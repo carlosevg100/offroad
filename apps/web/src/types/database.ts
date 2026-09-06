@@ -1109,6 +1109,142 @@ export type Database = {
           },
         ]
       }
+      capital_project_execution_brief_events: {
+        Row: {
+          actor_type: string
+          actor_user_id: string | null
+          capital_project_id: string
+          created_at: string
+          event_payload: Json
+          event_type: string
+          execution_brief_id: string
+          id: string
+          organization_id: string
+        }
+        Insert: {
+          actor_type: string
+          actor_user_id?: string | null
+          capital_project_id: string
+          created_at?: string
+          event_payload?: Json
+          event_type: string
+          execution_brief_id: string
+          id?: string
+          organization_id: string
+        }
+        Update: {
+          actor_type?: string
+          actor_user_id?: string | null
+          capital_project_id?: string
+          created_at?: string
+          event_payload?: Json
+          event_type?: string
+          execution_brief_id?: string
+          id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_execution_brief_events_organization_id_capital_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_brief_events_organization_id_execut_fkey"
+            columns: ["organization_id", "execution_brief_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_execution_briefs"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_execution_briefs: {
+        Row: {
+          brief_fingerprint: string
+          brief_version: number
+          capital_project_id: string
+          change_summary: Json
+          created_at: string
+          created_by: string
+          execution_mode: string
+          id: string
+          internal_snapshot: Json
+          objective: string
+          organization_id: string
+          parent_brief_id: string | null
+          plan_id: string
+          proposed_deliverable: string
+          schema_version: string
+          storage_fingerprint: string
+          visible_snapshot: Json
+          workstream_count: number
+        }
+        Insert: {
+          brief_fingerprint: string
+          brief_version: number
+          capital_project_id: string
+          change_summary?: Json
+          created_at?: string
+          created_by: string
+          execution_mode: string
+          id?: string
+          internal_snapshot: Json
+          objective: string
+          organization_id: string
+          parent_brief_id?: string | null
+          plan_id: string
+          proposed_deliverable: string
+          schema_version: string
+          storage_fingerprint: string
+          visible_snapshot: Json
+          workstream_count: number
+        }
+        Update: {
+          brief_fingerprint?: string
+          brief_version?: number
+          capital_project_id?: string
+          change_summary?: Json
+          created_at?: string
+          created_by?: string
+          execution_mode?: string
+          id?: string
+          internal_snapshot?: Json
+          objective?: string
+          organization_id?: string
+          parent_brief_id?: string | null
+          plan_id?: string
+          proposed_deliverable?: string
+          schema_version?: string
+          storage_fingerprint?: string
+          visible_snapshot?: Json
+          workstream_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_execution_briefs_organization_id_capital_pro_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_briefs_organization_id_parent_brie_fkey"
+            columns: ["organization_id", "parent_brief_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_execution_briefs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_briefs_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       capital_project_plan_tasks: {
         Row: {
           batch_no: number
@@ -7341,6 +7477,10 @@ export type Database = {
           p_processing_run_id?: string
           p_session_id: string
         }
+        Returns: Json
+      }
+      read_capital_project_execution_brief_progress_v1: {
+        Args: { p_execution_brief_id: string }
         Returns: Json
       }
       record_agent_change_proposal: {

@@ -1,8 +1,67 @@
 # Build State
 
-Atualizado em: 2026-09-04
-Baseline: `main` após PR #401, commit `16a3e07`
+Atualizado em: 2026-09-06
+Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
+
+## Blueprint executável do endgame, candidate, 06/09/2026
+
+- Criado `docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` como fonte proposta de execução do
+  programa, subordinada à Constituição e ao Atlas. O plano histórico linear permanece preservado,
+  mas não governa o roadmap futuro.
+- O documento separa explicitamente capacidade existente de destino: preview restrito ao Caso 01,
+  procedures e packs ainda não homologados, leitura arbitrária e work products ainda abaixo do gate
+  institucional, e matching/capital intelligence ainda inicial.
+- A arquitetura-alvo tem Project Workspace, Intent & Work Control, Specialist Runtime, DCM
+  Cognitive Harness, deterministic finance engines, Credit Object Graph, Work Products & Review e
+  Capital Network, atravessados por um Trust Control Plane de tenancy, autorização, evidência,
+  auditoria, privacidade, resiliência, custo e evals.
+- O programa foi reorganizado em oito streams, oito releases com gates, 74 itens de backlog de
+  fundação e oito jornadas gold longitudinais. Case 01 virou regressão, não centro do roadmap.
+- O contrato de interação agora inclui um `ExecutionBrief` antes do trabalho substantivo: fontes e
+  materiais planejados, frentes econômicas, análises/cálculos, dependências, checkpoints e entrega.
+  Ele é derivado do grafo real, editável e não expõe raciocínio privado ou agentes internos.
+- Criado o diagrama autocontido `docs/build/diagrams/offroad-endgame-architecture.html` usando os
+  tokens atuais da marca e o símbolo circular como referência de identidade; nenhuma tela do
+  produto foi alterada.
+- Trust deixou de ser uma entrega tardia do Release 7. O Release 0 agora exige Control Register,
+  inventários, threat model, baseline live, owners, evidências e bloqueio de critical/high; cada
+  release possui controles específicos. O Release 7 consolida integração enterprise, pentest e
+  avaliações externas sobre controles que já operam.
+- `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md` passa a ser o programa canônico
+  subordinado, com SOC 2, ISO/IEC 27001, privacidade, pentest, 11 domínios de controle e gates A-E.
+- `@offroad/release-governance` ganhou um gate determinístico de trust: requisito ausente, owner
+  ausente, evidência vencida, ambiente não comprovado ou finding critical/high bloqueiam o release.
+  Um segundo gate impede alegação SOC 2/ISO sem atestação externa vigente para o escopo exato.
+- O Control Register deixou de ser apenas uma lista no plano. Há 24 objetivos mestres `TRUST-*`,
+  124 atividades vinculadas sem colisão de IDs, mappings provisórios para SOC 2, ISO/IEC 27001,
+  NIST CSF 2.0 e LGPD, fontes normativas oficiais e validação determinística de completude. Estado
+  operacional, owners nominais e população de evidências continuam pendentes e visíveis.
+- O capability ledger v1 mede 26 capacidades sem usar um status único enganoso. Availability,
+  exposure e quality maturity são independentes. Caso 01 aparece como `live/allowlisted/tested`;
+  router universal, modelo integrado, Workbench e G2-G8 continuam `specified`; matching live e
+  assurance externa aparecem `absent`. Nenhuma capacidade analítica está liberada para trabalho de
+  cliente, material externo ou efeito externo.
+- G1-G8 agora possuem contratos executáveis em `@offroad/evals`: 63 estágios no total, Execution
+  Brief específico antes do trabalho substantivo, superfícies, objetos, outputs, evidência,
+  perguntas, transições, variantes, adversariais e 14 gates por jornada. Todos permanecem
+  `specified`; o contrato não substitui reference work product, binding, E2E ou benchmark.
+- `@offroad/work-plan` ganhou o primeiro compiler universal de `ExecutionBrief`: toda tarefa do
+  grafo precisa aparecer exatamente uma vez em três a sete frentes; tarefa inventada, escondida ou
+  duplicada, fonte não autorizada, premissa sem base, copy genérica e efeito externo sem autoridade
+  bloqueiam o plano. A projeção visível remove IDs e metadados internos.
+- As seis famílias de entrada agora possuem receitas de brief distintas. O fluxo de reunião e
+  originação foi ampliado de pesquisa preliminar até análise prospectiva e alternativa-alvo S11.
+  O compiler está ligado à ativação real, persistido em versões imutáveis e renderizado no chat.
+  Progresso por frente vem dos runs reais por RPC que não expõe IDs internos. Uma mudança de
+  objetivo, entrega, premissa, fonte ou checkpoint gera um diff visível na versão seguinte.
+- O template de PR e a Definition of Done agora exigem control IDs, data flow/classes,
+  providers/tools, abuse cases, testes negativos, evidência, containment e rollback.
+
+Status: **candidate architecture; Release 0 iniciado**. Nenhuma capacidade analítica foi promovida
+por este trabalho. Capability ledger, Control Register, jornadas, Execution Brief persistido e
+progresso seguro são executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work
+products de referência, os eventos narrativos por frente e a edição governada do plano.
 
 ## Polimento da entrada e correção do menu, 04/09/2026
 

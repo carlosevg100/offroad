@@ -68,10 +68,10 @@ describe("capital job compiler", () => {
     expect(companyDebt.tasks.find((task) => task.id === "M01")?.label).toContain("jurisdição");
     expect(companyDebt.tasks.find((task) => task.id === "C02")?.label).toContain("conhecimento aplicável");
     expect(companyDebt.tasks.some((task) => task.id.startsWith("S"))).toBe(false);
-    expect(thesis.tasks.map((task) => task.id)).toEqual(expect.arrayContaining(["M07", "C02", "K04"]));
-    expect(thesis.job.targetTaskIds).toEqual(["M07", "C02", "K04"]);
+    expect(thesis.tasks.map((task) => task.id)).toEqual(expect.arrayContaining(["M07", "C02", "C11", "S11", "K04"]));
+    expect(thesis.job.targetTaskIds).toEqual(["M07", "S11", "K04"]);
     expect(thesis.tasks.find((task) => task.id === "M07")?.dependencies).toEqual(["M06", "C02", "K04"]);
-    expect(thesis.tasks.some((task) => task.id === "S11")).toBe(false);
+    expect(thesis.tasks.some((task) => task.id === "S11")).toBe(true);
     expect(planning.tasks.some((task) => task.id === "S11")).toBe(true);
     expect(documents.job.inputPolicy.capitalIntent).toBe("inferable");
     expect(production.tasks.map((task) => task.id)).toEqual(expect.arrayContaining(["A11", "K09"]));

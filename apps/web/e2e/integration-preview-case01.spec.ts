@@ -124,6 +124,18 @@ test.describe("integration_preview: Case 01 end to end", () => {
     expect(alignment).toMatch(/\(2\) reunião exploratória/);
     expect(alignment).toMatch(/\(3\) briefing interno/);
     record("alinhamento", alignment);
+    // The person sees the request-specific plan before the long-running analysis returns. This is
+    // the product agreement, not a generic activity list and not the internal TaskSpec graph.
+    const executionBrief = page.getByTestId("execution-brief");
+    await expect(executionBrief).toBeVisible();
+    await expect(executionBrief.locator("h2")).toContainText("Camil");
+    await expect(executionBrief.locator(".execution-brief-card__workstreams > li")).toHaveCount(4);
+    await expect(executionBrief).toContainText("Conferir balanço, caixa e dívida da Camil");
+    await expect(executionBrief).toContainText("Testar serviço da dívida, covenants e downside");
+    await expect(executionBrief).toContainText("Comparar os caminhos de refinanciamento");
+    await expect(executionBrief).toContainText("Planejar a devolutiva");
+    const visiblePlanText = await executionBrief.innerText();
+    expect(visiblePlanText).not.toMatch(/sourceTaskIds|executionAuthority|TaskSpec|\b[CDKMSA][0-9]{2}\b/);
     await page.screenshot({path: join(outputDirectory, "02-alignment.png"), fullPage: true});
   });
 
@@ -142,6 +154,19 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(work.locator('[data-artifact-type="preview_alternatives"] .preview-work__state')).toContainText("comparado");
     await expect(work.locator('[data-artifact-type="preview_covenants"] .preview-work__gaps')).toBeVisible();
     await expect(page.locator(".advisor-context-section--activity > div small")).toHaveText("10/10");
+    const executionBrief = page.getByTestId("execution-brief");
+    await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
+    await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);
+    await expect(executionBrief.locator(".execution-brief-card__progress").first()).toContainText("Concluída");
+    const firstActivity = page.locator(".advisor-thread__activity-event").first();
+    await expect(firstActivity).toBeVisible();
+    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-testid") ?? "activity")))
+      .toEqual(expect.arrayContaining(["execution-brief", "activity"]));
+    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
+      .first()
+      .getAttribute("data-testid"))
+      .toBe("execution-brief");
     await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
   });
 
@@ -174,6 +199,10 @@ test.describe("integration_preview: Case 01 end to end", () => {
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
     await expect(page.locator('[data-artifact-type="preview_alternatives"] .preview-work__premises')).toContainText("newDebtAnnualRate = 0.155");
+    const briefChanges = page.getByTestId("execution-brief-changes");
+    await expect(briefChanges).toBeVisible();
+    await expect(briefChanges).toContainText("O que mudou nesta versão");
+    await expect(briefChanges).toContainText("Taxa anual da nova dívida");
     await page.screenshot({path: join(outputDirectory, "05-incremental-update.png"), fullPage: true});
     expect(projectUrl).toMatch(/\/pt-BR\/app\/projects\//);
   });

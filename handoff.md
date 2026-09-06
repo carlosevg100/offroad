@@ -1,6 +1,6 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 5 September 2026. The universal advisor foundation, persistent project memory,
+> Current as of 6 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
 > implemented but not yet homologated as top-tier expertise. The first human gold case remains the
@@ -10,6 +10,43 @@
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+### Program reset: executable endgame blueprint, 6 September 2026
+
+`docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` is the proposed canonical execution source for
+the next phase. It translates the Constitution and Intent Atlas into a buildable operating system:
+one calm Project Workspace, an Intent-to-Plan Compiler, bounded specialist execution, a DCM
+Cognitive Harness, deterministic finance engines, a governed Credit Object Graph, institutional
+work products, Capital Intelligence and a Trust Control Plane.
+
+This is a planning and architecture change, not evidence that the endgame is live. The current
+preview remains a narrow Case 01 route with five compositions and a fixed ten-step chain; the
+procedure library and depth packs are not yet homologated, arbitrary-document understanding is not
+production-grade, and the generated Word/Excel files prove transport rather than top-tier banker
+quality. Case 01 is now one regression inside eight longitudinal gold journeys, not the roadmap.
+
+The immediate gate is Release 0: freeze the real capability ledger, define G1-G8 end-to-end,
+produce manual reference work products at the target quality, decompose them into governed objects
+and procedures, and complete the Trust Foundation before replacing the fixed preview compiler.
+The Trust Foundation includes a control register, asset/data/provider inventories, threat model,
+live baseline, owners, current evidence, blocking critical/high policy and security Definition of
+Done. No broad founder fine-tuning is requested before the serious-test gate in section 23 of the
+blueprint.
+
+The interaction contract also requires an `ExecutionBrief` before substantive work begins. It tells
+the user what Offroad understood, which existing materials and external sources it will use, which
+economic dimensions and calculations it will cover, what may still be needed and what it will
+deliver. It is projected from the compiled task graph, not generated as a generic checklist, and can
+be edited without exposing private reasoning or internal agent topology.
+
+Trust is not deferred to enterprise packaging. The canonical program is
+`docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
+construction and gates. Release 7 is reserved for enterprise integration, independent pentest and
+formal SOC 2/ISO assurance over controls already operating. `@offroad/release-governance` now
+fails a release closed when a required control, owner, current evidence or environment proof is
+missing or a critical/high finding remains, and refuses formal badges without a current external
+attestation for the exact scope. This is the first implemented slice of Release 0, not a claim of
+audit readiness.
 
 ### Canonical identity: universal debt advisor, 2 September 2026
 
@@ -3297,6 +3334,33 @@ Não abrir simultaneamente dezenas de jornadas. A sequência obrigatória é:
 O próximo responsável deve resistir a duas tentações: expandir a demo antes de fechar a qualidade
 do primeiro caso e declarar expertise porque o schema ou o teste unitário existe. A prioridade é
 fazer uma decisão real ficar melhor, com um resultado que um profissional exigente aceitaria usar.
+
+### Trust Foundation, 06/09/2026
+
+O blueprint passou a tratar trust como control plane desde o Release 0. A primeira implementação
+executável está em `@offroad/release-governance`: gate de release fail-closed, gate de alegação de
+assurance e Control Register em duas camadas. O registro contém 24 objetivos mestres `TRUST-*` e
+vincula as 124 atividades detalhadas do programa sem reutilizar os mesmos IDs. Todos os mappings
+SOC 2, ISO/IEC 27001, NIST CSF e LGPD estão explicitamente como working map, nunca como validação
+externa. A suite focada tem 23 testes verdes em Node 24.19.
+
+Isso ainda não prova que os controles operam. A próxima fatia precisa popular owner nominal,
+aplicabilidade, current state, implementação, teste, evidência e findings por atividade; depois
+produzir inventários e threat model. Nenhum badge ou alegação audit-ready está autorizado.
+
+O mesmo princípio agora vale para produto. `docs/build/CAPABILITY_LEDGER.md` e
+`@offroad/release-governance/current-capability-ledger` registram 26 capacidades por availability,
+exposure e quality maturity. O evaluator falha quando specification, shadow ou fixture são
+apresentados como capacidade real. Nenhuma analytical capability está `production` ou liberada para
+customer reliance. O próximo incremento funcional deve criar as referências G1/G2 e converter o
+compiler fixo em objective-to-plan sem apagar esses limites.
+
+G1-G8 também deixaram de ser apenas diagramas. `packages/evals/src/longitudinal-journeys.ts`
+contém 63 estágios com estado de interface, objetos, outputs, evidência, política de perguntas,
+transições, variantes, trust adversarials e os 14 gates. Um teste garante Execution Brief antes do
+trabalho e briefs economicamente diferentes por intenção. O status continua `specified`: agora é
+possível construir e avaliar contra contratos concretos, mas ainda faltam reference work products,
+bindings, E2E e benchmark.
 
 ## 43. Atlas canônico de intenções e workflows, 04/09/2026
 

@@ -1,5 +1,58 @@
 # Acceptance Evidence
 
+## Blueprint executável do endgame, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Estado real | inspeção do registry de TaskSpecs, depth packs, procedures e preview | 80 TaskSpecs seguem `specified`; preview tem cinco composições e cadeia Case 01; packs/procedures não estão homologados |
+| Cobertura de produto | confronto com Constituição, Atlas, workflow atual e handoff | blueprint preserva limites, autoridade, evidence regimes, continuidade e fronteiras de atuação |
+| Referências externas | fontes oficiais de Legora, Harvey, Hebbia, Rogo, Model ML e OpenAI | padrões absorvidos como princípios; nenhuma interface concorrente foi copiada |
+| Arquitetura | diagrama HTML autocontido e `self_check.py` | oito blocos funcionais mais Trust Control Plane, fluxo intenção→execução→work product→capital, controles transversais e feedback governado; self-check verde |
+| Programa | oito streams, releases 0-7, BP-001 a BP-074 e G1-G8 | cada release tem construção, security gate e acceptance evidence; founder gate impede teste amplo antes da base necessária |
+| Plano antes da execução | contrato `ExecutionBrief`, exemplos por intenção e gate de Release 1 | companhia pública, material e covenant mostram fontes e análises diferentes; o plano deriva do grafo e antecede trabalho substantivo |
+| Programa de trust | blueprint §18 + `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md` | segurança começa no Release 0; SOC 2, ISO/IEC 27001, privacy e pentest possuem fronteira, controles, owners, evidência, cadência, backlog e gates explícitos |
+| Gate de release | `@offroad/release-governance/trust-controls` | bloqueia controle obrigatório/owner/evidência/ambiente ausente, evidência vencida e finding critical/high; warnings médios/baixos permanecem visíveis |
+| Gate de alegação | `evaluateAssuranceClaim` | separa designed/implemented/operating/independently tested e recusa SOC 2 Type II ou ISO/IEC 27001 sem atestação externa vigente e no scope fingerprint exato |
+| Control Register executável | `masterTrustControlCatalogue` + `evaluateTrustControlCatalogue` | 24 objetivos, 124 atividades, 11 domínios e quatro frameworks mínimos; falha por domínio, mapping, objetivo ou vínculo ausente e não permite chamar mapping interno de validação externa |
+| Vista humana do registro | `docs/security/CONTROL_REGISTER.md` | separa objetivo, atividade, implementação, operação e assurance; expõe mappings provisórios, nove objetivos sem implementation ref e ausência de população operacional |
+| Capability ledger executável | `currentCapabilityLedger` + `evaluateCapabilityLedger` | 26 capacidades classificadas separadamente por availability, exposure e quality; nenhuma analytical capability recebe uso de cliente ou maturity production |
+| Honestidade do ledger | `capability-ledger.test.ts` | recusa specified com runtime, mocked sem fixture, customer reliance sem live+production e preserva Case 01 como allowlisted em vez de universal |
+| Contratos G1-G8 | `longitudinalGoldJourneys` | oito jornadas e 63 estágios com plano específico, superfícies, objetos, outputs, evidência, transições, variantes e adversariais |
+| Gate longitudinal | `evaluateLongitudinalJourneyCatalogue` | exige os oito IDs, 14 gates únicos, terminal válido, transições resolvidas e Execution Brief antes de Live Work/Workbench |
+| Planos não genéricos | `longitudinal-journeys.test.ts` | diferencia explicitamente RI/CVM em G1, receivables em G3, clause graph em G5 e mandate/freshness em G8; oito briefs distintos |
+| Compiler de Execution Brief | `@offroad/work-plan/execution-brief` | deriva três a sete frentes do grafo, liga fontes/análises/outputs/dependências, deriva autorização e produz fingerprint e projeção visível segura |
+| Gate do plano visível | `execution-brief.test.ts` | bloqueia tarefa inventada, escondida ou duplicada, copy genérica, fonte disponível sem autorização, premissa não governada e efeito externo sem aprovação |
+| Especialização das entradas | seis receitas + capital job compiler | reunião chega a análise prospectiva e S11; revisão de operação explicita vigência, emendas, cross-references, indexação, covenants, waterfall e ajustes |
+| Testes de trust e capability | Vitest em quatro arquivos | dezesseis cenários específicos: release/assurance fail-closed, catálogo completo, 124 vínculos, frameworks mínimos, falsa validação externa, gaps de implementação e honestidade de capability; suite do pacote 27/27 verde |
+| Processo de mudança | `AGENTS.md` + PR template | toda mudança registra control IDs, data flow/classes, autorização, fornecedores, abuse cases, negative tests, evidência, containment e rollback |
+| Honestidade | revisão da linguagem de status | documento se declara proposta; não promove runtime, packs, arquivos ou expertise |
+| Gate focado de governance | test + typecheck + lint de `@offroad/release-governance` | 4 arquivos/27 testes verdes; typecheck e lint verdes em Node 24.19 |
+| Gate focado de jornadas | test + typecheck + lint de `@offroad/evals` | 11 arquivos/52 testes verdes; quatro testes novos exercitam catálogo, brief, gate map e transições |
+| Gate focado de Execution Brief | test + typecheck + lint de `@offroad/work-plan` | 7 arquivos/43 testes verdes; cinco testes novos cobrem especificidade, segurança da projeção e fail-closed |
+| Gate integral deste incremento | `pnpm check` em Node 24.19, numa worktree limpa contendo somente o diff desta entrega | lint, typecheck, testes e build verdes nos 43 alvos; 185 testes web e 19 testes de release governance verdes |
+
+## Execution Brief conectado ao workspace, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Compilação no runtime | testes de `agent-operation-brief` e novo módulo `execution-brief` | standard usa a versão ativa persistida; preview cobre exatamente as dez tarefas ativadas; mismatch falha fechado |
+| Persistência | migration `20260906143000_execution_brief_foundation.sql` | brief interno e projeção visível imutáveis, versionados, com RLS, eventos e escrita capability-bound |
+| Atomicidade | RPC `worker_record_agent_response_and_activate_v4` + teste de queue | resposta, ativação e brief usam uma única transação; replay retorna a versão existente |
+| Fronteira visível | schema estrito + teste SSR do card | objetivo, produto, fontes, frentes, premissas e checkpoint aparecem; task IDs e autoridade interna não aparecem |
+| Live Work seguro | RPC de progresso + schemas e teste SSR | estado e contagem são derivados do último run de cada tarefa; resposta não contém IDs internos; coluna `internal_snapshot` não é legível pelo cliente |
+| Interface real | página de projeto do advisor | consulta somente o brief mais recente válido e o apresenta entre a conversa e o work product |
+| Worker | Node 24 | 30 arquivos/172 testes, typecheck e lint verdes |
+| Work-plan | Node 24 | 7 arquivos/43 testes, typecheck e lint verdes |
+| Web aplicável | Vitest sem o teste textual global afetado por arquivos não versionados + Next build | 31 arquivos/182 testes verdes; 34 páginas compiladas; typecheck e lint verdes |
+| Pendência de banco | reconstrução local indisponível sem Docker | SQL/RLS/RPC precisam passar no CI antes de exposure; nenhuma alegação de produção |
+| Pendência integral externa | `src/i18n/no-em-dash.test.ts` | falha somente porque três arquivos não versionados do fundador contêm travessões; arquivos preservados e fora do commit |
+
+Status: **primeira integração vertical candidate**. O caminho existe de ponta a ponta no código, mas
+continua interno até banco, jornada viva, edição governada e Live Work passarem seus gates.
+
+Status: **candidate architecture; Trust Foundation em implementação**. O aceite comprova o contrato
+e o primeiro gate executável, não readiness de auditoria, certificação, pentest ou endgame.
+
 ## Polimento da entrada e correção do menu, 04/09/2026
 
 | Evidência | Verificação | Resultado |

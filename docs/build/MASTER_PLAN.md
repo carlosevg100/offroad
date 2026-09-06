@@ -1,5 +1,12 @@
 # Offroad Capital - Master Build Plan
 
+> **Historical build record.** This document preserves the original linear build sequence and
+> remains useful for implementation history. It is superseded for future product execution by
+> [`OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md`](OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md), which treats
+> the product as a persistent, intent-compiled operating system with parallel workstreams and
+> longitudinal gold journeys. The Constitution and Canonical Intent Workflow Atlas remain the
+> governing product contracts.
+
 Versão: 1.0
 Fonte de produto: Blueprint v3.0 pt-BR
 Método: dependências, gates objetivos e evidência de aceite. Este plano não representa cronograma.

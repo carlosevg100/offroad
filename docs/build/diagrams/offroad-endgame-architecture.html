@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Offroad Credit OS - Arquitetura do endgame</title>
+  <style>
+    :root {
+      --paper: #fafaf9;
+      --paper-2: #f0f2f3;
+      --ink: #151a20;
+      --muted: #707984;
+      --soft: #9aa3ac;
+      --rule: rgba(21, 26, 32, .14);
+      --accent: #7d9455;
+      --accent-tint: rgba(169, 193, 122, .18);
+      --link: #607d8b;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body { padding: 32px; }
+
+    main {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 40px;
+      align-items: end;
+      padding: 0 8px 24px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 0;
+      font-family: Newsreader, Georgia, serif;
+      font-size: clamp(38px, 5vw, 66px);
+      font-weight: 500;
+      line-height: .98;
+      letter-spacing: -.035em;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .diagram-shell {
+      margin-top: 24px;
+      border: 1px solid var(--rule);
+      background: var(--white);
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 1120px;
+      height: auto;
+    }
+
+    .zone {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+
+    .core-zone {
+      fill: rgba(240, 242, 243, .5);
+      stroke: rgba(125, 148, 85, .55);
+      stroke-width: 1.5;
+      stroke-dasharray: 5 5;
+    }
+
+    .node {
+      fill: var(--white);
+      stroke: rgba(21, 26, 32, .2);
+      stroke-width: 1.2;
+    }
+
+    .node--focus {
+      fill: var(--accent-tint);
+      stroke: var(--accent);
+      stroke-width: 1.5;
+    }
+
+    .node--dark {
+      fill: var(--ink);
+      stroke: var(--ink);
+      stroke-width: 1.2;
+    }
+
+    .connector {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 1.7;
+      marker-end: url(#arrow);
+    }
+
+    .connector--feedback {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      stroke-dasharray: 6 5;
+      marker-end: url(#arrow-accent);
+    }
+
+    .zone-label {
+      fill: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .15em;
+    }
+
+    .node-kicker {
+      fill: var(--accent);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+
+    .node-kicker--light { fill: #c6d5a9; }
+
+    .node-title {
+      fill: var(--ink);
+      font-family: Newsreader, Georgia, serif;
+      font-size: 21px;
+      font-weight: 600;
+    }
+
+    .node-title--light { fill: var(--white); }
+
+    .node-title--compact { font-size: 18px; }
+
+    .node-copy {
+      fill: var(--muted);
+      font-size: 11px;
+    }
+
+    .node-copy--light { fill: #cbd1d6; }
+
+    .edge-label-bg {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: .8;
+    }
+
+    .edge-label {
+      fill: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .05em;
+    }
+
+    footer {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 32px;
+      padding: 20px 8px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    footer strong { color: var(--ink); }
+
+    @media (max-width: 760px) {
+      body { padding: 16px; }
+      header, footer { grid-template-columns: 1fr; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">Offroad Credit OS · arquitetura-alvo</p>
+        <h1>Da intenção ao trabalho de crédito completo.</h1>
+      </div>
+      <p class="lead">
+        Um projeto contínuo compila o trabalho certo, executa especialistas governados,
+        preserva fatos e cálculos auditáveis e transforma decisões em work products vivos.
+      </p>
+    </header>
+
+    <section class="diagram-shell" aria-label="Arquitetura-alvo do Offroad Credit OS">
+      <svg viewBox="0 0 1200 688" role="img" aria-labelledby="offroad-endgame-architecture-title offroad-endgame-architecture-desc">
+        <title id="offroad-endgame-architecture-title">Arquitetura do endgame do Offroad Credit OS</title>
+        <desc id="offroad-endgame-architecture-desc">
+          A experiência de usuário entra no Intent and Work Control, que compila um grafo de trabalho.
+          Especialistas executam usando o DCM Cognitive Harness, os motores determinísticos e o Credit
+          Object Graph. Work products passam por revisão antes de chegar ao usuário e, quando aplicável,
+          ao Capital Network. Correções retornam como memória governada. Um Trust Control Plane aplica
+          identidade, autorização, isolamento, políticas de dados e provedores, auditoria, resposta a
+          incidentes e evidências de controle a todas as camadas.
+        </desc>
+
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#607d8b"></path>
+          </marker>
+          <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#7d9455"></path>
+          </marker>
+        </defs>
+
+        <!-- Zones -->
+        <rect class="zone" x="32" y="84" width="216" height="472" rx="8"></rect>
+        <rect class="core-zone" x="272" y="84" width="640" height="472" rx="8"></rect>
+        <rect class="zone" x="936" y="84" width="232" height="472" rx="8"></rect>
+        <text class="zone-label" x="48" y="110">EXPERIÊNCIA</text>
+        <text class="zone-label" x="288" y="110">OFFROAD CREDIT OS · TRUST BOUNDARY</text>
+        <text class="zone-label" x="952" y="110">ENTREGA E MERCADO</text>
+
+        <!-- Connectors behind nodes -->
+        <path class="connector" d="M 224 252 H 304"></path>
+        <path class="connector" d="M 552 212 H 624"></path>
+        <path class="connector" d="M 880 212 H 960"></path>
+        <path class="connector" d="M 1052 292 V 376"></path>
+        <path class="connector" d="M 380 424 V 340 H 428 V 286"></path>
+        <path class="connector" d="M 572 424 V 332 H 752 V 286"></path>
+        <path class="connector" d="M 780 424 V 340 H 816 V 286"></path>
+        <path class="connector" d="M 844 478 H 920 V 252 H 960"></path>
+        <path class="connector--feedback" d="M 960 448 H 900 V 524 H 844"></path>
+
+        <!-- Edge labels -->
+        <rect class="edge-label-bg" x="235" y="232" width="58" height="18" rx="9"></rect>
+        <text class="edge-label" x="264" y="244" text-anchor="middle">OBJETIVO</text>
+
+        <rect class="edge-label-bg" x="565" y="192" width="48" height="18" rx="9"></rect>
+        <text class="edge-label" x="589" y="204" text-anchor="middle">PLANO</text>
+
+        <rect class="edge-label-bg" x="891" y="192" width="58" height="18" rx="9"></rect>
+        <text class="edge-label" x="920" y="204" text-anchor="middle">OBJETOS</text>
+
+        <rect class="edge-label-bg" x="1014" y="324" width="76" height="18" rx="9"></rect>
+        <text class="edge-label" x="1052" y="336" text-anchor="middle">AUTORIZAÇÃO</text>
+
+        <rect class="edge-label-bg" x="856" y="502" width="86" height="18" rx="9"></rect>
+        <text class="edge-label" x="899" y="514" text-anchor="middle">FEEDBACK VIVO</text>
+
+        <!-- Nodes -->
+        <g id="user-surfaces">
+          <rect class="node" x="56" y="180" width="168" height="144" rx="8"></rect>
+          <text class="node-kicker" x="76" y="206">01 · UMA SUPERFÍCIE</text>
+          <text class="node-title node-title--compact" x="76" y="234">
+            <tspan x="76" dy="0">Project</tspan>
+            <tspan x="76" dy="20">Workspace</tspan>
+          </text>
+          <text class="node-copy" x="76" y="278">
+            <tspan x="76" dy="0">Chat · Vault · Workbench</tspan>
+            <tspan x="76" dy="17">Model · Materials · Capital</tspan>
+            <tspan x="76" dy="17">memória e aprovações</tspan>
+          </text>
+        </g>
+
+        <g id="intent-work-control">
+          <rect class="node--focus" x="304" y="146" width="248" height="140" rx="8"></rect>
+          <text class="node-kicker" x="326" y="172">02 · DEAL CAPTAIN</text>
+          <text class="node-title" x="326" y="204">Intent &amp; Work Control</text>
+          <text class="node-copy" x="326" y="230">
+            <tspan x="326" dy="0">resolve objetivo e contexto autorizado</tspan>
+            <tspan x="326" dy="17">compila o grafo mínimo e seus branches</tspan>
+            <tspan x="326" dy="17">pergunta, executa, invalida e retoma</tspan>
+          </text>
+        </g>
+
+        <g id="specialist-execution">
+          <rect class="node--dark" x="624" y="146" width="256" height="140" rx="8"></rect>
+          <text class="node-kicker node-kicker--light" x="646" y="172">03 · EXECUÇÃO ESPECIALIZADA</text>
+          <text class="node-title node-title--light" x="646" y="204">Specialist Runtime</text>
+          <text class="node-copy node-copy--light" x="646" y="230">
+            <tspan x="646" dy="0">documents · company · financial · credit</tspan>
+            <tspan x="646" dy="17">structure · market · materials · review</tspan>
+            <tspan x="646" dy="17">providers substituíveis; contrato estável</tspan>
+          </text>
+        </g>
+
+        <g id="work-products-review">
+          <rect class="node" x="960" y="146" width="184" height="146" rx="8"></rect>
+          <text class="node-kicker" x="980" y="172">04 · DECISÃO E ENTREGA</text>
+          <text class="node-title" x="980" y="204">Work Products</text>
+          <text class="node-copy" x="980" y="230">
+            <tspan x="980" dy="0">readout e workbench</tspan>
+            <tspan x="980" dy="17">model · deck · memo</tspan>
+            <tspan x="980" dy="17">review e template institucional</tspan>
+          </text>
+        </g>
+
+        <g id="capital-network">
+          <rect class="node" x="960" y="376" width="184" height="108" rx="8"></rect>
+          <text class="node-kicker" x="980" y="402">05 · QUANDO APLICÁVEL</text>
+          <text class="node-title" x="980" y="434">Capital Network</text>
+          <text class="node-copy" x="980" y="458">mandatos · fit · exclusões · conexão</text>
+        </g>
+
+        <g id="dcm-harness">
+          <rect class="node" x="304" y="424" width="152" height="100" rx="8"></rect>
+          <text class="node-kicker" x="322" y="450">EXPERTISE</text>
+          <text class="node-title node-title--compact" x="322" y="480">DCM Harness</text>
+          <text class="node-copy" x="322" y="502">procedures · packs · checks</text>
+        </g>
+
+        <g id="deterministic-engines">
+          <rect class="node" x="496" y="424" width="152" height="100" rx="8"></rect>
+          <text class="node-kicker" x="514" y="450">COMPUTAÇÃO</text>
+          <text class="node-title node-title--compact" x="514" y="480">Finance Engines</text>
+          <text class="node-copy" x="514" y="502">model · debt · covenant · waterfall</text>
+        </g>
+
+        <g id="credit-object-graph">
+          <rect class="node" x="688" y="424" width="156" height="100" rx="8"></rect>
+          <text class="node-kicker" x="706" y="450">MEMÓRIA GOVERNADA</text>
+          <text class="node-title node-title--compact" x="706" y="475">
+            <tspan x="706" dy="0">Credit Object</tspan>
+            <tspan x="706" dy="19">Graph</tspan>
+          </text>
+          <text class="node-copy" x="706" y="512">facts · claims · lineage · snapshots</text>
+        </g>
+
+        <!-- Footer strip inside SVG -->
+        <line x1="32" y1="584" x2="1168" y2="584" stroke="rgba(21,26,32,.14)" stroke-width="1"></line>
+        <text class="zone-label" x="48" y="608">TRUST CONTROL PLANE</text>
+        <text class="node-copy" x="232" y="608">identidade · autorização · isolamento · políticas de dados e provedores · efeitos · auditoria</text>
+        <text class="node-copy" x="232" y="628">retenção · DLP · observabilidade · resposta e recuperação · evidências · promoção por escopo</text>
+        <text class="node-copy" x="48" y="656">O usuário vê progresso útil, decisões, lacunas e entregáveis - nunca a topologia interna de agentes nem raciocínio privado.</text>
+      </svg>
+    </section>
+
+    <footer>
+      <div>
+        <strong>Princípio estrutural.</strong> O projeto, e não a mensagem, é a unidade de continuidade.
+        Cada novo pedido altera um grafo vivo de objetivos, fatos, cálculos, decisões e work products.
+      </div>
+      <div>
+        <strong>Limite.</strong> A Offroad prepara, analisa, estrutura e conecta. Underwriting, diligência,
+        aprovação, opinião jurídica, distribuição, documentação definitiva e closing permanecem com as partes.
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

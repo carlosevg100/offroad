@@ -236,7 +236,8 @@ export type QueueClient = {
     response: unknown,
     proposal?: unknown,
     activation?: unknown,
-  ): Promise<unknown>;
+    executionBrief?: {internal: unknown; visible: unknown; changeSummary?: unknown[]},
+  ): Promise<{activation?: unknown; executionBrief?: {id: string; version: number; replayed: boolean}}>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   recordIntentEnvelope(job: AgentOperationBriefJob, input: {envelope: unknown; classifier: unknown; model: string; costUsd: number}): Promise<void>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
@@ -657,15 +658,26 @@ export function createQueueClient(
       };
     },
 
-    async recordAgentResponse(job, assistantMessageId, response, proposal, activation) {
-      return call("worker_record_agent_response_and_activate_v3", {
+    async recordAgentResponse(job, assistantMessageId, response, proposal, activation, executionBrief) {
+      const data = await call("worker_record_agent_response_and_activate_v4", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
         p_response: response,
         p_proposal: proposal ?? null,
         p_activation: activation ?? null,
+        p_execution_brief_internal: executionBrief?.internal ?? null,
+        p_execution_brief_visible: executionBrief?.visible ?? null,
+        p_execution_brief_change_summary: executionBrief?.changeSummary ?? [],
       });
+      const parsed = z.object({
+        activation: z.unknown().optional(),
+        execution_brief: z.object({id: z.uuid(), version: z.number().int().positive(), replayed: z.boolean()}).optional(),
+      }).passthrough().parse(data);
+      return {
+        ...(parsed.activation !== undefined ? {activation: parsed.activation} : {}),
+        ...(parsed.execution_brief ? {executionBrief: parsed.execution_brief} : {}),
+      };
     },
 
     async recordIntentEnvelope(job, input) {

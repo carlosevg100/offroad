@@ -20,6 +20,8 @@ import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake
 import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {ExecutionBriefCard} from "./execution-brief-card";
+import type {ExecutionBriefChange, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
   id: string;
@@ -91,6 +93,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
+  executionBrief?: {brief: VisibleExecutionBrief; changes: readonly ExecutionBriefChange[]; createdAt: string; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
@@ -124,6 +127,12 @@ export function AdvisorProject(props: Props) {
       .filter((event) => !["work_failed", "quality_gate_failed"].includes(event.type)
         || !failureWasRecovered(event.createdAt, successfulOutcomeAt))
       .map((event) => ({kind: "activity" as const, id: event.id, createdAt: event.createdAt, event})),
+    ...(props.executionBrief ? [{
+      kind: "execution_brief" as const,
+      id: `execution-brief-${props.executionBrief.version}`,
+      createdAt: props.executionBrief.createdAt,
+      executionBrief: props.executionBrief,
+    }] : []),
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const lastActivityId = props.activityEvents.at(-1)?.id;
 
@@ -183,6 +192,15 @@ export function AdvisorProject(props: Props) {
 
         <div aria-live="polite" className="advisor-thread">
           {timeline.map((item) => {
+            if (item.kind === "execution_brief") {
+              return <ExecutionBriefCard
+                brief={item.executionBrief.brief}
+                changes={item.executionBrief.changes}
+                key={item.id}
+                progress={item.executionBrief.progress}
+                version={item.executionBrief.version}
+              />;
+            }
             if (item.kind === "activity") {
               const terminal = ["work_completed", "decision_recorded", "question_answered"].includes(item.event.type);
               const failed = ["work_failed", "quality_gate_failed"].includes(item.event.type);
