@@ -82,7 +82,8 @@ select
   '70000000-0000-4000-8000-000000000601', repeat('1', 64),
   'execution-brief-test', 'fixture-v1',
   '{"type":"fixture","id":"execution-brief-m01"}'::jsonb, repeat('2', 64),
-  '[{"id":"fixture_check","passed":true}]'::jsonb, now(), now()
+  '[{"id":"fixture_check","passed":true}]'::jsonb,
+  now() - interval '1 hour', now() - interval '1 hour'
 from public.capital_project_plan_tasks task
 where task.organization_id = '20000000-0000-4000-8000-000000000601'
   and task.plan_id = '40000000-0000-4000-8000-000000000601'
