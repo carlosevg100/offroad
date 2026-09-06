@@ -6,6 +6,7 @@ import {useRouter} from "next/navigation";
 import {useRef, useState, type ReactNode} from "react";
 
 import {
+  answerAdvisorInformationRequest,
   appendAdvisorMessage,
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
@@ -23,6 +24,7 @@ import {createClient} from "@/lib/supabase/client";
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {ExecutionBriefCard} from "./execution-brief-card";
+import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
 import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
@@ -70,6 +72,7 @@ export type AdvisorProjectCopy = {
   ready: string;
   needsAttention: string;
   messageFailed: string;
+  informationRequest: InformationRequestCopy;
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   proposal: AdvisorChangeProposalCopy;
 };
@@ -88,7 +91,7 @@ type Props = {
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
   projectId: string;
   projectName: string;
-  pendingRequests?: Array<{id: string; question: string; whyItMatters: string; decisionImpact?: string}>;
+  pendingRequests?: AdvisorInformationRequest[];
   proposals: AdvisorChangeProposal[];
   sessionId: string;
   sessionStatus: string;
@@ -185,6 +188,34 @@ export function AdvisorProject(props: Props) {
     return {ok: true};
   }
 
+  async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<{ok: true} | {ok: false; error: string}> {
+    const request = props.pendingRequests?.[0];
+    if (!request || pending) return {ok: false, error: props.copy.errors.processing};
+    const messageId = crypto.randomUUID();
+    setError("");
+    setPending(true);
+    setOptimistic((current) => [...current, {id: messageId, role: "user", content: input.content, status: "completed", createdAt: new Date().toISOString()}]);
+    const result = await answerAdvisorInformationRequest({
+      locale: props.locale,
+      projectId: props.projectId,
+      requestId: request.id,
+      expectedUpdatedAt: request.updatedAt,
+      answerSource: input.source,
+      content: input.content,
+      messageId,
+    });
+    setPending(false);
+    setOptimistic([]);
+    if (!result.ok) {
+      const message = props.copy.errors[result.error];
+      setError(message);
+      router.refresh();
+      return {ok: false, error: message};
+    }
+    router.refresh();
+    return {ok: true};
+  }
+
   async function upload(selected: FileList | null) {
     if (!selected?.length || uploading) return;
     setError("");
@@ -262,18 +293,13 @@ export function AdvisorProject(props: Props) {
             </article>;
           })}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
-          {props.pendingRequests?.length ? <article className="advisor-thread__message is-assistant advisor-thread__requests">
-            <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span>
-            <div>
-              <small>{props.copy.advisor}</small>
-              <strong>{props.copy.contextQuestion}</strong>
-              <p>{props.copy.awaitingAnswer}</p>
-              <ol>{props.pendingRequests.map((request, index) => <li key={request.id}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <div><strong>{request.question}</strong><small>{request.whyItMatters}</small></div>
-              </li>)}</ol>
-            </div>
-          </article> : null}
+          {props.pendingRequests?.length ? <InformationRequestCard
+            copy={props.copy.informationRequest}
+            disabled={pending || uploading}
+            onAnswer={answerInformationRequest}
+            remaining={Math.max(0, props.pendingRequests.length - 1)}
+            request={props.pendingRequests[0]!}
+          /> : null}
         </div>
 
         <div className="advisor-project__composer-wrap">

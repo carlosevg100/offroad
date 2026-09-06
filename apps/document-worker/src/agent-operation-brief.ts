@@ -32,6 +32,12 @@ const contextSchema = z.object({
   locale: z.enum(["pt-BR", "en-US"]),
   message: z.string().min(1).max(8_000),
   message_metadata: z.record(z.string(), z.unknown()).default({}),
+  answered_information_request: z.object({
+    id: z.uuid(),
+    requirementKey: z.string(),
+    question: z.string(),
+    answerSource: z.enum(["choice", "custom", "unavailable"]),
+  }).nullable().optional(),
   brief: z.record(z.string(), z.unknown()),
   snapshot_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   projection_updated_at: z.string(),
@@ -261,9 +267,19 @@ export async function processAgentOperationBriefJob(
                 primaryObjectives: context.professional_context.primaryObjectives,
               }
             : null,
-          openQuestions: openQuestionsOf(priorOutputs.get("A01")),
+          openQuestions: [
+            ...openQuestionsOf(priorOutputs.get("A01")),
+            ...(context.answered_information_request ? [{
+              id: context.answered_information_request.requirementKey,
+              text: context.answered_information_request.question,
+            }] : []),
+          ],
           priorObjectKinds: [...priorOutputs.keys()],
-          requestKind: context.message_metadata.kind === "execution_brief_edit" ? "execution_brief_edit" as const : "message" as const,
+          requestKind: context.message_metadata.kind === "execution_brief_edit"
+            ? "execution_brief_edit" as const
+            : context.message_metadata.kind === "information_request_response"
+            ? "information_request_response" as const
+            : "message" as const,
         };
         const priorCaseId = typeof context.brief.caseId === "string" ? context.brief.caseId : null;
         const priorRequest = context.brief.request && typeof context.brief.request === "object" && !Array.isArray(context.brief.request) ? context.brief.request as Record<string, unknown> : null;
@@ -296,6 +312,10 @@ export async function processAgentOperationBriefJob(
             entryJob: context.project?.entryJob ?? "origination_thesis",
             messageId: job.payload.message_id,
             planEditRequested: liveContext.requestKind === "execution_brief_edit",
+            ...(context.answered_information_request ? {answeredQuestion: {
+              id: context.answered_information_request.requirementKey,
+              text: context.answered_information_request.question,
+            }} : {}),
           });
         } catch (error) {
           failure = error instanceof Error ? error.message.slice(0, 200) : "unknown";
@@ -338,6 +358,10 @@ export async function processAgentOperationBriefJob(
         entryJob: context.project?.entryJob ?? "origination_thesis",
         messageId: job.payload.message_id,
         planEditRequested: context.message_metadata.kind === "execution_brief_edit",
+        ...(context.answered_information_request ? {answeredQuestion: {
+          id: context.answered_information_request.requirementKey,
+          text: context.answered_information_request.question,
+        }} : {}),
       });
       const previewMessageId = randomUUID();
       const previewResponse = {state: "idle" as const, reply: decision.reply};

@@ -366,7 +366,7 @@ async function ConversationalCapitalProject({
           .order("created_at", {ascending: false})
           .limit(40),
         supabase.from("capital_project_information_requests")
-          .select("id, question, why_it_matters, decision_impact, priority, information_gain, materiality, created_at")
+          .select("id, question, why_it_matters, decision_impact, acceptable_evidence, answer_kind, choices, priority, information_gain, materiality, created_at, updated_at")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id)
           .eq("status", "open")
@@ -391,6 +391,9 @@ async function ConversationalCapitalProject({
   const copy: AdvisorProjectCopy = {
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
+    informationRequest: {
+      eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
+    },
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
       errors: {invalid: t("proposal.errors.invalid"), stale: t("proposal.errors.stale"), save: t("proposal.errors.save"), processing: t("proposal.errors.processing")},
@@ -429,7 +432,6 @@ async function ConversationalCapitalProject({
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
-  const fallbackContext = pendingAdvisorContext(messages ?? []);
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
     ? informationRequests ?? []
@@ -440,8 +442,12 @@ async function ConversationalCapitalProject({
         question: request.question,
         whyItMatters: request.why_it_matters,
         decisionImpact: request.decision_impact,
+        acceptableEvidence: request.acceptable_evidence,
+        answerKind: request.answer_kind as "text" | "number" | "date" | "choice" | "document" | "confirmation",
+        choices: request.choices,
+        updatedAt: request.updated_at,
       }))
-    : showInformationRequests && fallbackContext ? [{id: `context-${project.id}`, ...fallbackContext}] : [];
+    : [];
   const compiledActivities = advisorActivities(project.entry_job, (tasks ?? []).map((task) => ({
     id: task.id,
     taskId: task.task_id,
@@ -668,19 +674,6 @@ function customerArtifactLabel(type: string, locale: string): string | null {
   };
   const label = labels[type];
   return label ? label[locale === "en-US" ? 1 : 0] : null;
-}
-
-function pendingAdvisorContext(messages: Array<{role: string; metadata: unknown; created_at: string}>): {question: string; whyItMatters: string} | null {
-  const latestAssistantIndex = messages.findLastIndex((message) => message.role === "assistant");
-  if (latestAssistantIndex < 0 || messages.slice(latestAssistantIndex + 1).some((message) => message.role === "user")) return null;
-  const latestAssistant = messages[latestAssistantIndex];
-  if (!latestAssistant?.metadata || typeof latestAssistant.metadata !== "object" || Array.isArray(latestAssistant.metadata)) return null;
-  const metadata = latestAssistant.metadata as Record<string, unknown>;
-  if (metadata.state !== "asking" || !metadata.clarification || typeof metadata.clarification !== "object" || Array.isArray(metadata.clarification)) return null;
-  const clarification = metadata.clarification as Record<string, unknown>;
-  return typeof clarification.question === "string" && typeof clarification.whyItMatters === "string"
-    ? {question: clarification.question, whyItMatters: clarification.whyItMatters}
-    : null;
 }
 
 function specializedCompletionArtifactId(metadata: unknown): string | null {

@@ -1235,6 +1235,21 @@
       "ready": "Pronto para continuar",
       "needsAttention": "Precisa de atenção",
       "messageFailed": "Esta mensagem não foi processada. Você pode enviá-la novamente; o trabalho já concluído será preservado.",
+      "informationRequest": {
+        "eyebrow": "Uma informação pode melhorar a análise",
+        "why": "Por que pergunto",
+        "impact": "O que pode mudar",
+        "evidence": "Se tiver, ajuda enviar",
+        "other": "Outra resposta",
+        "placeholder": "Responda com o que você souber...",
+        "submit": "Incorporar resposta",
+        "submitting": "Incorporando...",
+        "unavailable": "Não tenho essa informação",
+        "unavailableMessage": "Não tenho essa informação no momento. Siga com uma premissa explícita e sinalize a limitação.",
+        "remaining": "perguntas depois desta",
+        "confirmYes": "Sim",
+        "confirmNo": "Não"
+      },
       "activities": {
         "context": "Entendendo o pedido e recuperando o histórico",
         "research": "Lendo divulgações, resultados, notícias e contexto setorial",

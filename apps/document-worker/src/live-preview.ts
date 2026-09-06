@@ -134,7 +134,9 @@ frozen evidence base. Besides the envelope, fill "turn":
 - scopeChanges: an object with audience, depth and form, each null unless the person changes it in
   this turn.
 - requestKind comes from the product control. When it is execution_brief_edit, read the prose as an
-  instruction to revise the current plan; do not reinterpret it as an unrelated new assignment.`;
+  instruction to revise the current plan. When it is information_request_response, the product has
+  already bound the prose to the exact question in openQuestions; return that question id in answers.
+  Do not reinterpret either control as an unrelated new assignment.`;
 
 export type LiveUnderstanding = {
   envelope: IntentEnvelope;
@@ -149,7 +151,7 @@ export type LiveTurnContext = ShadowRoutingContext & {
   openQuestions: Array<{id: string; text: string}>;
   /** Which signed objects already exist in the project (task ids), so a question can be answered from them. */
   priorObjectKinds: string[];
-  requestKind: "message" | "execution_brief_edit";
+  requestKind: "message" | "execution_brief_edit" | "information_request_response";
 };
 
 /** One model call: the turn read into an envelope and the preview-desk fields. Throws on model or schema failure. */
@@ -208,6 +210,8 @@ export type LiveDecisionInput = {
   entryJob: string;
   messageId: string;
   planEditRequested?: boolean;
+  /** Exact request selected by the governed question control; never inferred from prose. */
+  answeredQuestion?: {id: string; text: string};
   registryVersion?: string;
 };
 
@@ -433,7 +437,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   }
 
   // The classifier abstains: the desk asks instead of guessing.
-  if (output.abstain && !input.planEditRequested) {
+  if (output.abstain && !input.planEditRequested && !input.answeredQuestion) {
     const question = output.firstQuestion ?? t(locale, "O que você precisa que eu faça, para qual companhia e para quem?", "What do you need done, for which company and for whom?");
     return {
       kind: "abstain", composition: null, activation: null,
@@ -501,7 +505,16 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   // the brief for the planner and the audit.
   const knownQuestionIds = new Set(input.openQuestions.map((question) => question.id));
   const classifierAnswers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
-  const answers = [...classifierAnswers, ...answersQuotedInText(input.message, input.openQuestions, output.turn.scopeChanges).filter((quoted) => !classifierAnswers.some((answer) => answer.questionId === quoted.questionId))];
+  const governedAnswers: PreviewTurn["answers"] = input.answeredQuestion ? [{
+    questionId: input.answeredQuestion.id,
+    answer: input.message,
+    effect: {audience: output.turn.scopeChanges.audience, depth: output.turn.scopeChanges.depth, scope: null},
+  }] : [];
+  const answers = [
+    ...governedAnswers,
+    ...classifierAnswers.filter((answer) => !governedAnswers.some((governed) => governed.questionId === answer.questionId)),
+    ...answersQuotedInText(input.message, input.openQuestions, output.turn.scopeChanges).filter((quoted) => !governedAnswers.some((governed) => governed.questionId === quoted.questionId) && !classifierAnswers.some((answer) => answer.questionId === quoted.questionId)),
+  ];
   const mergedAnswers = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
   const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
   const answersApplied = answers.length ? t(locale, `Respostas aplicadas (${answerText}). `, `Answers applied (${answerText}). `) : "";

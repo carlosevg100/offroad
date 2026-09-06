@@ -1235,6 +1235,21 @@
       "ready": "Ready to continue",
       "needsAttention": "Needs attention",
       "messageFailed": "This message was not processed. You can send it again; completed work will be preserved.",
+      "informationRequest": {
+        "eyebrow": "One answer can materially improve the analysis",
+        "why": "Why I am asking",
+        "impact": "What it may change",
+        "evidence": "Helpful evidence, if available",
+        "other": "Another answer",
+        "placeholder": "Answer with what you know...",
+        "submit": "Incorporate answer",
+        "submitting": "Incorporating...",
+        "unavailable": "I do not have this information",
+        "unavailableMessage": "I do not have this information right now. Proceed with an explicit assumption and flag the limitation.",
+        "remaining": "questions after this one",
+        "confirmYes": "Yes",
+        "confirmNo": "No"
+      },
       "activities": {
         "context": "Understanding the request and retrieving project history",
         "research": "Reading disclosures, results, news and sector context",

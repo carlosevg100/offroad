@@ -67,6 +67,8 @@ export type PreviewTurnInput = {
   messageId?: string;
   /** Set only by the governed plan control; this is UI state, never inferred from prose. */
   planEditRequested?: boolean;
+  /** Set only by the governed question control; binds this turn to one exact request. */
+  answeredQuestion?: {id: string; text: string};
 };
 
 export type PreviewActivation = {
@@ -213,6 +215,27 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
         "Ajuste recebido sobre a versão exibida. Vou recompilar o plano, preservar o trabalho que continua válido e mostrar separadamente o que foi incluído, retirado ou repriorizado.",
         "Adjustment received against the displayed version. I will recompile the plan, preserve the work that remains valid, and separately show what was added, removed or reprioritized.")}`,
       activation: buildPreviewActivation(composition, request, {}, input),
+    };
+  }
+
+  if (input.answeredQuestion) {
+    const audience = audienceFrom(input.message) ?? {primary: "vp", others: []};
+    const composition: PreviewComposition = hasAnalysis ? "deepen" : "prepare_meeting";
+    const request: PreviewRequest = {
+      turn: priorUserTurns.length + 1,
+      composition,
+      audience,
+      form: "first_deliverable",
+      pages: null,
+      sponsorInstruction,
+      undefinedAspects: [],
+    };
+    return {
+      kind: "activate",
+      reply: `${mark} ${t(locale,
+        "Resposta vinculada à pergunta em aberto. Vou incorporá-la ao contexto, recompilar o plano e preservar por fingerprint o trabalho que não mudou.",
+        "Answer bound to the open question. I will incorporate it into context, recompile the plan, and preserve unchanged work by fingerprint.")}`,
+      activation: buildPreviewActivation(composition, request, {}, input, {answers: [{questionId: input.answeredQuestion.id, answer: input.message}]}),
     };
   }
 
