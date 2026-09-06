@@ -33,6 +33,11 @@ const executionBriefEditSchema = continueSchema.extend({
   executionBriefId: z.string().uuid(),
   expectedFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
 });
+const informationResponseSchema = continueSchema.extend({
+  requestId: z.string().uuid(),
+  expectedUpdatedAt: z.iso.datetime({offset: true}),
+  answerSource: z.enum(["choice", "custom", "unavailable"]),
+});
 const projectSchema = z.object({locale: localeSchema, projectId: z.string().uuid()});
 
 export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing" | "stale";
@@ -147,6 +152,24 @@ export async function requestAdvisorExecutionBriefEdit(input: unknown): Promise<
     p_expected_fingerprint: parsed.data.expectedFingerprint,
     p_message_id: parsed.data.messageId,
     p_locale: parsed.data.locale,
+    p_content: parsed.data.content,
+  });
+  return error ? {ok: false, error: actionError(error)} : {ok: true};
+}
+
+/** Answers the exact contextual question displayed in the workspace. Closing the question,
+ * recording its audit binding and queueing replanning are one database transaction. */
+export async function answerAdvisorInformationRequest(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = informationResponseSchema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireWorkspace(parsed.data.locale);
+  const {error} = await supabase.rpc("submit_advisor_information_response_v1", {
+    p_project_id: parsed.data.projectId,
+    p_request_id: parsed.data.requestId,
+    p_expected_updated_at: parsed.data.expectedUpdatedAt,
+    p_message_id: parsed.data.messageId,
+    p_locale: parsed.data.locale,
+    p_answer_source: parsed.data.answerSource,
     p_content: parsed.data.content,
   });
   return error ? {ok: false, error: actionError(error)} : {ok: true};

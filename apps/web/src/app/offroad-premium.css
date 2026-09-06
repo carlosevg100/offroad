@@ -186,6 +186,48 @@
 .advisor-thread__requests li strong {color: #30373d; display: block; font-size: 12px; font-weight: 610; line-height: 1.45;}
 .advisor-thread__requests li small {color: #727b80; font-size: 10px; font-weight: 400; letter-spacing: 0; line-height: 1.5; margin: 5px 0 0; text-transform: none;}
 
+.information-request-card {
+  background: #fff;
+  border: 1px solid #dde2d9;
+  border-radius: 14px;
+  box-shadow: 0 16px 42px rgb(28 35 39 / 5%);
+  color: #22292e;
+  overflow: hidden;
+  width: 100%;
+}
+.information-request-card > header {align-items: flex-start; display: grid; gap: 12px; grid-template-columns: 28px minmax(0, 1fr) auto; padding: 22px 25px 18px;}
+.information-request-card > header > div > span {align-items: center; color: #6c7d4e; display: flex; font-size: 8px; font-weight: 680; gap: 6px; letter-spacing: .08em; text-transform: uppercase;}
+.information-request-card > header h2 {font-family: var(--font-newsreader), Georgia, serif; font-size: 22px; font-weight: 430; letter-spacing: -.02em; line-height: 1.16; margin: 8px 0 0; max-width: 620px;}
+.information-request-card > header > small {background: #f4f6f1; border-radius: 99px; color: #73805f; font-size: 8px; line-height: 1.3; padding: 6px 8px; white-space: nowrap;}
+.information-request-card__context {background: #f8f9f7; border-block: 1px solid #e7eae5; display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px 25px;}
+.information-request-card__context p {color: #616b71; font-size: 10px; line-height: 1.52; margin: 0;}
+.information-request-card__context strong {color: #8a9296; display: block; font-size: 7px; letter-spacing: .07em; margin-bottom: 4px; text-transform: uppercase;}
+.information-request-card__choices {display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 25px;}
+.information-request-card__choices button {align-items: center; background: #fff; border: 1px solid #d9ded6; border-radius: 8px; color: #30383d; cursor: pointer; display: inline-flex; font: inherit; font-size: 10px; font-weight: 610; gap: 12px; justify-content: space-between; min-height: 36px; padding: 9px 11px;}
+.information-request-card__choices button:hover {background: #f5f7f2; border-color: #a8b794;}
+.information-request-card__choices button.is-other {background: transparent; border-color: transparent; color: #687176; font-weight: 520;}
+.information-request-card button:disabled, .information-request-card input:disabled {cursor: not-allowed; opacity: .52;}
+.information-request-card__answer {display: grid; gap: 9px; padding: 18px 25px;}
+.information-request-card__answer > small {color: #7a8388; font-size: 8px; line-height: 1.45;}
+.information-request-card__answer > small strong {color: #636d72; margin-right: 6px;}
+.information-request-card__answer > div {align-items: stretch; display: grid; grid-template-columns: minmax(0, 1fr) 38px;}
+.information-request-card__answer input {background: #fbfcfa; border: 1px solid #d9ded6; border-radius: 8px 0 0 8px; color: #252c30; font: inherit; font-size: 11px; min-height: 39px; outline: 0; padding: 9px 11px;}
+.information-request-card__answer input:focus {border-color: #9eae82; box-shadow: 0 0 0 3px rgb(125 148 85 / 8%); position: relative; z-index: 1;}
+.information-request-card__answer > div > button {align-items: center; background: #20262b; border: 0; border-radius: 0 8px 8px 0; color: #fff; cursor: pointer; display: flex; justify-content: center;}
+.information-request-card__back {background: none; border: 0; color: #727c81; cursor: pointer; font: inherit; font-size: 8px; justify-self: start; padding: 1px 0;}
+.information-request-card > footer {border-top: 1px solid #eceeeb; padding: 11px 25px;}
+.information-request-card > footer button {align-items: center; background: none; border: 0; color: #7a8388; cursor: pointer; display: flex; font: inherit; font-size: 8px; gap: 5px; padding: 2px 0;}
+.information-request-card > footer button:hover {color: #343c40;}
+.information-request-card__error {color: #a3463f; font-size: 9px; margin: 0; padding: 0 25px 14px;}
+
+@media (max-width: 700px) {
+  .information-request-card > header {grid-template-columns: 28px minmax(0, 1fr); padding: 19px 18px 16px;}
+  .information-request-card > header > small {grid-column: 2; justify-self: start;}
+  .information-request-card__context {grid-template-columns: 1fr; padding: 13px 18px;}
+  .information-request-card__choices, .information-request-card__answer {padding: 16px 18px;}
+  .information-request-card > footer {padding-inline: 18px;}
+}
+
 .advisor-thread__work-product {
   width: 100%;
 }

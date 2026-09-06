@@ -8079,6 +8079,18 @@ export type Database = {
         }
         Returns: Json
       }
+      submit_advisor_information_response_v1: {
+        Args: {
+          p_answer_source: string
+          p_content: string
+          p_expected_updated_at: string
+          p_locale: string
+          p_message_id: string
+          p_project_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       submit_advisor_turn_v1: {
         Args: {
           p_content: string

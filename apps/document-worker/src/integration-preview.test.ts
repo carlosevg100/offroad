@@ -139,6 +139,17 @@ describe("integration_preview turn router", () => {
     expect(decision.activation?.brief.request.sponsorInstruction).toContain("retire o bloco de rating");
     expect(decision.reply).toContain("Ajuste recebido sobre a versão exibida");
   });
+  it("binds a governed answer to the exact open question without parsing the prose", () => {
+    const decision = routeIntegrationPreviewTurn({...base,
+      message: "Leve uma leitura de alternativas mais ampla, mas destaque refinanciamento.",
+      artifactTypes: ["preview_alternatives"],
+      answeredQuestion: {id: "q-thesis", text: "Qual tese o VP quer levar?"},
+    });
+    expect(decision.kind).toBe("activate");
+    expect(decision.activation?.composition).toBe("deepen");
+    expect(decision.activation?.brief.answers).toEqual([{questionId: "q-thesis", answer: "Leve uma leitura de alternativas mais ampla, mas destaque refinanciamento."}]);
+    expect(decision.reply).toContain("Resposta vinculada à pergunta em aberto");
+  });
 });
 
 describe("integration_preview run processor", () => {

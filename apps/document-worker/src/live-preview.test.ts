@@ -170,6 +170,20 @@ describe("live_intelligence_preview router", () => {
     expect(decision.activation?.brief.request.form).toBe("pitch_pages");
   });
 
+  it("uses the governed question binding even when the classifier abstains", async () => {
+    const output = classifierOutput({abstain: true, abstainReason: "answer alone is ambiguous", composition: null, turn: {companies: [], answers: []}});
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil",
+      artifactTypes: ["preview_alternatives"],
+      message: "Mais ampla, com refinanciamento como primeira hipótese.",
+      openQuestions: [{id: "70000000-0000-4000-8000-000000000393", text: "Qual tese deve orientar o material?"}],
+      answeredQuestion: {id: "70000000-0000-4000-8000-000000000393", text: "Qual tese deve orientar o material?"},
+    });
+    expect(decision.kind).toBe("activate");
+    expect(decision.composition).toBe("deepen");
+    expect(decision.activation?.brief.answers).toEqual([{questionId: "70000000-0000-4000-8000-000000000393", answer: "Mais ampla, com refinanciamento como primeira hipótese."}]);
+  });
+
   it("abstains when the classifier abstains, and redirects a request outside the desk", async () => {
     const abstained = await decide(classifierOutput({abstain: true, abstainReason: "two readings remain", composition: null, firstQuestion: "É para a Camil ou para outra companhia?"}));
     expect(abstained.kind).toBe("abstain");

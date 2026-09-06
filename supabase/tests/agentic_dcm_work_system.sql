@@ -321,4 +321,109 @@ begin
 end;
 $$;
 
+-- A browser response closes the exact question it displays, becomes a normal queued turn and
+-- leaves a content-free audit binding. Replays are safe; stale and forged choices fail closed.
+do $$
+declare
+  ids agent_work_system_ids%rowtype;
+  request_row public.capital_project_information_requests;
+  first_result jsonb;
+  replay_result jsonb;
+  rejected boolean;
+begin
+  select * into ids from agent_work_system_ids;
+  select * into strict request_row
+  from public.capital_project_information_requests
+  where capital_project_id = ids.project_id and status = 'open';
+
+  rejected := false;
+  begin
+    perform public.submit_advisor_information_response_v1(
+      ids.project_id, request_row.id, request_row.updated_at,
+      '90000000-0000-4000-8000-000000000392', 'pt-BR', 'choice', 'Opção inventada.'
+    );
+  exception when invalid_parameter_value then rejected := true;
+  end;
+  if not rejected then raise exception 'a non-choice request accepted a choice answer'; end if;
+
+  first_result := public.submit_advisor_information_response_v1(
+    ids.project_id, request_row.id, request_row.updated_at,
+    '90000000-0000-4000-8000-000000000393', 'pt-BR', 'custom',
+    'Vou enviar as escrituras e a planilha de dívida atualizada.'
+  );
+  if (first_result ->> 'replayed')::boolean
+    or first_result ->> 'request_status' <> 'answered'
+    or first_result ->> 'status' <> 'queued' then
+    raise exception 'governed information response did not queue: %', first_result;
+  end if;
+  if (select status from public.capital_project_information_requests where id = request_row.id) <> 'answered'
+    or (select answer_ref ->> 'messageId' from public.capital_project_information_requests where id = request_row.id)
+      <> '90000000-0000-4000-8000-000000000393'
+    or (select metadata ->> 'kind' from public.agent_messages where id = '90000000-0000-4000-8000-000000000393')
+      <> 'information_request_response'
+    or (select metadata ->> 'informationRequestId' from public.agent_messages where id = '90000000-0000-4000-8000-000000000393')
+      <> request_row.id::text
+    or (select count(*) from public.capital_project_agent_events
+        where event_type = 'question_answered' and detail ->> 'messageId' = '90000000-0000-4000-8000-000000000393') <> 1 then
+    raise exception 'question answer lost its exact request binding';
+  end if;
+  if exists (
+    select 1 from public.capital_project_agent_events
+    where event_type = 'question_answered' and detail::text ilike '%escrituras%'
+  ) then
+    raise exception 'question answer audit event duplicated raw customer content';
+  end if;
+
+  replay_result := public.submit_advisor_information_response_v1(
+    ids.project_id, request_row.id, request_row.updated_at,
+    '90000000-0000-4000-8000-000000000393', 'pt-BR', 'custom',
+    'Vou enviar as escrituras e a planilha de dívida atualizada.'
+  );
+  if not (replay_result ->> 'replayed')::boolean then
+    raise exception 'question answer did not replay idempotently: %', replay_result;
+  end if;
+
+  rejected := false;
+  begin
+    perform public.submit_advisor_information_response_v1(
+      ids.project_id, request_row.id, request_row.updated_at,
+      '90000000-0000-4000-8000-000000000394', 'pt-BR', 'custom', 'Resposta atrasada.'
+    );
+  exception when serialization_failure then rejected := true;
+  end;
+  if not rejected then raise exception 'a stale closed question accepted a second answer'; end if;
+end;
+$$;
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000394","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare ids agent_work_system_ids%rowtype; accepted boolean := false;
+begin
+  select * into ids from agent_work_system_ids;
+  begin
+    perform public.submit_advisor_information_response_v1(
+      ids.project_id, '70000000-0000-4000-8000-000000000393', now(),
+      '90000000-0000-4000-8000-000000000395', 'pt-BR', 'custom', 'Cross tenant.'
+    );
+    accepted := true;
+  exception when no_data_found then accepted := false;
+  end;
+  if accepted then raise exception 'question answer crossed the tenant boundary'; end if;
+end;
+$$;
+
+reset role;
+do $$
+begin
+  if has_function_privilege('anon', 'public.submit_advisor_information_response_v1(uuid,uuid,timestamptz,uuid,text,text,text)', 'execute')
+    or not has_function_privilege('authenticated', 'public.submit_advisor_information_response_v1(uuid,uuid,timestamptz,uuid,text,text,text)', 'execute') then
+    raise exception 'question answer command has unsafe grants';
+  end if;
+end;
+$$;
+
 rollback;
