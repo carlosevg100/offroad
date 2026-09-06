@@ -205,10 +205,9 @@ begin
   if second_result ->> 'version' <> '2' or (second_result ->> 'replayed')::boolean then
     raise exception 'second brief was not appended: %', second_result;
   end if;
-  if (select count(*) from public.capital_project_execution_brief_events) <> 3
-    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'presented') <> 2
-    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'superseded') <> 1 then
-    raise exception 'presented and superseded events did not follow immutable brief versions';
+  if (select count(*) from public.capital_project_execution_briefs) <> 0
+    or (select count(*) from public.capital_project_execution_brief_events) <> 0 then
+    raise exception 'worker principal gained direct visibility into tenant brief history';
   end if;
   begin
     perform public.worker_record_capital_project_execution_brief_v1(
@@ -232,7 +231,9 @@ declare
   progress jsonb;
 begin
   if (select count(*) from public.capital_project_execution_briefs) <> 2
-    or (select count(*) from public.capital_project_execution_brief_events) <> 3 then
+    or (select count(*) from public.capital_project_execution_brief_events) <> 3
+    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'presented') <> 2
+    or (select count(*) from public.capital_project_execution_brief_events where event_type = 'superseded') <> 1 then
     raise exception 'owner could not read its brief history';
   end if;
   begin
