@@ -3422,3 +3422,22 @@ decisão. As seis entradas continuam como atalhos da home e compatibilidade tran
 Estado: `specified`. O router por regex e `CapitalProjectJob` continuam em produção como
 implementação anterior; não devem ser confundidos com a arquitetura-alvo nem removidos sem schema,
 migração, compatibilidade, gold cases e rollout seguro.
+
+## 44. Enforcement da receita compilada no preview, 07/09/2026
+
+O preview deixou de confiar apenas no payload de ativação. Para cada turno executável, o worker
+persiste primeiro a seleção econômica imutável e a nova RPC v5 compara, na mesma transação, recipe,
+versão, slice fingerprint, outcome, TaskSpecs e lotes. Se qualquer elemento divergir, nenhuma
+resposta ativadora, plano ou job de análise sobrevive à transação.
+
+O E2E longitudinal também expôs que a intenção econômica desaparecia quando o pedido inicial saía
+das últimas 12 mensagens. A correção não aumentou essa janela: o job atual pode ler, via capability,
+somente a última seleção imutável do mesmo projeto. Ela fornece os packs econômicos para uma nova
+compilação apenas quando o turno não declara outra situação. O slice novo ainda é persistido e
+comparado integralmente pela RPC v5; portanto a memória dá continuidade, mas não concede autoridade.
+
+O teste revelou e corrigiu uma nuance importante: intenção final e produto de trabalho do turno não
+são sempre iguais. “Preciso preparar material, mas não sei por onde começar” mantém o objetivo final,
+mas o primeiro turno executa `meeting_plan`; somente o pedido explícito de preparar o arquivo ou uma
+decisão de conselho executa `material`. Staging aceitou a migration e os testes SQL; a fatia continua
+`candidate/internal` até CI, E2E e rollout de produção.

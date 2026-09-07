@@ -18,7 +18,9 @@ nem teste interno.
   vínculo de source pack. O worker nunca decide sozinho que está em prévia.
 - **Ativação própria**: um turno da conversa pode ativar uma corrida de prévia
   (`worker_activate_integration_preview_run_v1`, via o despachante
-  `worker_record_agent_response_and_activate_v3`). A ativação grava um plano de prévia (as TaskSpecs
+  `worker_record_agent_response_and_activate_v5`). Antes de gravar, o despachante exige a seleção
+  econômica imutável do mesmo job e compara recipe, versão, outcome, fingerprint, TaskSpecs e lotes.
+  A ativação grava um plano de prévia (as TaskSpecs
   do workflow compilado, cada uma ligada a um método `implemented`), um brief de prévia versionado
   por turno e um job `capital_project_analysis` com `analysis_scope = integration_preview`. Sem a
   concessão, a ativação é recusada e nada é gravado.
@@ -146,9 +148,21 @@ orçamento; ver `LIVE_INTELLIGENCE_PREVIEW.md`).
 
 ### Ordem de rollout em produção
 
-As migrations entram antes do código: o worker novo chama `worker_record_agent_response_and_activate_v3`
+As migrations entram antes do código: o worker novo chama `worker_record_agent_response_and_activate_v5`
 em todo turno, com ou sem concessão. Aplicar `integration_preview_mode` e `integration_preview_runtime`
 no projeto de produção, alinhar os nomes dos arquivos ao carimbo gravado, e só então mesclar.
+
+### Continuidade econômica entre turnos
+
+A janela curta de conversa serve para linguagem, não como memória operacional autoritativa. Se uma
+resposta, ajuste de plano ou mudança de premissa não ativa uma nova situação econômica, o worker
+consulta, com o capability do job atual, a última `workflow_selection` imutável do mesmo projeto e
+usa apenas seus packs econômicos como entrada explícita da nova compilação. Se o turno nomeia outra
+situação econômica, a nova intenção prevalece e nada é herdado.
+
+Essa âncora não reativa plano anterior, não copia artefatos nem autoriza execução. Cada turno produz
+um novo output slice e precisa persistir sua própria seleção; recipe, versão, outcome, fingerprint,
+TaskSpecs e lotes continuam comparados transacionalmente pela RPC v5 antes da fila.
 
 ## 5. Qualidade em paralelo
 

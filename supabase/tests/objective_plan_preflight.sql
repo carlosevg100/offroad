@@ -46,12 +46,21 @@ insert into public.agent_messages (
   '50000000-0000-4000-8000-000000000711', '40000000-0000-4000-8000-000000000711',
   'user', 'processing', 'Compare alternativas de estrutura de capital.', 'pt-BR',
   '10000000-0000-4000-8000-000000000711'
+), (
+  '60000000-0000-4000-8000-000000000712', '20000000-0000-4000-8000-000000000711',
+  '50000000-0000-4000-8000-000000000711', '40000000-0000-4000-8000-000000000711',
+  'user', 'processing', 'Prepare uma reunião de refinanciamento.', 'pt-BR',
+  '10000000-0000-4000-8000-000000000711'
 );
 insert into public.processing_runs (
   id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
 ) values (
   '70000000-0000-4000-8000-000000000711', '20000000-0000-4000-8000-000000000711',
   '40000000-0000-4000-8000-000000000711', 1, 'manual', 'running', 'objective-preflight-test-v1',
+  '10000000-0000-4000-8000-000000000711'
+), (
+  '70000000-0000-4000-8000-000000000712', '20000000-0000-4000-8000-000000000711',
+  '40000000-0000-4000-8000-000000000711', 2, 'manual', 'running', 'objective-preflight-test-v1',
   '10000000-0000-4000-8000-000000000711'
 );
 insert into public.processing_jobs (
@@ -61,8 +70,14 @@ insert into public.processing_jobs (
   '80000000-0000-4000-8000-000000000711', '20000000-0000-4000-8000-000000000711',
   '70000000-0000-4000-8000-000000000711', '40000000-0000-4000-8000-000000000711',
   'agent_operation_brief', 'leased',
-  '{"message_id":"60000000-0000-4000-8000-000000000711","locale":"pt-BR"}'::jsonb,
+  '{"message_id":"60000000-0000-4000-8000-000000000712","locale":"pt-BR"}'::jsonb,
   1, now() + interval '10 minutes', extensions.digest(repeat('r',64), 'sha256')
+), (
+  '80000000-0000-4000-8000-000000000712', '20000000-0000-4000-8000-000000000711',
+  '70000000-0000-4000-8000-000000000712', '40000000-0000-4000-8000-000000000711',
+  'agent_operation_brief', 'leased',
+  '{"message_id":"60000000-0000-4000-8000-000000000711","locale":"pt-BR"}'::jsonb,
+  1, now() + interval '10 minutes', extensions.digest(repeat('s',64), 'sha256')
 );
 
 set local role authenticated;
@@ -147,7 +162,7 @@ declare
     'status','selected','reason','selected',
     'recipeId','refinance-liability-management','recipeVersion','2026.09.07-v1',
     'recipeFingerprint',repeat('2',64),'sliceFingerprint',repeat('3',64),
-    'outcome','alternatives','taskIds',jsonb_build_array('C05','S10'),
+    'outcome','meeting_plan','taskIds',jsonb_build_array('C05','S10'),
     'parallelBatches',jsonb_build_array(jsonb_build_array('C05'),jsonb_build_array('S10')),
     'activatedEconomicPacks',jsonb_build_array('objective.refinance-liability-management'),
     'fingerprint',repeat('4',64)
@@ -336,6 +351,105 @@ end;
 $$;
 
 reset role;
+
+-- The activation boundary accepts only the immutable recipe slice selected for this exact job.
+do $$
+declare
+  activation jsonb := jsonb_build_object(
+    'job', 'integration_preview',
+    'composition', 'prepare_meeting',
+    'workflow', jsonb_build_object(
+      'id', 'refinance-liability-management.meeting_plan',
+      'version', '2026.09.07-v1',
+      'fingerprint', repeat('3',64)
+    ),
+    'plan', jsonb_build_object(
+      'taskSpecs', jsonb_build_array(
+        jsonb_build_object('id','C05'), jsonb_build_object('id','S10')
+      ),
+      'parallelBatches', jsonb_build_array(jsonb_build_array('C05'),jsonb_build_array('S10'))
+    )
+  );
+  validated jsonb;
+  accepted boolean;
+begin
+  validated := private.worker_validate_integration_preview_workflow_selection_v1(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), activation
+  );
+  if validated ->> 'recipe_id' <> 'refinance-liability-management'
+    or validated ->> 'outcome' <> 'meeting_plan'
+    or validated ->> 'slice_fingerprint' <> repeat('3',64) then
+    raise exception 'the exact persisted workflow selection was not accepted: %', validated;
+  end if;
+
+  begin
+    perform private.worker_validate_integration_preview_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64),
+      jsonb_set(activation, '{workflow,fingerprint}', to_jsonb(repeat('9',64)))
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'an activation with a forged slice fingerprint was accepted'; end if;
+
+  begin
+    perform private.worker_validate_integration_preview_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64),
+      jsonb_set(activation, '{plan,taskSpecs}', '[{"id":"C05"}]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'an activation with an incomplete task slice was accepted'; end if;
+
+  begin
+    perform private.worker_validate_integration_preview_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64),
+      jsonb_set(activation, '{plan,parallelBatches}', '[["C05","S10"]]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'an activation with different execution batches was accepted'; end if;
+
+  begin
+    perform private.worker_validate_integration_preview_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000711', repeat('x',64), activation
+    );
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a forged capability validated a workflow selection'; end if;
+
+  begin
+    perform private.worker_validate_integration_preview_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000712', repeat('s',64), activation
+    );
+    accepted := true;
+  exception when no_data_found then accepted := false;
+  end;
+  if accepted then raise exception 'an activation without a persisted workflow selection was accepted'; end if;
+
+  validated := public.worker_load_latest_objective_workflow_selection_v1(
+    '80000000-0000-4000-8000-000000000712', repeat('s',64)
+  );
+  if validated ->> 'recipeId' <> 'refinance-liability-management'
+    or validated ->> 'outcome' <> 'meeting_plan'
+    or validated ->> 'fingerprint' <> repeat('4',64) then
+    raise exception 'the project continuity anchor did not return the last selected recipe: %', validated;
+  end if;
+
+  begin
+    perform public.worker_load_latest_objective_workflow_selection_v1(
+      '80000000-0000-4000-8000-000000000712', repeat('x',64)
+    );
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'a forged capability loaded a workflow continuity anchor'; end if;
+end;
+$$;
+
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000711","role":"authenticated","aal":"aal1"}', true);
 

@@ -345,7 +345,7 @@ describe("execution-brief activation", () => {
       activation: {job_id: "70000000-0000-4000-8000-000000000001"},
       executionBrief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v4", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v5", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_assistant_message_id: "60000000-0000-4000-8000-000000000001",
