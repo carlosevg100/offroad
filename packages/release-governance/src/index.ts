@@ -21,3 +21,6 @@ export * from "./current-capability-ledger";
 export * from "./endgame-program-board";
 export * from "./endgame-program-markdown";
 export * from "./current-endgame-program";
+export * from "./evidence-registry";
+export * from "./current-evidence-registry";
+export * from "./evidence-registry-markdown";
