@@ -14,7 +14,8 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude 'dist/**'",
-    "program-board:render": "node --experimental-strip-types scripts/render-endgame-program-board.ts"
+    "program-board:render": "node --experimental-strip-types scripts/render-endgame-program-board.ts",
+    "evidence-registry:render": "tsx scripts/render-evidence-registry.ts"
   },
   "dependencies": {
     "@offroad/case-runner": "workspace:*",
@@ -22,6 +23,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^20.19.43",
+    "tsx": "4.23.12"
   }
 }
