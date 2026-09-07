@@ -1804,6 +1804,7 @@ function buildReceivablesVertical(
     methodExecutionAllowed: readinessAssessment.methodExecutionAllowed,
     sourceDatasetHash: readinessAssessment.sourceDatasetHash,
     dimensions: readinessAssessment.dimensions,
+    progress: readinessAssessment.progress,
     gaps: readinessAssessment.gaps,
     nextQuestions: readinessAssessment.nextQuestions,
   };

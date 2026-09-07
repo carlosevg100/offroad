@@ -128,7 +128,9 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
   projectId: string;
   processingRunId: string;
   locale: "pt-BR" | "en-US";
-  readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput" | "progress"> & {
+    progress?: ReceivablesPoolMethodReadiness["progress"];
+  };
   missingDraftSections?: readonly string[];
   idFactory?: () => string;
 }) {
@@ -178,9 +180,14 @@ export function buildReceivablesMethodFieldRequestProjection(input: {
   const english = input.locale === "en-US";
   const idFactory = input.idFactory ?? randomUUID;
   const explicitMissing = new Set((input.missingSections ?? []).map((item) => `/${item.replaceAll(".", "/")}`));
+  // Eligibility defines the pool on which sizing operates. Even when both groups are missing,
+  // do not interrogate the person about facility terms before the eligibility policy is closed.
+  const activeGroup = input.activeGroups.includes("policy")
+    ? "policy"
+    : input.activeGroups.includes("structure") ? "structure" : null;
   const candidates = fieldDefinitions.filter((definition) => {
     const group = definition.fieldPath.startsWith("/policy/") ? "policy" : "structure";
-    return input.activeGroups.includes(group) && (explicitMissing.size === 0 || explicitMissing.has(definition.fieldPath));
+    return group === activeGroup && (explicitMissing.size === 0 || explicitMissing.has(definition.fieldPath));
   }).slice(0, 3);
   return {
     schemaVersion: "project-information-request-projection.v1",

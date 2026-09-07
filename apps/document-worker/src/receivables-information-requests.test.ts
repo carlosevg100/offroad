@@ -115,4 +115,17 @@ describe("receivables method question projection", () => {
       producerBinding: {fieldPath: "/structure/advanceRate", unit: "percent_0_100"},
     });
   });
+
+  it("closes eligibility before asking for structure and waterfall inputs", () => {
+    const projection = buildReceivablesMethodFieldRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001",
+      processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "pt-BR",
+      sourceDatasetHash: "a".repeat(64),
+      activeGroups: ["policy", "structure"],
+      missingSections: ["structure.requestedFacility", "policy.maxDaysPastDue", "policy.maxSingleDebtorShare"],
+    });
+    expect(projection.requests).toHaveLength(2);
+    expect(projection.requests.every((request) => request.producerBinding.fieldPath.startsWith("/policy/"))).toBe(true);
+  });
 });

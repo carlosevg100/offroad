@@ -145,18 +145,19 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
                     <span className="section-kicker">{t("receivablesMethodKicker")}</span>
                     <h4>{t("receivablesMethodTitle")}</h4>
                   </div>
-                  <span>{receivables.methodReadiness.state === "ready" ? t("receivablesMethodReady") : t("receivablesMethodBlocked")}</span>
+                  <span>{t("receivablesMethodProgress", {completed: receivables.methodReadiness.progress.completed, total: receivables.methodReadiness.progress.total})}</span>
                 </header>
                 <p>{receivables.methodReadiness.state === "ready"
                   ? t("receivablesMethodReadyBody")
                   : t("receivablesMethodBlockedBody", {count: receivables.methodReadiness.gaps.length})}</p>
-                {receivables.methodReadiness.state === "blocked" ? (
-                  <ol>
-                    {receivables.methodReadiness.nextQuestions.slice(0, 5).map((question) => (
-                      <li key={question.id}>{question.text[lang]}</li>
-                    ))}
-                  </ol>
-                ) : null}
+                <ol className="case-receivables__progress">
+                  {receivables.methodReadiness.progress.stages.map((stage) => (
+                    <li className={`is-${stage.state}`} key={stage.id}>
+                      <span>{t(`receivablesStage.${stage.id}`)}</span>
+                      <small>{t(`receivablesStageState.${stage.state}`)}</small>
+                    </li>
+                  ))}
+                </ol>
               </section>
 
               <div className="case-receivables__columns">

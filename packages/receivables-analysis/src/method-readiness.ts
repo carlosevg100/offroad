@@ -97,6 +97,12 @@ export type ReceivablesPoolMethodReadiness = {
     state: "satisfied" | "missing" | "conflicting";
     gapCodes: readonly string[];
   }[];
+  progress: {
+    completed: number;
+    total: 6;
+    currentStageId: ReceivablesMethodProgressStageId | null;
+    stages: readonly ReceivablesMethodProgressStage[];
+  };
   gaps: readonly ReceivablesMethodReadinessGap[];
   nextQuestions: readonly {
     id: string;
@@ -105,6 +111,21 @@ export type ReceivablesPoolMethodReadiness = {
     evidenceIds: readonly string[];
   }[];
   validatedInput: ReceivablesPoolUnderwritingInput | null;
+};
+
+export type ReceivablesMethodProgressStageId =
+  | "portfolio_diagnostics"
+  | "evidence_reconciliation"
+  | "eligibility_analysis"
+  | "structure_sizing"
+  | "cash_waterfall"
+  | "full_underwriting";
+
+export type ReceivablesMethodProgressStage = {
+  id: ReceivablesMethodProgressStageId;
+  state: "complete" | "in_progress" | "waiting" | "conflicting";
+  outputAvailable: boolean;
+  dependsOn: readonly ReceivablesMethodProgressStageId[];
 };
 
 type ReadinessInput = {
@@ -279,6 +300,65 @@ function primaryReason(gaps: readonly ReceivablesMethodReadinessGap[]): Receivab
   return "ready";
 }
 
+function methodProgress(
+  gaps: readonly ReceivablesMethodReadinessGap[],
+  partialDraft: ReadinessInput["partialDraft"],
+): ReceivablesPoolMethodReadiness["progress"] {
+  const conflicting = gaps.some((item) => item.class === "conflict");
+  const dimensionsWithGaps = new Set(gaps.map((item) => item.dimensionId));
+  const evidenceDimensions: readonly ReceivablesMethodReadinessDimensionId[] = [
+    "portfolio_lineage", "cedent_and_servicing", "title_legal_controls", "performance_history",
+    "cash_reconciliation", "accounting_reconciliation",
+  ];
+  const evidenceComplete = evidenceDimensions.every((id) => !dimensionsWithGaps.has(id));
+  const policyComplete = evidenceComplete && !dimensionsWithGaps.has("eligibility_policy");
+  const missing = new Set(partialDraft?.missingSections ?? (gaps.length === 0 ? [] : ["structure.required", "structure.waterfall.required"]));
+  const structurePathsMissing = [...missing].some((section) => section.startsWith("structure.") && !section.startsWith("structure.waterfall."));
+  const waterfallPathsMissing = [...missing].some((section) => section.startsWith("structure.waterfall."));
+  const structureComplete = policyComplete && !structurePathsMissing && !dimensionsWithGaps.has("facility_and_waterfall");
+  const structureInputsComplete = policyComplete && !structurePathsMissing;
+  const waterfallComplete = structureInputsComplete && !waterfallPathsMissing && !dimensionsWithGaps.has("facility_and_waterfall");
+
+  const stages: ReceivablesMethodProgressStage[] = [
+    {id: "portfolio_diagnostics", state: "complete", outputAvailable: true, dependsOn: []},
+    {
+      id: "evidence_reconciliation",
+      state: conflicting ? "conflicting" : evidenceComplete ? "complete" : "in_progress",
+      outputAvailable: evidenceComplete,
+      dependsOn: ["portfolio_diagnostics"],
+    },
+    {
+      id: "eligibility_analysis",
+      state: conflicting ? "conflicting" : policyComplete ? "complete" : evidenceComplete ? "in_progress" : "waiting",
+      outputAvailable: policyComplete,
+      dependsOn: ["evidence_reconciliation"],
+    },
+    {
+      id: "structure_sizing",
+      state: conflicting ? "conflicting" : structureComplete || structureInputsComplete ? "complete" : policyComplete ? "in_progress" : "waiting",
+      outputAvailable: structureComplete || structureInputsComplete,
+      dependsOn: ["eligibility_analysis"],
+    },
+    {
+      id: "cash_waterfall",
+      state: conflicting ? "conflicting" : waterfallComplete ? "complete" : structureInputsComplete ? "in_progress" : "waiting",
+      outputAvailable: waterfallComplete,
+      dependsOn: ["structure_sizing"],
+    },
+    {
+      id: "full_underwriting",
+      state: conflicting ? "conflicting" : gaps.length === 0 ? "complete" : "waiting",
+      outputAvailable: gaps.length === 0,
+      dependsOn: ["cash_waterfall"],
+    },
+  ];
+  const completed = stages.filter((stage) => stage.state === "complete").length;
+  const currentStageId = stages.find((stage) => stage.state === "conflicting")?.id
+    ?? stages.find((stage) => stage.state === "in_progress")?.id
+    ?? null;
+  return {completed, total: 6, currentStageId, stages};
+}
+
 /**
  * Fail-closed bridge between the immutable document rail and specialist execution. It never
  * fills a blank, interprets missing event history as zero or lets a valid-looking method payload
@@ -306,6 +386,7 @@ export function assessReceivablesPoolMethodReadiness(input: ReadinessInput): Rec
       gapCodes: dimensionGaps.map((item) => item.code).sort(),
     };
   });
+  const progress = methodProgress(gaps, input.partialDraft);
   return {
     version: receivablesPoolMethodReadinessVersion,
     state: gaps.length === 0 ? "ready" : "blocked",
@@ -313,6 +394,7 @@ export function assessReceivablesPoolMethodReadiness(input: ReadinessInput): Rec
     methodExecutionAllowed: gaps.length === 0,
     sourceDatasetHash: input.phaseOne.datasetHash,
     dimensions,
+    progress,
     gaps,
     nextQuestions: gaps.map((item) => ({id: item.code, dimensionId: item.dimensionId, text: item.question, evidenceIds: item.evidenceIds})),
     validatedInput,
