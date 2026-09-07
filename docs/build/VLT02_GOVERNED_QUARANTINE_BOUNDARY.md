@@ -38,16 +38,20 @@ adversariais próprios; não basta o parser conseguir abri-lo.
 A ordem é fixa: integridade e limites mínimos de bytes, scanner, inspector de container e autorização
 do parser. `file-type`, `JSZip.loadAsync` e qualquer descompressão só executam depois de um veredito
 limpo do scanner. Em ZIP/OOXML, os limites do diretório central são verificados antes da
-descompressão; quando esses limites passam, nenhuma entrada é aberta. Quando passam, todos os membros
-são descomprimidos por stream sob limites reais de membro e total. O primeiro limite real atingido
-aborta o restante do archive.
+descompressão; quando qualquer um desses limites falha ou é excedido, nenhuma entrada é aberta.
+Somente quando todos passam os membros são descomprimidos por stream sob limites reais de membro e
+total. O primeiro limite real atingido aborta o restante do archive.
 
 Conteúdo XML necessário à política tem um limite próprio versionado de inspeção, padrão de 8 MiB. Se
 esse limite for excedido, o receipt registra `active_content_inspection_exceeded`; o caso não é
 confundido com excesso de tamanho do membro. Archives dentro de archive não são suportados nesta
 versão: `maxArchiveDepth` é fixo em zero e conteúdo aninhado é detectado tanto pelo nome quanto pelos
-magic bytes do membro descomprimido. Paths absolutos, vazios, relativos ou com backslash são
-rejeitados. Nenhum membro é materializado em disco.
+magic bytes do membro descomprimido. A cobertura por magic byte desta fatia é exata e limitada a ZIP
+(local header), gzip, RAR, 7z, bzip2 (`BZh`) e XZ. Por nome, também são rejeitadas extensões TAR e
+aliases comuns (`.tar`, `.tgz`, `.tbz`, `.tbz2`, `.txz`). TAR renomeado sem extensão e arquivos
+autoextraíveis/SFX não são reconhecidos por magic nesta fatia; completar essa detecção permanece um
+bloqueio explícito, portanto este documento não afirma cobertura universal de containers. Paths
+absolutos, vazios, relativos ou com backslash são rejeitados. Nenhum membro é materializado em disco.
 
 ## Receipt imutável e autorização
 
@@ -68,9 +72,13 @@ recalcula os bytes correntes. Troca de tenant/versão/operação/nome/MIME e alt
 do scan falham fechado. A função retorna o snapshot autorizado com uma nova cópia, evitando que o
 consumidor receba por referência o buffer de download.
 
-O `receiptId` é uma chave determinística da operação e do input governado. Repetir a mesma tentativa
-sob o mesmo relógio controlado produz o mesmo receipt; persistência idempotente e concorrente depende
-do adapter transacional descrito abaixo e ainda não está implementada.
+O `receiptId` identifica o receipt imutável exato: ele deriva de todos os campos do binding (incluindo
+nome, MIME, hashes e tamanhos esperados), bytes observados, política, resultado do scanner, decisão e
+timestamps. `authorizeParserInput` recalcula tanto esse ID quanto o fingerprint externo. Repetir a
+mesma tentativa sob o mesmo relógio controlado produz o mesmo receipt; uma nova tentativa ou um
+resultado diferente produz outro ID. O `receiptId` não é, sozinho, a chave de idempotência da
+operação. Persistência idempotente e concorrente depende do adapter transacional descrito abaixo e
+ainda não está implementada.
 
 ## Integração no worker
 
@@ -118,6 +126,8 @@ Os testes cobrem:
 6. **egress:** não há evidência nesta branch de deny-by-default e destinos permitidos durante scan;
 7. **validação adversarial em staging:** o contrato e os testes locais não substituem ClamAV real,
    corpus malicioso controlado, concorrência, crash recovery e prova de não interferência entre jobs.
+8. **detecção completa de containers aninhados:** TAR renomeado e SFX exigem detector especializado;
+   a fatia atual não afirma detectá-los por conteúdo.
 
 Até esses bloqueios fecharem, é incorreto afirmar “sandbox live”, “ClamAV verificado”, “data room
 isolado”, “SOC 2-ready” ou “VLT-02 promovido”. A próxima fatia deve compor VLT-01 e VLT-02 num adapter
