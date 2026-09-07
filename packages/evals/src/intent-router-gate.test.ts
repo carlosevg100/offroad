@@ -214,6 +214,7 @@ describe("intent router promotion gate", () => {
       {...base, routingCore: {...base.routingCore, depth: {...base.routingCore.depth, value: "institutional"}}},
       {...base, routingCore: {...base.routingCore, action: {...base.routingCore.action, state: "not_applicable"}}},
       {...base, routingCore: {...base.routingCore, object: {...base.routingCore.object, state: "unknown"}}},
+      {...base, routingCore: {...base.routingCore, workResponsibility: {...base.routingCore.workResponsibility, state: "explicit"}}},
     ];
     for (const changed of mutations) expect(intentRoutingFingerprint(changed)).not.toBe(baseFingerprint);
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
@@ -300,5 +301,32 @@ describe("intent router promotion gate", () => {
     const forgedSummary = summarizeIntentRouterGate(forgedFingerprints);
     expect(forgedSummary.passed).toBe(false);
     expect(forgedSummary.routingFingerprintMismatches).toHaveLength(52);
+  });
+
+  it("rejects forged plan order and duplicate responsibilities across the complete manifest", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "hx03")!;
+    const valid = completeObservations();
+    const base = outputFor(turn);
+    const forgedValues: IntentClassifierOutput[] = [
+      {...base, primaryWorks: [base.primaryWorks[0]!, base.primaryWorks[2]!, base.primaryWorks[1]!]},
+      {...base, primaryWorks: [...base.primaryWorks, base.primaryWorks[2]!]},
+      {...base, routingCore: {...base.routingCore, workResponsibility: {...base.routingCore.workResponsibility, value: ["producer", "producer"]}}},
+    ];
+    for (const forged of forgedValues) {
+      const observations = valid.map((entry) => entry.turnId === turn.id && entry.repeat === 1
+        ? observation(turn, 1, forged)
+        : entry);
+      expect(summarizeIntentRouterGate(observations).passed).toBe(false);
+    }
+  });
+
+  it("fails the gate when raw inferred fields omit confidence", () => {
+    const turn = intentGoldTurns[0]!;
+    const base = outputFor(turn);
+    const missingConfidence = intentClassifierOutputSchema.parse({
+      ...base,
+      routingCore: {...base.routingCore, action: {...base.routingCore.action, confidence: null}},
+    });
+    expect(scoreIntentGoldTurn(turn, missingConfidence, missingConfidence).completed).toBe(false);
   });
 });

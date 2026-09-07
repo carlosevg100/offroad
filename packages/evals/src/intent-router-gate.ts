@@ -38,12 +38,21 @@ const exactSet = <T extends string>(actual: readonly T[], expected: readonly T[]
   const left = [...new Set(actual)].sort(); const right = [...new Set(expected)].sort();
   return left.length === right.length && left.every((value, index) => value === right[index]);
 };
+const exactOrdered = <T>(actual: readonly T[], expected: readonly T[]): boolean =>
+  actual.length === expected.length && actual.every((value, index) => value === expected[index]);
 const assertsMeaning = (state: IntentClassifierOutput["routingCore"]["action"]["state"]): boolean =>
   state === "explicit" || state === "inferred";
 const supportsPlanField = (
   state: IntentClassifierOutput["routingCore"]["action"]["state"],
   abstains: boolean,
 ): boolean => assertsMeaning(state) || (abstains && state === "unknown");
+const hasGovernedClassifierConfidence = (output: IntentClassifierOutput): boolean => {
+  const fields = [
+    ...Object.values(output.routingCore),
+    ...Object.values(output.inferableContext),
+  ];
+  return fields.every((field) => (field.state !== "inferred" && field.state !== "ambiguous") || field.confidence != null);
+};
 export const fingerprintIntentMessage = (message: string): string => createHash("sha256").update(message, "utf8").digest("hex");
 
 function objectInstancesMatch(gold: IntentGoldTurn, output: IntentClassifierOutput, allowUnknownState = false): boolean {
@@ -91,14 +100,13 @@ export function scoreIntentGoldTurn(
     ? semanticOutput.routingCore.audienceType.state === "unknown" || semanticOutput.routingCore.audienceType.state === "not_applicable"
     : assertsMeaning(semanticOutput.routingCore.audienceType.state);
   return {
-    completed: true,
+    completed: hasGovernedClassifierConfidence(rawOutput),
     composition: output.composition === expected.composition,
     abstain: output.abstain === expected.abstain,
     depth: output.routingCore.depth.value === expected.depth && supportsPlanField(output.routingCore.depth.state, expected.abstain),
     continuity: output.routingCore.continuity.value === expected.continuity && supportsPlanField(output.routingCore.continuity.state, expected.abstain),
-    primaryWorksExact: exactSet(output.primaryWorks.map(({work}) => work), expected.primaryWorks)
-      && output.primaryWorks[0]?.work === expected.primaryWorks[0],
-    responsibilitiesExact: exactSet(output.routingCore.workResponsibility.value, expected.workResponsibility)
+    primaryWorksExact: exactOrdered(output.primaryWorks.map(({work}) => work), expected.primaryWorks),
+    responsibilitiesExact: exactOrdered(output.routingCore.workResponsibility.value, expected.workResponsibility)
       && supportsPlanField(output.routingCore.workResponsibility.state, expected.abstain),
     canonicalAction: semanticOutput.routingCore.action.value.length === 1
       && semanticOutput.routingCore.action.value[0] === expected.semantic.canonicalAction
@@ -125,7 +133,8 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
     audienceType: {value: output.routingCore.audienceType.value, state: output.routingCore.audienceType.state},
     depth: {value: output.routingCore.depth.value, state: output.routingCore.depth.state},
     continuity: {value: output.routingCore.continuity.value, state: output.routingCore.continuity.state},
-    primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
+    primaryWorks: output.primaryWorks.map(({work}) => work),
+    responsibilities: {value: output.routingCore.workResponsibility.value, state: output.routingCore.workResponsibility.state},
     asksQuestion: output.firstQuestion !== null,
   };
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");

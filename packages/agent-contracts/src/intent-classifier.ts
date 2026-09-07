@@ -145,10 +145,14 @@ function hasAffirmedCue(text: string, cue: RegExp): boolean {
 
 /** External side effects require a direct user command, never mere lexical co-occurrence. */
 function hasExplicitExternalOutreach(text: string): boolean {
-  const command = /^(?:(?:ja|agora|por favor|please|pode|podem|can you|quero que|vamos)\s+)*(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
-  return command.test(text)
+  const courtesy = /^(?:(?:ja|agora|por favor|please)\s+)*/;
+  const imperative = /(?:envie|manda|mande|compartilhe|conecte|introduza|apresente|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
+  const modalCommand = /(?:(?:pode|podem|can you|quero que|vamos)\s+)(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
+  const directCommand = new RegExp(`${courtesy.source}(?:${imperative.source}|${modalCommand.source})`);
+  const rejected = /\b(?:nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid|proibid[oa]|forbidden|not allowed|fora de questao|nem pensar|de jeito nenhum|absolutely not|definitely not)\b/;
+  return directCommand.test(text)
     && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text)
-    && !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(text);
+    && !rejected.test(text);
 }
 
 /** Classify one affirmative, user-authored clause. Cross-clause noun/verb joins are forbidden. */
@@ -214,7 +218,7 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
   const normalized = normalizeForPolicy(input.latestUserMessage)
     .replace(/"[^"]*"|'[^']*'|“[^”]*”|‘[^’]*’/g, " ")
     .replace(/\b(?:source text|source|texto fonte|noticia|documento|contrato)\b[^.;!\x0a]{0,80}\b(?:says?|said|diz|disse|contem a frase)\b[^.;!\x0a]*/g, " ")
-    .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no)\b/g, " ");
+    .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no|nem pensar|de jeito nenhum|absolutely not|definitely not)\b[^.;!\x0a]*/g, " ");
   const clauses = normalized
     .replace(/\b(apenas|somente|so|only|just)\b/g, ". $1")
     .split(/[.;!?\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
