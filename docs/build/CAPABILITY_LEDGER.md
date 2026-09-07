@@ -44,7 +44,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Kernels financeiros determinísticos | live | internal | implemented | não formam modelo institucional integrado |
 | Modelo institucional integrado | specified | none | specified | sem fechamento completo e drivers setoriais promovidos |
 | DOCX básico do preview | live | allowlisted | tested | a planilha ad hoc foi bloqueada; DOCX não passou gate top-tier ou template fidelity |
-| Fundação Office nativa governada | live | allowlisted | implemented | PPTX e decision workbook do Caso 01 usam manifesto, storage privado, binding e download autenticado; ambos continuam internal-only e o workbook não é o modelo integrado |
+| Fundação Office nativa governada | live | allowlisted | unsupported | A implementação fonte de PPTX e decision workbook está presente, mas a transição continua não registrada até existirem CI, merge e gate real; ambos permanecem internal-only e o workbook não é o modelo integrado |
 | Suite de artifacts template-faithful | specified | none | specified | referências ainda não aprovadas |
 | Verifier universal | specified | none | specified | gates atuais são estreitos |
 | Matching com mandatos sintéticos | mocked | internal | implemented | sem base live suficiente |

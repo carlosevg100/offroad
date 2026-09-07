@@ -174,8 +174,9 @@ products de referência, os eventos narrativos por frente e a edição governada
   armazena os bytes exatos por capability de uso único e vincula o SHA-256 à superfície de
   apresentação. A rota autenticada revalida tamanho e hash antes do download.
 - O manifesto mantém o material como `internal_only` e não elegível para liberação enquanto a
-  revisão visual estiver pendente. Isso é fundação implementada, não aprovação de template de
-  cliente nem promoção da suite completa de materiais.
+  revisão visual estiver pendente. O código desta fundação está presente, mas sua transição no
+  Program Board continua planejada e a qualidade permanece `unsupported` até existirem CI, merge e
+  gate real. Não há aprovação de template de cliente nem promoção da suite completa de materiais.
 - A próxima lacuna desta frente é ligar o modelo financeiro governado ao mesmo ciclo de armazenamento
   e revisão, depois incorporar DOCX nativo, ingestão de template e diff visual/versionado.
 
@@ -2730,7 +2731,7 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Vitest e typecheck focados estão verdes. O Docker local está indisponível; migration, RLS e SQL
   adversarial permanecem pendentes do gate Supabase da CI antes de qualquer promoção para tested.
 
-## Materiais Office governados no Caso 01, implemented/internal, 07/09/2026
+## Materiais Office governados no Caso 01, candidate/internal, 07/09/2026
 
 - A apresentação e o workbook de decisão partem do mesmo `Decision Artifact` governado por
   fingerprint. Os dois
