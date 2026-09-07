@@ -385,12 +385,94 @@
       ]
     }
   ],
+  "series": [
+    {
+      "id": "SER-MATURITY-WALL",
+      "label": "Vencimentos contratuais",
+      "unit": "R$ mil",
+      "chartKind": "column",
+      "object": {
+        "id": "OBJ-MATURITY-WALL",
+        "type": "maturity_wall",
+        "fingerprint": "1f55c8a4cb7e515b40637c01c80d9ebacf3e56d0e70264370b20236ee1149664",
+        "path": "debt.grossContractualSchedule"
+      },
+      "points": [
+        {
+          "label": "2026/27",
+          "value": 1234476,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "label": "2027/28",
+          "value": 779804,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "label": "2028/29",
+          "value": 1229475,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "label": "2029/30",
+          "value": 695013,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "label": "2030/31",
+          "value": 994544,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "label": "after 2031",
+          "value": 809198,
+          "evidenceState": "calculated",
+          "sourceIds": [
+            "SRC-01",
+            "SRC-07"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        }
+      ]
+    }
+  ],
   "views": [
     {
       "surface": "conversation",
       "artifactId": "GC02_CHAT_READOUT_v1",
       "artifactKind": "chat_readout",
-      "artifactFingerprint": "c2a5446f2296762e4c77f99461014e91e3389f3e10ff6c0a5d3383fe10b64eee",
+      "artifactFingerprint": "9670fee66f18f665483b0c20c56058e5930cf1da7ca50fb2ce6183d61187130a",
       "blocks": [
         {
           "id": "CHAT-CURRENT",
@@ -405,7 +487,8 @@
           ],
           "sourceIds": [],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": []
         },
         {
           "id": "CHAT-FORWARD",
@@ -429,7 +512,8 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
         },
         {
           "id": "CHAT-BOUNDARY",
@@ -447,7 +531,8 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
         }
       ]
     },
@@ -473,7 +558,8 @@
           ],
           "sourceIds": [],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": []
         },
         {
           "id": "MODEL-DEBT",
@@ -486,7 +572,8 @@
           ],
           "sourceIds": [],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": []
         },
         {
           "id": "MODEL-FORWARD",
@@ -510,7 +597,8 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
         },
         {
           "id": "MODEL-GAPS",
@@ -528,7 +616,8 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
         },
         {
           "id": "MODEL-SOURCES",
@@ -546,7 +635,8 @@
             "SRC-08"
           ],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": []
         }
       ]
     },
@@ -569,7 +659,8 @@
           ],
           "sourceIds": [],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": []
         },
         {
           "id": "DECK-MATURITY",
@@ -580,7 +671,10 @@
           ],
           "sourceIds": [],
           "assumptionIds": [],
-          "gapIds": []
+          "gapIds": [],
+          "seriesIds": [
+            "SER-MATURITY-WALL"
+          ]
         },
         {
           "id": "DECK-FORWARD",
@@ -604,7 +698,8 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
         },
         {
           "id": "DECK-GAPS",
@@ -622,7 +717,27 @@
             "GAP-04",
             "GAP-05",
             "GAP-06"
-          ]
+          ],
+          "seriesIds": []
+        },
+        {
+          "id": "DECK-SOURCES",
+          "kind": "source_register",
+          "title": "Fontes e data-base",
+          "claimIds": [],
+          "sourceIds": [
+            "SRC-01",
+            "SRC-02",
+            "SRC-03",
+            "SRC-04",
+            "SRC-05",
+            "SRC-06",
+            "SRC-07",
+            "SRC-08"
+          ],
+          "assumptionIds": [],
+          "gapIds": [],
+          "seriesIds": []
         }
       ]
     }
@@ -669,5 +784,5 @@
       ]
     }
   ],
-  "contractFingerprint": "3f1a705f1298a74454fc9a9ce55156aa5face89f10c6a16e265b63c316d9ae87"
+  "contractFingerprint": "957905779165b848419741824e9352f1b4b98a708012ae3097685ebde3281611"
 }
