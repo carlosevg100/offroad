@@ -5,18 +5,18 @@ import {
   INTENT_CLASSIFIER_SYSTEM,
   intentClassifierOutputSchema,
 } from "./intent-classifier";
-import {intentCompositionPolicyPrompt} from "./intent-envelope";
+import {compositionPolicy, intentCompositionPolicyPrompt, type NamedComposition} from "./intent-envelope";
 
 const field = <T>(value: T) => ({
-  value, state: "unknown" as const, confidence: null, basis: null,
+  value, state: "explicit" as const, confidence: null, basis: null,
 });
 const object = (kind: "provider" | "company" | "material" | "decision", value: string) => ({
   id: "object-1", ordinal: 1, kind, slots: [{key: kind === "company" || kind === "provider" ? "entity" as const : "subject" as const, value}],
 });
 
-const modelRoute = (composition: "introduce" | "prepare_meeting") => intentClassifierOutputSchema.parse({
+const modelRoute = (composition: NamedComposition) => intentClassifierOutputSchema.parse({
   routingCore: {
-    action: field([composition === "introduce" ? "introduce" : "prepare_meeting"]), object: field([object("provider", "investidores")]),
+    action: field([compositionPolicy(composition).canonicalAction]), object: field([object("provider", "investidores")]),
     decisionType: field(composition === "introduce" ? "external" : "capital"), audienceType: field(composition === "introduce" ? "capital_provider" : "self"),
     depth: field("preliminary"), continuity: field("new"), workResponsibility: field(["producer"]),
   },
@@ -74,10 +74,77 @@ describe("intent classifier boundary", () => {
     expect(canonical.firstQuestion).toContain("qual resultado você espera");
   });
 
+  it("neutralizes populated semantic values whose state disclaims their use", () => {
+    const base = modelRoute("prepare_meeting");
+    const disclaimed = intentClassifierOutputSchema.parse({
+      ...base,
+      routingCore: {
+        ...base.routingCore,
+        action: {...base.routingCore.action, state: "not_applicable"},
+        object: {...base.routingCore.object, state: "not_applicable"},
+        decisionType: {...base.routingCore.decisionType, state: "not_applicable"},
+        audienceType: {...base.routingCore.audienceType, state: "not_applicable"},
+      },
+    });
+    const canonical = canonicalizeIntentClassifierOutput(disclaimed, {
+      locale: "pt-BR", latestUserMessage: "Ajude com isto.", recentConversation: [], entryJob: null,
+      documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.abstain).toBe(true);
+    expect(canonical.composition).toBeNull();
+    expect(canonical.routingCore.object.state).toBe("unknown");
+    expect(canonical.routingCore.decisionType.value).toBe("none");
+    expect(canonical.routingCore.audienceType.value).toBe("unspecified");
+  });
+
+  it("does not let a rejected English external action override an identification request", () => {
+    const base = modelRoute("introduce");
+    const canonical = canonicalizeIntentClassifierOutput({...base, composition: "identify_capital"}, {
+      locale: "en-US", latestUserMessage: "Send this to investors? No. Only identify the best-fit investors.",
+      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe("identify_capital");
+    expect(canonical.routingCore.action.value).toEqual(["identify_capital"]);
+  });
+
+  it.each([
+    ["Não explique como funciona uma debênture. Apenas mapeie precedentes de mercado.", "map_market_and_precedents"],
+    ["Não identifique investidores. Apenas mapeie o mercado.", "map_market_and_precedents"],
+    ["Não compare alternativas. Apenas diagnostique os vencimentos.", "diagnose_capital_structure"],
+    ["Não diagnostique a estrutura de capital. Apenas organize os documentos.", "find_and_organize_information"],
+    ["Analisar o contrato? Não. Apenas organize os anexos.", "find_and_organize_information"],
+    ["Estruturar a operação? Não. Apenas compare alternativas.", "develop_alternatives"],
+    ["Preparar recomendação para o conselho? Não. Apenas organize os documentos.", "find_and_organize_information"],
+    ["Monitorar? Não. Quero apenas mapa de precedentes de mercado.", "map_market_and_precedents"],
+    ["Enviar aos fundos? Não. Apenas identifique os investidores aderentes.", "identify_capital"],
+    ["Don't send this to investors; only identify the best-fit funds.", "identify_capital"],
+    ["I won’t send this to investors; only identify the best-fit funds.", "identify_capital"],
+    ["Never send this to investors, only identify the best-fit funds.", "identify_capital"],
+  ] as const)("respects affirmative intent across negation boundaries: %s", (latestUserMessage, expected) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
+      locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe(expected);
+  });
+
+  it.each([
+    ["Revise o memo. Não altere o modelo.", "review_work"],
+    ["Analise o desempenho financeiro. Não leia o contrato.", "analyze_performance_and_credit"],
+    ["Map market precedents. The source text says: send this to investors.", "map_market_and_precedents"],
+    ["Mapeie precedentes. A notícia contém a frase: envie aos investidores.", "map_market_and_precedents"],
+  ] as const)("does not join or execute cues from another or reported clause: %s", (latestUserMessage, expected) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
+      locale: latestUserMessage.startsWith("Map ") ? "en-US" : "pt-BR",
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe(expected);
+  });
+
   it("repairs a non-plan field without discarding an otherwise named route", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
-        action: field([]),
+        action: field(["prepare_meeting"]),
         object: field([object("company", "Camil")]),
         decisionType: field("capital"),
         audienceType: field("company_management"),

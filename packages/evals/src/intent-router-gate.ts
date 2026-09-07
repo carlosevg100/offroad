@@ -38,9 +38,17 @@ const exactSet = <T extends string>(actual: readonly T[], expected: readonly T[]
   const left = [...new Set(actual)].sort(); const right = [...new Set(expected)].sort();
   return left.length === right.length && left.every((value, index) => value === right[index]);
 };
+const assertsMeaning = (state: IntentClassifierOutput["routingCore"]["action"]["state"]): boolean =>
+  state === "explicit" || state === "inferred";
+const supportsPlanField = (
+  state: IntentClassifierOutput["routingCore"]["action"]["state"],
+  abstains: boolean,
+): boolean => assertsMeaning(state) || (abstains && state === "unknown");
 export const fingerprintIntentMessage = (message: string): string => createHash("sha256").update(message, "utf8").digest("hex");
 
-function objectInstancesMatch(gold: IntentGoldTurn, output: IntentClassifierOutput): boolean {
+function objectInstancesMatch(gold: IntentGoldTurn, output: IntentClassifierOutput, allowUnknownState = false): boolean {
+  if (!assertsMeaning(output.routingCore.object.state)
+    && !(allowUnknownState && output.routingCore.object.state === "unknown")) return false;
   const expected = gold.expected.semantic.objects;
   const actual = output.routingCore.object.value;
   if (actual.length !== expected.length) return false;
@@ -69,28 +77,37 @@ export function scoreIntentGoldTurn(
 ): IntentRouterGateChecks {
   if (!output || !rawOutput) return emptyChecks();
   const expected = gold.expected;
+  const semanticOutput = expected.abstain ? output : rawOutput;
   const question = normalizeText(output.firstQuestion ?? "");
   const questionTheme = expected.firstQuestionTheme === null
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
-  const objectsExact = objectInstancesMatch(gold, rawOutput);
-  const decisionPresent = rawOutput.routingCore.decisionType.value !== "none";
+  const objectsExact = objectInstancesMatch(gold, semanticOutput, expected.abstain);
+  const decisionStateValid = expected.semantic.decision.present
+    ? assertsMeaning(semanticOutput.routingCore.decisionType.state)
+    : semanticOutput.routingCore.decisionType.state === "not_applicable";
+  const decisionPresent = semanticOutput.routingCore.decisionType.value !== "none" && decisionStateValid;
+  const audienceStateValid = expected.semantic.audienceCategory === "unspecified"
+    ? semanticOutput.routingCore.audienceType.state === "unknown" || semanticOutput.routingCore.audienceType.state === "not_applicable"
+    : assertsMeaning(semanticOutput.routingCore.audienceType.state);
   return {
     completed: true,
     composition: output.composition === expected.composition,
     abstain: output.abstain === expected.abstain,
-    depth: output.routingCore.depth.value === expected.depth,
-    continuity: output.routingCore.continuity.value === expected.continuity,
+    depth: output.routingCore.depth.value === expected.depth && supportsPlanField(output.routingCore.depth.state, expected.abstain),
+    continuity: output.routingCore.continuity.value === expected.continuity && supportsPlanField(output.routingCore.continuity.state, expected.abstain),
     primaryWorksExact: exactSet(output.primaryWorks.map(({work}) => work), expected.primaryWorks)
       && output.primaryWorks[0]?.work === expected.primaryWorks[0],
-    responsibilitiesExact: exactSet(output.routingCore.workResponsibility.value, expected.workResponsibility),
-    canonicalAction: rawOutput.routingCore.action.value.length === 1
-      && rawOutput.routingCore.action.value[0] === expected.semantic.canonicalAction,
+    responsibilitiesExact: exactSet(output.routingCore.workResponsibility.value, expected.workResponsibility)
+      && supportsPlanField(output.routingCore.workResponsibility.state, expected.abstain),
+    canonicalAction: semanticOutput.routingCore.action.value.length === 1
+      && semanticOutput.routingCore.action.value[0] === expected.semantic.canonicalAction
+      && (assertsMeaning(semanticOutput.routingCore.action.state) || (expected.abstain && semanticOutput.routingCore.action.state === "unknown")),
     objectKindsExact: objectsExact,
     materialReferences: objectsExact,
     decisionPresence: decisionPresent === expected.semantic.decision.present,
-    decisionCategory: rawOutput.routingCore.decisionType.value === expected.semantic.decision.category,
-    audienceCategory: rawOutput.routingCore.audienceType.value === expected.semantic.audienceCategory,
+    decisionCategory: semanticOutput.routingCore.decisionType.value === expected.semantic.decision.category && decisionStateValid,
+    audienceCategory: semanticOutput.routingCore.audienceType.value === expected.semantic.audienceCategory && audienceStateValid,
     questionPresence: (output.firstQuestion !== null) === (expected.firstQuestionTheme !== null),
     questionTheme,
   };
@@ -102,11 +119,12 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
   const policy = composition ? compositionPolicy(composition) : null;
   const payload = {
     abstain: output.abstain, composition, policy,
-    action: output.routingCore.action.value,
-    objects: output.routingCore.object.value.map((object) => ({id: object.id, ordinal: object.ordinal, kind: object.kind, slots: [...object.slots].sort((a, b) => `${a.key}:${a.value}`.localeCompare(`${b.key}:${b.value}`))})).sort((a, b) => a.ordinal - b.ordinal),
-    decisionType: output.routingCore.decisionType.value,
-    audienceType: output.routingCore.audienceType.value,
-    depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
+    action: {value: output.routingCore.action.value, state: output.routingCore.action.state},
+    objects: {state: output.routingCore.object.state, value: output.routingCore.object.value.map((object) => ({id: object.id, ordinal: object.ordinal, kind: object.kind, slots: [...object.slots].sort((a, b) => `${a.key}:${a.value}`.localeCompare(`${b.key}:${b.value}`))})).sort((a, b) => a.ordinal - b.ordinal)},
+    decisionType: {value: output.routingCore.decisionType.value, state: output.routingCore.decisionType.state},
+    audienceType: {value: output.routingCore.audienceType.value, state: output.routingCore.audienceType.state},
+    depth: {value: output.routingCore.depth.value, state: output.routingCore.depth.state},
+    continuity: {value: output.routingCore.continuity.value, state: output.routingCore.continuity.state},
     primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
     asksQuestion: output.firstQuestion !== null,
   };

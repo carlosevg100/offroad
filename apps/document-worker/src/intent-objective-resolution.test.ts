@@ -17,7 +17,7 @@ function envelope(input: {
   return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
-      action: explicit(["analisar"]),
+      action: explicit([policy?.canonicalAction ?? "analyze"]),
       object: explicit((input.objects ?? ["company"]).map((kind) => ({kind}))),
       desiredOutcome: explicit("produzir o resultado profissional pedido"),
       decision: explicit(null),

@@ -109,6 +109,43 @@ describe("intent router promotion gate", () => {
     expect(decisionChecks.decisionCategory).toBe(false);
   });
 
+  it("rejects semantically populated fields that disclaim their meaning", () => {
+    for (const turn of intentGoldTurns) {
+      const base = outputFor(turn);
+      const disclaimed = {
+        ...base,
+        routingCore: {
+          ...base.routingCore,
+          action: {...base.routingCore.action, state: "not_applicable" as const, confidence: null},
+          object: {...base.routingCore.object, state: "not_applicable" as const, confidence: null},
+          decisionType: {...base.routingCore.decisionType, state: "not_applicable" as const, confidence: null},
+          audienceType: {...base.routingCore.audienceType, state: "not_applicable" as const, confidence: null},
+          depth: {...base.routingCore.depth, state: "not_applicable" as const, confidence: null},
+          continuity: {...base.routingCore.continuity, state: "not_applicable" as const, confidence: null},
+          workResponsibility: {...base.routingCore.workResponsibility, state: "not_applicable" as const, confidence: null},
+        },
+      };
+      const checks = scoreIntentGoldTurn(turn, disclaimed, disclaimed);
+      expect(Object.values(checks).every(Boolean), turn.id).toBe(false);
+    }
+  });
+
+  it("rejects duplicate, mismatched and non-contiguous object identities at the model boundary", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc03-t01")!;
+    const base = outputFor(turn);
+    const invalidValues = [
+      base.routingCore.object.value.map((object, index) => index === 1 ? {...object, id: "object-1"} : object),
+      base.routingCore.object.value.map((object, index) => index === 0 ? {...object, id: "object-2"} : object),
+      base.routingCore.object.value.map((object, index) => index === 0 ? {...object, id: "object-3", ordinal: 3} : object),
+    ];
+    for (const value of invalidValues) {
+      expect(() => intentClassifierOutputSchema.parse({
+        ...base,
+        routingCore: {...base.routingCore, object: {...base.routingCore.object, value}},
+      })).toThrow();
+    }
+  });
+
   it("excludes narrative routing claims from the strict model contract", () => {
     const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
     const base = outputFor(turn);
@@ -134,7 +171,7 @@ describe("intent router promotion gate", () => {
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
     expect(modelTurn.expected.semantic.objects.find(({kind}) => kind === "scenario")?.slots).toEqual(expect.arrayContaining([
       {key: "indexer", allowedValues: ["CDI"], cardinality: 1},
-      {key: "percentage", allowedValues: ["12"], cardinality: 1},
+      {key: "percentage", allowedValues: ["0.12"], cardinality: 1},
       {key: "tenor_months", allowedValues: ["84"], cardinality: 1},
     ]));
     const missingRate = outputFor(modelTurn);
@@ -175,6 +212,8 @@ describe("intent router promotion gate", () => {
       {...base, routingCore: {...base.routingCore, decisionType: {...base.routingCore.decisionType, value: "credit"}}},
       {...base, routingCore: {...base.routingCore, audienceType: {...base.routingCore.audienceType, value: "board_or_committee"}}},
       {...base, routingCore: {...base.routingCore, depth: {...base.routingCore.depth, value: "institutional"}}},
+      {...base, routingCore: {...base.routingCore, action: {...base.routingCore.action, state: "not_applicable"}}},
+      {...base, routingCore: {...base.routingCore, object: {...base.routingCore.object, state: "unknown"}}},
     ];
     for (const changed of mutations) expect(intentRoutingFingerprint(changed)).not.toBe(baseFingerprint);
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;

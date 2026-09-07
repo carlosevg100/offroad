@@ -51,6 +51,7 @@ describe("shadow intent observability boundary", () => {
       composition: "introduce",
       routingCore: {
         ...output.routingCore,
+        action: field(["introduce"], "inferred"),
         depth: field("institutional", "inferred"),
         workResponsibility: field(["coordinator"], "inferred"),
       },

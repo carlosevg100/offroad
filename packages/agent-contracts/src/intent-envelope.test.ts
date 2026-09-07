@@ -10,7 +10,7 @@ function candidate(composition: NamedComposition) {
   return {
     schemaVersion: "intent-envelope.v1" as const,
     routingCore: {
-      action: explicit([composition]),
+      action: explicit([policy.canonicalAction]),
       object: explicit([{kind: "process" as const}]),
       desiredOutcome: explicit("resultado materialmente definido"),
       decision: explicit(null),
@@ -50,11 +50,12 @@ describe("canonical composition policy", () => {
     }
   });
 
-  it.each(["primaryWorks", "depth", "workResponsibility", "effect"] as const)(
+  it.each(["primaryWorks", "action", "depth", "workResponsibility", "effect"] as const)(
     "rejects a %s fork from the composition policy",
     (field) => {
       const value = candidate("introduce");
       if (field === "primaryWorks") value.primaryWorks = [{work: "market", confidence: 0.99}];
+      if (field === "action") value.routingCore.action = explicit(["answer"]);
       if (field === "depth") value.routingCore.depth = explicit("point");
       if (field === "workResponsibility") value.routingCore.workResponsibility = explicit(["producer"]);
       if (field === "effect") value.effect = "none";
@@ -76,5 +77,11 @@ describe("canonical composition policy", () => {
 
   it("rejects an unknown composition instead of letting the catalogue drift", () => {
     expect(intentEnvelopeSchema.safeParse({...candidate("monitor"), composition: "future_composition"}).success).toBe(false);
+  });
+
+  it("rejects an effectful or semantically routed envelope with no composition", () => {
+    const attack = candidate("introduce");
+    expect(intentEnvelopeSchema.safeParse({...attack, composition: null}).success).toBe(false);
+    expect(intentEnvelopeSchema.safeParse({...attack, composition: null, effect: "none"}).success).toBe(false);
   });
 });

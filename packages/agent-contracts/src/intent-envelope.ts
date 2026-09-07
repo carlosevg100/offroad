@@ -93,7 +93,10 @@ export const intentDecisionTypeSchema = z.enum(["none", "capital", "credit", "ma
 export type IntentDecisionType = z.infer<typeof intentDecisionTypeSchema>;
 export const intentAudienceTypeSchema = z.enum(["self", "internal_senior", "company_management", "board_or_committee", "capital_provider", "market", "unspecified"]);
 export type IntentAudienceType = z.infer<typeof intentAudienceTypeSchema>;
-export const intentObjectSlotKeySchema = z.enum(["entity", "subject", "amount", "currency", "percentage", "indexer", "tenor_months"]);
+export const intentObjectSlotKeySchema = z.enum([
+  "entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio",
+  "indexer", "tenor_months", "page_count", "count", "cadence",
+]);
 export type IntentObjectSlotKey = z.infer<typeof intentObjectSlotKeySchema>;
 
 const inferable = <T extends z.ZodTypeAny>(value: T) => z.object({
@@ -235,6 +238,7 @@ export function intentCompositionPolicyPrompt(): string {
 
 const sameOrderedValues = <T extends string>(actual: readonly T[], expected: readonly T[]): boolean =>
   actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+const assertsRoutedMeaning = (state: IntentFieldState): boolean => state === "explicit" || state === "inferred" || state === "system" || state === "reused_confirmed";
 
 export const intentEnvelopeSchema = z.object({
   schemaVersion: z.literal("intent-envelope.v1"),
@@ -247,7 +251,15 @@ export const intentEnvelopeSchema = z.object({
   effect: dcmWorkEffectSchema,
   createdAt: z.string().datetime({offset: true}),
 }).superRefine((envelope, ctx) => {
-  if (envelope.composition === null) return;
+  if (envelope.composition === null) {
+    const checks: Array<[boolean, (string | number)[], string]> = [
+      [envelope.effect === "none", ["effect"], "an unnamed route can have no committed or external effect"],
+      [!envelope.routingCore.action.value.includes("introduce"), ["routingCore", "action"], "an unnamed route cannot introduce externally"],
+      [!envelope.routingCore.workResponsibility.value.includes("external_authorizer"), ["routingCore", "workResponsibility"], "an unnamed route cannot claim external authorization"],
+    ];
+    for (const [valid, path, message] of checks) if (!valid) ctx.addIssue({code: z.ZodIssueCode.custom, path, message});
+    return;
+  }
   const policy = compositionPolicy(envelope.composition);
   const works = envelope.primaryWorks.map(({work}) => work);
   const expectedWorks = resolveCompositionPrimaryWorks(envelope.composition, {
@@ -255,6 +267,22 @@ export const intentEnvelopeSchema = z.object({
   });
   if (!sameOrderedValues(works, expectedWorks)) {
     ctx.addIssue({code: z.ZodIssueCode.custom, path: ["primaryWorks"], message: "primary works must match the canonical composition policy"});
+  }
+  if (!sameOrderedValues(envelope.routingCore.action.value, [policy.canonicalAction])) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "action"], message: "action must match the canonical composition policy"});
+  }
+  if (!assertsRoutedMeaning(envelope.routingCore.action.state)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "action", "state"], message: "a routed action has an asserted state"});
+  }
+  if (!assertsRoutedMeaning(envelope.routingCore.object.state)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "object", "state"], message: "routed objects have an asserted state"});
+  }
+  if (envelope.routingCore.decision.value !== null && !assertsRoutedMeaning(envelope.routingCore.decision.state)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "decision", "state"], message: "a routed decision has an asserted state"});
+  }
+  if (!(envelope.routingCore.audience.value.length === 1 && envelope.routingCore.audience.value[0] === "unspecified")
+    && !assertsRoutedMeaning(envelope.routingCore.audience.state)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "audience", "state"], message: "a routed audience has an asserted state"});
   }
   if (envelope.routingCore.depth.value !== policy.depth) {
     ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "depth"], message: "depth must match the canonical composition policy"});

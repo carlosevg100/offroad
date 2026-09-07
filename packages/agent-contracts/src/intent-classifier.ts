@@ -52,18 +52,47 @@ const inferredClassifierField = <T extends z.ZodTypeAny>(value: T) => z.object({
   basis: z.string().max(200).nullish(),
 });
 
+const classifierObjectSlotsSchema = z.array(z.object({
+  key: intentObjectSlotKeySchema,
+  value: z.string().min(1).max(200),
+})).max(12).superRefine((slots, ctx) => {
+  const keys = new Set<string>();
+  for (const [index, slot] of slots.entries()) {
+    if (keys.has(slot.key)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "key"], message: "slot keys are unique within an object"});
+    keys.add(slot.key);
+  }
+});
+
+const classifierObjectInstancesSchema = z.array(z.object({
+  id: z.string().regex(/^object-[1-9]\d*$/),
+  ordinal: z.number().int().min(1).max(24),
+  kind: intentObjectKindSchema,
+  slots: classifierObjectSlotsSchema,
+}).strict()).max(24).superRefine((objects, ctx) => {
+  const ids = new Set<string>();
+  const ordinals = new Set<number>();
+  for (const [index, object] of objects.entries()) {
+    if (ids.has(object.id)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "id"], message: "object ids are unique"});
+    if (ordinals.has(object.ordinal)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "ordinal"], message: "object ordinals are unique"});
+    if (object.id !== `object-${object.ordinal}`) {
+      ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "id"], message: "object id matches its ordinal"});
+    }
+    ids.add(object.id);
+    ordinals.add(object.ordinal);
+  }
+  const ordered = [...ordinals].sort((left, right) => left - right);
+  if (ordered.some((ordinal, index) => ordinal !== index + 1)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, message: "object ordinals are contiguous from one"});
+  }
+});
+
 export const intentClassifierOutputSchema = z.object({
   routingCore: z.object({
     // Empty lists are representable at the model boundary so an honest abstention is valid JSON.
     // `canonicalizeIntentClassifierOutput` then supplies a fail-closed envelope shape; the
     // persisted contract remains strict and never accepts an empty routing core.
     action: inferredClassifierField(z.array(canonicalIntentActionSchema).max(1)),
-    object: inferredClassifierField(z.array(z.object({
-      id: z.string().regex(/^object-[1-9]\d*$/),
-      ordinal: z.number().int().min(1).max(24),
-      kind: intentObjectKindSchema,
-      slots: z.array(z.object({key: intentObjectSlotKeySchema, value: z.string().min(1).max(200)})).max(12),
-    }).strict()).max(24)),
+    object: inferredClassifierField(classifierObjectInstancesSchema),
     decisionType: inferredClassifierField(intentDecisionTypeSchema),
     audienceType: inferredClassifierField(intentAudienceTypeSchema),
     depth: inferredClassifierField(intentDepthSchema),
@@ -96,56 +125,100 @@ const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => 
 const normalizeForPolicy = (value: string): string => value
   .normalize("NFKD")
   .replace(/[\u0300-\u036f]/g, "")
-  .toLocaleLowerCase("pt-BR");
+  .toLocaleLowerCase("pt-BR")
+  // Expand common English negative contractions before cue polarity is evaluated. Curly
+  // apostrophes survive NFKD, so both forms are intentional.
+  .replace(/\b(?:don['’]t|doesn['’]t|didn['’]t|won['’]t|wouldn['’]t|shouldn['’]t|can['’]t|cannot|couldn['’]t|isn['’]t|aren['’]t|wasn['’]t|weren['’]t|haven['’]t|hasn['’]t|hadn['’]t)\b/g, " not ");
 
-/** High-precision, auditable rules take precedence only when the person's wording is explicit. */
-function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
-  const text = normalizeForPolicy(input.latestUserMessage);
+/** A deterministic override is allowed only for an affirmative cue in its own clause. */
+function hasAffirmedCue(text: string, cue: RegExp): boolean {
+  const flags = cue.flags.includes("g") ? cue.flags : `${cue.flags}g`;
+  for (const match of text.matchAll(new RegExp(cue.source, flags))) {
+    const before = text.slice(Math.max(0, (match.index ?? 0) - 100), match.index ?? 0);
+    const after = text.slice((match.index ?? 0) + match[0].length, (match.index ?? 0) + match[0].length + 100);
+    const clause = before.split(/[.;!?\x0a]|\b(?:mas|porem|contudo|apenas|somente|but|however|only)\b/).at(-1) ?? "";
+    const rejectedAfterQuestion = /^[^.;!\x0a]{0,80}\?\s*(?:nao|not|no)\b/.test(after);
+    if (!/\b(nao|not|sem|without|nunca|jamais|never)\b/.test(clause) && !rejectedAfterQuestion) return true;
+  }
+  return false;
+}
+
+/** Classify one affirmative, user-authored clause. Cross-clause noun/verb joins are forbidden. */
+function explicitCompositionForClause(input: IntentClassifierInput, text: string): NamedComposition | null {
   const hasPrior = input.recentConversation.length > 0;
   const material = /\b(material|deck|pitch|memo|one[- ]?pager|apresentacao|presentation|paginas?|pages?|planilha|spreadsheet)\b/.test(text);
   const meeting = /\b(reuniao|meeting|conversa|conversation)\b/.test(text);
   const materialTransition = hasPrior && /\b(gostei|selecion\w*|escolh\w*|vamos preparar|prepare the material|liked|selected|chosen)\b/.test(text);
   const specifiedMaterial = /\b(\d+|tres|three)\s*(paginas?|pages?)\b/.test(text)
     || /\b(deck|memo|one[- ]?pager|planilha|spreadsheet)\b/.test(text);
+  const materialCreation = hasAffirmedCue(text, /\b(produz\w*|prepar\w*|cri\w*|monte|montar|gere|gerar|build|create|produce|prepare|draft|generate)\b/);
 
-  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produz\w*|faz\w*|cri\w*|prepar\w*|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text);
-  const negatedMonitor = /\b(nao|not|sem|without)\s+(?:(?:quero\s+|want\s+to\s+)?(?:monitor\w*|acompanh\w*|track)|(?:cri\w*|create)\s+(?:um\s+)?(?:monitor\w*|acompanhamento))\b/.test(text);
-  const negatedOutreach = /\b(nao|not|sem|without)\s+(?:envie|enviar|contate|contatar|conecte|conectar|introduza|introduzir|send|contact|connect|introduce)\b/.test(text);
-  const externalOutreach = !negatedOutreach && /\b(envi\w*|mand\w*|apresent\w*|conect\w*|introdu\w*|send|share|connect|introduce)\b/.test(text)
+  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produz\w*|faz\w*|cri\w*|prepar\w*|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text)
+    || /\b(?:material|deck|pitch|memo|arquivo|file)\b[^.;!\x0a]{0,60}\?\s*(?:nao|not|no)\b/.test(text);
+  const externalOutreach = hasAffirmedCue(text, /\b(envi(?:e|ar|em|ou|ando|ado|ada|ados|adas)|mand(?:e|a|ar|em|ou|ando|ado|ada|ados|adas)|compartilh(?:e|ar|em|ou)|conect(?:e|ar|em|ou)|introduz(?:a|ir|am|iu)|apresent(?:e|ar|em|ou)|send|share|connect|introduce)\b/)
     && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text);
 
-  if (/\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/.test(text)
+  if (hasAffirmedCue(text, /\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/)
     && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
-  if (/\b(construa|construir|monte|montar|revise|revisar|build|review|audit)\b/.test(text)
-    && /\b(modelo|model|forecast|projecao|projection)\b/.test(text)) return "build_or_review_model";
-  if (/\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/.test(text)
-    || (/\b(por que|why)\b/.test(text) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
-  if (/\b(diferenca|difference|como funciona|how does|explique|explain|o que e|what is)\b/.test(text)
+  if (hasAffirmedCue(text, /\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/)
+    || (hasAffirmedCue(text, /\b(por que|why)\b/) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
+  if (hasAffirmedCue(text, /\b(diferenca|difference|como funciona|how does|explique|explain|o que e|what is)\b/)
     && /\b(debenture|fidc|ccb|bond|loan|instrumento|instrument)\b/.test(text)) return "answer_a_question";
-  if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
-  if (/\b(covenant|headroom|folga)\b/.test(text) && /\b(teste|testar|analise|analisar|teste?\b|holds?)\b/.test(text)
+  if (hasAffirmedCue(text, /\b(construa|construir|monte|montar|revise|revisar|build|review|audit)\b/)
+    && /\b(modelo|model|forecast|projecao|projection)\b/.test(text)) return "build_or_review_model";
+  if (/\b(covenant|headroom)\b/.test(text) && hasAffirmedCue(text, /\b(aguenta|suporta|holds?|cobertura|coverage)\b/)) return "analyze_performance_and_credit";
+  if (/\b(covenant|headroom|folga)\b/.test(text) && hasAffirmedCue(text, /\b(teste|testar|analise|analisar|teste?\b|holds?)\b/)
     && !/\b(clausula|clause|formula|waterfall)\b/.test(text)) return "analyze_performance_and_credit";
-  if (/\b(leia|ler|analise|analisar|teste|testar|read|analy[sz]e|test)\b/.test(text)
+  if (hasAffirmedCue(text, /\b(leia|ler|analise|analisar|teste|testar|read|analy[sz]e|test)\b/)
     && /\b(contrato|contract|clausula|clause|covenant|waterfall|escritura|indenture)\b/.test(text)) return "read_contract_covenant_waterfall";
-  if (/\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/.test(text)) return "find_and_organize_information";
-  if (/\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/.test(text)) return "extract_and_reconcile_data";
-  if (/\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/.test(text)) return "manage_work";
+  if (hasAffirmedCue(text, /\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/)) return "find_and_organize_information";
+  if (hasAffirmedCue(text, /\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/)) return "extract_and_reconcile_data";
+  if (hasAffirmedCue(text, /\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/)) return "manage_work";
   if (externalOutreach) return "introduce";
-  if (/\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ (?:os )?(?:investidores|fundos)|who would finance|which funds|find capital|identify investors)\b/.test(text)) return "identify_capital";
-  if (!negatedMonitor && /\b(monitor\w*|acompanh\w*|avise quando|todo trimestre|track|alert me|quarterly)\b/.test(text)) return "monitor";
-  if (/\b(comparaveis|precedentes|condicoes de mercado|como esta o mercado|pricing|spread|comparables|precedents|market conditions)\b/.test(text)) return "map_market_and_precedents";
-  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|recomend\w*|prepar\w*|decision)\b/.test(text)) return "prepare_decision";
-  if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical|controle de qualidade|quality control)\b/.test(text)) return "review_work";
-  if (material && !negatedMaterial && (specifiedMaterial || materialTransition)) return "prepare_material";
+  if (hasAffirmedCue(text, /\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ (?:os )?(?:investidores|fundos)|who would finance|which funds|find capital|identify investors)\b/)) return "identify_capital";
+  if (hasAffirmedCue(text, /\b(monitor\w*|acompanh\w*|avise quando|todo trimestre|track|alert me|quarterly)\b/)) return "monitor";
+  if (hasAffirmedCue(text, /\b(mapeie|mapear|levante|pesquise|map|research|como esta|how is)\b[^.;!\x0a]{0,60}\b(mercado|emissoes|comparaveis|precedentes|pricing|spread|market|issuances|comparables|precedents)\b/)
+    || hasAffirmedCue(text, /\b(comparaveis|precedentes|condicoes de mercado|pricing|comparables|precedents|market conditions)\b/)) return "map_market_and_precedents";
+  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text)
+    && hasAffirmedCue(text, /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|recomend\w*|prepar\w*|decision)\b/)) return "prepare_decision";
+  if (hasAffirmedCue(text, /\b(revise|revisar|review|critique|criticar|cetico|skeptical|controle de qualidade|quality control)\b/)) return "review_work";
+  if (material && !negatedMaterial && ((specifiedMaterial && materialCreation) || materialTransition)) return "prepare_material";
   if (material && meeting) return "prepare_meeting";
-  if (/\b(recebi|recebemos|received)\b/.test(text) && /\b(proposta|deal|oportunidade|opportunity|term sheet)\b/.test(text)) return "evaluate_received_opportunity";
-  if (/\b(estruture|estruturar|desenhe|desenhar|structure|design)\b/.test(text) && /\b(operacao|operation|recebiveis|receivables|divida|debt|term sheet)\b/.test(text)) return "design_indicative_structure";
-  if (/\b(alternativas|opcoes|caminhos|compare|alternatives|options)\b/.test(text)) return "develop_alternatives";
-  if (/\b(vencimentos|maturity|liquidez|liquidity|estrutura de capital|capital structure|refinanc|repricing)\b/.test(text)) return "diagnose_capital_structure";
-  if (/\b(qualidade de credito|credit quality|risco de credito|credit risk|desempenho financeiro|financial performance)\b/.test(text)) return "analyze_performance_and_credit";
-  if (/\b(entender|entenda|compreender|understand|explique|explain)\b/.test(text)) return "understand_company_sector_asset";
-  if (/\b(levante|localize|ache|baixe|organize|atualize|find|locate|download|organize|update)\b/.test(text)) return "find_and_organize_information";
+  if (hasAffirmedCue(text, /\b(recebi|recebemos|received)\b/) && /\b(proposta|deal|oportunidade|opportunity|term sheet)\b/.test(text)) return "evaluate_received_opportunity";
+  if (hasAffirmedCue(text, /\b(estruture|estruturar|desenhe|desenhar|structure|design)\b/)
+    && /\b(operacao|operation|recebiveis|receivables|divida|debt|term sheet)\b/.test(text)) return "design_indicative_structure";
+  if (hasAffirmedCue(text, /\b(compare|comparar|avalie|avaliar|explore|explorar|compare|evaluate|explore)\b[^.;!\x0a]{0,60}\b(alternativas|opcoes|caminhos|alternatives|options|paths)\b/)) return "develop_alternatives";
+  if (hasAffirmedCue(text, /\b(diagnostique|diagnosticar|diagnose)\b/)
+    || hasAffirmedCue(text, /\b(vencimentos|maturity|liquidez|liquidity|estrutura de capital|capital structure|refinanc|repricing)\b/)) return "diagnose_capital_structure";
+  if (hasAffirmedCue(text, /\b(qualidade de credito|credit quality|risco de credito|credit risk|desempenho financeiro|financial performance)\b/)) return "analyze_performance_and_credit";
+  if (hasAffirmedCue(text, /\b(entender|entenda|compreender|understand|explique|explain)\b/)) return "understand_company_sector_asset";
+  if (hasAffirmedCue(text, /\b(levante|localize|ache|baixe|organize|atualize|find|locate|download|organize|update)\b/)) return "find_and_organize_information";
   return null;
+}
+
+/**
+ * High-precision deterministic overrides are intentionally narrower than the model. We remove
+ * quoted/reported source text, rejected rhetorical questions and negative clauses, then accept an
+ * override only when every remaining actionable clause agrees. A conflicting or incomplete turn
+ * stays with the semantic model instead of being guessed from isolated keywords.
+ */
+function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
+  const normalized = normalizeForPolicy(input.latestUserMessage)
+    .replace(/"[^"]*"|'[^']*'|“[^”]*”|‘[^’]*’/g, " ")
+    .replace(/\b(?:source text|source|texto fonte|noticia|documento|contrato)\b[^.;!\x0a]{0,80}\b(?:says?|said|diz|disse|contem a frase)\b[^.;!\x0a]*/g, " ")
+    .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no)\b/g, " ");
+  const clauses = normalized
+    .replace(/\b(apenas|somente|so|only|just)\b/g, ". $1")
+    .split(/[.;!?\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
+    .map((clause) => clause.trim())
+    .filter(Boolean)
+    .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never)\b/.test(clause));
+  const exclusive = clauses.filter((clause) => /^(?:apenas|somente|so|only|just)\b/.test(clause));
+  const candidates = (exclusive.length > 0 ? exclusive : clauses)
+    .map((clause) => explicitCompositionForClause(input, clause))
+    .filter((composition): composition is NamedComposition => composition !== null);
+  const unique = [...new Set(candidates)];
+  return unique.length === 1 ? unique[0]! : null;
 }
 
 /** Requests that explicitly delegate the missing objective, fabricate evidence or route by title. */
@@ -224,8 +297,16 @@ export function canonicalizeIntentClassifierOutput(
   const locale = input.locale;
   const explicit = explicitComposition(input);
   const composition = explicit ?? output.composition;
+  const core = output.routingCore;
+  const assertsMeaning = (state: typeof core.action.state) => state === "explicit" || state === "inferred";
+  const unresolvedSemantics = core.object.value.length === 0
+    || !assertsMeaning(core.object.state)
+    || (explicit === null && (core.action.value.length !== 1 || !assertsMeaning(core.action.state)))
+    || (core.decisionType.value !== "none" && !assertsMeaning(core.decisionType.state))
+    || (core.audienceType.value !== "unspecified" && !assertsMeaning(core.audienceType.state));
   const mustAbstain = requiresObjectiveClarification(input)
     || composition === null
+    || unresolvedSemantics
     || (output.abstain && explicit === null);
 
   if (!mustAbstain) {
@@ -291,10 +372,16 @@ guess authority, evidence regime, permissions or documents: they are not yours t
 Use only the canonical enums and codes in the schema. "action" contains exactly one canonical
 action when the request is understood. "decisionType" and "audienceType" classify the decision and
 audience without narrative prose. Objects are distinct instances with stable "object-N" ids,
-one-based ordinals and canonical slots. Never return free-form desired-outcome, decision or
-audience narratives. Put named entities or qualitative subjects in "entity" or "subject"; normalize
-amounts to base units, currencies to ISO-4217, percentages to decimal text without a percent sign, indexers to
-their uppercase code and tenor to months. Do not split one object across multiple instances.
+one-based contiguous ordinals and canonical slots. Order objects by first material appearance in
+the current message, then append objects resolved only from recent conversation in their first
+historical appearance order; if two objects first appear together, use the schema enum order.
+Never return free-form desired-outcome, decision or audience narratives. Use "entity" only for a
+named or identifier-specific entity and "subject" for a generic category or qualitative subject.
+Normalize amounts to base units, currencies to ISO-4217, percentages to fractional decimal text
+without a percent sign (12% is "0.12"), ratios to decimal multiples (4.7x is "4.7"), indexers to
+their uppercase code, basis-point changes to integer text, tenor to months, page/count values to
+integer text, and cadence to a stable English code such as "weekly" or "quarterly". Do not split
+one object across multiple instances.
 
 Choose the composition that names the requested outcome, not an intermediate step. The complete
 composition and ordered-work policy below is generated from the same executable policy used by

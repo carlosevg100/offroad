@@ -13,7 +13,7 @@ function envelope(overrides: Record<string, unknown> = {}) {
   return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
-      action: {value: ["levantar", "compreender"], state: "inferred", confidence: 0.8},
+      action: {value: ["prepare_meeting"], state: "inferred", confidence: 0.8},
       object: {value: [{kind: "company", reference: "Camil"}], state: "explicit"},
       desiredOutcome: {value: "material revisável para o VP", state: "inferred", confidence: 0.7},
       decision: {value: "qual tese levar", state: "inferred", confidence: 0.6},
