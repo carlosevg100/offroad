@@ -25,3 +25,4 @@ export * from "./security-current-state";
 export * from "./security-current-state-markdown";
 export * from "./security-assurance-language";
 export * from "./current-security-inventory";
+export * from "./evidence-registry";
