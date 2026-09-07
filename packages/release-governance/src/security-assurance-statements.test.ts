@@ -92,6 +92,28 @@ describe("governed security assurance statements", () => {
     expect(renderSecurityAssuranceStatement(statement, decision, "en-US")).toBe("SOC 2 Type II: not certified.");
   });
 
+  it.each([
+    ["invalid clock", {evaluatedAt: new Date("invalid")}, "trusted_clock_invalid"],
+    ["duplicate evidence", {evidence: [signedEvidence(), signedEvidence()]}, "duplicate_attestation_evidence:ASE-SOC2-REPORT"],
+    ["duplicate root", {trustedRoots: [root, root]}, "duplicate_attestation_trust_root:ATR-TEST-ASSESSOR"],
+    ["duplicate resolved bytes", {resolvedEvidence: [
+      {evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes},
+      {evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes},
+    ]}, "duplicate_resolved_attestation_bytes:ASE-SOC2-REPORT"],
+  ])("fails closed on %s", (_label, override, blocker) => {
+    const statement = attestedStatement();
+    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
+      statement,
+      evidence: [signedEvidence()],
+      trustedRoots: [root],
+      resolvedEvidence: [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes}],
+      evaluatedAt: now,
+      ...override,
+    });
+    expect(decision.allowed).toBe(false);
+    expect(decision.blockers).toContain(blocker);
+  });
+
   it("rejects a tampered attestation and a reconstructed render decision", () => {
     const statement = attestedStatement();
     const evidence = signedEvidence();

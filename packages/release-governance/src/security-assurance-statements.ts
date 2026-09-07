@@ -131,6 +131,10 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
   const roots = z.array(securityAssuranceTrustRootSchema).parse(input.trustedRoots);
   const now = input.evaluatedAt.getTime();
   const blockers: string[] = [];
+  if (!Number.isFinite(now)) blockers.push("trusted_clock_invalid");
+  for (const duplicate of duplicateValues(evidence.map((item) => item.evidenceRef))) blockers.push(`duplicate_attestation_evidence:${duplicate}`);
+  for (const duplicate of duplicateValues(roots.map((item) => item.trustRootId))) blockers.push(`duplicate_attestation_trust_root:${duplicate}`);
+  for (const duplicate of duplicateValues(input.resolvedEvidence.map((item) => item.evidenceRef))) blockers.push(`duplicate_resolved_attestation_bytes:${duplicate}`);
 
   if (statement.status === "attested") {
     const attestation = evidence.find((candidate) => candidate.evidenceRef === statement.evidenceRef);
@@ -287,6 +291,16 @@ function sha256(value: string): string {
 
 function sha256Bytes(value: Uint8Array): string {
   return `sha256:${createHash("sha256").update(value).digest("hex")}`;
+}
+
+function duplicateValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value);
+    seen.add(value);
+  }
+  return [...duplicates].sort();
 }
 
 function deepFreeze<T>(value: T): T {
