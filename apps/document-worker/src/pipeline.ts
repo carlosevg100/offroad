@@ -126,7 +126,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       ),
     );
 
-    if (verdict.verdict === "infected") {
+    if (verdict.verdict !== "clean") {
       // Recorded on the document (it becomes `rejected`) and reported as a permanent failure:
       // retrying an infected file would only scan it again.
       await queue.recordDocument(job, {scanResult: verdict});
@@ -144,7 +144,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
         }),
         {retryable: false},
       );
-      log("document.infected", {job: job.job_id, signature: verdict.signature});
+      log("document.rejected_by_gate", {job: job.job_id, verdict: verdict.verdict, signature: verdict.signature});
       return {status: "failed", stages};
     }
 

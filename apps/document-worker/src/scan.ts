@@ -135,9 +135,11 @@ export async function runGate(
   const digest = verifyIntegrity(bytes, expected);
 
   if (!scanner) {
-    // Only reachable when an operator explicitly set REQUIRE_VIRUS_SCAN=false; the verdict
-    // records that no scanner ran, so the document carries the fact for review.
-    return {verdict: "error", scanner: "none", scannedAt: now(), bytes: bytes.byteLength, sha256: digest, signature: "scanner_disabled"};
+    // A human may disable scanner start-up while diagnosing the container, but that flag must
+    // never become permission to parse unscanned bytes. Keep the failure permanent for this
+    // process configuration: retrying the same job cannot help until an operator restores the
+    // scanner and restarts the worker.
+    throw new GateError("the virus scanner is required before document parsing", "scanner_unavailable", false);
   }
 
   const result = await scanner.scan(bytes);

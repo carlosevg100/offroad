@@ -179,9 +179,17 @@ describe("the gate runs before anything reads the file", () => {
     expect(calls.uploaded).toEqual([]);
   });
 
-  it("records that no scanner ran when an operator disabled it", async () => {
-    const verdict = await runGate(bytes, {}, null, () => "2026-08-18T12:00:00.000Z");
-    expect(verdict).toMatchObject({verdict: "error", scanner: "none", signature: "scanner_disabled"});
+  it("blocks parsing when an operator disabled the scanner", async () => {
+    await expect(runGate(bytes, {}, null, () => "2026-08-18T12:00:00.000Z")).rejects.toMatchObject({
+      code: "scanner_unavailable",
+      retryable: false,
+    });
+
+    const {deps, calls} = fakes({scanner: null});
+    const outcome = await processDocumentJob(job(), deps);
+    expect(outcome.status).toBe("failed");
+    expect(calls.uploaded).toEqual([]);
+    expect(calls.retrievalChunks).toEqual([]);
   });
 });
 
