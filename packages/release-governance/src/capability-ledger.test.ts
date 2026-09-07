@@ -33,7 +33,7 @@ describe("capability ledger", () => {
     expect(byId.get("trust.worker-schema-boot-gate")).toMatchObject({
       availability: "live",
       exposure: "internal",
-      qualityMaturity: "implemented",
+      qualityMaturity: "tested",
       allowedUses: ["internal_validation"],
     });
   });
