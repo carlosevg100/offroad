@@ -2,6 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import {autonomyLadder, autonomyRank, effectWithinAutonomy, minimumAutonomyForEffect} from "./autonomy";
 import {benchmarkScorecardSchema, changeExplanationHolds, changeExplanationSchema, findingsLedgerEntrySchema, scorecardPasses} from "./findings";
+import {intentClassifierOutputSchema} from "./intent-classifier";
 import {intentEnvelopeSchema, namedCompositions, needsConfirmation, primaryWorkSchema, systemFieldViolations} from "./intent-envelope";
 import {readingDebts, readingManifestSchema} from "./reading-manifest";
 
@@ -76,6 +77,29 @@ describe("intent envelope v1", () => {
     expect(atlasIds.size).toBe(20);
     expect(namedCompositions.review_work.modifiers.workResponsibility).toBe("reviewer");
     expect(namedCompositions.introduce.modifiers.effect).toBe("external");
+  });
+
+  it("refuses prose in the classifier composition field", () => {
+    const classifier = {
+      routingCore: envelope().routingCore,
+      inferableContext: {
+        jurisdiction: {value: ["BR"], state: "inferred", confidence: 0.9},
+        asOfDate: {value: null, state: "unknown"},
+        currency: {value: "BRL", state: "inferred", confidence: 0.9},
+        deadline: {value: null, state: "unknown"},
+        sponsorInstruction: {value: null, state: "unknown"},
+        constraints: {value: [], state: "unknown"},
+        urgency: {value: null, state: "unknown"},
+        availableInputs: {value: [], state: "unknown"},
+      },
+      primaryWorks: [{work: "capital_strategy", confidence: 0.8}],
+      composition: "prepare_meeting",
+      firstQuestion: null,
+      abstain: false,
+      abstainReason: null,
+    };
+    expect(() => intentClassifierOutputSchema.parse(classifier)).not.toThrow();
+    expect(() => intentClassifierOutputSchema.parse({...classifier, composition: "strategy then materials"})).toThrow(/Invalid option/);
   });
 });
 

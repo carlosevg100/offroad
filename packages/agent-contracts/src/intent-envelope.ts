@@ -129,6 +129,31 @@ export const governedExecutionContextSchema = z.object({
 });
 export type GovernedExecutionContext = z.infer<typeof governedExecutionContextSchema>;
 
+export const namedCompositionKeys = [
+  "find_and_organize_information",
+  "extract_and_reconcile_data",
+  "understand_company_sector_asset",
+  "answer_a_question",
+  "analyze_performance_and_credit",
+  "build_or_review_model",
+  "diagnose_capital_structure",
+  "develop_alternatives",
+  "design_indicative_structure",
+  "read_contract_covenant_waterfall",
+  "prepare_meeting",
+  "prepare_material",
+  "review_work",
+  "prepare_decision",
+  "evaluate_received_opportunity",
+  "map_market_and_precedents",
+  "identify_capital",
+  "introduce",
+  "monitor",
+  "manage_work",
+] as const;
+export const namedCompositionSchema = z.enum(namedCompositionKeys);
+export type NamedComposition = z.infer<typeof namedCompositionSchema>;
+
 export const intentEnvelopeSchema = z.object({
   schemaVersion: z.literal("intent-envelope.v1"),
   routingCore: routingCoreSchema,
@@ -167,9 +192,7 @@ export const namedCompositions = {
   introduce: {atlas: "I18", primaryWorks: ["capital_match"], modifiers: {effect: "external"}},
   monitor: {atlas: "I19", primaryWorks: ["find_and_organize", "extract_and_reconcile"], modifiers: {continuity: "monitor"}},
   manage_work: {atlas: "I20", primaryWorks: [], modifiers: {workspaceFunction: true}},
-} as const satisfies Record<string, {atlas: string; primaryWorks: readonly PrimaryWork[]; modifiers: Record<string, string | boolean>}>;
-
-export type NamedComposition = keyof typeof namedCompositions;
+} as const satisfies Record<NamedComposition, {atlas: string; primaryWorks: readonly PrimaryWork[]; modifiers: Record<string, string | boolean>}>;
 
 /**
  * The fields the model may never fill. A classifier output that marks any of them as inferred
