@@ -2646,7 +2646,7 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   chamava uma RPC de tenant e exigiria que a conta isolada do worker pertencesse à organização. O
   refresh agora nasce diretamente da capability do job leased, sem impersonar o usuário; autoria,
   orçamento e execução controlada continuam atribuídos à resposta de origem.
-- A migration e a capacidade aditiva do contrato de boot ainda precisam ser promovidas em
-  produção, passar pela CI integral e estabilizar no ECS antes de esta fatia contar como live. O
-  número de versão permanece compatível com a imagem anterior durante o rollout; a imagem nova
-  exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila.
+- A migration `20260907054112` e a capacidade aditiva `20260907054118` já estão em produção. A
+  fatia ainda precisa concluir a CI integral e estabilizar a imagem nova no ECS antes de contar
+  como live. O número de versão permanece compatível com a imagem anterior durante o rollout; a
+  imagem nova exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila.
