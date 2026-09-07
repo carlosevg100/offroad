@@ -111,6 +111,31 @@ describe("receivables specialist method readiness", () => {
     expect(result.gaps.find((item) => item.code === "performance_history_incomplete")?.message.pt).toContain("não será tratada como zero");
   });
 
+  it("retracts document blockers as a governed partial draft satisfies them", () => {
+    const result = assessReceivablesPoolMethodReadiness({
+      phaseOne,
+      detection,
+      partialDraft: {
+        state: "incomplete",
+        openConflictIds: [],
+        missingSections: ["policy.maxDaysPastDue", "structure.advanceRate", "evidence.eligibilityPolicy", "evidence.facilityAndWaterfall"],
+      },
+    });
+    expect(result.primaryReason).toBe("needs_policy");
+    expect(result.gaps.map((item) => item.code)).toEqual(["eligibility_policy_not_governed", "facility_and_waterfall_not_governed"]);
+    expect(result.dimensions.find((item) => item.id === "cash_reconciliation")?.state).toBe("satisfied");
+  });
+
+  it("surfaces a partial-draft conflict instead of choosing a value", () => {
+    const result = assessReceivablesPoolMethodReadiness({
+      phaseOne,
+      detection,
+      partialDraft: {state: "conflicted", missingSections: ["structure.advanceRate"], openConflictIds: ["f".repeat(64)]},
+    });
+    expect(result.primaryReason).toBe("conflicting");
+    expect(result.gaps[0]?.code).toContain("supplement_draft_conflicted");
+  });
+
   it("allows execution only after a fully evidenced, one-to-one assembly reconciles", () => {
     const result = assessReceivablesPoolMethodReadiness({phaseOne, detection, assembly});
     expect(result).toMatchObject({state: "ready", primaryReason: "ready", methodExecutionAllowed: true, gaps: []});
