@@ -1442,12 +1442,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
-| Contrato all-or-nothing | `compileUniversalDispatchCandidate` | recipe selected só produz slice quando toda TaskSpec tem prontidão executável e identidades exatas de método, capability, executor e result contract |
+| Contrato all-or-nothing | `compileUniversalDispatchCandidate` | recipe selected só produz slice quando toda TaskSpec tem prontidão recalculada no contexto exato e identidades exatas de método, capability, executor e result contract |
+| Vínculo da política | `dispatch-candidate.test.ts` | preflight ready antigo é bloqueado quando `allowedUses` muda, mesmo preservando executor e procedure; hashes de capability manifest e execution context entram no candidato |
 | Ausência de efeito | schema TypeScript + constraints SQL | `internal_shadow`, `willExecute=false` e `externalEffectAllowed=false`; nenhum executor é invocado |
 | Adversariais | `dispatch-candidate.test.ts` | bloqueia readiness não pronta, capability divergente, executor duplicado, tarefa fora do objetivo e workflow não selecionado |
 | Persistência | migration `20260907112546_universal_dispatch_candidate_shadow.sql` | RPC v5 grava a cadeia e o candidato no mesmo capability token, com replay e fingerprints dos registries |
 | Segurança prevista | `objective_plan_preflight.sql` | falsificação de readiness/candidacy, escrita direta, anon e cross-tenant são recusados pelo contrato |
-| Gate focado | dcm-specialization + document-worker | 31 testes da especialização e 231 do worker verdes; typecheck verde |
+| Gate focado | dcm-specialization + document-worker | 32 testes da especialização e 231 do worker verdes; typecheck verde |
 | Limite | inspeção de runtime | rail de produção intacto; R01 segue shadow; nenhum workflow universal foi promovido ou executado |
 | Pendência | Supabase local | Docker indisponível nesta worktree; migration/RLS/SQL precisam passar na CI antes de qualidade tested |
 

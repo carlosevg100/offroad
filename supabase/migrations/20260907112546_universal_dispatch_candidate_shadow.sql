@@ -17,6 +17,7 @@ create table public.capital_project_objective_dispatch_candidates (
   candidate_fingerprint text not null check (candidate_fingerprint ~ '^[0-9a-f]{64}$'),
   readiness_fingerprint text not null check (readiness_fingerprint ~ '^[0-9a-f]{64}$'),
   capability_manifest_hash text not null check (capability_manifest_hash ~ '^[0-9a-f]{64}$'),
+  execution_context_hash text not null check (execution_context_hash ~ '^[0-9a-f]{64}$'),
   executor_registry_hash text not null check (executor_registry_hash ~ '^[0-9a-f]{64}$'),
   task_ids text[] not null default '{}',
   parallel_batches jsonb not null check (jsonb_typeof(parallel_batches) = 'array'),
@@ -116,6 +117,7 @@ begin
     or coalesce(p_dispatch_candidate ->> 'methodBindingFingerprint', '') !~ '^[0-9a-f]{64}$'
     or coalesce(p_dispatch_candidate ->> 'workflowSelectionFingerprint', '') !~ '^[0-9a-f]{64}$'
     or coalesce(p_dispatch_candidate ->> 'capabilityManifestHash', '') !~ '^[0-9a-f]{64}$'
+    or coalesce(p_dispatch_candidate ->> 'executionContextHash', '') !~ '^[0-9a-f]{64}$'
     or coalesce(p_dispatch_candidate ->> 'executorRegistryHash', '') !~ '^[0-9a-f]{64}$'
     or jsonb_typeof(p_dispatch_candidate -> 'tasks') <> 'array'
     or jsonb_array_length(p_dispatch_candidate -> 'tasks') > 80
@@ -237,7 +239,7 @@ begin
     objective_method_binding_id, objective_workflow_selection_id,
     source_message_id, processing_job_id, schema_version, mode, candidate_status,
     candidate_fingerprint, readiness_fingerprint, capability_manifest_hash,
-    executor_registry_hash, task_ids, parallel_batches, reasons, will_execute,
+    execution_context_hash, executor_registry_hash, task_ids, parallel_batches, reasons, will_execute,
     external_effect_allowed, dispatch_candidate, created_by
   ) values (
     job_row.organization_id, preflight_row.capital_project_id, preflight_row.id,
@@ -245,7 +247,7 @@ begin
     p_dispatch_candidate ->> 'schemaVersion', p_dispatch_candidate ->> 'mode',
     p_dispatch_candidate ->> 'status', p_dispatch_candidate ->> 'fingerprint',
     p_dispatch_candidate ->> 'readinessFingerprint', p_dispatch_candidate ->> 'capabilityManifestHash',
-    p_dispatch_candidate ->> 'executorRegistryHash', candidate_task_ids,
+    p_dispatch_candidate ->> 'executionContextHash', p_dispatch_candidate ->> 'executorRegistryHash', candidate_task_ids,
     p_dispatch_candidate -> 'parallelBatches', p_dispatch_candidate -> 'reasons',
     false, false, p_dispatch_candidate, preflight_row.created_by
   )

@@ -2699,8 +2699,10 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 
 - O preflight objetivo-específico agora compila também um candidato universal all-or-nothing.
   Cada tarefa selecionada precisa coincidir simultaneamente com o grafo do objetivo, a decisão de
-  prontidão, o método/version, a capability, o executor realmente empacotado e o contrato de
-  resultado. Duplicidade, ausência ou divergência esvazia todo o slice e deixa razões nomeadas.
+  prontidão recalculada sob o contexto de execução exato, o método/version, a capability, o executor
+  realmente empacotado e o contrato de resultado. O candidato carrega hashes do manifesto de
+  capabilities e do contexto; policy drift, duplicidade, ausência ou divergência esvazia todo o
+  slice e deixa razões nomeadas.
 - O candidato é persistido atomicamente com plano, especialização, method binding e seleção de
   receita pela RPC `worker_record_objective_plan_preflight_v5`. A tabela tem RLS forçada,
   imutabilidade, replay por fingerprint e vínculos ao tenant, projeto, mensagem e job.

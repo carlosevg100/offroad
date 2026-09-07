@@ -173,6 +173,7 @@ declare
     'readinessFingerprint',repeat('b',64),'specializationFingerprint',repeat('c',64),
     'methodBindingFingerprint',repeat('1',64),'workflowSelectionFingerprint',repeat('4',64),
     'capabilityManifestHash',repeat('5',64),'executorRegistryHash',repeat('6',64),
+    'executionContextHash',repeat('8',64),
     'recipeId','refinance-liability-management','recipeVersion','2026.09.07-v1',
     'sliceFingerprint',repeat('3',64),'tasks',jsonb_build_array(),
     'parallelBatches',jsonb_build_array(),
@@ -618,12 +619,12 @@ begin
       objective_method_binding_id, objective_workflow_selection_id,
       source_message_id, processing_job_id, schema_version, mode, candidate_status,
       candidate_fingerprint, readiness_fingerprint, capability_manifest_hash,
-      executor_registry_hash, parallel_batches, reasons, dispatch_candidate, created_by
+      execution_context_hash, executor_registry_hash, parallel_batches, reasons, dispatch_candidate, created_by
     ) select
       preflight.organization_id, preflight.capital_project_id, preflight.id, binding.id,
       selection.id, preflight.source_message_id, preflight.processing_job_id,
       'universal-dispatch-candidate.v1', 'internal_shadow', 'blocked', repeat('8',64),
-      preflight.readiness_fingerprint, repeat('9',64), repeat('a',64), '[]'::jsonb,
+      preflight.readiness_fingerprint, repeat('9',64), repeat('b',64), repeat('a',64), '[]'::jsonb,
       '[{"code":"workflow_not_selected","taskId":null,"detail":null}]'::jsonb,
       '{}'::jsonb, preflight.created_by
     from public.capital_project_objective_preflights preflight

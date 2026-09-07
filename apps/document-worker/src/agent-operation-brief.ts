@@ -34,6 +34,7 @@ import {
   expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
   taskExecutionCapabilitySchema,
+  type ObjectiveExecutionContext,
   type ObjectiveOutputTerminal,
 } from "@offroad/work-plan";
 import {z} from "zod";
@@ -843,38 +844,39 @@ function compileObjectivePreflight(
     methodRegistryHash: specialistMethodRuntimeManifestHash,
   });
   const confidential = context.documents.length > 0 || context.project?.accessBasis !== "public_information";
+  const executionContext: ObjectiveExecutionContext = {
+    use: "internal_validation",
+    authority: "project_write",
+    evidenceRegime: confidential ? "mixed_governed" : "public_only",
+    tenantId: null,
+    projectId: context.project?.id ?? null,
+    internalActor: true,
+    externalAuthorizationRef: null,
+    resourcesByTaskId: Object.fromEntries(methodBinding.graph.tasks.map((task) => [task.id, task.id === "R01" ? {
+      providerId: null,
+      toolIds: [],
+      // Receivables underwriting consumes the governed project room and house policy only.
+      // Public company/market research may support the broader objective but is not an input
+      // to title-level eligibility, reconciliation, borrowing base or waterfall mathematics.
+      sourceClasses: objectivePlan.sourcePlan.filter((source) => (
+        source === "project_context" || source === "provided_documents" || source === "house_method"
+      )),
+      dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
+    } : {
+      providerId: null,
+      toolIds: [],
+      sourceClasses: [...objectivePlan.sourcePlan],
+      dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
+    }])),
+    disabledTaskIds: [],
+    disabledExecutorKeys: [],
+    disabledProviderIds: [],
+    disabledToolIds: [],
+  };
   const preflightDecision = evaluateObjectivePlanReadiness({
     graph: methodBinding.graph,
     capabilities: specialistCapabilities,
-    context: {
-      use: "internal_validation",
-      authority: "project_write",
-      evidenceRegime: confidential ? "mixed_governed" : "public_only",
-      tenantId: null,
-      projectId: context.project?.id ?? null,
-      internalActor: true,
-      externalAuthorizationRef: null,
-      resourcesByTaskId: Object.fromEntries(methodBinding.graph.tasks.map((task) => [task.id, task.id === "R01" ? {
-        providerId: null,
-        toolIds: [],
-        // Receivables underwriting consumes the governed project room and house policy only.
-        // Public company/market research may support the broader objective but is not an input
-        // to title-level eligibility, reconciliation, borrowing base or waterfall mathematics.
-        sourceClasses: objectivePlan.sourcePlan.filter((source) => (
-          source === "project_context" || source === "provided_documents" || source === "house_method"
-        )),
-        dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
-      } : {
-        providerId: null,
-        toolIds: [],
-        sourceClasses: [...objectivePlan.sourcePlan],
-        dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
-      }])),
-      disabledTaskIds: [],
-      disabledExecutorKeys: [],
-      disabledProviderIds: [],
-      disabledToolIds: [],
-    },
+    context: executionContext,
   });
   const workflowSelection = selectWorkflowRecipeForObjective({
     specialization,
@@ -884,6 +886,7 @@ function compileObjectivePreflight(
     objectiveStructuralIdentity: objectivePlan.structuralIdentity,
     graph: methodBinding.graph,
     readiness: preflightDecision,
+    executionContext,
     methodBinding: methodBinding.binding,
     workflowSelection,
     capabilities: specialistCapabilities,

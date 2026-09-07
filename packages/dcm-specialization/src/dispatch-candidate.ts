@@ -1,9 +1,12 @@
 import {createHash} from "node:crypto";
 
 import {
+  evaluateObjectivePlanReadiness,
+  objectiveExecutionContextSchema,
   objectivePlanReadinessSchema,
   taskExecutionCapabilitySchema,
   type CompiledTaskGraph,
+  type ObjectiveExecutionContext,
   type ObjectivePlanReadiness,
   type TaskExecutionCapability,
 } from "@offroad/work-plan";
@@ -23,6 +26,7 @@ export type CandidateExecutorRegistration = z.infer<typeof candidateExecutorRegi
 
 const dispatchReasonSchema = z.object({
   code: z.enum([
+    "readiness_binding_mismatch",
     "workflow_not_selected",
     "workflow_task_absent_from_objective",
     "workflow_batch_partition_mismatch",
@@ -61,6 +65,7 @@ export const universalDispatchCandidateSchema = z.object({
   methodBindingFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   workflowSelectionFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   capabilityManifestHash: z.string().regex(/^[a-f0-9]{64}$/),
+  executionContextHash: z.string().regex(/^[a-f0-9]{64}$/),
   executorRegistryHash: z.string().regex(/^[a-f0-9]{64}$/),
   recipeId: z.string().min(1).nullable(),
   recipeVersion: z.string().min(1).nullable(),
@@ -92,6 +97,7 @@ export function compileUniversalDispatchCandidate(input: {
   objectiveStructuralIdentity: string;
   graph: CompiledTaskGraph;
   readiness: ObjectivePlanReadiness;
+  executionContext: ObjectiveExecutionContext;
   methodBinding: ObjectiveMethodBinding;
   workflowSelection: WorkflowRecipeSelection;
   capabilities: readonly TaskExecutionCapability[];
@@ -99,6 +105,7 @@ export function compileUniversalDispatchCandidate(input: {
 }): UniversalDispatchCandidate {
   const objectiveStructuralIdentity = z.string().regex(/^[a-f0-9]{64}$/).parse(input.objectiveStructuralIdentity);
   const readiness = objectivePlanReadinessSchema.parse(input.readiness);
+  const executionContext = objectiveExecutionContextSchema.parse(input.executionContext);
   const methodBinding = objectiveMethodBindingSchema.parse(input.methodBinding);
   const selection = workflowRecipeSelectionSchema.parse(input.workflowSelection);
   const capabilities = z.array(taskExecutionCapabilitySchema).parse(input.capabilities)
@@ -108,6 +115,21 @@ export function compileUniversalDispatchCandidate(input: {
     .sort((left, right) => `${left.taskId}:${left.executorKey}:${left.executorVersion}`
       .localeCompare(`${right.taskId}:${right.executorKey}:${right.executorVersion}`));
   const reasons: UniversalDispatchReason[] = [];
+
+  const duplicateCapabilityTaskIds = duplicateTaskIds(capabilities);
+  if (duplicateCapabilityTaskIds.length > 0) {
+    reasons.push(reason("readiness_binding_mismatch", null, `duplicate capabilities: ${duplicateCapabilityTaskIds.join(",")}`));
+  } else {
+    const recomputedReadiness = evaluateObjectivePlanReadiness({
+      graph: input.graph,
+      capabilities,
+      context: executionContext,
+    });
+    if (recomputedReadiness.readinessFingerprint !== readiness.readinessFingerprint
+      || stableJson(recomputedReadiness) !== stableJson(readiness)) {
+      reasons.push(reason("readiness_binding_mismatch", null, "persisted readiness differs from exact policy recomputation"));
+    }
+  }
 
   if (selection.status !== "selected") {
     reasons.push(reason("workflow_not_selected", null, selection.reason));
@@ -190,6 +212,7 @@ export function compileUniversalDispatchCandidate(input: {
     methodBindingFingerprint: methodBinding.fingerprint,
     workflowSelectionFingerprint: selection.fingerprint,
     capabilityManifestHash: fingerprint(capabilities),
+    executionContextHash: fingerprint(executionContext),
     executorRegistryHash: fingerprint(executors),
     recipeId: selection.recipeId,
     recipeVersion: selection.recipeVersion,
@@ -227,6 +250,12 @@ function groupByTask<T extends {taskId: string}>(items: readonly T[]): Map<strin
   const grouped = new Map<string, T[]>();
   for (const item of items) grouped.set(item.taskId, [...(grouped.get(item.taskId) ?? []), item]);
   return grouped;
+}
+
+function duplicateTaskIds<T extends {taskId: string}>(items: readonly T[]): string[] {
+  const counts = new Map<string, number>();
+  for (const item of items) counts.set(item.taskId, (counts.get(item.taskId) ?? 0) + 1);
+  return [...counts.entries()].filter(([, count]) => count > 1).map(([taskId]) => taskId).sort();
 }
 
 function reason(code: UniversalDispatchReason["code"], taskId: string | null = null, detail: string | null = null): UniversalDispatchReason {

@@ -117,6 +117,7 @@ function compile(overrides: Partial<Parameters<typeof compileUniversalDispatchCa
     objectiveStructuralIdentity: sha("2"),
     graph,
     readiness: evaluateObjectivePlanReadiness({graph, capabilities: [capability], context}),
+    executionContext: context,
     methodBinding,
     workflowSelection: selection,
     capabilities: [capability],
@@ -152,6 +153,18 @@ describe("universal dispatch candidate", () => {
     expect(result.status).toBe("blocked");
     expect(result.reasons).toContainEqual(expect.objectContaining({code: "capability_identity_mismatch", taskId: "R01"}));
     expect(result.tasks).toEqual([]);
+  });
+
+  it("rejects stale ready preflight after a capability policy changes without changing executor identity", () => {
+    const staleReadiness = evaluateObjectivePlanReadiness({graph, capabilities: [capability], context});
+    const changedPolicy = {...capability, allowedUses: ["customer_work" as const]};
+    const result = compile({readiness: staleReadiness, capabilities: [changedPolicy]});
+    expect(result).toMatchObject({status: "blocked", tasks: [], parallelBatches: []});
+    expect(result.reasons).toContainEqual({
+      code: "readiness_binding_mismatch",
+      taskId: null,
+      detail: "persisted readiness differs from exact policy recomputation",
+    });
   });
 
   it("rejects duplicate executor registrations rather than choosing by array order", () => {
