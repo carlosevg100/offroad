@@ -1,6 +1,15 @@
 import {createHash} from "node:crypto";
 import {connect} from "node:net";
 
+import {
+  authorizeParserInput,
+  quarantineDocument,
+  type AuthorizedParserInput,
+  type DocumentQuarantinePolicy,
+  type DocumentQuarantineReceipt,
+  type QuarantineDocumentBinding,
+} from "@offroad/document-intelligence";
+
 /**
  * The gate (stage E0). Nothing reaches a parser before this passes.
  *
@@ -30,7 +39,7 @@ export type ScanVerdict = {
 
 export class GateError extends Error {
   readonly retryable: boolean;
-  readonly code: "hash_mismatch" | "size_mismatch" | "infected" | "scanner_unavailable";
+  readonly code: "hash_mismatch" | "size_mismatch" | "infected" | "scanner_unavailable" | "invalid_binding";
   constructor(message: string, code: GateError["code"], retryable: boolean) {
     super(message);
     this.name = "GateError";
@@ -62,8 +71,52 @@ export function verifyIntegrity(bytes: Uint8Array, expected: {sha256?: string; b
 
 export type Scanner = {
   name: string;
+  engineVersion?: string | null;
+  signatureSetVersion?: string | null;
   scan(bytes: Uint8Array): Promise<{clean: boolean; signature?: string}>;
 };
+
+/**
+ * The governed gate used by the worker pipeline. It returns an authorized parser snapshot only
+ * when the immutable receipt is clean and still binds the exact tenant, document version,
+ * operation, name, MIME, policy and bytes. A rejected receipt is data to persist, never
+ * permission to continue.
+ */
+export async function runGovernedGate(input: {
+  bytes: Uint8Array;
+  binding: QuarantineDocumentBinding;
+  scanner: Scanner | null;
+  policy?: DocumentQuarantinePolicy;
+  now?: () => string;
+}): Promise<{receipt: DocumentQuarantineReceipt; authorization: AuthorizedParserInput | null}> {
+  const receipt = await quarantineDocument({
+    bytes: input.bytes,
+    binding: input.binding,
+    scanner: input.scanner ? {
+      scannerId: input.scanner.name,
+      engineVersion: input.scanner.engineVersion ?? null,
+      signatureSetVersion: input.scanner.signatureSetVersion ?? null,
+      scan: async (bytes) => {
+        const result = await input.scanner!.scan(bytes);
+        return result.clean
+          ? {verdict: "clean" as const}
+          : {verdict: "infected" as const, ...(result.signature ? {signature: result.signature} : {})};
+      },
+    } : null,
+    ...(input.policy ? {policy: input.policy} : {}),
+    ...(input.now ? {now: input.now} : {}),
+  });
+  if (receipt.verdict !== "clean") return {receipt, authorization: null};
+  return {
+    receipt,
+    authorization: authorizeParserInput({
+      receipt,
+      binding: input.binding,
+      bytes: input.bytes,
+      ...(input.policy ? {policy: input.policy} : {}),
+    }),
+  };
+}
 
 /**
  * clamd's INSTREAM: `zINSTREAM\0`, then length-prefixed chunks, then a zero length to close.
@@ -135,9 +188,11 @@ export async function runGate(
   const digest = verifyIntegrity(bytes, expected);
 
   if (!scanner) {
-    // Only reachable when an operator explicitly set REQUIRE_VIRUS_SCAN=false; the verdict
-    // records that no scanner ran, so the document carries the fact for review.
-    return {verdict: "error", scanner: "none", scannedAt: now(), bytes: bytes.byteLength, sha256: digest, signature: "scanner_disabled"};
+    // A human may disable scanner start-up while diagnosing the container, but that flag must
+    // never become permission to parse unscanned bytes. Keep the failure permanent for this
+    // process configuration: retrying the same job cannot help until an operator restores the
+    // scanner and restarts the worker.
+    throw new GateError("the virus scanner is required before document parsing", "scanner_unavailable", false);
   }
 
   const result = await scanner.scan(bytes);

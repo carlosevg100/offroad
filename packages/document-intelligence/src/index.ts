@@ -13,3 +13,4 @@ export * from "./text";
 export * from "./layer-index";
 export * from "./verifier";
 export * from "./governed-document-identity";
+export * from "./governed-document-quarantine";

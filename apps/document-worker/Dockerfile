@@ -2,12 +2,12 @@
 #
 # Document worker image (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
 #
-# The container is the isolation boundary for hostile documents: it holds no tenant
-# credential, no service-role key and no long-lived storage token, and everything it touches
-# arrives through a short-lived signed URL. What it *does* carry are the three programs the
-# parsers need from the outside world — LibreOffice to convert legacy Office files, Tesseract
-# to read scans, poppler to rasterise PDF pages — plus ClamAV, which every file passes before
-# a parser sees it.
+# This image is one layer of the intended hostile-document boundary. The worker has no tenant
+# or service-role credential and receives files through short-lived signed URLs, but the image
+# alone does not prove read-only rootfs, dropped capabilities, seccomp, egress denial or
+# per-document process isolation; those remain deployment gates. The runtime includes
+# LibreOffice, Tesseract, poppler and ClamAV. Application code fails closed unless a governed
+# clean receipt exists before any parser sees bytes.
 
 # ---------------------------------------------------------------------------------------
 # Build: compile the workspace with the exact lockfile
@@ -105,8 +105,8 @@ RUN apt-get update \
 RUN rm -rf /usr/local/lib/node_modules/npm \
  && rm -f /usr/local/bin/npm /usr/local/bin/npx
 
-# Virus definitions are baked into the image so a cold task can scan immediately; the
-# entrypoint refreshes them in the background afterwards.
+# Try to bake definitions into the image. Failure is not treated as proof of a usable database:
+# the entrypoint must still start clamd successfully or refuse to start the worker.
 RUN freshclam --quiet || true
 
 # clamd listens on loopback only: nothing outside the task can reach it.
@@ -135,12 +135,14 @@ COPY apps/document-worker/docker-entrypoint.sh /usr/local/bin/document-worker-en
 RUN chmod +x /usr/local/bin/document-worker-entrypoint
 
 # The worker itself never needs root. LibreOffice and Tesseract run as this user too, so a
-# document that manages to exploit one of them lands as an unprivileged account in a
-# container with no credentials and no network route to anything of ours.
+# document that manages to exploit one of them lands as an unprivileged account. Credential
+# minimization and network containment are separate deployment controls, not properties proved
+# by this Dockerfile.
 RUN useradd --system --create-home --home-dir /home/worker --shell /usr/sbin/nologin worker \
  && chown -R worker:worker /app
 
-# Fails the task if clamd stops answering: a worker that cannot scan must not keep claiming.
+# Checks clamd socket liveness. Definition freshness and scan correctness require separate
+# runtime evidence; an open port alone does not prove either.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
   CMD node -e "require('net').connect(3310,'127.0.0.1').on('connect',p=>process.exit(0)).on('error',()=>process.exit(1))"
 

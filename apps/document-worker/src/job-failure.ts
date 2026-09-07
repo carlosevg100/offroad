@@ -92,7 +92,7 @@ export function classifyFailure(error: unknown, code?: string): FailureClass {
   }
   if (/budget/i.test(own)) return "budget";
   if (/quality_gate/i.test(own)) return "quality_gate";
-  if (/^(infected|unreadable_document)$/i.test(own)) return "invalid_input";
+  if (/^(infected|malware_detected|empty_file|file_size_exceeded|size_mismatch|hash_mismatch|unsupported_type|declared_type_mismatch|extension_type_mismatch|malformed_container|polyglot_content|encrypted_document|archive_|active_|embedded_object|external_|formula_injection|unreadable_document)/i.test(own)) return "invalid_input";
   if (/invalid_.*input|invalid_case/i.test(own)) return "invalid_input";
   const message = error instanceof Error ? error.message : String(error ?? "");
   if (DB_TIMEOUT.test(message)) return "db_timeout";
