@@ -172,6 +172,18 @@ describe("intent classifier boundary", () => {
     "Envie a lista de investidores.",
     "Send this to the CFO and identify investors.",
     "Envie o material ao CFO e identifique os fundos aderentes.",
+    "Send the analysis comparing lenders to investors.",
+    "Send the comparison of providers to investors.",
+    "Send the memo referring to investors.",
+    "Send the report relevant to investors.",
+    "Send the memo titled introduction to investors.",
+    "Send the document section about outreach to investors.",
+    "Envie a análise comparando bancos a investidores.",
+    "Envie o relatório referente a investidores.",
+    "Envie o memo intitulado introdução a investidores.",
+    "Envie a seção sobre divulgação para investidores.",
+    "Send this to investors?",
+    "Envie isto aos investidores?",
   ])("never preserves a model-proposed introduction when outreach is rejected: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",

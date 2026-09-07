@@ -152,12 +152,14 @@ function hasExplicitExternalOutreach(text: string): boolean {
   const rejected = /\b(?:nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid|proibid[oa]|forbidden|not allowed|fora de questao|nem pensar|de jeito nenhum|absolutely not|definitely not)\b/;
   const command = text.match(directCommand);
   if (!command || rejected.test(text)) return false;
+  const modalAtStart = /^(?:(?:ja|agora|por favor|please)\s+)*(?:pode|podem|can you|quero que|vamos)\s+/;
+  if (text.endsWith("?") && !modalAtStart.test(text)) return false;
 
   // External effects use a closed grammar for the complete clause: command, bounded direct
   // object, destination preposition and provider. This prevents a leading word such as "send"
   // in a label or explanation from combining with "investors" later in the sentence.
   const remainder = text.slice(command[0].length).trim();
-  const routed = remainder.match(/^(?:(?:this|that|these|those|isso|isto)(?:\s+[a-z0-9_-]+){0,8}|(?:a|o|as|os|esse|essa|este|esta|da|do|das|dos|the)\s+[a-z0-9_-]+(?:\s+[a-z0-9_-]+){0,7})\s+(?:a|ao|aos|para|to)\s+(?:(?:os|as|the|tres|three|\d+)\s+)?(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)(.*)$/);
+  const routed = remainder.match(/^(?:(?:this|that|these|those|isso|isto)|(?:a|o|as|os|esse|essa|este|esta|da|do|das|dos|the)\s+[a-z0-9_-]+)\s+(?:a|ao|aos|para|to)\s+(?:(?:os|as|the|tres|three|\d+)\s+)?(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)(.*)$/);
   if (!routed) return false;
 
   // Once the provider target is named, only a bounded fit/selection qualifier and terminal
