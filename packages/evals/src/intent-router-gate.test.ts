@@ -165,6 +165,31 @@ describe("intent router promotion gate", () => {
     const duplicate = [...calls, {...calls[0]!, invocationId: calls[1]!.invocationId}];
     expect(verifyIntentRouterCallEvidence({observations: [run], calls: duplicate, providerPreflight: [], gatewaySpent: {...spent, calls: 3, costUsd: 0.025}}).issues)
       .toEqual(expect.arrayContaining([expect.stringContaining("duplicate_invocation"), expect.stringContaining("terminal_success_count")]));
+
+    const rejectedInvocationId = "10000000-0000-4000-8000-000000000001";
+    const repairInvocationId = "10000000-0000-4000-8000-000000000002";
+    const validationIssues = [{path: "composition", code: "invalid_value", message: "Invalid enum value"}];
+    const issueFingerprint = evidenceFingerprint(validationIssues.map(({path, code}) => ({path, code})));
+    const rejectedRoute: GatewayCallLog = {
+      ...calls[0]!, invocationId: rejectedInvocationId, outcome: "invalid_output", costUsd: 0.004, latencyMs: 10,
+      outputFingerprint: "a".repeat(64), validationIssues, validationIssueCodeFingerprint: issueFingerprint,
+    };
+    const repairedRoute: GatewayCallLog = {
+      ...calls[0]!, invocationId: repairInvocationId, retryOrdinal: 1, isSameModelRepair: true,
+      previousInvocationId: rejectedInvocationId, repairGuidanceFingerprint: "b".repeat(64),
+      repairValidationIssueCodeFingerprint: issueFingerprint, promptFingerprint: "c".repeat(64),
+      costUsd: 0.01, latencyMs: 20,
+    };
+    const repairedRun = {
+      ...run, routeAttemptCount: 2, routeCostUsd: 0.014, routeLatencyMs: 30,
+      costUsd: 0.019, latencyMs: 110,
+    };
+    const repairedCalls = [rejectedRoute, repairedRoute, calls[1]!];
+    const repairedSpend = {costUsd: 0.019, calls: 3, unknownCostCalls: 0, budgetExposureUsd: 0.019};
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: repairedCalls, providerPreflight: [], gatewaySpent: repairedSpend}).passed).toBe(true);
+    const unboundRepair = {...repairedRoute, previousInvocationId: "10000000-0000-4000-8000-000000000099"};
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, unboundRepair, calls[1]!], providerPreflight: [], gatewaySpent: repairedSpend}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("repair_predecessor_mismatch")]));
   });
 
   it("exercises every one of the 52 authored messages without treating an oracle-built output as provider evidence", () => {

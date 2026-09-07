@@ -89,17 +89,13 @@ export function verifyIntentRouterCallEvidence(input: {
         if (call.metadata?.caseId !== turn.caseId) issues.push(`case_mismatch:${operation}:${index}`);
         if (call.fromCassette || call.costStatus === "cassette") issues.push(`cassette_not_paid_evidence:${operation}:${index}`);
         const prior = calls[index - 1];
-        const expectedPromptFingerprint = call.isSameModelRepair
-          ? prior?.validationIssues
-            ? evidenceFingerprint({
-                system: `${contract.system}\n\n${schemaRepairGuidance(prior.validationIssues)}`,
-                schemaName: contract.schemaName,
-                schema: z.toJSONSchema(contract.schema),
-              })
-            : null
-          : expectedInitialPromptFingerprint;
-        if (expectedPromptFingerprint === null || call.promptFingerprint !== expectedPromptFingerprint) {
-          issues.push(`prompt_mismatch:${operation}:${index}`);
+        if (call.isSameModelRepair) {
+          validateRepairLineage(call, prior, expectedInitialPromptFingerprint, operation, index, issues);
+        } else {
+          if (call.promptFingerprint !== expectedInitialPromptFingerprint) issues.push(`prompt_mismatch:${operation}:${index}`);
+          if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
+            issues.push(`unexpected_repair_lineage:${operation}:${index}`);
+          }
         }
         if ((call.retryOrdinal ?? 0) !== index && !call.usedProviderFallback) issues.push(`retry_ordinal_mismatch:${operation}:${index}`);
         if (index > 0 && calls[index - 1]?.outcome === "ok") issues.push(`attempt_after_success:${operation}:${index}`);
@@ -151,7 +147,14 @@ export function verifyIntentRouterCallEvidence(input: {
     matching.forEach((call, index) => {
       if (call.provider !== row.provider) issues.push(`preflight_provider_mismatch:${row.task}:${row.provider}:${index}`);
       if (call.inputFingerprint !== expectedInputFingerprint) issues.push(`preflight_input_mismatch:${row.task}:${row.provider}:${index}`);
-      if (!call.isSameModelRepair && call.promptFingerprint !== expectedPromptFingerprint) issues.push(`preflight_prompt_mismatch:${row.task}:${row.provider}:${index}`);
+      if (call.isSameModelRepair) {
+        validateRepairLineage(call, matching[index - 1], expectedPromptFingerprint, `preflight:${row.task}:${row.provider}`, index, issues);
+      } else {
+        if (call.promptFingerprint !== expectedPromptFingerprint) issues.push(`preflight_prompt_mismatch:${row.task}:${row.provider}:${index}`);
+        if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
+          issues.push(`unexpected_repair_lineage:preflight:${row.task}:${row.provider}:${index}`);
+        }
+      }
       if (call.outcome === "ok" && call.model !== row.resolvedModel) issues.push(`preflight_model_mismatch:${row.task}:${row.provider}:${index}`);
       if (call.fromCassette || call.costStatus === "cassette") issues.push(`preflight_cassette_not_paid_evidence:${row.task}:${row.provider}:${index}`);
     });
@@ -211,16 +214,36 @@ function close(left: number, right: number): boolean {
   return Math.abs(left - right) <= 1e-8;
 }
 
-function schemaRepairGuidance(issues: readonly {path: string; code: string; message: string}[]): string {
-  const details = issues.slice(0, 5).map((issue) => {
-    const path = issue.path.length > 0 ? issue.path : "<root>";
-    return `- ${path}: correct schema violation ${issue.code}`;
-  });
-  return [
-    "SCHEMA REPAIR (one bounded retry): your previous JSON did not validate.",
-    "Return the entire corrected JSON object. Do not explain the correction and do not repeat the rejected value.",
-    ...details,
-  ].join("\n").slice(0, 2_000);
+function validateRepairLineage(
+  call: GatewayCallLog,
+  prior: GatewayCallLog | undefined,
+  basePromptFingerprint: string,
+  operation: string,
+  index: number,
+  issues: string[],
+): void {
+  if (!prior || prior.outcome !== "invalid_output") {
+    issues.push(`repair_without_rejection:${operation}:${index}`);
+    return;
+  }
+  if (call.previousInvocationId !== prior.invocationId) issues.push(`repair_predecessor_mismatch:${operation}:${index}`);
+  const priorIssueFingerprint = evidenceFingerprint((prior.validationIssues ?? []).map(({path, code}) => ({path, code})));
+  if (!prior.validationIssueCodeFingerprint || prior.validationIssueCodeFingerprint !== priorIssueFingerprint) {
+    issues.push(`rejection_issue_fingerprint_mismatch:${operation}:${index}`);
+  }
+  if (!call.repairValidationIssueCodeFingerprint
+    || call.repairValidationIssueCodeFingerprint !== prior.validationIssueCodeFingerprint) {
+    issues.push(`repair_issue_fingerprint_mismatch:${operation}:${index}`);
+  }
+  if (!call.repairGuidanceFingerprint || !/^[a-f0-9]{64}$/.test(call.repairGuidanceFingerprint)) {
+    issues.push(`repair_guidance_fingerprint_missing:${operation}:${index}`);
+  }
+  // The gateway never exposes repair text. Its exact content is committed by the guidance hash;
+  // the effective full prompt must therefore be distinct from the independently reconstructed
+  // base prompt and bound to the rejected invocation above.
+  if (!call.promptFingerprint || call.promptFingerprint === basePromptFingerprint) {
+    issues.push(`repair_prompt_not_distinct:${operation}:${index}`);
+  }
 }
 
 function stableJson(value: unknown): string {
