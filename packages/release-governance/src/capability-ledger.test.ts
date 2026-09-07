@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(30);
+    expect(decision.entryCount).toBe(31);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -19,6 +19,7 @@ describe("capability ledger", () => {
     expect(byId.get("workflow.objective-plan-core")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested"});
     expect(byId.get("workflow.preflight-capability-gate")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested"});
     expect(byId.get("workflow.objective-preflight-shadow")).toMatchObject({availability: "shadow", exposure: "internal", qualityMaturity: "implemented"});
+    expect(byId.get("workflow.specialist-method-binding-shadow")).toMatchObject({availability: "shadow", exposure: "internal", qualityMaturity: "implemented"});
   });
 
   it("records the execution brief and safe run-derived progress as live without claiming customer reliance", () => {

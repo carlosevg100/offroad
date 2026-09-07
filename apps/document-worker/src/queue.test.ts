@@ -307,6 +307,7 @@ describe("execution-brief activation", () => {
     const objectivePlan = {schemaVersion: "objective-plan.v1", structuralIdentity: "a".repeat(64)};
     const preflightDecision = {schemaVersion: "objective-plan-readiness.v1", readinessFingerprint: "b".repeat(64)};
     const specialization = {schemaVersion: "objective-specialization.v1", fingerprint: "c".repeat(64)};
+    const methodBinding = {schemaVersion: "objective-method-binding.v1", fingerprint: "d".repeat(64)};
     const rpc = vi.fn(async () => ({data: {
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
@@ -317,10 +318,16 @@ describe("execution-brief activation", () => {
       pack_ids: ["core.institutional-dcm"],
       minimum_maturity: "implemented",
       specialization_replayed: false,
+      method_binding_id: "a0000000-0000-4000-8000-000000000001",
+      method_binding_fingerprint: "d".repeat(64),
+      method_binding_status: "blocked",
+      bound_task_ids: [],
+      specialist_task_ids: [],
+      method_binding_replayed: false,
     }, error: null}));
     const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
 
-    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision, specialization})).resolves.toEqual({
+    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision, specialization, methodBinding})).resolves.toEqual({
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
       terminalReachable: false,
@@ -330,13 +337,20 @@ describe("execution-brief activation", () => {
       packIds: ["core.institutional-dcm"],
       minimumMaturity: "implemented",
       specializationReplayed: false,
+      methodBindingId: "a0000000-0000-4000-8000-000000000001",
+      methodBindingFingerprint: "d".repeat(64),
+      methodBindingStatus: "blocked",
+      boundTaskIds: [],
+      specialistTaskIds: [],
+      methodBindingReplayed: false,
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v2", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v3", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_objective_plan: objectivePlan,
       p_preflight_decision: preflightDecision,
       p_specialization: specialization,
+      p_method_binding: methodBinding,
     });
   });
 });

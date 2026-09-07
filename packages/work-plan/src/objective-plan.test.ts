@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {compileObjectivePlan, compileObjectiveToPlan} from "./objective-plan";
+import {compileObjectivePlan, compileObjectiveToPlan, expandObjectivePlanWithTaskTargets} from "./objective-plan";
 
 const sixCanonicalRequests = [
   {
@@ -184,5 +184,17 @@ describe("objective-to-plan compiler", () => {
     expect(decision).toMatchObject({objectiveKind: "documents_to_case", mode: "create_project"});
     expect(decision.targetTaskIds).not.toContain("X04");
     expect(decision.taskGraph.tasks.every((task) => task.effect !== "external")).toBe(true);
+  });
+
+  it("expands an objective with a specialist task through the same canonical graph boundary", () => {
+    const base = compileObjectiveToPlan({
+      message: "Compare alternativas para refinanciar e alongar os vencimentos.", hasAttachments: false,
+    });
+    const expanded = expandObjectivePlanWithTaskTargets(base, ["R01"]);
+    expect(expanded.targetTaskIds).toEqual(["R01", "S11"]);
+    expect(expanded.taskGraph.targetTaskIds).toEqual(expanded.targetTaskIds);
+    expect(expanded.taskGraph.tasks.map((task) => task.id)).toContain("R01");
+    expect(expanded.structuralIdentity).not.toBe(base.structuralIdentity);
+    expect(() => expandObjectivePlanWithTaskTargets(base, ["Z99"])).toThrow(/unknown TaskSpec/);
   });
 });

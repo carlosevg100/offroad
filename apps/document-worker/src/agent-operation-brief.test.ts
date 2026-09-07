@@ -70,14 +70,14 @@ describe("agent operation brief worker", () => {
 
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
     let activation: unknown;
-    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown} | undefined;
+    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown} | undefined;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
         session_id: job.intake_session_id,
         message_id: job.payload.message_id,
         locale: "pt-BR",
-        message: "Quero comparar alternativas de dívida para financiar a expansão da Camil.",
+        message: "Quero comparar alternativas de dívida com recebíveis para financiar a expansão da Camil.",
         brief: {}, snapshot_fingerprint: "a".repeat(64),
         projection_updated_at: "2026-09-02T12:00:00.000Z", manifest_id: null,
         project: {
@@ -92,7 +92,7 @@ describe("agent operation brief worker", () => {
         activation = value;
         return {};
       },
-      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown}) => {
+      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown}) => {
         objectivePreflightInput = input;
         return {
           id: "99999999-9999-4999-8999-999999999999",
@@ -101,9 +101,15 @@ describe("agent operation brief worker", () => {
           replayed: false,
           specializationId: "88888888-8888-4888-8888-888888888888",
           specializationFingerprint: "c".repeat(64),
-          packIds: ["core.institutional-dcm", "objective.capex-expansion"],
+          packIds: ["core.institutional-dcm", "objective.capex-expansion", "analysis.receivables-underwriting"],
           minimumMaturity: "implemented" as const,
           specializationReplayed: false,
+          methodBindingId: "77777777-7777-4777-8777-777777777777",
+          methodBindingFingerprint: "d".repeat(64),
+          methodBindingStatus: "partial" as const,
+          boundTaskIds: ["R01"],
+          specialistTaskIds: ["R01"],
+          methodBindingReplayed: false,
         };
       },
       complete: async () => {}, recordAgentFailure: async () => {},
@@ -117,7 +123,7 @@ describe("agent operation brief worker", () => {
     expect(result.status).toBe("succeeded");
     expect(activation).toMatchObject({
       job: "capital_planning", company: {name: "Camil"},
-      brief: {capitalIntent: "Quero comparar alternativas de dívida para financiar a expansão da Camil."},
+      brief: {capitalIntent: "Quero comparar alternativas de dívida com recebíveis para financiar a expansão da Camil."},
     });
     expect(objectivePreflightInput).toMatchObject({
       objectivePlan: {
@@ -135,10 +141,20 @@ describe("agent operation brief worker", () => {
         selectedPackIds: expect.arrayContaining([
           "core.institutional-dcm",
           "objective.capex-expansion",
+          "analysis.receivables-underwriting",
         ]),
         profile: {
           minimumMaturity: "implemented",
         },
+      },
+      methodBinding: {
+        schemaVersion: "objective-method-binding.v1",
+        status: "partial",
+        specialistTaskIds: ["R01"],
+        bindings: [expect.objectContaining({
+          taskId: "R01",
+          procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+        })],
       },
     });
   });

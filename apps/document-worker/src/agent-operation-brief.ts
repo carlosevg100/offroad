@@ -13,11 +13,13 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
-import {compileObjectiveSpecialization} from "@offroad/dcm-specialization";
+import {bindObjectiveMethods, compileObjectiveSpecialization} from "@offroad/dcm-specialization";
+import {specialistMethodRuntimeManifest, specialistMethodRuntimeManifestHash} from "@offroad/credit-playbook";
 import {
   capitalProjectJobSchema,
   compileObjectiveToPlan,
   evaluateObjectivePlanReadiness,
+  expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
 } from "@offroad/work-plan";
 import {z} from "zod";
@@ -31,6 +33,14 @@ import {prepareExecutionBrief} from "./execution-brief";
 
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
+
+const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
+  ...method,
+  procedure: {...method.procedure},
+  taskIds: [...method.taskIds],
+  requiredPackIds: [...method.requiredPackIds],
+  executor: {...method.executor},
+}));
 
 const contextSchema = z.object({
   session_id: z.uuid(),
@@ -508,6 +518,12 @@ export async function processAgentOperationBriefJob(
       packIds: string[];
       minimumMaturity: "specified" | "implemented" | "tested" | "production";
       specializationReplayed: boolean;
+      methodBindingId: string;
+      methodBindingFingerprint: string;
+      methodBindingStatus: "bound" | "partial" | "blocked" | "conflicted";
+      boundTaskIds: string[];
+      specialistTaskIds: string[];
+      methodBindingReplayed: boolean;
     } | null = null;
     if (response.activation && queue.recordObjectivePlanPreflight) {
       try {
@@ -516,6 +532,7 @@ export async function processAgentOperationBriefJob(
           objectivePlan: shadow.objectivePlan,
           preflightDecision: shadow.preflightDecision,
           specialization: shadow.specialization,
+          methodBinding: shadow.methodBinding,
         });
         log("objective_plan.preflight_recorded", {
           job: job.job_id,
@@ -527,6 +544,10 @@ export async function processAgentOperationBriefJob(
           specializationFingerprint: objectivePreflight.specializationFingerprint,
           selectedPackIds: objectivePreflight.packIds,
           minimumPackMaturity: objectivePreflight.minimumMaturity,
+          methodBindingFingerprint: objectivePreflight.methodBindingFingerprint,
+          methodBindingStatus: objectivePreflight.methodBindingStatus,
+          specialistTaskIds: objectivePreflight.specialistTaskIds,
+          boundTaskIds: objectivePreflight.boundTaskIds,
           mode: "shadow",
         });
       } catch (preflightError) {
@@ -554,6 +575,10 @@ export async function processAgentOperationBriefJob(
       objectivePreflightStatus: objectivePreflight?.status,
       objectiveSpecializationFingerprint: objectivePreflight?.specializationFingerprint,
       objectivePackIds: objectivePreflight?.packIds,
+      objectiveMethodBindingFingerprint: objectivePreflight?.methodBindingFingerprint,
+      objectiveMethodBindingStatus: objectivePreflight?.methodBindingStatus,
+      objectiveSpecialistTaskIds: objectivePreflight?.specialistTaskIds,
+      objectiveBoundTaskIds: objectivePreflight?.boundTaskIds,
     }, completion.usage as unknown as Record<string, number>);
     await queue.complete(job, {
       assistantMessageId,
@@ -593,7 +618,7 @@ type AgentContext = z.infer<typeof contextSchema>;
  */
 function compileObjectivePreflight(context: AgentContext) {
   const entryJob = context.project ? capitalProjectJobSchema.safeParse(context.project.entryJob) : null;
-  const objectivePlan = compileObjectiveToPlan({
+  const baseObjectivePlan = compileObjectiveToPlan({
     message: context.message,
     hasAttachments: context.documents.length > 0,
     ...(entryJob?.success ? {existingProject: {
@@ -602,13 +627,33 @@ function compileObjectivePreflight(context: AgentContext) {
       hasCurrentMandates: false,
     }} : {}),
   });
+  const provisionalSpecialization = compileObjectiveSpecialization({
+    objectiveText: context.message,
+    taskIds: baseObjectivePlan.taskGraph.tasks.map((task) => task.id),
+  });
+  const provisionalBinding = bindObjectiveMethods({
+    graph: baseObjectivePlan.taskGraph,
+    specialization: provisionalSpecialization,
+    methods: specialistMethods,
+    methodRegistryHash: specialistMethodRuntimeManifestHash,
+  });
+  const objectivePlan = expandObjectivePlanWithTaskTargets(
+    baseObjectivePlan,
+    provisionalBinding.binding.specialistTaskIds,
+  );
   const specialization = compileObjectiveSpecialization({
     objectiveText: context.message,
     taskIds: objectivePlan.taskGraph.tasks.map((task) => task.id),
   });
+  const methodBinding = bindObjectiveMethods({
+    graph: objectivePlan.taskGraph,
+    specialization,
+    methods: specialistMethods,
+    methodRegistryHash: specialistMethodRuntimeManifestHash,
+  });
   const confidential = context.documents.length > 0 || context.project?.accessBasis !== "public_information";
   const preflightDecision = evaluateObjectivePlanReadiness({
-    graph: objectivePlan.taskGraph,
+    graph: methodBinding.graph,
     capabilities: [],
     context: {
       use: "internal_validation",
@@ -618,7 +663,7 @@ function compileObjectivePreflight(context: AgentContext) {
       projectId: context.project?.id ?? null,
       internalActor: true,
       externalAuthorizationRef: null,
-      resourcesByTaskId: Object.fromEntries(objectivePlan.taskGraph.tasks.map((task) => [task.id, {
+      resourcesByTaskId: Object.fromEntries(methodBinding.graph.tasks.map((task) => [task.id, {
         providerId: null,
         toolIds: [],
         sourceClasses: [...objectivePlan.sourcePlan],
@@ -630,7 +675,7 @@ function compileObjectivePreflight(context: AgentContext) {
       disabledToolIds: [],
     },
   });
-  return {objectivePlan, preflightDecision, specialization};
+  return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding};
 }
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {

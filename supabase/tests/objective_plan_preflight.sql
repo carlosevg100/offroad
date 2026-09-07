@@ -116,10 +116,38 @@ declare
       'unmappedRequirementKeys',jsonb_build_array()
     )
   );
+  method_binding jsonb := jsonb_build_object(
+    'schemaVersion','objective-method-binding.v1',
+    'specializationFingerprint',repeat('c',64),
+    'methodRegistryHash',repeat('e',64),
+    'selectedPackIds',jsonb_build_array(
+      'core.institutional-dcm','objective.refinance-liability-management'
+    ),
+    'baseTargetTaskIds',jsonb_build_array('M02'),
+    'specialistTaskIds',jsonb_build_array(),
+    'effectiveTargetTaskIds',jsonb_build_array('M02'),
+    'bindings',jsonb_build_array(jsonb_build_object(
+      'taskId','M02',
+      'procedure',jsonb_build_object('id','normalize-objective','version','2026.09.06-v1'),
+      'maturity','implemented',
+      'requiredPackIds',jsonb_build_array('objective.refinance-liability-management'),
+      'bindingPriority',100,
+      'executor',jsonb_build_object('module','@offroad/work-plan','exportName','compileObjectiveToPlan'),
+      'resultContract','objective-plan.v1',
+      'sourcePath','routing/normalize-objective.md',
+      'sourceHash',repeat('f',64)
+    )),
+    'unboundTaskIds',jsonb_build_array(),
+    'conflicts',jsonb_build_array(),
+    'status','bound',
+    'fingerprint',repeat('1',64)
+  );
   first_result jsonb;
   replay_result jsonb;
   specialization_result jsonb;
   specialization_replay jsonb;
+  method_result jsonb;
+  method_replay jsonb;
   accepted boolean;
 begin
   first_result := public.worker_record_objective_plan_preflight_v1(
@@ -155,6 +183,25 @@ begin
   if specialization_replay ->> 'specialization_id' <> specialization_result ->> 'specialization_id'
     or not (specialization_replay ->> 'specialization_replayed')::boolean then
     raise exception 'identical objective specialization did not replay: %', specialization_replay;
+  end if;
+
+  method_result := public.worker_record_objective_plan_preflight_v3(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding
+  );
+  if method_result ->> 'id' <> first_result ->> 'id'
+    or method_result ->> 'method_binding_fingerprint' <> repeat('1',64)
+    or method_result ->> 'method_binding_status' <> 'bound'
+    or (method_result ->> 'method_binding_replayed')::boolean then
+    raise exception 'objective method binding was not recorded correctly: %', method_result;
+  end if;
+  method_replay := public.worker_record_objective_plan_preflight_v3(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding
+  );
+  if method_replay ->> 'method_binding_id' <> method_result ->> 'method_binding_id'
+    or not (method_replay ->> 'method_binding_replayed')::boolean then
+    raise exception 'identical method binding did not replay: %', method_replay;
   end if;
 
   begin
@@ -200,6 +247,17 @@ begin
   if accepted then raise exception 'coverage binding divergent from the objective graph was accepted'; end if;
 
   begin
+    perform public.worker_record_objective_plan_preflight_v3(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight, specialization,
+      jsonb_set(method_binding, '{effectiveTargetTaskIds}', '[]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'method binding divergent from objective targets was accepted'; end if;
+
+  begin
     perform public.worker_record_objective_plan_preflight_v1(
       '80000000-0000-4000-8000-000000000711', repeat('x',64), objective_plan, blocked_preflight
     );
@@ -213,6 +271,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_specializations) <> 0 then
     raise exception 'worker principal gained direct visibility into tenant specializations';
+  end if;
+  if (select count(*) from public.capital_project_objective_method_bindings) <> 0 then
+    raise exception 'worker principal gained direct visibility into tenant method bindings';
   end if;
 end;
 $$;
@@ -229,6 +290,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_specializations) <> 1 then
     raise exception 'project owner could not read the objective specialization';
+  end if;
+  if (select count(*) from public.capital_project_objective_method_bindings) <> 1 then
+    raise exception 'project owner could not read the objective method binding';
   end if;
   begin
     insert into public.capital_project_objective_preflights (
@@ -263,6 +327,23 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'authenticated client inserted an objective specialization directly'; end if;
+  begin
+    insert into public.capital_project_objective_method_bindings (
+      organization_id, capital_project_id, objective_preflight_id, objective_specialization_id,
+      source_message_id, processing_job_id, schema_version, binding_fingerprint,
+      method_registry_hash, binding_status, selected_pack_ids, method_binding, created_by
+    ) select
+      preflight.organization_id, preflight.capital_project_id, preflight.id, specialization.id,
+      preflight.source_message_id, preflight.processing_job_id, 'objective-method-binding.v1',
+      repeat('2',64), repeat('3',64), 'blocked', array['core.institutional-dcm'],
+      '{}'::jsonb, preflight.created_by
+    from public.capital_project_objective_preflights preflight
+    join public.capital_project_objective_specializations specialization
+      on specialization.objective_preflight_id = preflight.id limit 1;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'authenticated client inserted an objective method binding directly'; end if;
 end;
 $$;
 
@@ -274,6 +355,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_specializations) <> 0 then
     raise exception 'tenant B read tenant A objective specialization';
+  end if;
+  if (select count(*) from public.capital_project_objective_method_bindings) <> 0 then
+    raise exception 'tenant B read tenant A objective method binding';
   end if;
 end;
 $$;
@@ -289,7 +373,12 @@ begin
     or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'insert')
     or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'update')
     or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'delete')
-    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v2(uuid,text,jsonb,jsonb,jsonb)', 'execute') then
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v2(uuid,text,jsonb,jsonb,jsonb)', 'execute')
+    or has_table_privilege('anon', 'public.capital_project_objective_method_bindings', 'select')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'insert')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'update')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'delete')
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v3(uuid,text,jsonb,jsonb,jsonb,jsonb)', 'execute') then
     raise exception 'objective preflight grants are wider than the design';
   end if;
 end;
