@@ -23,6 +23,10 @@ const call: GatewayCallLog = {
   schemaName: "live_preview_routing_output",
   metadata: {surface: "live_preview_router", accidentalFutureContent: "must-not-be-logged"},
   validationIssues: [{path: "routingCore.action", code: "invalid_type", message: "rejected value must-not-be-logged"}],
+  previousInvocationId: "10000000-0000-4000-8000-000000000000",
+  repairGuidanceFingerprint: "d".repeat(64),
+  validationIssueCodeFingerprint: "e".repeat(64),
+  repairValidationIssueCodeFingerprint: "f".repeat(64),
 };
 
 describe("modelCallLogDetail", () => {
@@ -37,6 +41,10 @@ describe("modelCallLogDetail", () => {
       providerHttpStatus: null,
       providerFailureCategory: "unknown",
       validationIssueCount: 1,
+      previousInvocationId: "10000000-0000-4000-8000-000000000000",
+      repairGuidanceFingerprint: "d".repeat(64),
+      validationIssueCodeFingerprint: "e".repeat(64),
+      repairValidationIssueCodeFingerprint: "f".repeat(64),
     });
     expect(JSON.stringify(detail)).not.toContain("must-not-be-logged");
     expect(detail).not.toHaveProperty("metadata");
@@ -65,6 +73,10 @@ describe("modelCallLogDetail", () => {
       providerError: {name: "customer-secret-error", status: 429, code: "customer-secret-code", type: "customer-secret-type"},
       validationIssues: [{path: "customer.secret.account", code: "customer-secret-code", message: "customer-secret-message"}],
       promptFingerprint: "customer-secret-prompt",
+      previousInvocationId: "customer-secret-previous-id",
+      repairGuidanceFingerprint: "customer-secret-guidance",
+      validationIssueCodeFingerprint: "customer-secret-issues",
+      repairValidationIssueCodeFingerprint: "customer-secret-repair-issues",
     } satisfies GatewayCallLog;
 
     const detail = modelCallLogDetail("20000000-0000-4000-8000-000000000002", poisoned);

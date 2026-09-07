@@ -178,6 +178,14 @@ export type ValidationIssueDiagnostic = {
 
 export type GatewayCallLog = {
   invocationId: string;
+  /** Present only on a bounded same-model repair; identifies the rejected attempt it repairs. */
+  previousInvocationId?: string;
+  /** SHA-256 of the exact content-free repair guidance sent to the model. */
+  repairGuidanceFingerprint?: string;
+  /** SHA-256 of the stable path/code pairs rejected on this invocation. */
+  validationIssueCodeFingerprint?: string;
+  /** On a repair, the issue-code fingerprint of the rejected invocation it is repairing. */
+  repairValidationIssueCodeFingerprint?: string;
   task: TaskKind;
   provider: Provider;
   model: string;

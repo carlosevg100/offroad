@@ -130,6 +130,10 @@ function retryTelemetry(call: GatewayCallLog) {
     ...(call.retryOrdinal !== undefined ? {retryOrdinal: boundedNumber(call.retryOrdinal, true, 1)} : {}),
     ...(call.isSameModelRepair !== undefined ? {isSameModelRepair: call.isSameModelRepair === true} : {}),
     ...(call.usedProviderFallback !== undefined ? {usedProviderFallback: call.usedProviderFallback === true} : {}),
+    ...(call.previousInvocationId !== undefined ? {previousInvocationId: uuid(call.previousInvocationId)} : {}),
+    ...(call.repairGuidanceFingerprint !== undefined ? {repairGuidanceFingerprint: fingerprint(call.repairGuidanceFingerprint)} : {}),
+    ...(call.validationIssueCodeFingerprint !== undefined ? {validationIssueCodeFingerprint: fingerprint(call.validationIssueCodeFingerprint)} : {}),
+    ...(call.repairValidationIssueCodeFingerprint !== undefined ? {repairValidationIssueCodeFingerprint: fingerprint(call.repairValidationIssueCodeFingerprint)} : {}),
   };
 }
 

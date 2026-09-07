@@ -17,6 +17,7 @@ import {
   deniedModelPatterns,
   estimateCostUsd,
   evaluateProviderDataPolicy,
+  gatewayCallLogSchema,
   isValidCpf,
   mapAnthropicStopReason,
   mapAnthropicUsage,
@@ -354,6 +355,11 @@ describe("gateway", () => {
       {outcome: "invalid_output", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, usedFallback: false},
       {outcome: "ok", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false, usedFallback: true},
     ]);
+    expect(logs[1]?.previousInvocationId).toBe(logs[0]?.invocationId);
+    expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[1]?.repairValidationIssueCodeFingerprint).toBe(logs[0]?.validationIssueCodeFingerprint);
+    expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(2);
     expect(result).toMatchObject({
       provider: "anthropic",
       retryOrdinal: 1,
@@ -391,6 +397,13 @@ describe("gateway", () => {
       {provider: "anthropic", model: "claude-sonnet-5", outcome: "invalid_output", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false},
       {provider: "openai", model: "gpt-5.6-terra", outcome: "ok", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true},
     ]);
+    expect(logs[1]?.previousInvocationId).toBe(logs[0]?.invocationId);
+    expect(logs[1]?.repairValidationIssueCodeFingerprint).toBe(logs[0]?.validationIssueCodeFingerprint);
+    expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[1]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[2]).not.toHaveProperty("previousInvocationId");
+    expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(3);
   });
 
   it("can preflight one provider without silently succeeding through fallback", async () => {

@@ -2,6 +2,10 @@ import {z} from "zod";
 
 export const gatewayCallLogSchema = z.object({
   invocationId: z.uuid(),
+  previousInvocationId: z.uuid().optional(),
+  repairGuidanceFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  validationIssueCodeFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  repairValidationIssueCodeFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   task: z.enum([
     "classify_document",
     "locate_fields",

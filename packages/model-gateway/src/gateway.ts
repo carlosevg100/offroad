@@ -99,16 +99,24 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     ];
     let lastFailureWasTruncation = false;
     let repairGuidance: string | undefined;
+    let previousAttemptInvocationId: string | undefined;
+    let pendingRepairIssueCodeFingerprint: string | undefined;
 
     for (const candidate of candidates) {
       if (candidate.isSameModelRepair && !repairGuidance) continue;
       const {ref, retryOrdinal, isSameModelRepair, usedProviderFallback} = candidate;
+      const invocationId = randomUUID();
       const attemptSystem = isSameModelRepair && repairGuidance
         ? `${request.system}\n\n${repairGuidance}`
         : request.system;
       const legacyUsedFallback = isSameModelRepair || usedProviderFallback;
       const promptFingerprint = fingerprint({system: attemptSystem, schemaName: request.schemaName, schema: schemaJson});
       const attemptTelemetry = {retryOrdinal, isSameModelRepair, usedProviderFallback};
+      const repairLineage = isSameModelRepair && repairGuidance ? {
+        ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
+        repairGuidanceFingerprint: fingerprint(repairGuidance),
+        ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
+      } : {};
       let providerPolicyVersion: string | undefined;
       if (config.providerDataPolicy?.enforce) {
         if (!request.dataHandling) {
@@ -128,6 +136,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           emit(config, {
             request,
             ref,
+            invocationId,
+            ...repairLineage,
             costUsd: 0,
             latencyMs: 0,
             usedFallback: legacyUsedFallback,
@@ -140,6 +150,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
             notCalled: true,
             providerPolicyVersion,
           });
+          previousAttemptInvocationId = invocationId;
           continue;
         }
       }
@@ -211,6 +222,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         emit(config, {
           request,
           ref,
+          invocationId,
+          ...repairLineage,
           costUsd: 0,
           latencyMs: now() - startedAt,
           usedFallback: legacyUsedFallback,
@@ -223,6 +236,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           providerPolicyVersion,
           providerError,
         });
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
@@ -236,7 +250,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       if (response.stopReason === "refusal") {
         attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
@@ -267,10 +282,13 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
         attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code}) => ({path, code})));
         if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
           repairGuidance = schemaRepairGuidance(parsed.error.issues);
+          pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
         }
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
+        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues, validationIssueCodeFingerprint});
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
@@ -298,20 +316,24 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           message: validationIssues.slice(0, 5).map(({path, code}) => `${path}:${code}`).join(";"),
           ...attemptTelemetry,
         });
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code}) => ({path, code})));
         if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
           repairGuidance = deterministicRepairGuidance(validationIssues);
+          pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
         }
         emit(config, {
-          request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
+          request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
           ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint,
           inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion,
-          validationIssues,
+          validationIssues, validationIssueCodeFingerprint,
         });
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
       attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
-      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      previousAttemptInvocationId = invocationId;
       const result: GatewayResult<z.infer<TSchema>> = {
         output: parsed.data as z.infer<TSchema>,
         provider: ref.provider,
@@ -353,6 +375,10 @@ function emit(
   entry: {
     request: GatewayRequest<z.ZodType>;
     ref: ModelRef;
+    invocationId: string;
+    previousInvocationId?: string;
+    repairGuidanceFingerprint?: string;
+    repairValidationIssueCodeFingerprint?: string;
     response?: AdapterResponse;
     costUsd: number;
     latencyMs: number;
@@ -369,12 +395,13 @@ function emit(
     providerPolicyVersion: string | undefined;
     providerError?: ProviderErrorDiagnostic;
     validationIssues?: ValidationIssueDiagnostic[];
+    validationIssueCodeFingerprint?: string;
   },
 ): void {
   if (!config.onCall) return;
   const usage = entry.response?.usage ?? {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
   const log: GatewayCallLog = {
-    invocationId: randomUUID(),
+    invocationId: entry.invocationId,
     task: entry.request.task,
     provider: entry.ref.provider,
     model: entry.response?.model || entry.ref.model,
@@ -395,6 +422,10 @@ function emit(
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
+  if (entry.previousInvocationId) log.previousInvocationId = entry.previousInvocationId;
+  if (entry.repairGuidanceFingerprint) log.repairGuidanceFingerprint = entry.repairGuidanceFingerprint;
+  if (entry.validationIssueCodeFingerprint) log.validationIssueCodeFingerprint = entry.validationIssueCodeFingerprint;
+  if (entry.repairValidationIssueCodeFingerprint) log.repairValidationIssueCodeFingerprint = entry.repairValidationIssueCodeFingerprint;
   if (entry.request.dataHandling) log.dataClassification = entry.request.dataHandling.classification;
   if (entry.providerPolicyVersion) log.providerPolicyVersion = entry.providerPolicyVersion;
   if (entry.request.metadata) log.metadata = entry.request.metadata;
