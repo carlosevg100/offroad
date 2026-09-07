@@ -1,5 +1,23 @@
 # Build State
 
+## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
+
+- Uma única policy tipada governa as vinte composições e é consumida por schema, classificador,
+  carimbo do runtime e fingerprint. O envelope rejeita divergência em works, profundidade,
+  responsabilidades ou efeito.
+- Autoridade e regime de evidência continuam exclusivos do control plane. Ausência de access basis
+  resulta em `unresolved`; cargo ou contexto profissional não concedem autoridade. Pedidos
+  horizontais podem operar sobre documento, instrumento ou mercado sem companhia artificial.
+- O corpus candidate agora possui 40 turnos, cobre as vinte composições em jornadas, horizontais,
+  confusões e adversariais e declara assinatura semântica por turno. O manifesto exige 52
+  observações: 40 bases e duas paráfrases autorais adicionais em seis IDs.
+- O score exige significado correto para ação, objetos e referências, resultado, decisão e
+  audiência, além dos campos do plano. Missing, extra, duplicate, bytes repetidos e mudança de
+  fingerprint reprovam o gate.
+- A run `34096964058` deixa de ser evidência de promoção: 17 turnos, 29 observações, repetição dos
+  mesmos bytes e score parcial. O novo gate ainda não foi executado com modelo real e permanece
+  `candidate`. Nenhuma capability foi promovida por esta mudança.
+
 ## Endgame Program Board executável, candidate, 07/09/2026
 
 - A evolução do blueprint passa a ter uma fonte canônica machine-readable em

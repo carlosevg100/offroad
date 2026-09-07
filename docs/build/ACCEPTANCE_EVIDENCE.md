@@ -20,22 +20,22 @@
 Status: **candidate control evidence**. A evidência valida o mecanismo de controle, não encerra
 CTRL-01/CTRL-02 e não promove capacidade de produto.
 
-## Roteamento de intenção com política governada, tested interno, 07/09/2026
+## Roteamento de intenção com política governada, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
-| Contrato real | `intent-router-gold.yml` no commit `919def6` | mesmo prompt, schema, canonicalizador e política determinística consumidos pelo worker |
-| Cobertura | run `34096964058` | 17 turnos canônicos e 29 observações dos cinco casos gold |
-| Campos plan-driving | relatório compacto | 17/17 em composição, abstenção, profundidade, continuidade e primeiro trabalho |
-| Autoridade | responsabilidade com threshold de 100% | 17/17, incluindo `decision_maker` somente quando o CFO declara que a decisão é dele |
-| Perguntas | presença e aderência temática | 17/17; o roteador pergunta somente o que altera workflow e deixa lacunas de evidência ao coverage engine |
-| Repetibilidade | seis entroncamentos executados três vezes | 6/6 fingerprints invariantes |
-| Operação e custo | gateway real | 31 tentativas, US$ 0,5265, nenhum custo desconhecido |
+| Política única | `namedCompositions` + schema/canonicalizador/stamp/fingerprint | vinte composições derivam os mesmos works, profundidade, responsabilidades e efeito; divergência é rejeitada |
+| Cobertura candidate | `intent-gold.ts` | 40 turnos, vinte composições e quatro suítes: jornada, horizontal, confusão e adversarial |
+| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências dos objetos, resultado, decisão e audiência são verificados pelo significado |
+| Autoridade e evidência | carimbo do control plane + testes negativos | nunca inferidas pelo modelo; acesso ausente fica `unresolved`; cargo não concede decisão ou efeito externo |
+| Repetibilidade candidate | manifesto imutável | 40 bases + duas paráfrases reais em seis IDs = 52 observações; missing, extra, duplicate e mesmos bytes reprovam |
+| Regra | summary v2 | manifesto, quatro suítes, todos os checks e seis trios exigem 100% |
 | Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
 
-Status: **tested para validação interna no conjunto delimitado**. Esta evidência não promove o
-roteador para uso amplo, não autoriza executor e não comprova pesquisa, análise financeira,
-modelagem, materiais, matching ou uma jornada longitudinal completa.
+Status: **candidate não executado com modelo real**. A run `34096964058` foi invalidada como
+evidência de promoção porque usava 17 turnos, 29 observações, replay dos mesmos bytes e score menos
+profundo. Ela é apenas baseline histórica. Esta evidência não promove o roteador para uso amplo,
+não autoriza executor e não comprova pesquisa, análise financeira, modelagem, materiais ou matching.
 
 ## Dispatch do preview pelo slice compilado, candidate, 06/09/2026
 

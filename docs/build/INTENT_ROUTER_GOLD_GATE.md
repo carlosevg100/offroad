@@ -1,93 +1,73 @@
 # Gate gold do roteador semântico
 
-Estado em 07/09/2026: aprovado no conjunto gold delimitado e classificado como `tested` para
-validação interna. Não governa produção e não homologa executores nem qualidade analítica.
+Estado em 07/09/2026: **candidate, ainda não executado com modelo real**. O gate anterior
+([run 34096964058](https://github.com/carlosevg100/offroad/actions/runs/34096964058)) permanece
+como histórico de desenvolvimento, mas foi invalidado como evidência de promoção: cobria só 17
+turnos, repetia os mesmos bytes nos testes de estabilidade e não verificava o significado dos
+objetos, resultados, decisões ou audiências.
 
-Evidência controladora: [run 34096964058](https://github.com/carlosevg100/offroad/actions/runs/34096964058),
-executado no commit `919def6a81f88ac9053169ca9950b28b08efa1ad`. Foram 17/17 turnos em
-composição, abstenção, profundidade, continuidade, primeiro trabalho, trabalhos esperados,
-responsabilidades e perguntas; 6/6 entroncamentos repetidos permaneceram invariantes. A corrida
-gerou 29 observações, 31 tentativas de provedor, custo medido de US$ 0,5265 e nenhuma tentativa com
-custo desconhecido.
+O contrato novo não governa produção, não homologa executores e não comprova qualidade analítica.
+Ele só poderá ser chamado de `tested` quando uma corrida posterior a esta mudança passar sem
+exceção pelo manifesto e por todos os checks descritos abaixo.
 
-## O problema que este gate resolve
+## O que o gate novo prova
 
-Um classificador semântico pode retornar JSON válido e ainda assim escolher trabalhos diferentes
-para o mesmo pedido. Isso é particularmente perigoso porque a variação parece linguagem natural,
-mas altera fontes, análises, perguntas, materiais e especialistas acionados.
+O catálogo mantém vinte composições, mas cada composição possui uma única política canônica. A
+mesma tabela tipada alimenta schema, canonicalizador, carimbo de runtime e fingerprint; ela fixa:
 
-O gate compara o contrato exato usado pelo worker com 17 turnos canônicos dos cinco casos gold.
-Não existe cópia simplificada do prompt ou do schema no harness: ambos vivem em
-`@offroad/agent-contracts` e são importados pelo produto e pelo avaliador.
-
-O modelo não é a autoridade final sobre o plano. Ele lê linguagem, objetos, resultado e contexto;
-uma política determinística e versionada deriva dos 20 identificadores canônicos a ordem dos
-trabalhos, profundidade mínima, continuidade e responsabilidade operacional. Regras explícitas de
-alta precisão reconhecem transições como reunião para material, alteração de premissa, pergunta de
-origem e revisão. Assim, pequenas variações de prosa não mudam silenciosamente o workflow.
-
-O cargo continua sendo contexto, não autorização. `decision_maker` só é acrescentado quando a
-pessoa declara que a decisão é dela; introdução externa continua exigindo autorização específica.
-
-## O que é medido
-
-Todos os 17 turnos rodam uma vez para medir:
-
-- composição escolhida;
-- decisão de abster;
+- ação canônica;
+- trabalhos primários e sua ordem;
 - profundidade;
-- continuidade;
-- primeiro trabalho do plano;
-- cobertura dos demais trabalhos e responsabilidades;
-- presença ou ausência de pergunta material e aderência ao tema do gabarito.
+- responsabilidades do trabalho;
+- efeito externo.
 
-## Fronteira das perguntas
+O envelope persistido rejeita qualquer divergência nesses campos. Cargo continua sendo contexto,
+nunca autoridade. Regime de evidência, grants, permissões e acesso são carimbados apenas pelo
+control plane; acesso ausente vira `unresolved`, não público. Pedidos horizontais sobre instrumento,
+documento ou mercado não precisam inventar uma companhia.
 
-Este gate mede somente a pergunta que altera o workflow: família de trabalho, ordem, audiência,
-forma de entrega ou efeito externo. O roteador não deve interromper um trabalho já identificável
-para pedir orçamento, dívida, tape, aging, mandato ou cronograma de capex. Essas são lacunas de
-evidência e pertencem ao mapa de cobertura e ao question gate do executor especializado.
+## Corpus e resposta esperada
 
-Essa separação evita duas falhas opostas: um roteador engessado que pergunta tudo antes de começar
-e um executor que simula dados inexistentes. O primeiro inicia o trilho correto; o segundo mostra o
-que já consegue fazer, pede apenas o que muda materialmente a análise e registra o que ficou sem
-cobertura.
+São exatamente 40 turnos sintéticos distribuídos em quatro suítes:
 
-Seis entroncamentos rodam três vezes por padrão:
+- jornadas longitudinais;
+- trabalho horizontal sem companhia;
+- fronteiras de confusão entre composições próximas;
+- pedidos adversariais, negações e tentativas de inferir cargo, objetivo, evidência ou autoridade.
 
-- instrução incompleta de um sponsor;
-- pergunta pontual dentro de um projeto;
-- correção explícita do objetivo;
-- pedido com efeito externo;
-- alteração incremental de premissa;
-- pedido ambíguo que exige abstenção.
+As vinte composições aparecem no conjunto. Cada turno possui assinatura semântica explícita:
+ação canônica, tipos de objeto, referências materiais, sinais do resultado desejado, presença e
+categoria da decisão e categoria de audiência. O score confere esses significados, além de
+composição, abstenção, profundidade, continuidade, trabalhos, responsabilidades e pergunta.
+JSON válido ou campo meramente preenchido não é acerto.
 
-A estabilidade ignora redação, justificativa e pequenas diferenças de confiança. Ela compara apenas
-os valores que mudam o workflow. Uma composição, profundidade, continuidade, primeiro trabalho,
-responsabilidade ou decisão de perguntar diferente gera outro fingerprint e reprova invariância.
+## Manifesto imutável e estabilidade
+
+O manifesto exige exatamente:
+
+- 40 observações `repeat=1`, uma por turno;
+- `repeat=2` e `repeat=3` somente para seis IDs de estabilidade;
+- 52 observações no total.
+
+As duas repetições adicionais são paráfrases escritas manualmente, não replay do mesmo prompt. O
+gate compara o SHA-256 dos três textos e rejeita observação ausente, extra, duplicada, associada à
+suíte errada ou com bytes reaproveitados. Nos seis trios, o fingerprint semântico completo deve ser
+idêntico e todos os checks precisam passar.
 
 ## Regra de promoção
 
-Composição, abstenção, profundidade, continuidade, primeiro trabalho, responsabilidades,
-completude e invariância exigem 100%. Trabalhos complementares e presença e tema da pergunta exigem
-pelo menos 93%, o que permite no máximo um erro no conjunto atual. Um resultado verde é necessário,
-mas não suficiente: ele não promove o roteador, não libera executor e não autoriza conclusão para
-cliente.
+Não há tolerância estatística neste corpus pequeno. Manifesto, quatro suítes, todos os checks de
+todos os 40 turnos e os seis trios de estabilidade exigem 100%. Um resultado verde é necessário,
+mas não suficiente para expor o roteador: ainda não autoriza executor, pesquisa, conclusão ao
+cliente ou ação externa.
 
 ## Execução e segurança
 
-O workflow manual `Intent router gold gate` usa apenas prompts sintéticos. As chaves são lidas no
-GitHub Actions por credencial AWS OIDC de curta duração, mascaradas antes do processo e nunca
-persistidas. O gateway impõe teto de chamadas e de custo. O artefato contém JSON, relatório Markdown,
-fingerprints, métricas, custos e logs sem conteúdo de cliente; não contém vídeo nem trace de browser.
+O workflow manual usa somente prompts sintéticos, o prompt e schema exatos do runtime e credenciais
+AWS OIDC de curta duração. As chaves são mascaradas, o gateway impõe teto de chamadas e custo e o
+artefato é compacto. A quantidade de repetições não é configurável: o runner falha se o manifesto
+não tiver exatamente 52 observações.
 
-Com três repetições, são 29 resultados planejados. O orçamento padrão é US$ 3 e o limite configurável
-nunca pode exceder US$ 10. O workflow termina com falha quando qualquer gate não passa, preservando o
-relatório para diagnóstico.
-
-## Decisões a partir das corridas reais
-
-Cada resultado real é tratado como medição, não como aprovação. Cada divergência vira
-uma de quatro ações: corrigir o gold quando o gabarito estiver errado; melhorar o contrato quando a
-intenção estiver subespecificada; separar uma composição quando dois trabalhos legítimos estiverem
-colidindo; ou manter a família fora de produção quando o classificador não for estável.
+Cada divergência real deve resultar em uma decisão explícita: corrigir um gabarito comprovadamente
+errado, melhorar o contrato subespecificado, separar composições que colidem ou manter a família
+fora de produção. Nunca se reduz o gate apenas para transformar uma corrida vermelha em verde.

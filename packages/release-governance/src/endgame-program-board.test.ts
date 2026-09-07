@@ -128,7 +128,7 @@ describe("endgame program board", () => {
   it("refuses expired evidence and incomplete external assessments", () => {
     const invalid: EndgameProgramBoard = {
       ...currentEndgameProgramBoard,
-      evidenceIndex: currentEndgameProgramBoard.evidenceIndex.map((evidence) => evidence.evidenceId === "EV-INTENT-GATE"
+      evidenceIndex: currentEndgameProgramBoard.evidenceIndex.map((evidence) => evidence.evidenceId === "EV-CTRL02-LOCAL-GATE"
         ? {...evidence, validThrough: "2026-09-06T00:00:00.000-03:00"}
         : evidence).concat({
           evidenceId: "EV-EXTERNAL-INCOMPLETE",
@@ -145,8 +145,8 @@ describe("endgame program board", () => {
 
     expect(decision.valid).toBe(false);
     expect(decision.blockers).toEqual(expect.arrayContaining([
-      {code: "acceptance_evidence_expired:EV-INTENT-GATE", taskId: "RT-01"},
-      {code: "task_evidence_expired:EV-INTENT-GATE", taskId: "RT-01"},
+      {code: "acceptance_evidence_expired:EV-CTRL02-LOCAL-GATE", taskId: "CTRL-02"},
+      {code: "task_evidence_expired:EV-CTRL02-LOCAL-GATE", taskId: "CTRL-02"},
       {code: "external_assessment_requires_fingerprint_and_validity", taskId: null},
     ]));
   });

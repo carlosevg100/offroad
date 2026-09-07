@@ -3508,7 +3508,6 @@ autoriza `customer_work`, `external_material` ou `external_action`. O próximo m
 os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
 evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
 amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
-
 ## 46. SEC-01: inventário atual de segurança, 07/09/2026
 
 O primeiro inventário de segurança agora possui fonte tipada em
@@ -3548,3 +3547,14 @@ janela e revogação antes de permitir `attested`; na ausência ou falha, o rend
 não viram certificação. O scanner restante é lint conservador para texto adulterado, não NLP. A
 trust store atual está vazia, portanto a implementação evita falsa alegação mas não prova assurance
 externo.
+
+# Engineering update: RT-01 canonical intent contract, 7 September 2026
+
+RT-01 now has one typed policy for all twenty named compositions, consumed by validation,
+canonicalization, runtime stamping and semantic fingerprinting. Authority and evidence remain
+control-plane fields, unresolved access fails closed, and horizontal work no longer requires an
+invented company. The candidate gold set contains forty turns and an immutable 52-observation
+manifest across journey, horizontal, confusion and adversarial suites, including six authored
+paraphrase triplets and a semantic answer key. Run 34096964058 is historical only: its 17 turns,
+same-byte repeats and partial scorer no longer qualify as promotion evidence. No capability is
+promoted until the replacement gate passes 100% with the real model.

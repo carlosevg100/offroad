@@ -7,10 +7,6 @@ name: Intent router gold gate
 on:
   workflow_dispatch:
     inputs:
-      stability_repeats:
-        description: "Runs for each invariance turn (2-5)"
-        required: false
-        default: "3"
       max_cost:
         description: "Hard gateway budget in USD (max 10)"
         required: false
@@ -57,7 +53,6 @@ jobs:
 
       - name: Run the canonical router gate
         env:
-          STABILITY_REPEATS: ${{ inputs.stability_repeats || '3' }}
           MAX_COST: ${{ inputs.max_cost || '3' }}
         run: |
           set -euo pipefail
@@ -69,7 +64,6 @@ jobs:
 
           set +e
           pnpm --filter @offroad/evals intent-router:gold -- \
-            --stability-repeats "$STABILITY_REPEATS" \
             --max-cost "$MAX_COST" \
             --out "$RUNNER_TEMP/intent-router-gold"
           gate_status=$?
