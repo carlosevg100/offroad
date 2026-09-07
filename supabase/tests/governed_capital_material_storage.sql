@@ -64,6 +64,11 @@ create temporary table material_storage_test_state (
   object_path text not null
 ) on commit drop;
 
+-- The test crosses into the authenticated role before it records the minted capability.
+-- Temporary tables are owned by the migration runner, so grant only the two operations the
+-- fixture needs; this does not affect any application table or production policy.
+grant select, insert on material_storage_test_state to authenticated;
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
