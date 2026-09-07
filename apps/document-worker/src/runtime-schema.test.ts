@@ -21,6 +21,7 @@ describe("worker runtime schema preflight", () => {
           "integration-preview-workflow-continuity.v1",
           "receivables-information-request-bindings.v1",
           "receivables-complete-draft-refresh.v1",
+          "universal-dispatch-candidate-shadow.v1",
         ],
       },
       error: null,
@@ -50,7 +51,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: receivables-complete-draft-refresh.v1");
+    }))).rejects.toThrow("missing capabilities: universal-dispatch-candidate-shadow.v1");
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {

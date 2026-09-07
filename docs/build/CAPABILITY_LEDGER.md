@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v11
+Versão: 2026.09.07-v14
 
-Baseline inspecionada: commit `cb5f674af932`
+Baseline inspecionada: commit `8557d22`
 
 Status: primeira classificação executável do produto atual
 
@@ -37,6 +37,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Router semântico | live | allowlisted | tested | cinco composições do preview |
 | Biblioteca de 80 TaskSpecs | specified | none | specified | allowlist não equivale a executor |
 | Compiler do Caso 01 | live | allowlisted | tested | cadeia case-bound |
+| Candidato universal de dispatch | shadow | internal | implemented | decisão all-or-nothing persistida; execução é invariavelmente desabilitada |
 | Compiler universal objective-to-plan | specified | none | specified | ainda sem runtime |
 | Especialistas do Caso 01 | live | allowlisted | tested | nove métodos, não runtime geral |
 | Specialist Runtime geral | specified | none | specified | dispatch universal ainda ausente |

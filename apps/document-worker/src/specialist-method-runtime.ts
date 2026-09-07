@@ -43,6 +43,19 @@ export type ReceivablesSpecialistShadowResult = {
 const taskId = "R01" as const;
 const executorKey = "@offroad/receivables-analysis#underwriteReceivablesPool" as const;
 
+/**
+ * Bundled executor identities available to the universal dispatcher candidate compiler. Presence
+ * here proves only that the worker binary holds the exact export; execution still requires the
+ * independent capability, method, preflight and recipe gates.
+ */
+export const specialistCandidateExecutorRuntimeManifest = [{
+  taskId,
+  executorKey,
+  executorVersion: "2026.09.06-v1",
+  procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+  resultContract: "method.underwrite-receivables-pool.v1",
+}] as const;
+
 function methodRuntime() {
   const method = specialistMethodRuntimeManifest.find((entry) => entry.taskIds.includes(taskId));
   const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === taskId);

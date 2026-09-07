@@ -318,3 +318,4 @@ export function assessDepthPackPromotion(rawPack: DepthPackManifest, rawEvidence
 
 export * from "./method-binding";
 export * from "./workflow-selection";
+export * from "./dispatch-candidate";

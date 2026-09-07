@@ -465,6 +465,7 @@ describe("execution-brief activation", () => {
     const specialization = {schemaVersion: "objective-specialization.v1", fingerprint: "c".repeat(64)};
     const methodBinding = {schemaVersion: "objective-method-binding.v1", fingerprint: "d".repeat(64)};
     const workflowSelection = {schemaVersion: "workflow-recipe-selection.v1", fingerprint: "e".repeat(64)};
+    const dispatchCandidate = {schemaVersion: "universal-dispatch-candidate.v1", fingerprint: "f".repeat(64)};
     const rpc = vi.fn(async () => ({data: {
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
@@ -486,10 +487,14 @@ describe("execution-brief activation", () => {
       workflow_selection_status: "blocked",
       workflow_selection_reason: "economic_situation_not_implemented",
       workflow_selection_replayed: false,
+      dispatch_candidate_id: "c0000000-0000-4000-8000-000000000001",
+      dispatch_candidate_fingerprint: "f".repeat(64),
+      dispatch_candidate_status: "blocked",
+      dispatch_candidate_replayed: false,
     }, error: null}));
     const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
 
-    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision, specialization, methodBinding, workflowSelection})).resolves.toEqual({
+    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision, specialization, methodBinding, workflowSelection, dispatchCandidate})).resolves.toEqual({
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
       terminalReachable: false,
@@ -510,8 +515,12 @@ describe("execution-brief activation", () => {
       workflowSelectionStatus: "blocked",
       workflowSelectionReason: "economic_situation_not_implemented",
       workflowSelectionReplayed: false,
+      dispatchCandidateId: "c0000000-0000-4000-8000-000000000001",
+      dispatchCandidateFingerprint: "f".repeat(64),
+      dispatchCandidateStatus: "blocked",
+      dispatchCandidateReplayed: false,
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v4", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v5", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_objective_plan: objectivePlan,
@@ -519,6 +528,7 @@ describe("execution-brief activation", () => {
       p_specialization: specialization,
       p_method_binding: methodBinding,
       p_workflow_selection: workflowSelection,
+      p_dispatch_candidate: dispatchCandidate,
     });
   });
 });
