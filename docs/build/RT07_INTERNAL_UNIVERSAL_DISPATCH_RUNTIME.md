@@ -35,6 +35,9 @@ live capability only to prove the runtime contract in CI.
 - `blocked` and `needs_context` resolutions are refused before task execution. `empty` is explicitly
   valid: the absence of prior context never manufactures memory or a canned user message.
 - Timeout and cancellation use an `AbortSignal`. A signal already aborted never invokes the task.
+- Resolution issuer and validity are checked at preparation, before graph work and immediately
+  before executor invocation. Fixture authorization is bounded by the resolution window, and a
+  completed in-memory graph is not replayed after resolution expiry.
 - Authorization or identity failures throw a named refusal before any task runs. Runtime failures
   produce explicit failed receipts; later graph batches are marked skipped.
 - Returned outputs are internal values only. There is no artifact publishing, database write,
@@ -59,7 +62,10 @@ live capability only to prove the runtime contract in CI.
 13. modified signed authorization;
 14. execution-context mismatch in the context resolution; and
 15. a changed context resolution under an older signed authorization; and
-16. blocked or needs-context resolution before executor invocation.
+16. blocked or needs-context resolution before executor invocation;
+17. fixture authorization that predates or outlives the resolution;
+18. expiry between preparation and executor invocation; and
+19. refusal to replay a completed graph after context expiry.
 
 The existing R01 test suite also exercises the newly explicit strict result schema at the method
 boundary.
@@ -69,8 +75,8 @@ boundary.
 This is a minimal internal runtime, not a live universal dispatcher:
 
 - idempotency storage is in memory and does not survive worker restart or span replicas;
-- fixture authorization uses injected HMAC keys and has no production issuer, rotation, revocation,
-  audit storage, or workload-identity integration;
+- fixture authorization and context resolution use named issuers with injected HMAC keys but have
+  no production issuer, managed rotation, revocation, audit storage, or workload-identity integration;
 - receipts and outputs are not durably persisted;
 - the context resolver currently binds metadata and immutable payload references only; it does not
   load or inject selected payload bytes into an executor;
@@ -79,6 +85,7 @@ This is a minimal internal runtime, not a live universal dispatcher:
 - no customer-facing result or external effect is possible.
 
 The next gate is a durable, tenant-scoped execution/receipt store with transactional claim semantics,
-a workload-identity-backed authorization issuer and revocation path, recovery tests across process
+a workload-identity-backed authorization issuer and revocation path, and a durable pre-read
+revalidation receipt in the same transaction that resolves/loads context. Recovery tests across process
 restart/concurrent workers, and an explicit promotion review. Only after that review may a separately
 approved change consider connecting a production route or changing a real capability manifest.

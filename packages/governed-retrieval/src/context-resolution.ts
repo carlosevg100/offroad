@@ -1,4 +1,4 @@
-import {createHash} from "node:crypto";
+import {createHash, createHmac, timingSafeEqual} from "node:crypto";
 
 import {
   authorityGrantSchema,
@@ -13,6 +13,13 @@ const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
 const isoInstantSchema = z.iso.datetime({offset: true});
 const isoDateSchema = z.iso.date();
 const identitySchema = z.string().trim().min(1).max(240);
+const contextLocatorIdSchema = z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,239}$/);
+
+export const contextPayloadLocatorSchema = z.object({
+  scheme: z.enum(["context_snapshot", "document_snapshot"]),
+  locatorId: contextLocatorIdSchema,
+}).strict();
+export type ContextPayloadLocator = z.infer<typeof contextPayloadLocatorSchema>;
 
 export const contextKindSchema = z.enum([
   "organization_memory",
@@ -37,9 +44,16 @@ export const contextDataClassSchema = z.enum(["public", "project_confidential", 
 export const contextTemporalPolicySchema = z.enum(["timeless", "at_or_before", "exact_as_of"]);
 
 const subjectRefSchema = z.object({kind: intentObjectKindSchema, id: identitySchema}).strict();
+const authorizedContextSnapshotSchema = z.object({itemId: identitySchema, snapshotFingerprint: sha256Schema}).strict();
 
-const systemContextControlPayloadSchema = z.object({
-  schemaVersion: z.literal("system-context-control.v1"),
+const verifiedIssuerSchema = z.object({
+  issuerId: identitySchema,
+  keyId: identitySchema,
+  algorithm: z.literal("hmac-sha256"),
+}).strict();
+
+const systemContextControlBaseSchema = z.object({
+  schemaVersion: z.literal("system-context-control.v2"),
   source: z.literal("system"),
   organizationId: identitySchema,
   projectId: identitySchema.nullable(),
@@ -48,14 +62,18 @@ const systemContextControlPayloadSchema = z.object({
   evidenceRegime: z.enum(["public_only", "project_private", "mixed_governed"]),
   authorityGrants: z.array(authorityGrantSchema).max(5),
   permissions: z.array(contextPermissionSchema).max(6),
-  authorizedContextItemIds: z.array(identitySchema).max(2_000),
+  authorizedContextSnapshots: z.array(authorizedContextSnapshotSchema).max(2_000),
+  candidateSetFingerprint: sha256Schema,
   authorizedDocumentIds: z.array(identitySchema).max(1_000),
   authorizedCompanyIds: z.array(identitySchema).max(1_000),
   executionContextHash: sha256Schema,
   revision: z.number().int().positive(),
   issuedAt: isoInstantSchema,
   expiresAt: isoInstantSchema,
-}).strict().superRefine((control, context) => {
+  issuer: verifiedIssuerSchema,
+}).strict();
+
+const systemContextControlPayloadSchema = systemContextControlBaseSchema.superRefine((control, context) => {
   if (Date.parse(control.expiresAt) <= Date.parse(control.issuedAt)) {
     context.addIssue({code: "custom", path: ["expiresAt"], message: "expiresAt must be after issuedAt"});
   }
@@ -67,10 +85,14 @@ const systemContextControlPayloadSchema = z.object({
   if (control.authority === "analysis_only" && writeGrants) {
     context.addIssue({code: "custom", path: ["authorityGrants"], message: "write grants require project_write or external_action authority"});
   }
+  if (new Set(control.authorizedContextSnapshots.map(({itemId}) => itemId)).size !== control.authorizedContextSnapshots.length) {
+    context.addIssue({code: "custom", path: ["authorizedContextSnapshots"], message: "context snapshot grants require unique item identities"});
+  }
 });
 
 export const systemContextControlSchema = systemContextControlPayloadSchema.extend({
   fingerprint: sha256Schema,
+  signature: sha256Schema,
 }).strict();
 export type SystemContextControl = z.infer<typeof systemContextControlSchema>;
 
@@ -99,12 +121,13 @@ const contextCandidatePayloadSchema = z.object({
   logicalKey: z.string().regex(/^[a-z0-9][a-z0-9._:-]{0,239}$/),
   kind: contextKindSchema,
   organizationId: identitySchema,
+  controlRevision: z.number().int().positive(),
   projectId: identitySchema.nullable(),
   companyId: identitySchema.nullable(),
   conversationId: identitySchema.nullable(),
   documentId: identitySchema.nullable(),
   dataClass: contextDataClassSchema,
-  payloadRef: z.string().trim().min(1).max(1_000),
+  payloadLocator: contextPayloadLocatorSchema,
   contentHash: sha256Schema,
   sourceVersion: z.string().trim().min(1).max(120),
   snapshotVersion: z.number().int().positive(),
@@ -141,6 +164,18 @@ const contextCandidatePayloadSchema = z.object({
   const selectorCount = item.selectors.primaryWorks.length + item.selectors.objectKinds.length
     + item.selectors.objectRefs.length + item.selectors.productKeys.length;
   if (selectorCount === 0) context.addIssue({code: "custom", path: ["selectors"], message: "context requires an explicit relevance selector"});
+  if (item.companyId !== null) {
+    const companyRefs = item.selectors.objectRefs.filter((ref) => ref.kind === "company");
+    if (!companyRefs.some((ref) => ref.id === item.companyId) || companyRefs.some((ref) => ref.id !== item.companyId)) {
+      context.addIssue({code: "custom", path: ["selectors", "objectRefs"], message: "company-scoped context requires exactly coherent company selectors"});
+    }
+  }
+  if (item.kind === "document" && item.payloadLocator.scheme !== "document_snapshot") {
+    context.addIssue({code: "custom", path: ["payloadLocator", "scheme"], message: "document context requires document_snapshot locator"});
+  }
+  if (item.kind !== "document" && item.payloadLocator.scheme !== "context_snapshot") {
+    context.addIssue({code: "custom", path: ["payloadLocator", "scheme"], message: "memory context requires context_snapshot locator"});
+  }
 });
 
 export const contextCandidateSchema = contextCandidatePayloadSchema.and(z.object({fingerprint: sha256Schema}).strict());
@@ -159,6 +194,8 @@ export const contextExclusionReasonSchema = z.enum([
   "wrong_jurisdiction",
   "as_of_unresolved",
   "wrong_as_of",
+  "company_target_unresolved",
+  "wrong_company",
   "superseded",
   "conflict",
 ]);
@@ -176,7 +213,10 @@ export const contextBlockerCodeSchema = z.enum([
   "unauthorized_context_candidate",
   "unauthorized_document_candidate",
   "unauthorized_company_candidate",
+  "control_snapshot_mismatch",
+  "control_candidate_set_mismatch",
   "lineage_cycle",
+  "lineage_parent_missing",
   "lineage_scope_mismatch",
   "lineage_version_invalid",
 ]);
@@ -189,13 +229,15 @@ export const contextGapCodeSchema = z.enum([
   "as_of_date_required",
   "context_as_of_mismatch",
   "context_conflict",
+  "company_target_required",
+  "context_company_mismatch",
 ]);
 
 const includedContextSchema = z.object({
   itemId: identitySchema,
   logicalKey: z.string().min(1),
   kind: contextKindSchema,
-  payloadRef: z.string().min(1),
+  payloadLocator: contextPayloadLocatorSchema,
   contentHash: sha256Schema,
   sourceVersion: z.string().min(1),
   snapshotVersion: z.number().int().positive(),
@@ -224,28 +266,40 @@ const contextBlockerSchema = z.object({
 }).strict();
 
 const contextResolutionPayloadSchema = z.object({
-  schemaVersion: z.literal("authorized-context-resolution.v1"),
+  schemaVersion: z.literal("authorized-context-resolution.v2"),
   mode: z.literal("internal_shadow"),
   status: z.enum(["empty", "resolved", "needs_context", "blocked"]),
   systemControlFingerprint: sha256Schema,
   executionContextHash: sha256Schema,
   intentFingerprint: sha256Schema,
+  controlRevision: z.number().int().positive(),
+  controlIssuer: verifiedIssuerSchema,
   included: z.array(includedContextSchema),
   excluded: z.array(excludedContextSchema),
   gaps: z.array(contextGapSchema),
   blockers: z.array(contextBlockerSchema),
   resolvedAt: isoInstantSchema,
+  validUntil: isoInstantSchema,
+  issuer: verifiedIssuerSchema,
   externalEffectAllowed: z.literal(false),
 }).strict();
 
 export const authorizedContextResolutionSchema = contextResolutionPayloadSchema.extend({
   fingerprint: sha256Schema,
+  signature: sha256Schema,
 }).strict();
 export type AuthorizedContextResolution = z.infer<typeof authorizedContextResolutionSchema>;
 
-export function createSystemContextControl(input: z.input<typeof systemContextControlPayloadSchema>): SystemContextControl {
-  const payload = normalizeSystemControl(systemContextControlPayloadSchema.parse(input));
-  return systemContextControlSchema.parse({...payload, fingerprint: fingerprint(payload)});
+const systemContextControlIssuanceSchema = systemContextControlBaseSchema.omit({candidateSetFingerprint: true});
+
+export function issueSystemContextControl(input: z.input<typeof systemContextControlIssuanceSchema>, secret: string): SystemContextControl {
+  const issuance = systemContextControlIssuanceSchema.parse(input);
+  const payload = normalizeSystemControl(systemContextControlPayloadSchema.parse({
+    ...issuance,
+    candidateSetFingerprint: fingerprint(normalizeSnapshotGrants(issuance.authorizedContextSnapshots)),
+  }));
+  const fingerprintValue = fingerprint(payload);
+  return systemContextControlSchema.parse({...payload, fingerprint: fingerprintValue, signature: sign({fingerprint: fingerprintValue, issuer: payload.issuer}, secret)});
 }
 
 export function createContextResolutionIntent(input: z.input<typeof contextResolutionIntentPayloadSchema>): ContextResolutionIntent {
@@ -265,16 +319,18 @@ export function createContextCandidate(input: z.input<typeof contextCandidatePay
  */
 export function resolveAuthorizedContext(input: {
   systemControl: unknown;
+  systemControlKeys: Readonly<Record<string, string>>;
   intent: unknown;
   candidates: readonly unknown[];
   now: Date;
+  resolutionIssuer: z.input<typeof verifiedIssuerSchema> & {secret: string};
 }): AuthorizedContextResolution {
   const controlResult = systemContextControlSchema.safeParse(input.systemControl);
   const intentResult = contextResolutionIntentSchema.safeParse(input.intent);
   const baseControl = controlResult.success ? normalizeSystemControl(controlResult.data) : null;
   const baseIntent = intentResult.success ? normalizeIntent(intentResult.data) : null;
   const blockers: Array<z.infer<typeof contextBlockerSchema>> = [];
-  if (!controlResult.success || !baseControl || fingerprint(stripFingerprint(controlResult.data)) !== controlResult.data.fingerprint) {
+  if (!controlResult.success || !baseControl || !verifySystemControl(baseControl, input.systemControlKeys)) {
     blockers.push({code: "system_control_invalid", itemIds: []});
   } else if (Date.parse(baseControl.issuedAt) > input.now.getTime() || Date.parse(baseControl.expiresAt) <= input.now.getTime()) {
     blockers.push({code: "system_control_expired", itemIds: []});
@@ -285,7 +341,7 @@ export function resolveAuthorizedContext(input: {
   if (!baseControl || !baseIntent || blockers.length > 0) {
     return finalizeResolution({
       status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers,
-      resolvedAt: input.now.toISOString(),
+      resolvedAt: input.now.toISOString(), validUntil: new Date(input.now.getTime() + 1).toISOString(), resolutionIssuer: input.resolutionIssuer,
     });
   }
 
@@ -312,56 +368,56 @@ export function resolveAuthorizedContext(input: {
   }
 
   for (const item of parsed) validateScope(item, baseControl, blockers);
+  const actualCandidateSet = normalizeSnapshotGrants(parsed.map(({id, fingerprint: snapshotFingerprint}) => ({itemId: id, snapshotFingerprint})));
+  if (fingerprint(actualCandidateSet) !== baseControl.candidateSetFingerprint) {
+    blockers.push({code: "control_candidate_set_mismatch", itemIds: []});
+  }
   validateLineage(parsed, blockers);
   if (blockers.length > 0) {
-    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString()});
+    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: baseControl.expiresAt, resolutionIssuer: input.resolutionIssuer});
   }
 
   const included: Array<z.infer<typeof includedContextSchema>> = [];
   const excluded: Array<z.infer<typeof excludedContextSchema>> = [];
   const gaps: Array<z.infer<typeof contextGapSchema>> = [];
-  const eligibleByKey = new Map<string, Array<{item: ContextCandidate; reasons: z.infer<typeof includedContextSchema>["inclusionReasons"]}>>();
+  const groups = new Map<string, ContextCandidate[]>();
+  for (const item of parsed.sort(candidateOrder)) groups.set(item.logicalKey, [...(groups.get(item.logicalKey) ?? []), item]);
+  const selectedHeads: ContextCandidate[] = [];
+  for (const [logicalKey, group] of [...groups.entries()].sort(([left], [right]) => left.localeCompare(right))) {
+    const ids = new Set(group.map((item) => item.id));
+    const supersededIds = new Set(group.map((item) => item.supersedesId).filter((id): id is string => id !== null && ids.has(id)));
+    const heads = group.filter((item) => !supersededIds.has(item.id));
+    if (heads.length !== 1) {
+      const sourceItemIds = heads.map((item) => item.id).sort();
+      gaps.push({code: "context_conflict", logicalKey, sourceItemIds, handling: "ask_if_material"});
+      for (const item of group) excluded.push({itemId: item.id, logicalKey, reason: "conflict"});
+      continue;
+    }
+    const head = heads[0]!;
+    selectedHeads.push(head);
+    for (const item of group) if (item.id !== head.id) excluded.push({itemId: item.id, logicalKey, reason: "superseded"});
+  }
 
-  for (const item of parsed.sort(candidateOrder)) {
+  for (const item of selectedHeads) {
     const reasons = relevanceReasons(item, baseIntent);
     const evaluation = evaluateCandidate(item, baseControl, baseIntent, input.now, reasons.length > 0);
     if (evaluation.reason) excluded.push({itemId: item.id, logicalKey: item.logicalKey, reason: evaluation.reason});
     if (evaluation.gap) gaps.push({code: evaluation.gap, logicalKey: item.logicalKey, sourceItemIds: [item.id], handling: gapHandling(evaluation.gap)});
     if (!evaluation.reason && reasons.length > 0) {
-      const values = eligibleByKey.get(item.logicalKey) ?? [];
-      values.push({item, reasons});
-      eligibleByKey.set(item.logicalKey, values);
-    }
-  }
-
-  for (const [logicalKey, group] of [...eligibleByKey.entries()].sort(([left], [right]) => left.localeCompare(right))) {
-    const ids = new Set(group.map(({item}) => item.id));
-    const supersededIds = new Set(group.map(({item}) => item.supersedesId).filter((id): id is string => id !== null && ids.has(id)));
-    const heads = group.filter(({item}) => !supersededIds.has(item.id));
-    if (heads.length !== 1) {
-      const sourceItemIds = heads.map(({item}) => item.id).sort();
-      gaps.push({code: "context_conflict", logicalKey, sourceItemIds, handling: "ask_if_material"});
-      for (const {item} of group) excluded.push({itemId: item.id, logicalKey, reason: "conflict"});
-      continue;
-    }
-    const selected = heads[0]!;
-    included.push({
-      itemId: selected.item.id,
-      logicalKey,
-      kind: selected.item.kind,
-      payloadRef: selected.item.payloadRef,
-      contentHash: selected.item.contentHash,
-      sourceVersion: selected.item.sourceVersion,
-      snapshotVersion: selected.item.snapshotVersion,
-      snapshotFingerprint: selected.item.fingerprint,
-      inclusionReasons: selected.reasons,
-    });
-    for (const {item} of group) {
-      if (item.id !== selected.item.id) excluded.push({itemId: item.id, logicalKey, reason: "superseded"});
+      included.push({
+        itemId: item.id, logicalKey: item.logicalKey, kind: item.kind, payloadLocator: item.payloadLocator,
+        contentHash: item.contentHash, sourceVersion: item.sourceVersion, snapshotVersion: item.snapshotVersion,
+        snapshotFingerprint: item.fingerprint, inclusionReasons: reasons,
+      });
     }
   }
 
   const uniqueGaps = dedupeGaps(gaps);
+  const includedIds = new Set(included.map((entry) => entry.itemId));
+  const validityCutoffs = [baseControl.expiresAt, ...selectedHeads
+    .filter((item) => includedIds.has(item.id))
+    .flatMap((item) => [item.validUntil, item.freshUntil, item.revokedAt].filter((value): value is string => value !== null))];
+  const validUntil = validityCutoffs.reduce((earliest, value) => Date.parse(value) < Date.parse(earliest) ? value : earliest);
   return finalizeResolution({
     status: uniqueGaps.length > 0 ? "needs_context" : included.length > 0 ? "resolved" : "empty",
     control: baseControl,
@@ -370,13 +426,19 @@ export function resolveAuthorizedContext(input: {
     excluded: dedupeExcluded(excluded),
     gaps: uniqueGaps,
     blockers: [],
-    resolvedAt: input.now.toISOString(),
+    resolvedAt: input.now.toISOString(), validUntil, resolutionIssuer: input.resolutionIssuer,
   });
 }
 
-export function verifyAuthorizedContextResolution(raw: unknown): AuthorizedContextResolution {
+export function verifyAuthorizedContextResolution(raw: unknown, keys: Readonly<Record<string, string>>, now?: Date): AuthorizedContextResolution {
   const resolution = authorizedContextResolutionSchema.parse(raw);
-  if (fingerprint(stripFingerprint(resolution)) !== resolution.fingerprint) throw new Error("context_resolution_fingerprint_mismatch");
+  const payload = stripSignatureAndFingerprint(resolution);
+  if (fingerprint(payload) !== resolution.fingerprint) throw new Error("context_resolution_fingerprint_mismatch");
+  const secret = keys[resolution.issuer.keyId];
+  if (!secret || !safeSignatureEqual(resolution.signature, sign({fingerprint: resolution.fingerprint, issuer: resolution.issuer}, secret))) {
+    throw new Error("context_resolution_signature_invalid");
+  }
+  if (now && Date.parse(resolution.validUntil) <= now.getTime()) throw new Error("context_resolution_expired");
   return resolution;
 }
 
@@ -387,14 +449,21 @@ function evaluateCandidate(
   now: Date,
   materiallyRelevant: boolean,
 ): {reason: z.infer<typeof contextExclusionReasonSchema> | null; gap: z.infer<typeof contextGapCodeSchema> | null} {
-  if (!control.authorizedContextItemIds.includes(item.id)) return {reason: "not_authorized", gap: null};
+  if (!control.authorizedContextSnapshots.some(({itemId, snapshotFingerprint}) => itemId === item.id && snapshotFingerprint === item.fingerprint)) {
+    return {reason: "not_authorized", gap: null};
+  }
   if (!control.permissions.includes(permissionFor(item.kind))) return {reason: "permission_missing", gap: materiallyRelevant ? "context_permission_required" : null};
   if (!dataClassAllowed(item, control)) return {reason: "data_class_not_allowed", gap: materiallyRelevant ? "context_permission_required" : null};
   const nowMs = now.getTime();
   if (Date.parse(item.validFrom) > nowMs) return {reason: "not_yet_valid", gap: materiallyRelevant ? "current_context_required" : null};
   if (item.validUntil !== null && Date.parse(item.validUntil) <= nowMs) return {reason: "expired", gap: materiallyRelevant ? "current_context_required" : null};
   if (item.revokedAt !== null && Date.parse(item.revokedAt) <= nowMs) return {reason: "revoked", gap: materiallyRelevant ? "current_context_required" : null};
-  if (item.freshUntil !== null && Date.parse(item.freshUntil) < nowMs) return {reason: "stale", gap: materiallyRelevant ? "current_context_required" : null};
+  if (item.freshUntil !== null && Date.parse(item.freshUntil) <= nowMs) return {reason: "stale", gap: materiallyRelevant ? "current_context_required" : null};
+  if (item.companyId !== null) {
+    const companyTargets = intent.objectRefs.filter((ref) => ref.kind === "company").map((ref) => ref.id);
+    if (companyTargets.length === 0) return {reason: "company_target_unresolved", gap: "company_target_required"};
+    if (!companyTargets.includes(item.companyId)) return {reason: "wrong_company", gap: materiallyRelevant ? "context_company_mismatch" : null};
+  }
   if (!materiallyRelevant) return {reason: "irrelevant", gap: null};
 
   if (item.jurisdictions.length > 0) {
@@ -434,7 +503,10 @@ function relevanceReasons(item: ContextCandidate, intent: ContextResolutionInten
   if (item.selectors.primaryWorks.some((value) => intent.primaryWorks.includes(value))) reasons.push("primary_work_match");
   if (item.selectors.objectKinds.some((value) => intent.objectKinds.includes(value))) reasons.push("object_kind_match");
   const refs = new Set(intent.objectRefs.map((value) => `${value.kind}:${value.id}`));
-  if (item.selectors.objectRefs.some((value) => refs.has(`${value.kind}:${value.id}`))) reasons.push("object_identity_match");
+  // A company ref is a mandatory scope gate, not by itself proof that every memory about that
+  // company is relevant. Other exact object identities (operation, document, instrument, etc.)
+  // remain affirmative relevance signals.
+  if (item.selectors.objectRefs.some((value) => value.kind !== "company" && refs.has(`${value.kind}:${value.id}`))) reasons.push("object_identity_match");
   if (item.selectors.productKeys.some((value) => intent.productKeys.includes(value))) reasons.push("product_match");
   return reasons;
 }
@@ -446,9 +518,14 @@ function validateScope(item: ContextCandidate, control: SystemContextControl, bl
   if (item.organizationId !== control.organizationId) blockers.push({code: "cross_tenant_candidate", itemIds: []});
   if (item.projectId !== null && item.projectId !== control.projectId) blockers.push({code: "cross_project_candidate", itemIds: []});
   if (item.kind === "conversation_memory" && item.conversationId !== control.conversationId) blockers.push({code: "cross_conversation_candidate", itemIds: []});
-  if (!control.authorizedContextItemIds.includes(item.id)) blockers.push({code: "unauthorized_context_candidate", itemIds: []});
+  const snapshotGrant = control.authorizedContextSnapshots.find(({itemId}) => itemId === item.id);
+  if (!snapshotGrant) blockers.push({code: "unauthorized_context_candidate", itemIds: []});
+  else if (snapshotGrant.snapshotFingerprint !== item.fingerprint) blockers.push({code: "control_snapshot_mismatch", itemIds: []});
   if (item.kind === "document" && (item.documentId === null || !control.authorizedDocumentIds.includes(item.documentId))) blockers.push({code: "unauthorized_document_candidate", itemIds: []});
   if (item.companyId !== null && !control.authorizedCompanyIds.includes(item.companyId)) blockers.push({code: "unauthorized_company_candidate", itemIds: []});
+  if (item.controlRevision !== control.revision || Date.parse(item.capturedAt) > Date.parse(control.issuedAt)) {
+    blockers.push({code: "control_snapshot_mismatch", itemIds: []});
+  }
 }
 
 function validateLineage(items: ContextCandidate[], blockers: Array<z.infer<typeof contextBlockerSchema>>): void {
@@ -456,7 +533,8 @@ function validateLineage(items: ContextCandidate[], blockers: Array<z.infer<type
   for (const item of items) {
     if (item.supersedesId === null) continue;
     const parent = byId.get(item.supersedesId);
-    if (parent && (parent.logicalKey !== item.logicalKey || parent.organizationId !== item.organizationId || parent.projectId !== item.projectId)) {
+    if (!parent) blockers.push({code: "lineage_parent_missing", itemIds: [item.id]});
+    if (parent && !sameImmutableLineageScope(parent, item)) {
       blockers.push({code: "lineage_scope_mismatch", itemIds: [item.id, parent.id].sort()});
     }
     if (parent && (item.snapshotVersion <= parent.snapshotVersion || Date.parse(item.capturedAt) < Date.parse(parent.capturedAt))) {
@@ -473,6 +551,22 @@ function validateLineage(items: ContextCandidate[], blockers: Array<z.infer<type
       cursor = byId.get(cursor.supersedesId);
     }
   }
+}
+
+function sameImmutableLineageScope(left: ContextCandidate, right: ContextCandidate): boolean {
+  return left.logicalKey === right.logicalKey
+    && left.kind === right.kind
+    && left.organizationId === right.organizationId
+    && left.controlRevision === right.controlRevision
+    && left.projectId === right.projectId
+    && left.companyId === right.companyId
+    && left.conversationId === right.conversationId
+    && left.documentId === right.documentId
+    && left.dataClass === right.dataClass
+    && left.payloadLocator.scheme === right.payloadLocator.scheme
+    && left.temporalPolicy === right.temporalPolicy
+    && stableJson(left.jurisdictions) === stableJson(right.jurisdictions)
+    && stableJson(left.selectors) === stableJson(right.selectors);
 }
 
 function permissionFor(kind: ContextKind): ContextPermission {
@@ -496,29 +590,37 @@ function normalizeSystemControl<T extends z.infer<typeof systemContextControlPay
   return {...value,
     authorityGrants: [...new Set(value.authorityGrants)].sort(),
     permissions: [...new Set(value.permissions)].sort(),
-    authorizedContextItemIds: [...new Set(value.authorizedContextItemIds)].sort(),
+    authorizedContextSnapshots: normalizeSnapshotGrants(value.authorizedContextSnapshots),
     authorizedDocumentIds: [...new Set(value.authorizedDocumentIds)].sort(),
     authorizedCompanyIds: [...new Set(value.authorizedCompanyIds)].sort(),
   } as T;
 }
 
+function normalizeSnapshotGrants<T extends z.infer<typeof authorizedContextSnapshotSchema>>(values: readonly T[]): T[] {
+  return [...values].sort((left, right) => left.itemId.localeCompare(right.itemId) || left.snapshotFingerprint.localeCompare(right.snapshotFingerprint));
+}
+
 function normalizeIntent<T extends z.infer<typeof contextResolutionIntentPayloadSchema> | ContextResolutionIntent>(value: T): T {
+  const objectRefs = [...new Map(value.objectRefs.map((ref) => [`${ref.kind}:${ref.id}`, ref])).values()]
+    .sort((left, right) => `${left.kind}:${left.id}`.localeCompare(`${right.kind}:${right.id}`));
   return {...value,
     primaryWorks: [...new Set(value.primaryWorks)].sort(),
     objectKinds: [...new Set(value.objectKinds)].sort(),
-    objectRefs: [...value.objectRefs].sort((left, right) => `${left.kind}:${left.id}`.localeCompare(`${right.kind}:${right.id}`)),
+    objectRefs,
     productKeys: [...new Set(value.productKeys)].sort(),
     jurisdictions: {...value.jurisdictions, values: [...new Set(value.jurisdictions.values)].sort()},
   } as T;
 }
 
 function normalizeCandidate<T extends z.infer<typeof contextCandidatePayloadSchema> | ContextCandidate>(value: T): T {
+  const objectRefs = [...new Map(value.selectors.objectRefs.map((ref) => [`${ref.kind}:${ref.id}`, ref])).values()]
+    .sort((left, right) => `${left.kind}:${left.id}`.localeCompare(`${right.kind}:${right.id}`));
   return {...value,
     jurisdictions: [...new Set(value.jurisdictions)].sort(),
     selectors: {
       primaryWorks: [...new Set(value.selectors.primaryWorks)].sort(),
       objectKinds: [...new Set(value.selectors.objectKinds)].sort(),
-      objectRefs: [...value.selectors.objectRefs].sort((left, right) => `${left.kind}:${left.id}`.localeCompare(`${right.kind}:${right.id}`)),
+      objectRefs,
       productKeys: [...new Set(value.selectors.productKeys)].sort(),
     },
   } as T;
@@ -533,22 +635,35 @@ function finalizeResolution(input: {
   gaps: AuthorizedContextResolution["gaps"];
   blockers: AuthorizedContextResolution["blockers"];
   resolvedAt: string;
+  validUntil: string;
+  resolutionIssuer: z.input<typeof verifiedIssuerSchema> & {secret: string};
 }): AuthorizedContextResolution {
+  const controlIssuer = input.control?.issuer ?? {issuerId: "invalid-control", keyId: "invalid-control", algorithm: "hmac-sha256" as const};
+  const {secret: resolutionSecret, ...resolutionIssuer} = input.resolutionIssuer;
   const payload = contextResolutionPayloadSchema.parse({
-    schemaVersion: "authorized-context-resolution.v1",
+    schemaVersion: "authorized-context-resolution.v2",
     mode: "internal_shadow",
     status: input.status,
     systemControlFingerprint: input.control?.fingerprint ?? "0".repeat(64),
     executionContextHash: input.control?.executionContextHash ?? "0".repeat(64),
     intentFingerprint: input.intent?.fingerprint ?? "0".repeat(64),
+    controlRevision: input.control?.revision ?? 1,
+    controlIssuer,
     included: input.included,
     excluded: input.excluded,
     gaps: input.gaps,
     blockers: dedupeBlockers(input.blockers),
     resolvedAt: input.resolvedAt,
+    validUntil: input.validUntil,
+    issuer: verifiedIssuerSchema.parse(resolutionIssuer),
     externalEffectAllowed: false,
   });
-  return authorizedContextResolutionSchema.parse({...payload, fingerprint: fingerprint(payload)});
+  const fingerprintValue = fingerprint(payload);
+  return authorizedContextResolutionSchema.parse({
+    ...payload,
+    fingerprint: fingerprintValue,
+    signature: sign({fingerprint: fingerprintValue, issuer: payload.issuer}, resolutionSecret),
+  });
 }
 
 function dedupeExcluded(values: AuthorizedContextResolution["excluded"]): AuthorizedContextResolution["excluded"] {
@@ -558,9 +673,13 @@ function dedupeExcluded(values: AuthorizedContextResolution["excluded"]): Author
 }
 
 function dedupeGaps(values: AuthorizedContextResolution["gaps"]): AuthorizedContextResolution["gaps"] {
-  return [...new Map(values.map((value) => ({...value, sourceItemIds: [...new Set(value.sourceItemIds)].sort()}))
-    .sort((left, right) => left.code.localeCompare(right.code) || (left.logicalKey ?? "").localeCompare(right.logicalKey ?? ""))
-    .map((value) => [`${value.code}:${value.logicalKey ?? ""}`, value])).values()];
+  const grouped = new Map<string, AuthorizedContextResolution["gaps"][number]>();
+  for (const value of values) {
+    const key = `${value.code}:${value.logicalKey ?? ""}`;
+    const prior = grouped.get(key);
+    grouped.set(key, {...value, sourceItemIds: [...new Set([...(prior?.sourceItemIds ?? []), ...value.sourceItemIds])].sort()});
+  }
+  return [...grouped.values()].sort((left, right) => left.code.localeCompare(right.code) || (left.logicalKey ?? "").localeCompare(right.logicalKey ?? ""));
 }
 
 function dedupeBlockers(values: AuthorizedContextResolution["blockers"]): AuthorizedContextResolution["blockers"] {
@@ -577,6 +696,29 @@ function stripFingerprint(value: unknown): unknown {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
   const {fingerprint: _fingerprint, ...rest} = value as Record<string, unknown>;
   return rest;
+}
+
+function stripSignatureAndFingerprint(value: AuthorizedContextResolution): unknown {
+  const {fingerprint: _fingerprint, signature: _signature, ...payload} = value;
+  return payload;
+}
+
+function verifySystemControl(control: SystemContextControl, keys: Readonly<Record<string, string>>): boolean {
+  const secret = keys[control.issuer.keyId];
+  if (!secret) return false;
+  const {fingerprint: fingerprintValue, signature, ...payload} = control;
+  return fingerprint(payload) === fingerprintValue
+    && safeSignatureEqual(signature, sign({fingerprint: fingerprintValue, issuer: control.issuer}, secret));
+}
+
+function sign(value: unknown, secret: string): string {
+  return createHmac("sha256", secret).update(stableJson(value)).digest("hex");
+}
+
+function safeSignatureEqual(left: string, right: string): boolean {
+  const leftBytes = Buffer.from(left, "hex");
+  const rightBytes = Buffer.from(right, "hex");
+  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
 }
 
 function fingerprint(value: unknown): string {

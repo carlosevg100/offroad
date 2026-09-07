@@ -7,7 +7,7 @@ import {
 import {
   createContextCandidate,
   createContextResolutionIntent,
-  createSystemContextControl,
+  issueSystemContextControl,
   resolveAuthorizedContext,
   type ContextCandidate,
   type ContextPermission,
@@ -35,6 +35,9 @@ import {
 const sha = (character: string) => character.repeat(64);
 const now = () => new Date("2026-09-07T12:00:00.000Z");
 const authorizationKey = "test-only-hmac-key-never-used-outside-ci";
+const controlKey = "test-only-control-key-never-used-outside-ci";
+const resolutionKey = "test-only-resolution-key-never-used-outside-ci";
+const contextResolutionKeys = {"resolution-key": resolutionKey};
 const executor = bundledInternalDispatchExecutorRegistry[0]!;
 const source = offroadTaskRegistry.find((task) => task.id === "R01")!;
 const graph: CompiledTaskGraph = {
@@ -129,8 +132,9 @@ function authorization(value: UniversalDispatchCandidate) {
     contextResolution: contextResolution(value),
     keyId: "ci-key",
     secret: authorizationKey,
-    issuedAt: "2026-09-07T11:00:00.000Z",
-    expiresAt: "2026-09-07T13:00:00.000Z",
+    issuedAt: "2026-09-07T12:00:00.000Z",
+    expiresAt: "2026-09-07T12:30:00.000Z",
+    contextResolutionKeys,
   });
 }
 
@@ -141,8 +145,8 @@ function contextResolution(value: UniversalDispatchCandidate, overrides: {
   permissions?: ContextPermission[];
 } = {}) {
   const candidates = overrides.candidates ?? [];
-  const systemControl = createSystemContextControl({
-    schemaVersion: "system-context-control.v1",
+  const systemControl = issueSystemContextControl({
+    schemaVersion: "system-context-control.v2",
     source: "system",
     organizationId: "ci-tenant",
     projectId: "ci-project",
@@ -151,14 +155,15 @@ function contextResolution(value: UniversalDispatchCandidate, overrides: {
     evidenceRegime: "project_private",
     authorityGrants: ["read"],
     permissions: overrides.permissions ?? [],
-    authorizedContextItemIds: candidates.map(({id}) => id),
+    authorizedContextSnapshots: candidates.map(({id, fingerprint}) => ({itemId: id, snapshotFingerprint: fingerprint})),
     authorizedDocumentIds: [],
     authorizedCompanyIds: [],
     executionContextHash: overrides.executionContextHash ?? value.executionContextHash,
     revision: 1,
     issuedAt: "2026-09-07T11:00:00.000Z",
     expiresAt: "2026-09-07T13:00:00.000Z",
-  });
+    issuer: {issuerId: "ci-control-plane", keyId: "control-key", algorithm: "hmac-sha256"},
+  }, controlKey);
   const resolutionIntent = createContextResolutionIntent({
     schemaVersion: "context-resolution-intent.v1",
     primaryWorks: ["analyze"],
@@ -169,22 +174,30 @@ function contextResolution(value: UniversalDispatchCandidate, overrides: {
     asOfDate: {value: "2026-06-30", state: "explicit"},
     continuity: overrides.continuity ?? "new",
   });
-  return resolveAuthorizedContext({systemControl, intent: resolutionIntent, candidates, now: now()});
+  return resolveAuthorizedContext({
+    systemControl,
+    systemControlKeys: {"control-key": controlKey},
+    intent: resolutionIntent,
+    candidates,
+    now: now(),
+    resolutionIssuer: {issuerId: "ci-context-resolver", keyId: "resolution-key", algorithm: "hmac-sha256", secret: resolutionKey},
+  });
 }
 
-function runtimeContextCandidate(id: string, organizationId = "ci-tenant") {
+function runtimeContextCandidate(id: string, organizationId = "ci-tenant", overrides: Record<string, unknown> = {}) {
   return createContextCandidate({
     schemaVersion: "context-candidate.v1",
     id,
     logicalKey: "project.receivables",
     kind: "project_memory",
     organizationId,
+    controlRevision: 1,
     projectId: "ci-project",
     companyId: null,
     conversationId: null,
     documentId: null,
     dataClass: "project_confidential",
-    payloadRef: `context://${id}`,
+    payloadLocator: {scheme: "context_snapshot", locatorId: id},
     contentHash: sha("8"),
     sourceVersion: "fixture-v1",
     snapshotVersion: 1,
@@ -198,13 +211,15 @@ function runtimeContextCandidate(id: string, organizationId = "ci-tenant") {
     jurisdictions: [],
     selectors: {primaryWorks: ["analyze"], objectKinds: [], objectRefs: [], productKeys: []},
     supersedesId: null,
-  });
+    ...overrides,
+  } as never);
 }
 
 function runtime(registry: readonly InternalBundledExecutor[] = bundledInternalDispatchExecutorRegistry) {
   const internal = createInternalUniversalDispatchRuntime({
     registry,
     authorizationKeys: {"ci-key": authorizationKey},
+    contextResolutionKeys,
     now,
   });
   return {
@@ -277,6 +292,74 @@ describe("internal universal dispatch runtime", () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
+  it("refuses fixture authorization that predates or outlives its signed context resolution", () => {
+    const value = candidate();
+    const resolution = contextResolution(value);
+    expect(() => issueInternalFixtureAuthorization({
+      candidate: value,
+      contextResolution: resolution,
+      keyId: "ci-key",
+      secret: authorizationKey,
+      issuedAt: "2026-09-07T11:59:59.000Z",
+      expiresAt: "2026-09-07T12:30:00.000Z",
+      contextResolutionKeys,
+    })).toThrow("dispatch_authorization_exceeds_context_resolution");
+    expect(() => issueInternalFixtureAuthorization({
+      candidate: value,
+      contextResolution: resolution,
+      keyId: "ci-key",
+      secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z",
+      expiresAt: "2026-09-07T13:00:00.001Z",
+      contextResolutionKeys,
+    })).toThrow("dispatch_authorization_exceeds_context_resolution");
+  });
+
+  it("revalidates context before executor invocation and closes the TOCTOU window", async () => {
+    const value = candidate();
+    const expiringCandidate = runtimeContextCandidate("expiring-context", "ci-tenant", {freshUntil: "2026-09-07T12:10:00.000Z"});
+    const resolution = contextResolution(value, {candidates: [expiringCandidate], permissions: ["read_project_context"]});
+    const signedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value,
+      contextResolution: resolution,
+      keyId: "ci-key",
+      secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z",
+      expiresAt: "2026-09-07T12:09:00.000Z",
+      contextResolutionKeys,
+    });
+    const invoke = vi.fn(executor.execute);
+    const clock = vi.fn()
+      .mockReturnValueOnce(new Date("2026-09-07T12:00:00.000Z"))
+      .mockReturnValueOnce(new Date("2026-09-07T12:00:00.000Z"))
+      .mockReturnValue(new Date("2026-09-07T12:10:00.000Z"));
+    const internal = createInternalUniversalDispatchRuntime({
+      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionKeys, now: clock,
+    });
+    await expect(internal.execute({
+      candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000,
+    })).rejects.toMatchObject({code: "dispatch_context_resolution_expired_before_read"});
+    expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it("does not replay a completed graph after its signed context resolution expires", async () => {
+    const value = candidate();
+    let clock = new Date("2026-09-07T12:00:00.000Z");
+    const expiringCandidate = runtimeContextCandidate("expiring-context", "ci-tenant", {freshUntil: "2026-09-07T12:10:00.000Z"});
+    const resolution = contextResolution(value, {candidates: [expiringCandidate], permissions: ["read_project_context"]});
+    const signedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:09:00.000Z", contextResolutionKeys,
+    });
+    const internal = createInternalUniversalDispatchRuntime({
+      registry: bundledInternalDispatchExecutorRegistry, authorizationKeys: {"ci-key": authorizationKey}, contextResolutionKeys, now: () => clock,
+    });
+    const request = {candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000};
+    await expect(internal.execute(request)).resolves.toMatchObject({replayed: false});
+    clock = new Date("2026-09-07T12:10:00.000Z");
+    await expect(internal.execute(request)).rejects.toMatchObject({code: "dispatch_context_resolution_expired"});
+  });
+
   it("refuses a blocked candidate before consulting authorization or invoking an executor", async () => {
     const blocked = candidate({...capability, availability: "shadow"});
     await expect(runtime().execute({candidate: blocked, authorization: {}, inputsByTaskId: {R01: input}, timeoutMs: 1_000}))
@@ -335,6 +418,7 @@ describe("internal universal dispatch runtime", () => {
     await expect(createInternalUniversalDispatchRuntime({
       registry: [effectful] as unknown as readonly InternalBundledExecutor[],
       authorizationKeys: {"ci-key": authorizationKey},
+      contextResolutionKeys,
       now,
     }).execute({
       candidate: value, contextResolution: contextResolution(value), authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 1_000,
