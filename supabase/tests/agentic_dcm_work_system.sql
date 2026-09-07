@@ -461,6 +461,85 @@ begin
 end;
 $$;
 
+-- The full case-analysis capability uses the same projection rail for specialist readiness
+-- questions. It must not need a second question table or bypass the project binding.
+reset role;
+do $$
+declare ids agent_work_system_ids%rowtype;
+begin
+  select * into ids from agent_work_system_ids;
+  insert into public.processing_runs (
+    id, organization_id, intake_session_id, run_no, trigger, status,
+    pipeline_version, budget, versions, created_by
+  ) values (
+    '41000000-0000-4000-8000-000000000393', '20000000-0000-4000-8000-000000000393',
+    ids.session_id, (
+      select coalesce(max(run_no), 0) + 1
+      from public.processing_runs existing_run
+      where existing_run.organization_id = '20000000-0000-4000-8000-000000000393'
+        and existing_run.intake_session_id = ids.session_id
+    ), 'manual', 'running', 'receivables-question-projection-v1', '{}', '{}',
+    '10000000-0000-4000-8000-000000000393'
+  );
+  insert into public.processing_jobs (
+    id, organization_id, processing_run_id, intake_session_id, kind, status,
+    payload, lease_expires_at, capability_sha256
+  ) values (
+    '51000000-0000-4000-8000-000000000393', '20000000-0000-4000-8000-000000000393',
+    '41000000-0000-4000-8000-000000000393', ids.session_id, 'case_analysis', 'leased',
+    '{"analysis_scope":"full_case"}', now() + interval '10 minutes',
+    extensions.digest(repeat('r', 64), 'sha256')
+  );
+end;
+$$;
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-4000-8000-000000000393","role":"authenticated","aal":"aal1"}',
+  true
+);
+do $$
+declare
+  ids agent_work_system_ids%rowtype;
+  result jsonb;
+  projection jsonb;
+begin
+  select * into ids from agent_work_system_ids;
+  projection := jsonb_build_object(
+    'schemaVersion', 'project-information-request-projection.v1',
+    'projectId', ids.project_id,
+    'sourceNamespace', 'receivables_method_r01',
+    'projectionRef', 'case-run:R01:first',
+    'requests', jsonb_build_array(jsonb_build_object(
+      'schemaVersion', 'dcm-information-request.v1',
+      'id', '73000000-0000-4000-8000-000000000393',
+      'projectId', ids.project_id,
+      'requirementKey', 'receivables.r01.cash_reconciliation_not_evidenced',
+      'question', 'Envie o extrato e o arquivo de baixas para reconciliar os recebimentos.',
+      'whyItMatters', 'Os recebimentos ainda não estão ligados aos títulos e à conta vinculada.',
+      'decisionImpact', 'Sem esta evidência o método R01 permanece bloqueado.',
+      'acceptableEvidence', jsonb_build_array('Extrato bancário', 'Arquivo de baixas'),
+      'answerKind', 'document', 'choices', '[]'::jsonb,
+      'priority', 'blocking', 'informationGain', 1, 'materiality', 1,
+      'answerability', 0.8, 'redundancyPenalty', 0, 'status', 'open'
+    ))
+  );
+  result := public.worker_sync_project_information_requests_v1(
+    '51000000-0000-4000-8000-000000000393', repeat('r', 64), projection
+  );
+  if result ->> 'open_count' <> '1'
+    or not exists (
+      select 1 from public.capital_project_information_requests
+      where capital_project_id = ids.project_id
+        and source_namespace = 'receivables_method_r01'
+        and requirement_key = 'receivables.r01.cash_reconciliation_not_evidenced'
+        and status = 'open'
+    ) then
+    raise exception 'case analysis did not project its specialist question: %', result;
+  end if;
+end;
+$$;
+
 reset role;
 update public.capital_project_information_requests
 set status = 'answered', answer_ref = jsonb_build_object('test', true)

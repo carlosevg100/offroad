@@ -101,6 +101,7 @@ import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} f
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
+import {buildReceivablesMethodInformationRequestProjection} from "./receivables-information-requests";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -1037,6 +1038,14 @@ export async function processCaseAnalysisJob(
     const publicReport = publicCaseRunReport(result.report);
     const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
+    if (receivablesVertical && dependencies.queue.syncProjectInformationRequests) {
+      await dependencies.queue.syncProjectInformationRequests(job, buildReceivablesMethodInformationRequestProjection({
+        projectId: raw.session.capital_project_id,
+        processingRunId: job.processing_run_id,
+        locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
+        readiness: receivablesVertical.methodReadiness,
+      }));
+    }
     if (receivables?.specialistShadow && receivables.inputAssemblyId) {
       if (!dependencies.queue.recordReceivablesSpecialistShadowRun) {
         throw new Error("receivables_specialist_shadow_persistence_unavailable");
