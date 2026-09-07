@@ -134,6 +134,32 @@ describe("case input loading", () => {
       replayed: false,
     });
   });
+
+  it("persists a reconciled supplement patch and draft through the exact capability", async () => {
+    const patch = {schemaVersion: "2026.09.07-v1", patchId: "answer-1"};
+    const nextDraft = {schemaVersion: "2026.09.07-v1", revision: 1};
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_apply_receivables_method_supplement_patch_v1");
+      expect(args).toEqual({
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_patch: patch,
+        p_next_draft: nextDraft,
+      });
+      return {data: {
+        patch_id: "50000000-0000-4000-8000-000000000001",
+        draft_id: "60000000-0000-4000-8000-000000000001",
+        revision: 1,
+        draft_fingerprint: "c".repeat(64),
+        replayed: false,
+      }, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.applyReceivablesMethodSupplementPatch!(
+      job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, {patch, nextDraft},
+    )).resolves.toMatchObject({revision: 1, draftFingerprint: "c".repeat(64), replayed: false});
+  });
 });
 
 describe("operating-control persistence", () => {
