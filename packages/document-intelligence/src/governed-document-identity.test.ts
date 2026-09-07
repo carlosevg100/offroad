@@ -111,14 +111,14 @@ function receiptBody(receipt: Omit<ClassificationTransitionReceipt, "attestation
 function makeClassificationReceipt(record: GovernedDocumentVersionIdentity, to: ClassificationTransitionReceipt["to"], authorizations: ClassificationTransitionReceipt["authorizations"], overrides: Partial<Omit<ClassificationTransitionReceipt, "attestation" | "from" | "to" | "authorizations">> & {attestationId?: string; signedAt?: string} = {}): ClassificationTransitionReceipt {
   const previous = record.lifecycleHistory.at(-1)!;
   const {attestationId = ids.classificationAttestation, signedAt, ...fields} = overrides;
-  const base = {receiptId: ids.classificationReceipt, identityRecordId: record.core.identityRecordId, organizationId: record.core.organizationId, projectId: record.core.projectId, companyId: record.core.companyId, conversationId: record.core.conversationId, documentId: record.core.documentId, documentVersion: record.core.version, from: {dataClass: previous.dataClass, informationClass: previous.informationClass, confidentiality: previous.confidentiality}, to, purpose: "classification_transition" as const, operationId: ids.classificationOperation, priorLifecycleFingerprint: previous.lifecycleFingerprint, targetRevision: previous.revision + 1, authorizations, authorizedActor: actor, authorizedAt: "2026-09-01T10:05:00.000Z", ...fields};
+  const base = {receiptId: ids.classificationReceipt, identityRecordId: record.core.identityRecordId, organizationId: record.core.organizationId, projectId: record.core.projectId, companyId: record.core.companyId, conversationId: record.core.conversationId, documentId: record.core.documentId, documentVersion: record.core.version, from: {dataClass: previous.dataClass, informationClass: previous.informationClass, confidentiality: previous.confidentiality}, to, purpose: "classification_transition" as const, operationId: ids.classificationOperation, priorLifecycleFingerprint: previous.lifecycleFingerprint, targetRevision: previous.revision + 1, authorizations, authorizedActor: actor, authorizationPolicyVersion: "classification-authz.v1", authorizedAt: "2026-09-01T10:05:00.000Z", validThrough: "2026-09-01T10:15:00.000Z", ...fields};
   return {...base, attestation: signBody(receiptBody(base), attestationId, signedAt)};
 }
 
 type RootOptions = {
   sources?: Map<number, AtomicSourceDocumentResolution>; currentActor?: typeof actor | typeof serviceActor; registeredActors?: Set<string>;
   registeredTools?: Set<string>; sourceRegistration?: DocumentSourceOrigin | null; artifacts?: Map<string, ArtifactResolution>;
-  records?: Map<number, GovernedDocumentVersionIdentity>; canonical?: Map<string, GovernedDocumentVersionIdentity>; receipts?: Map<string, ClassificationTransitionReceipt>; authorizedAppend?: boolean; now?: string; journalSignedAt?: string;
+  records?: Map<number, GovernedDocumentVersionIdentity>; canonical?: Map<string, GovernedDocumentVersionIdentity>; receipts?: Map<string, ClassificationTransitionReceipt>; authorizedAppend?: boolean; classificationAuthorizationCurrent?: boolean; classificationPolicyMaxValidityMs?: number; now?: string; journalSignedAt?: string;
 };
 function toolKey(tool: DocumentToolIdentity) { return stable(tool); }
 function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
@@ -144,6 +144,8 @@ function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
     async attestLifecycleJournal(body) { return signBody(body, ids.journalAttestation, options.journalSignedAt); }, async verifyLifecycleJournalAttestation(body, attestation) { return signatureValid(body, attestation); },
     async resolveClassificationReceipt(receiptId) { return receipts.get(receiptId) ?? null; },
     async verifyClassificationReceipt(receipt) { const {attestation, ...body} = receipt; return signatureValid(receiptBody(body), attestation); },
+    async resolveClassificationAuthorizationPolicy(authorizationPolicyVersion) { return authorizationPolicyVersion === "classification-authz.v1" ? {authorizationPolicyVersion, maxValidityMs: options.classificationPolicyMaxValidityMs ?? 15 * 60_000} : null; },
+    async isClassificationAuthorizationCurrent() { return options.classificationAuthorizationCurrent ?? true; },
     now() { return options.now ?? "2026-09-01T10:05:00.000Z"; },
   };
 }
@@ -383,12 +385,14 @@ describe("governed document identity v3", () => {
   });
 
   it("binds source signing to authorization, capture and hash verification under the trusted clock", async () => {
-    const signedBeforeCaptureBase = makeSource();
-    const signedBeforeCapture = makeSource(1, sourceBytes, {
-      row: {...signedBeforeCaptureBase.row, sha256_verified_at: "2026-09-01T09:59:30.000Z"},
-      sourceSignedAt: "2026-09-01T09:59:59.999Z",
-    });
+    const signedBeforeCapture = makeSource(1, sourceBytes, {sourceSignedAt: "2026-09-01T09:59:59.999Z"});
     await expect(harness({sources: new Map([[1, signedBeforeCapture]])}).server.compile(compileInput())).rejects.toThrow("source_attestation_time_invalid");
+
+    const verifiedBeforeCaptureBase = makeSource();
+    const verifiedBeforeCapture = makeSource(1, sourceBytes, {
+      row: {...verifiedBeforeCaptureBase.row, sha256_verified_at: "2026-09-01T09:59:59.999Z"},
+    });
+    await expect(harness({sources: new Map([[1, verifiedBeforeCapture]])}).server.compile(compileInput())).rejects.toThrow("source_hash_verification_time_invalid");
 
     const signedBeforeHash = makeSource(1, sourceBytes, {sourceSignedAt: "2026-09-01T10:00:29.999Z"});
     await expect(harness({sources: new Map([[1, signedBeforeHash]])}).server.compile(compileInput())).rejects.toThrow("source_attestation_time_invalid");
@@ -445,6 +449,38 @@ describe("governed document identity v3", () => {
       record.core.identityRecordId,
       appendInput({classificationReceiptId: signedTooFarInFuture.receiptId}),
     )).rejects.toThrow("classification_attestation_time_invalid");
+  });
+
+  it("requires short-lived, policy-bound and currently authorized classification receipts", async () => {
+    const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const grants = ["change_data_class", "change_confidentiality", "declassify"] as const;
+
+    const expiredIn2027 = makeClassificationReceipt(record, publicClassification, [...grants]);
+    await expect(harness({
+      canonical: h.canonical,
+      records: h.records,
+      receipts: new Map([[expiredIn2027.receiptId, expiredIn2027]]),
+      now: "2027-09-01T10:05:00.000Z",
+    }).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: expiredIn2027.receiptId}))).rejects.toThrow("classification_receipt_expired");
+
+    const excessiveValidity = makeClassificationReceipt(record, publicClassification, [...grants], {validThrough: "2026-09-01T10:20:00.001Z"});
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[excessiveValidity.receiptId, excessiveValidity]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: excessiveValidity.receiptId}),
+    )).rejects.toThrow("classification_receipt_expired");
+
+    const revoked = makeClassificationReceipt(record, publicClassification, [...grants]);
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[revoked.receiptId, revoked]]), classificationAuthorizationCurrent: false}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: revoked.receiptId}),
+    )).rejects.toThrow("classification_authorization_not_current");
+
+    const unknownPolicy = makeClassificationReceipt(record, publicClassification, [...grants], {authorizationPolicyVersion: "classification-authz.retired"});
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[unknownPolicy.receiptId, unknownPolicy]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: unknownPolicy.receiptId}),
+    )).rejects.toThrow("classification_receipt_invalid");
   });
 
   it("publishes a machine-verifiable boundary that forbids effects before transactional commit", () => {
