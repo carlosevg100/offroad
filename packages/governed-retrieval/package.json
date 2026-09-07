@@ -16,6 +16,7 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
+    "@offroad/agent-contracts": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "zod": "4.4.3"

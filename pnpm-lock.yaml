@@ -828,6 +828,9 @@ importers:
 
   packages/governed-retrieval:
     dependencies:
+      '@offroad/agent-contracts':
+        specifier: workspace:*
+        version: link:../agent-contracts
       '@offroad/document-intelligence':
         specifier: workspace:*
         version: link:../document-intelligence
