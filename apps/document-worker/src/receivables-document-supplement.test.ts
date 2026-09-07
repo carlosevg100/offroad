@@ -1,5 +1,12 @@
 import {describe, expect, it} from "vitest";
-import type {ReceivablesEvidenceDocument, ReceivablesPhaseOneInput} from "@offroad/receivables-analysis";
+import {
+  applyReceivablesSupplementPatch,
+  compileReceivablesSupplementDraft,
+  newReceivablesSupplementDraft,
+  receivablesDocumentSupplementContract,
+  type ReceivablesEvidenceDocument,
+  type ReceivablesPhaseOneInput,
+} from "@offroad/receivables-analysis";
 
 import {buildReceivablesDocumentSupplementPatch} from "./receivables-document-supplement";
 
@@ -38,7 +45,7 @@ function sheet(name: string, headers: string[], rows: Array<Array<string | numbe
   };
 }
 
-function evidenceDocument(overrides: {titles?: Array<Array<string | number | boolean | null>>; duplicateAccounting?: boolean} = {}): ReceivablesEvidenceDocument {
+function evidenceDocument(overrides: {titles?: Array<Array<string | number | boolean | null>>; duplicateAccounting?: boolean; assumptions?: "partial" | "complete"} = {}): ReceivablesEvidenceDocument {
   const titleHeaders = [
     "NUM_TITULO", "SETOR_SACADO", "VLR_RECEBIDO_PERIODO", "SALDO_INADIMPLENTE", "RECUPERADO_PERIODO",
     "DILUICAO_PERIODO", "RECOMPRA_PERIODO", "SUBSTITUICAO_PERIODO", "CEDIVEL", "LASTRO_VERIFICADO",
@@ -63,6 +70,36 @@ function evidenceDocument(overrides: {titles?: Array<Array<string | number | boo
           ["R-002", "2026-08-31", "50.00", "T-002", "98.765.432/0001-00", "sim", ""],
         ]),
         accounting,
+        ...(overrides.assumptions ? [
+          sheet("POLITICA", ["CAMPO", "VALOR"], overrides.assumptions === "complete"
+            ? receivablesDocumentSupplementContract.sheets.policy.inputs.map(([key, path, kind]) => [
+                key,
+                kind === "boolean" ? "sim"
+                  : kind === "registration_rule" ? "obrigatório"
+                  : kind === "string_list" ? "todos"
+                  : kind === "percentage" ? "10%"
+                  : kind === "integer" ? path.endsWith("maxRemainingTermDays") ? "180" : "30"
+                  : "100",
+              ])
+            : [
+            ["MAX_ATRASO_DIAS", "30"],
+            ["MAX_CONCENTRACAO_SACADO", "12,5%"],
+            ["EXIGIR_CEDIVEL", "sim"],
+            ["SETORES_PERMITIDOS", "varejo; indústria"],
+            ["MAX_DILUICAO", ""],
+          ]),
+          sheet("ESTRUTURA", ["CAMPO", "VALOR"], overrides.assumptions === "complete"
+            ? receivablesDocumentSupplementContract.sheets.structure.inputs.map(([key, , kind]) => [
+                key,
+                kind === "percentage" ? "10%" : kind === "multiple" ? "1,25x" : "100",
+              ])
+            : [
+            ["VALOR_LINHA", "R$ 1.000.000,00"],
+            ["ADVANCE_RATE", "72,5%"],
+            ["OVERCOLLATERALIZATION_MIN", "1,25x"],
+            ["WATERFALL_CAIXA_DISPONIVEL", ""],
+          ]),
+        ] : []),
         ...(overrides.duplicateAccounting ? [{...accounting, name: "CONTABIL_COPIA"}] : []),
       ],
     },
@@ -73,7 +110,7 @@ describe("receivables document supplement adapter", () => {
   it("extracts the four core sections only from explicit contract columns", () => {
     const result = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [evidenceDocument()]});
     expect(result.extractedSections).toEqual(["cedent", "titles", "cashReceipts", "accounting"]);
-    expect(result.omittedSections).toEqual([]);
+    expect(result.omittedSections).toEqual(["policy", "structure"]);
     expect(result.patch).toMatchObject({
       sourceDatasetHash: datasetHash,
       sections: {
@@ -103,5 +140,39 @@ describe("receivables document supplement adapter", () => {
     expect(result.extractedSections).not.toContain("accounting");
     expect(result.omittedSections).toContain("accounting");
     expect(result.patch?.sections.accounting).toBeUndefined();
+  });
+
+  it("imports only populated governed policy and structure inputs without inventing blanks", () => {
+    const result = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [evidenceDocument({assumptions: "partial"})]});
+    expect(result.extractedSections).toEqual(["cedent", "titles", "cashReceipts", "accounting", "policy", "structure"]);
+    expect(result.patch?.fields).toEqual(expect.arrayContaining([
+      {path: "/policy/maxDaysPastDue", value: 30},
+      {path: "/policy/maxSingleDebtorShare", value: "0.125"},
+      {path: "/policy/requireAssignable", value: true},
+      {path: "/policy/allowedDebtorSectors", value: ["varejo", "indústria"]},
+      {path: "/structure/requestedFacility", value: "1000000.00"},
+      {path: "/structure/advanceRate", value: "0.725"},
+      {path: "/structure/requiredOvercollateralization", value: "1.25"},
+    ]));
+    expect(result.patch?.fields.some((field) => field.path === "/policy/maximumDilutionShare")).toBe(false);
+    expect(result.patch?.fields.some((field) => field.path === "/structure/waterfall/availableCash")).toBe(false);
+    expect(result.patch?.evidence).toMatchObject({
+      eligibilityPolicy: [expect.objectContaining({sourceId: "document-1"})],
+      facilityAndWaterfall: [expect.objectContaining({sourceId: "document-1"})],
+    });
+  });
+
+  it("completes the governed draft when one workbook supplies every required input", () => {
+    const result = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [evidenceDocument({assumptions: "complete"})]});
+    expect(result.patch).not.toBeNull();
+    const draft = applyReceivablesSupplementPatch({
+      draft: newReceivablesSupplementDraft(datasetHash),
+      patch: result.patch!,
+    });
+    expect(compileReceivablesSupplementDraft(draft)).toMatchObject({
+      state: "complete",
+      missingSections: [],
+      openConflictIds: [],
+    });
   });
 });

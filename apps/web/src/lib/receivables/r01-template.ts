@@ -45,6 +45,21 @@ function appendSheet(workbook: XLSX.WorkBook, name: string, headers: readonly st
   XLSX.utils.book_append_sheet(workbook, sheet, name);
 }
 
+function appendInputSheet(
+  workbook: XLSX.WorkBook,
+  name: string,
+  headers: readonly string[],
+  inputs: readonly (readonly [string, string, string, string])[],
+  formatHeader: string,
+) {
+  const sheet = XLSX.utils.aoa_to_sheet([
+    [...headers, formatHeader],
+    ...inputs.map(([key, , , format]) => [key, "", format]),
+  ]);
+  sheet["!cols"] = [{wch: 38}, {wch: 24}, {wch: 42}];
+  XLSX.utils.book_append_sheet(workbook, sheet, name);
+}
+
 export function buildReceivablesR01Template(locale: Locale): ArrayBuffer {
   const english = locale === "en-US";
   const contract = receivablesDocumentSupplementContract;
@@ -60,11 +75,14 @@ export function buildReceivablesR01Template(locale: Locale): ArrayBuffer {
     ...contract.sheets.titles.requiredHeaders,
     ...contract.sheets.cashReceipts.requiredHeaders,
     ...contract.sheets.accounting.requiredHeaders,
+    ...contract.sheets.policy.inputs.map(([key]) => key),
+    ...contract.sheets.structure.inputs.map(([key]) => key),
   ])];
   const readme = XLSX.utils.aoa_to_sheet([
     [english ? "Offroad R01 — guided receivables input" : "Offroad R01 — entrada guiada de recebíveis"],
     [english ? "Purpose" : "Objetivo", english ? "Organize the minimum evidence used to reconcile and test a receivables pool. This template does not replace contracts, bank statements or supporting evidence." : "Organizar a evidência mínima usada para conciliar e testar uma carteira de recebíveis. O modelo não substitui contratos, extratos ou documentos de lastro."],
     [english ? "How to use" : "Como usar", english ? "Keep sheet and column names unchanged. Use one row per receivable or receipt. Leave a cell blank when the information is unknown; never enter zero merely because data is missing." : "Mantenha os nomes das abas e colunas. Use uma linha por título ou recebimento. Deixe a célula vazia quando não souber; nunca informe zero apenas porque o dado não foi entregue."],
+    [english ? "Policy and structure" : "Política e estrutura", english ? "POLITICA and ESTRUTURA are optional governed inputs. Complete only the values you want Offroad to test. Every populated value remains reviewable and traceable to this file." : "POLITICA e ESTRUTURA são inputs governados opcionais. Preencha apenas os valores que deseja que a Offroad teste. Todo valor preenchido permanece revisável e rastreável a este arquivo."],
     [english ? "Reporting date" : "Data-base", english ? "Use one consistent reporting date across the pool, accounting and cash files." : "Use a mesma data-base para carteira, contabilidade e caixa."],
     [english ? "Privacy" : "Privacidade", english ? "Upload the completed file only inside the corresponding private Offroad project." : "Envie o arquivo preenchido apenas dentro do projeto privado correspondente na Offroad."],
     [],
@@ -78,5 +96,7 @@ export function buildReceivablesR01Template(locale: Locale): ArrayBuffer {
   appendSheet(workbook, contract.sheets.titles.name, [...new Set([...contract.sheets.titles.sourceHeaders, ...contract.sheets.titles.requiredHeaders])]);
   appendSheet(workbook, contract.sheets.cashReceipts.name, contract.sheets.cashReceipts.requiredHeaders);
   appendSheet(workbook, contract.sheets.accounting.name, contract.sheets.accounting.requiredHeaders);
+  appendInputSheet(workbook, contract.sheets.policy.name, contract.sheets.policy.requiredHeaders, contract.sheets.policy.inputs, english ? "FORMAT" : "FORMATO");
+  appendInputSheet(workbook, contract.sheets.structure.name, contract.sheets.structure.requiredHeaders, contract.sheets.structure.inputs, english ? "FORMAT" : "FORMATO");
   return XLSX.write(workbook, {bookType: "xlsx", type: "array"}) as ArrayBuffer;
 }

@@ -7,6 +7,7 @@ import {
   receivablesSupplementPatchSchema,
   type ReceivablesEvidenceDocument,
   type ReceivablesPhaseOneInput,
+  type ReceivablesSupplementFieldPath,
   type ReceivablesSupplementPatch,
 } from "@offroad/receivables-analysis";
 
@@ -36,12 +37,13 @@ function rowsOf(document: ReceivablesEvidenceDocument): SheetRow[] {
   });
 }
 
-function findTable(documents: readonly ReceivablesEvidenceDocument[], required: readonly string[]): Table | null {
+function findTable(documents: readonly ReceivablesEvidenceDocument[], required: readonly string[], sheetName?: string): Table | null {
   const expected = required.map(fold);
   const matches: Table[] = [];
   for (const document of documents) {
     const rows = rowsOf(document);
     for (const candidate of rows) {
+      if (sheetName && fold(candidate.sheet) !== fold(sheetName)) continue;
       const columns = new Map<string, string>();
       for (const [col, cell] of candidate.cells) columns.set(fold(String(cell.v ?? "")), col);
       if (!expected.every((header) => columns.has(header))) continue;
@@ -75,6 +77,65 @@ function bool(value: string): boolean | null {
   return null;
 }
 
+function scalar(value: string): Decimal | null {
+  const raw = value.trim().toLowerCase().replace(/\s/g, "").replace(/^r\$/i, "").replace(/x$/, "");
+  const normalized = raw.includes(",") ? raw.replace(/\./g, "").replace(",", ".") : raw;
+  if (!/^\d+(?:\.\d+)?$/.test(normalized)) return null;
+  const parsed = new Decimal(normalized);
+  return parsed.isNegative() ? null : parsed;
+}
+
+type GovernedInputDefinition = readonly [
+  key: string,
+  path: ReceivablesSupplementFieldPath,
+  kind: "integer" | "percentage" | "boolean" | "registration_rule" | "string_list" | "money" | "multiple",
+  format: string,
+];
+
+function governedValue(kind: GovernedInputDefinition[2], value: string): unknown | null {
+  if (kind === "boolean") return bool(value);
+  if (kind === "registration_rule") return option(value, {
+    obrigatorio: "required", required: "required",
+    "quando aplicavel": "required_when_applicable", "required when applicable": "required_when_applicable",
+    "nao obrigatorio": "not_required", "not required": "not_required",
+  });
+  if (kind === "string_list") {
+    if (/^(todos|all)$/i.test(value.trim())) return [];
+    const values = [...new Set(value.split(/[;,]/).map((item) => item.trim()).filter(Boolean))];
+    return values.length > 0 && values.length <= 100 ? values : null;
+  }
+  const parsed = scalar(value.replace(/%$/, ""));
+  if (!parsed) return null;
+  if (kind === "integer") return parsed.isInteger() && parsed.lessThanOrEqualTo(Number.MAX_SAFE_INTEGER) ? parsed.toNumber() : null;
+  if (kind === "percentage") return parsed.lessThanOrEqualTo(100) ? parsed.dividedBy(100).toFixed() : null;
+  if (kind === "money") return parsed.toFixed(2);
+  return parsed.toFixed();
+}
+
+function governedFields(table: Table, definitions: readonly GovernedInputDefinition[]) {
+  const byKey = new Map(definitions.map((definition) => [definition[0], definition]));
+  const accepted = new Map<string, {path: ReceivablesSupplementFieldPath; value: unknown}>();
+  const invalid = new Set<string>();
+  for (const row of table.rows) {
+    const key = text(table, row, "CAMPO");
+    const raw = text(table, row, "VALOR");
+    if (!raw) continue;
+    const definition = byKey.get(key);
+    if (!definition || accepted.has(key) || invalid.has(key)) {
+      invalid.add(key || `row_${row.row}`);
+      accepted.delete(key);
+      continue;
+    }
+    const value = governedValue(definition[2], raw);
+    if (value === null) {
+      invalid.add(key);
+      continue;
+    }
+    accepted.set(key, {path: definition[1], value});
+  }
+  return {fields: [...accepted.values()], invalid: [...invalid].sort()};
+}
+
 function date(value: string): string | null {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))) return value;
   const match = value.match(/^(\d{2})[/.](\d{2})[/.](\d{4})$/);
@@ -105,6 +166,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
   documents: readonly ReceivablesEvidenceDocument[];
 }): {patch: ReceivablesSupplementPatch | null; extractedSections: string[]; omittedSections: string[]} {
   const sections: Record<string, {value: unknown}> = {};
+  const fields: Array<{path: ReceivablesSupplementFieldPath; value: unknown}> = [];
   const evidence: Record<string, unknown> = {};
   const extractedSections: string[] = [];
   const omittedSections: string[] = [];
@@ -186,7 +248,31 @@ export function buildReceivablesDocumentSupplementPatch(input: {
     extractedSections.push("accounting");
   } else omittedSections.push("accounting");
 
-  if (Object.keys(sections).length === 0) return {patch: null, extractedSections, omittedSections};
+  const policyContract = receivablesDocumentSupplementContract.sheets.policy;
+  const policyTable = findTable(input.documents, policyContract.requiredHeaders, policyContract.name);
+  if (policyTable) {
+    const parsed = governedFields(policyTable, policyContract.inputs);
+    fields.push(...parsed.fields);
+    omittedSections.push(...parsed.invalid.map((key) => `policy.${key}`));
+    if (parsed.fields.length > 0) {
+      evidence.eligibilityPolicy = [sheetEvidence(policyTable, "CAMPO")];
+      extractedSections.push("policy");
+    } else omittedSections.push("policy");
+  } else omittedSections.push("policy");
+
+  const structureContract = receivablesDocumentSupplementContract.sheets.structure;
+  const structureTable = findTable(input.documents, structureContract.requiredHeaders, structureContract.name);
+  if (structureTable) {
+    const parsed = governedFields(structureTable, structureContract.inputs);
+    fields.push(...parsed.fields);
+    omittedSections.push(...parsed.invalid.map((key) => `structure.${key}`));
+    if (parsed.fields.length > 0) {
+      evidence.facilityAndWaterfall = [sheetEvidence(structureTable, "CAMPO")];
+      extractedSections.push("structure");
+    } else omittedSections.push("structure");
+  } else omittedSections.push("structure");
+
+  if (Object.keys(sections).length === 0 && fields.length === 0) return {patch: null, extractedSections, omittedSections};
   const suppliedEvidence = Object.values(evidence).flat() as Array<{sourceClass: "provided_document"; sourceId: string; anchor: string}>;
   const contentFingerprint = createHash("sha256").update(stable({sections, evidence})).digest("hex");
   const patch = receivablesSupplementPatchSchema.parse({
@@ -194,7 +280,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
     patchId: `document-adapter:${contentFingerprint}`,
     sourceDatasetHash: input.phaseOne.datasetHash,
     suppliedBy: {actorType: "document_worker", actorId: "receivables-document-adapter:2026.09.07-v1", suppliedAt: `${input.phaseOne.universe.dates.reportingDate}T00:00:00.000Z`, evidence: suppliedEvidence},
-    sections, fields: [], evidence,
+    sections, fields, evidence,
   });
   return {patch, extractedSections, omittedSections};
 }
