@@ -117,6 +117,8 @@ const schema = z.object({
   TESSERACT_BIN: z.string().default("tesseract"),
   PDFTOPPM_BIN: z.string().default("pdftoppm"),
   PDFINFO_BIN: z.string().default("pdfinfo"),
+  /** Immutable brand assets baked into the worker image; client templates will use a separate governed upload path. */
+  BRAND_ASSETS_DIR: z.string().min(1).default("apps/web/public/brand"),
   OCR_LANGUAGES: z.string().default("por+eng"),
   CONVERT_TIMEOUT_MS: z.coerce.number().int().default(180_000),
   OCR_TIMEOUT_MS: z.coerce.number().int().default(120_000),

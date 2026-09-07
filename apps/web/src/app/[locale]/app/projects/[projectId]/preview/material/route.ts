@@ -1,5 +1,6 @@
 import {materialToDocx} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
+import {renderedMaterialManifestSchema, verifyRenderedMaterialBytes} from "@offroad/case-understanding";
 import * as XLSX from "xlsx";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -51,7 +52,8 @@ const tableKeys: Record<string, {key: string; caption: {pt: string; en: string}}
 export async function GET(request: Request, {params}: Params) {
   const {locale, projectId} = await params;
   const lang = locale === "en-US" ? "en" : "pt";
-  const format = new URL(request.url).searchParams.get("format") === "xlsx" ? "xlsx" : "docx";
+  const requestedFormat = new URL(request.url).searchParams.get("format");
+  const format = requestedFormat === "xlsx" || requestedFormat === "pptx" ? requestedFormat : "docx";
   const {supabase, organization} = await requireWorkspace(locale);
   const status = await loadIntegrationPreviewStatus(supabase, organization.id);
   if (!integrationPreviewCoversProject(status, projectId)) return new Response("Not found", {status: 404});
@@ -64,6 +66,32 @@ export async function GET(request: Request, {params}: Params) {
   const artifacts = (data ?? []) as ArtifactRow[];
   const latestByType = new Map<string, ArtifactRow>();
   for (const artifact of artifacts) if (!latestByType.has(artifact.artifact_type)) latestByType.set(artifact.artifact_type, artifact);
+  if (format === "pptx") {
+    const artifact = latestByType.get("preview_presentation_material");
+    const content = artifact && isRecord(artifact.content) ? artifact.content : null;
+    const parsedManifest = renderedMaterialManifestSchema.safeParse(content?.manifest);
+    if (!artifact || !parsedManifest.success || parsedManifest.data.format !== "pptx" || parsedManifest.data.storage.state !== "stored") {
+      return new Response(lang === "pt" ? "A apresentação governada ainda não está pronta." : "The governed presentation is not ready yet.", {status: 409});
+    }
+    const download = await supabase.storage.from(parsedManifest.data.storage.bucket).download(parsedManifest.data.storage.objectPath);
+    if (download.error || !download.data) {
+      return new Response(lang === "pt" ? "Não foi possível recuperar a apresentação armazenada." : "The stored presentation could not be retrieved.", {status: 502});
+    }
+    const bytes = new Uint8Array(await download.data.arrayBuffer());
+    try {
+      verifyRenderedMaterialBytes(parsedManifest.data, bytes);
+    } catch {
+      return new Response(lang === "pt" ? "A apresentação armazenada não corresponde ao manifesto assinado." : "The stored presentation does not match its signed manifest.", {status: 409});
+    }
+    return new Response(bytes, {headers: {
+      "content-type": parsedManifest.data.mimeType,
+      "content-disposition": `attachment; filename="${parsedManifest.data.fileName}"`,
+      "cache-control": "private, no-store",
+      "x-material-sha256": parsedManifest.data.contentSha256,
+      "x-material-manifest-fingerprint": parsedManifest.data.manifestFingerprint,
+      "x-material-release-state": parsedManifest.data.release.state,
+    }});
+  }
   const material = latestByType.get("preview_material");
   if (!material) return new Response(lang === "pt" ? "A síntese ainda não foi produzida." : "The synthesis has not been produced yet.", {status: 409});
   const materialContent = isRecord(material.content) ? material.content : {};

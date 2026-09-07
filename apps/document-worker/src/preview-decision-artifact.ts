@@ -11,6 +11,7 @@ type Source = DecisionArtifactContractInput["sources"][number];
 type Claim = DecisionArtifactContractInput["claims"][number];
 type Gap = DecisionArtifactContractInput["gaps"][number];
 type Assumption = DecisionArtifactContractInput["assumptions"][number];
+type Series = NonNullable<DecisionArtifactContractInput["series"]>[number];
 
 type Anchor = {
   document: string;
@@ -255,12 +256,31 @@ export function compilePreviewDecisionArtifact(input: {
 
   if (claims.length === 0) throw new Error("preview decision artifact has no governed claim to display");
 
+  const series: Series[] = [];
+  const maturityRows = Array.isArray(maturities?.walls) ? maturities.walls as unknown[] : [];
+  const maturityPoints = maturityRows.flatMap((candidate) => {
+    const row = record(candidate);
+    const label = primitive(row?.period);
+    const rawAmount = primitive(row?.amount);
+    const amount = typeof rawAmount === "number" ? rawAmount : typeof rawAmount === "string" && rawAmount.trim() !== "" ? Number(rawAmount) : Number.NaN;
+    if (typeof label !== "string" || !Number.isFinite(amount)) return [];
+    return [{label, value: amount, evidenceState: "calculated" as const, sourceIds: sourceIds(candidate), assumptionIds: [], gapIds: []}];
+  });
+  if (maturities && maturityPoints.length > 0) series.push({
+    id: "series-maturity-wall",
+    label: "Vencimentos contratuais",
+    unit: typeof maturities.unit === "string" ? maturities.unit : null,
+    chartKind: "column",
+    object: {id: "c10", type: typeof maturities.schema_version === "string" ? maturities.schema_version : "maturity_wall", fingerprint: outputFingerprint("C10", maturities), path: "walls"},
+    points: maturityPoints,
+  });
+
   const metricClaimIds = claims.filter((claim) => claim.id !== "claim-leading-alternative").map((claim) => claim.id);
   const decisionClaimIds = claims.filter((claim) => claim.id === "claim-leading-alternative").map((claim) => claim.id);
   const allSourceIds = [...sources.keys()].sort();
   const allAssumptionIds = assumptions.map((assumption) => assumption.id);
   const allGapIds = gaps.map((gap) => gap.id);
-  const block = (id: string, kind: "headline" | "metric" | "table" | "chart" | "narrative" | "decision" | "gap" | "source_register", title: string, claimIds: string[], sourceIdsForBlock: string[] = [], assumptionIds: string[] = [], gapIds: string[] = []) => ({id, kind, title, claimIds, sourceIds: sourceIdsForBlock, assumptionIds, gapIds});
+  const block = (id: string, kind: "headline" | "metric" | "table" | "chart" | "narrative" | "decision" | "gap" | "source_register", title: string, claimIds: string[], sourceIdsForBlock: string[] = [], assumptionIds: string[] = [], gapIds: string[] = [], seriesIds: string[] = []) => ({id, kind, title, claimIds, sourceIds: sourceIdsForBlock, assumptionIds, gapIds, seriesIds});
   const gapBlock = allGapIds.length ? [block("open-gaps", "gap", "O que ainda muda a decisão", [], [], [], allGapIds)] : [];
   const assumptionBlock = allAssumptionIds.length ? [block("editable-assumptions", "table", "Premissas editáveis", [], [], allAssumptionIds, [])] : [];
   const decisionBlock = decisionClaimIds.length ? [block("analytical-direction", "decision", "Direção analítica — não é recomendação final", decisionClaimIds)] : [];
@@ -289,7 +309,12 @@ export function compilePreviewDecisionArtifact(input: {
       artifactId: "preview-decision-deck",
       artifactKind: "pptx",
       artifactFingerprint: fingerprintFor("presentation"),
-      blocks: [block("decision-headline", "headline", "Situação e implicação", metricClaimIds), ...decisionBlock, ...gapBlock],
+      blocks: [
+        block("decision-headline", "headline", "Situação e implicação", metricClaimIds.filter((id) => !id.startsWith("claim-peak-maturity"))),
+        ...(series.length ? [block("maturity-wall", "chart", "Vencimentos contratuais", metricClaimIds.filter((id) => id.startsWith("claim-peak-maturity")), [], [], [], series.map((item) => item.id))] : []),
+        ...decisionBlock,
+        ...gapBlock,
+      ],
     },
   ];
 
@@ -313,6 +338,7 @@ export function compilePreviewDecisionArtifact(input: {
     assumptions,
     gaps,
     claims,
+    series,
     views,
     identityRequirements: metricClaimIds.map((claimId) => ({claimId, surfaces: ["conversation", "workbook", "presentation"]})),
   });

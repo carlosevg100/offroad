@@ -11,9 +11,10 @@
  *
  * Everything it writes carries the preview mark. Methods stay in the implemented rung.
  */
-import {randomUUID} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
-import {fingerprintJson, type DecisionArtifactContract} from "@offroad/case-understanding";
+import {renderInstitutionalPresentation, type InstitutionalPresentationTemplate} from "@offroad/case-export";
+import {bindRenderedMaterialToDecisionArtifact, buildRenderedMaterialManifest, decisionArtifactIdentityReport, fingerprintJson, verifyRenderedMaterialBytes, type DecisionArtifactContract} from "@offroad/case-understanding";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 
@@ -45,6 +46,7 @@ import {z} from "zod";
 
 import {describeJobFailure} from "./job-failure";
 import {compilePreviewDecisionArtifact} from "./preview-decision-artifact";
+import type {MaterialRenderInspector} from "./material-render-inspection";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 export const PREVIEW_MARK = "[Validação interna, integration_preview]";
@@ -355,6 +357,10 @@ export type IntegrationPreviewDependencies = {
   queue: QueueClient;
   /** In live mode the run makes one bounded call for the questions; without it the fixed alignment points are used. */
   gateway?: ModelGateway;
+  /** Exact Office render + independent PDF/page raster gate; supplied by the production worker. */
+  materialInspector?: MaterialRenderInspector;
+  /** Brand/client template selected before execution; visual choices never alter economic objects. */
+  presentationTemplate?: InstitutionalPresentationTemplate;
   log?: (event: string, detail?: Record<string, unknown>) => void;
   now?: () => Date;
 };
@@ -464,12 +470,97 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     };
     const hadPriorDecisionContract = context.prior_artifacts.some((artifact) => artifact.artifact_type === "preview_decision_contract");
     const recordDecisionContract = async (input: {taskRunId: string; inputFingerprint: string; dependencies: Array<{artifactId: string; artifactFingerprint: string}>}) => {
-      const contract = compilePreviewDecisionArtifact({
+      let contract = compilePreviewDecisionArtifact({
         caseId: case01.case01EvidenceManifest.caseId,
         asOf: case01.case01EvidenceManifest.referenceDate,
         outputs,
         premises,
       });
+      const contractDependencies = [...input.dependencies];
+      if (context.preview.composition === "prepare_material"
+        && dependencies.materialInspector
+        && dependencies.presentationTemplate
+        && queue.storeCapitalProjectMaterial) {
+        const companyName = typeof context.session.company_profile.name === "string"
+          ? context.session.company_profile.name
+          : null;
+        const rendered = await renderInstitutionalPresentation({
+          contract,
+          title: `${companyName ?? context.project.project_name} · Estrutura de capital`,
+          subtitle: request.form === "board_deck" ? "Análise para discussão com o Conselho de Administração" : "Material de trabalho para discussão",
+          ...(companyName ? {companyName} : {}),
+          ...(request.audience?.primary ? {audience: request.audience.primary} : {}),
+          locale,
+          template: dependencies.presentationTemplate,
+        });
+        const inspectedAt = (dependencies.now?.() ?? new Date()).toISOString();
+        const inspection = await dependencies.materialInspector.inspect({
+          bytes: rendered.bytes,
+          contentSha256: rendered.audit.fileSha256,
+          format: "pptx",
+          inspectedAt,
+        });
+        const stored = await queue.storeCapitalProjectMaterial(job, {
+          bytes: rendered.bytes,
+          contentSha256: rendered.audit.fileSha256,
+          format: "pptx",
+          mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        });
+        const templateFingerprint = fingerprintJson({
+          id: dependencies.presentationTemplate.id,
+          version: dependencies.presentationTemplate.version,
+          origin: dependencies.presentationTemplate.origin,
+          colors: dependencies.presentationTemplate.colors,
+          fonts: dependencies.presentationTemplate.fonts,
+          logo: dependencies.presentationTemplate.logo ? createHash("sha256").update(dependencies.presentationTemplate.logo.data).digest("hex") : null,
+          logoOnDark: dependencies.presentationTemplate.logoOnDark ? createHash("sha256").update(dependencies.presentationTemplate.logoOnDark.data).digest("hex") : null,
+        });
+        const manifest = buildRenderedMaterialManifest({
+          schemaVersion: "2026.09.07-v1",
+          id: `preview-presentation-${rendered.audit.fileSha256.slice(0, 16)}`,
+          organizationId: context.project.organization_id,
+          projectId: context.project.id,
+          caseId: contract.caseId,
+          decisionContractFingerprint: contract.contractFingerprint,
+          surface: "presentation",
+          format: "pptx",
+          fileName: `offroad-${contract.caseId}-${contract.asOf}.pptx`,
+          mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+          byteLength: rendered.bytes.byteLength,
+          contentSha256: rendered.audit.fileSha256,
+          renderer: {id: "offroad-institutional-presentation", version: rendered.audit.rendererVersion},
+          template: {id: dependencies.presentationTemplate.id, version: dependencies.presentationTemplate.version, fingerprint: templateFingerprint, origin: dependencies.presentationTemplate.origin},
+          storage: {bucket: "case-artifacts", objectPath: stored.objectPath, state: "stored", etag: stored.storageEtag},
+          generatedAt: inspectedAt,
+          quality: {
+            schemaValidated: rendered.audit.packageInspection.valid,
+            numericIdentityPassed: decisionArtifactIdentityReport(contract).valid,
+            formulaAuditPassed: true,
+            visualInspection: "not_run",
+            openIssues: [{code: "visual_review_pending", severity: "high", detail: `Renderability passed for ${inspection.pdf.pageCount} pages; visual approval remains required before release.`}],
+            releaseEligible: false,
+          },
+          release: {state: "internal_only", recipientIds: []},
+          claimIds: rendered.audit.renderedClaimIds,
+          sourceIds: rendered.audit.renderedSourceIds,
+          assumptionIds: rendered.audit.renderedAssumptionIds,
+          gapIds: rendered.audit.renderedGapIds,
+        });
+        verifyRenderedMaterialBytes(manifest, rendered.bytes);
+        const materialArtifact = await queue.recordCapitalProjectArtifact(job, {
+          taskRunId: input.taskRunId,
+          artifactType: "preview_presentation_material",
+          schemaVersion: "rendered-material.2026.09.07-v1",
+          status: "draft",
+          inputFingerprint: fingerprintJson({contract: contract.contractFingerprint, format: "pptx", template: templateFingerprint}),
+          content: {manifest, rendererAudit: rendered.audit, renderInspection: inspection},
+          evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
+          dependencies: input.dependencies,
+        });
+        contract = bindRenderedMaterialToDecisionArtifact(contract, manifest);
+        contractDependencies.push({artifactId: materialArtifact.id, artifactFingerprint: materialArtifact.artifactFingerprint});
+        log("integration_preview.presentation_stored", {job: job.job_id, pages: inspection.pdf.pageCount, bytes: rendered.bytes.byteLength, replayed: stored.replayed});
+      }
       const recorded = await queue.recordCapitalProjectArtifact(job, {
         taskRunId: input.taskRunId,
         artifactType: "preview_decision_contract",
@@ -486,7 +577,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           contract,
         },
         evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
-        dependencies: input.dependencies,
+        dependencies: contractDependencies,
       });
       decisionContracts.push(contract);
       decisionContractArtifacts.push(recorded);
