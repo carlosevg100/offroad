@@ -201,9 +201,15 @@ export async function quarantineDocument(input: {
 
   let detected: z.infer<typeof detectedContentSchema> | null = null;
   if (reasons.size === 0) {
-    const inspection = await inspectDocumentBytes(immutableBytes, binding, policy);
-    detected = inspection.detected;
-    for (const reason of inspection.reasons) reasons.add(reason);
+    try {
+      const inspection = await inspectDocumentBytes(immutableBytes, binding, policy);
+      detected = inspection.detected;
+      for (const reason of inspection.reasons) reasons.add(reason);
+    } catch {
+      // A detector/parser crash is itself a malformed input verdict. The gate must still emit a
+      // durable rejection receipt; throwing here would leave the document stuck in `scanning`.
+      reasons.add("malformed_container");
+    }
   }
 
   let scannerResult: DocumentQuarantineReceipt["scanner"] = {
