@@ -1,4 +1,9 @@
 import {createHash} from "node:crypto";
+import {execFile} from "node:child_process";
+import {readFile} from "node:fs/promises";
+import {dirname, isAbsolute, relative, resolve, sep} from "node:path";
+import {promisify} from "node:util";
+import {fileURLToPath} from "node:url";
 import {z} from "zod";
 import type {TrustControlCatalogue} from "./control-register";
 
@@ -71,7 +76,7 @@ export const securityDataClassRecordSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   handlingRule: z.string().min(1),
-  permittedEnvironmentRefs: z.array(inventoryIdSchema).min(1),
+  declaredHandlingEnvironmentRefs: z.array(inventoryIdSchema).min(1),
   externalUseRequiresApproval: z.boolean(),
   ...governedEntitySchema.shape,
 });
@@ -205,6 +210,8 @@ export type SecurityInventoryIssue = {
 
 export type SecurityInventoryDecision = {
   structurallyValid: boolean;
+  evidenceVerification: "declaration_only" | "repository_and_local_bytes";
+  currentStateTruthVerified: boolean;
   assuranceReady: false;
   blockers: SecurityInventoryIssue[];
   warnings: SecurityInventoryIssue[];
@@ -218,19 +225,31 @@ export type SecurityInventoryDecision = {
     openGaps: number;
   };
   inventoryFingerprint: string;
+  evidenceResolutions: Array<{
+    evidenceId: string;
+    ref: string;
+    byteLength: number;
+    contentFingerprint: string;
+    source: "git_object" | "local_artifact";
+  }>;
 };
 
 const secretPatterns: Array<{name: string; pattern: RegExp}> = [
   {name: "private_key", pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/},
   {name: "openai_style_key", pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/},
+  {name: "openai_project_key", pattern: /\bsk-proj-[A-Za-z0-9_-]{20,}\b/},
+  {name: "anthropic_key", pattern: /\bsk-ant-[A-Za-z0-9_-]{20,}\b/},
   {name: "stripe_style_key", pattern: /\b(?:sk|pk)_(?:live|test)_[A-Za-z0-9]{16,}\b/},
-  {name: "aws_access_key", pattern: /\bAKIA[A-Z0-9]{16}\b/},
+  {name: "aws_access_key", pattern: /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/},
+  {name: "aws_session_token", pattern: /\bFwoGZXIvYXdzE[A-Za-z0-9/+=]{30,}\b/},
   {name: "github_token", pattern: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/},
   {name: "github_fine_grained_token", pattern: /\bgithub_pat_[A-Za-z0-9_]{20,}\b/},
   {name: "perplexity_key", pattern: /\bpplx-[A-Za-z0-9_-]{20,}\b/},
   {name: "firecrawl_key", pattern: /\bfc-[A-Za-z0-9_-]{20,}\b/},
   {name: "supabase_secret_key", pattern: /\bsb_secret_[A-Za-z0-9_-]{20,}\b/},
   {name: "posthog_personal_key", pattern: /\bphc_[A-Za-z0-9_-]{20,}\b/},
+  {name: "sentry_auth_token", pattern: /\bsntrys_[A-Za-z0-9_-]{20,}\b/},
+  {name: "vercel_token", pattern: /\b(?:vercel_|vcp_)[A-Za-z0-9_-]{20,}\b/},
   {name: "google_api_key", pattern: /\bAIza[0-9A-Za-z_-]{25,}\b/},
   {name: "credential_in_url", pattern: /https?:\/\/[^\s/:]+:[^\s/@]+@/},
   {name: "jwt", pattern: /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/},
@@ -243,7 +262,18 @@ const secretPatterns: Array<{name: string; pattern: RegExp}> = [
 export function evaluateSecurityCurrentStateInventory(
   inventory: SecurityCurrentStateInventory,
   trustControlCatalogue: TrustControlCatalogue,
-  now = new Date(),
+): SecurityInventoryDecision {
+  return evaluateDeclaredInventory(inventory, trustControlCatalogue, new Date());
+}
+
+/**
+ * Declaration-only structural validation. This result deliberately cannot attest current-state
+ * truth because it does not resolve bytes from the repository or evidence store.
+ */
+function evaluateDeclaredInventory(
+  inventory: SecurityCurrentStateInventory,
+  trustControlCatalogue: TrustControlCatalogue,
+  now: Date,
 ): SecurityInventoryDecision {
   const rawSerialized = JSON.stringify(inventory);
   const rawSecretIssues: SecurityInventoryIssue[] = [];
@@ -254,7 +284,7 @@ export function evaluateSecurityCurrentStateInventory(
   if (awsSecretCandidates.some((candidate) => /[A-Z]/.test(candidate) && /[a-z]/.test(candidate) && /\d/.test(candidate) && /[+/]/.test(candidate))) {
     rawSecretIssues.push({code: "secret_material_detected:aws_secret_access_key", subjectRef: null});
   }
-  if (/"(?:api[_-]?key|password|secret|access[_-]?token|refresh[_-]?token|aws_secret_access_key)"\s*:\s*"[^"\s]{8,}"/i.test(rawSerialized)) {
+  if (/"(?:api[_-]?key|password|secret|access[_-]?token|refresh[_-]?token|aws_secret_access_key|aws_session_token|auth_token|dsn)"\s*:\s*"[^"\s]{8,}"/i.test(rawSerialized)) {
     rawSecretIssues.push({code: "secret_material_detected:sensitive_field", subjectRef: null});
   }
   const parsed = securityCurrentStateInventorySchema.parse(inventory);
@@ -275,7 +305,11 @@ export function evaluateSecurityCurrentStateInventory(
   const knownControlIds = new Set(trustControlCatalogue.controls.map((control) => control.controlId));
   const allEntityIds = new Map<string, string>();
 
-  if (new Date(parsed.baseline.reviewDueAt).getTime() < now.getTime()) {
+  const nowMs = now.getTime();
+  const reviewDueAtMs = checkedDate(parsed.baseline.reviewDueAt, "baseline_review_due_at", parsed.baseline.commit, blockers);
+  const evidenceCutoffMs = checkedDate(parsed.baseline.evidenceCutoff, "baseline_evidence_cutoff", parsed.baseline.commit, blockers);
+  if (!Number.isFinite(nowMs)) blockers.push({code: "trusted_clock_invalid", subjectRef: null});
+  if (reviewDueAtMs !== null && Number.isFinite(nowMs) && reviewDueAtMs < nowMs) {
     blockers.push({code: "baseline_review_overdue", subjectRef: parsed.baseline.commit});
   }
 
@@ -296,15 +330,18 @@ export function evaluateSecurityCurrentStateInventory(
   }
 
   for (const evidence of parsed.evidenceIndex) {
-    const evidenceCapturedAt = new Date(evidence.capturedAt).getTime();
-    const evidenceCutoff = new Date(parsed.baseline.evidenceCutoff).getTime();
-    if (evidenceCapturedAt > now.getTime() || evidenceCapturedAt > evidenceCutoff) {
+    const evidenceCapturedAt = checkedDate(evidence.capturedAt, "evidence_captured_at", evidence.evidenceId, blockers);
+    const validThrough = evidence.validThrough
+      ? checkedDate(evidence.validThrough, "evidence_valid_through", evidence.evidenceId, blockers)
+      : null;
+    if (evidenceCapturedAt !== null && evidenceCutoffMs !== null && Number.isFinite(nowMs)
+      && (evidenceCapturedAt > nowMs || evidenceCapturedAt > evidenceCutoffMs)) {
       blockers.push({code: "evidence_captured_after_cutoff", subjectRef: evidence.evidenceId});
     }
     if (evidence.freshness === "immutable" && !evidence.immutableFingerprint) {
       blockers.push({code: "immutable_evidence_requires_fingerprint", subjectRef: evidence.evidenceId});
     }
-    if (["repository_file", "automated_test", "configuration"].includes(evidence.kind)
+    if (["repository_file", "automated_test", "configuration", "design_reference"].includes(evidence.kind)
       && evidence.immutableFingerprint !== parsed.baseline.commit) {
       blockers.push({code: "repository_evidence_commit_mismatch", subjectRef: evidence.evidenceId});
     }
@@ -323,10 +360,10 @@ export function evaluateSecurityCurrentStateInventory(
     if (evidence.kind === "operator_observation") {
       warnings.push({code: "operator_observation_not_independently_verified", subjectRef: evidence.evidenceId});
     }
-    if (evidence.validThrough && new Date(evidence.validThrough).getTime() <= evidenceCapturedAt) {
+    if (validThrough !== null && evidenceCapturedAt !== null && validThrough <= evidenceCapturedAt) {
       blockers.push({code: "evidence_validity_window_invalid", subjectRef: evidence.evidenceId});
     }
-    if (evidence.validThrough && new Date(evidence.validThrough).getTime() < now.getTime()) {
+    if (validThrough !== null && Number.isFinite(nowMs) && validThrough < nowMs) {
       blockers.push({code: "evidence_expired", subjectRef: evidence.evidenceId});
     }
   }
@@ -338,7 +375,7 @@ export function evaluateSecurityCurrentStateInventory(
   }
   for (const dataClass of parsed.dataClasses) {
     validateGovernedEntity(dataClass.dataClassId, dataClass, evidenceById, gapById, knownControlIds, blockers);
-    validateRefs(dataClass.dataClassId, dataClass.permittedEnvironmentRefs, environmentById, "unknown_environment_ref", blockers);
+    validateRefs(dataClass.dataClassId, dataClass.declaredHandlingEnvironmentRefs, environmentById, "unknown_environment_ref", blockers);
   }
   for (const system of parsed.systems) {
     validateGovernedEntity(system.systemId, system, evidenceById, gapById, knownControlIds, blockers);
@@ -397,6 +434,8 @@ export function evaluateSecurityCurrentStateInventory(
 
   return {
     structurallyValid: blockers.length === 0,
+    evidenceVerification: "declaration_only",
+    currentStateTruthVerified: false,
     assuranceReady: false,
     blockers: stableIssues(blockers),
     warnings: stableIssues(warnings),
@@ -410,7 +449,110 @@ export function evaluateSecurityCurrentStateInventory(
       openGaps: parsed.gaps.filter((gap) => gap.status === "open").length,
     },
     inventoryFingerprint: createHash("sha256").update(stableJson(parsed)).digest("hex"),
+    evidenceResolutions: [],
   };
+}
+
+const execFileAsync = promisify(execFile);
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const repositoryKinds = new Set<SecurityInventoryEvidence["kind"]>(["repository_file", "automated_test", "configuration", "design_reference"]);
+const externalKinds = new Set<SecurityInventoryEvidence["kind"]>(["external_snapshot", "contract_record", "operator_observation"]);
+
+/**
+ * Trusted evaluation used by render and release gates. Resolver construction is internal: callers
+ * cannot substitute bytes, a repository, a clock, or an observation verifier.
+ */
+export async function evaluateSecurityCurrentStateInventoryTrusted(
+  inventory: SecurityCurrentStateInventory,
+  trustControlCatalogue: TrustControlCatalogue,
+): Promise<SecurityInventoryDecision> {
+  const parsed = securityCurrentStateInventorySchema.parse(inventory);
+  const declared = evaluateDeclaredInventory(parsed, trustControlCatalogue, new Date());
+  const blockers = [...declared.blockers];
+  const resolutions: SecurityInventoryDecision["evidenceResolutions"] = [];
+
+  for (const evidence of parsed.evidenceIndex) {
+    if (!safeRepositoryRelativePath(evidence.ref)) {
+      blockers.push({code: "evidence_ref_outside_repository", subjectRef: evidence.evidenceId});
+      continue;
+    }
+    try {
+      if (repositoryKinds.has(evidence.kind)) {
+        const objectRef = `${parsed.baseline.commit}:${evidence.ref}`;
+        const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
+        const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
+        const fingerprint = sha256(bytes);
+        if (evidence.contentFingerprint && evidence.contentFingerprint !== fingerprint) {
+          blockers.push({code: "repository_evidence_content_mismatch", subjectRef: evidence.evidenceId});
+        }
+        resolutions.push({evidenceId: evidence.evidenceId, ref: objectRef, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "git_object"});
+      } else if (externalKinds.has(evidence.kind)) {
+        const absolutePath = resolve(repositoryRoot, evidence.ref);
+        const bytes = await readFile(absolutePath);
+        const fingerprint = sha256(bytes);
+        if (evidence.contentFingerprint !== fingerprint) {
+          blockers.push({code: "external_evidence_content_mismatch", subjectRef: evidence.evidenceId});
+        }
+        if (evidence.kind === "operator_observation") validateUnverifiedOperatorObservation(evidence, bytes, blockers);
+        resolutions.push({evidenceId: evidence.evidenceId, ref: evidence.ref, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "local_artifact"});
+      }
+    } catch {
+      blockers.push({code: "evidence_bytes_unresolvable", subjectRef: evidence.evidenceId});
+    }
+  }
+
+  const expectedEvidenceCount = parsed.evidenceIndex.length;
+  if (resolutions.length !== expectedEvidenceCount) blockers.push({code: "evidence_resolution_incomplete", subjectRef: null});
+  return {
+    ...declared,
+    structurallyValid: blockers.length === 0,
+    evidenceVerification: "repository_and_local_bytes",
+    currentStateTruthVerified: blockers.length === 0,
+    blockers: stableIssues(blockers),
+    evidenceResolutions: resolutions.sort((a, b) => a.evidenceId.localeCompare(b.evidenceId)),
+  };
+}
+
+function checkedDate(value: string, field: string, subjectRef: string, blockers: SecurityInventoryIssue[]): number | null {
+  const parsed = new Date(value).getTime();
+  if (!Number.isFinite(parsed)) {
+    blockers.push({code: `invalid_date:${field}`, subjectRef});
+    return null;
+  }
+  return parsed;
+}
+
+function safeRepositoryRelativePath(value: string): boolean {
+  if (isAbsolute(value) || value.includes("\0")) return false;
+  const absolute = resolve(repositoryRoot, value);
+  const rel = relative(repositoryRoot, absolute);
+  return rel !== "" && rel !== ".." && !rel.startsWith(`..${sep}`) && !isAbsolute(rel);
+}
+
+function sha256(bytes: Uint8Array): string {
+  return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+function validateUnverifiedOperatorObservation(
+  evidence: SecurityInventoryEvidence,
+  bytes: Uint8Array,
+  blockers: SecurityInventoryIssue[],
+) {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(Buffer.from(bytes).toString("utf8"));
+  } catch {
+    blockers.push({code: "operator_observation_invalid_json", subjectRef: evidence.evidenceId});
+    return;
+  }
+  const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
+  if (record.verificationState !== "unverified_operator_observation") {
+    blockers.push({code: "operator_observation_verification_state_invalid", subjectRef: evidence.evidenceId});
+  }
+  const assertionText = `${evidence.description}\n${Buffer.from(bytes).toString("utf8")}`;
+  if (/\b(?:confirmed|verified|attested)\b/i.test(assertionText)) {
+    blockers.push({code: "operator_observation_asserts_verified_fact", subjectRef: evidence.evidenceId});
+  }
 }
 
 function indexed<T>(items: T[], key: (item: T) => string, code: string, issues: SecurityInventoryIssue[]): Map<string, T> {

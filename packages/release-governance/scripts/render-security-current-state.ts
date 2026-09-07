@@ -1,11 +1,11 @@
 import {writeFile} from "node:fs/promises";
 import {fileURLToPath} from "node:url";
 import {currentSecurityInventory} from "../src/current-security-inventory.ts";
-import {evaluateSecurityCurrentStateInventory} from "../src/security-current-state.ts";
+import {evaluateSecurityCurrentStateInventoryTrusted} from "../src/security-current-state.ts";
 import {renderSecurityCurrentStateInventory} from "../src/security-current-state-markdown.ts";
 import {masterTrustControlCatalogue} from "../src/trust-control-catalogue.ts";
 
-const decision = evaluateSecurityCurrentStateInventory(
+const decision = await evaluateSecurityCurrentStateInventoryTrusted(
   currentSecurityInventory,
   masterTrustControlCatalogue,
   new Date(),

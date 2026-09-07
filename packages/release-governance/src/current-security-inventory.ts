@@ -69,9 +69,9 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
     freshness: "time_bound",
     validThrough: "2026-09-14T09:20:00.000-03:00",
     immutableFingerprint: null,
-    contentFingerprint: "sha256:52477bf0525d10938786355b5b5724950ac597942ee30af611b7911bca582621",
+    contentFingerprint: "sha256:2010cab3bb4c8ff29fb3afdd9030cf8e60a846d6a72e6d65699e1c095a7b022d",
     collector: {name: "operator-authored-observation", version: "1", principalClass: "authorized cloud administrator"},
-    description: "Unverified operator observation reporting that rollout diagnostic actions may be absent from the deploy role; no raw policy or simulation receipt is attached.",
+    description: "Unverified operator observation about an earlier rollout diagnostic failure; effective IAM permissions remain unknown until a policy and simulation receipt are collected.",
   },
 ];
 
@@ -118,37 +118,37 @@ const environments: SecurityCurrentStateInventory["environments"] = [
 const dataClasses: SecurityCurrentStateInventory["dataClasses"] = [
   {
     dataClassId: "public", title: "Public information", description: "Issuer filings and other information intentionally public.",
-    handlingRule: "Use only for the declared task and retain source provenance.", permittedEnvironmentRefs: environments.map((item) => item.environmentId), externalUseRequiresApproval: false,
+    handlingRule: "Use only for the declared task and retain source provenance.", declaredHandlingEnvironmentRefs: environments.map((item) => item.environmentId), externalUseRequiresApproval: false,
     status: "partial", owner: owner("Data governance owner", "AI governance owner"), evidenceRefs: ["SEV-PUBLIC-RESEARCH", "SEV-MODEL-DATA-POLICY"], gapRefs: ["SG-DATA-LIFECYCLE"], controlIds: ["TRUST-DATA-02", "TRUST-AI-01"],
   },
   {
     dataClassId: "internal_operational", title: "Internal operational data", description: "Operational metadata, job state and non-customer business records.",
-    handlingRule: "Restrict by role and purpose; do not place in public artifacts.", permittedEnvironmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
+    handlingRule: "Restrict by role and purpose; do not place in public artifacts.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Data governance owner", "Platform engineering owner"), evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-SUPABASE-CONFIG"], gapRefs: ["SG-DATA-LIFECYCLE"], controlIds: ["TRUST-DATA-02", "TRUST-DATA-03"],
   },
   {
     dataClassId: "personal_data", title: "Personal data", description: "Account identity, contact and professional-profile information tied to a person.",
-    handlingRule: "Process only for a documented purpose with rights and lifecycle controls.", permittedEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
+    handlingRule: "Process only for a documented purpose with rights and lifecycle controls.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Privacy owner", "Data governance owner"), evidenceRefs: ["SEV-SUPABASE-CONFIG", "SEV-SECURITY-PLAN"], gapRefs: ["SG-DATA-LIFECYCLE", "SG-PRIVACY-RECORDS"], controlIds: ["TRUST-DATA-02", "TRUST-DATA-04"],
   },
   {
     dataClassId: "customer_confidential", title: "Customer confidential information", description: "Non-public documents, prompts, cases, outputs and communications.",
-    handlingRule: "Keep tenant-scoped and route externally only through an approved data-policy decision.", permittedEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
+    handlingRule: "Keep tenant-scoped and route externally only through an approved data-policy decision.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Data security owner", "Privacy owner"), evidenceRefs: ["SEV-RLS-TEST", "SEV-MODEL-DATA-POLICY"], gapRefs: ["SG-DATA-LIFECYCLE", "SG-PROVIDER-ASSURANCE"], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-AI-01"],
   },
   {
     dataClassId: "restricted_financial", title: "Restricted financial information", description: "Financial models, debt terms, mandates, projections and investment analysis.",
-    handlingRule: "Apply customer-confidential controls plus explicit task authorization and traceability.", permittedEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
+    handlingRule: "Apply customer-confidential controls plus explicit task authorization and traceability.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Data security owner", "Credit product owner"), evidenceRefs: ["SEV-RLS-TEST", "SEV-MODEL-DATA-POLICY"], gapRefs: ["SG-DATA-LIFECYCLE", "SG-PROVIDER-ASSURANCE"], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-AI-01"],
   },
   {
     dataClassId: "credential_secret", title: "Credentials and secrets", description: "Authentication secrets, provider credentials and workload tokens.",
-    handlingRule: "Never commit or log values; use managed stores and rotate on suspected exposure.", permittedEnvironmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
+    handlingRule: "Never commit or log values; use managed stores and rotate on suspected exposure.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Platform security owner", "Security operations owner"), evidenceRefs: ["SEV-ENV-NAMES", "SEV-DEPLOY-WORKER", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS"], controlIds: ["TRUST-DATA-03", "TRUST-ID-01"],
   },
   {
     dataClassId: "security_evidence", title: "Security evidence", description: "Configuration snapshots, logs, findings, tests and audit-preparation records.",
-    handlingRule: "Protect integrity, access, retention and separation from customer content.", permittedEnvironmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
+    handlingRule: "Protect integrity, access, retention and separation from customer content.", declaredHandlingEnvironmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-CI", "ENV-DEVELOPMENT"], externalUseRequiresApproval: true,
     status: "partial", owner: owner("Security governance owner", "Engineering governance owner"), evidenceRefs: ["SEV-SECURITY-WORKFLOW", "SEV-SECURITY-PLAN"], gapRefs: ["SG-DATA-LIFECYCLE"], controlIds: ["TRUST-GOV-02", "TRUST-OPS-01", "TRUST-SDLC-01"],
   },
 ];
@@ -179,6 +179,13 @@ const systems: SecurityCurrentStateInventory["systems"] = [
     environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN"], status: "partial",
     owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE", "SG-VENDOR-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03", "TRUST-AI-01"],
+  },
+  {
+    systemId: "SYS-CODEX-CI", title: "Codex agentic review executor", kind: "worker",
+    purpose: "Execute model-directed independent review inside an ephemeral GitHub-hosted runner with danger-full-access to the checked-out workspace and outbound network access.",
+    environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"],
+    vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-OPENAI"], status: "partial", owner: owner("AI governance owner", "Product security owner"),
+    evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-01", "TRUST-AI-02", "TRUST-DATA-03", "TRUST-SDLC-01", "TRUST-CLOUD-02"],
   },
   {
     systemId: "SYS-OBSERVABILITY", title: "Application observability", kind: "observability", purpose: "Error, performance and allowlisted product-health telemetry when configured.",
@@ -236,6 +243,12 @@ const dataStores: SecurityCurrentStateInventory["dataStores"] = [
     storeId: "STORE-ECR", title: "Worker container registry", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION", "ENV-CI"], dataClassIds: ["internal_operational", "security_evidence"],
     tenancyBoundary: "A named ECR repository receives immutable worker images and a mutable latest tag; effective live access and retention are unverified.", retentionState: "unknown", backupState: "provider_managed_unverified", status: "partial",
     owner: owner("Platform engineering owner", "Product security owner"), evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-WORKER-TASK"], gapRefs: ["SG-LIVE-CONFIG", "SG-DATA-LIFECYCLE", "SG-VENDOR-ASSURANCE"], controlIds: ["TRUST-CLOUD-01", "TRUST-SDLC-01", "TRUST-SDLC-02"],
+  },
+  {
+    storeId: "STORE-CODEX-RUNNER", title: "Ephemeral Codex review workspace and logs", systemRef: "SYS-CODEX-CI", environmentRefs: ["ENV-CI"], dataClassIds: ["internal_operational", "credential_secret", "security_evidence"],
+    tenancyBoundary: "One GitHub-hosted job receives a checkout, an OpenAI credential through process environment, unrestricted workspace filesystem access, network egress, command execution and generated review artifacts; isolation beyond runner ephemerality is not proven.",
+    retentionState: "partial", backupState: "unknown", status: "partial", owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-EVAL-CODEX"],
+    gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-02", "TRUST-DATA-03", "TRUST-SDLC-01", "TRUST-OPS-01"],
   },
 ];
 
@@ -340,6 +353,44 @@ const dataFlows: SecurityCurrentStateInventory["dataFlows"] = [
     purpose: "Fetch remote typography when generated HTML material is rendered in a networked browser.", authorizationBoundary: "No repository-enforced allowlist, self-hosting or privacy contract is proven.", direction: "outbound", status: "partial",
     owner: owner("Web platform owner", "Privacy owner"), evidenceRefs: ["SEV-CASE-RENDER"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-TELEMETRY-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-02"],
   },
+  {
+    flowId: "FLOW-GITHUB-CODEX", title: "GitHub workflow to Codex agentic executor", sourceRef: "SYS-GITHUB", destinationRef: "SYS-CODEX-CI", environmentRefs: ["ENV-CI"],
+    dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], purpose: "Install and launch Codex against a repository corpus and model-authored review prompt.",
+    authorizationBoundary: "Manual workflow dispatch and read-only GitHub token; no repository-enforced command allowlist, filesystem write restriction or egress allowlist is present inside the runner.", direction: "internal", status: "partial",
+    owner: owner("AI governance owner", "Product security owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-02", "TRUST-SDLC-01", "TRUST-CLOUD-02"],
+  },
+  {
+    flowId: "FLOW-CODEX-AWS-SECRETS", title: "Codex review job to AWS Secrets Manager", sourceRef: "SYS-CODEX-CI", destinationRef: "VEN-AWS", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
+    dataClassIds: ["credential_secret", "internal_operational"], purpose: "Exchange GitHub OIDC for the evaluation role and retrieve the OpenAI credential into the job environment.",
+    authorizationBoundary: "Workflow names the OIDC role and masks the retrieved value, but effective IAM grants, process-level secret isolation and denial to the agentic child process are not proven.", direction: "outbound", status: "partial",
+    owner: owner("Cloud security owner", "AI governance owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-ID-01", "TRUST-DATA-03", "TRUST-AI-02"],
+  },
+  {
+    flowId: "FLOW-CODEX-OPENAI", title: "Codex review job to OpenAI", sourceRef: "SYS-CODEX-CI", destinationRef: "VEN-OPENAI", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
+    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Send the review prompt and selected repository corpus to the Codex service and receive tool-directed output.",
+    authorizationBoundary: "The workflow selects model and effort but does not enforce an outbound destination allowlist, prompt-injection boundary, tool allowlist or provider assurance receipt.", direction: "outbound", status: "partial",
+    owner: owner("AI governance owner", "Data security owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-01", "TRUST-AI-02", "TRUST-DATA-04"],
+  },
+  {
+    flowId: "FLOW-NPM-SUPPLY", title: "npm registry package acquisition", sourceRef: "VEN-NPM-REGISTRY", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    purpose: "Install pnpm dependencies and the pinned Codex CLI from the npm registry.", authorizationBoundary: "Lockfile and selected package versions are repository-visible; registry identity, install-script behavior and provenance verification are incomplete.", direction: "inbound", status: "partial",
+    owner: owner("Product security owner", "Engineering governance owner"), evidenceRefs: ["SEV-LOCKFILE", "SEV-EVAL-CODEX"], gapRefs: ["SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    flowId: "FLOW-GITHUB-ACTIONS-SUPPLY", title: "GitHub Actions component acquisition", sourceRef: "VEN-GITHUB-ACTIONS", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"],
+    purpose: "Execute commit-pinned third-party and GitHub-maintained workflow actions.", authorizationBoundary: "Action revisions are pinned, but publisher assurance, transitive code and periodic provenance review remain incomplete.", direction: "inbound", status: "partial",
+    owner: owner("Product security owner", "Engineering governance owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-EVAL-CODEX"], gapRefs: ["SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    flowId: "FLOW-SUPABASE-LOCAL-IMAGES", title: "Supabase local container image acquisition", sourceRef: "VEN-SUPABASE-LOCAL-IMAGES", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "security_evidence"],
+    purpose: "Acquire database, auth, storage and related containers used by the local Supabase CI stack.", authorizationBoundary: "CLI version is pinned; exact image registry, digest inventory and image attestation are not captured here.", direction: "inbound", status: "unknown",
+    owner: owner("Product security owner", "Data platform owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SUPABASE-CONFIG"], gapRefs: ["SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-CLOUD-02", "TRUST-VENDOR-01"],
+  },
+  {
+    flowId: "FLOW-PLAYWRIGHT-BROWSERS", title: "Playwright browser binary acquisition", sourceRef: "VEN-PLAYWRIGHT-DOWNLOADS", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    purpose: "Acquire browser binaries used by UI and material-rendering tests.", authorizationBoundary: "Package version is locked, but download host, browser digest and artifact provenance are not represented as release evidence.", direction: "inbound", status: "partial",
+    owner: owner("Product security owner", "Web platform owner"), evidenceRefs: ["SEV-LOCKFILE", "SEV-QUALITY-WORKFLOW"], gapRefs: ["SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
 ];
 
 const identities: SecurityCurrentStateInventory["identities"] = [
@@ -393,6 +444,11 @@ const identities: SecurityCurrentStateInventory["identities"] = [
     identityId: "ID-VERCEL-SOURCE-INTEGRATION", title: "Vercel source integration", kind: "api_credential", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-PREVIEW", "ENV-PRODUCTION", "ENV-EXTERNAL"], privilege: "unknown",
     authentication: "Provider-managed source/deploy identity; credential form, grants and lifecycle are unresolved.", lifecycleState: "unknown", status: "unknown", owner: owner("Web platform owner", "Engineering governance owner"),
     evidenceRefs: ["SEV-AGENTS-SCOPE"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG", "SG-VENDOR-ASSURANCE"], controlIds: ["TRUST-ID-01", "TRUST-CLOUD-02", "TRUST-SDLC-01"],
+  },
+  {
+    identityId: "ID-CODEX-CI", title: "Codex agent process in CI", kind: "service_role", systemRef: "SYS-CODEX-CI", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], privilege: "privileged",
+    authentication: "The Codex CLI receives an OpenAI API credential and executes with danger-full-access inside the runner; it inherits workspace filesystem access, command execution and network egress.", lifecycleState: "partial", status: "partial",
+    owner: owner("AI governance owner", "Product security owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-02", "TRUST-ID-01", "TRUST-DATA-03", "TRUST-CLOUD-02"],
   },
 ];
 
@@ -467,6 +523,26 @@ const vendors: VendorInput[] = [
     activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown", status: "partial",
     owner: owner("Vendor risk owner", "Privacy owner"), evidenceRefs: ["SEV-CASE-RENDER"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-TELEMETRY-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-02"],
   },
+  {
+    vendorId: "VEN-NPM-REGISTRY", title: "npm registry", service: "JavaScript package and Codex CLI distribution", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-DEVELOPMENT", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown", status: "partial",
+    owner: owner("Vendor risk owner", "Product security owner"), evidenceRefs: ["SEV-LOCKFILE", "SEV-EVAL-CODEX"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    vendorId: "VEN-GITHUB-ACTIONS", title: "GitHub Actions ecosystem", service: "Workflow action distribution and execution", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown", status: "partial",
+    owner: owner("Vendor risk owner", "Product security owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-EVAL-CODEX"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    vendorId: "VEN-SUPABASE-LOCAL-IMAGES", title: "Supabase local image registries", service: "Container images for the local Supabase CI stack", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-DEVELOPMENT", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "security_evidence"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown", status: "unknown",
+    owner: owner("Vendor risk owner", "Data platform owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SUPABASE-CONFIG"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-CLOUD-02", "TRUST-VENDOR-01"],
+  },
+  {
+    vendorId: "VEN-PLAYWRIGHT-DOWNLOADS", title: "Playwright browser distribution", service: "Browser binaries for UI and rendering tests", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-DEVELOPMENT", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown", status: "partial",
+    owner: owner("Vendor risk owner", "Product security owner"), evidenceRefs: ["SEV-LOCKFILE", "SEV-QUALITY-WORKFLOW"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
 ];
 
 const gaps: SecurityCurrentStateInventory["gaps"] = [
@@ -531,9 +607,15 @@ const gaps: SecurityCurrentStateInventory["gaps"] = [
     controlIds: ["TRUST-GOV-01", "TRUST-GOV-02"], nextAction: "Assign named primary and backup people to every functional owner role and record acceptance and review cadence.",
   },
   {
-    gapId: "SG-DEPLOY-DIAGNOSTICS", title: "Worker rollout role lacks required failure diagnostics", severity: "high", status: "open", owner: owner("Cloud security owner", "Security operations owner"),
+    gapId: "SG-DEPLOY-DIAGNOSTICS", title: "Worker rollout diagnostic permissions are not independently verified", severity: "high", status: "open", owner: owner("Cloud security owner", "Security operations owner"),
     targetRefs: ["SYS-GITHUB", "FLOW-GITHUB-AWS", "ID-GITHUB-OIDC", "ID-AWS-WORKER-ROLES", "VEN-AWS"], evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"],
-    controlIds: ["TRUST-CLOUD-01", "TRUST-OPS-01", "TRUST-SDLC-01"], nextAction: "Add only the scoped read actions required for safe rollout diagnostics, then prove success and denial outside the intended resources.",
+    controlIds: ["TRUST-CLOUD-01", "TRUST-OPS-01", "TRUST-SDLC-01"], nextAction: "Collect a dated IAM policy and simulate-principal-policy receipt for the exact rollout role and actions. Only after proving an actual denial, design the minimum resource-scoped grant and prove both intended success and out-of-scope denial.",
+  },
+  {
+    gapId: "SG-CODEX-CI-AGENT-BOUNDARY", title: "Codex CI agent boundary lacks enforced least privilege and egress controls", severity: "critical", status: "open", owner: owner("Product security owner", "AI governance owner"),
+    targetRefs: ["SYS-CODEX-CI", "STORE-CODEX-RUNNER", "FLOW-GITHUB-CODEX", "FLOW-CODEX-AWS-SECRETS", "FLOW-CODEX-OPENAI", "ID-CODEX-CI"], evidenceRefs: ["SEV-EVAL-CODEX"],
+    controlIds: ["TRUST-AI-01", "TRUST-AI-02", "TRUST-DATA-03", "TRUST-SDLC-01", "TRUST-CLOUD-02", "TRUST-OPS-01"],
+    nextAction: "Threat-model the danger-full-access runner; isolate provider credentials from agent-readable environment, enforce an allowlisted corpus and commands/tools, restrict filesystem writes and network egress, test prompt-injection and exfiltration attempts, scan logs/artifacts for secrets and define retention plus incident evidence.",
   },
   {
     gapId: "SG-SCHEMA-BEFORE-CODE", title: "Hosted schema is not orchestrated before worker code", severity: "critical", status: "open", owner: owner("Platform engineering owner", "Engineering governance owner"),
@@ -552,8 +634,8 @@ const gaps: SecurityCurrentStateInventory["gaps"] = [
   },
   {
     gapId: "SG-ASSET-DISCOVERY", title: "Security asset and external dependency discovery is incomplete", severity: "high", status: "open", owner: owner("Security governance owner", "Platform security owner"),
-    targetRefs: ["ENV-CI", "SYS-WEB", "SYS-WORKER", "SYS-GITHUB", "STORE-AWS-SECRETS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-GOOGLE-FONTS"], evidenceRefs: ["SEV-WEB-DEPENDENCIES", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE", "SEV-SECURITY-PLAN"], controlIds: ["TRUST-GOV-02", "TRUST-SDLC-02", "TRUST-VENDOR-01", "TRUST-AI-01", "TRUST-DATA-03"],
-    nextAction: "Inventory Secrets Manager, ECR and container artifacts, provider credentials, Vercel source integration, browser CDNs and external fonts before claiming external-boundary completeness.",
+    targetRefs: ["ENV-CI", "SYS-WEB", "SYS-WORKER", "SYS-GITHUB", "STORE-AWS-SECRETS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "FLOW-NPM-SUPPLY", "FLOW-GITHUB-ACTIONS-SUPPLY", "FLOW-SUPABASE-LOCAL-IMAGES", "FLOW-PLAYWRIGHT-BROWSERS", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-GOOGLE-FONTS", "VEN-NPM-REGISTRY", "VEN-GITHUB-ACTIONS", "VEN-SUPABASE-LOCAL-IMAGES", "VEN-PLAYWRIGHT-DOWNLOADS"], evidenceRefs: ["SEV-WEB-DEPENDENCIES", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-LOCKFILE", "SEV-SECURITY-PLAN"], controlIds: ["TRUST-GOV-02", "TRUST-SDLC-02", "TRUST-VENDOR-01", "TRUST-AI-01", "TRUST-DATA-03"],
+    nextAction: "Inventory Secrets Manager, ECR and container artifacts, provider credentials, Vercel source integration, npm and GitHub Actions supply, exact Supabase local image registries and digests, Playwright browser downloads, browser CDNs and external fonts before claiming external-boundary completeness.",
   },
 ];
 
@@ -574,6 +656,7 @@ export const currentSecurityInventory: SecurityCurrentStateInventory = {
     "Environment and data-class references are independent scope unions, not a Cartesian authorization matrix; that matrix remains an explicit critical gap.",
     "The deployed worker configuration omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false.",
     "Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.",
+    "The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.",
     "This inventory is not evidence of SOC 2 examination, ISO certification, penetration testing or regulatory compliance.",
   ],
   evidenceIndex,

@@ -13,13 +13,13 @@ export function renderSecurityCurrentStateInventory(
     "",
     `Fingerprint: \`${decision.inventoryFingerprint}\``,
     "",
-    "Status: baseline estrutural do repositório. Não é certificação, exame independente, pentest ou prova de operação contínua.",
+    `Status: baseline do repositório com verificação de evidência \`${decision.evidenceVerification}\`. Não é certificação, exame independente, pentest ou prova de operação contínua.`,
     "",
     "## Como ler",
     "",
     inventory.scopeStatement,
     "",
-    "`verified` significa apenas que a afirmação delimitada possui evidência referenciada. `partial` e `unknown` preservam lacunas abertas. Integração observada em código não comprova ativação live nem termos contratuais.",
+    "`verified` significa apenas que a afirmação delimitada possui evidência referenciada e resolvida pelo gate confiável. `partial` e `unknown` preservam lacunas abertas. Integração observada em código não comprova ativação live nem termos contratuais. Uma observação de operador nunca comprova o estado efetivo de uma permissão.",
     "",
     ...inventory.limitations.map((limitation) => `- ${limitation}`),
     "",
@@ -35,6 +35,7 @@ export function renderSecurityCurrentStateInventory(
     `| Vendors e subprocessadores | ${decision.counts.vendors} |`,
     `| Lacunas abertas | ${decision.counts.openGaps} |`,
     `| Inventário estruturalmente válido | ${decision.structurallyValid ? "sim" : "não"} |`,
+    `| Evidência resolvida por bytes confiáveis | ${decision.currentStateTruthVerified ? "sim" : "não"} |`,
     `| Assurance ready | ${decision.assuranceReady ? "sim" : "não"} |`,
     "",
     "## Ambientes",
@@ -48,10 +49,10 @@ export function renderSecurityCurrentStateInventory(
     "",
     "## Classes de dados",
     "",
-    "| Classe | Regra de tratamento | Ambientes permitidos | Uso externo requer aprovação | Estado | Owner | Lacunas |",
+    "| Classe | Regra de tratamento | Ambientes declarados para tratamento | Uso externo requer aprovação | Estado | Owner | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.dataClasses.map((item) => row([
-      item.dataClassId, item.handlingRule, refs(item.permittedEnvironmentRefs), item.externalUseRequiresApproval ? "sim" : "não",
+      item.dataClassId, item.handlingRule, refs(item.declaredHandlingEnvironmentRefs), item.externalUseRequiresApproval ? "sim" : "não",
       item.status, ownerLabel(item.owner), refs(item.gapRefs),
     ])),
     "",
@@ -100,7 +101,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Severidade | Lacuna | Owner | Controles | Próxima ação |",
     "| --- | --- | --- | --- | --- | --- |",
     ...inventory.gaps.filter((item) => item.status === "open").map((item) => row([
-      item.gapId, item.severity, item.title, ownerLabel(item.owner), refs(item.controlIds), item.nextAction,
+      `<a id="${item.gapId.toLowerCase()}"></a>\`${item.gapId}\``, item.severity, item.title, ownerLabel(item.owner), refs(item.controlIds), item.nextAction,
     ])),
     "",
     "## Governança e rastreabilidade por objeto",
@@ -166,7 +167,7 @@ function ownerLabel(owner: SecurityOwner): string {
 }
 
 function refs(values: readonly string[]): string {
-  return values.length === 0 ? "nenhum" : values.map((value) => `\`${value}\``).join(", ");
+  return values.length === 0 ? "nenhum" : values.map((value) => value.startsWith("SG-") ? `[\`${value}\`](#${value.toLowerCase()})` : `\`${value}\``).join(", ");
 }
 
 function row(values: Array<string | number>): string {

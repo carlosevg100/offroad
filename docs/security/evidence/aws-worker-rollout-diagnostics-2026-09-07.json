@@ -9,12 +9,13 @@
     "principalClass": "authorized cloud administrator"
   },
   "scope": "worker deployment role",
-  "observation": "the operator reports that required rollout diagnostic actions may be absent; no raw policy document or simulate-principal-policy receipt is attached",
-  "reportedAbsentActions": [
+  "observation": "the operator reports that rollout diagnostics were unavailable in an earlier session; whether IAM caused that result remains unknown because no raw policy document or simulate-principal-policy receipt is attached",
+  "actionsRequiringEffectivePermissionVerification": [
     "ecs:DescribeTasks",
     "ecs:ListTasks",
     "logs:FilterLogEvents"
   ],
   "verificationState": "unverified_operator_observation",
-  "redaction": "Cloud account identifiers, role identifiers and policy documents are intentionally excluded; this prevents independent verification and therefore cannot be treated as an IAM attestation."
+  "requiredNextEvidence": "dated role policy plus simulate-principal-policy results for every named action and representative in-scope and out-of-scope resources",
+  "redaction": "Cloud account identifiers, role identifiers and policy documents are intentionally excluded; this prevents independent verification and therefore cannot establish whether any action is allowed or denied."
 }
