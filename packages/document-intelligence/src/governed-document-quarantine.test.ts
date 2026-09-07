@@ -6,6 +6,7 @@ import {describe, expect, it} from "vitest";
 import {
   authorizeParserInput,
   defaultDocumentQuarantinePolicy,
+  documentQuarantinePolicySchema,
   GovernedDocumentQuarantineError,
   governedDocumentQuarantineRuntimeBoundary,
   quarantineDocument,
@@ -117,6 +118,23 @@ describe("governed document quarantine", () => {
       detectedMediaType: "application/pdf",
       observedSha256: hash(bytes),
     });
+  });
+
+  it("binds receiptId to every binding field and the exact immutable receipt", async () => {
+    const bytes = pdf();
+    const baseline = await inspect(bytes);
+    const renamed = await inspect(bytes, {originalName: "renamed.pdf"});
+    const redeclared = await inspect(bytes, {declaredMediaType: "application/pdf; charset=binary"});
+    const wrongExpectedHash = await inspect(bytes, {expectedSha256: "0".repeat(64)});
+    const wrongExpectedSize = await inspect(bytes, {expectedByteSize: bytes.byteLength + 1});
+
+    expect(new Set([
+      baseline.receiptId,
+      renamed.receiptId,
+      redeclared.receiptId,
+      wrongExpectedHash.receiptId,
+      wrongExpectedSize.receiptId,
+    ]).size).toBe(5);
   });
 
   it("fails closed when the scanner is absent, unavailable, or detects malware", async () => {
@@ -282,6 +300,35 @@ describe("governed document quarantine", () => {
     expect(receipt.detected?.archiveMaxDepth).toBe(1);
   });
 
+  it.each([
+    ["bzip2", Uint8Array.from([0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26])],
+    ["xz", Uint8Array.from([0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00, 0x00, 0x04])],
+  ])("rejects a renamed %s member by magic bytes when maxArchiveDepth is zero", async (_format, nestedBytes) => {
+    expect(defaultDocumentQuarantinePolicy.maxArchiveDepth).toBe(0);
+    const bytes = await workbook({"xl/media/renamed.bin": nestedBytes});
+    const receipt = await inspect(bytes, {
+      originalName: "analysis.xlsx",
+      declaredMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    expect(receipt.reasons).toContain("nested_archive");
+    expect(receipt.detected?.archiveMaxDepth).toBe(1);
+  });
+
+  it("keeps maxArchiveDepth fixed at zero and rejects TAR by member name", async () => {
+    expect(documentQuarantinePolicySchema.safeParse({
+      ...defaultDocumentQuarantinePolicy,
+      maxArchiveDepth: 1,
+    }).success).toBe(false);
+    const bytes = await workbook({"xl/media/payload.tar": encoder.encode("not opened")});
+    const receipt = await inspect(bytes, {
+      originalName: "analysis.xlsx",
+      declaredMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    expect(receipt.reasons).toContain("nested_archive");
+  });
+
   it("rejects spreadsheet formula injection in delimited text", async () => {
     const bytes = encoder.encode("name,amount\nlegitimate,100\nattack,=WEBSERVICE(\"https://example.test\")\n");
     const receipt = await inspect(bytes, {originalName: "input.csv", declaredMediaType: "text/csv"});
@@ -328,6 +375,7 @@ describe("governed document quarantine", () => {
         "atomic_compare_and_swap",
         "runtime_task_isolation",
         "runtime_egress_enforcement",
+        "complete_nested_container_detection",
       ]),
     });
   });

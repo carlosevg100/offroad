@@ -106,6 +106,7 @@ export const governedDocumentQuarantineRuntimeBoundary = deepFreeze({
     "scanner_version_and_signature_attestation",
     "runtime_task_isolation",
     "runtime_egress_enforcement",
+    "complete_nested_container_detection",
     "staging_adversarial_validation",
   ],
 } as const);
@@ -266,18 +267,8 @@ export async function quarantineDocument(input: {
   const orderedReasons = [...reasons].sort();
   const verdict = orderedReasons.length === 0 && scannerResult.verdict === "clean" ? "clean" : "rejected";
   const policyFingerprint = fingerprint(policy);
-  const receiptId = `sha256:${fingerprint({
-    operationId: binding.operationId,
-    organizationId: binding.organizationId,
-    sourceDocumentId: binding.sourceDocumentId,
-    documentVersion: binding.documentVersion,
-    observedSha256,
-    policyVersion: policy.policyVersion,
-    policyFingerprint,
-  })}`;
-  const body = {
+  const receiptIdentity = {
     schemaVersion: governedDocumentQuarantineVersion,
-    receiptId,
     organizationId: binding.organizationId,
     sourceDocumentId: binding.sourceDocumentId,
     documentVersion: binding.documentVersion,
@@ -301,6 +292,14 @@ export async function quarantineDocument(input: {
       {state: verdict, at: completedAt},
     ],
   } as const;
+  // This ID identifies the exact immutable receipt, not merely a job or an input. Including every
+  // binding field, the observed bytes, policy, scanner outcome and timestamps prevents two
+  // materially different receipts from colliding under a retry of the same operation.
+  const receiptId = `sha256:${fingerprint(receiptIdentity)}`;
+  const body = {
+    ...receiptIdentity,
+    receiptId,
+  } as const;
   const receipt = documentQuarantineReceiptSchema.parse({...body, receiptFingerprint: fingerprint(body)});
   return deepFreeze(receipt);
 }
@@ -314,6 +313,8 @@ export function authorizeParserInput(input: {
   const receipt = documentQuarantineReceiptSchema.parse(structuredClone(input.receipt));
   const {receiptFingerprint: _fingerprint, ...body} = receipt;
   if (fingerprint(body) !== receipt.receiptFingerprint) throw new GovernedDocumentQuarantineError("receipt_invalid");
+  const {receiptId: _receiptId, ...receiptIdentity} = body;
+  if (`sha256:${fingerprint(receiptIdentity)}` !== receipt.receiptId) throw new GovernedDocumentQuarantineError("receipt_invalid");
   if (receipt.verdict !== "clean" || receipt.scanner.verdict !== "clean" || receipt.reasons.length > 0) {
     throw new GovernedDocumentQuarantineError("receipt_not_clean");
   }
@@ -569,7 +570,7 @@ function hasExternalFormula(source: string): boolean {
 }
 
 function archiveDepth(name: string): number {
-  return /\.(?:zip|jar|7z|rar|gz|bz2|xz)$/i.test(name) ? 1 : 0;
+  return /\.(?:zip|zipx|jar|7z|rar|gz|tgz|bz2|tbz|tbz2|xz|txz|tar)$/i.test(name) ? 1 : 0;
 }
 
 function archivePathSafe(name: string): boolean {
@@ -634,6 +635,8 @@ function archiveMagic(prefix: Uint8Array): boolean {
     || startsWith(prefix, [0x1f, 0x8b])
     || startsWith(prefix, [0x52, 0x61, 0x72, 0x21, 0x1a, 0x07])
     || startsWith(prefix, [0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
+    || startsWith(prefix, [0x42, 0x5a, 0x68])
+    || startsWith(prefix, [0xfd, 0x37, 0x7a, 0x58, 0x5a, 0x00])
   );
 }
 
