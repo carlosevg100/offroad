@@ -10,7 +10,7 @@
  * without a frozen corpus never receives another company's objects.
  */
 import type {IntentEnvelope} from "@offroad/agent-contracts";
-import {intentDepthSchema} from "@offroad/agent-contracts";
+import {canonicalizeIntentClassifierOutput, intentDepthSchema} from "@offroad/agent-contracts";
 import {preview} from "@offroad/credit-playbook";
 
 const {describePremises} = preview;
@@ -189,9 +189,20 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
     thinking: "off",
     metadata: {surface: "live_preview_router"},
   });
-  const output: LiveRoutingOutput = {...completion.output, turn: normalizePreviewTurn(completion.output.turn)};
+  const previewComposition = completion.output.composition;
+  const classifier = canonicalizeIntentClassifierOutput({
+    ...completion.output,
+    // `deepen` exists only on this compatibility rail and is restored after the canonical
+    // classifier boundary has decided whether the turn must fail closed.
+    composition: previewComposition === "deepen" ? null : previewComposition,
+  }, context.locale);
+  const output: LiveRoutingOutput = {
+    ...classifier,
+    composition: classifier.abstain ? null : previewComposition,
+    turn: normalizePreviewTurn(completion.output.turn),
+  };
   return {
-    envelope: stampIntentEnvelope(completion.output, context, input.now),
+    envelope: stampIntentEnvelope(output, context, input.now),
     output,
     model: completion.model,
     costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore),
