@@ -234,7 +234,6 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     .replace(/\b(?:source text|source|texto fonte|noticia|documento|contrato)\b[^.;!\x0a]{0,80}\b(?:says?|said|diz|disse|contem a frase)\b[^.;!\x0a]*/g, " ")
     .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no|nem pensar|de jeito nenhum|absolutely not|definitely not)\b[^.;!\x0a]*/g, " ");
   const clauses = normalized
-    .replace(/\b(apenas|somente|so|only|just)\b/g, ". $1")
     // Keep question marks inside a clause. `Can you send this?` remains an explicit request,
     // while `Send this? I refuse` reaches the closed external grammar as one rejected clause.
     .split(/[.;!\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
@@ -290,10 +289,95 @@ function policyContinuity(
   if (/\b(esquece|ignora|novo trabalho|forget|ignore|new task)\b/.test(text)) return policyField("new" as const, composition);
   if (composition === "build_or_review_model"
     && /\b(ajusta|altera|atualiza|recalcula|change|update|recalculate)\b/.test(text)) return policyField("refresh" as const, composition);
+  if (input.recentConversation.length === 0) return policyField("new" as const, composition);
   if (input.recentConversation.length > 0 && [
     "answer_a_question", "review_work", "prepare_material", "prepare_decision", "introduce", "map_market_and_precedents",
   ].includes(composition)) return policyField("resume" as const, composition);
   return output.routingCore.continuity;
+}
+
+/**
+ * Decision domain is a workflow axis, not a second model-authored description of the request.
+ * Most compositions determine it completely. The few polymorphic families use only the current
+ * request and governed active context; a job title never changes the domain.
+ */
+function policyDecisionType(
+  composition: NamedComposition,
+  input: IntentClassifierInput,
+): IntentClassifierOutput["routingCore"]["decisionType"] {
+  const text = normalizeForPolicy([
+    ...input.recentConversation.map(({content}) => content),
+    input.latestUserMessage,
+  ].join("\n"));
+  const fixed: Partial<Record<NamedComposition, IntentClassifierOutput["routingCore"]["decisionType"]["value"]>> = {
+    find_and_organize_information: "none",
+    understand_company_sector_asset: "none",
+    answer_a_question: "none",
+    extract_and_reconcile_data: "document",
+    read_contract_covenant_waterfall: "document",
+    analyze_performance_and_credit: "credit",
+    evaluate_received_opportunity: "credit",
+    diagnose_capital_structure: "capital",
+    develop_alternatives: "capital",
+    design_indicative_structure: "capital",
+    prepare_meeting: "capital",
+    prepare_material: "material",
+    prepare_decision: "capital",
+    map_market_and_precedents: "market",
+    identify_capital: "market",
+    introduce: "external",
+    manage_work: "workflow",
+  };
+  let value = fixed[composition];
+  if (!value && composition === "monitor") {
+    value = /\b(mercado|emiss\w*|spread|market|issuance|pricing)\b/.test(text) ? "market" : "credit";
+  }
+  if (!value && composition === "build_or_review_model") {
+    const updatesCapitalScenario = /\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/.test(normalizeForPolicy(input.latestUserMessage))
+      && /\b(cenario|scenario|taxa|rate|prazo|tenor|cdi|indexador|indexer)\b/.test(normalizeForPolicy(input.latestUserMessage));
+    value = updatesCapitalScenario ? "capital" : "credit";
+  }
+  value ??= "none";
+  return value === "none"
+    ? {value, state: "not_applicable", confidence: null, basis: `deterministic policy for ${composition}`}
+    : policyField(value, composition);
+}
+
+/** Audience means the consumer or external counterparty of this work, never the subject analysed. */
+function policyAudienceType(
+  composition: NamedComposition,
+  input: IntentClassifierInput,
+): IntentClassifierOutput["routingCore"]["audienceType"] {
+  if (composition === "build_or_review_model" || composition === "answer_a_question") {
+    return policyField("self" as const, composition);
+  }
+  if (composition === "identify_capital" || composition === "introduce") {
+    return policyField("capital_provider" as const, composition);
+  }
+  const current = normalizeForPolicy(input.latestUserMessage);
+  const history = normalizeForPolicy(input.recentConversation.map(({content}) => content).join("\n"));
+  const all = `${history}\n${current}`;
+  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(current)) {
+    return policyField("board_or_committee" as const, composition);
+  }
+  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(current)) {
+    return policyField("internal_senior" as const, composition);
+  }
+  if (composition === "prepare_meeting" && /\b(cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current)) {
+    return policyField("company_management" as const, composition);
+  }
+  if (composition === "prepare_material") {
+    if (/\b(interno|internal|vp|pm|diretor|director)\b/.test(current)) return policyField("internal_senior" as const, composition);
+    if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(all)) return policyField("board_or_committee" as const, composition);
+    if (/\b(reuniao|meeting|companhia|cliente|client|cfo|tesouraria|treasury)\b/.test(all)) return policyField("company_management" as const, composition);
+  }
+  if (composition === "review_work" && /\b(conselh\w*|board|conselheiro|director)\b/.test(all)) {
+    return policyField("board_or_committee" as const, composition);
+  }
+  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(all)) {
+    return policyField("internal_senior" as const, composition);
+  }
+  return policyField("self" as const, composition);
 }
 
 function policyQuestion(
@@ -359,6 +443,8 @@ export function canonicalizeIntentClassifierOutput(
         ...output.routingCore,
         action: policyField([policy.canonicalAction], composition),
         object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{id: "object-1", ordinal: 1, kind: "process", slots: []}], state: "unknown", confidence: null, basis: null},
+        decisionType: policyDecisionType(composition, input),
+        audienceType: policyAudienceType(composition, input),
         depth: policyField(policy.depth, composition),
         continuity: policyContinuity(composition, output, input),
         workResponsibility: policyField([...policy.workResponsibilities], composition),

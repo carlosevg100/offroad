@@ -128,6 +128,39 @@ describe("intent classifier boundary", () => {
     expect(canonical.composition).toBe(expected);
   });
 
+  it("keeps a model-review request affirmative when only the rejected narrative review is qualified", () => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("review_work"), {
+      locale: "pt-BR",
+      latestUserMessage: "Revise o modelo financeiro, as fórmulas e as premissas; não quero uma revisão apenas narrativa do memo.",
+      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe("build_or_review_model");
+    expect(canonical.routingCore.action.value).toEqual(["model"]);
+    expect(canonical.routingCore.decisionType).toMatchObject({value: "credit", state: "inferred"});
+    expect(canonical.routingCore.audienceType).toMatchObject({value: "self", state: "inferred"});
+  });
+
+  it("derives workflow domain and audience instead of trusting contradictory duplicate model fields", () => {
+    const raw = modelRoute("prepare_decision");
+    const canonical = canonicalizeIntentClassifierOutput({
+      ...raw,
+      routingCore: {
+        ...raw.routingCore,
+        action: field(["understand"]),
+        decisionType: field("material"),
+        audienceType: field("company_management"),
+      },
+    }, {
+      locale: "pt-BR",
+      latestUserMessage: "Sou CFO e vou levar ao conselho uma decisão entre alongar a dívida ou emitir debêntures.",
+      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.routingCore.action.value).toEqual(["prepare_decision"]);
+    expect(canonical.routingCore.decisionType.value).toBe("capital");
+    expect(canonical.routingCore.audienceType.value).toBe("board_or_committee");
+    expect(canonical.routingCore.continuity.value).toBe("new");
+  });
+
   it.each([
     ["Revise o memo. Não altere o modelo.", "review_work"],
     ["Analise o desempenho financeiro. Não leia o contrato.", "analyze_performance_and_credit"],
