@@ -17,10 +17,11 @@ Este documento define como o board canônico evolui. Ele não altera estados por
 2. **No PR:** registrar arquivos, testes, findings, containment e rollback. Código local verde permite
    `code_complete`; não permite `gate_passed`.
 3. **Após CI:** anexar run imutável e ambiente. Evidência completa permite `evidence_complete`.
-4. **No gate:** fechar acceptance e blockers, verificar dependências e registrar a transição no
-   Capability Ledger. Somente então usar `gate_passed`.
-5. **Após rollout verificado:** confirmar runtime, exposição, observabilidade e rollback. Somente
-   capability `live` e exposta pode levar a tarefa a `promoted`.
+4. **No gate:** fechar acceptance e blockers e verificar dependências. Se a tarefa declarar uma
+   transição já registrada, ela precisa estar refletida no Capability Ledger. Tarefas de suporte
+   podem usar `gate_passed` sem inventar uma capability.
+5. **Após rollout verificado:** registrar a transição, confirmar runtime, exposição,
+   observabilidade e rollback. Somente capability `live` e exposta pode levar a tarefa a `promoted`.
 
 ## Ritmo operacional
 

@@ -128,6 +128,8 @@ const terminalStates = new Set<ProgramTaskState>(["gate_passed", "promoted"]);
 const exclusiveCapabilityTransitionOwners = new Map<string, string>([
   ["artifacts.governed-office-foundation", "MAT-01"],
   ["artifacts.template-faithful-suite", "MAT-05"],
+  ["execution.general-specialist-runtime", "WFI-14"],
+  ["gold.g2-g8-reference-journeys", "JNY-09"],
 ]);
 
 /**
@@ -166,6 +168,17 @@ export function evaluateEndgameProgramBoard(
     taskCounts[task.state] += 1;
     if (taskById.has(task.taskId)) blockers.push({code: "duplicate_task_id", taskId: task.taskId});
     taskById.set(task.taskId, task);
+  }
+  const transitionClaims = new Map<string, string[]>();
+  for (const task of parsed.tasks) {
+    if (!task.capabilityTransition) continue;
+    const claims = transitionClaims.get(task.capabilityTransition.capabilityId) ?? [];
+    claims.push(task.taskId);
+    transitionClaims.set(task.capabilityTransition.capabilityId, claims);
+  }
+  for (const [capabilityId, taskIds] of transitionClaims) {
+    if (taskIds.length <= 1) continue;
+    for (const taskId of taskIds) blockers.push({code: `duplicate_capability_transition:${capabilityId}`, taskId});
   }
 
   for (const finding of parsed.reconciliationFindings) {
@@ -222,12 +235,15 @@ export function evaluateEndgameProgramBoard(
       if (task.acceptance.some((criterion) => criterion.status !== "passed" && criterion.status !== "not_applicable")) blockers.push({code: "terminal_task_acceptance_incomplete", taskId: task.taskId});
       if (task.evidenceRefs.length === 0) blockers.push({code: "terminal_task_requires_evidence", taskId: task.taskId});
       if (task.blockers.some((blocker) => blocker.status === "open")) blockers.push({code: "terminal_task_has_open_blocker", taskId: task.taskId});
-      if (!task.capabilityTransition || task.capabilityTransition.status !== "recorded") blockers.push({code: "terminal_task_requires_recorded_capability_transition", taskId: task.taskId});
       for (const dependency of task.dependsOn) {
         const dependencyTask = taskById.get(dependency);
         if (dependencyTask && !terminalStates.has(dependencyTask.state)) blockers.push({code: `terminal_dependency_not_passed:${dependency}`, taskId: task.taskId});
       }
-      if (task.state === "promoted" && task.capabilityTransition) {
+      if (task.state === "promoted") {
+        if (!task.capabilityTransition || task.capabilityTransition.status !== "recorded") {
+          blockers.push({code: "promoted_task_requires_recorded_capability_transition", taskId: task.taskId});
+          continue;
+        }
         const capability = capabilityById.get(task.capabilityTransition.capabilityId);
         if (!capability || capability.availability !== "live" || capability.exposure === "none") blockers.push({code: "promoted_task_requires_live_exposed_capability", taskId: task.taskId});
       }

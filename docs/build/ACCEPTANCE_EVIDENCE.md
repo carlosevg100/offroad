@@ -4,8 +4,8 @@
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
-| Fonte canônica | `current-endgame-program.ts` | baseline, evidence index, findings e 62 work packages R0-R7 em um objeto tipado |
-| Gate de conclusão | `evaluateEndgameProgramBoard` | impede `gate_passed`/`promoted` sem subtarefas, acceptance, evidência, dependências, blockers fechados e transição registrada no ledger |
+| Fonte canônica | `current-endgame-program.ts` | baseline, evidence index, findings e 64 work packages R0-R7 em um objeto tipado |
+| Gate de conclusão | `evaluateEndgameProgramBoard` | `gate_passed` exige trabalho, acceptance, evidência, dependências e blockers fechados; `promoted` acrescenta transição registrada e capability live/exposta |
 | Integridade do grafo | testes de dependências | referência ausente, self-loop, duplicidade e ciclo falham fechado |
 | Integridade de evidência | evidence index + testes negativos | evidence ref inexistente, acceptance passada sem prova e blocker resolvido sem prova falham fechado |
 | Segurança | Control Register real | cada `TRUST-*` referenciado precisa resolver a um objetivo existente no catálogo canônico |
@@ -13,7 +13,8 @@
 | Paridade humana | `ENDGAME_PROGRAM_BOARD.md` | conteúdo gerado precisa ser byte-identical ao renderer da fonte canônica |
 | Baseline real | inspeção de origin/main e GitHub | `main@b760167`; ledger v13 em `cb5f674`; PR 523 aberto e bloqueado por E2E |
 | Escopo de promoção | ownership exclusivo no evaluator | MAT-01 só pode avançar a foundation estreita; a suíte template-faithful pertence a MAT-05 |
-| Gate focado | test + typecheck + lint de `@offroad/release-governance` | 5 arquivos/39 testes verdes antes do registro final deste incremento |
+| Promoções agregadas | WFI-14 e JNY-09 + duplicate-transition gate | um pack não promove o runtime geral; uma jornada não promove G2-G8; capability não pode ter duas transições no mesmo board |
+| Gate focado | test + typecheck + lint de `@offroad/release-governance` | 5 arquivos/44 testes verdes antes do registro final deste incremento |
 | Gate integral local | `pnpm check` em Node 24 | lint, typecheck, test e build verdes nos 43 targets; CI externa ainda pendente |
 
 Status: **candidate control evidence**. A evidência valida o mecanismo de controle, não encerra

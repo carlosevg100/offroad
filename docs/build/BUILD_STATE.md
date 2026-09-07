@@ -3,13 +3,14 @@
 ## Endgame Program Board executável, candidate, 07/09/2026
 
 - A evolução do blueprint passa a ter uma fonte canônica machine-readable em
-  `@offroad/release-governance/current-endgame-program`, com 62 work packages distribuídos entre
+  `@offroad/release-governance/current-endgame-program`, com 64 work packages distribuídos entre
   R0 e R7. Cada item declara resultado, owner role, dependências, subtarefas, critérios de aceite,
   evidências, bloqueadores, controles de segurança e transição de capability quando aplicável.
 - O avaliador falha fechado para evidência ou dependência inexistente, ciclos, IDs duplicados,
   acceptance aprovada sem evidência, blocker resolvido sem evidência e control ID que não exista no
-  Control Register. Um item não pode chegar a `gate_passed` ou `promoted` sem encerrar subtarefas,
-  critérios, dependências e bloqueadores e sem uma transição já registrada no Capability Ledger.
+  Control Register. Um item não pode chegar a `gate_passed` sem encerrar subtarefas, critérios,
+  dependências e bloqueadores. `promoted` exige também uma transição registrada no Capability Ledger
+  para capability live e exposta; tarefas de suporte podem passar gate sem inventar uma capability.
 - A vista humana `ENDGAME_PROGRAM_BOARD.md` é gerada da mesma fonte e possui teste de paridade byte
   a byte. Ela não é um segundo roadmap editável.
 - O primeiro baseline foi fixado em `main@b760167`. A reconciliação registra quatro findings high:
@@ -18,6 +19,9 @@
 - MAT-01 governa somente `artifacts.governed-office-foundation`. O evaluator reserva
   `artifacts.template-faithful-suite` a MAT-05, depois de XLSX/PPTX/DOCX, template fidelity e review;
   um material isolado não pode promover a suíte ampla.
+- Os 13 packs não declaram individualmente o runtime geral: WFI-14 é o gate agregado e depende de
+  WFI-01 a WFI-13. As oito jornadas também não promovem isoladamente G2-G8: JNY-09 depende de todas.
+  O evaluator bloqueia tanto owner incorreto quanto transição duplicada para a mesma capability.
 - Nenhuma capability foi promovida por esta entrega. O board permanece em candidate até a CI deste
   PR e a reconciliação seguinte serem registradas como evidência.
 

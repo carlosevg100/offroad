@@ -5,11 +5,11 @@
 Atualizado em: 2026-09-07T08:37:45.000-03:00
 Baseline: `main@b76016734e860358d8b9d2f076d47c527346b0d3`
 Capability Ledger: `2026.09.07-v13@cb5f674`
-Fingerprint do board: `d7c4ba0c5468ef3eb69e2269f701d9ea2d38c1ecd3a7aa3da5ce3192c35e31f4`
+Fingerprint do board: `76fb67d712d86cc314f67dad054149a5d4dbfb7eefb58d107be9ac8bb0dd1db0`
 
 ## Leitura executiva
 
-Este quadro mede gates comprovados, não volume de código. `Gate passed` exige dependências encerradas, critérios aceitos com evidência, nenhum bloqueador aberto e transição registrada no Capability Ledger. `Promovido` exige, além disso, runtime live e exposição diferente de `none`.
+Este quadro mede gates comprovados, não volume de código. `Gate passed` exige dependências encerradas, critérios aceitos com evidência e nenhum bloqueador aberto. Se a tarefa declara uma transição, ela precisa ser válida e, quando registrada, já estar refletida no Capability Ledger. `Promovido` exige transição registrada, runtime live e exposição diferente de `none`.
 
 ## Reconciliação do baseline
 
@@ -97,6 +97,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | WFI-11 | Backlog | Instrumentos EUA possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | WFI-01, RT-07 | — |
 | WFI-12 | Backlog | Cross-border possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | WFI-01, RT-07 | — |
 | WFI-13 | Backlog | Sector packs prioritários possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | WFI-01, RT-07 | — |
+| WFI-14 | Backlog | O runtime geral só avança depois que todos os packs Pareto possuem gates próprios e integração conjunta. | WFI-01, WFI-02, WFI-03, WFI-04, WFI-05, WFI-06, WFI-07, WFI-08, WFI-09, WFI-10, WFI-11, WFI-12, WFI-13 | — |
 
 ### R6
 
@@ -110,6 +111,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | JNY-06 | Backlog | Atualização incremental funciona como projeto contínuo, não como resposta isolada. | RT-08, MAT-04 | — |
 | JNY-07 | Backlog | Project finance longitudinal funciona como projeto contínuo, não como resposta isolada. | WFI-09, MAT-05 | — |
 | JNY-08 | Backlog | Operação a conexão qualificada funciona como projeto contínuo, não como resposta isolada. | WFI-06, CAP-02 | — |
+| JNY-09 | Backlog | A capability longitudinal G2-G8 só avança após todas as jornadas e variantes obrigatórias passarem. | JNY-01, JNY-02, JNY-03, JNY-04, JNY-05, JNY-06, JNY-07, JNY-08 | — |
 | CAP-01 | Backlog | Mandatos têm fonte, data, validade, ticket, setor, instrumento, retorno, restrições, confiança e consentimento. | VLT-04 | — |
 | CAP-02 | Backlog | Hard filters, fit, non-fit, unknown, exclusões e informação que muda ranking são discriminados. | CAP-01, FIN-07 | — |
 | CAP-03 | Backlog | Disclosure, destinatário, material e introdução exigem autorização exata e permanecem auditáveis. | CAP-02, MAT-05 | — |

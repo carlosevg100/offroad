@@ -24,7 +24,7 @@ export function renderEndgameProgramBoard(board: EndgameProgramBoard, fingerprin
     "",
     "## Leitura executiva",
     "",
-    "Este quadro mede gates comprovados, não volume de código. `Gate passed` exige dependências encerradas, critérios aceitos com evidência, nenhum bloqueador aberto e transição registrada no Capability Ledger. `Promovido` exige, além disso, runtime live e exposição diferente de `none`.",
+    "Este quadro mede gates comprovados, não volume de código. `Gate passed` exige dependências encerradas, critérios aceitos com evidência e nenhum bloqueador aberto. Se a tarefa declara uma transição, ela precisa ser válida e, quando registrada, já estar refletida no Capability Ledger. `Promovido` exige transição registrada, runtime live e exposição diferente de `none`.",
     "",
     "## Reconciliação do baseline",
     "",

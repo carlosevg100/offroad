@@ -25,10 +25,10 @@ describe("endgame program board", () => {
     expect(decision.readyForNextPromotion).toBe(false);
     expect(decision.blockers).toEqual([]);
     expect(decision.taskCounts.blocked).toBe(1);
-    expect(currentEndgameProgramBoard.tasks).toHaveLength(62);
+    expect(currentEndgameProgramBoard.tasks).toHaveLength(64);
   });
 
-  it("refuses gate_passed when acceptance, evidence, dependencies or transition are incomplete", () => {
+  it("refuses gate_passed when acceptance, evidence or dependencies are incomplete", () => {
     const invalid = boardWithTask("CTRL-03", (task) => ({...task, state: "gate_passed"}));
     const decision = evaluateEndgameProgramBoard(invalid, currentCapabilityLedger, masterTrustControlCatalogue);
 
@@ -37,8 +37,50 @@ describe("endgame program board", () => {
       {code: "terminal_task_has_open_subtasks", taskId: "CTRL-03"},
       {code: "terminal_task_acceptance_incomplete", taskId: "CTRL-03"},
       {code: "terminal_task_requires_evidence", taskId: "CTRL-03"},
-      {code: "terminal_task_requires_recorded_capability_transition", taskId: "CTRL-03"},
     ]));
+  });
+
+  it("allows a support task to pass its gate without inventing a capability transition", () => {
+    const gatePassed = boardWithTask("CTRL-02", (task) => ({
+      ...task,
+      state: "gate_passed",
+      subtasks: task.subtasks.map((subtask) => ({...subtask, state: "done"})),
+    }));
+    const decision = evaluateEndgameProgramBoard(gatePassed, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(true);
+    expect(decision.readyForNextPromotion).toBe(false);
+  });
+
+  it("allows gate_passed with a valid planned transition but does not treat it as promotion", () => {
+    const gatePassed = boardWithTask("CTRL-02", (task) => ({
+      ...task,
+      state: "gate_passed",
+      subtasks: task.subtasks.map((subtask) => ({...subtask, state: "done"})),
+      capabilityTransition: {
+        capabilityId: "finance.deterministic-kernels",
+        from: "implemented",
+        to: "tested",
+        status: "planned",
+        evidenceRefs: [],
+      },
+    }));
+    const decision = evaluateEndgameProgramBoard(gatePassed, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(true);
+    expect(decision.taskCounts.promoted).toBe(0);
+  });
+
+  it("still requires a recorded live and exposed capability transition for promotion", () => {
+    const promoted = boardWithTask("CTRL-02", (task) => ({
+      ...task,
+      state: "promoted",
+      subtasks: task.subtasks.map((subtask) => ({...subtask, state: "done"})),
+    }));
+    const decision = evaluateEndgameProgramBoard(promoted, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "promoted_task_requires_recorded_capability_transition", taskId: "CTRL-02"});
   });
 
   it("refuses a recorded transition that did not land in the capability ledger", () => {
@@ -124,6 +166,46 @@ describe("endgame program board", () => {
 
     expect(decision.valid).toBe(false);
     expect(decision.blockers).toContainEqual({code: "capability_transition_owned_by:MAT-05", taskId: "MAT-01"});
+  });
+
+  it("prevents one pack from promoting the aggregate specialist runtime", () => {
+    const overclaimed = boardWithTask("WFI-02", (task) => ({
+      ...task,
+      capabilityTransition: {
+        capabilityId: "execution.general-specialist-runtime",
+        from: "specified",
+        to: "tested",
+        status: "planned",
+        evidenceRefs: [],
+      },
+    }));
+    const decision = evaluateEndgameProgramBoard(overclaimed, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "capability_transition_owned_by:WFI-14", taskId: "WFI-02"},
+      {code: "duplicate_capability_transition:execution.general-specialist-runtime", taskId: "WFI-02"},
+    ]));
+  });
+
+  it("prevents one journey from promoting the aggregate G2-G8 capability", () => {
+    const overclaimed = boardWithTask("JNY-02", (task) => ({
+      ...task,
+      capabilityTransition: {
+        capabilityId: "gold.g2-g8-reference-journeys",
+        from: "specified",
+        to: "tested",
+        status: "planned",
+        evidenceRefs: [],
+      },
+    }));
+    const decision = evaluateEndgameProgramBoard(overclaimed, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "capability_transition_owned_by:JNY-09", taskId: "JNY-02"},
+      {code: "duplicate_capability_transition:gold.g2-g8-reference-journeys", taskId: "JNY-02"},
+    ]));
   });
 
   it("keeps the generated Markdown byte-identical to the canonical board", () => {

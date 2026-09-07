@@ -3497,7 +3497,7 @@ objetos, procedimentos e blocos de artifact compiler.
 # Endgame Program Control, candidate, 07/09/2026
 
 O roadmap do blueprint agora possui controle executável em `@offroad/release-governance`, e não
-apenas uma sequência narrativa. A fonte canônica `current-endgame-program.ts` registra 62 work
+apenas uma sequência narrativa. A fonte canônica `current-endgame-program.ts` registra 64 work
 packages R0-R7 com dependências, subtarefas, acceptance, evidências, blockers, TRUST IDs e
 transições de maturity. `docs/build/ENDGAME_PROGRAM_BOARD.md` é uma vista gerada e testada por
 paridade; alterações devem começar na fonte tipada e rodar `program-board:render`.
@@ -3505,5 +3505,6 @@ paridade; alterações devem começar na fonte tipada e rodar `program-board:ren
 O baseline inicial é `main@b760167`. Não tratar o PPTX governado como integrado: o PR 523 segue
 aberto e seu E2E falhou. Não tratar nenhuma capacidade como pronta para cliente: o ledger atual não
 autoriza `customer_work`, `external_material` ou `external_action`. O próximo maintainer deve fechar
-os findings do board com evidência, não apenas mudar estados. O gate recusa conclusão sem transição
-correspondente no Capability Ledger.
+os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
+evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
+amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
