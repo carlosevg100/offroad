@@ -7,7 +7,9 @@
   roots está vazio, portanto nenhum claim positivo pode ser promovido hoje.
 - A root single-purpose fixa scope, subject, claim, criterion, tipo, collector, gate, OIDC e
   freshness. Claim, criterion e limitations são definidos pelo control plane. Receipt imutável
-  vincula registry, atestação, bytes, primeiro recebimento, run e nonce; promoção exige CAS atômico.
+  vincula registry, atestação, bytes, primeiro recebimento, run e nonce. O control plane persiste uma
+  decisão por ID opaco, deriva subject/scope/gate/transição do manifest e exige CAS atômico sobre o
+  conjunto exato de receipts; fingerprint público não autoriza promoção.
 - A lista `verifiedEvidenceIds` inclui somente evidência que passou definição, escopo, root,
   assinatura, validade, receipt, gate e integridade dos bytes. Erro global zera IDs, precondições
   de promoção e suporte de claims.

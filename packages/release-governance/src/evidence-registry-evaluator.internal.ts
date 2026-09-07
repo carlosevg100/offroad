@@ -90,10 +90,16 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
   const registryFingerprint = fingerprintJson(registry);
 
   const nonceOwners = new Map<string, string>();
+  const receiptIdOwners = new Map<string, string>();
   for (const receipt of controlPlane.receipts) {
     const previous = nonceOwners.get(receipt.nonce);
     if (previous && previous !== receipt.evidenceId) globalBlockers.push(issue("receipt_nonce_reused", null, null, receipt.evidenceId));
     nonceOwners.set(receipt.nonce, receipt.evidenceId);
+    const previousReceipt = receiptIdOwners.get(receipt.receiptId);
+    if (previousReceipt && previousReceipt !== receipt.evidenceId) {
+      globalBlockers.push(issue("receipt_id_reused", null, null, receipt.evidenceId));
+    }
+    receiptIdOwners.set(receipt.receiptId, receipt.evidenceId);
   }
 
   for (const criterion of registry.criteria) {
@@ -164,6 +170,7 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     registryFingerprint,
     verifiedEvidenceIds,
     promotionPreconditions,
+    promotionTarget: registryValid ? manifest?.promotionTarget ?? null : null,
     claimDecisions,
     blockers,
   };
@@ -198,6 +205,23 @@ function resolveAcceptanceManifest(
   }
   if (fingerprintJson(manifest.limitations) !== fingerprintJson(registry.limitations)) {
     blockers.push(issue("registry_limitations_not_control_plane_canonical"));
+  }
+  if (evidenceTrustScopeFingerprint(manifest.promotionTarget.scope)
+    !== evidenceTrustScopeFingerprint(manifest.scope)) {
+    blockers.push(issue("promotion_target_scope_mismatch"));
+  }
+  if (manifest.claims.some((claim) =>
+    evidenceSubjectFingerprint(claim.subject) !== evidenceSubjectFingerprint(manifest.promotionTarget.subject))) {
+    blockers.push(issue("promotion_target_claim_subject_mismatch"));
+  }
+  if (manifest.criteria.some((criterion) =>
+    evidenceSubjectFingerprint(criterion.subject) !== evidenceSubjectFingerprint(manifest.promotionTarget.subject))) {
+    blockers.push(issue("promotion_target_criterion_subject_mismatch"));
+  }
+  if (manifest.criteria.some((criterion) => !criterion.gate
+    || criterion.gate.gateId !== manifest.promotionTarget.gate.gateId
+    || criterion.gate.requiredResult !== manifest.promotionTarget.gate.result)) {
+    blockers.push(issue("promotion_target_gate_mismatch"));
   }
   return manifest;
 }
@@ -393,6 +417,7 @@ export function invalidEvidenceRegistryDecision(
     registryFingerprint: safeUnknownFingerprint(input),
     verifiedEvidenceIds: [],
     promotionPreconditions: [],
+    promotionTarget: null,
     claimDecisions: [],
     blockers: [issue(code)],
   };

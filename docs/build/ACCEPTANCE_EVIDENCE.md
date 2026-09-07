@@ -10,7 +10,7 @@
 | Isolamento | root single-purpose | scope, subject, collector, gate, tipo e identidade OIDC são exatos |
 | Freshness | relógio e primeiro receipt internos | validade, TTL, max-age e issuance-to-receipt são limitados |
 | Integridade | referência `artifact://sha256/<digest>` + bytes resolvidos | outra referência e outros bytes não verificam |
-| Replay de promoção | precondições + CAS atômico | primeiro consumo autoriza; replay e decisão forjada falham |
+| Replay de promoção | decisão persistida por ID opaco + CAS atômico | alvo vem do manifest; conjunto exato de receipts, replay, cross-target e hashes públicos forjados falham |
 | Gate focado | Node 24, package test/typecheck | 8 arquivos/169 testes verdes; tipos verdes |
 | Gate integral | Node 24, `pnpm check` | lint, typecheck, testes e build verdes; 43/43 targets |
 

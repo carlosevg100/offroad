@@ -49,8 +49,10 @@ Cada atestação Ed25519 vincula no mesmo payload canônico:
 
 Claim, criterion e limitations aceitos vêm do manifest do control plane. O receipt vincula o
 fingerprint do registry inteiro, a atestação, os bytes, o primeiro recebimento, o run e o nonce.
-Freshness usa esse instante confiável, e emissão anterior demais ao receipt falha. A decisão válida
-ainda exige consumo atômico por compare-and-swap antes de qualquer promoção; replay é rejeitado.
+Freshness usa esse instante confiável, e emissão anterior demais ao receipt falha. O control plane
+persiste a decisão com ID opaco e alvo derivado do manifest. A promoção recebe apenas esse ID e o
+alvo esperado; o storage deve casar decisão, subject, scope, gate, transição e o conjunto exato de
+receipts e consumi-los numa única operação atômica. Hash público não funciona como credencial.
 
 ## Estado deste slice
 
@@ -80,4 +82,5 @@ Os testes Node 24 cobrem injeção pelo caller, canonicalidade de claim/criterio
 metadata, todos os componentes de scope, subject, collector, gate, workload identity, tipo,
 root futura/expirada/revogada, emissão futura, TTL, max-age, receipt tardio/futuro/consumido,
 run/nonce divergentes, replay de nonce, CAS de uso único, fingerprint adulterado, input
-cíclico/BigInt e scopes incoerentes. Tudo continua sintético, não evidência operacional.
+cíclico/BigInt, scopes incoerentes e tentativa de recalcular hashes públicos para promover outro
+alvo. Tudo continua sintético, não evidência operacional.

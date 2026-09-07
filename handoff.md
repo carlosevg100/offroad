@@ -21,7 +21,9 @@ registry atual está vazio; por isso o produto ainda não pode transformar uma a
 O statement Ed25519 vincula claim/criterion, subject, scope, artifact, gate, collector, run, OIDC e
 nonce. Uma root single-purpose autoriza exatamente essas dimensões; o manifest do control plane
 define claims, criteria e limitations. Receipt interno ancora registry, atestação, bytes e primeiro
-recebimento; promoção exige CAS atômico de uso único. O caminho positivo continua só em teste.
+recebimento. O control plane persiste decisão por ID opaco com alvo derivado do manifest; promoção
+consome decisão e conjunto exato de receipts em CAS atômico. Hash público não é credencial. O
+caminho positivo continua só em teste.
 
 Isto não conclui CTRL-03. Root onboarding, collector OIDC/KMS, storage privado imutável, adapter CAS
 durável/transacional, current registry, renderer, integração com Ledger/Board e continuous evidence

@@ -181,6 +181,35 @@ export const evidenceRegistrySchema = z.object({
 }).strict();
 export type EvidenceRegistry = z.infer<typeof evidenceRegistrySchema>;
 
+export const evidencePromotionTargetSchema = z.object({
+  subject: evidenceSubjectSchema,
+  scope: evidenceTrustScopeSchema,
+  gate: z.object({gateId: z.string().min(1), result: z.literal("passed")}).strict(),
+  transition: z.object({
+    resourceKind: z.enum(["capability", "program_task", "control", "release"]),
+    resourceId: z.string().min(1),
+    fromState: z.string().min(1),
+    toState: z.string().min(1),
+  }).strict(),
+}).strict().superRefine((target, context) => {
+  if (target.transition.resourceKind !== target.subject.kind
+    || target.transition.resourceId !== target.subject.id) {
+    context.addIssue({
+      code: "custom",
+      path: ["transition"],
+      message: "promotion transition must target the exact governed subject",
+    });
+  }
+  if (target.transition.fromState === target.transition.toState) {
+    context.addIssue({
+      code: "custom",
+      path: ["transition", "toState"],
+      message: "promotion transition must change state",
+    });
+  }
+});
+export type EvidencePromotionTarget = z.infer<typeof evidencePromotionTargetSchema>;
+
 /**
  * Definitions accepted by the control plane. Registry claims, criteria and limitations are
  * compared to this manifest; callers cannot define their own acceptance claim.
@@ -193,6 +222,7 @@ export const evidenceAcceptanceManifestSchema = z.object({
   criteria: z.array(evidenceCriterionSchema).min(1),
   claims: z.array(evidenceClaimSchema).min(1),
   limitations: z.array(z.string().min(1)).min(1),
+  promotionTarget: evidencePromotionTargetSchema,
   trustRootIds: z.array(z.string().regex(/^ATR-[A-Z0-9-]+$/)).min(1)
     .refine((values) => new Set(values).size === values.length, "trust root ids must be unique"),
 }).strict();
@@ -310,6 +340,7 @@ export const evidenceRegistryDecisionSchema = z.object({
     expectedCasRevision: z.number().int().nonnegative(),
     nonce: z.string().min(16),
   }).strict()),
+  promotionTarget: evidencePromotionTargetSchema.nullable(),
   claimDecisions: z.array(evidenceClaimDecisionSchema),
   blockers: z.array(evidenceRegistryIssueSchema),
   decisionFingerprint: sha256Schema,

@@ -14,14 +14,17 @@ import {
   type EvidenceCriterion,
   type EvidenceEvaluationRequest,
   type EvidenceIngestReceipt,
+  type EvidencePromotionTarget,
   type EvidenceSubject,
   type EvidenceTrustRoot,
   type EvidenceTrustScope,
 } from "./evidence-registry.ts";
 import {
-  consumeEvidenceDecisionForPromotion,
+  consumePersistedEvidenceDecisionForPromotion,
+  persistEvidenceDecisionForPromotion,
+  type AuthoritativeEvidencePromotionDecision,
   type EvidenceControlPlaneSnapshot,
-  type EvidencePromotionCasRequest,
+  type EvidencePromotionAuthorityStore,
 } from "./evidence-registry-control-plane.ts";
 import {evaluateEvidenceRegistryAgainstControlPlane} from "./evidence-registry-evaluator.internal.ts";
 
@@ -111,6 +114,17 @@ const root: EvidenceTrustRoot = {
 };
 
 const limitations = ["Synthetic security fixture; never production evidence."];
+const promotionTarget: EvidencePromotionTarget = {
+  subject,
+  scope,
+  gate,
+  transition: {
+    resourceKind: "capability",
+    resourceId: subject.id,
+    fromState: "shadow",
+    toState: "tested",
+  },
+};
 const manifest: EvidenceAcceptanceManifest = {
   manifestId: "EAM-RT01-TEST",
   manifestVersion: "1",
@@ -119,6 +133,7 @@ const manifest: EvidenceAcceptanceManifest = {
   criteria: [criterion],
   claims: [claim],
   limitations,
+  promotionTarget,
   trustRootIds: [root.trustRootId],
 };
 
@@ -216,28 +231,51 @@ describe("control-plane-owned acceptance evidence", () => {
     });
   });
 
-  it("requires one atomic receipt CAS before promotion and rejects replay", async () => {
-    const decision = evaluate(request());
-    let consumed = false;
-    const calls: EvidencePromotionCasRequest[] = [];
-    const store = {
-      consumeAvailableReceiptsAtomically: async (cas: EvidencePromotionCasRequest) => {
-        calls.push(cas);
-        if (consumed) return false;
-        consumed = true;
+  it("persists an authoritative opaque decision and atomically rejects replay and cross-target use", async () => {
+    const input = request();
+    const persisted = new Map<string, AuthoritativeEvidencePromotionDecision & {consumed: boolean}>();
+    const store: EvidencePromotionAuthorityStore = {
+      persistAuthoritativeDecision: async (decision) => {
+        if (persisted.has(decision.decisionId)) return false;
+        persisted.set(decision.decisionId, {...decision, consumed: false});
+        return true;
+      },
+      consumeDecisionAndReceiptsAtomically: async ({decisionId, expectedTarget}) => {
+        const record = persisted.get(decisionId);
+        if (!record || record.consumed || fingerprintJson(record.target) !== fingerprintJson(expectedTarget)) return false;
+        const receipt = testControlPlane(input).receipts[0]!;
+        const exactReceiptSet = record.receipts.length === 1
+          && record.receipts[0]!.receiptId === receipt.receiptId
+          && record.receipts[0]!.evidenceId === receipt.evidenceId
+          && record.receipts[0]!.expectedCasRevision === receipt.casRevision
+          && record.receipts[0]!.nonce === receipt.nonce;
+        if (!exactReceiptSet || receipt.state !== "available") return false;
+        record.consumed = true;
         return true;
       },
     };
-    await expect(consumeEvidenceDecisionForPromotion(decision, "promotion-rt01", store))
-      .resolves.toMatchObject({authorized: true, code: "authorized"});
-    await expect(consumeEvidenceDecisionForPromotion(decision, "promotion-replay", store))
-      .resolves.toMatchObject({authorized: false, code: "receipt_cas_rejected"});
-    expect(calls[0]?.receipts).toEqual(decision.promotionPreconditions);
+    const result = await persistEvidenceDecisionForPromotion(input, testControlPlane(input), store);
+    expect(result).toMatchObject({persisted: true});
+    expect(result.decisionId).toMatch(/^EPD-[A-F0-9]{48}$/);
+    expect(persisted.get(result.decisionId!)?.target).toEqual(promotionTarget);
 
-    const forged = {...decision, allClaimsSupported: false};
-    await expect(consumeEvidenceDecisionForPromotion(forged, "promotion-forged", store))
-      .resolves.toMatchObject({authorized: false, code: "decision_not_eligible"});
-    expect(calls).toHaveLength(2);
+    const otherTarget = {
+      ...promotionTarget,
+      transition: {...promotionTarget.transition, resourceId: "another-capability"},
+      subject: {...promotionTarget.subject, id: "another-capability"},
+    } satisfies EvidencePromotionTarget;
+    await expect(consumePersistedEvidenceDecisionForPromotion(result.decisionId!, "promotion-cross-target", otherTarget, store))
+      .resolves.toMatchObject({authorized: false, code: "receipt_cas_rejected"});
+    await expect(consumePersistedEvidenceDecisionForPromotion(result.decisionId!, "promotion-rt01", promotionTarget, store))
+      .resolves.toMatchObject({authorized: true, code: "authorized"});
+    await expect(consumePersistedEvidenceDecisionForPromotion(result.decisionId!, "promotion-replay", promotionTarget, store))
+      .resolves.toMatchObject({authorized: false, code: "receipt_cas_rejected"});
+
+    // Recomputing every public hash still does not create the opaque persisted decision id.
+    const forgedPublicHash = fingerprintJson({...result.decision, promotionTarget: otherTarget});
+    const forgedOpaqueId = `EPD-${forgedPublicHash.slice(0, 48).toUpperCase()}`;
+    await expect(consumePersistedEvidenceDecisionForPromotion(forgedOpaqueId, "promotion-forged", otherTarget, store))
+      .resolves.toMatchObject({authorized: false, code: "receipt_cas_rejected"});
   });
 
   it("does not accept caller-injected roots, verifier labels, receipts or clocks", () => {
