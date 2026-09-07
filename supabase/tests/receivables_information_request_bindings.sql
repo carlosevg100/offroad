@@ -176,6 +176,68 @@ begin
 end;
 $$;
 
+reset role;
+update public.document_intake_sessions
+set status = 'review_ready', pipeline_version = 'binding-test-v1'
+where id = '40000000-0000-4000-8000-000000000741';
+insert into public.preliminary_understandings (
+  organization_id, intake_session_id, processing_run_id, object_version, status,
+  input_fingerprint, object_fingerprint, payload, decided_by, decided_at
+) values (
+  '20000000-0000-4000-8000-000000000741', '40000000-0000-4000-8000-000000000741',
+  '70000000-0000-4000-8000-000000000741', 1, 'confirmed', repeat('b',64), repeat('c',64),
+  '{"schemaVersion":"2026.08.31-v1"}'::jsonb,
+  '10000000-0000-4000-8000-000000000741', now()
+);
+insert into private.receivables_method_supplement_patches (
+  id, organization_id, capital_project_id, intake_session_id, processing_run_id,
+  processing_job_id, source_dataset_hash, patch_id, patch_fingerprint, patch
+) values (
+  'a0000000-0000-4000-8000-000000000741', '20000000-0000-4000-8000-000000000741',
+  '30000000-0000-4000-8000-000000000741', '40000000-0000-4000-8000-000000000741',
+  '70000000-0000-4000-8000-000000000741', '80000000-0000-4000-8000-000000000741',
+  repeat('a',64), 'seed-complete-draft', repeat('e',64),
+  '{"schemaVersion":"2026.09.07-v1","seed":true}'::jsonb
+);
+insert into private.receivables_method_supplement_drafts (
+  id, organization_id, capital_project_id, intake_session_id, source_dataset_hash,
+  revision, draft_fingerprint, caused_by_patch_id, draft
+) values (
+  'b0000000-0000-4000-8000-000000000741', '20000000-0000-4000-8000-000000000741',
+  '30000000-0000-4000-8000-000000000741', '40000000-0000-4000-8000-000000000741',
+  repeat('a',64), 1, repeat('d',64), 'a0000000-0000-4000-8000-000000000741',
+  '{"schemaVersion":"2026.09.07-v1","sourceDatasetHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","revision":1,"appliedPatchIds":["seed-complete-draft"],"sections":{},"fields":{},"evidence":{},"conflicts":[]}'::jsonb
+);
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000742","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare
+  first_result jsonb;
+  replay_result jsonb;
+begin
+  first_result := public.worker_enqueue_receivables_method_refresh_v1(
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64)
+  );
+  if (first_result ->> 'replayed')::boolean
+    or not exists (
+      select 1 from public.processing_jobs job
+      where job.id = (first_result ->> 'job_id')::uuid and job.kind = 'case_analysis'
+    )
+    or (select created_by from public.processing_runs where id = (first_result ->> 'processing_run_id')::uuid)
+      <> '10000000-0000-4000-8000-000000000741'::uuid then
+    raise exception 'complete draft did not create an attributed case refresh: %', first_result;
+  end if;
+  replay_result := public.worker_enqueue_receivables_method_refresh_v1(
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64)
+  );
+  if not (replay_result ->> 'replayed')::boolean
+    or replay_result ->> 'processing_run_id' <> first_result ->> 'processing_run_id' then
+    raise exception 'complete draft refresh was not idempotent: %', replay_result;
+  end if;
+end;
+$$;
+
 -- Tenant users cannot enumerate executor bindings through the Data API role.
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000741","role":"authenticated","aal":"aal1"}', true);

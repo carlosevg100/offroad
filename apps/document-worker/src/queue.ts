@@ -197,6 +197,15 @@ export type QueueClient = {
     replayed: boolean;
   }>;
   loadReceivablesMethodSupplementDraft?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown | null>;
+  /** Starts one bounded case refresh for a complete immutable draft. The database deduplicates
+   * retries by draft fingerprint, so a replay cannot create duplicate paid analysis runs. */
+  enqueueReceivablesMethodRefresh?(job: AgentOperationBriefJob, input: {
+    draftFingerprint: string;
+  }): Promise<{
+    processingRunId: string;
+    jobId: string;
+    replayed: boolean;
+  }>;
   recordReceivablesSpecialistShadowRun?(job: FullCaseAnalysisJob, input: {
     inputAssemblyId: string;
     result: unknown;
@@ -567,6 +576,24 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
+    },
+
+    async enqueueReceivablesMethodRefresh(job, input) {
+      const data = await call("worker_enqueue_receivables_method_refresh_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_draft_fingerprint: input.draftFingerprint,
+      });
+      const parsed = z.object({
+        processing_run_id: z.uuid(),
+        job_id: z.uuid(),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        processingRunId: parsed.processing_run_id,
+        jobId: parsed.job_id,
+        replayed: parsed.replayed,
+      };
     },
 
     async recordReceivablesSpecialistShadowRun(job, input) {
