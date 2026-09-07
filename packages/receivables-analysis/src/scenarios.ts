@@ -1,10 +1,36 @@
 import Decimal from "decimal.js";
 
-import {defaultReceivablesPolicy} from "./analyze";
 import {receivablesCaseSchema, type CashReceipt, type Receivable, type ReceivablesCase, type ReceivablesDecision} from "./schema";
 
 const DAY = 86_400_000;
 const dateOffset = (date: string, days: number) => new Date(Date.parse(`${date}T00:00:00.000Z`) + days * DAY).toISOString().slice(0, 10);
+
+/** Synthetic policy for parametric engine tests. Never an institutional or production default. */
+const syntheticReceivablesPolicy = {
+  maxDaysPastDue: 90,
+  maxRemainingTermDays: 365,
+  minSeasoningDays: 30,
+  requireAssignable: true,
+  requireEvidenceVerified: true,
+  registrationRule: "required_when_applicable",
+  excludeDisputed: true,
+  excludeRelatedParties: true,
+  excludeEncumbered: true,
+  allowedDebtorSectors: [],
+  maxSingleDebtorShare: "0.20",
+  maxDebtorGroupShare: "0.25",
+  minimumEligibleShare: "0.60",
+  minimumEvidenceCoverage: "0.90",
+  minimumRegistrationCoverage: "0.90",
+  maximumDelinquency30Share: "0.15",
+  maximumDilutionShare: "0.05",
+  maximumRepurchaseShare: "0.08",
+  minimumRecoveryRate: "0.25",
+  maximumAccountingMismatchShare: "0.01",
+  maximumCashMismatchShare: "0.01",
+  minimumMappedCashShare: "0.95",
+  minimumLinkedAccountCashShare: "0.95",
+} as const;
 
 function basePortfolio(referenceDate: string): Receivable[] {
   return Array.from({length: 60}, (_, index) => ({
@@ -60,7 +86,7 @@ export function diversifiedReceivablesCase(id = "receivables-clean-diversified")
     portfolio: basePortfolio(referenceDate),
     cashReceipts: baseCash(referenceDate),
     accounting: {grossReceivablesBalance: "6000000.00", allowanceBalance: "120000.00", reportedCollectionsInPeriod: "600000.00"},
-    policy: defaultReceivablesPolicy,
+    policy: syntheticReceivablesPolicy,
     structure: {
       requestedFacility: "3000000.00",
       advanceRate: "0.80",

@@ -5,8 +5,8 @@
  *   pnpm --filter @offroad/evals gc03:tables
  */
 import {buildDebtServiceSchedule, calculateDscr, calculateLeverage, checkIdentity} from "@offroad/financial-core";
-import {analyzeReceivables, toReceivablesCaseFromSimpleTape} from "@offroad/receivables-analysis";
-import {fakeco, fakecoReceivables} from "@offroad/testing-fixtures";
+import {analyzeReceivables} from "@offroad/receivables-analysis";
+import {buildSyntheticReceivablesCase, fakeco, fakecoReceivables} from "@offroad/testing-fixtures";
 import Decimal from "decimal.js";
 
 const d = (value: Decimal.Value) => new Decimal(value);
@@ -47,7 +47,7 @@ const byDebtor = fakecoReceivables.agingByDebtor(rows);
 const total = rows.reduce((sum, row) => sum + row.balance, 0);
 const topShare = (n: number) => d(byDebtor.slice(0, n).reduce((sum, entry) => sum + entry.total, 0)).div(total);
 md.push("", "### Concentração por sacado (tape de 31/07/2026)", "", `Top 1 ${pct(topShare(1))} (${byDebtor[0]!.debtorName}); top 5 ${pct(topShare(5))}; top 10 ${pct(topShare(10))}; ${byDebtor.length} sacados; carteira ${fmt(total)} igual ao balancete.`);
-const simple = toReceivablesCaseFromSimpleTape({id: "gc03-aurora-2026-07", referenceDate: fakecoReceivables.receivablesReferenceDate, cedentName: fakeco.company.legalName, tape: rows.map((row) => ({receivableId: row.receivableId, debtorId: row.debtorId, balance: String(row.balance), daysPastDue: row.daysPastDue}))});
+const simple = buildSyntheticReceivablesCase({id: "gc03-aurora-2026-07", referenceDate: fakecoReceivables.receivablesReferenceDate, cedentName: fakeco.company.legalName, tape: rows.map((row) => ({receivableId: row.receivableId, debtorId: row.debtorId, balance: String(row.balance), daysPastDue: row.daysPastDue}))});
 const encumbranceOf = new Map(rows.map((row) => [row.receivableId, row.encumbrance]));
 const sectorOf = new Map(rows.map((row) => [row.receivableId, row.sector]));
 const withEncumbrances = {

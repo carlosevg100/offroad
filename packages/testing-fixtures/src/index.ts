@@ -41,4 +41,5 @@ export * as camilManagement from "./camil-management/truth";
 // to depend on the ontology, which would close a cycle with credit-ontology.
 export * as fakeco from "./fakeco/truth";
 export * as fakecoReceivables from "./fakeco/receivables";
+export * from "./synthetic-receivables-case";
 export * as nimbus from "./nimbus/truth";
