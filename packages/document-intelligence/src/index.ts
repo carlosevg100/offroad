@@ -12,3 +12,4 @@ export * from "./schemas";
 export * from "./text";
 export * from "./layer-index";
 export * from "./verifier";
+export * from "./governed-document-identity";
