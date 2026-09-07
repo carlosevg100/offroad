@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(35);
+    expect(decision.entryCount).toBe(36);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
