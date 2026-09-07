@@ -14,6 +14,9 @@ import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic
 import {describe, expect, it} from "vitest";
 
 const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "language_conduct", "matching", "outcome"];
+// These cases execute the complete governed rail, including the receivables engine. Five seconds is
+// a unit-test default, not a stable ceiling for this CPU-heavy integration test on a shared CI runner.
+const governedRailTimeoutMs = 10_000;
 
 async function runScenario(scenario: FactoryScenario) {
   const generated = generateCase(scenario);
@@ -102,6 +105,7 @@ describe("parametric cases on the governed rail", () => {
       for (const expected of generated.gold.expectedMatches) expect(fits.get(expected.capitalProviderId)).toBe(expected.expected);
       expect(result.state.outcome.qualifiedIntroductionAllowed).toBe(false);
     },
+    governedRailTimeoutMs,
   );
 
   it("keeps contradictory evidence visible and hostile document text outside reconciled facts", async () => {
