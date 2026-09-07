@@ -55,7 +55,7 @@ function normalizeAssuranceClauses(output: string): string[] {
     // intact so label-value forms such as "SOC 2—certified" remain one proposition; a spaced dash
     // separates natural-language propositions.
     .replace(/[.!?;\r\n]+/gu, "\n")
-    .replace(/\s+[—–-]\s+|[,/]+|\b(?:while|enquanto)\b/gu, "\n")
+    .replace(/\s+[\u2014\u2013-]\s+|[,/]+|\b(?:while|enquanto)\b/gu, "\n")
     .split("\n")
     .map((clause) => clause.replace(/[\p{P}\p{S}\p{Z}\s]+/gu, " ").trim().replace(/\s+/gu, " "))
     .filter(Boolean);
