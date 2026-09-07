@@ -37,7 +37,7 @@ structured gaps, blockers, exact selected snapshot identities and its own finger
 ## Selection and refusal policy
 
 The resolver validates security scope before relevance. A cross-tenant, cross-project,
-cross-conversation, unauthorized-document or unauthorized-company candidate blocks the entire
+cross-conversation, unlisted-context, unauthorized-document or unauthorized-company candidate blocks the entire
 resolution even when its selectors are irrelevant. Invalid fingerprints, duplicate identities,
 lineage cycles and cross-scope/non-monotonic lineage also block.
 

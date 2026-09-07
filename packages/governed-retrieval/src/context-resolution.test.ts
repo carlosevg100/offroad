@@ -139,6 +139,13 @@ describe("authorized context resolution", () => {
     ]));
   });
 
+  it("blocks a same-project candidate absent from the system authorization snapshot", () => {
+    const unlisted = candidate("not-on-the-authorized-list");
+    const result = resolveAuthorizedContext({systemControl: control(), intent: intent(), candidates: [unlisted], now: NOW});
+    expect(result).toMatchObject({status: "blocked", included: [], blockers: [{code: "unauthorized_context_candidate", itemIds: []}]});
+    expect(JSON.stringify(result)).not.toContain("not-on-the-authorized-list");
+  });
+
   it("never accepts authority or permissions added by memory and detects control-plane alteration", () => {
     const withAuthority = {...candidate("ctx-project-v1"), authority: "external_action"};
     const memoryResult = resolveAuthorizedContext({systemControl: control(), intent: intent(), candidates: [withAuthority], now: NOW});

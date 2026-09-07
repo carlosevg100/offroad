@@ -172,6 +172,7 @@ export const contextBlockerCodeSchema = z.enum([
   "cross_tenant_candidate",
   "cross_project_candidate",
   "cross_conversation_candidate",
+  "unauthorized_context_candidate",
   "unauthorized_document_candidate",
   "unauthorized_company_candidate",
   "lineage_cycle",
@@ -438,6 +439,7 @@ function validateScope(item: ContextCandidate, control: SystemContextControl, bl
   if (item.organizationId !== control.organizationId) blockers.push({code: "cross_tenant_candidate", itemIds: []});
   if (item.projectId !== null && item.projectId !== control.projectId) blockers.push({code: "cross_project_candidate", itemIds: []});
   if (item.kind === "conversation_memory" && item.conversationId !== control.conversationId) blockers.push({code: "cross_conversation_candidate", itemIds: []});
+  if (!control.authorizedContextItemIds.includes(item.id)) blockers.push({code: "unauthorized_context_candidate", itemIds: []});
   if (item.kind === "document" && (item.documentId === null || !control.authorizedDocumentIds.includes(item.documentId))) blockers.push({code: "unauthorized_document_candidate", itemIds: []});
   if (item.kind === "company_memory" && (item.companyId === null || !control.authorizedCompanyIds.includes(item.companyId))) blockers.push({code: "unauthorized_company_candidate", itemIds: []});
 }
