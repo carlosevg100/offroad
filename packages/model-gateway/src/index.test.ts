@@ -359,6 +359,8 @@ describe("gateway", () => {
     expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
     expect(logs[1]?.repairValidationIssueCodeFingerprint).toBe(logs[0]?.validationIssueCodeFingerprint);
     expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "schema"});
+    expect(logs[1]).toMatchObject({configuredModel: "claude-sonnet-5"});
     expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(2);
     expect(result).toMatchObject({
       provider: "anthropic",
@@ -402,6 +404,8 @@ describe("gateway", () => {
     expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
     expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
     expect(logs[1]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
+    expect(logs[1]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
     expect(logs[2]).not.toHaveProperty("previousInvocationId");
     expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(3);
   });

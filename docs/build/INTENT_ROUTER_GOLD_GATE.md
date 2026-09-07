@@ -106,8 +106,12 @@ O workflow manual usa somente prompts sintéticos e pode executar chamadas pagas
 de `main`, no repositório canônico, pelo arquivo de workflow canônico e pelo GitHub Environment
 `intent-router-gold-main`. O runner repete esses checks antes de ler credenciais. Cada chamada deve
 se ligar bijetivamente a task, schema, prompt, input, provider, model, tentativa, output e custo;
-chamada órfã, duplicada ou de cassette reprova. O artefato inclui provenance do run e fingerprint
-de todo o record, mas ainda não possui attestation criptográfica externa.
+chamada órfã, duplicada ou de cassette reprova. O verificador deriva os provedores e modelos da
+policy em código, exige preflight real de cada rota configurada e recalcula o custo a partir do uso
+e da tabela de preços cujo fingerprint fica no relatório. Um reparo só é aceito quando preserva
+provider/model/effort e quando sua orientação content-free e o prompt efetivo podem ser recompostos
+a partir dos issues rejeitados. O artefato inclui provenance do run e fingerprint de todo o record,
+mas ainda não possui attestation criptográfica externa.
 
 Configuração externa obrigatória antes da próxima corrida: restringir o GitHub Environment à branch
 `main` e a trust policy do IAM ao subject

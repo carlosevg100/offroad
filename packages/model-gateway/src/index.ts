@@ -15,6 +15,7 @@ export * from "./data-policy";
 export * from "./types";
 export * from "./policy";
 export * from "./pricing";
+export * from "./repair";
 export * from "./redaction";
 export * from "./cassette";
 export * from "./gateway";

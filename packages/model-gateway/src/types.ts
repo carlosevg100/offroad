@@ -174,6 +174,8 @@ export type ValidationIssueDiagnostic = {
   path: string;
   code: string;
   message: string;
+  /** Schema-owned enum members only; never contains the rejected provider value. */
+  allowedValues?: Array<string | number | boolean>;
 };
 
 export type GatewayCallLog = {
@@ -188,6 +190,8 @@ export type GatewayCallLog = {
   repairValidationIssueCodeFingerprint?: string;
   task: TaskKind;
   provider: Provider;
+  /** Policy-selected request model. `model` may be the provider's resolved/versioned model name. */
+  configuredModel?: string;
   model: string;
   effort: Effort;
   outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
@@ -215,6 +219,8 @@ export type GatewayCallLog = {
   metadata?: Record<string, string>;
   providerError?: ProviderErrorDiagnostic;
   validationIssues?: ValidationIssueDiagnostic[];
+  /** Identifies the deterministic builder needed to reconstruct a bounded repair prompt. */
+  validationSource?: "schema" | "deterministic";
 };
 
 export class ModelGatewayError extends Error {

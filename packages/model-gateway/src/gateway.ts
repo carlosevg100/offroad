@@ -3,6 +3,7 @@ import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
 import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
+import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {
@@ -276,18 +277,21 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
               path: issue.path.join("."),
               code: issue.code,
               message: issue.message.slice(0, 180),
+              ...("values" in issue && Array.isArray(issue.values) ? {allowedValues: issue.values
+                .filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value))
+                .slice(0, 20)} : {}),
             }));
         const message = truncated
           ? "provider stopped at the output-token limit before completing the structured response"
           : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
         attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
-        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code}) => ({path, code})));
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
         if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
-          repairGuidance = schemaRepairGuidance(parsed.error.issues);
+          repairGuidance = buildRepairGuidance("schema", validationIssues);
           pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
         }
-        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues, validationIssueCodeFingerprint});
+        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues, validationIssueCodeFingerprint, validationSource: "schema"});
         previousAttemptInvocationId = invocationId;
         continue;
       }
@@ -304,7 +308,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         }
       }
       if (postValidation && !postValidation.accepted) {
-        const validationIssues = postValidation.issues.slice(0, 12).map((issue, index) => {
+        const validationIssues: ValidationIssueDiagnostic[] = postValidation.issues.slice(0, 12).map((issue, index) => {
           const path = safeContractToken(issue.path, `contract.${index}`, 160);
           const code = safeContractToken(issue.code, "deterministic_validation_failed", 100);
           return {path, code, message: `Deterministic validation failed: ${code}.`};
@@ -316,16 +320,16 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           message: validationIssues.slice(0, 5).map(({path, code}) => `${path}:${code}`).join(";"),
           ...attemptTelemetry,
         });
-        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code}) => ({path, code})));
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
         if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
-          repairGuidance = deterministicRepairGuidance(validationIssues);
+          repairGuidance = buildRepairGuidance("deterministic", validationIssues);
           pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
         }
         emit(config, {
           request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
           ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint,
           inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion,
-          validationIssues, validationIssueCodeFingerprint,
+          validationIssues, validationIssueCodeFingerprint, validationSource: "deterministic",
         });
         previousAttemptInvocationId = invocationId;
         continue;
@@ -396,6 +400,7 @@ function emit(
     providerError?: ProviderErrorDiagnostic;
     validationIssues?: ValidationIssueDiagnostic[];
     validationIssueCodeFingerprint?: string;
+    validationSource?: RepairValidationSource;
   },
 ): void {
   if (!config.onCall) return;
@@ -404,6 +409,7 @@ function emit(
     invocationId: entry.invocationId,
     task: entry.request.task,
     provider: entry.ref.provider,
+    configuredModel: entry.ref.model,
     model: entry.response?.model || entry.ref.model,
     effort: entry.ref.effort,
     outcome: entry.outcome,
@@ -431,6 +437,7 @@ function emit(
   if (entry.request.metadata) log.metadata = entry.request.metadata;
   if (entry.providerError) log.providerError = entry.providerError;
   if (entry.validationIssues) log.validationIssues = entry.validationIssues;
+  if (entry.validationSource) log.validationSource = entry.validationSource;
   config.onCall(log);
 }
 
@@ -461,41 +468,6 @@ function singleWrappedObject(value: unknown): unknown {
 function firstShortString(...values: unknown[]): string | undefined {
   const value = values.find((candidate) => typeof candidate === "string" && candidate.length > 0);
   return typeof value === "string" ? value.slice(0, 80) : undefined;
-}
-
-/**
- * Content-free correction for the one bounded prompted-JSON repair. It exposes only validator
- * paths, codes and enum members from the schema; the rejected provider value is never echoed.
- */
-function schemaRepairGuidance(issues: readonly {path: readonly PropertyKey[]; code: string; values?: unknown}[]): string {
-  const details = issues.slice(0, 5).map((issue) => {
-    const path = issue.path.length > 0 ? issue.path.map(String).join(".") : "<root>";
-    const allowed = Array.isArray(issue.values)
-      ? issue.values
-          .filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value))
-          .slice(0, 20)
-          .map((value) => JSON.stringify(value).slice(0, 82))
-      : [];
-    return allowed.length > 0
-      ? `- ${path}: use exactly one of ${allowed.join(", ")}`
-      : `- ${path}: correct schema violation ${issue.code}`;
-  });
-  return [
-    "SCHEMA REPAIR (one bounded retry): your previous JSON did not validate.",
-    "Return the entire corrected JSON object. Do not explain the correction and do not repeat the rejected value.",
-    ...details,
-  ].join("\n").slice(0, 2_000);
-}
-
-/** Content-free correction for deterministic post-schema validation. */
-function deterministicRepairGuidance(issues: readonly ValidationIssueDiagnostic[]): string {
-  const details = issues.slice(0, 8).map(({path, code}) =>
-    `- ${path || "<root>"}: resolve deterministic contract issue ${code}`);
-  return [
-    "CONTRACT REPAIR (one bounded retry): your previous JSON passed the schema but failed deterministic validation.",
-    "Return the entire corrected JSON object. Re-read the supplied source and do not invent evidence.",
-    ...details,
-  ].join("\n").slice(0, 2_000);
 }
 
 function safeContractToken(value: unknown, fallback: string, max: number): string {

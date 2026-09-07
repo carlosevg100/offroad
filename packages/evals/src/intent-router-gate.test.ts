@@ -1,6 +1,6 @@
 import {INTENT_CLASSIFIER_SYSTEM, SEMANTIC_OBJECT_EXTRACTOR_SYSTEM, canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, semanticObjectCompilationSchema, semanticObjectExtractorOutputSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
 import {fingerprintJson} from "@offroad/case-understanding";
-import type {GatewayCallLog} from "@offroad/model-gateway";
+import {buildRepairGuidance, estimateCostUsd, type GatewayCallLog, type ModelRef} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
 
@@ -16,6 +16,7 @@ import {
 import {intentGoldClassifierInput, intentGoldMessage, intentGoldObjectInput} from "./intent-router-gate-input";
 import {evidenceFingerprint, fingerprintIntentRouterEvidenceRecord, verifyIntentRouterCallEvidence, verifyIntentRouterEvidenceRecord} from "./intent-router-call-evidence";
 import {assertTrustedPaidGateEnvironment} from "./intent-router-gate-trust";
+import type {IntentRouterProviderPreflight} from "./intent-router-preflight";
 
 const outputFor = (turn = intentGoldTurns[0]!, overrides: Partial<IntentClassifierOutput> = {}): IntentClassifierOutput => ({
   routingCore: {
@@ -134,62 +135,146 @@ describe("intent router promotion gate", () => {
     expect(verifyIntentRouterEvidenceRecord({...record, observations: 51})).toBe(false);
   });
 
-  it("requires bijective task, schema, prompt, input, output, provider, model, attempt and cost lineage", () => {
+  it("requires bijective task, schema, prompt, input, output, provider, model, attempt, preflight and recomputed cost lineage", () => {
     const turn = intentGoldTurns[0]!;
-    const run = observation(turn, 1, outputFor(turn));
+    const rawRun = observation(turn, 1, outputFor(turn));
     const message = intentGoldMessage(turn, 1);
-    const call = (surface: "intent_router_gold" | "intent_object_gold"): GatewayCallLog => {
-      const route = surface === "intent_router_gold";
+    const primary: ModelRef = {provider: "anthropic", model: "claude-sonnet-5", effort: "low"};
+    const fallback: ModelRef = {provider: "openai", model: "gpt-5.6-terra", effort: "low"};
+    const usage = {inputTokens: 1_000, outputTokens: 100, cachedInputTokens: 0};
+    const contract = (task: "route_intent" | "extract_semantic_objects") => {
+      const route = task === "route_intent";
       const input = [{type: "text" as const, text: JSON.stringify(route ? intentGoldClassifierInput(turn, message) : intentGoldObjectInput(turn, message))}];
       const system = route ? INTENT_CLASSIFIER_SYSTEM : SEMANTIC_OBJECT_EXTRACTOR_SYSTEM;
       const schemaName = route ? "shadow_routing_output" : "semantic_object_extractor_output";
       const schema = route ? intentClassifierOutputSchema : semanticObjectExtractorOutputSchema;
+      return {route, input, system, schemaName, schema};
+    };
+    const call = (surface: "intent_router_gold" | "intent_object_gold", ref = primary): GatewayCallLog => {
+      const task = surface === "intent_router_gold" ? "route_intent" as const : "extract_semantic_objects" as const;
+      const {route, input, system, schemaName, schema} = contract(task);
       return {
-        invocationId: surface, task: route ? "route_intent" : "extract_semantic_objects", provider: "anthropic",
-        model: route ? "governed-test-model" : "governed-object-model", effort: "medium", outcome: "ok",
+        invocationId: surface, task, provider: ref.provider, configuredModel: ref.model,
+        model: ref.model, effort: ref.effort, outcome: "ok",
         promptFingerprint: evidenceFingerprint({system, schemaName, schema: z.toJSONSchema(schema)}),
-        inputFingerprint: evidenceFingerprint(input), outputFingerprint: route ? run.rawActualFingerprint! : run.rawObjectActualFingerprint!,
-        usage: {inputTokens: 1, outputTokens: 1, cachedInputTokens: 0}, costUsd: route ? 0.01 : 0.005,
+        inputFingerprint: evidenceFingerprint(input), outputFingerprint: route ? rawRun.rawActualFingerprint! : rawRun.rawObjectActualFingerprint!,
+        usage, costUsd: estimateCostUsd(ref.model, usage),
         costStatus: "measured", latencyMs: route ? 20 : 80, stopReason: "end", usedFallback: false,
         retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, fromCassette: false, schemaName,
         metadata: {surface, caseId: turn.caseId, turnId: turn.id, repeat: "1"},
       };
     };
-    const calls = [call("intent_router_gold"), call("intent_object_gold")];
-    const spent = {costUsd: 0.015, calls: 2, unknownCostCalls: 0, budgetExposureUsd: 0.015};
-    expect(verifyIntentRouterCallEvidence({observations: [run], calls, providerPreflight: [], gatewaySpent: spent}).passed).toBe(true);
-    const forged = calls.map((entry, index) => index === 0 ? {...entry, task: "extract_semantic_objects" as const, costUsd: 0.001} : entry);
-    const verdict = verifyIntentRouterCallEvidence({observations: [run], calls: forged, providerPreflight: [], gatewaySpent: spent});
+    const preflightCall = (task: "route_intent" | "extract_semantic_objects", ref: ModelRef): GatewayCallLog => {
+      const {input, system, schemaName, schema} = contract(task);
+      return {
+        invocationId: `preflight:${task}:${ref.provider}`, task, provider: ref.provider, configuredModel: ref.model,
+        model: ref.model, effort: ref.effort, outcome: "ok",
+        promptFingerprint: evidenceFingerprint({system, schemaName, schema: z.toJSONSchema(schema)}),
+        inputFingerprint: evidenceFingerprint(input), outputFingerprint: "f".repeat(64), usage,
+        costUsd: estimateCostUsd(ref.model, usage), costStatus: "measured", latencyMs: 10, stopReason: "end",
+        usedFallback: false, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+        fromCassette: false, schemaName,
+        metadata: {surface: "intent_router_provider_preflight", provider: ref.provider, configuredModel: ref.model},
+      };
+    };
+    const preflightCalls = (["route_intent", "extract_semantic_objects"] as const)
+      .flatMap((task) => [primary, fallback].map((ref) => preflightCall(task, ref)));
+    const providerPreflight: IntentRouterProviderPreflight[] = preflightCalls.map((entry) => ({
+      task: entry.task, schemaName: entry.schemaName, provider: entry.provider,
+      configuredModel: entry.configuredModel!, resolvedModel: entry.model, passed: true, attemptCount: 1,
+      measuredCostUsd: entry.costUsd, conservativeExposureUsd: entry.costUsd, latencyMs: entry.latencyMs, error: null,
+    }));
+    const observationCalls = [call("intent_router_gold"), call("intent_object_gold")];
+    const run = {
+      ...rawRun,
+      provider: primary.provider, model: primary.model, objectProvider: primary.provider, objectModel: primary.model,
+      routeCostUsd: observationCalls[0]!.costUsd, objectCostUsd: observationCalls[1]!.costUsd,
+      costUsd: observationCalls[0]!.costUsd + observationCalls[1]!.costUsd,
+    };
+    const calls = [...observationCalls, ...preflightCalls];
+    const totalCost = calls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const spent = {costUsd: totalCost, calls: calls.length, unknownCostCalls: 0, budgetExposureUsd: totalCost};
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls, providerPreflight, gatewaySpent: spent}).passed).toBe(true);
+
+    const forged = calls.map((entry, index) => index === 0 ? {...entry, task: "extract_semantic_objects" as const} : entry);
+    const verdict = verifyIntentRouterCallEvidence({observations: [run], calls: forged, providerPreflight, gatewaySpent: spent});
     expect(verdict.passed).toBe(false);
-    expect(verdict.issues).toEqual(expect.arrayContaining([expect.stringContaining("task_mismatch"), expect.stringContaining("cost_mismatch"), "gateway_measured_cost_mismatch"]));
+    expect(verdict.issues).toEqual(expect.arrayContaining([expect.stringContaining("task_mismatch")]));
     const duplicate = [...calls, {...calls[0]!, invocationId: calls[1]!.invocationId}];
-    expect(verifyIntentRouterCallEvidence({observations: [run], calls: duplicate, providerPreflight: [], gatewaySpent: {...spent, calls: 3, costUsd: 0.025}}).issues)
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls: duplicate, providerPreflight, gatewaySpent: {...spent, calls: calls.length + 1, costUsd: spent.costUsd + calls[0]!.costUsd}}).issues)
       .toEqual(expect.arrayContaining([expect.stringContaining("duplicate_invocation"), expect.stringContaining("terminal_success_count")]));
+
+    const noPreflight = verifyIntentRouterCallEvidence({
+      observations: [run], calls: observationCalls, providerPreflight: [],
+      gatewaySpent: {costUsd: run.costUsd, calls: 2, unknownCostCalls: 0, budgetExposureUsd: run.costUsd},
+    });
+    expect(noPreflight.passed).toBe(false);
+    expect(noPreflight.issues).toEqual(expect.arrayContaining([expect.stringContaining("preflight_row_count")]));
+
+    const zeroCostCalls = calls.map((entry) => ({...entry, costUsd: 0}));
+    const zeroCostRows = providerPreflight.map((row) => ({...row, measuredCostUsd: 0, conservativeExposureUsd: 0}));
+    const zeroCostRun = {...run, routeCostUsd: 0, objectCostUsd: 0, costUsd: 0};
+    const zeroCost = verifyIntentRouterCallEvidence({
+      observations: [zeroCostRun], calls: zeroCostCalls, providerPreflight: zeroCostRows,
+      gatewaySpent: {costUsd: 0, calls: calls.length, unknownCostCalls: 0, budgetExposureUsd: 0},
+    });
+    expect(zeroCost.passed).toBe(false);
+    expect(zeroCost.issues).toEqual(expect.arrayContaining([expect.stringContaining("call_cost_mismatch"), "gateway_measured_cost_mismatch"]));
+
+    const rogueRef: ModelRef = {provider: "openai", model: "gpt-4o", effort: "low"};
+    const rogueCall = call("intent_router_gold", rogueRef);
+    const rogueRun = {...run, provider: rogueRef.provider, model: rogueRef.model, routeCostUsd: rogueCall.costUsd,
+      costUsd: rogueCall.costUsd + observationCalls[1]!.costUsd};
+    const rogueCalls = [rogueCall, observationCalls[1]!, ...preflightCalls];
+    const rogueTotal = rogueCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const rogue = verifyIntentRouterCallEvidence({observations: [rogueRun], calls: rogueCalls, providerPreflight,
+      gatewaySpent: {costUsd: rogueTotal, calls: rogueCalls.length, unknownCostCalls: 0, budgetExposureUsd: rogueTotal}});
+    expect(rogue.passed).toBe(false);
+    expect(rogue.issues).toEqual(expect.arrayContaining([expect.stringContaining("initial_attempt_topology_mismatch")]));
+
+    const forgedResolvedCall = {...observationCalls[0]!, model: "claude-sonnet-5-forged"};
+    const forgedResolvedRun = {...run, model: forgedResolvedCall.model};
+    const forgedResolvedCalls = [forgedResolvedCall, observationCalls[1]!, ...preflightCalls];
+    const forgedResolvedTotal = forgedResolvedCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const forgedResolved = verifyIntentRouterCallEvidence({observations: [forgedResolvedRun], calls: forgedResolvedCalls, providerPreflight,
+      gatewaySpent: {costUsd: forgedResolvedTotal, calls: forgedResolvedCalls.length, unknownCostCalls: 0, budgetExposureUsd: forgedResolvedTotal}});
+    expect(forgedResolved.passed).toBe(false);
+    expect(forgedResolved.issues).toEqual(expect.arrayContaining([expect.stringContaining("resolved_model_not_preflighted")]));
 
     const rejectedInvocationId = "10000000-0000-4000-8000-000000000001";
     const repairInvocationId = "10000000-0000-4000-8000-000000000002";
-    const validationIssues = [{path: "composition", code: "invalid_value", message: "Invalid enum value"}];
-    const issueFingerprint = evidenceFingerprint(validationIssues.map(({path, code}) => ({path, code})));
+    const validationIssues = [{path: "composition", code: "invalid_value", message: "Invalid enum value", allowedValues: ["prepare_meeting"]}];
+    const issueFingerprint = evidenceFingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues})));
+    const guidance = buildRepairGuidance("schema", validationIssues);
+    const routeContract = contract("route_intent");
     const rejectedRoute: GatewayCallLog = {
-      ...calls[0]!, invocationId: rejectedInvocationId, outcome: "invalid_output", costUsd: 0.004, latencyMs: 10,
-      outputFingerprint: "a".repeat(64), validationIssues, validationIssueCodeFingerprint: issueFingerprint,
+      ...observationCalls[0]!, invocationId: rejectedInvocationId, outcome: "invalid_output", latencyMs: 10,
+      outputFingerprint: "a".repeat(64), validationIssues, validationIssueCodeFingerprint: issueFingerprint, validationSource: "schema",
     };
     const repairedRoute: GatewayCallLog = {
-      ...calls[0]!, invocationId: repairInvocationId, retryOrdinal: 1, isSameModelRepair: true,
-      previousInvocationId: rejectedInvocationId, repairGuidanceFingerprint: "b".repeat(64),
-      repairValidationIssueCodeFingerprint: issueFingerprint, promptFingerprint: "c".repeat(64),
-      costUsd: 0.01, latencyMs: 20,
+      ...observationCalls[0]!, invocationId: repairInvocationId, retryOrdinal: 1, isSameModelRepair: true, usedFallback: true,
+      previousInvocationId: rejectedInvocationId, repairGuidanceFingerprint: evidenceFingerprint(guidance),
+      repairValidationIssueCodeFingerprint: issueFingerprint,
+      promptFingerprint: evidenceFingerprint({system: `${routeContract.system}\n\n${guidance}`, schemaName: routeContract.schemaName, schema: z.toJSONSchema(routeContract.schema)}),
+      latencyMs: 20,
     };
     const repairedRun = {
-      ...run, routeAttemptCount: 2, routeCostUsd: 0.014, routeLatencyMs: 30,
-      costUsd: 0.019, latencyMs: 110,
+      ...run, routeAttemptCount: 2, routeCostUsd: rejectedRoute.costUsd + repairedRoute.costUsd, routeLatencyMs: 30,
+      costUsd: rejectedRoute.costUsd + repairedRoute.costUsd + observationCalls[1]!.costUsd, latencyMs: 110,
     };
-    const repairedCalls = [rejectedRoute, repairedRoute, calls[1]!];
-    const repairedSpend = {costUsd: 0.019, calls: 3, unknownCostCalls: 0, budgetExposureUsd: 0.019};
-    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: repairedCalls, providerPreflight: [], gatewaySpent: repairedSpend}).passed).toBe(true);
+    const repairedCalls = [rejectedRoute, repairedRoute, observationCalls[1]!, ...preflightCalls];
+    const repairedTotal = repairedCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const repairedSpend = {costUsd: repairedTotal, calls: repairedCalls.length, unknownCostCalls: 0, budgetExposureUsd: repairedTotal};
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: repairedCalls, providerPreflight, gatewaySpent: repairedSpend}).passed).toBe(true);
     const unboundRepair = {...repairedRoute, previousInvocationId: "10000000-0000-4000-8000-000000000099"};
-    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, unboundRepair, calls[1]!], providerPreflight: [], gatewaySpent: repairedSpend}).issues)
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, unboundRepair, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: repairedSpend}).issues)
       .toEqual(expect.arrayContaining([expect.stringContaining("repair_predecessor_mismatch")]));
+    const forgedRepair = {...repairedRoute, repairGuidanceFingerprint: "b".repeat(64), promptFingerprint: "c".repeat(64)};
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, forgedRepair, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: repairedSpend}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("repair_guidance_mismatch"), expect.stringContaining("repair_prompt_mismatch")]));
+    const switchedRepair = {...repairedRoute, provider: "openai" as const, configuredModel: "gpt-5.6-terra", model: "gpt-5.6-terra"};
+    expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, switchedRepair, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: repairedSpend}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("repair_model_mismatch")]));
   });
 
   it("exercises every one of the 52 authored messages without treating an oracle-built output as provider evidence", () => {

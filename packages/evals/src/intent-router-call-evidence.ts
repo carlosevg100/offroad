@@ -6,7 +6,14 @@ import {
   intentClassifierOutputSchema,
   semanticObjectExtractorOutputSchema,
 } from "@offroad/agent-contracts";
-import type {GatewayCallLog} from "@offroad/model-gateway";
+import {
+  buildRepairGuidance,
+  defaultTaskPolicies,
+  estimateCostUsd,
+  listPrices,
+  type GatewayCallLog,
+  type ModelRef,
+} from "@offroad/model-gateway";
 import {z} from "zod";
 
 import {intentGoldTurns} from "./intent-gold";
@@ -24,6 +31,8 @@ export type IntentRouterCallEvidence = {
   linkedPreflightOperations: number;
   providerAttempts: number;
   measuredCostUsd: number;
+  recomputedMeasuredCostUsd: number;
+  pricingTableFingerprint: string;
   unknownCostAttempts: number;
   cassetteAttempts: number;
 };
@@ -33,6 +42,17 @@ const surfaceContract = {
   intent_router_gold: {task: "route_intent", schemaName: "shadow_routing_output", system: INTENT_CLASSIFIER_SYSTEM, schema: intentClassifierOutputSchema},
   intent_object_gold: {task: "extract_semantic_objects", schemaName: "semantic_object_extractor_output", system: SEMANTIC_OBJECT_EXTRACTOR_SYSTEM, schema: semanticObjectExtractorOutputSchema},
 } as const;
+
+const sameRef = (left: Pick<ModelRef, "provider" | "model" | "effort">, right: Pick<ModelRef, "provider" | "model" | "effort">): boolean =>
+  left.provider === right.provider && left.model === right.model && left.effort === right.effort;
+
+const configuredRefs = (task: keyof typeof defaultTaskPolicies): ModelRef[] => {
+  const policy = defaultTaskPolicies[task];
+  return [policy.primary, ...(policy.fallback ? [policy.fallback] : [])].filter((ref, index, refs) =>
+    refs.findIndex((candidate) => sameRef(candidate, ref)) === index);
+};
+
+const configuredModel = (call: GatewayCallLog): string => call.configuredModel ?? call.model;
 
 /**
  * Verifies the call ledger independently from the report. Every observation operation must own one
@@ -49,6 +69,11 @@ export function verifyIntentRouterCallEvidence(input: {
   for (const call of input.calls) {
     if (invocationIds.has(call.invocationId)) issues.push(`duplicate_invocation:${call.invocationId}`);
     invocationIds.add(call.invocationId);
+    const recomputed = recomputedCallCost(call);
+    if (call.costStatus === "measured" && (!Number.isFinite(recomputed) || !close(call.costUsd, recomputed))) {
+      issues.push(`call_cost_mismatch:${call.invocationId}`);
+    }
+    if (call.costStatus !== "measured" && call.costUsd !== 0) issues.push(`non_measured_call_has_cost:${call.invocationId}`);
   }
 
   let linkedObservationOperations = 0;
@@ -82,15 +107,23 @@ export function verifyIntentRouterCallEvidence(input: {
         schemaName: contract.schemaName,
         schema: z.toJSONSchema(contract.schema),
       });
+      const allowedRefs = configuredRefs(contract.task);
+      validateAttemptTopology(calls, allowedRefs[0]!, allowedRefs[1], operation, issues);
       calls.forEach((call, index) => {
         if (call.task !== contract.task) issues.push(`task_mismatch:${operation}:${index}`);
         if (call.schemaName !== contract.schemaName) issues.push(`schema_mismatch:${operation}:${index}`);
         if (call.inputFingerprint !== expectedInputFingerprint) issues.push(`input_mismatch:${operation}:${index}`);
         if (call.metadata?.caseId !== turn.caseId) issues.push(`case_mismatch:${operation}:${index}`);
         if (call.fromCassette || call.costStatus === "cassette") issues.push(`cassette_not_paid_evidence:${operation}:${index}`);
+        const preflight = input.providerPreflight.find((row) => row.task === contract.task && row.passed
+          && row.provider === call.provider && row.configuredModel === configuredModel(call));
+        if (!preflight) issues.push(`provider_not_preflighted:${operation}:${index}`);
+        else if (call.costStatus === "measured" && call.model !== preflight.resolvedModel) {
+          issues.push(`resolved_model_not_preflighted:${operation}:${index}`);
+        }
         const prior = calls[index - 1];
         if (call.isSameModelRepair) {
-          validateRepairLineage(call, prior, expectedInitialPromptFingerprint, operation, index, issues);
+          validateRepairLineage(call, prior, contract.system, contract.schemaName, contract.schema, operation, index, issues);
         } else {
           if (call.promptFingerprint !== expectedInitialPromptFingerprint) issues.push(`prompt_mismatch:${operation}:${index}`);
           if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
@@ -115,7 +148,7 @@ export function verifyIntentRouterCallEvidence(input: {
       const expectedCost = surface === "intent_router_gold" ? observation.routeCostUsd : observation.objectCostUsd;
       const expectedLatency = surface === "intent_router_gold" ? observation.routeLatencyMs : observation.objectLatencyMs;
       if (counted.length !== expectedAttempts) issues.push(`attempt_count_mismatch:${operation}`);
-      if (!close(sum(calls.map(({costUsd}) => costUsd)), expectedCost)) issues.push(`cost_mismatch:${operation}`);
+      if (!close(sum(calls.map(recomputedCallCost)), expectedCost)) issues.push(`cost_mismatch:${operation}`);
       if (sum(calls.map(({latencyMs}) => latencyMs)) !== expectedLatency) issues.push(`latency_mismatch:${operation}`);
       linkedObservationOperations += 1;
     }
@@ -125,10 +158,21 @@ export function verifyIntentRouterCallEvidence(input: {
   }
 
   let linkedPreflightOperations = 0;
-  for (const row of input.providerPreflight) {
+  const expectedPreflights = (Object.keys(surfaceContract) as Array<keyof typeof surfaceContract>).flatMap((surface) => {
+    const contract = surfaceContract[surface];
+    return configuredRefs(contract.task).map((ref) => ({contract, ref}));
+  });
+  for (const {contract, ref} of expectedPreflights) {
+    const rows = input.providerPreflight.filter((row) => row.task === contract.task
+      && row.schemaName === contract.schemaName && row.provider === ref.provider && row.configuredModel === ref.model);
+    if (rows.length !== 1) {
+      issues.push(`preflight_row_count:${contract.task}:${ref.provider}:${ref.model}:${rows.length}`);
+      continue;
+    }
+    const row = rows[0]!;
+    if (!row.passed) issues.push(`preflight_not_passed:${row.task}:${row.provider}:${row.configuredModel}`);
     const preflightTurn = intentGoldTurns[0]!;
-    const route = row.task === "route_intent";
-    const contract = route ? surfaceContract.intent_router_gold : surfaceContract.intent_object_gold;
+    const route = contract.task === "route_intent";
     const preflightInput = [{type: "text", text: JSON.stringify(route
       ? intentGoldClassifierInput(preflightTurn, preflightTurn.message)
       : intentGoldObjectInput(preflightTurn, preflightTurn.message))}];
@@ -146,9 +190,12 @@ export function verifyIntentRouterCallEvidence(input: {
     }
     matching.forEach((call, index) => {
       if (call.provider !== row.provider) issues.push(`preflight_provider_mismatch:${row.task}:${row.provider}:${index}`);
+      if (configuredModel(call) !== row.configuredModel || call.effort !== ref.effort) {
+        issues.push(`preflight_configured_model_mismatch:${row.task}:${row.provider}:${index}`);
+      }
       if (call.inputFingerprint !== expectedInputFingerprint) issues.push(`preflight_input_mismatch:${row.task}:${row.provider}:${index}`);
       if (call.isSameModelRepair) {
-        validateRepairLineage(call, matching[index - 1], expectedPromptFingerprint, `preflight:${row.task}:${row.provider}`, index, issues);
+        validateRepairLineage(call, matching[index - 1], contract.system, contract.schemaName, contract.schema, `preflight:${row.task}:${row.provider}`, index, issues);
       } else {
         if (call.promptFingerprint !== expectedPromptFingerprint) issues.push(`preflight_prompt_mismatch:${row.task}:${row.provider}:${index}`);
         if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
@@ -158,6 +205,7 @@ export function verifyIntentRouterCallEvidence(input: {
       if (call.outcome === "ok" && call.model !== row.resolvedModel) issues.push(`preflight_model_mismatch:${row.task}:${row.provider}:${index}`);
       if (call.fromCassette || call.costStatus === "cassette") issues.push(`preflight_cassette_not_paid_evidence:${row.task}:${row.provider}:${index}`);
     });
+    validateAttemptTopology(matching, ref, undefined, `preflight:${row.task}:${row.provider}:${row.configuredModel}`, issues);
     if (matching.filter(({costStatus}) => costStatus !== "not_called").length !== row.attemptCount) {
       issues.push(`preflight_attempt_count_mismatch:${row.task}:${row.provider}`);
     }
@@ -166,28 +214,38 @@ export function verifyIntentRouterCallEvidence(input: {
     }
     linkedPreflightOperations += 1;
   }
+  const expectedPreflightKeys = new Set(expectedPreflights.map(({contract, ref}) =>
+    `${contract.task}:${contract.schemaName}:${ref.provider}:${ref.model}`));
+  for (const row of input.providerPreflight) {
+    const key = `${row.task}:${row.schemaName}:${row.provider}:${row.configuredModel}`;
+    if (!expectedPreflightKeys.has(key)) issues.push(`unexpected_preflight_row:${key}`);
+  }
   for (const call of input.calls) {
     if (!claimedInvocationIds.has(call.invocationId)) issues.push(`orphan_call:${call.invocationId}`);
   }
 
   const providerAttempts = input.calls.filter(({costStatus}) => costStatus === "measured" || costStatus === "unknown").length;
   const measuredCostUsd = sum(input.calls.map(({costStatus, costUsd}) => costStatus === "measured" ? costUsd : 0));
+  const recomputedMeasuredCostUsd = sum(input.calls.map(recomputedCallCost));
   const unknownCostAttempts = input.calls.filter(({costStatus}) => costStatus === "unknown").length;
   const cassetteAttempts = input.calls.filter(({costStatus}) => costStatus === "cassette").length;
   if (providerAttempts !== input.gatewaySpent.calls) issues.push("gateway_call_count_mismatch");
-  if (!close(measuredCostUsd, input.gatewaySpent.costUsd)) issues.push("gateway_measured_cost_mismatch");
+  if (!Number.isFinite(recomputedMeasuredCostUsd)) issues.push("unpriced_measured_call");
+  if (!close(recomputedMeasuredCostUsd, input.gatewaySpent.costUsd)) issues.push("gateway_measured_cost_mismatch");
   if (unknownCostAttempts !== input.gatewaySpent.unknownCostCalls) issues.push("gateway_unknown_cost_mismatch");
-  if (input.gatewaySpent.budgetExposureUsd + 1e-9 < input.gatewaySpent.costUsd) issues.push("gateway_exposure_below_measured_cost");
+  if (input.gatewaySpent.budgetExposureUsd + 1e-9 < recomputedMeasuredCostUsd) issues.push("gateway_exposure_below_measured_cost");
 
   return {
     passed: issues.length === 0,
     issues,
     observationOperations: input.observations.length * 2,
     linkedObservationOperations,
-    preflightOperations: input.providerPreflight.length,
+    preflightOperations: expectedPreflights.length,
     linkedPreflightOperations,
     providerAttempts,
     measuredCostUsd,
+    recomputedMeasuredCostUsd,
+    pricingTableFingerprint: evidenceFingerprint(listPrices),
     unknownCostAttempts,
     cassetteAttempts,
   };
@@ -217,7 +275,9 @@ function close(left: number, right: number): boolean {
 function validateRepairLineage(
   call: GatewayCallLog,
   prior: GatewayCallLog | undefined,
-  basePromptFingerprint: string,
+  system: string,
+  schemaName: string,
+  schema: z.ZodType,
   operation: string,
   index: number,
   issues: string[],
@@ -227,7 +287,12 @@ function validateRepairLineage(
     return;
   }
   if (call.previousInvocationId !== prior.invocationId) issues.push(`repair_predecessor_mismatch:${operation}:${index}`);
-  const priorIssueFingerprint = evidenceFingerprint((prior.validationIssues ?? []).map(({path, code}) => ({path, code})));
+  if (call.provider !== prior.provider || call.model !== prior.model || configuredModel(call) !== configuredModel(prior)
+    || call.effort !== prior.effort) issues.push(`repair_model_mismatch:${operation}:${index}`);
+  if (call.usedProviderFallback || !call.usedFallback || call.retryOrdinal !== 1) issues.push(`repair_topology_mismatch:${operation}:${index}`);
+  const priorIssueFingerprint = evidenceFingerprint((prior.validationIssues ?? []).map(({path, code, allowedValues}) => ({
+    path, code, allowedValues: allowedValues ?? [],
+  })));
   if (!prior.validationIssueCodeFingerprint || prior.validationIssueCodeFingerprint !== priorIssueFingerprint) {
     issues.push(`rejection_issue_fingerprint_mismatch:${operation}:${index}`);
   }
@@ -235,15 +300,50 @@ function validateRepairLineage(
     || call.repairValidationIssueCodeFingerprint !== prior.validationIssueCodeFingerprint) {
     issues.push(`repair_issue_fingerprint_mismatch:${operation}:${index}`);
   }
-  if (!call.repairGuidanceFingerprint || !/^[a-f0-9]{64}$/.test(call.repairGuidanceFingerprint)) {
-    issues.push(`repair_guidance_fingerprint_missing:${operation}:${index}`);
+  if (!prior.validationSource) {
+    issues.push(`repair_validation_source_missing:${operation}:${index}`);
+    return;
   }
-  // The gateway never exposes repair text. Its exact content is committed by the guidance hash;
-  // the effective full prompt must therefore be distinct from the independently reconstructed
-  // base prompt and bound to the rejected invocation above.
-  if (!call.promptFingerprint || call.promptFingerprint === basePromptFingerprint) {
-    issues.push(`repair_prompt_not_distinct:${operation}:${index}`);
-  }
+  const guidance = buildRepairGuidance(prior.validationSource, prior.validationIssues ?? []);
+  if (call.repairGuidanceFingerprint !== evidenceFingerprint(guidance)) issues.push(`repair_guidance_mismatch:${operation}:${index}`);
+  const effectivePromptFingerprint = evidenceFingerprint({
+    system: `${system}\n\n${guidance}`,
+    schemaName,
+    schema: z.toJSONSchema(schema),
+  });
+  if (call.promptFingerprint !== effectivePromptFingerprint) issues.push(`repair_prompt_mismatch:${operation}:${index}`);
+}
+
+function validateAttemptTopology(
+  calls: readonly GatewayCallLog[],
+  primary: ModelRef,
+  fallback: ModelRef | undefined,
+  operation: string,
+  issues: string[],
+): void {
+  calls.forEach((call, index) => {
+    if (!call.configuredModel) issues.push(`configured_model_missing:${operation}:${index}`);
+    const callRef = {provider: call.provider, model: configuredModel(call), effort: call.effort};
+    if (index === 0) {
+      if (!sameRef(callRef, primary) || call.retryOrdinal !== 0 || call.isSameModelRepair
+        || call.usedProviderFallback || call.usedFallback) {
+        issues.push(`initial_attempt_topology_mismatch:${operation}:${index}`);
+      }
+      return;
+    }
+    if (call.isSameModelRepair) return;
+    if (!fallback || !sameRef(callRef, fallback) || call.retryOrdinal !== 0 || !call.usedProviderFallback
+      || !call.usedFallback || calls[index - 1]?.outcome === "ok") {
+      issues.push(`fallback_topology_mismatch:${operation}:${index}`);
+    }
+  });
+}
+
+function recomputedCallCost(call: GatewayCallLog): number {
+  if (call.costStatus !== "measured") return 0;
+  const model = configuredModel(call);
+  if (!listPrices[model]) return Number.NaN;
+  return estimateCostUsd(model, call.usage);
 }
 
 function stableJson(value: unknown): string {
