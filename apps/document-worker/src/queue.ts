@@ -176,6 +176,24 @@ export type QueueClient = {
     uncompressedBytes: number;
     payloadBase64: string;
   }): Promise<{written: boolean; replayed: boolean; source_document_id: string; content_sha256: string}>;
+  /** Stores an exact, TypeScript-validated specialist input outside the Data API. The database
+   * computes its immutable fingerprint and binds it to this case-analysis capability. */
+  recordReceivablesMethodInputAssembly?(job: FullCaseAnalysisJob, assembly: unknown): Promise<{
+    id: string;
+    sourceDatasetHash: string;
+    assemblyFingerprint: string;
+    replayed: boolean;
+  }>;
+  recordReceivablesSpecialistShadowRun?(job: FullCaseAnalysisJob, input: {
+    inputAssemblyId: string;
+    result: unknown;
+  }): Promise<{
+    id: string;
+    inputFingerprint: string;
+    outputFingerprint: string;
+    resultFingerprint: string;
+    replayed: boolean;
+  }>;
   loadIntakeEvents(job: DocumentJob): Promise<unknown[]>;
   recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
   recordAnalysisScopeSuggestions(job: DocumentJob, eventId: string, suggestions: unknown[]): Promise<unknown>;
@@ -463,6 +481,49 @@ export function createQueueClient(
         source_document_id: z.uuid(),
         content_sha256: z.string().regex(/^[a-f0-9]{64}$/),
       }).parse(data);
+    },
+
+    async recordReceivablesMethodInputAssembly(job, assembly) {
+      const data = await call("worker_record_receivables_method_input_assembly_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_assembly: assembly,
+      });
+      const parsed = z.object({
+        id: z.uuid(),
+        source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
+        assembly_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        id: parsed.id,
+        sourceDatasetHash: parsed.source_dataset_hash,
+        assemblyFingerprint: parsed.assembly_fingerprint,
+        replayed: parsed.replayed,
+      };
+    },
+
+    async recordReceivablesSpecialistShadowRun(job, input) {
+      const data = await call("worker_record_receivables_specialist_shadow_run_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_input_assembly_id: input.inputAssemblyId,
+        p_result: input.result,
+      });
+      const parsed = z.object({
+        id: z.uuid(),
+        input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        output_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        result_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        id: parsed.id,
+        inputFingerprint: parsed.input_fingerprint,
+        outputFingerprint: parsed.output_fingerprint,
+        resultFingerprint: parsed.result_fingerprint,
+        replayed: parsed.replayed,
+      };
     },
 
     async loadIntakeEvents(job) {

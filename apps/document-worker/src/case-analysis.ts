@@ -33,6 +33,7 @@ import {
 import {caseRunReportSchema, taskCacheFromReport, type CaseStageEvent} from "@offroad/case-runner";
 import {
   archetypeIdSchema,
+  specialistTaskCapabilityRuntimeManifest,
   type InformationAnswers,
   type RequirementResponses,
 } from "@offroad/credit-playbook";
@@ -73,6 +74,7 @@ import {
   buildReceivablesRawUniverse,
   detectReceivablesRawEvidence,
   receivablesCaseSchema,
+  receivablesPoolInputAssemblySchema,
   type ReceivablesProviderMetricSet,
   type ReceivablesEvidenceDocument,
   type ReceivablesFiscalArchiveEvidence,
@@ -98,6 +100,7 @@ import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
+import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -366,6 +369,12 @@ const rawCaseInputSchema = z.object({
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
   receivables_evidence: z.array(receivablesEvidenceEnvelopeSchema).default([]),
+  receivables_method_input_assembly: z.object({
+    id: z.uuid(),
+    source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    assembly_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    assembly: receivablesPoolInputAssemblySchema,
+  }).nullable().default(null),
   receivables_provider_context: receivablesProviderContextSchema.default({programs: [], observations: []}),
   pricing_context: pricingContextSchema.nullable().default(null),
   market_distribution_context:marketDistributionContextSchema.nullable().default(null),
@@ -1028,6 +1037,31 @@ export async function processCaseAnalysisJob(
     const publicReport = publicCaseRunReport(result.report);
     const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
+    if (receivables?.specialistShadow && receivables.inputAssemblyId) {
+      if (!dependencies.queue.recordReceivablesSpecialistShadowRun) {
+        throw new Error("receivables_specialist_shadow_persistence_unavailable");
+      }
+      const persistedShadow = await dependencies.queue.recordReceivablesSpecialistShadowRun(job, {
+        inputAssemblyId: receivables.inputAssemblyId,
+        result: receivables.specialistShadow,
+      });
+      await dependencies.queue.writeStage(job, "receivables_specialist_R01_shadow", "succeeded", {
+        mode: "internal_shadow",
+        taskId: "R01",
+        inputFingerprint: persistedShadow.inputFingerprint,
+        outputFingerprint: persistedShadow.outputFingerprint,
+        qualityGateCount: receivables.specialistShadow.qualityResults.length,
+        replayed: persistedShadow.replayed,
+        externalEffectAllowed: false,
+      });
+    } else if (receivablesVertical?.methodExecution.status === "failed") {
+      await dependencies.queue.writeStage(job, "receivables_specialist_R01_shadow", "failed", {
+        mode: "internal_shadow",
+        taskId: "R01",
+        failureCode: receivablesVertical.methodExecution.failureCode,
+        externalEffectAllowed: false,
+      });
+    }
     const economic = economicInput(raw);
     const extractionVersion = stringOr(raw.session.extraction_version, "unknown");
     const versions = pipelineVersions({snapshot: economic, extractionVersion});
@@ -1574,6 +1608,16 @@ type PublicReceivablesVertical = {
   defects: ReceivablesCasePipelineReport["defects"];
   questions: ReceivablesCasePipelineReport["questions"];
   methodReadiness: Omit<ReturnType<typeof assessReceivablesPoolMethodReadiness>, "validatedInput">;
+  methodExecution: {
+    mode: "internal_shadow";
+    taskId: "R01";
+    status: "not_ready" | "succeeded" | "failed";
+    externalEffectAllowed: false;
+    inputFingerprint: string | null;
+    outputFingerprint: string | null;
+    qualityResults: readonly {id: string; status: "passed" | "failed"; detail: string}[];
+    failureCode: string | null;
+  };
   pipeline: null | {
     version: ReceivablesCasePipelineReport["version"];
     quality: ReceivablesCasePipelineReport["quality"];
@@ -1598,7 +1642,12 @@ function buildReceivablesVertical(
   raw: z.infer<typeof rawCaseInputSchema>,
   asOf: string,
   includeProviderFit: boolean,
-): {publicReport: PublicReceivablesVertical; privateReport: ReceivablesCasePipelineReport | null} | null {
+): {
+  publicReport: PublicReceivablesVertical;
+  privateReport: ReceivablesCasePipelineReport | null;
+  specialistShadow: ReceivablesSpecialistShadowResult | null;
+  inputAssemblyId: string | null;
+} | null {
   if (raw.receivables_evidence.length === 0) return null;
 
   const documents: ReceivablesEvidenceDocument[] = [];
@@ -1625,7 +1674,12 @@ function buildReceivablesVertical(
     documents,
     fiscalArchives,
   });
-  const readinessAssessment = assessReceivablesPoolMethodReadiness({phaseOne: built.phaseOne, detection});
+  const storedAssembly = raw.receivables_method_input_assembly;
+  const readinessAssessment = assessReceivablesPoolMethodReadiness({
+    phaseOne: built.phaseOne,
+    detection,
+    ...(storedAssembly ? {assembly: storedAssembly.assembly} : {}),
+  });
   const methodReadiness: Omit<typeof readinessAssessment, "validatedInput"> = {
     version: readinessAssessment.version,
     state: readinessAssessment.state,
@@ -1636,6 +1690,48 @@ function buildReceivablesVertical(
     gaps: readinessAssessment.gaps,
     nextQuestions: readinessAssessment.nextQuestions,
   };
+  let specialistShadow: ReceivablesSpecialistShadowResult | null = null;
+  let methodExecution: PublicReceivablesVertical["methodExecution"] = {
+    mode: "internal_shadow",
+    taskId: "R01",
+    status: "not_ready",
+    externalEffectAllowed: false,
+    inputFingerprint: null,
+    outputFingerprint: null,
+    qualityResults: [],
+    failureCode: null,
+  };
+  if (readinessAssessment.methodExecutionAllowed && storedAssembly) {
+    const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === "R01");
+    if (!capability) throw new Error("receivables_specialist_capability_not_registered");
+    try {
+      specialistShadow = executeReceivablesSpecialistShadow({
+        taskId: "R01",
+        executorKey: capability.executorKey,
+        executorVersion: capability.executorVersion,
+        phaseOne: built.phaseOne,
+        detection,
+        assembly: storedAssembly.assembly,
+      });
+      methodExecution = {
+        mode: "internal_shadow",
+        taskId: "R01",
+        status: "succeeded",
+        externalEffectAllowed: false,
+        inputFingerprint: specialistShadow.artifact.inputFingerprint,
+        outputFingerprint: specialistShadow.artifact.outputFingerprint,
+        qualityResults: specialistShadow.qualityResults,
+        failureCode: null,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "specialist_method_shadow_failed";
+      methodExecution = {
+        ...methodExecution,
+        status: "failed",
+        failureCode: message.split(":", 1)[0] ?? "specialist_method_shadow_failed",
+      };
+    }
+  }
   const fingerprint = fingerprintJson({
     version: "2026.08.28-v1",
     datasetHash,
@@ -1658,11 +1754,17 @@ function buildReceivablesVertical(
     defects: detection.defects,
     questions: detection.questions,
     methodReadiness,
+    methodExecution,
   };
 
   const requestedAmount = numericString(raw.session.requested_amount);
   if (!requestedAmount || Number(requestedAmount) <= 0) {
-    return {publicReport: {...common, status: "needs_requested_amount", pipeline: null}, privateReport: null};
+    return {
+      publicReport: {...common, status: "needs_requested_amount", pipeline: null},
+      privateReport: null,
+      specialistShadow,
+      inputAssemblyId: storedAssembly?.id ?? null,
+    };
   }
 
   const factIds = new Set(canonicalReceivablesRouteCatalogue.flatMap((route) => (
@@ -1706,6 +1808,8 @@ function buildReceivablesVertical(
 
   return {
     privateReport: report,
+    specialistShadow,
+    inputAssemblyId: storedAssembly?.id ?? null,
     publicReport: {
       ...common,
       status: "analyzed",
