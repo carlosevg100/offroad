@@ -3441,3 +3441,10 @@ são sempre iguais. “Preciso preparar material, mas não sei por onde começar
 mas o primeiro turno executa `meeting_plan`; somente o pedido explícito de preparar o arquivo ou uma
 decisão de conselho executa `material`. Staging aceitou a migration e os testes SQL; a fatia continua
 `candidate/internal` até CI, E2E e rollout de produção.
+
+O PR #503 passou banco, segurança, build e E2E longitudinal e foi mesclado. Na promoção, o comando
+de merge da branch retornou sucesso sem alterar o catálogo de migrations da produção. A verificação
+explícita encontrou as RPCs ausentes e cancelou o deploy automático do worker. As 15 migrations
+pendentes foram então aplicadas em ordem; o repositório foi renomeado para os carimbos efetivos de
+produção `20260907044208` a `20260907044325`, sem mudança de SQL. Rollouts futuros precisam conferir
+o catálogo e uma RPC crítica depois do merge, não confiar apenas no status nominal do comando.

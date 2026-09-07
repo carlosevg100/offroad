@@ -24,7 +24,7 @@ receita; não demonstra todos os workflows, pesquisa aberta, arquivos institucio
 |---|---|---|
 | Consumo real | `compileObjectivePreflight` | seleção recebe a especialização final e o terminal do objetivo; selected e blocked são enviados ao repositório shadow |
 | Fronteira de escrita | RPC `worker_record_objective_plan_preflight_v4` | capability token exato governa a gravação conjunta de plano, especialização, binding e seleção |
-| Persistência | migration `20260907024500_objective_workflow_selection_shadow.sql` | registro imutável e idempotente ligado a tenant, projeto, mensagem, job, preflight e especialização |
+| Persistência | migration `20260907044316_objective_workflow_selection_shadow.sql` | registro imutável e idempotente ligado a tenant, projeto, mensagem, job, preflight e especialização |
 | Composição no banco | validações da RPC v4 | packs econômicos fecham com a especialização; task IDs e batches formam partição sem repetição; selected exige receita completa e blocked exige grafo vazio |
 | Isolamento | RLS forçada + `objective_plan_preflight.sql` | owner lê, outro tenant não lê, cliente não escreve, anon não chama e capability forjado é recusado |
 | Observabilidade | log `objective_plan.preflight_recorded` | status, reason, recipe e outcome aparecem sem conteúdo de cliente |
@@ -101,7 +101,7 @@ não um roteador universal, homologação top-tier ou disponibilidade externa.
 | Evidência | Verificação | Resultado |
 |---|---|---|
 | Compilação no runtime | testes de `agent-operation-brief` e novo módulo `execution-brief` | standard usa a versão ativa persistida; preview cobre exatamente as dez tarefas ativadas; mismatch falha fechado |
-| Persistência | migration `20260906143000_execution_brief_foundation.sql` | brief interno e projeção visível imutáveis, versionados, com RLS, eventos e escrita capability-bound |
+| Persistência | migration `20260907044208_execution_brief_foundation.sql` | brief interno e projeção visível imutáveis, versionados, com RLS, eventos e escrita capability-bound |
 | Atomicidade | RPC `worker_record_agent_response_and_activate_v4` + teste de queue | resposta, ativação e brief usam uma única transação; replay retorna a versão existente |
 | Fronteira visível | schema estrito + teste SSR do card | objetivo, produto, fontes, frentes, premissas e checkpoint aparecem; task IDs e autoridade interna não aparecem |
 | Live Work seguro | RPC de progresso + schemas e teste SSR | estado e contagem são derivados do último run de cada tarefa; resposta não contém IDs internos; coluna `internal_snapshot` não é legível pelo cliente |
@@ -1343,7 +1343,7 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Evidência | Comando/artefato | Resultado | Data |
 | --- | --- | --- | --- |
 | Observação ligada ao turno | `agent-operation-brief.ts` | toda ativação standard com projeto compila o objetivo, avalia o grafo contra o inventário universal real e registra o resultado antes da ativação legada; falha da observação não interrompe o trilho liberado | 2026-09-06 |
-| Persistência imutável | `20260906234054_objective_plan_preflight.sql` | plano, identidade, decisão, fingerprint, partição de tarefas, status e alcançabilidade ficam vinculados a organização, projeto, mensagem e job; somente leitura do tenant é concedida | 2026-09-06 |
+| Persistência imutável | `20260907044240_objective_plan_preflight.sql` | plano, identidade, decisão, fingerprint, partição de tarefas, status e alcançabilidade ficam vinculados a organização, projeto, mensagem e job; somente leitura do tenant é concedida | 2026-09-06 |
 | Comando capability-bound | `worker_record_objective_plan_preflight_v1` | exige o job leased exato, mensagem de usuário ainda em processamento e projeto da sessão; valida esquema, limites, conjunto de targets e partição completa antes de gravar idempotentemente | 2026-09-06 |
 | Testes do worker | Vitest e typecheck de `@offroad/document-worker` | 30 arquivos/178 testes verdes; adapter RPC e ativação determinística comprovam gravação do plano e decisão bloqueada sem promover dispatcher | 2026-09-06 |
 | Segurança SQL | `supabase/tests/objective_plan_preflight.sql` | contrato cobre replay, resultado terminal forjado, partição sobreposta, capability falsa, isolamento entre tenants e proibição de escrita direta; execução local aguarda runtime Docker e permanece gate obrigatório da CI | 2026-09-06 |
@@ -1354,8 +1354,9 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Evidência | Comando/artefato | Resultado | Data |
 | --- | --- | --- | --- |
 | Ordem do turno | `agent-operation-brief.test.ts` | seleção `refinance-liability-management.meeting_plan` é persistida antes da ativação; 188 testes do worker verdes | 2026-09-07 |
-| Gate transacional | `20260907032452_integration_preview_workflow_selection_enforcement.sql` | nova RPC v5 compara seleção e ativação antes de delegar à gravação/ativação atômica existente | 2026-09-07 |
+| Gate transacional | `20260907044319_integration_preview_workflow_selection_enforcement.sql` | nova RPC v5 compara seleção e ativação antes de delegar à gravação/ativação atômica existente | 2026-09-07 |
 | Testes negativos | `supabase/tests/objective_plan_preflight.sql` em staging | fingerprint forjado, task slice incompleto, lotes divergentes e capability falsa recusados; `objective_plan_preflight_passed` | 2026-09-07 |
 | Brief e grants | `supabase/tests/execution_brief_foundation.sql` em staging | wrapper v5 preserva o contrato do Execution Brief; `anon` sem execução e `authenticated` com capability; teste passou | 2026-09-07 |
-| Continuidade do workflow | `20260907041815_integration_preview_workflow_continuity_anchor.sql`, `20260907042403_integration_preview_workflow_continuity_grant_parity.sql`, teste SQL e `agent-operation-brief.test.ts` | resposta governada, ajuste do plano e alteração de premissa continuam usando a última seleção econômica imutável do mesmo projeto mesmo depois de o pedido inicial sair da janela curta; capability forjada e projeto distinto não têm acesso; wrapper e implementação têm grant parity; o novo turno recompila e volta a passar pelo gate exato | 2026-09-07 |
+| Continuidade do workflow | `20260907044322_integration_preview_workflow_continuity_anchor.sql`, `20260907044325_integration_preview_workflow_continuity_grant_parity.sql`, teste SQL e `agent-operation-brief.test.ts` | resposta governada, ajuste do plano e alteração de premissa continuam usando a última seleção econômica imutável do mesmo projeto mesmo depois de o pedido inicial sair da janela curta; capability forjada e projeto distinto não têm acesso; wrapper e implementação têm grant parity; o novo turno recompila e volta a passar pelo gate exato | 2026-09-07 |
 | Advisors | Supabase staging | nenhum novo finding de segurança; dois INFO preexistentes em tabelas `private`; findings de performance preexistentes seguem fora desta fatia | 2026-09-07 |
+| Rollout fail-closed | catálogo de migrations e `to_regprocedure` em produção | merge da branch respondeu sucesso, mas não promoveu DDL; deploy do worker cancelado antes do rollout, 15 migrations aplicadas em ordem e carimbos do Git reconciliados com produção | 2026-09-07 |
