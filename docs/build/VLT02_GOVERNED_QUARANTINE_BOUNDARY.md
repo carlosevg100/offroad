@@ -9,9 +9,11 @@ introduz uma portaria governada antes de qualquer interpretação de conteúdo. 
 
 `quarantined → scanning → clean | rejected`
 
-Somente `clean`, com scanner `clean`, nenhum motivo de rejeição e receipt íntegro, autoriza uma cópia
-dos bytes para o parser. PDF, Office, texto, imagem e arquivo fiscal usam a mesma autorização. O
-arquivo bruto baixado não é entregue diretamente a `parseDocument` nem a `parseNfeArchive`.
+Somente `clean`, com scanner `clean`, nenhum motivo de rejeição e receipt íntegro, autoriza um
+snapshot para o parser. O snapshot inclui cópia dos bytes, tenant, documento, versão, operação, nome,
+MIME e tipo detectado já vinculados. PDF, Office, texto, imagem e arquivo fiscal usam a mesma
+autorização. O arquivo bruto baixado e os campos mutáveis do job não são usados no roteamento após o
+gate.
 
 Isso é uma capacidade interna candidata. Não prova um data room isolado em produção, não prova um
 ClamAV operacional ou atualizado e não promove ingestão para uso externo.
@@ -33,10 +35,18 @@ composto somente por XML para o fluxo fiscal. Formatos legados CFB, ODF, RTF, ex
 genéricos não são tratados como limpos nesta versão. Acrescentar um formato exige inspector e testes
 adversariais próprios; não basta o parser conseguir abri-lo.
 
-O inspector usa magic bytes e valida a estrutura antes do scanner. Em ZIP/OOXML, os limites do
-diretório central são verificados antes da descompressão; quando esses limites passam, todos os
-membros são descomprimidos por stream sob limites reais de membro e total. Conteúdo XML necessário à
-política é capturado somente até 8 MiB. Paths absolutos, vazios, relativos ou com backslash são
+A ordem é fixa: integridade e limites mínimos de bytes, scanner, inspector de container e autorização
+do parser. `file-type`, `JSZip.loadAsync` e qualquer descompressão só executam depois de um veredito
+limpo do scanner. Em ZIP/OOXML, os limites do diretório central são verificados antes da
+descompressão; quando esses limites passam, nenhuma entrada é aberta. Quando passam, todos os membros
+são descomprimidos por stream sob limites reais de membro e total. O primeiro limite real atingido
+aborta o restante do archive.
+
+Conteúdo XML necessário à política tem um limite próprio versionado de inspeção, padrão de 8 MiB. Se
+esse limite for excedido, o receipt registra `active_content_inspection_exceeded`; o caso não é
+confundido com excesso de tamanho do membro. Archives dentro de archive não são suportados nesta
+versão: `maxArchiveDepth` é fixo em zero e conteúdo aninhado é detectado tanto pelo nome quanto pelos
+magic bytes do membro descomprimido. Paths absolutos, vazios, relativos ou com backslash são
 rejeitados. Nenhum membro é materializado em disco.
 
 ## Receipt imutável e autorização
@@ -53,9 +63,10 @@ Cada tentativa produz um objeto validado e congelado contendo:
 - `receiptId` e fingerprint do receipt.
 
 `authorizeParserInput` recalcula o fingerprint do receipt, exige veredito e scanner limpos, compara
-tenant, documento, versão, operação, hash, tamanho e política e então recalcula os bytes correntes.
-Troca de tenant/versão/operação e alteração dos bytes depois do scan falham fechado. A função retorna
-uma nova cópia, evitando que o consumidor receba por referência o buffer de download.
+tenant, documento, versão, operação, hash, tamanho, nome original, MIME declarado e política e então
+recalcula os bytes correntes. Troca de tenant/versão/operação/nome/MIME e alteração dos bytes depois
+do scan falham fechado. A função retorna o snapshot autorizado com uma nova cópia, evitando que o
+consumidor receba por referência o buffer de download.
 
 O `receiptId` é uma chave determinística da operação e do input governado. Repetir a mesma tentativa
 sob o mesmo relógio controlado produz o mesmo receipt; persistência idempotente e concorrente depende
@@ -80,12 +91,14 @@ Os testes cobrem:
 2. PDF malformado, criptografado, com script e polyglot PDF+ZIP;
 3. divergência de magic byte, MIME e extensão;
 4. macro, objeto embutido, relação externa e fórmula externa em OOXML;
-5. zip bomb, excesso de membros, membro e total descomprimido, nested archive e unsafe path;
+5. zip bomb, excesso de membros, membro e total descomprimido, abort do restante do archive, limite
+   próprio de XML, nested archive por magic byte e unsafe path;
 6. formula injection em CSV;
 7. receipt adulterado e receipt rejeitado;
-8. troca de tenant, versão, operação, política e bytes após scan;
-9. caminho saudável com receipt limpo;
-10. integração do worker provando que um tipo forjado não chega a parser/classificação/retrieval.
+8. troca de tenant, versão, operação, nome, MIME, política e bytes após scan;
+9. caminho saudável com receipt limpo e exceção do detector convertida em receipt rejeitado;
+10. integração do worker provando que um tipo forjado não chega a parser/classificação/retrieval e
+    que uma mutação do payload durante o scan não altera nome, MIME ou roteamento autorizados.
 
 ## Fronteira honesta e bloqueios
 
