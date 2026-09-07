@@ -3558,3 +3558,10 @@ manifest across journey, horizontal, confusion and adversarial suites, including
 paraphrase triplets and a semantic answer key. Run 34096964058 is historical only: its 17 turns,
 same-byte repeats and partial scorer no longer qualify as promotion evidence. No capability is
 promoted until the replacement gate passes 100% with the real model.
+
+The code-complete candidate now sends all 52 authored messages through a semantically correct raw
+response and the production canonicalizer. Scoring reads raw action, object/reference bindings,
+outcome, decision and audience before canonical repair; material numbers and entities participate
+in both the answer key and fingerprint. The summary independently rebuilds manifest membership,
+checks and routing fingerprints and fails on null/provider-error observations or forged expected,
+checks and constant hashes. This deterministic integration is green but is not a real-model run.

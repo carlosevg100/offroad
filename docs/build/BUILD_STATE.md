@@ -11,11 +11,15 @@
 - O corpus candidate agora possui 40 turnos, cobre as vinte composições em jornadas, horizontais,
   confusões e adversariais e declara assinatura semântica por turno. O manifesto exige 52
   observações: 40 bases e duas paráfrases autorais adicionais em seis IDs.
-- O score exige significado correto para ação, objetos e referências, resultado, decisão e
-  audiência, além dos campos do plano. Missing, extra, duplicate, bytes repetidos e mudança de
-  fingerprint reprovam o gate.
+- O score exige, na resposta bruta anterior ao reparo canônico, significado correto para ação,
+  objetos, referências ligadas ao objeto, resultado, decisão e audiência. Números e entidades
+  materiais entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`.
+- Os 52 textos passam por um teste local raw-to-canonicalizer. O summary recompõe checks,
+  fingerprint e manifesto, e rejeita resposta nula, erro de provedor, expected, checks ou hashes
+  forjados. Missing, extra, duplicate, suíte errada e bytes repetidos também reprovam.
 - A run `34096964058` deixa de ser evidência de promoção: 17 turnos, 29 observações, repetição dos
-  mesmos bytes e score parcial. O novo gate ainda não foi executado com modelo real e permanece
+  mesmos bytes e score parcial. A integração determinística local está verde, mas o novo gate ainda
+  não foi executado com modelo real e permanece
   `candidate`. Nenhuma capability foi promovida por esta mudança.
 
 ## Endgame Program Board executável, candidate, 07/09/2026

@@ -26,13 +26,16 @@ CTRL-01/CTRL-02 e não promove capacidade de produto.
 |---|---|---|
 | Política única | `namedCompositions` + schema/canonicalizador/stamp/fingerprint | vinte composições derivam os mesmos works, profundidade, responsabilidades e efeito; divergência é rejeitada |
 | Cobertura candidate | `intent-gold.ts` | 40 turnos, vinte composições e quatro suítes: jornada, horizontal, confusão e adversarial |
-| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências dos objetos, resultado, decisão e audiência são verificados pelo significado |
+| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências ligadas aos objetos, resultado, decisão e audiência são verificados na resposta bruta; números e entidades materiais são preservados |
 | Autoridade e evidência | carimbo do control plane + testes negativos | nunca inferidas pelo modelo; acesso ausente fica `unresolved`; cargo não concede decisão ou efeito externo |
 | Repetibilidade candidate | manifesto imutável | 40 bases + duas paráfrases reais em seis IDs = 52 observações; missing, extra, duplicate e mesmos bytes reprovam |
 | Regra | summary v2 | manifesto, quatro suítes, todos os checks e seis trios exigem 100% |
+| Integração determinística | 52 inputs raw-to-canonicalizer | todos os textos autorais exercitam a precedência e os reparos reais; negações, flexões, abstenção e continuidade têm regressão |
+| Evidência antifraude | summary v2 + reproduções do revisor | checks, fingerprints e expected são recalculados; null, provider error, associação objeto-referência trocada, CDI/`CDI + 15%` e hashes constantes reprovam |
 | Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
 
-Status: **candidate não executado com modelo real**. A run `34096964058` foi invalidada como
+Status: **code-complete candidate, não executado com modelo real**. A integração determinística e
+as reproduções do revisor estão verdes. A run `34096964058` foi invalidada como
 evidência de promoção porque usava 17 turnos, 29 observações, replay dos mesmos bytes e score menos
 profundo. Ela é apenas baseline histórica. Esta evidência não promove o roteador para uso amplo,
 não autoriza executor e não comprova pesquisa, análise financeira, modelagem, materiais ou matching.

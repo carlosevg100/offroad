@@ -36,10 +36,18 @@ São exatamente 40 turnos sintéticos distribuídos em quatro suítes:
 - pedidos adversariais, negações e tentativas de inferir cargo, objetivo, evidência ou autoridade.
 
 As vinte composições aparecem no conjunto. Cada turno possui assinatura semântica explícita:
-ação canônica, tipos de objeto, referências materiais, sinais do resultado desejado, presença e
-categoria da decisão e categoria de audiência. O score confere esses significados, além de
+ação canônica, tipos de objeto, referências materiais ligadas ao objeto correspondente, sinais do
+resultado desejado, presença e categoria da decisão e categoria de audiência. Números, entidades e
+premissas que alteram a decisão fazem parte da referência; por exemplo, o cenário `gc05-t03` exige
+CDI de 12% e prazo de sete anos. O score confere esses significados na resposta bruta do modelo,
+antes de reparos do canonicalizador, além de
 composição, abstenção, profundidade, continuidade, trabalhos, responsabilidades e pergunta.
 JSON válido ou campo meramente preenchido não é acerto.
+
+Um teste de integração passa uma resposta bruta semanticamente correta pelos 52 textos autorais e
+pelo canonicalizador de produção. Ele exerce precedência, negações, flexões verbais, mudança de
+continuidade e a abstenção. Esse teste local prova o contrato determinístico; não substitui a
+corrida futura com o provedor real.
 
 ## Manifesto imutável e estabilidade
 
@@ -52,7 +60,14 @@ O manifesto exige exatamente:
 As duas repetições adicionais são paráfrases escritas manualmente, não replay do mesmo prompt. O
 gate compara o SHA-256 dos três textos e rejeita observação ausente, extra, duplicada, associada à
 suíte errada ou com bytes reaproveitados. Nos seis trios, o fingerprint semântico completo deve ser
-idêntico e todos os checks precisam passar.
+idêntico e todos os checks precisam passar. O fingerprint preserva entidades, números, indexadores
+e sua associação ao tipo de objeto, de modo que `CDI` e `CDI + 15%` não sejam equivalentes.
+
+O resumo não confia nos checks ou hashes gravados pelo runner. Ele recompõe o manifesto usando
+turno, suíte, repetição e SHA-256 da mensagem; recalcula cada check sobre `rawActual` e `actual`; e
+recalcula o fingerprint. Resposta bruta ou canonicalizada ausente, erro do provedor, identidade do
+provedor/modelo ausente, expected divergente, check gravado divergente ou fingerprint forjado
+reprovam nominalmente o gate.
 
 ## Regra de promoção
 
