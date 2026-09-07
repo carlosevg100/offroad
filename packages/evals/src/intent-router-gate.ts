@@ -148,6 +148,8 @@ export type IntentRouterGateSummary = {
   expectedMismatches: string[]; invalidObservationEntries: string[]; recordedCheckMismatches: string[]; routingFingerprintMismatches: string[];
   metrics: IntentRouterGateMetric[]; suiteGates: IntentRouterSuiteGate[]; stableTurns: number; repeatedTurns: number;
   stabilityRate: number; requiredStabilityRate: 1; unstableTurnIds: string[]; totalCostUsd: number; totalLatencyMs: number;
+  fingerprintInvariantTurns: number; fingerprintInvarianceRate: number; fingerprintVariantTurnIds: string[];
+  qualifiedStableTurns: number; qualifiedStabilityRate: number; qualifiedUnstableTurnIds: string[];
 };
 
 export function expectedIntentRouterManifest(turns: readonly IntentGoldTurn[] = intentGoldTurns): Array<{turnId: string; suite: IntentGoldSuite; repeat: 1 | 2 | 3; messageFingerprint: string}> {
@@ -212,15 +214,27 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
     return {suite, passed: values.length === expectedCount && failedTurnIds.length === 0, observations: values.length, failedTurnIds};
   });
   const stabilityIds = turns.filter((turn) => turn.stabilityParaphrases).map((turn) => turn.id);
-  const unstableTurnIds = stabilityIds.filter((turnId) => {
+  const fingerprintVariantTurnIds = stabilityIds.filter((turnId) => {
     const values = evaluated.filter(({observation}) => observation.turnId === turnId).sort((a, b) => a.observation.repeat - b.observation.repeat);
     return values.length !== 3 || new Set(values.map(({observation}) => observation.messageFingerprint).filter(Boolean)).size !== 3
       || values.some(({routingFingerprint}) => routingFingerprint === null)
-      || new Set(values.map(({routingFingerprint}) => routingFingerprint)).size !== 1
+      || new Set(values.map(({routingFingerprint}) => routingFingerprint)).size !== 1;
+  });
+  const qualifiedUnstableTurnIds = stabilityIds.filter((turnId) => {
+    const values = evaluated.filter(({observation}) => observation.turnId === turnId);
+    return fingerprintVariantTurnIds.includes(turnId)
+      || values.length !== 3
       || values.some(({checks}) => Object.values(checks).some((passed) => !passed));
   });
-  const stableTurns = stabilityIds.length - unstableTurnIds.length;
-  const stabilityRate = stabilityIds.length === 0 ? 0 : stableTurns / stabilityIds.length;
+  const fingerprintInvariantTurns = stabilityIds.length - fingerprintVariantTurnIds.length;
+  const fingerprintInvarianceRate = stabilityIds.length === 0 ? 0 : fingerprintInvariantTurns / stabilityIds.length;
+  const qualifiedStableTurns = stabilityIds.length - qualifiedUnstableTurnIds.length;
+  const qualifiedStabilityRate = stabilityIds.length === 0 ? 0 : qualifiedStableTurns / stabilityIds.length;
+  // Compatibility aliases retain the historical field names while making their qualified
+  // semantics explicit in the new report fields above.
+  const stableTurns = qualifiedStableTurns;
+  const stabilityRate = qualifiedStabilityRate;
+  const unstableTurnIds = qualifiedUnstableTurnIds;
   return {
     schemaVersion: "intent-router-gate.v2",
     passed: manifestPassed && metrics.every(({gatePassed}) => gatePassed) && suiteGates.every(({passed}) => passed) && stabilityRate === 1,
@@ -230,5 +244,7 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
     metrics, suiteGates, stableTurns, repeatedTurns: stabilityIds.length, stabilityRate, requiredStabilityRate: 1,
     unstableTurnIds, totalCostUsd: observations.reduce((sum, observation) => sum + observation.costUsd, 0),
     totalLatencyMs: observations.reduce((sum, observation) => sum + observation.latencyMs, 0),
+    fingerprintInvariantTurns, fingerprintInvarianceRate, fingerprintVariantTurnIds,
+    qualifiedStableTurns, qualifiedStabilityRate, qualifiedUnstableTurnIds,
   };
 }

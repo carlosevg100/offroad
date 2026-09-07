@@ -97,6 +97,15 @@ function providerFailureCategory(call: GatewayCallLog): "timeout" | "rate_limit"
   return "unknown";
 }
 
+/** Additive only: old persisted calls retain their exact projection shape. */
+function retryTelemetry(call: GatewayCallLog) {
+  return {
+    ...(call.retryOrdinal !== undefined ? {retryOrdinal: boundedNumber(call.retryOrdinal, true, 1)} : {}),
+    ...(call.isSameModelRepair !== undefined ? {isSameModelRepair: call.isSameModelRepair === true} : {}),
+    ...(call.usedProviderFallback !== undefined ? {usedProviderFallback: call.usedProviderFallback === true} : {}),
+  };
+}
+
 /** Closed, content-free telemetry that is safe to persist with a failed job. */
 export function safeModelAttemptDiagnostics(calls: GatewayCallLog[]) {
   return calls.slice(0, 32).map((call, index) => ({
@@ -111,6 +120,7 @@ export function safeModelAttemptDiagnostics(calls: GatewayCallLog[]) {
     latencyMs: boundedNumber(call.latencyMs, true, 86_400_000),
     stopReason: closed(call.stopReason, stopReasons),
     usedFallback: call.usedFallback === true,
+    ...retryTelemetry(call),
     fromCassette: call.fromCassette === true,
     providerHttpStatus: (() => {
       const status = boundedNumber(call.providerError?.status, true, 599);
@@ -150,6 +160,7 @@ export function modelCallLogDetail(jobId: string, call: GatewayCallLog): Record<
     latencyMs: boundedNumber(call.latencyMs, true, 86_400_000),
     stopReason: closed(call.stopReason, stopReasons),
     usedFallback: call.usedFallback === true,
+    ...retryTelemetry(call),
     fromCassette: call.fromCassette === true,
     providerHttpStatus: (() => {
       const status = boundedNumber(call.providerError?.status, true, 599);

@@ -247,6 +247,23 @@ describe("intent router promotion gate", () => {
     expect(summarizeIntentRouterGate(changedMeaning).unstableTurnIds).toContain(stability.id);
   });
 
+  it("separates pure fingerprint invariance from qualified semantic stability", () => {
+    const stability = intentGoldTurns.find((turn) => turn.stabilityParaphrases)!;
+    const consistentlyWrong = outputFor(stability, {
+      routingCore: {...outputFor(stability).routingCore, decisionType: {value: "none", state: "not_applicable"}},
+    });
+    const observations = completeObservations().map((entry) => entry.turnId === stability.id
+      ? observation(stability, entry.repeat, consistentlyWrong)
+      : entry);
+    const summary = summarizeIntentRouterGate(observations);
+
+    expect(summary.fingerprintVariantTurnIds).not.toContain(stability.id);
+    expect(summary.fingerprintInvarianceRate).toBe(1);
+    expect(summary.qualifiedUnstableTurnIds).toContain(stability.id);
+    expect(summary.qualifiedStabilityRate).toBeLessThan(1);
+    expect(summary.stabilityRate).toBe(summary.qualifiedStabilityRate);
+  });
+
   it("passes only when every suite and every semantic check is green", () => {
     const summary = summarizeIntentRouterGate(completeObservations());
     expect(summary.passed).toBe(true);

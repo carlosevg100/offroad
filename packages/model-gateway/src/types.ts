@@ -53,6 +53,11 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   schemaName: string;
   /** Overrides the policy's primary model (must still be allowlisted). */
   model?: Partial<ModelRef>;
+  /**
+   * Disables provider fallback for a single request. Used by provider preflights that must prove
+   * each configured route independently instead of succeeding through another provider.
+   */
+  allowFallback?: boolean;
   maxOutputTokens?: number;
   timeoutMs?: number;
   /** Route to the policy's shadow model instead of the primary (second opinion). */
@@ -119,12 +124,26 @@ export type GatewayResult<T> = {
   costUsd: number;
   latencyMs: number;
   stopReason: StopReason;
-  /** True when the primary model failed/refused and a fallback produced this result. */
+  /** Legacy compatibility bit: true for any successful non-initial attempt. */
   usedFallback: boolean;
+  /** Unambiguous alias: true only when the successful attempt changed provider or model. */
+  usedProviderFallback?: boolean;
+  /** Zero for the first attempt; one for the bounded same-model schema repair. */
+  retryOrdinal?: number;
+  /** True only for the bounded prompted-JSON repair on the same model. */
+  isSameModelRepair?: boolean;
   /** True when the response came from a recorded cassette (tests/CI). */
   fromCassette: boolean;
   requestId?: string;
-  attempts: Array<{provider: Provider; model: string; outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected"; message?: string}>;
+  attempts: Array<{
+    provider: Provider;
+    model: string;
+    outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
+    message?: string;
+    retryOrdinal?: number;
+    isSameModelRepair?: boolean;
+    usedProviderFallback?: boolean;
+  }>;
 };
 
 export type ProviderErrorDiagnostic = {
@@ -160,7 +179,14 @@ export type GatewayCallLog = {
   costStatus: "measured" | "unknown" | "cassette" | "not_called";
   latencyMs: number;
   stopReason: StopReason;
+  /** Legacy compatibility bit: true for any non-initial attempt. */
   usedFallback: boolean;
+  /** Zero for the first attempt; one for the bounded same-model schema repair. */
+  retryOrdinal?: number;
+  /** Distinguishes a schema repair from a provider/model fallback. */
+  isSameModelRepair?: boolean;
+  /** True only after moving from the primary provider/model to the configured fallback. */
+  usedProviderFallback?: boolean;
   fromCassette: boolean;
   schemaName: string;
   dataClassification?: DataHandlingContext["classification"];

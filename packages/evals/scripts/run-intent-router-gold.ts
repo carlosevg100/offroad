@@ -20,7 +20,9 @@ import {
   createAnthropicAdapter,
   createModelGateway,
   createOpenAIAdapter,
+  defaultTaskPolicies,
   type GatewayCallLog,
+  type ModelRef,
 } from "@offroad/model-gateway";
 
 import {assertCanonicalIntentGold, intentGoldTurns, stabilityIntentTurnIds, type IntentGoldTurn} from "../src/intent-gold";
@@ -33,6 +35,11 @@ import {
   summarizeIntentRouterGate,
   type IntentRouterGateObservation,
 } from "../src/intent-router-gate";
+import {
+  IntentRouterProviderPreflightError,
+  preflightIntentRouterProviders,
+  type IntentRouterProviderPreflight,
+} from "../src/intent-router-preflight";
 
 const args = process.argv.slice(2);
 const option = (name: string, fallback: string): string => {
@@ -66,33 +73,58 @@ async function main(): Promise<void> {
   assertCanonicalIntentGold();
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
-  if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY is required; run this gate through its OIDC workflow");
+  const routePolicy = defaultTaskPolicies.route_intent;
+  const configuredProviders = uniqueModelRefs([routePolicy.primary, ...(routePolicy.fallback ? [routePolicy.fallback] : [])]);
+  const missingProviderKeys = configuredProviders.filter(({provider}) =>
+    provider === "anthropic" ? !anthropicKey : !openaiKey).map(({provider}) => provider);
+  if (missingProviderKeys.length > 0) {
+    throw new Error(`configured route_intent provider credentials missing: ${missingProviderKeys.join(",")}; run this gate through its OIDC workflow`);
+  }
 
   const plannedCalls = expectedIntentRouterManifest().length;
   if (plannedCalls !== 52) throw new Error(`intent_router_manifest_must_have_52_observations:${plannedCalls}`);
+  mkdirSync(outDir, {recursive: true});
   const gateway = createModelGateway({
     adapters: {
-      anthropic: createAnthropicAdapter({apiKey: anthropicKey}),
-      ...(openaiKey ? {openai: createOpenAIAdapter({apiKey: openaiKey})} : {}),
+      anthropic: createAnthropicAdapter({apiKey: anthropicKey!}),
+      openai: createOpenAIAdapter({apiKey: openaiKey!}),
     },
-    budget: {maxCostUsd, maxCalls: plannedCalls * 3},
+    budget: {maxCostUsd, maxCalls: plannedCalls * 3 + configuredProviders.length * 2},
     onCall: (call) => calls.push(call),
   });
   const observations: IntentRouterGateObservation[] = [];
+  const preflightTurn = intentGoldTurns[0]!;
+  let providerPreflight: IntentRouterProviderPreflight[] = [];
+  try {
+    providerPreflight = await preflightIntentRouterProviders(gateway, configuredProviders, {
+      task: "route_intent",
+      system: INTENT_CLASSIFIER_SYSTEM,
+      input: [{type: "text", text: JSON.stringify(classifierInputFor(preflightTurn, preflightTurn.message))}],
+      schema: intentClassifierOutputSchema,
+      schemaName: "shadow_routing_output",
+      outputMode: "prompted_json",
+      thinking: "off",
+      metadata: {caseId: preflightTurn.caseId, turnId: preflightTurn.id},
+    });
+  } catch (cause) {
+    providerPreflight = cause instanceof IntentRouterProviderPreflightError ? cause.results : providerPreflight;
+    writeFileSync(resolve(outDir, "provider-preflight.json"), `${JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      passed: false,
+      providers: providerPreflight,
+      gatewaySpent: gateway.spent(),
+      calls,
+    }, null, 2)}\n`, "utf8");
+    writeFileSync(resolve(outDir, "intent-router-gold.md"), renderPreflightFailure(providerPreflight, gateway.spent()), "utf8");
+    throw cause;
+  }
 
   for (const turn of intentGoldTurns) {
     const repeats = stabilityTurnIds.has(turn.id) ? 3 : 1;
     for (let repeat = 1; repeat <= repeats; repeat += 1) {
       const message = repeat === 1 ? turn.message : turn.stabilityParaphrases?.[repeat - 2];
       if (!message) throw new Error(`missing_authored_paraphrase:${turn.id}:${repeat}`);
-      const classifierInput = buildIntentClassifierInput({
-        locale: turn.locale,
-        latestUserMessage: message,
-        recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
-        entryJob: null,
-        documentCount: turn.documentCount,
-        professionalContext: professionalContextByCase[turn.caseId] ?? null,
-      });
+      const classifierInput = classifierInputFor(turn, message);
       const startedAt = Date.now();
       let actual: IntentClassifierOutput | null = null;
       let rawActual: IntentClassifierOutput | null = null;
@@ -146,6 +178,17 @@ async function main(): Promise<void> {
   const parsedObservations = observations.map((observation) => intentRouterGateObservationSchema.parse(observation));
   const summary = summarizeIntentRouterGate(parsedObservations);
   const spent = gateway.spent();
+  const observationCalls = calls.filter(({metadata}) => metadata?.surface === "intent_router_gold");
+  const preflightCalls = calls.filter(({metadata}) => metadata?.surface === "intent_router_provider_preflight");
+  const attemptTelemetry = {
+    observations: parsedObservations.length,
+    totalProviderAttempts: spent.calls,
+    observationProviderAttempts: observationCalls.filter(({costStatus}) => costStatus !== "not_called").length,
+    preflightProviderAttempts: preflightCalls.filter(({costStatus}) => costStatus !== "not_called").length,
+    sameModelRepairAttempts: calls.filter(({isSameModelRepair}) => isSameModelRepair === true).length,
+    providerFallbackAttempts: calls.filter(({usedProviderFallback}) => usedProviderFallback === true).length,
+    unknownCostAttempts: spent.unknownCostCalls,
+  };
   const record = {
     ...summary,
     generatedAt: new Date().toISOString(),
@@ -153,17 +196,34 @@ async function main(): Promise<void> {
     stabilityTurnIds: [...stabilityTurnIds],
     budget: {maxCostUsd, plannedCalls},
     gatewaySpent: spent,
+    providerPreflight,
+    attemptTelemetry,
     contract: {schemaName: "shadow_routing_output", outputMode: "prompted_json", task: "route_intent"},
     expectedManifest: expectedIntentRouterManifest(),
     runs: parsedObservations,
     calls,
   };
-  mkdirSync(outDir, {recursive: true});
   writeFileSync(resolve(outDir, "intent-router-gold.json"), `${JSON.stringify(record, null, 2)}\n`, "utf8");
   writeFileSync(resolve(outDir, "intent-router-gold.md"), renderMarkdown(record), "utf8");
-  console.log(`gate=${summary.passed ? "PASS" : "FAIL"} turns=${summary.uniqueTurns} observations=${summary.observations} stability=${percent(summary.stabilityRate)} cost=$${spent.costUsd.toFixed(4)}`);
+  console.log(`gate=${summary.passed ? "PASS" : "FAIL"} turns=${summary.uniqueTurns} observations=${summary.observations} fingerprint_invariance=${percent(summary.fingerprintInvarianceRate)} qualified_stability=${percent(summary.qualifiedStabilityRate)} attempts=${spent.calls} measured_cost=$${spent.costUsd.toFixed(4)} conservative_exposure=$${spent.budgetExposureUsd.toFixed(4)}`);
   console.log(`report=${resolve(outDir, "intent-router-gold.md")}`);
   if (!summary.passed) process.exitCode = 1;
+}
+
+function classifierInputFor(turn: IntentGoldTurn, message: string) {
+  return buildIntentClassifierInput({
+    locale: turn.locale,
+    latestUserMessage: message,
+    recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
+    entryJob: null,
+    documentCount: turn.documentCount,
+    professionalContext: professionalContextByCase[turn.caseId] ?? null,
+  });
+}
+
+function uniqueModelRefs(refs: readonly ModelRef[]): ModelRef[] {
+  return refs.filter((ref, index, values) => values.findIndex((candidate) =>
+    candidate.provider === ref.provider && candidate.model === ref.model && candidate.effort === ref.effort) === index);
 }
 
 function percent(value: number): string {
@@ -173,7 +233,13 @@ function percent(value: number): string {
 function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
   generatedAt: string;
   gatewaySpent: ReturnType<ReturnType<typeof createModelGateway>["spent"]>;
-    runs: IntentRouterGateObservation[];
+  providerPreflight: IntentRouterProviderPreflight[];
+  attemptTelemetry: {
+    observations: number; totalProviderAttempts: number; observationProviderAttempts: number;
+    preflightProviderAttempts: number; sameModelRepairAttempts: number; providerFallbackAttempts: number;
+    unknownCostAttempts: number;
+  };
+  runs: IntentRouterGateObservation[];
 }): string {
   const lines = [
     "# Intent Router Gold Gate",
@@ -182,8 +248,11 @@ function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
     `**Generated:** ${record.generatedAt}`,
     `**Coverage:** ${record.uniqueTurns}/40 canonical turns; ${record.observations}/52 observations`,
     `**Manifest:** ${record.manifestPassed ? "PASS" : "FAIL"}`,
-    `**Stability:** ${record.stableTurns}/${record.repeatedTurns} repeated turns (${percent(record.stabilityRate)})`,
-    `**Measured cost:** US$ ${record.gatewaySpent.costUsd.toFixed(4)}; ${record.gatewaySpent.calls} provider attempts; ${record.gatewaySpent.unknownCostCalls} attempts with unknown cost`,
+    `**Provider preflight:** ${record.providerPreflight.every(({passed}) => passed) ? "PASS" : "FAIL"} (${record.providerPreflight.map(({provider, configuredModel}) => `${provider}/${configuredModel}`).join(", ")})`,
+    `**Pure fingerprint invariance:** ${record.fingerprintInvariantTurns}/${record.repeatedTurns} repeated turns (${percent(record.fingerprintInvarianceRate)})`,
+    `**Qualified stability:** ${record.qualifiedStableTurns}/${record.repeatedTurns} repeated turns (${percent(record.qualifiedStabilityRate)})`,
+    `**Cost:** measured US$ ${record.gatewaySpent.costUsd.toFixed(4)}; conservative exposure US$ ${record.gatewaySpent.budgetExposureUsd.toFixed(4)}; ${record.gatewaySpent.unknownCostCalls} attempts with unknown cost`,
+    `**Volume:** ${record.attemptTelemetry.observations} observations; ${record.attemptTelemetry.totalProviderAttempts} total provider attempts (${record.attemptTelemetry.observationProviderAttempts} observation + ${record.attemptTelemetry.preflightProviderAttempts} preflight); ${record.attemptTelemetry.sameModelRepairAttempts} same-model repairs; ${record.attemptTelemetry.providerFallbackAttempts} provider fallbacks`,
     "",
     "## Promotion metrics",
     "",
@@ -206,14 +275,36 @@ function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
       return `| ${observation.turnId} | ${observation.repeat} | ${observation.expected.composition ?? "abstain/no composition"} | ${observation.actual?.composition ?? "none"} | ${failed.length === 0 ? "PASS" : `FAIL: ${failed.join(", ")}`} | ${observation.error?.replaceAll("|", "\\|") ?? "none"} |`;
     }),
     "",
-    "## Invariance failures",
+    "## Pure fingerprint invariance failures",
     "",
-    record.unstableTurnIds.length === 0 ? "None." : record.unstableTurnIds.map((id) => `- ${id}`).join("\n"),
+    record.fingerprintVariantTurnIds.length === 0 ? "None." : record.fingerprintVariantTurnIds.map((id) => `- ${id}`).join("\n"),
+    "",
+    "## Qualified stability failures",
+    "",
+    record.qualifiedUnstableTurnIds.length === 0 ? "None." : record.qualifiedUnstableTurnIds.map((id) => `- ${id}`).join("\n"),
     "",
     "> Passing this gate is necessary but not sufficient for production routing. It proves the bounded gold set and repeated-prompt invariance; it does not authorize a workflow, executor or customer-facing conclusion.",
     "",
   ];
   return `${lines.join("\n")}\n`;
+}
+
+function renderPreflightFailure(
+  providers: IntentRouterProviderPreflight[],
+  spent: ReturnType<ReturnType<typeof createModelGateway>["spent"]>,
+): string {
+  return [
+    "# Intent Router Gold Gate",
+    "",
+    "**Verdict:** ABORTED BEFORE OBSERVATIONS",
+    `**Generated:** ${new Date().toISOString()}`,
+    `**Provider preflight:** FAIL (${providers.map(({provider, passed}) => `${provider}=${passed ? "PASS" : "FAIL"}`).join(", ") || "no result"})`,
+    "**Coverage:** 0/40 canonical turns; 0/52 observations",
+    `**Cost:** measured US$ ${spent.costUsd.toFixed(4)}; conservative exposure US$ ${spent.budgetExposureUsd.toFixed(4)}; ${spent.unknownCostCalls} attempts with unknown cost`,
+    "",
+    "> The gate aborted before the gold corpus because every configured route_intent provider must pass the real prompt/input/schema contract independently.",
+    "",
+  ].join("\n");
 }
 
 main().catch((error) => {

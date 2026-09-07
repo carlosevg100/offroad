@@ -79,16 +79,36 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     });
     const input = config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {});
     const schemaJson = z.toJSONSchema(request.schema);
-    const promptFingerprint = fingerprint({system: request.system, schemaName: request.schemaName, schema: schemaJson});
     const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
-    const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
-    // Prompted JSON is parsed from text: one malformed answer is worth a second try on the same model before the fallback.
-    if (request.outputMode === "prompted_json") candidates.splice(1, 0, primary);
-    let policyRejected = 0;
+    const candidates: Array<{
+      ref: ModelRef;
+      retryOrdinal: number;
+      isSameModelRepair: boolean;
+      usedProviderFallback: boolean;
+    }> = [
+      {ref: primary, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
+      // A repair attempt is conditional: the loop skips it unless the first response reached
+      // schema validation and produced bounded, content-free repair guidance.
+      ...(request.outputMode === "prompted_json"
+        ? [{ref: primary, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false}]
+        : []),
+      ...(fallback && request.allowFallback !== false
+        ? [{ref: fallback, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true}]
+        : []),
+    ];
     let lastFailureWasTruncation = false;
+    let repairGuidance: string | undefined;
 
-    for (const [index, ref] of candidates.entries()) {
+    for (const candidate of candidates) {
+      if (candidate.isSameModelRepair && !repairGuidance) continue;
+      const {ref, retryOrdinal, isSameModelRepair, usedProviderFallback} = candidate;
+      const attemptSystem = isSameModelRepair && repairGuidance
+        ? `${request.system}\n\n${repairGuidance}`
+        : request.system;
+      const legacyUsedFallback = isSameModelRepair || usedProviderFallback;
+      const promptFingerprint = fingerprint({system: attemptSystem, schemaName: request.schemaName, schema: schemaJson});
+      const attemptTelemetry = {retryOrdinal, isSameModelRepair, usedProviderFallback};
       let providerPolicyVersion: string | undefined;
       if (config.providerDataPolicy?.enforce) {
         if (!request.dataHandling) {
@@ -104,14 +124,14 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         });
         providerPolicyVersion = policyDecision.policyVersion ?? undefined;
         if (!policyDecision.allowed) {
-          policyRejected += 1;
-          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(",")});
+          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(","), ...attemptTelemetry});
           emit(config, {
             request,
             ref,
             costUsd: 0,
             latencyMs: 0,
-            usedFallback: index > 0,
+            usedFallback: legacyUsedFallback,
+            ...attemptTelemetry,
             fromCassette: false,
             outcome: "policy_rejected",
             promptFingerprint,
@@ -133,7 +153,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       const adapterRequest: AdapterRequest = {
         model: ref.model,
         effort: ref.effort,
-        system: request.system,
+        system: attemptSystem,
         input,
         schema: request.schema,
         schemaName: request.schemaName,
@@ -185,7 +205,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       } catch (error) {
         if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
         const providerError = providerErrorDiagnostic(error);
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error)});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
         spent.calls += 1;
         spent.unknownCostCalls += 1;
         emit(config, {
@@ -193,7 +213,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           ref,
           costUsd: 0,
           latencyMs: now() - startedAt,
-          usedFallback: index > 0,
+          usedFallback: legacyUsedFallback,
+          ...attemptTelemetry,
           fromCassette: false,
           outcome: "error",
           promptFingerprint,
@@ -214,8 +235,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       spent.calls += fromCassette ? 0 : 1;
 
       if (response.stopReason === "refusal") {
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal"});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
         continue;
       }
 
@@ -244,14 +265,17 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         const message = truncated
           ? "provider stopped at the output-token limit before completing the structured response"
           : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
+        if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
+          repairGuidance = schemaRepairGuidance(parsed.error.issues);
+        }
+        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
         continue;
       }
 
-      attempts.push({provider: ref.provider, model: ref.model, outcome: "ok"});
-      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
+      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
       const result: GatewayResult<z.infer<TSchema>> = {
         output: parsed.data as z.infer<TSchema>,
         provider: ref.provider,
@@ -261,7 +285,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         costUsd,
         latencyMs,
         stopReason: response.stopReason,
-        usedFallback: index > 0,
+        usedFallback: legacyUsedFallback,
+        usedProviderFallback,
+        retryOrdinal,
+        isSameModelRepair,
         fromCassette,
         attempts,
       };
@@ -269,7 +296,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       return result;
     }
 
-    if (policyRejected === candidates.length) {
+    if (attempts.length > 0 && attempts.every(({outcome}) => outcome === "policy_rejected")) {
       throw new ModelGatewayError(`no provider satisfies the data policy for task "${request.task}"`, "data_policy_violation", attempts);
     }
     if (lastFailureWasTruncation) {
@@ -294,6 +321,9 @@ function emit(
     costUsd: number;
     latencyMs: number;
     usedFallback: boolean;
+    retryOrdinal: number;
+    isSameModelRepair: boolean;
+    usedProviderFallback: boolean;
     fromCassette: boolean;
     outcome: GatewayCallLog["outcome"];
     promptFingerprint: string;
@@ -323,6 +353,9 @@ function emit(
     latencyMs: entry.latencyMs,
     stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,
+    retryOrdinal: entry.retryOrdinal,
+    isSameModelRepair: entry.isSameModelRepair,
+    usedProviderFallback: entry.usedProviderFallback,
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
@@ -361,6 +394,30 @@ function singleWrappedObject(value: unknown): unknown {
 function firstShortString(...values: unknown[]): string | undefined {
   const value = values.find((candidate) => typeof candidate === "string" && candidate.length > 0);
   return typeof value === "string" ? value.slice(0, 80) : undefined;
+}
+
+/**
+ * Content-free correction for the one bounded prompted-JSON repair. It exposes only validator
+ * paths, codes and enum members from the schema; the rejected provider value is never echoed.
+ */
+function schemaRepairGuidance(issues: readonly {path: readonly PropertyKey[]; code: string; values?: unknown}[]): string {
+  const details = issues.slice(0, 5).map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.map(String).join(".") : "<root>";
+    const allowed = Array.isArray(issue.values)
+      ? issue.values
+          .filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value))
+          .slice(0, 20)
+          .map((value) => JSON.stringify(value).slice(0, 82))
+      : [];
+    return allowed.length > 0
+      ? `- ${path}: use exactly one of ${allowed.join(", ")}`
+      : `- ${path}: correct schema violation ${issue.code}`;
+  });
+  return [
+    "SCHEMA REPAIR (one bounded retry): your previous JSON did not validate.",
+    "Return the entire corrected JSON object. Do not explain the correction and do not repeat the rejected value.",
+    ...details,
+  ].join("\n").slice(0, 2_000);
 }
 
 function fingerprint(value: unknown): string {

@@ -330,6 +330,45 @@ describe("gateway", () => {
     expect(third.usedFallback).toBe(true);
   });
 
+  it("labels a same-model schema repair separately and gives bounded enum guidance", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic = fakeAdapter("anthropic", [
+      ok("claude-sonnet-5", {kind: "secret_rejected_value", confidence: 0.5}),
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.5}),
+    ]);
+    const result = await createModelGateway({
+      adapters: {anthropic},
+      onCall: (log) => logs.push(log),
+    }).complete({...baseRequest, outputMode: "prompted_json", allowFallback: false});
+
+    expect(anthropic.calls).toHaveLength(2);
+    expect(anthropic.calls[1]?.system).toContain("SCHEMA REPAIR (one bounded retry)");
+    expect(anthropic.calls[1]?.system).toContain("kind: use exactly one of");
+    expect(anthropic.calls[1]?.system).not.toContain("secret_rejected_value");
+    expect(logs).toMatchObject([
+      {outcome: "invalid_output", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, usedFallback: false},
+      {outcome: "ok", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false, usedFallback: true},
+    ]);
+    expect(result).toMatchObject({
+      provider: "anthropic",
+      retryOrdinal: 1,
+      isSameModelRepair: true,
+      usedProviderFallback: false,
+      usedFallback: true,
+    });
+  });
+
+  it("can preflight one provider without silently succeeding through fallback", async () => {
+    const anthropic = fakeAdapter("anthropic", [new Error("unavailable")]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
+    const request = {...baseRequest, outputMode: "prompted_json" as const, allowFallback: false};
+
+    await expect(createModelGateway({adapters: {anthropic, openai}}).complete(request))
+      .rejects.toMatchObject({code: "all_attempts_failed"});
+    expect(anthropic.calls).toHaveLength(1);
+    expect(openai.calls).toHaveLength(0);
+  });
+
   it("preserves required nullable values returned by every provider", async () => {
     const recommendationSchema = z.object({
       status: z.enum(["not_ready", "directional"]),

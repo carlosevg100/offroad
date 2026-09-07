@@ -86,4 +86,13 @@ describe("modelCallLogDetail", () => {
       costUsd: null,
     });
   });
+
+  it("keeps legacy fallback telemetry while distinguishing repair from provider fallback", () => {
+    const repair = {...call, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false};
+    const fallback = {...call, outcome: "ok" as const, retryOrdinal: 0, isSameModelRepair: false, usedFallback: true, usedProviderFallback: true};
+    expect(safeModelAttemptDiagnostics([repair, fallback])).toMatchObject([
+      {usedFallback: false, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false},
+      {usedFallback: true, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true},
+    ]);
+  });
 });
