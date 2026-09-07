@@ -219,6 +219,8 @@
 .information-request-card__document-answer > small strong {color: #636d72; margin-right: 6px;}
 .information-request-card__document-answer > button {align-items: center; background: #20262b; border: 1px solid #20262b; border-radius: 8px; color: #fff; cursor: pointer; display: inline-flex; font: inherit; font-size: 10px; font-weight: 640; gap: 8px; justify-self: start; min-height: 38px; padding: 9px 13px;}
 .information-request-card__document-answer > button:hover {background: #30383d;}
+.information-request-card__template {align-items:center;color:#55653e;display:inline-flex;font-size:9px;font-weight:620;gap:6px;justify-self:start;text-decoration:none;}
+.information-request-card__template:hover {color:#2f3c23;text-decoration:underline;text-underline-offset:3px;}
 .information-request-card__document-answer > p {color: #7a8388; font-size: 8px; line-height: 1.45; margin: 0; max-width: 560px;}
 .information-request-card__back {background: none; border: 0; color: #727c81; cursor: pointer; font: inherit; font-size: 8px; justify-self: start; padding: 1px 0;}
 .information-request-card > footer {border-top: 1px solid #eceeeb; padding: 11px 25px;}

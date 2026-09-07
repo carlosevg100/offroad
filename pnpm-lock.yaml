@@ -168,6 +168,9 @@ importers:
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../../packages/model-gateway
+      '@offroad/receivables-analysis':
+        specifier: workspace:*
+        version: link:../../packages/receivables-analysis
       '@offroad/reconciliation':
         specifier: workspace:*
         version: link:../../packages/reconciliation

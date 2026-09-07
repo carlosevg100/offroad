@@ -10,6 +10,7 @@ const copy = {
   evidence: "Se tiver, ajuda enviar",
   attachEvidence: "Anexar os documentos desta pergunta",
   attachEvidenceHelp: "A pergunta permanece aberta até a análise dos arquivos.",
+  downloadTemplate: "Baixar modelo guiado",
   other: "Outra resposta",
   placeholder: "Escreva aqui",
   submit: "Incorporar resposta",
@@ -54,12 +55,15 @@ describe("InformationRequestCard", () => {
       answerKind: "document",
       choices: [],
       acceptableEvidence: ["Extrato bancário", "Arquivo de baixas"],
+      templateHref: "/pt-BR/app/projects/project-1/templates/receivables-r01",
       updatedAt: "2026-09-06T19:40:00.000Z",
     }} />);
 
     expect(html).toContain("Anexar os documentos desta pergunta");
     expect(html).toContain("Extrato bancário · Arquivo de baixas");
     expect(html).toContain("A pergunta permanece aberta até a análise dos arquivos.");
+    expect(html).toContain("Baixar modelo guiado");
+    expect(html).toContain("templates/receivables-r01");
     expect(html).not.toContain('placeholder="Escreva aqui"');
   });
 });

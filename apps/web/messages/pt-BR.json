@@ -1242,6 +1242,7 @@
         "evidence": "Se tiver, ajuda enviar",
         "attachEvidence": "Anexar os documentos desta pergunta",
         "attachEvidenceHelp": "A pergunta permanece aberta até a Offroad processar os arquivos e confirmar que a evidência é suficiente.",
+        "downloadTemplate": "Baixar modelo guiado de recebíveis",
         "other": "Outra resposta",
         "placeholder": "Responda com o que você souber...",
         "submit": "Incorporar resposta",

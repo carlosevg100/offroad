@@ -32,6 +32,7 @@
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
+    "@offroad/receivables-analysis": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
     "@offroad/work-plan": "workspace:*",
     "@sentry/nextjs": "10.70.0",

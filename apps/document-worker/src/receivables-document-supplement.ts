@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import Decimal from "decimal.js";
 
 import {
+  receivablesDocumentSupplementContract,
   receivablesSupplementPatchSchema,
   type ReceivablesEvidenceDocument,
   type ReceivablesPhaseOneInput,
@@ -108,7 +109,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
   const extractedSections: string[] = [];
   const omittedSections: string[] = [];
 
-  const cedentTable = findTable(input.documents, ["CEDENTE_ID", "RAZAO_SOCIAL", "PAPEL_SERVICING"]);
+  const cedentTable = findTable(input.documents, receivablesDocumentSupplementContract.sheets.cedent.requiredHeaders);
   const cedentRow = cedentTable?.rows.length === 1 ? cedentTable.rows[0]! : null;
   const servicingRole = cedentTable && cedentRow ? option(text(cedentTable, cedentRow, "PAPEL_SERVICING"), {
     cedente: "cedent", cedent: "cedent", terceiro: "third_party", "third party": "third_party",
@@ -120,12 +121,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
     extractedSections.push("cedent");
   } else omittedSections.push("cedent");
 
-  const titleHeaders = [
-    "NUM_TITULO", "SETOR_SACADO", "VLR_RECEBIDO_PERIODO", "SALDO_INADIMPLENTE", "RECUPERADO_PERIODO",
-    "DILUICAO_PERIODO", "RECOMPRA_PERIODO", "SUBSTITUICAO_PERIODO", "CEDIVEL", "LASTRO_VERIFICADO",
-    "REGISTRO", "ONUS", "DISPUTADO", "PARTE_RELACIONADA",
-  ];
-  const titleTable = findTable(input.documents, titleHeaders);
+  const titleTable = findTable(input.documents, receivablesDocumentSupplementContract.sheets.titles.requiredHeaders);
   const sourceByExternalId = new Map<string, string[]>();
   for (const receivable of input.phaseOne.universe.receivables) {
     if (!receivable.externalId) continue;
@@ -159,7 +155,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
     extractedSections.push("titles");
   } else omittedSections.push("titles");
 
-  const cashTable = findTable(input.documents, ["ID_RECEBIMENTO", "DATA_RECEBIMENTO", "VALOR_RECEBIMENTO", "NUM_TITULO", "CNPJ_SACADO", "CONTA_VINCULADA", "DUPLICADO_DE"]);
+  const cashTable = findTable(input.documents, receivablesDocumentSupplementContract.sheets.cashReceipts.requiredHeaders);
   const cashRows = cashTable?.rows.flatMap((row) => {
     if (!cashTable) return [];
     const id = text(cashTable, row, "ID_RECEBIMENTO");
@@ -177,7 +173,7 @@ export function buildReceivablesDocumentSupplementPatch(input: {
     extractedSections.push("cashReceipts");
   } else omittedSections.push("cashReceipts");
 
-  const accountingTable = findTable(input.documents, ["SALDO_CONTAS_A_RECEBER", "PROVISAO", "RECEBIMENTOS_PERIODO"]);
+  const accountingTable = findTable(input.documents, receivablesDocumentSupplementContract.sheets.accounting.requiredHeaders);
   const accountingRow = accountingTable?.rows.length === 1 ? accountingTable.rows[0]! : null;
   const accounting = accountingTable && accountingRow ? {
     grossReceivablesBalance: money(text(accountingTable, accountingRow, "SALDO_CONTAS_A_RECEBER")),

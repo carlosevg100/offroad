@@ -1,6 +1,6 @@
 "use client";
 
-import {ArrowRight, Bot, CircleHelp, LoaderCircle, Paperclip} from "lucide-react";
+import {ArrowRight, Bot, CircleHelp, Download, LoaderCircle, Paperclip} from "lucide-react";
 import {useState, type FormEvent} from "react";
 
 export type AdvisorInformationRequest = {
@@ -11,6 +11,7 @@ export type AdvisorInformationRequest = {
   answerKind: "text" | "number" | "date" | "choice" | "document" | "confirmation";
   choices: string[];
   acceptableEvidence: string[];
+  templateHref?: string;
   updatedAt: string;
 };
 
@@ -21,6 +22,7 @@ export type InformationRequestCopy = {
   evidence: string;
   attachEvidence: string;
   attachEvidenceHelp: string;
+  downloadTemplate: string;
   other: string;
   placeholder: string;
   submit: string;
@@ -93,6 +95,9 @@ export function InformationRequestCard(props: {
         <Paperclip aria-hidden="true" size={14} />
         <span>{props.copy.attachEvidence}</span>
       </button>
+      {props.request.templateHref ? <a className="information-request-card__template" download href={props.request.templateHref}>
+        <Download aria-hidden="true" size={13} />{props.copy.downloadTemplate}
+      </a> : null}
       <p>{props.copy.attachEvidenceHelp}</p>
     </div> : choiceMode && !custom ? <div className="information-request-card__choices">
       {choices.map((choice) => <button disabled={Boolean(pending) || props.disabled} key={choice} onClick={() => void answer("choice", choice)} type="button">

@@ -13,3 +13,4 @@ export * from "./underwrite";
 export * from "./method-readiness";
 export * from "./method-assembly";
 export * from "./method-supplement-draft";
+export * from "./document-supplement-contract";
