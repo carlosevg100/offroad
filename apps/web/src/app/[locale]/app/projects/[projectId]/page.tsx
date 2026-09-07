@@ -366,7 +366,7 @@ async function ConversationalCapitalProject({
           .order("created_at", {ascending: false})
           .limit(40),
         supabase.from("capital_project_information_requests")
-          .select("id, question, why_it_matters, decision_impact, acceptable_evidence, answer_kind, choices, priority, information_gain, materiality, created_at, updated_at")
+          .select("id, requirement_key, question, why_it_matters, decision_impact, acceptable_evidence, answer_kind, choices, priority, information_gain, materiality, created_at, updated_at")
           .eq("organization_id", organization.id)
           .eq("capital_project_id", project.id)
           .eq("status", "open")
@@ -391,7 +391,7 @@ async function ConversationalCapitalProject({
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
     informationRequest: {
-      eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), attachEvidence: t("informationRequest.attachEvidence"), attachEvidenceHelp: t("informationRequest.attachEvidenceHelp"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
+      eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), attachEvidence: t("informationRequest.attachEvidence"), attachEvidenceHelp: t("informationRequest.attachEvidenceHelp"), downloadTemplate: t("informationRequest.downloadTemplate"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
     },
     proposal: {
       preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
@@ -442,6 +442,9 @@ async function ConversationalCapitalProject({
         whyItMatters: request.why_it_matters,
         decisionImpact: request.decision_impact,
         acceptableEvidence: request.acceptable_evidence,
+        ...(request.requirement_key.startsWith("receivables.r01.")
+          ? {templateHref: `/${locale}/app/projects/${project.id}/templates/receivables-r01`}
+          : {}),
         answerKind: request.answer_kind as "text" | "number" | "date" | "choice" | "document" | "confirmation",
         choices: request.choices,
         updatedAt: request.updated_at,
