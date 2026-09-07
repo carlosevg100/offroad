@@ -24,7 +24,7 @@ describe("security current-state inventory", () => {
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.assuranceReady).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 24, identities: 11, vendors: 17, openGaps: 18});
+    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 25, identities: 11, vendors: 17, openGaps: 18, coverageClaims: 8});
     expect(decision.warnings).toContainEqual({code: "operator_observation_not_independently_verified", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
   });
 
@@ -41,10 +41,11 @@ describe("security current-state inventory", () => {
         const content = readFileSync(path);
         const digest = `sha256:${createHash("sha256").update(content).digest("hex")}`;
         expect(evidence.contentFingerprint).toBe(digest);
-        const artifact = JSON.parse(content.toString("utf8")) as {collector?: unknown; capturedAt?: unknown; validThrough?: unknown};
+        const artifact = JSON.parse(content.toString("utf8")) as {collector?: unknown; capturedAt?: unknown; validThrough?: unknown; origin?: unknown};
         expect(artifact.collector).toEqual(evidence.collector);
         expect(artifact.capturedAt).toBe(evidence.capturedAt);
         expect(artifact.validThrough).toBe(evidence.validThrough);
+        expect(artifact.origin).toMatchObject({repository: "carlosevg100/offroad", environmentRef: "ENV-PRODUCTION"});
       }
     }
 
@@ -52,7 +53,15 @@ describe("security current-state inventory", () => {
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(decision.evidenceVerification).toBe("repository_and_local_bytes");
     expect(decision.currentStateTruthVerified).toBe(true);
+    expect(decision.repositoryResolution).toMatchObject({
+      declaredRepository: "carlosevg100/offroad",
+      trustedRemote: "github.com/carlosevg100/offroad",
+      resolvedCommit: currentSecurityInventory.baseline.commit,
+      commitContainedInMain: true,
+    });
     expect(decision.evidenceResolutions).toHaveLength(currentSecurityInventory.evidenceIndex.length);
+    expect(decision.claimAssessments).toHaveLength(8);
+    expect(decision.claimAssessments.every((claim) => claim.status === "blocked_by_open_gaps")).toBe(true);
     const generatedPath = fileURLToPath(new URL("../../../docs/security/CURRENT_STATE_INVENTORY.md", import.meta.url));
     expect(readFileSync(generatedPath, "utf8")).toBe(renderSecurityCurrentStateInventory(currentSecurityInventory, decision));
   });
@@ -86,6 +95,57 @@ describe("security current-state inventory", () => {
     expect(currentSecurityInventory.identities.find((item) => item.identityId === "ID-CODEX-CI")).toMatchObject({privilege: "privileged", status: "partial"});
     const gap = currentSecurityInventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
     for (const phrase of ["prompt-injection", "network egress", "commands/tools", "logs/artifacts"]) expect(gap.nextAction).toContain(phrase);
+    const sourceFlow = currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-CODEX-SOURCE");
+    expect(sourceFlow).toMatchObject({sourceRef: "SYS-CODEX-CI", destinationRef: "STORE-SOURCE"});
+    expect(sourceFlow?.dataClassIds).toContain("credential_secret");
+    expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-CODEX-OPENAI")?.dataClassIds).toContain("credential_secret");
+  });
+
+  it("fails closed if canonical claims or 17 of 18 required gaps are removed and references are reused", () => {
+    const inventory = copyInventory();
+    const retainedGap = inventory.gaps.find((gap) => gap.gapId === "SG-ENV-DATA-MAPPING")!;
+    const allEntityIds = [
+      ...inventory.environments.map((item) => item.environmentId),
+      ...inventory.dataClasses.map((item) => item.dataClassId),
+      ...inventory.systems.map((item) => item.systemId),
+      ...inventory.dataStores.map((item) => item.storeId),
+      ...inventory.dataFlows.map((item) => item.flowId),
+      ...inventory.identities.map((item) => item.identityId),
+      ...inventory.vendors.map((item) => item.vendorId),
+    ];
+    retainedGap.targetRefs = allEntityIds;
+    inventory.gaps = [retainedGap];
+    for (const entity of [
+      ...inventory.environments,
+      ...inventory.dataClasses,
+      ...inventory.systems,
+      ...inventory.dataStores,
+      ...inventory.dataFlows,
+      ...inventory.identities,
+      ...inventory.vendors,
+    ]) entity.gapRefs = [retainedGap.gapId];
+    inventory.coverageClaims = inventory.coverageClaims.slice(0, 1);
+    inventory.coverageClaims[0]!.requiredGaps = [{gapRef: retainedGap.gapId, severity: retainedGap.severity, requiredStatus: "open"}];
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.currentStateTruthVerified).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "canonical_coverage_catalogue_mismatch", subjectRef: null},
+      {code: "canonical_claim_missing", subjectRef: "SCL-AI-PROVIDER-BOUNDARY"},
+      {code: "canonical_gap_missing", subjectRef: "SG-OWNER-ASSIGNMENT"},
+    ]));
+    expect(decision.claimAssessments.some((claim) => claim.status === "coverage_contract_invalid")).toBe(true);
+  });
+
+  it("fails closed if a canonical gap is marked resolved or reclassified", () => {
+    const inventory = copyInventory();
+    const gap = inventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
+    gap.status = "resolved";
+    gap.severity = "low";
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "canonical_gap_status_mismatch", subjectRef: gap.gapId},
+      {code: "canonical_gap_severity_mismatch", subjectRef: gap.gapId},
+    ]));
   });
 
   it("inventories npm, Actions, Supabase local images and Playwright browser supply paths", () => {
@@ -167,6 +227,7 @@ describe("security current-state inventory", () => {
     ["posthog_personal_key", "phc_0123456789abcdefghijklmnopqrst"],
     ["aws_access_key", "ASIA" + "0123456789ABCDEF"],
     ["aws_session_token", "FwoGZXIvYXdzE" + "0123456789abcdefghijklmnopqrstuvwxyz+/="],
+    ["aws_sts_session_token", "IQoJb3JpZ2luX2" + "0123456789abcdefghijklmnopqrstuvwxyz+/="],
     ["anthropic_key", "sk-ant-" + "0123456789abcdefghijklmnopqrst"],
     ["openai_style_key", "sk-proj-" + "0123456789abcdefghijklmnopqrst"],
     ["sentry_auth_token", "sntrys_" + "0123456789abcdefghijklmnopqrst"],
@@ -237,6 +298,24 @@ describe("security current-state inventory", () => {
     const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.blockers).toContainEqual({code: "operator_observation_asserts_verified_fact", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
+  });
+
+  it.each([
+    ["collector", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.collector = {name: "invented", version: "9", principalClass: "self-declared"}; }],
+    ["capturedAt", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.capturedAt = "2026-09-07T09:21:00.000-03:00"; }],
+    ["validThrough", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.validThrough = "2026-09-13T09:20:00.000-03:00"; }],
+  ])("rejects forged external evidence %s metadata even when referenced bytes still resolve", async (_field, forge) => {
+    const inventory = copyInventory();
+    forge(inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!);
+    const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
+    expect(decision.currentStateTruthVerified).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "external_evidence_declaration_not_allowlisted", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
+  });
+
+  it("rejects a forged repository label before trusted evaluation", async () => {
+    const inventory = copyInventory();
+    (inventory as unknown as {baseline: {repository: string}}).baseline.repository = "attacker/fork";
+    await expect(evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue)).rejects.toThrow();
   });
 
   it("fails trusted evaluation when a local observation hash is invented", async () => {

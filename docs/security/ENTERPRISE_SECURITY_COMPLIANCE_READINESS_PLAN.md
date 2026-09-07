@@ -426,9 +426,12 @@ Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem tria
 - [ ] SEC-006 ativar secret scanning push protection e validar histórico;
 - [x] SEC-007 criar baseline inicial de ambientes, ativos, dados, identidades e fornecedores a
   partir do repositório; `CURRENT_STATE_INVENTORY.md` e sua fonte tipada registram 6 ambientes,
-  8 sistemas, 7 classes de dados, 8 stores, 24 fluxos, 11 identidades, 17 vendors e 18 gaps. O
-  gate confiável resolve cada referência no commit declarado e cada observação local por bytes e
-  SHA-256. A completude live continua aberta em SEC-008 e não é inferida desta baseline;
+  8 sistemas, 7 classes de dados, 8 stores, 25 fluxos, 11 identidades, 17 vendors, 8 claims
+  canônicos e 18 gaps obrigatórios. O gate confiável confirma o remote autorizado, resolve o commit
+  real contido em `origin/main`, resolve cada referência nesse objeto Git e vincula observações
+  locais a bytes, SHA-256 e metadados de origem e autoridade allowlisted. O status dos claims é
+  derivado; remover ou reclassificar coverage/gaps falha fechado. A completude live continua aberta
+  em SEC-008 e não é inferida desta baseline;
 - [ ] SEC-008 coletar configuração live read-only de AWS, Supabase, Vercel, GitHub, Sentry e PostHog;
 - [ ] SEC-009 fechar DPA/ZDR/retention/region de OpenAI, Anthropic, Perplexity e Firecrawl;
 - [ ] SEC-010 ativar enforcement fail-closed de provider policy primeiro em staging;

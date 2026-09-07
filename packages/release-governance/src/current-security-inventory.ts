@@ -3,6 +3,7 @@ import type {
   SecurityInventoryEvidence,
   SecurityOwner,
 } from "./security-current-state";
+import {createCanonicalSecurityCoverageCatalogue} from "./security-current-state.ts";
 
 const baselineCommit = "b2e389757995859cf6a0b250e051d83ba0b53163";
 const capturedAt = "2026-09-07T09:43:00.000-03:00";
@@ -69,7 +70,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
     freshness: "time_bound",
     validThrough: "2026-09-14T09:20:00.000-03:00",
     immutableFingerprint: null,
-    contentFingerprint: "sha256:2010cab3bb4c8ff29fb3afdd9030cf8e60a846d6a72e6d65699e1c095a7b022d",
+    contentFingerprint: "sha256:eee921b75a3b879cd6790163cb370efe7294fec808fee95bc0e0bd492babbf8b",
     collector: {name: "operator-authored-observation", version: "1", principalClass: "authorized cloud administrator"},
     description: "Unverified operator observation about an earlier rollout diagnostic failure; effective IAM permissions remain unknown until a policy and simulation receipt are collected.",
   },
@@ -232,7 +233,7 @@ const dataStores: SecurityCurrentStateInventory["dataStores"] = [
   {
     storeId: "STORE-SOURCE", title: "GitHub source and CI artifacts", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "security_evidence"],
     tenancyBoundary: "Repository is documented as public; customer data and secret values are prohibited.", retentionState: "partial", backupState: "provider_managed_unverified", status: "partial",
-    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-AGENTS-SCOPE", "SEV-SECURITY-WORKFLOW"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-DATA-LIFECYCLE"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03"],
+    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-AGENTS-SCOPE", "SEV-SECURITY-WORKFLOW", "SEV-EVAL-CODEX"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-DATA-LIFECYCLE", "SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03"],
   },
   {
     storeId: "STORE-AWS-SECRETS", title: "AWS Secrets Manager", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["credential_secret"],
@@ -366,8 +367,14 @@ const dataFlows: SecurityCurrentStateInventory["dataFlows"] = [
     owner: owner("Cloud security owner", "AI governance owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-ID-01", "TRUST-DATA-03", "TRUST-AI-02"],
   },
   {
+    flowId: "FLOW-CODEX-SOURCE", title: "Codex review executor to repository and review artifacts", sourceRef: "SYS-CODEX-CI", destinationRef: "STORE-SOURCE", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
+    dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], purpose: "Read the checked-out repository and emit review text, command output, logs and artifacts into the GitHub-controlled job boundary.",
+    authorizationBoundary: "The repository prohibits committed secrets, but danger-full-access can read and write the workspace; corpus, command output and artifact content are not restricted by an enforced allowlist.", direction: "internal", status: "partial",
+    owner: owner("AI governance owner", "Product security owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-02", "TRUST-DATA-03", "TRUST-SDLC-01", "TRUST-OPS-01"],
+  },
+  {
     flowId: "FLOW-CODEX-OPENAI", title: "Codex review job to OpenAI", sourceRef: "SYS-CODEX-CI", destinationRef: "VEN-OPENAI", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
-    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Send the review prompt and selected repository corpus to the Codex service and receive tool-directed output.",
+    dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], purpose: "Send the review prompt, accessible repository corpus and tool context to the Codex service and receive tool-directed output; credential exposure remains a modeled risk until isolation is enforced.",
     authorizationBoundary: "The workflow selects model and effort but does not enforce an outbound destination allowlist, prompt-injection boundary, tool allowlist or provider assurance receipt.", direction: "outbound", status: "partial",
     owner: owner("AI governance owner", "Data security owner"), evidenceRefs: ["SEV-EVAL-CODEX"], gapRefs: ["SG-CODEX-CI-AGENT-BOUNDARY"], controlIds: ["TRUST-AI-01", "TRUST-AI-02", "TRUST-DATA-04"],
   },
@@ -613,7 +620,7 @@ const gaps: SecurityCurrentStateInventory["gaps"] = [
   },
   {
     gapId: "SG-CODEX-CI-AGENT-BOUNDARY", title: "Codex CI agent boundary lacks enforced least privilege and egress controls", severity: "critical", status: "open", owner: owner("Product security owner", "AI governance owner"),
-    targetRefs: ["SYS-CODEX-CI", "STORE-CODEX-RUNNER", "FLOW-GITHUB-CODEX", "FLOW-CODEX-AWS-SECRETS", "FLOW-CODEX-OPENAI", "ID-CODEX-CI"], evidenceRefs: ["SEV-EVAL-CODEX"],
+    targetRefs: ["SYS-CODEX-CI", "STORE-CODEX-RUNNER", "STORE-SOURCE", "FLOW-GITHUB-CODEX", "FLOW-CODEX-AWS-SECRETS", "FLOW-CODEX-SOURCE", "FLOW-CODEX-OPENAI", "ID-CODEX-CI"], evidenceRefs: ["SEV-EVAL-CODEX"],
     controlIds: ["TRUST-AI-01", "TRUST-AI-02", "TRUST-DATA-03", "TRUST-SDLC-01", "TRUST-CLOUD-02", "TRUST-OPS-01"],
     nextAction: "Threat-model the danger-full-access runner; isolate provider credentials from agent-readable environment, enforce an allowlisted corpus and commands/tools, restrict filesystem writes and network egress, test prompt-injection and exfiltration attempts, scan logs/artifacts for secrets and define retention plus incident evidence.",
   },
@@ -649,6 +656,7 @@ export const currentSecurityInventory: SecurityCurrentStateInventory = {
     environmentDataMatrixState: "not_inventoried",
     gapRef: "SG-ENV-DATA-MAPPING",
   },
+  coverageClaims: createCanonicalSecurityCoverageCatalogue(),
   limitations: [
     "Repository evidence does not attest to complete live configuration, contract terms or control operation over time.",
     "Functional owner roles are recorded, but named primary and backup assignments are not evidenced.",

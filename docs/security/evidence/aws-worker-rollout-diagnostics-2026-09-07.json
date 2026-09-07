@@ -3,6 +3,12 @@
   "capturedAt": "2026-09-07T09:20:00.000-03:00",
   "validThrough": "2026-09-14T09:20:00.000-03:00",
   "source": "unverified operator observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
   "collector": {
     "name": "operator-authored-observation",
     "version": "1",

@@ -8,7 +8,6 @@ import {masterTrustControlCatalogue} from "../src/trust-control-catalogue.ts";
 const decision = await evaluateSecurityCurrentStateInventoryTrusted(
   currentSecurityInventory,
   masterTrustControlCatalogue,
-  new Date(),
 );
 if (!decision.structurallyValid) {
   throw new Error(`security current-state inventory is invalid: ${JSON.stringify(decision.blockers)}`);

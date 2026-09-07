@@ -12,6 +12,8 @@ const inventoryIdSchema = z.string().regex(/^[A-Z]{2,5}-[A-Z0-9-]+$/);
 const evidenceIdSchema = z.string().regex(/^SEV-[A-Z0-9-]+$/);
 const gapIdSchema = z.string().regex(/^SG-[A-Z0-9-]+$/);
 const controlIdSchema = z.string().regex(/^TRUST-[A-Z0-9-]+$/);
+const claimIdSchema = z.string().regex(/^SCL-[A-Z0-9-]+$/);
+const canonicalRepository = "carlosevg100/offroad" as const;
 
 export const securityInventoryStateSchema = z.enum(["verified", "partial", "unknown"]);
 export type SecurityInventoryState = z.infer<typeof securityInventoryStateSchema>;
@@ -174,11 +176,153 @@ export const securityInventoryGapSchema = z.object({
 });
 export type SecurityInventoryGap = z.infer<typeof securityInventoryGapSchema>;
 
+export const securityInventoryClaimSchema = z.object({
+  claimId: claimIdSchema,
+  domain: z.enum(["governance", "environment", "data", "identity", "privacy", "ai", "vendor", "supply_chain"]),
+  criterion: z.string().min(1),
+  evidenceRequirements: z.array(z.object({
+    evidenceRef: evidenceIdSchema,
+    criterion: z.string().min(1),
+  })).min(1),
+  requiredGaps: z.array(z.object({
+    gapRef: gapIdSchema,
+    severity: z.enum(["critical", "high", "medium", "low"]),
+    requiredStatus: z.literal("open"),
+  })).min(1),
+});
+export type SecurityInventoryClaim = z.infer<typeof securityInventoryClaimSchema>;
+
+/**
+ * Reviewed minimum coverage for this baseline. It lives outside caller-controlled inventory data,
+ * so removing a claim or gap, changing its severity, or silently dropping evidence fails closed.
+ */
+const canonicalSecurityCoverageCatalogue = [
+  {
+    claimId: "SCL-GOVERNANCE-OWNERSHIP", domain: "governance",
+    criterion: "Security scope and control ownership are represented without treating functional role labels as named accountability.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-AGENTS-SCOPE", criterion: "Repository operating rules delimit the represented environment and known unknowns."},
+      {evidenceRef: "SEV-SECURITY-PLAN", criterion: "The readiness plan defines the target control domains but is not operating evidence."},
+      {evidenceRef: "SEV-CODEOWNERS", criterion: "Repository ownership rules are represented separately from live privileged access."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-OWNER-ASSIGNMENT", severity: "critical", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-ENVIRONMENT-RELEASE", domain: "environment",
+    criterion: "Runtime environments, deployment configuration, separation and schema-before-code ordering remain bounded by explicit evidence and gaps.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-ENV-NAMES", criterion: "Configured variable names identify intended integrations without proving live values."},
+      {evidenceRef: "SEV-WORKER-TASK", criterion: "The task definition identifies the declared worker runtime and secret references."},
+      {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "The workflow identifies deployment steps and workload identity boundaries."},
+      {evidenceRef: "SEV-QUALITY-WORKFLOW", criterion: "The quality workflow identifies CI and local Supabase execution paths."},
+      {evidenceRef: "SEV-ROLLOUT-ORDER", criterion: "The recorded rollout demonstrates why schema ordering remains an explicit gap."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-LIVE-CONFIG", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-ENV-SEPARATION", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-SCHEMA-BEFORE-CODE", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-ENV-DATA-MAPPING", severity: "critical", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-DATA-PROTECTION", domain: "data",
+    criterion: "Tenant isolation, storage, lifecycle, recovery and content-safe logging are separately covered and never inferred from one another.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-SUPABASE-CONFIG", criterion: "Local platform configuration identifies declared Auth, database and storage behavior."},
+      {evidenceRef: "SEV-RLS-TEST", criterion: "The tenant non-interference suite is present at the pinned repository commit."},
+      {evidenceRef: "SEV-WEB-UPLOAD", criterion: "The browser upload implementation identifies the private object-storage path."},
+      {evidenceRef: "SEV-WORKER-RUNTIME", criterion: "Worker code identifies processing, logging and provider handoffs."},
+      {evidenceRef: "SEV-WORKER-CONFIG", criterion: "Worker configuration identifies fail-closed parsing and declared provider switches."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-DATA-LIFECYCLE", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-BACKUP-RESTORE", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-LOGGING-CONTENT-SAFETY", severity: "high", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-IDENTITY-ACCESS", domain: "identity",
+    criterion: "Human, workload and deployment identities are inventoried without inferring effective permissions from configuration or operator recollection.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "OIDC and named deployment roles are visible in the pinned workflow."},
+      {evidenceRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", criterion: "The unverified operator observation records only the need for effective-permission evidence."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-PRIVILEGED-ACCESS", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-ENDPOINTS", severity: "high", requiredStatus: "open"},
+      {gapRef: "SG-DEPLOY-DIAGNOSTICS", severity: "high", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-PRIVACY-RIGHTS", domain: "privacy",
+    criterion: "Personal-data purpose, rights, residency and transfer obligations remain explicit rather than implied by platform configuration.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-SUPABASE-CONFIG", criterion: "Authentication configuration identifies personal-data processing entry points."},
+      {evidenceRef: "SEV-WEB-OBSERVABILITY", criterion: "Client telemetry code identifies conditional personal-data-adjacent flows."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-PRIVACY-RECORDS", severity: "high", requiredStatus: "open"},
+      {gapRef: "SG-REGION-MAP", severity: "high", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-AI-PROVIDER-BOUNDARY", domain: "ai",
+    criterion: "Model routing, provider data policy and the privileged Codex executor are distinct boundaries with explicit credential and prompt-injection risk.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-MODEL-DATA-POLICY", criterion: "The provider data-policy contract is present at the pinned commit."},
+      {evidenceRef: "SEV-MODEL-DATA-POLICY-TEST", criterion: "Provider policy regressions are represented by pinned tests."},
+      {evidenceRef: "SEV-MODEL-POLICY", criterion: "The model routing policy identifies allowlists, fallback and workload limits."},
+      {evidenceRef: "SEV-PUBLIC-RESEARCH", criterion: "Configured research providers and activation variables are represented."},
+      {evidenceRef: "SEV-EVAL-CODEX", criterion: "The Codex workflow identifies its agentic workspace, credential and egress boundary."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-PROVIDER-ASSURANCE", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-CODEX-CI-AGENT-BOUNDARY", severity: "critical", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-VENDOR-TELEMETRY", domain: "vendor",
+    criterion: "External processing, telemetry, contracts and regional behavior remain unverified until provider-specific evidence is collected.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-WEB-OBSERVABILITY", criterion: "Conditional Sentry and PostHog activation is visible in client code."},
+      {evidenceRef: "SEV-CASE-RENDER", criterion: "Generated-material code identifies the external font-loading boundary."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-VENDOR-ASSURANCE", severity: "high", requiredStatus: "open"},
+      {gapRef: "SG-TELEMETRY-ASSURANCE", severity: "high", requiredStatus: "open"},
+    ],
+  },
+  {
+    claimId: "SCL-SUPPLY-CHAIN-COVERAGE", domain: "supply_chain",
+    criterion: "CI, evaluation, package, action, container, browser and browser-CDN acquisition paths are all represented and remain subject to asset discovery.",
+    evidenceRequirements: [
+      {evidenceRef: "SEV-SECURITY-WORKFLOW", criterion: "Security CI identifies CodeQL, dependency, SBOM and image scanning."},
+      {evidenceRef: "SEV-WEB-DEPENDENCIES", criterion: "Direct web dependencies are recorded at the pinned commit."},
+      {evidenceRef: "SEV-LOCKFILE", criterion: "Resolved JavaScript package sources are pinned in the repository."},
+      {evidenceRef: "SEV-EVAL-EXTRACTION", criterion: "Extraction evaluation provider and credential paths are represented."},
+      {evidenceRef: "SEV-EVAL-INTENT", criterion: "Intent evaluation provider and credential paths are represented."},
+      {evidenceRef: "SEV-EVAL-CLASSIFICATION", criterion: "Classification evaluation provider and credential paths are represented."},
+      {evidenceRef: "SEV-EVAL-GOLD", criterion: "Gold evaluation provider and credential paths are represented."},
+      {evidenceRef: "SEV-EVAL-PROBE", criterion: "Structured-output probe provider and credential paths are represented."},
+      {evidenceRef: "SEV-EVAL-LIVE-GATE", criterion: "Live-preview gate provider, search and local-stack paths are represented."},
+    ],
+    requiredGaps: [
+      {gapRef: "SG-ASSET-DISCOVERY", severity: "high", requiredStatus: "open"},
+    ],
+  },
+] satisfies SecurityInventoryClaim[];
+
+export function createCanonicalSecurityCoverageCatalogue(): SecurityInventoryClaim[] {
+  return structuredClone(canonicalSecurityCoverageCatalogue);
+}
+
 export const securityCurrentStateInventorySchema = z.object({
   inventoryVersion: z.string().min(1),
   generatedAt: dateTimeSchema,
   baseline: z.object({
-    repository: z.string().min(1),
+    repository: z.literal(canonicalRepository),
     branch: z.literal("main"),
     commit: z.string().regex(/^[a-f0-9]{7,40}$/),
     evidenceCutoff: dateTimeSchema,
@@ -191,6 +335,7 @@ export const securityCurrentStateInventorySchema = z.object({
     gapRef: gapIdSchema,
   }),
   limitations: z.array(z.string().min(1)).min(1),
+  coverageClaims: z.array(securityInventoryClaimSchema).min(1),
   evidenceIndex: z.array(securityInventoryEvidenceSchema).min(1),
   environments: z.array(securityEnvironmentRecordSchema).min(1),
   dataClasses: z.array(securityDataClassRecordSchema).min(1),
@@ -223,8 +368,22 @@ export type SecurityInventoryDecision = {
     identities: number;
     vendors: number;
     openGaps: number;
+    coverageClaims: number;
   };
   inventoryFingerprint: string;
+  repositoryResolution: {
+    declaredRepository: string;
+    trustedRemote: string | null;
+    resolvedCommit: string | null;
+    commitContainedInMain: boolean;
+  };
+  claimAssessments: Array<{
+    claimId: string;
+    domain: SecurityInventoryClaim["domain"];
+    status: "coverage_contract_invalid" | "evidence_unresolved" | "blocked_by_open_gaps" | "covered_without_open_gap";
+    evidenceRefs: string[];
+    openGapRefs: string[];
+  }>;
   evidenceResolutions: Array<{
     evidenceId: string;
     ref: string;
@@ -242,6 +401,7 @@ const secretPatterns: Array<{name: string; pattern: RegExp}> = [
   {name: "stripe_style_key", pattern: /\b(?:sk|pk)_(?:live|test)_[A-Za-z0-9]{16,}\b/},
   {name: "aws_access_key", pattern: /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/},
   {name: "aws_session_token", pattern: /\bFwoGZXIvYXdzE[A-Za-z0-9/+=]{30,}\b/},
+  {name: "aws_sts_session_token", pattern: /\bIQoJb3JpZ2luX2[A-Za-z0-9/+=]{30,}\b/},
   {name: "github_token", pattern: /\bgh[pousr]_[A-Za-z0-9]{20,}\b/},
   {name: "github_fine_grained_token", pattern: /\bgithub_pat_[A-Za-z0-9_]{20,}\b/},
   {name: "perplexity_key", pattern: /\bpplx-[A-Za-z0-9_-]{20,}\b/},
@@ -299,6 +459,10 @@ function evaluateDeclaredInventory(
   const identityById = indexed(parsed.identities, (item) => item.identityId, "duplicate_identity_id", blockers);
   const vendorById = indexed(parsed.vendors, (item) => item.vendorId, "duplicate_vendor_id", blockers);
   const gapById = indexed(parsed.gaps, (item) => item.gapId, "duplicate_gap_id", blockers);
+  const claimById = indexed(parsed.coverageClaims, (item) => item.claimId, "duplicate_claim_id", blockers);
+  if (stableJson(parsed.coverageClaims) !== stableJson(canonicalSecurityCoverageCatalogue)) {
+    blockers.push({code: "canonical_coverage_catalogue_mismatch", subjectRef: null});
+  }
   if (!gapById.has(parsed.scopeRelationship.gapRef)) {
     blockers.push({code: `scope_relationship_gap_missing:${parsed.scopeRelationship.gapRef}`, subjectRef: null});
   }
@@ -393,7 +557,7 @@ function evaluateDeclaredInventory(
     validateGovernedEntity(flow.flowId, flow, evidenceById, gapById, knownControlIds, blockers);
     validateRefs(flow.flowId, flow.environmentRefs, environmentById, "unknown_environment_ref", blockers);
     validateRefs(flow.flowId, flow.dataClassIds, dataClassById, "unknown_data_class_ref", blockers);
-    const endpoints = new Set([...systemById.keys(), ...vendorById.keys()]);
+    const endpoints = new Set([...systemById.keys(), ...storeById.keys(), ...vendorById.keys()]);
     validateRefs(flow.flowId, [flow.sourceRef, flow.destinationRef], endpoints, "unknown_flow_endpoint", blockers);
   }
   for (const identity of parsed.identities) {
@@ -432,6 +596,37 @@ function evaluateDeclaredInventory(
     }
   }
 
+  const claimedGapIds = new Set<string>();
+  const claimedEvidenceIds = new Set<string>();
+  for (const canonicalClaim of canonicalSecurityCoverageCatalogue) {
+    const claim = claimById.get(canonicalClaim.claimId);
+    if (!claim) {
+      blockers.push({code: "canonical_claim_missing", subjectRef: canonicalClaim.claimId});
+    }
+    for (const requirement of canonicalClaim.evidenceRequirements) {
+      claimedEvidenceIds.add(requirement.evidenceRef);
+      if (!evidenceById.has(requirement.evidenceRef)) {
+        blockers.push({code: `claim_evidence_missing:${requirement.evidenceRef}`, subjectRef: canonicalClaim.claimId});
+      }
+    }
+    for (const requiredGap of canonicalClaim.requiredGaps) {
+      claimedGapIds.add(requiredGap.gapRef);
+      const gap = gapById.get(requiredGap.gapRef);
+      if (!gap) {
+        blockers.push({code: "canonical_gap_missing", subjectRef: requiredGap.gapRef});
+        continue;
+      }
+      if (gap.severity !== requiredGap.severity) blockers.push({code: "canonical_gap_severity_mismatch", subjectRef: requiredGap.gapRef});
+      if (gap.status !== requiredGap.requiredStatus) blockers.push({code: "canonical_gap_status_mismatch", subjectRef: requiredGap.gapRef});
+    }
+  }
+  for (const gap of parsed.gaps) {
+    if (!claimedGapIds.has(gap.gapId)) blockers.push({code: "gap_not_covered_by_canonical_claim", subjectRef: gap.gapId});
+  }
+  for (const evidence of parsed.evidenceIndex) {
+    if (!claimedEvidenceIds.has(evidence.evidenceId)) blockers.push({code: "evidence_not_linked_to_claim_criterion", subjectRef: evidence.evidenceId});
+  }
+
   return {
     structurallyValid: blockers.length === 0,
     evidenceVerification: "declaration_only",
@@ -447,8 +642,16 @@ function evaluateDeclaredInventory(
       identities: parsed.identities.length,
       vendors: parsed.vendors.length,
       openGaps: parsed.gaps.filter((gap) => gap.status === "open").length,
+      coverageClaims: parsed.coverageClaims.length,
     },
     inventoryFingerprint: createHash("sha256").update(stableJson(parsed)).digest("hex"),
+    repositoryResolution: {
+      declaredRepository: parsed.baseline.repository,
+      trustedRemote: null,
+      resolvedCommit: null,
+      commitContainedInMain: false,
+    },
+    claimAssessments: deriveClaimAssessments(parsed, new Set()),
     evidenceResolutions: [],
   };
 }
@@ -457,6 +660,24 @@ const execFileAsync = promisify(execFile);
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const repositoryKinds = new Set<SecurityInventoryEvidence["kind"]>(["repository_file", "automated_test", "configuration", "design_reference"]);
 const externalKinds = new Set<SecurityInventoryEvidence["kind"]>(["external_snapshot", "contract_record", "operator_observation"]);
+const trustedRepositoryRemote = "github.com/carlosevg100/offroad";
+const trustedExternalEvidenceAuthorities = {
+  "SEV-AWS-DEPLOY-ROLE-SNAPSHOT": {
+    kind: "operator_observation",
+    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-07.json",
+    capturedAt: "2026-09-07T09:20:00.000-03:00",
+    validThrough: "2026-09-14T09:20:00.000-03:00",
+    contentFingerprint: "sha256:eee921b75a3b879cd6790163cb370efe7294fec808fee95bc0e0bd492babbf8b",
+    source: "unverified operator observation",
+    collector: {name: "operator-authored-observation", version: "1", principalClass: "authorized cloud administrator"},
+    origin: {
+      repository: canonicalRepository,
+      environmentRef: "ENV-PRODUCTION",
+      systemRef: "SYS-GITHUB",
+      authorityClass: "observation_only_no_attestation_authority",
+    },
+  },
+} as const;
 
 /**
  * Trusted evaluation used by render and release gates. Resolver construction is internal: callers
@@ -470,6 +691,7 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
   const declared = evaluateDeclaredInventory(parsed, trustControlCatalogue, new Date());
   const blockers = [...declared.blockers];
   const resolutions: SecurityInventoryDecision["evidenceResolutions"] = [];
+  const repositoryResolution = await resolveTrustedRepository(parsed, blockers);
 
   for (const evidence of parsed.evidenceIndex) {
     if (!safeRepositoryRelativePath(evidence.ref)) {
@@ -477,6 +699,7 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
       continue;
     }
     try {
+      const blockersBeforeResolution = blockers.length;
       if (repositoryKinds.has(evidence.kind)) {
         const objectRef = `${parsed.baseline.commit}:${evidence.ref}`;
         const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
@@ -485,7 +708,9 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
         if (evidence.contentFingerprint && evidence.contentFingerprint !== fingerprint) {
           blockers.push({code: "repository_evidence_content_mismatch", subjectRef: evidence.evidenceId});
         }
-        resolutions.push({evidenceId: evidence.evidenceId, ref: objectRef, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "git_object"});
+        if (blockers.length === blockersBeforeResolution) {
+          resolutions.push({evidenceId: evidence.evidenceId, ref: objectRef, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "git_object"});
+        }
       } else if (externalKinds.has(evidence.kind)) {
         const absolutePath = resolve(repositoryRoot, evidence.ref);
         const bytes = await readFile(absolutePath);
@@ -493,8 +718,10 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
         if (evidence.contentFingerprint !== fingerprint) {
           blockers.push({code: "external_evidence_content_mismatch", subjectRef: evidence.evidenceId});
         }
-        if (evidence.kind === "operator_observation") validateUnverifiedOperatorObservation(evidence, bytes, blockers);
-        resolutions.push({evidenceId: evidence.evidenceId, ref: evidence.ref, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "local_artifact"});
+        validateExternalEvidenceAuthority(evidence, bytes, blockers);
+        if (blockers.length === blockersBeforeResolution) {
+          resolutions.push({evidenceId: evidence.evidenceId, ref: evidence.ref, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "local_artifact"});
+        }
       }
     } catch {
       blockers.push({code: "evidence_bytes_unresolvable", subjectRef: evidence.evidenceId});
@@ -509,8 +736,53 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
     evidenceVerification: "repository_and_local_bytes",
     currentStateTruthVerified: blockers.length === 0,
     blockers: stableIssues(blockers),
+    repositoryResolution,
+    claimAssessments: deriveClaimAssessments(parsed, new Set(resolutions.map((item) => item.evidenceId))),
     evidenceResolutions: resolutions.sort((a, b) => a.evidenceId.localeCompare(b.evidenceId)),
   };
+}
+
+async function resolveTrustedRepository(
+  inventory: SecurityCurrentStateInventory,
+  blockers: SecurityInventoryIssue[],
+): Promise<SecurityInventoryDecision["repositoryResolution"]> {
+  let trustedRemote: string | null = null;
+  let resolvedCommit: string | null = null;
+  let commitContainedInMain = false;
+  try {
+    const {stdout} = await execFileAsync("git", ["remote", "get-url", "origin"], {cwd: repositoryRoot, encoding: "utf8"});
+    trustedRemote = normalizeGitRemote(stdout.trim());
+    if (trustedRemote !== trustedRepositoryRemote || inventory.baseline.repository !== canonicalRepository) {
+      blockers.push({code: "repository_identity_mismatch", subjectRef: inventory.baseline.repository});
+    }
+  } catch {
+    blockers.push({code: "repository_identity_unresolvable", subjectRef: inventory.baseline.repository});
+  }
+  try {
+    const {stdout} = await execFileAsync("git", ["rev-parse", "--verify", `${inventory.baseline.commit}^{commit}`], {cwd: repositoryRoot, encoding: "utf8"});
+    resolvedCommit = stdout.trim();
+    if (resolvedCommit !== inventory.baseline.commit) blockers.push({code: "repository_commit_not_full_hash", subjectRef: inventory.baseline.commit});
+  } catch {
+    blockers.push({code: "repository_commit_unresolvable", subjectRef: inventory.baseline.commit});
+  }
+  if (resolvedCommit) {
+    try {
+      await execFileAsync("git", ["merge-base", "--is-ancestor", resolvedCommit, "refs/remotes/origin/main"], {cwd: repositoryRoot});
+      commitContainedInMain = true;
+    } catch {
+      blockers.push({code: "repository_commit_not_on_trusted_main", subjectRef: inventory.baseline.commit});
+    }
+  }
+  return {declaredRepository: inventory.baseline.repository, trustedRemote, resolvedCommit, commitContainedInMain};
+}
+
+function normalizeGitRemote(remote: string): string {
+  return remote
+    .replace(/^git@github\.com:/, "github.com/")
+    .replace(/^ssh:\/\/git@github\.com\//, "github.com/")
+    .replace(/^https?:\/\/github\.com\//, "github.com/")
+    .replace(/\.git$/, "")
+    .replace(/\/$/, "");
 }
 
 function checkedDate(value: string, field: string, subjectRef: string, blockers: SecurityInventoryIssue[]): number | null {
@@ -533,7 +805,7 @@ function sha256(bytes: Uint8Array): string {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 }
 
-function validateUnverifiedOperatorObservation(
+function validateExternalEvidenceAuthority(
   evidence: SecurityInventoryEvidence,
   bytes: Uint8Array,
   blockers: SecurityInventoryIssue[],
@@ -546,13 +818,87 @@ function validateUnverifiedOperatorObservation(
     return;
   }
   const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
-  if (record.verificationState !== "unverified_operator_observation") {
+  const authority = trustedExternalEvidenceAuthorities[evidence.evidenceId as keyof typeof trustedExternalEvidenceAuthorities];
+  if (!authority) {
+    blockers.push({code: "external_evidence_authority_not_allowlisted", subjectRef: evidence.evidenceId});
+    return;
+  }
+  const declaredAuthorityMetadata = {
+    kind: evidence.kind,
+    ref: evidence.ref,
+    capturedAt: evidence.capturedAt,
+    validThrough: evidence.validThrough,
+    collector: evidence.collector,
+    contentFingerprint: evidence.contentFingerprint,
+  };
+  const expectedAuthorityMetadata = {
+    kind: authority.kind,
+    ref: authority.ref,
+    capturedAt: authority.capturedAt,
+    validThrough: authority.validThrough,
+    collector: authority.collector,
+    contentFingerprint: authority.contentFingerprint,
+  };
+  if (stableJson(declaredAuthorityMetadata) !== stableJson(expectedAuthorityMetadata)) {
+    blockers.push({code: "external_evidence_declaration_not_allowlisted", subjectRef: evidence.evidenceId});
+  }
+  const payloadMetadata = {
+    evidenceId: record.evidenceId,
+    capturedAt: record.capturedAt,
+    validThrough: record.validThrough,
+    source: record.source,
+    collector: record.collector,
+    origin: record.origin,
+  };
+  const expectedPayloadMetadata = {
+    evidenceId: evidence.evidenceId,
+    capturedAt: authority.capturedAt,
+    validThrough: authority.validThrough,
+    source: authority.source,
+    collector: authority.collector,
+    origin: authority.origin,
+  };
+  if (stableJson(payloadMetadata) !== stableJson(expectedPayloadMetadata)) {
+    blockers.push({code: "external_evidence_payload_metadata_mismatch", subjectRef: evidence.evidenceId});
+  }
+  if (evidence.kind === "operator_observation" && record.verificationState !== "unverified_operator_observation") {
     blockers.push({code: "operator_observation_verification_state_invalid", subjectRef: evidence.evidenceId});
   }
   const assertionText = `${evidence.description}\n${Buffer.from(bytes).toString("utf8")}`;
-  if (/\b(?:confirmed|verified|attested)\b/i.test(assertionText)) {
+  if (evidence.kind === "operator_observation" && /\b(?:confirmed|verified|attested)\b/i.test(assertionText)) {
     blockers.push({code: "operator_observation_asserts_verified_fact", subjectRef: evidence.evidenceId});
   }
+}
+
+function deriveClaimAssessments(
+  inventory: SecurityCurrentStateInventory,
+  resolvedEvidenceIds: Set<string>,
+): SecurityInventoryDecision["claimAssessments"] {
+  const gapById = new Map(inventory.gaps.map((gap) => [gap.gapId, gap]));
+  return canonicalSecurityCoverageCatalogue.map((claim) => {
+    const declaredClaim = inventory.coverageClaims.find((candidate) => candidate.claimId === claim.claimId);
+    const evidenceRefs = claim.evidenceRequirements.map((requirement) => requirement.evidenceRef);
+    const openGapRefs = claim.requiredGaps
+      .filter((requiredGap) => gapById.get(requiredGap.gapRef)?.status === "open")
+      .map((requiredGap) => requiredGap.gapRef);
+    const evidenceResolved = evidenceRefs.every((evidenceRef) => resolvedEvidenceIds.has(evidenceRef));
+    const coverageContractValid = declaredClaim !== undefined
+      && stableJson(declaredClaim) === stableJson(claim)
+      && claim.requiredGaps.every((requiredGap) => {
+        const actual = gapById.get(requiredGap.gapRef);
+        return actual?.severity === requiredGap.severity && actual.status === requiredGap.requiredStatus;
+      });
+    return {
+      claimId: claim.claimId,
+      domain: claim.domain,
+      status: !coverageContractValid ? "coverage_contract_invalid" as const
+        : !evidenceResolved ? "evidence_unresolved" as const
+        : openGapRefs.length > 0 ? "blocked_by_open_gaps" as const
+          : "covered_without_open_gap" as const,
+      evidenceRefs,
+      openGapRefs,
+    };
+  });
 }
 
 function indexed<T>(items: T[], key: (item: T) => string, code: string, issues: SecurityInventoryIssue[]): Map<string, T> {

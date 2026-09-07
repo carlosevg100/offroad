@@ -3515,21 +3515,26 @@ O primeiro inventário de segurança agora possui fonte tipada em
 `packages/release-governance/src/current-security-inventory.ts` e vista gerada em
 `docs/security/CURRENT_STATE_INVENTORY.md`. A baseline está presa ao commit `b2e38975` e cobre as
 fronteiras observáveis no repositório: seis ambientes, oito sistemas, sete classes de dados, oito
-stores, vinte e quatro fluxos, onze identidades e service roles, dezessete vendors e subprocessadores,
-evidências e owners funcionais. npm, GitHub Actions, imagens locais do Supabase, downloads do
+stores, vinte e cinco fluxos, onze identidades e service roles, dezessete vendors e subprocessadores,
+oito claims canônicos, evidências, owners funcionais e dezoito gaps obrigatórios. npm, GitHub
+Actions, imagens locais do Supabase, downloads do
 Playwright e o executor Codex em CI agora aparecem como fronteiras próprias.
 
 O validador síncrono é declaration-only e nunca atesta o estado atual. O gate assíncrono confiável
-resolve cada arquivo diretamente no objeto Git do commit declarado e cada observação local por
-bytes e SHA-256; path inexistente, hash inventado ou observação de operador escrita como confirmação
-falham fechados. A vista Markdown é gerada apenas por esse gate e testada por paridade.
+confirma o remote autorizado, resolve o commit real contido em `origin/main`, lê cada arquivo
+diretamente desse objeto Git e vincula cada observação local a bytes, SHA-256, collector, origem,
+ambiente e autoridade allowlisted. O catálogo fora do payload fixa claims, critérios, evidências,
+gaps, severidades e status esperados; o status de cada claim é derivado. Path, hash, metadado,
+claim ou gap forjado, removido ou reclassificado falha fechado. A vista Markdown é gerada apenas
+por esse gate e testada por paridade.
 
 Esta entrega não prova configuração live, contratos, owners nominais, retenção, regiões, restore ou
 operação ao longo do tempo: dezoito lacunas continuam abertas. A observação anterior sobre a role de
 deploy não estabelece ausência de permissões: primeiro é preciso obter policy e receipt de
 `simulate-principal-policy`, depois decidir se algum grant mínimo é necessário. O Codex review
 também está explicitamente modelado como executor agentic privilegiado: `danger-full-access`, acesso
-ao workspace, comandos, credencial e rede existem no runner, enquanto isolamento de secrets,
+ao workspace, comandos, credencial e rede existem no runner. O fluxo do executor para source,
+review, logs e artifacts e o fluxo para OpenAI incluem explicitamente `credential_secret`, enquanto isolamento de secrets,
 allowlists, contenção de prompt injection, egress, logs e artefatos ainda não estão provados. A
 baseline não autoriza alegação de SOC 2, ISO, pentest ou compliance. Próximo passo: SEC-008, coleta
 read-only e datada das configurações live, seguida da verificação contratual e dos boundaries
