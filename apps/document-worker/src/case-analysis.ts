@@ -1080,6 +1080,9 @@ export async function processCaseAnalysisJob(
         processingRunId: job.processing_run_id,
         locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
         readiness: receivablesVertical.methodReadiness,
+        ...(receivables?.inputResolution.missingSections
+          ? {missingDraftSections: receivables.inputResolution.missingSections}
+          : {}),
       });
       await dependencies.queue.syncReceivablesInformationRequests(job, evidenceProjection);
       const evidenceOpen = evidenceProjection.requests.length > 0;

@@ -54,6 +54,35 @@ describe("receivables method question projection", () => {
     expect(projection.requests).toEqual([]);
   });
 
+  it("retracts evidence questions already satisfied by the governed document draft", () => {
+    const readiness = {
+      ...base,
+      gaps: [
+        {
+          ...base.gaps[0]!, code: "cedent_and_servicing_not_evidenced", dimensionId: "cedent_and_servicing" as const,
+          class: "evidence" as const, question: {pt: "Quem é o cedente?", en: "Who is the cedent?"},
+        },
+        {
+          ...base.gaps[0]!, code: "cash_reconciliation_not_evidenced", dimensionId: "cash_reconciliation" as const,
+          class: "evidence" as const, question: {pt: "Envie as baixas.", en: "Provide settlements."},
+        },
+        {
+          ...base.gaps[0]!, code: "accounting_reconciliation_not_evidenced", dimensionId: "accounting_reconciliation" as const,
+          class: "evidence" as const, question: {pt: "Envie o razão.", en: "Provide the ledger."},
+        },
+      ],
+    };
+    const projection = buildReceivablesMethodInformationRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001",
+      processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "pt-BR",
+      readiness,
+      missingDraftSections: ["cashReceipts", "evidence.cashReconciliation", "policy.maxDaysPastDue"],
+      idFactory: () => "30000000-0000-4000-8000-000000000001",
+    });
+    expect(projection.requests.map((request) => request.question)).toEqual(["Envie as baixas."]);
+  });
+
   it("asks for exact model fields with a private dataset and unit binding", () => {
     const ids = [
       "30000000-0000-4000-8000-000000000001",
