@@ -1789,6 +1789,13 @@ function buildReceivablesVertical(
     phaseOne: built.phaseOne,
     detection,
     ...(methodAssembly ? {assembly: methodAssembly} : {}),
+    ...(!methodAssembly && (inputResolution.draftState === "incomplete" || inputResolution.draftState === "conflicted")
+      ? {partialDraft: {
+          state: inputResolution.draftState,
+          missingSections: inputResolution.missingSections,
+          openConflictIds: inputResolution.openConflictIds,
+        }}
+      : {}),
   });
   const methodReadiness: Omit<typeof readinessAssessment, "validatedInput"> = {
     version: readinessAssessment.version,

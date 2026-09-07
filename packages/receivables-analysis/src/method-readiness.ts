@@ -111,6 +111,11 @@ type ReadinessInput = {
   phaseOne: ReceivablesPhaseOneInput;
   detection: ReceivablesRawDetectionReport;
   assembly?: unknown;
+  partialDraft?: {
+    state: "incomplete" | "conflicted";
+    missingSections: readonly string[];
+    openConflictIds: readonly string[];
+  };
 };
 
 const dimensionOrder: readonly ReceivablesMethodReadinessDimensionId[] = [
@@ -163,7 +168,38 @@ const missingAssemblyGaps = (input: ReadinessInput): ReceivablesMethodReadinessG
       evidenceIds,
     ));
   }
-  return gaps;
+  if (!input.partialDraft) return gaps;
+  const missing = new Set(input.partialDraft.missingSections);
+  const remaining = gaps.filter((item) => {
+    if (item.class === "policy") {
+      return [...missing].some((section) => section.startsWith("policy.")) || missing.has("evidence.eligibilityPolicy");
+    }
+    if (item.class === "structure") {
+      return [...missing].some((section) => section.startsWith("structure.")) || missing.has("evidence.facilityAndWaterfall");
+    }
+    const requirements: Partial<Record<ReceivablesMethodReadinessDimensionId, readonly string[]>> = {
+      portfolio_lineage: ["titles"],
+      cedent_and_servicing: ["cedent", "evidence.cedentAndServicing"],
+      title_legal_controls: ["titles", "evidence.titleLegalControls"],
+      performance_history: ["titles", "evidence.performanceHistory"],
+      cash_reconciliation: ["cashReceipts", "evidence.cashReconciliation"],
+      accounting_reconciliation: ["accounting", "evidence.accountingReconciliation"],
+    };
+    const needed = requirements[item.dimensionId];
+    return needed === undefined || needed.some((section) => missing.has(section));
+  });
+  if (input.partialDraft.state === "conflicted") {
+    remaining.unshift(gap(
+      `supplement_draft_conflicted:${input.partialDraft.openConflictIds.join("|") || "unknown"}`,
+      "portfolio_lineage",
+      "conflict",
+      "Duas fontes propõem valores diferentes para o mesmo input do método; nenhuma delas foi escolhida silenciosamente.",
+      "Two sources propose different values for the same method input; neither was selected silently.",
+      "Revise o conflito indicado e confirme, com a fonte correspondente, qual valor deve prevalecer.",
+      "Review the identified conflict and confirm, with its supporting source, which value should prevail.",
+    ));
+  }
+  return remaining;
 };
 
 const decimalEqual = (left: string, right: string) => new Decimal(left).eq(right);
