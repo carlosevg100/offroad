@@ -2732,16 +2732,22 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 
 ## Materiais Office governados no Caso 01, implemented/internal, 07/09/2026
 
-- A apresentação e o workbook de decisão partem do mesmo `Decision Artifact` assinado. Os dois
+- A apresentação e o workbook de decisão partem do mesmo `Decision Artifact` governado por
+  fingerprint. Os dois
   arquivos são gerados como Office nativo, passam pela suíte LibreOffice/pdfinfo/pdftoppm, são
   armazenados no bucket privado por capability de uso único e recebem manifesto com SHA-256,
   tenant, projeto, renderer, template, qualidade, lineage e estado de release.
-- Os dois manifestos são vinculados em uma única reconstrução do contrato. O download autenticado
+- Os dois manifestos são vinculados em uma única reconstrução do contrato. Isso não é uma transação
+  atômica com Storage: upload, registro do artifact e persistência do contrato são operações
+  separadas. Uma falha posterior pode deixar um objeto privado imutável sem referência; ainda não
+  existe um reconciliador ou coletor para esses objetos. O download autenticado
   falha fechado se faltar manifesto, se organização/projeto divergirem, se o contrato mais recente
   não contiver o binding exato ou se os bytes baixados tiverem sido alterados.
 - A planilha ad hoc, antes reconstruída pela rota web a partir da síntese, foi removida. Sem a suíte
   de inspeção completa, o plano conversacional pode terminar, mas nenhum PPTX/XLSX é gravado,
-  vinculado ou exposto. Esse ramo é separado do teste que prova geração, inspeção e storage reais.
+  vinculado ou exposto. O run registra um status operacional `governed_material_pipeline_unavailable`
+  separado das lacunas econômicas e a conversa explica por que nenhum arquivo foi criado. Esse ramo
+  é separado do teste que prova geração, inspeção e storage reais.
 - O bloqueio observado no E2E do PR #523 não era lentidão: o job falhou em 646 ms com
   `spawn soffice ENOENT`, mas a jornada aguardou por 180 segundos uma mensagem que nunca chegaria.
   O boot agora mede LibreOffice, pdfinfo e pdftoppm e só injeta a capacidade quando os três estão

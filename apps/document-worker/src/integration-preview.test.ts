@@ -157,7 +157,7 @@ describe("integration_preview turn router", () => {
     const unrecognised = routeIntegrationPreviewTurn({...base, message: "Mude a premissa de crescimento", artifactTypes: ["preview_alternatives"]});
     expect(unrecognised.kind).toBe("converse");
   });
-  it("answers where a number came from out of the signed covenant object", () => {
+  it("answers where a number came from out of the fingerprint-governed covenant object", () => {
     const covenants = executors.reconcileCovenantDefinitions(case01.case01Evidence()["reconcile-covenant-definitions"]) as unknown as PreviewStepOutput;
     const decision = routeIntegrationPreviewTurn({...base, message: "De onde saiu essa alavancagem de 4,7x?", artifactTypes: ["preview_alternatives"], priorOutputs: new Map([["C09", covenants]])});
     expect(decision.kind).toBe("answer");
@@ -243,7 +243,7 @@ describe("integration_preview run processor", () => {
     expect(fake.started).toEqual(steps);
     expect(fake.recorded.some((artifact) => artifact.artifactType === "preview_material")).toBe(true);
     expect(fake.recorded.at(-1)?.artifactType).toBe("preview_decision_contract");
-    expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos assinados");
+    expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos governados por fingerprint");
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
@@ -276,7 +276,7 @@ describe("integration_preview run processor", () => {
     expect(backfill.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_decision_contract"]);
     expect(decisionArtifactContractSchema.parse(backfill.recorded[0]!.content.contract).claims).not.toHaveLength(0);
   });
-  it("prepares the material on a later turn from the signed objects, with a change note against the first readout", async () => {
+  it("prepares the material on a later turn from fingerprint-governed objects, with a change note against the first readout", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
     await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
     const material = fakeQueue({composition: "prepare_material", prior: first.recorded, request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []}});
@@ -284,7 +284,7 @@ describe("integration_preview run processor", () => {
     expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(material.started).toEqual(steps);
-    expect(material.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
+    expect(material.recorded.filter((artifact) => !["preview_decision_contract", "preview_material_execution_status"].includes(artifact.artifactType)).map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
     expect(material.completion()?.content).toContain("Plano do material");
     const brief = material.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
@@ -293,6 +293,15 @@ describe("integration_preview run processor", () => {
     // but must not claim that it created or stored a binary material.
     expect(material.storedMaterials).toEqual([]);
     expect(material.recorded.some((artifact) => artifact.artifactType === "preview_presentation_material" || artifact.artifactType === "preview_workbook_material")).toBe(false);
+    expect(material.recorded.find((artifact) => artifact.artifactType === "preview_material_execution_status")?.content).toMatchObject({
+      state: "unavailable",
+      code: "governed_material_pipeline_unavailable",
+      reason: "inspection_toolchain_unavailable",
+      requestedFormats: ["pptx", "xlsx"],
+      release: {state: "internal_only", recipientIds: []},
+    });
+    expect(material.completion()?.content).toContain("Os arquivos Office não foram criados");
+    expect(material.stages).toContainEqual({stage: "integration_preview:materials", status: "succeeded"});
     const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
     expect(contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint).toBeNull();
     expect(contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint).toBeNull();

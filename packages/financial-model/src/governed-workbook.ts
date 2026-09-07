@@ -236,11 +236,11 @@ export async function toGovernedXlsxBuffer(
   const basic = toXlsxBuffer(model, lang, decisionWorkbook ? {
     title: lang === "pt" ? "Workbook de decisão, interno" : "Decision workbook, internal",
     description: lang === "pt"
-      ? "Este arquivo projeta claims, premissas, séries, fontes e lacunas de um Decision Artifact assinado. Não é um modelo financeiro integrado e não cria projeções ausentes."
-      : "This file projects claims, assumptions, series, sources and gaps from a signed Decision Artifact. It is not an integrated financial model and does not create missing projections.",
+      ? "Este arquivo projeta claims, premissas, séries, fontes e lacunas de um Decision Artifact governado por fingerprint. Não é um modelo financeiro integrado e não cria projeções ausentes."
+      : "This file projects claims, assumptions, series, sources and gaps from a fingerprint-governed Decision Artifact. It is not an integrated financial model and does not create missing projections.",
     controls: lang === "pt"
-      ? "As células editáveis estão na aba Premissas. A aba Controle liga os indicadores às linhas governadas de Claims; nenhuma alteração no arquivo modifica o objeto assinado que o originou."
-      : "Editable cells are on the Assumptions sheet. The Control sheet links indicators to governed Claim rows; editing this file does not change its signed source object.",
+      ? "As células editáveis estão na aba Premissas. A aba Controle liga os indicadores às linhas governadas de Claims; nenhuma alteração no arquivo modifica o objeto governado que o originou."
+      : "Editable cells are on the Assumptions sheet. The Control sheet links indicators to governed Claim rows; editing this file does not change its governed source object.",
     sources: lang === "pt"
       ? "Claims, séries e premissas mantêm os identificadores de fontes, objetos e lacunas do contrato na própria linha."
       : "Claims, series and assumptions retain the contract's source, object and gap identifiers on the same row.",

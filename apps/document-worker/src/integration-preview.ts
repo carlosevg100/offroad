@@ -255,8 +255,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Vou planejar o material a partir dos objetos já assinados: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
-        `I will plan the material from the signed objects: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
+        `Vou planejar o material a partir dos objetos governados por fingerprint: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
+        `I will plan the material from the fingerprint-governed objects: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
       activation: buildPreviewActivation("prepare_material", request, {}, input),
     };
   }
@@ -299,7 +299,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     "The analysis is already in the project. I can prepare the material (\"let's prepare the material: three pitch pages\"), change a premise (\"assume a rate of 15.50% per year\") or explain where a number came from (\"where did the leverage come from?\").")}`, activation: null};
 }
 
-/** A question about a number is answered from the signed objects, with the definition and the anchors they carry. */
+/** A question about a number is answered from fingerprint-governed objects, with their definition and anchors. */
 export function answerFromObjects(input: PreviewTurnInput): string {
   const locale = input.locale;
   if (patterns.leverage.test(input.message)) {
@@ -320,8 +320,8 @@ export function answerFromObjects(input: PreviewTurnInput): string {
   }
   const steps = case01PreviewSteps.filter((step) => input.priorOutputs.has(step.taskId));
   return t(locale,
-    `Cada número vem de um objeto assinado: ${steps.map((step) => `${step.label.pt} (${step.methodId} ${step.methodVersion})`).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e âncoras.`,
-    `Every number comes from a signed object: ${steps.map((step) => `${step.label.en} (${step.methodId} ${step.methodVersion})`).join("; ")}. Ask for the number you want to trace, such as leverage, and I bring the definition, period, accounts and anchors.`);
+    `Cada número vem de um objeto governado por fingerprint: ${steps.map((step) => `${step.label.pt} (${step.methodId} ${step.methodVersion})`).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e âncoras.`,
+    `Every number comes from a fingerprint-governed object: ${steps.map((step) => `${step.label.en} (${step.methodId} ${step.methodVersion})`).join("; ")}. Ask for the number you want to trace, such as leverage, and I bring the definition, period, accounts and anchors.`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -459,6 +459,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const artifactByTask = new Map<string, {id: string; artifactFingerprint: string; replayed: boolean}>();
     const decisionContractArtifacts: Array<{id: string; artifactFingerprint: string}> = [];
     const decisionContracts: DecisionArtifactContract[] = [];
+    let materialExecutionStatus: {state: "unavailable"; code: string; messagePt: string; messageEn: string} | null = null;
     const previousBriefArtifact = priorByTask.get("A01");
     const previousBriefOutput = previousBriefArtifact ? outputOf(previousBriefArtifact) : null;
     const runContext: PreviewRunContext = {
@@ -556,6 +557,50 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         contractDependencies.push({artifactId: workbookArtifact.id, artifactFingerprint: workbookArtifact.artifactFingerprint});
         log("integration_preview.workbook_stored", {job: job.job_id, pages: workbookInspection.pdf.pageCount, bytes: workbook.bytes.byteLength, replayed: workbookStored.replayed, artifactClass: "decision_workbook"});
         contract = bindRenderedMaterialsToDecisionArtifact(sourceContract, materialManifests);
+      } else if (context.preview.composition === "prepare_material") {
+        const reason = !dependencies.materialInspector ? "inspection_toolchain_unavailable" : "private_storage_capability_unavailable";
+        const inspectionUnavailable = reason === "inspection_toolchain_unavailable";
+        materialExecutionStatus = {
+          state: "unavailable",
+          code: "governed_material_pipeline_unavailable",
+          messagePt: inspectionUnavailable
+            ? "Os arquivos Office não foram criados porque a renderização e a inspeção governadas não estão disponíveis neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem inspeção foi exposto."
+            : "Os arquivos Office não foram criados porque o armazenamento privado governado não está disponível neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem vínculo ao projeto foi exposto.",
+          messageEn: inspectionUnavailable
+            ? "The Office files were not created because governed rendering and inspection are unavailable in this environment. The plan and analysis were preserved; no uninspected file was exposed."
+            : "The Office files were not created because governed private storage is unavailable in this environment. The plan and analysis were preserved; no file without a project binding was exposed.",
+        };
+        const statusArtifact = await queue.recordCapitalProjectArtifact(job, {
+          taskRunId: input.taskRunId,
+          artifactType: "preview_material_execution_status",
+          schemaVersion: "material-execution-status.2026.09.07-v1",
+          status: "draft",
+          inputFingerprint: fingerprintJson({contract: contract.contractFingerprint, state: materialExecutionStatus.state, code: materialExecutionStatus.code, reason}),
+          content: {
+            preview: {mode: "integration_preview", role: "material_execution_status"},
+            state: materialExecutionStatus.state,
+            code: materialExecutionStatus.code,
+            reason,
+            requestedFormats: ["pptx", "xlsx"],
+            message: {pt: materialExecutionStatus.messagePt, en: materialExecutionStatus.messageEn},
+            release: {state: "internal_only", recipientIds: []},
+          },
+          evidenceRefs: [],
+          dependencies: input.dependencies,
+        });
+        contractDependencies.push({artifactId: statusArtifact.id, artifactFingerprint: statusArtifact.artifactFingerprint});
+        await queue.writeStage(job, `${stage}:materials`, "succeeded", {
+          summary_pt: inspectionUnavailable
+            ? "Arquivos não criados: renderização e inspeção governadas indisponíveis neste ambiente"
+            : "Arquivos não criados: armazenamento privado governado indisponível neste ambiente",
+          summary_en: inspectionUnavailable
+            ? "Files not created: governed rendering and inspection unavailable in this environment"
+            : "Files not created: governed private storage unavailable in this environment",
+          code: materialExecutionStatus.code,
+          reason,
+          state: materialExecutionStatus.state,
+        });
+        log("integration_preview.materials_unavailable", {job: job.job_id, code: materialExecutionStatus.code, reason});
       }
       const recorded = await queue.recordCapitalProjectArtifact(job, {
         taskRunId: input.taskRunId,
@@ -739,7 +784,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const final = artifactByTask.get(workflowSteps.at(-1)!.taskId)!;
     const decisionContractArtifact = decisionContractArtifacts.at(-1) ?? null;
     const decisionArtifact = decisionContracts.at(-1) ?? compilePreviewDecisionArtifact({caseId: case01.case01EvidenceManifest.caseId, asOf: case01.case01EvidenceManifest.referenceDate, outputs, premises});
-    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult, decisionArtifact});
+    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult, decisionArtifact, materialExecutionStatus});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
     await queue.writeStage(job, stage, "succeeded", {summary_pt: "Validação interna concluída: devolutiva publicada na conversa", summary_en: "Internal validation finished: readout published in the conversation", artifactId: final.id});
@@ -769,7 +814,7 @@ export function stateLabel(state: string, locale: "pt-BR" | "en-US"): string {
 }
 
 /** The readout the conversation receives: states, facts and gaps read from the objects, never written by hand. */
-export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null; decisionArtifact?: DecisionArtifactContract | null}): string {
+export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null; decisionArtifact?: DecisionArtifactContract | null; materialExecutionStatus?: {state: "unavailable"; code: string; messagePt: string; messageEn: string} | null}): string {
   const {locale, outputs} = input;
   const mark = locale === "en-US" ? PREVIEW_MARK_EN : PREVIEW_MARK;
   const lines: string[] = [];
@@ -777,7 +822,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
   if (previewOutcome(input.composition) === "material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
-    lines.push(t(locale, "Plano do material a partir dos objetos assinados.", "Material plan from the signed objects."));
+    lines.push(t(locale, "Plano do material a partir dos objetos governados por fingerprint.", "Material plan from the fingerprint-governed objects."));
     if (plan) {
       lines.push(t(locale, `Estado do plano: ${stateLabel(plan.state, locale)}.`, `Plan state: ${stateLabel(plan.state, locale)}.`));
       for (const [index, page] of (plan.pages ?? []).entries()) lines.push(`${index + 1}. ${page.title}: ${page.blocks.join(", ")}`);
@@ -786,6 +831,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
     const change = brief?.change_note && typeof brief.change_note === "object" ? (brief.change_note as {changes: string[]}) : null;
     if (change?.changes?.length) lines.push(t(locale, `O que mudou desde a devolutiva anterior: ${change.changes.join("; ")}.`, `What changed since the previous readout: ${change.changes.join("; ")}.`));
     else lines.push(t(locale, "Números e premissas da devolutiva anterior preservados por referência; nada foi copiado à mão.", "Numbers and premises of the previous readout preserved by reference; nothing retyped."));
+    if (input.materialExecutionStatus) lines.push(locale === "en-US" ? input.materialExecutionStatus.messageEn : input.materialExecutionStatus.messagePt);
   } else {
     lines.push(input.composition === "change_premise"
       ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps replayed without recomputation, by fingerprint.`)

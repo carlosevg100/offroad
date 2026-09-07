@@ -35,7 +35,7 @@ const contract = () => buildDecisionArtifactContract({
 });
 
 describe("governed decision workbook", () => {
-  it("renders deterministic formula-linked bytes from one signed contract without claiming an integrated model", async () => {
+  it("renders deterministic formula-linked bytes from one fingerprinted contract without claiming an integrated model", async () => {
     const input = {contract: contract(), locale: "pt-BR" as const, title: "Camil · Workbook de decisão", companyName: "Camil Alimentos"};
     const first = await renderDecisionWorkbook(input);
     const second = await renderDecisionWorkbook(input);

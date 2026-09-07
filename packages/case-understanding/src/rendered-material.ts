@@ -44,7 +44,11 @@ const renderedMaterialBodySchema = z.object({
   decisionContractFingerprint: hashSchema,
   surface: renderedMaterialSurfaceSchema,
   format: renderedMaterialFormatSchema,
-  fileName: z.string().min(5).max(240),
+  fileName: z.string().min(5).max(240).refine((value) => (
+    value === value.trim()
+    && !/[\u0000-\u001f\u007f-\u009f"'/\\\u2028\u2029]/.test(value)
+    && !/%(?:0a|0d|22|27|2f|5c)/i.test(value)
+  ), {message: "file name contains unsafe path or header characters"}),
   mimeType: z.string().min(1),
   byteLength: z.number().int().positive(),
   contentSha256: hashSchema,
@@ -103,7 +107,7 @@ export function buildRenderedMaterialManifest(raw: RenderedMaterialManifestInput
 export function verifyRenderedMaterialBytes(manifest: RenderedMaterialManifest, bytes: Uint8Array): void {
   const digest = createHash("sha256").update(bytes).digest("hex");
   if (bytes.byteLength !== manifest.byteLength) throw new Error("rendered material byte length does not match its manifest");
-  if (digest !== manifest.contentSha256) throw new Error("rendered material bytes do not match their signed sha256");
+  if (digest !== manifest.contentSha256) throw new Error("rendered material bytes do not match their governed sha256 fingerprint");
 }
 
 /**
@@ -118,9 +122,10 @@ export function bindRenderedMaterialToDecisionArtifact(
 }
 
 /**
- * Bind every independently rendered surface to the same source snapshot in one atomic rebuild.
- * Binding one surface changes the contract fingerprint, so sequential binding would incorrectly
- * make the second receipt look stale even when both files came from the same signed contract.
+ * Bind every independently rendered surface to the same source snapshot in one contract rebuild.
+ * This is not a storage transaction: stored files may remain unreferenced if later persistence
+ * fails. Binding one surface first would change the contract fingerprint and incorrectly make the
+ * second receipt look stale even when both files came from the same fingerprinted contract.
  */
 export function bindRenderedMaterialsToDecisionArtifact(
   contract: DecisionArtifactContract,

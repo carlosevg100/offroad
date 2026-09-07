@@ -7,7 +7,7 @@ import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@
 
 /**
  * Authenticated retrieval for governed presentation/workbook bytes plus the basic internal Word
- * preview. Office decision surfaces are never regenerated here: their signed manifest, private
+ * preview. Office decision surfaces are never regenerated here: their fingerprinted manifest, private
  * object, exact SHA and binding in the latest Decision Artifact must all agree. Internal
  * validation only; the project must run in integration_preview and every read remains scoped.
  */
@@ -88,7 +88,7 @@ export async function GET(request: Request, {params}: Params) {
     try {
       verifyGovernedMaterialDownload(manifest, bytes);
     } catch {
-      return new Response(lang === "pt" ? "O material armazenado não corresponde ao manifesto assinado." : "The stored material does not match its signed manifest.", {status: 409});
+      return new Response(lang === "pt" ? "O material armazenado não corresponde ao manifesto governado." : "The stored material does not match its governed manifest.", {status: 409});
     }
     return new Response(bytes, {headers: {
       "content-type": manifest.mimeType,
