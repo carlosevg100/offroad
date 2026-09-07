@@ -84,11 +84,12 @@ async function main(): Promise<void> {
   });
 
   // External tools: report their versions once, so a run records exactly what read the file.
-  const [sofficeVersion, tesseractVersion] = await Promise.all([
+  const [sofficeVersion, tesseractVersion, pdfinfoVersion] = await Promise.all([
     toolVersion(config.SOFFICE_BIN),
     toolVersion(config.TESSERACT_BIN),
+    toolVersion(config.PDFINFO_BIN),
   ]);
-  log("worker.tools", {libreoffice: sofficeVersion, tesseract: tesseractVersion});
+  log("worker.tools", {libreoffice: sofficeVersion, tesseract: tesseractVersion, pdfinfo: pdfinfoVersion});
 
   const scanner = config.REQUIRE_VIRUS_SCAN
     ? createClamdScanner({host: config.CLAMD_HOST, port: config.CLAMD_PORT, timeoutMs: config.CLAMD_TIMEOUT_MS})

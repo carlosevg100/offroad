@@ -116,6 +116,7 @@ const schema = z.object({
   SOFFICE_BIN: z.string().default("soffice"),
   TESSERACT_BIN: z.string().default("tesseract"),
   PDFTOPPM_BIN: z.string().default("pdftoppm"),
+  PDFINFO_BIN: z.string().default("pdfinfo"),
   OCR_LANGUAGES: z.string().default("por+eng"),
   CONVERT_TIMEOUT_MS: z.coerce.number().int().default(180_000),
   OCR_TIMEOUT_MS: z.coerce.number().int().default(120_000),
