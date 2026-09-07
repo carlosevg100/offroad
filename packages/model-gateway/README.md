@@ -20,7 +20,10 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
 - **Structured outputs** — the request carries a zod schema; Anthropic receives it as
   `output_config.format` (`zodOutputFormat`), OpenAI as a strict `json_schema`
   (optional fields become nullable and nulls are stripped before validation). The
-  gateway validates every output with zod; invalid output triggers the fallback.
+  gateway validates every output with zod. Prompted JSON receives at most one same-model
+  repair with content-free schema paths and allowed enum members before provider fallback.
+  Telemetry separates `retryOrdinal`, `isSameModelRepair` and `usedProviderFallback` while
+  retaining the legacy `usedFallback` bit (any non-initial attempt) for existing consumers.
 - **Refusals** — `stop_reason: refusal` (either provider) is never turned into a
   result; the fallback runs and the attempt is recorded.
 - **Budgets** — per gateway instance (one instance per processing run): max cost and

@@ -1,5 +1,50 @@
 # Build State
 
+## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
+
+- O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->
+  aplicação -> canonicalizador`; input, compilation e output autodeclarados já não podem produzir
+  verde. O manifesto e a integridade da execução são estados distintos e ambos bloqueiam promoção.
+- Métricas raw, coverage do extrator e resultado final/policy são reportados separadamente.
+  Abstenção não ganha crédito por coverage incompleto. `inferableContext` agora participa do
+  fingerprint, inclusive jurisdição, data-base, moeda, restrições e inputs disponíveis.
+- O ledger de chamadas é reconciliado por operação com task, schema, prompt, input, provider,
+  model, tentativa, output, latência e custo; duplicata, órfã, cassette ou divergência reprova. O
+  record é ligado ao SHA/run do GitHub e recebe fingerprint integral, sem alegar attestation externa.
+- Execução paga foi limitada em código e workflow a `main` pós-merge no environment
+  `intent-router-gold-main`. **Bloqueio externo:** branch policy do Environment e trust policy IAM
+  ainda precisam ser verificadas/configuradas fora do repositório. Até lá, não há nova evidência
+  válida nem promoção; a feature continua desativada.
+
+- Uma única policy tipada governa as vinte composições e é consumida por schema, classificador,
+  carimbo do runtime e fingerprint. O envelope rejeita divergência em works, profundidade,
+  responsabilidades ou efeito. O prompt é renderizado dessa mesma policy. A condição
+  `documents_present` é governada: estrutura com anexos começa por conciliação; sem anexos, a
+  variante documental é recusada.
+- Autoridade e regime de evidência continuam exclusivos do control plane. Ausência de access basis
+  resulta em `unresolved`; cargo ou contexto profissional não concedem autoridade. Pedidos
+  horizontais podem operar sobre documento, instrumento ou mercado sem companhia artificial.
+- O corpus candidate agora possui 40 turnos, cobre as vinte composições em jornadas, horizontais,
+  confusões e adversariais e declara assinatura semântica por turno. O manifesto exige 52
+  observações: 40 bases e duas paráfrases autorais adicionais em seis IDs.
+- O score exige, na resposta bruta anterior ao reparo canônico, significado correto para ação,
+  objetos, referências ligadas ao objeto, decisão e audiência. Números e entidades materiais
+  entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`. Não há campos narrativos
+  de outcome, decisão ou audiência nem rótulo `affirmed` no contrato do classificador: o gate
+  compara enums, estados assertivos, confiança de inferências e o oracle explícito de cada turno.
+  Negação e ambiguidade são testadas por casos delimitados e pela política fail-closed de efeitos
+  externos; isso não equivale a uma prova geral de compreensão de toda prosa possível.
+- O oracle gold é independente da policy de produção. Slots normalizados preservam montante,
+  moeda, percentual, basis points, ratio, indexador, prazo, páginas, contagem e cadência, com
+  cardinalidade singular por objeto; valores extras ou conflitantes reprovam. O Caso 03 exige BRL 50 milhões e começa pela conciliação
+  dos dois anexos, enquanto reunião de financiamento começa por entendimento.
+- Os 52 textos passam por um teste local raw-to-canonicalizer. O summary recompõe checks,
+  fingerprint e manifesto, e rejeita resposta nula, erro de provedor, expected, checks ou hashes
+  forjados. Missing, extra, duplicate, suíte errada e bytes repetidos também reprovam.
+- A run `34096964058` deixa de ser evidência de promoção: 17 turnos, 29 observações, repetição dos
+  mesmos bytes e score parcial. A integração determinística local está verde, mas o novo gate ainda
+  não foi executado com modelo real e permanece
+  `candidate`. Nenhuma capability foi promovida por esta mudança.
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
 - O slice reconstruído de CTRL-03 remove roots, manifests, receipts, verifier labels e relógio do

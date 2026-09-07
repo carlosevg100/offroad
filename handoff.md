@@ -3527,7 +3527,6 @@ autoriza `customer_work`, `external_material` ou `external_action`. O próximo m
 os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
 evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
 amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
-
 ## 46. SEC-01: inventário atual de segurança, 07/09/2026
 
 O primeiro inventário de segurança agora possui fonte tipada em
@@ -3567,3 +3566,42 @@ janela e revogação antes de permitir `attested`; na ausência ou falha, o rend
 não viram certificação. O scanner restante é lint conservador para texto adulterado, não NLP. A
 trust store atual está vazia, portanto a implementação evita falsa alegação mas não prova assurance
 externo.
+
+# Engineering update: RT-01 canonical intent contract, 7 September 2026
+
+Integrity follow-up: the original candidate summary trusted its recorded compilation/final output
+and could be forged green. Gate v3 now reconstructs both canonical inputs and the complete raw
+classifier/raw extractor -> compiler -> apply -> canonicalizer chain. It reports raw-model,
+extractor coverage and final-policy metrics separately, includes inferable context in stability,
+and reconciles every provider call to task/schema/prompt/input/provider/model/attempt/output/cost.
+The paid workflow is main-only behind `intent-router-gold-main`; the GitHub Environment branch
+policy and IAM OIDC subject restriction remain external blockers that must be verified before a new
+run counts. The artifact is run-bound and tamper-evident, not externally attested. No capability is
+promoted by this follow-up.
+
+RT-01 now has one typed policy for all twenty named compositions, consumed by validation,
+canonicalization, runtime stamping and semantic fingerprinting. Authority and evidence remain
+control-plane fields, unresolved access fails closed, and horizontal work no longer requires an
+invented company. The candidate gold set contains forty turns and an immutable 52-observation
+manifest across journey, horizontal, confusion and adversarial suites, including six authored
+paraphrase triplets and a semantic answer key. Run 34096964058 is historical only: its 17 turns,
+same-byte repeats and partial scorer no longer qualify as promotion evidence. No capability is
+promoted until the replacement gate passes 100% with the real model.
+
+The code-complete candidate now sends all 52 authored messages through a semantically correct raw
+response and the production canonicalizer. Scoring reads raw action, object/reference bindings,
+outcome, decision and audience before canonical repair; material numbers and entities participate
+in both the answer key and fingerprint. The summary independently rebuilds manifest membership,
+checks and routing fingerprints and fails on null/provider-error observations or forged expected,
+checks and constant hashes. This deterministic integration is green but is not a real-model run.
+
+The final review also stopped treating classifier-owned affirmation labels as truth. Desired
+outcome, decision and audience polarity is independently derived from the prose and checked against
+the label, so falsely affirmed negation or ambiguity fails closed and changes the routing
+fingerprint. The classifier prompt is rendered from the executable policy;
+document-backed structuring selects a policy-owned extract/reconcile-first variant, validated
+against control-plane documents. Gold plans are an independent acceptance oracle, and material
+amount, currency, percentage, indexer and tenor use normalized, single-valued slots; extra or
+conflicting values fail per object and slot kind. Case 03 therefore requires
+BRL 50 million and starts with reconciliation, while financing-meeting work remains
+understand-first. These are local candidate controls, not a real-provider promotion result.

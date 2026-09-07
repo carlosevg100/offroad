@@ -17,6 +17,7 @@ import {
   deniedModelPatterns,
   estimateCostUsd,
   evaluateProviderDataPolicy,
+  gatewayCallLogSchema,
   isValidCpf,
   mapAnthropicStopReason,
   mapAnthropicUsage,
@@ -111,6 +112,11 @@ describe("policy", () => {
     const shadow = resolveModel("extract_fields", defaultTaskPolicies, {useShadow: true});
     expect(shadow.primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "medium"});
     expect(resolveModel("classify_document", defaultTaskPolicies, {}).primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "low"});
+    expect(resolveModel("extract_semantic_objects", defaultTaskPolicies, {})).toMatchObject({
+      primary: {provider: "anthropic", model: "claude-sonnet-5", effort: "low"},
+      fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "low"},
+      policy: {maxOutputTokens: 3_000, timeoutMs: 60_000},
+    });
     const audit = resolveModel("audit_evidence", defaultTaskPolicies, {});
     expect(audit.primary.provider).toBe("openai");
     expect(audit.fallback?.provider).toBe("anthropic");
@@ -328,6 +334,91 @@ describe("gateway", () => {
     const third = await createModelGateway({adapters: {anthropic: invalid, openai: openai3}}).complete(baseRequest);
     expect(third.attempts[0]?.outcome).toBe("invalid_output");
     expect(third.usedFallback).toBe(true);
+  });
+
+  it("labels a same-model schema repair separately and gives bounded enum guidance", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic = fakeAdapter("anthropic", [
+      ok("claude-sonnet-5", {kind: "secret_rejected_value", confidence: 0.5}),
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.5}),
+    ]);
+    const result = await createModelGateway({
+      adapters: {anthropic},
+      onCall: (log) => logs.push(log),
+    }).complete({...baseRequest, outputMode: "prompted_json", allowFallback: false});
+
+    expect(anthropic.calls).toHaveLength(2);
+    expect(anthropic.calls[1]?.system).toContain("SCHEMA REPAIR (one bounded retry)");
+    expect(anthropic.calls[1]?.system).toContain("kind: use exactly one of");
+    expect(anthropic.calls[1]?.system).not.toContain("secret_rejected_value");
+    expect(logs).toMatchObject([
+      {outcome: "invalid_output", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, usedFallback: false},
+      {outcome: "ok", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false, usedFallback: true},
+    ]);
+    expect(logs[1]?.previousInvocationId).toBe(logs[0]?.invocationId);
+    expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[1]?.repairValidationIssueCodeFingerprint).toBe(logs[0]?.validationIssueCodeFingerprint);
+    expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "schema"});
+    expect(logs[1]).toMatchObject({configuredModel: "claude-sonnet-5"});
+    expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(2);
+    expect(result).toMatchObject({
+      provider: "anthropic",
+      retryOrdinal: 1,
+      isSameModelRepair: true,
+      usedProviderFallback: false,
+      usedFallback: true,
+    });
+  });
+
+  it("repairs a schema-valid output rejected by a deterministic contract, then falls back with telemetry", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic = fakeAdapter("anthropic", [
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.1}),
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.2}),
+    ]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.9})]);
+    const result = await createModelGateway({
+      adapters: {anthropic, openai},
+      onCall: (log) => logs.push(log),
+    }).complete({
+      ...baseRequest,
+      outputMode: "prompted_json",
+      validateOutput: (output) => output.confidence >= 0.8
+        ? {accepted: true}
+        : {accepted: false, issues: [{path: "coverage", code: "coverage_incomplete", message: "Deterministic coverage is incomplete."}]},
+    });
+
+    expect(anthropic.calls).toHaveLength(2);
+    expect(anthropic.calls[1]?.system).toContain("CONTRACT REPAIR (one bounded retry)");
+    expect(anthropic.calls[1]?.system).toContain("coverage_incomplete");
+    expect(openai.calls).toHaveLength(1);
+    expect(result).toMatchObject({provider: "openai", model: "gpt-5.6-terra", usedProviderFallback: true, retryOrdinal: 0});
+    expect(logs).toMatchObject([
+      {provider: "anthropic", model: "claude-sonnet-5", outcome: "invalid_output", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
+      {provider: "anthropic", model: "claude-sonnet-5", outcome: "invalid_output", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false},
+      {provider: "openai", model: "gpt-5.6-terra", outcome: "ok", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true},
+    ]);
+    expect(logs[1]?.previousInvocationId).toBe(logs[0]?.invocationId);
+    expect(logs[1]?.repairValidationIssueCodeFingerprint).toBe(logs[0]?.validationIssueCodeFingerprint);
+    expect(logs[1]?.repairGuidanceFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[1]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(logs[0]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
+    expect(logs[1]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
+    expect(logs[2]).not.toHaveProperty("previousInvocationId");
+    expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(3);
+  });
+
+  it("can preflight one provider without silently succeeding through fallback", async () => {
+    const anthropic = fakeAdapter("anthropic", [new Error("unavailable")]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);
+    const request = {...baseRequest, outputMode: "prompted_json" as const, allowFallback: false};
+
+    await expect(createModelGateway({adapters: {anthropic, openai}}).complete(request))
+      .rejects.toMatchObject({code: "all_attempts_failed"});
+    expect(anthropic.calls).toHaveLength(1);
+    expect(openai.calls).toHaveLength(0);
   });
 
   it("preserves required nullable values returned by every provider", async () => {

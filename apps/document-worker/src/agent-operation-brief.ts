@@ -1,6 +1,7 @@
 import {randomUUID} from "node:crypto";
 
 import {
+  activeWorkContextSchema,
   agentOperationBriefResponseSchema,
   collaborativeAdvisoryPolicy,
   createAgentChangeProposal,
@@ -8,6 +9,7 @@ import {
   routeWorkspaceRequest,
   workspaceJourneyBlueprint,
   type AgentOperationBriefResponse,
+  type ActiveWorkContext,
   type IntentEnvelope,
   type WorkspaceExecutionRoute,
   type WorkspaceJobActivation,
@@ -34,6 +36,7 @@ import {
   expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
   taskExecutionCapabilitySchema,
+  visibleExecutionBriefSchema,
   type ObjectiveExecutionContext,
   type ObjectiveOutputTerminal,
 } from "@offroad/work-plan";
@@ -42,7 +45,7 @@ import {z} from "zod";
 import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
-import {shadowIntentEnvelope} from "./intent-shadow";
+import {activeWorkObjectBindings, activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope} from "./intent-shadow";
 import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
@@ -347,6 +350,7 @@ export async function processAgentOperationBriefJob(
     // In the live preview the classifier is the router itself, so the shadow does not run twice.
     if (dependencies.shadowRouting !== false && !(job.integration_preview === true && job.integration_preview_mode === "live")) {
       try {
+        const activeWorkContext = governedActiveWorkContext(job.organization_id, context);
         const shadow = await shadowIntentEnvelope({
           gateway,
           context: {
@@ -356,7 +360,8 @@ export async function processAgentOperationBriefJob(
             organizationId: job.organization_id,
             projectId: context.project?.id ?? null,
             entryJob: context.project?.entryJob ?? null,
-            accessBasis: context.project?.accessBasis ?? null,
+            accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
+            authorityGrants: ["read"],
             documentIds: context.documents.map((document) => document.id),
             professionalContext: context.professional_context
               ? {
@@ -366,6 +371,8 @@ export async function processAgentOperationBriefJob(
                   primaryObjectives: context.professional_context.primaryObjectives,
                 }
               : null,
+            activeWorkContext: activeWorkContext?.context ?? null,
+            activeWorkContextBinding: activeWorkContext?.binding ?? null,
           },
         });
         const objectiveRouting = objectiveRoutingObservation(context, shadow.envelope, {
@@ -379,6 +386,14 @@ export async function processAgentOperationBriefJob(
             abstainReason: shadow.output.abstainReason,
             firstQuestion: shadow.output.firstQuestion,
             objectiveRouting,
+            routingAttempt: shadow.routingAttempt,
+            semanticObjectCompilation: shadow.semanticObjects.compilation,
+            semanticObjectExtractor: {
+              model: shadow.semanticObjects.modelRoute,
+              attemptCount: shadow.semanticObjects.attemptCount,
+              successfulAttempt: shadow.semanticObjects.successfulAttempt,
+              routingAttempt: shadow.semanticObjects.routingAttempt,
+            },
           },
           model: shadow.modelRoute,
           costUsd: shadow.costUsd,
@@ -402,9 +417,9 @@ export async function processAgentOperationBriefJob(
         if (output && typeof output === "object" && !Array.isArray(output)) priorOutputs.set(artifact.task_id, output as PreviewStepOutput);
       }
       if (job.integration_preview_mode === "live") {
-        // live_intelligence_preview: one model call reads the turn; the derivation after it is
-        // deterministic and the reply states composition, company, corpus, model and cost. A
-        // failed call is an abstention with a content-free reason, never a guess.
+        // live_intelligence_preview: canonical route + semantic-object contracts run before the
+        // supplemental preview-control reader. The derivation after them is deterministic. A
+        // failed contract is an abstention with a content-free reason, never a guess.
         const liveContext = {
           locale: context.locale,
           message: context.message,
@@ -412,7 +427,8 @@ export async function processAgentOperationBriefJob(
           organizationId: job.organization_id,
           projectId: context.project?.id ?? null,
           entryJob: context.project?.entryJob ?? null,
-          accessBasis: context.project?.accessBasis ?? null,
+          accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
+          authorityGrants: ["read"] as const,
           documentIds: context.documents.map((document) => document.id),
           professionalContext: context.professional_context
             ? {
@@ -459,6 +475,9 @@ export async function processAgentOperationBriefJob(
               surface: "live_preview_router",
               turn: understanding.output.turn,
               objectiveRouting,
+              routingAttempt: understanding.routingAttempt,
+              semanticObjectAttempt: understanding.semanticObjectAttempt,
+              previewTurnAttempt: understanding.previewTurnAttempt,
             },
             model: understanding.modelRoute,
             costUsd: understanding.costUsd,
@@ -780,6 +799,74 @@ export async function processAgentOperationBriefJob(
 }
 
 type AgentContext = z.infer<typeof contextSchema>;
+
+/**
+ * Builds continuity exclusively from capability-scoped durable records. Recent conversation,
+ * assistant prose and professional profile data are intentionally absent from this compiler.
+ */
+export function governedActiveWorkContext(
+  organizationId: string,
+  context: AgentContext,
+): {context: ActiveWorkContext; binding: NonNullable<Parameters<typeof shadowIntentEnvelope>[0]["context"]["activeWorkContextBinding"]>} | null {
+  if (!context.project || !context.latest_execution_brief || !context.manifest_id) return null;
+  const visible = visibleExecutionBriefSchema.parse(context.latest_execution_brief.visibleSnapshot);
+  if (visible.fingerprint !== context.latest_execution_brief.fingerprint) {
+    throw new Error("active_work_context_objective_fingerprint_mismatch");
+  }
+  const objective = {
+    id: context.latest_execution_brief.id,
+    revision: context.latest_execution_brief.version,
+    fingerprint: context.latest_execution_brief.fingerprint,
+    label: visible.objective,
+  };
+  const sourceManifest = {
+    id: context.manifest_id,
+    fingerprint: context.snapshot_fingerprint,
+    documentIds: context.documents.map(({id}) => id),
+    evidenceObjectIds: [context.project.id, objective.id],
+  };
+  const objects: Array<z.input<typeof activeWorkContextSchema>["objects"][number]> = [{
+    id: `project:${context.project.id}`,
+    ordinal: 1,
+    kind: "project",
+    slots: [{key: "entity", value: context.project.name}],
+    label: context.project.name,
+    governance: {state: "system_resolved", sourceIds: [context.project.id]},
+  }];
+  if (visible.objective.length <= 200) objects.push({
+    id: `objective:${objective.id}`,
+    ordinal: 2,
+    kind: "decision",
+    slots: [{key: "subject", value: visible.objective}],
+    label: visible.objective,
+    governance: {state: "system_resolved", sourceIds: [objective.id]},
+  });
+  const governed = activeWorkContextSchema.parse({
+    schemaVersion: "active-work-context.v2",
+    contextId: `project:${context.project.id}:objective:${objective.id}`,
+    organizationId,
+    projectId: context.project.id,
+    revision: objective.revision,
+    state: context.project.status === "active" ? "active" : "paused",
+    objective,
+    sourceManifest,
+    objects,
+  });
+  return {
+    context: governed,
+    binding: {
+      objectiveId: objective.id,
+      objectiveRevision: objective.revision,
+      objectiveFingerprint: objective.fingerprint,
+      sourceManifestId: sourceManifest.id,
+      sourceManifestFingerprint: sourceManifest.fingerprint,
+      sourceManifestDocumentIds: [...sourceManifest.documentIds],
+      sourceManifestEvidenceObjectIds: [...sourceManifest.evidenceObjectIds],
+      sourceManifestMembershipFingerprint: activeWorkSourceManifestMembershipFingerprint(sourceManifest),
+      activeWorkObjectBindings: activeWorkObjectBindings(governed.objects),
+    },
+  };
+}
 
 /**
  * Measures the semantic envelope against the compatibility classifier without allowing either

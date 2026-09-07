@@ -38,22 +38,36 @@ populado ou promoção. O gate integral local está verde; revisão independente
 Status: **candidate control evidence**. A evidência valida o mecanismo de controle, não encerra
 CTRL-01/CTRL-02 e não promove capacidade de produto.
 
-## Roteamento de intenção com política governada, tested interno, 07/09/2026
+## Roteamento de intenção com política governada, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
 |---|---|---|
-| Contrato real | `intent-router-gold.yml` no commit `919def6` | mesmo prompt, schema, canonicalizador e política determinística consumidos pelo worker |
-| Cobertura | run `34096964058` | 17 turnos canônicos e 29 observações dos cinco casos gold |
-| Campos plan-driving | relatório compacto | 17/17 em composição, abstenção, profundidade, continuidade e primeiro trabalho |
-| Autoridade | responsabilidade com threshold de 100% | 17/17, incluindo `decision_maker` somente quando o CFO declara que a decisão é dele |
-| Perguntas | presença e aderência temática | 17/17; o roteador pergunta somente o que altera workflow e deixa lacunas de evidência ao coverage engine |
-| Repetibilidade | seis entroncamentos executados três vezes | 6/6 fingerprints invariantes |
-| Operação e custo | gateway real | 31 tentativas, US$ 0,5265, nenhum custo desconhecido |
+| Política única | `namedCompositions` + schema/canonicalizador/stamp/fingerprint | vinte composições derivam os mesmos works, profundidade, responsabilidades e efeito; divergência é rejeitada |
+| Condição de execução | policy + control plane | `documents_present` ativa conciliação antes de estratégia somente com documentos governados; o prompt é renderizado da policy |
+| Cobertura candidate | `intent-gold.ts` | 40 turnos, vinte composições e quatro suítes: jornada, horizontal, confusão e adversarial |
+| Oracle independente | `intent-gold.ts` | expectativas de aceitação não importam nem derivam a policy de produção; mudança errada na policy quebra o gate |
+| Assinatura semântica | gabarito e scorer v2 | ação, decisão e audiência usam enums canônicos; objetos possuem id, ordinal e slots, verificados na resposta bruta sem aceitar narrativa livre como verdade de roteamento |
+| Slots materiais | schema + gold | entidade, assunto, montante, moeda, percentual, indexador e prazo são slots canônicos; cardinalidade, valores e associação à instância exata são obrigatórios; objeto/slot extra, conflito ou divisão entre objetos reprova |
+| Autoridade e evidência | carimbo do control plane + testes negativos | nunca inferidas pelo modelo; acesso ausente fica `unresolved`; cargo não concede decisão ou efeito externo |
+| Repetibilidade candidate | manifesto imutável | 40 bases + duas paráfrases reais em seis IDs = 52 observações; missing, extra, duplicate e mesmos bytes reprovam |
+| Regra | summary v2 | manifesto, quatro suítes, todos os checks e seis trios exigem 100% |
+| Integração determinística | 52 inputs raw-to-canonicalizer | todos os textos autorais exercitam a precedência e os reparos reais; abstenção, continuidade, cardinalidade e associação exata de slots têm regressão |
+| Evidência antifraude | summary v2 + reproduções do revisor | checks, fingerprints e expected são recalculados; null, provider error, associação objeto-referência trocada, CDI/`CDI + 15%` e hashes constantes reprovam |
 | Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
+| Recomposição antifraude v3 | inputs canônicos + raw route/extractor | compiler, apply e canonicalizer são reexecutados pelo summary; compilation/output forjado reprova |
+| Métricas honestas | raw / coverage / final-policy | correções da policy ficam quantificadas e não são apresentadas como acerto bruto do modelo; abstenção não depende de falha do extrator |
+| Estabilidade completa | fingerprint v3 | inclui `inferableContext`; mudança BR→US deixa de parecer estável |
+| Linhagem de chamadas | call evidence verifier | exige bijeção por task/schema/prompt/input/provider/model/attempt/output/custo; duplicata, órfã e cassette reprovam |
+| Proveniência do artefato | GitHub context + evidence fingerprint | commit/run/workflow/ref vinculados ao record; alteração posterior é detectada; não há alegação de attestation externa |
+| Fronteira paga | guard do runner + workflow | somente `main` no Environment dedicado; teste negativo recusa execução local, feature branch e workflow divergente |
 
-Status: **tested para validação interna no conjunto delimitado**. Esta evidência não promove o
-roteador para uso amplo, não autoriza executor e não comprova pesquisa, análise financeira,
-modelagem, materiais, matching ou uma jornada longitudinal completa.
+Status: **candidate endurecido, não executado com modelo real após o gate v3**. A integração determinística e
+as reproduções do revisor estão verdes. A run `34096964058` foi invalidada como
+evidência de promoção porque usava 17 turnos, 29 observações, replay dos mesmos bytes e score menos
+profundo. Ela é apenas baseline histórica. A branch policy do GitHub Environment e o subject da
+trust policy IAM são configuração externa ainda não atestada; sem isso o gate pago não é evidência
+aceitável. Esta evidência não promove o roteador para uso amplo,
+não autoriza executor e não comprova pesquisa, análise financeira, modelagem, materiais ou matching.
 
 ## Dispatch do preview pelo slice compilado, candidate, 06/09/2026
 

@@ -99,6 +99,9 @@ function primaryWorkFallback(envelope: IntentEnvelope): ResolutionDraft {
   if (first === "understand" && hasObject(envelope, "company")) {
     return resolved("company_analysis", confidence, "understand_company_object", envelope, works);
   }
+  if (first === "understand" && (["instrument", "document", "market"] as const).some((kind) => hasObject(envelope, kind))) {
+    return resolved("factual_question", confidence, "horizontal_understanding_without_company", envelope, works);
+  }
   if (first === "market") return resolved("market_mapping", confidence, "primary_work_market", envelope, works);
   if (first === "find_and_organize") return resolved("information_organization", confidence, "primary_work_find_and_organize", envelope, works);
   return needsContext("desired_outcome", "semantic_objective_not_materially_resolved", envelope, works, confidence);
@@ -140,23 +143,6 @@ function needsContext(
   };
 }
 
-function coverageGap(
-  reasonCode: string,
-  envelope: IntentEnvelope,
-  works: PrimaryWork[],
-  confidence: number,
-): ResolutionDraft {
-  return {
-    status: "coverage_gap",
-    objectiveKind: "ambiguous",
-    confidence,
-    reasonCode,
-    composition: envelope.composition,
-    supportingPrimaryWorks: works,
-    requiredContext: [],
-  };
-}
-
 /**
  * Converts the model-classified envelope into the small objective catalogue accepted by the
  * deterministic graph compiler. This function grants no authority and executes no task. Unknown
@@ -177,10 +163,12 @@ export function resolveIntentObjective(
       works,
       confidence,
     );
+  } else if (envelope.composition === "understand_company_sector_asset"
+    && !hasObject(envelope, "company")
+    && (["instrument", "document", "market"] as const).some((kind) => hasObject(envelope, kind))) {
+    draft = resolved("factual_question", confidence, "horizontal_understanding_without_company", envelope, works);
   } else if (envelope.composition && compositionObjective[envelope.composition]) {
     draft = resolved(compositionObjective[envelope.composition]!, confidence, "named_composition", envelope, works);
-  } else if (envelope.composition) {
-    draft = coverageGap("unknown_named_composition", envelope, works, confidence);
   } else {
     draft = primaryWorkFallback(envelope);
   }

@@ -2,7 +2,8 @@ import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
-import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
+import {estimateCostReservationUsd, estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
+import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {
@@ -50,11 +51,6 @@ export type ModelGateway = {
   spent(): {costUsd: number; calls: number; unknownCostCalls: number; budgetExposureUsd: number};
 };
 
-// OpenAI documents a 10% uplift for regional processing. Reserving that margin before a call
-// keeps the budget valid regardless of whether a deployment uses global or regional routing;
-// the ledger still records the provider-reported token estimate without inventing a surcharge.
-const PREFLIGHT_PRICE_SAFETY_FACTOR = 1.1;
-
 export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   const policies = config.policies ?? defaultTaskPolicies;
   const prices = config.prices ?? listPrices;
@@ -79,16 +75,44 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     });
     const input = config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {});
     const schemaJson = z.toJSONSchema(request.schema);
-    const promptFingerprint = fingerprint({system: request.system, schemaName: request.schemaName, schema: schemaJson});
     const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
-    const candidates: ModelRef[] = fallback ? [primary, fallback] : [primary];
-    // Prompted JSON is parsed from text: one malformed answer is worth a second try on the same model before the fallback.
-    if (request.outputMode === "prompted_json") candidates.splice(1, 0, primary);
-    let policyRejected = 0;
+    const candidates: Array<{
+      ref: ModelRef;
+      retryOrdinal: number;
+      isSameModelRepair: boolean;
+      usedProviderFallback: boolean;
+    }> = [
+      {ref: primary, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
+      // A repair attempt is conditional: the loop skips it unless the first response reached
+      // schema validation and produced bounded, content-free repair guidance.
+      ...(request.outputMode === "prompted_json"
+        ? [{ref: primary, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false}]
+        : []),
+      ...(fallback && request.allowFallback !== false
+        ? [{ref: fallback, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true}]
+        : []),
+    ];
     let lastFailureWasTruncation = false;
+    let repairGuidance: string | undefined;
+    let previousAttemptInvocationId: string | undefined;
+    let pendingRepairIssueCodeFingerprint: string | undefined;
 
-    for (const [index, ref] of candidates.entries()) {
+    for (const candidate of candidates) {
+      if (candidate.isSameModelRepair && !repairGuidance) continue;
+      const {ref, retryOrdinal, isSameModelRepair, usedProviderFallback} = candidate;
+      const invocationId = randomUUID();
+      const attemptSystem = isSameModelRepair && repairGuidance
+        ? `${request.system}\n\n${repairGuidance}`
+        : request.system;
+      const legacyUsedFallback = isSameModelRepair || usedProviderFallback;
+      const promptFingerprint = fingerprint({system: attemptSystem, schemaName: request.schemaName, schema: schemaJson});
+      const attemptTelemetry = {retryOrdinal, isSameModelRepair, usedProviderFallback};
+      const repairLineage = isSameModelRepair && repairGuidance ? {
+        ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
+        repairGuidanceFingerprint: fingerprint(repairGuidance),
+        ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
+      } : {};
       let providerPolicyVersion: string | undefined;
       if (config.providerDataPolicy?.enforce) {
         if (!request.dataHandling) {
@@ -104,14 +128,16 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         });
         providerPolicyVersion = policyDecision.policyVersion ?? undefined;
         if (!policyDecision.allowed) {
-          policyRejected += 1;
-          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(",")});
+          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(","), ...attemptTelemetry});
           emit(config, {
             request,
             ref,
+            invocationId,
+            ...repairLineage,
             costUsd: 0,
             latencyMs: 0,
-            usedFallback: index > 0,
+            usedFallback: legacyUsedFallback,
+            ...attemptTelemetry,
             fromCassette: false,
             outcome: "policy_rejected",
             promptFingerprint,
@@ -120,6 +146,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
             notCalled: true,
             providerPolicyVersion,
           });
+          previousAttemptInvocationId = invocationId;
           continue;
         }
       }
@@ -133,7 +160,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       const adapterRequest: AdapterRequest = {
         model: ref.model,
         effort: ref.effort,
-        system: request.system,
+        system: attemptSystem,
         input,
         schema: request.schema,
         schemaName: request.schemaName,
@@ -148,11 +175,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       // Refuse before the provider call, not after it. The old check only looked at already
       // spent dollars, so a single large request could cross the ceiling and be billed in full.
       const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-      const reservationUsd = estimateCostUsd(ref.model, {
-        inputTokens,
-        cachedInputTokens: 0,
-        outputTokens: adapterRequest.maxOutputTokens,
-      }, prices) * PREFLIGHT_PRICE_SAFETY_FACTOR;
+      const reservationUsd = estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
       if (config.budget?.maxCostUsd !== undefined && budgetExposureUsd + reservationUsd > config.budget.maxCostUsd) {
         throw new ModelGatewayError(
           `cost budget would be exceeded (${budgetExposureUsd.toFixed(4)} + ${reservationUsd.toFixed(4)} > ${config.budget.maxCostUsd})`,
@@ -185,15 +208,18 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       } catch (error) {
         if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
         const providerError = providerErrorDiagnostic(error);
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error)});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
         spent.calls += 1;
         spent.unknownCostCalls += 1;
         emit(config, {
           request,
           ref,
+          invocationId,
+          ...repairLineage,
           costUsd: 0,
           latencyMs: now() - startedAt,
-          usedFallback: index > 0,
+          usedFallback: legacyUsedFallback,
+          ...attemptTelemetry,
           fromCassette: false,
           outcome: "error",
           promptFingerprint,
@@ -202,6 +228,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           providerPolicyVersion,
           providerError,
         });
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
@@ -214,8 +241,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       spent.calls += fromCassette ? 0 : 1;
 
       if (response.stopReason === "refusal") {
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal"});
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
+        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
@@ -240,18 +268,67 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
               path: issue.path.join("."),
               code: issue.code,
               message: issue.message.slice(0, 180),
+              ...("values" in issue && Array.isArray(issue.values) ? {allowedValues: issue.values
+                .filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value))
+                .slice(0, 20)} : {}),
             }));
         const message = truncated
           ? "provider stopped at the output-token limit before completing the structured response"
           : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message});
+        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
-        emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues});
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
+        if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
+          repairGuidance = buildRepairGuidance("schema", validationIssues);
+          pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
+        }
+        emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion, validationIssues, validationIssueCodeFingerprint, validationSource: "schema"});
+        previousAttemptInvocationId = invocationId;
         continue;
       }
 
-      attempts.push({provider: ref.provider, model: ref.model, outcome: "ok"});
-      emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: index > 0, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      let postValidation: ReturnType<NonNullable<typeof request.validateOutput>> | undefined;
+      if (request.validateOutput) {
+        try {
+          postValidation = request.validateOutput(parsed.data as z.infer<TSchema>);
+        } catch {
+          postValidation = {
+            accepted: false,
+            issues: [{path: "<root>", code: "deterministic_validator_failed", message: "Deterministic output validation failed."}],
+          };
+        }
+      }
+      if (postValidation && !postValidation.accepted) {
+        const validationIssues: ValidationIssueDiagnostic[] = postValidation.issues.slice(0, 12).map((issue, index) => {
+          const path = safeContractToken(issue.path, `contract.${index}`, 160);
+          const code = safeContractToken(issue.code, "deterministic_validation_failed", 100);
+          return {path, code, message: `Deterministic validation failed: ${code}.`};
+        });
+        attempts.push({
+          provider: ref.provider,
+          model: ref.model,
+          outcome: "invalid_output",
+          message: validationIssues.slice(0, 5).map(({path, code}) => `${path}:${code}`).join(";"),
+          ...attemptTelemetry,
+        });
+        const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
+        if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
+          repairGuidance = buildRepairGuidance("deterministic", validationIssues);
+          pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
+        }
+        emit(config, {
+          request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
+          ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint,
+          inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion,
+          validationIssues, validationIssueCodeFingerprint, validationSource: "deterministic",
+        });
+        previousAttemptInvocationId = invocationId;
+        continue;
+      }
+
+      attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
+      emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      previousAttemptInvocationId = invocationId;
       const result: GatewayResult<z.infer<TSchema>> = {
         output: parsed.data as z.infer<TSchema>,
         provider: ref.provider,
@@ -261,7 +338,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         costUsd,
         latencyMs,
         stopReason: response.stopReason,
-        usedFallback: index > 0,
+        usedFallback: legacyUsedFallback,
+        usedProviderFallback,
+        retryOrdinal,
+        isSameModelRepair,
         fromCassette,
         attempts,
       };
@@ -269,7 +349,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       return result;
     }
 
-    if (policyRejected === candidates.length) {
+    if (attempts.length > 0 && attempts.every(({outcome}) => outcome === "policy_rejected")) {
       throw new ModelGatewayError(`no provider satisfies the data policy for task "${request.task}"`, "data_policy_violation", attempts);
     }
     if (lastFailureWasTruncation) {
@@ -290,10 +370,17 @@ function emit(
   entry: {
     request: GatewayRequest<z.ZodType>;
     ref: ModelRef;
+    invocationId: string;
+    previousInvocationId?: string;
+    repairGuidanceFingerprint?: string;
+    repairValidationIssueCodeFingerprint?: string;
     response?: AdapterResponse;
     costUsd: number;
     latencyMs: number;
     usedFallback: boolean;
+    retryOrdinal: number;
+    isSameModelRepair: boolean;
+    usedProviderFallback: boolean;
     fromCassette: boolean;
     outcome: GatewayCallLog["outcome"];
     promptFingerprint: string;
@@ -303,14 +390,17 @@ function emit(
     providerPolicyVersion: string | undefined;
     providerError?: ProviderErrorDiagnostic;
     validationIssues?: ValidationIssueDiagnostic[];
+    validationIssueCodeFingerprint?: string;
+    validationSource?: RepairValidationSource;
   },
 ): void {
   if (!config.onCall) return;
   const usage = entry.response?.usage ?? {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
   const log: GatewayCallLog = {
-    invocationId: randomUUID(),
+    invocationId: entry.invocationId,
     task: entry.request.task,
     provider: entry.ref.provider,
+    configuredModel: entry.ref.model,
     model: entry.response?.model || entry.ref.model,
     effort: entry.ref.effort,
     outcome: entry.outcome,
@@ -323,14 +413,22 @@ function emit(
     latencyMs: entry.latencyMs,
     stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,
+    retryOrdinal: entry.retryOrdinal,
+    isSameModelRepair: entry.isSameModelRepair,
+    usedProviderFallback: entry.usedProviderFallback,
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
+  if (entry.previousInvocationId) log.previousInvocationId = entry.previousInvocationId;
+  if (entry.repairGuidanceFingerprint) log.repairGuidanceFingerprint = entry.repairGuidanceFingerprint;
+  if (entry.validationIssueCodeFingerprint) log.validationIssueCodeFingerprint = entry.validationIssueCodeFingerprint;
+  if (entry.repairValidationIssueCodeFingerprint) log.repairValidationIssueCodeFingerprint = entry.repairValidationIssueCodeFingerprint;
   if (entry.request.dataHandling) log.dataClassification = entry.request.dataHandling.classification;
   if (entry.providerPolicyVersion) log.providerPolicyVersion = entry.providerPolicyVersion;
   if (entry.request.metadata) log.metadata = entry.request.metadata;
   if (entry.providerError) log.providerError = entry.providerError;
   if (entry.validationIssues) log.validationIssues = entry.validationIssues;
+  if (entry.validationSource) log.validationSource = entry.validationSource;
   config.onCall(log);
 }
 
@@ -361,6 +459,12 @@ function singleWrappedObject(value: unknown): unknown {
 function firstShortString(...values: unknown[]): string | undefined {
   const value = values.find((candidate) => typeof candidate === "string" && candidate.length > 0);
   return typeof value === "string" ? value.slice(0, 80) : undefined;
+}
+
+function safeContractToken(value: unknown, fallback: string, max: number): string {
+  return typeof value === "string" && value.length > 0 && value.length <= max && /^[A-Za-z0-9_.:[\]-]+$/.test(value)
+    ? value
+    : fallback;
 }
 
 function fingerprint(value: unknown): string {

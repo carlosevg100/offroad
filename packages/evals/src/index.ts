@@ -22,3 +22,5 @@ export * from "./gc02-reference-snapshot";
 export * from "./gc02-decision-artifact";
 export * from "./intent-gold";
 export * from "./intent-router-gate";
+export * from "./intent-router-gate-input";
+export * from "./intent-router-call-evidence";

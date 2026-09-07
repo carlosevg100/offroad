@@ -34,6 +34,7 @@ describe("model failure lineage", () => {
       invocationId: null,
       task: "origination_thesis",
       provider: "anthropic",
+      model: "claude-sonnet-5",
       effort: "medium",
       outcome: "error",
       costUsd: 0,

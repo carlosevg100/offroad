@@ -8,7 +8,7 @@ import {
 import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
-import {processAgentOperationBriefJob} from "./agent-operation-brief";
+import {governedActiveWorkContext, processAgentOperationBriefJob} from "./agent-operation-brief";
 import {liveRoutingOutputSchema} from "./live-preview";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 
@@ -31,9 +31,9 @@ function validLiveRoutingOutput(company = "Magazine Luiza") {
   });
   return liveRoutingOutputSchema.parse({
     routingCore: {
-      action: field(["analisar companhia"]),
-      object: field([{kind: "company", reference: company}]),
-      desiredOutcome: field("análise preliminar"), decision: field(null), audience: field(["VP"]),
+      action: field(["understand"]),
+      object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: company}]}]),
+      decisionType: field("none"), audienceType: field("internal_senior"),
       depth: field("preliminary", "inferred"), continuity: field("new"), workResponsibility: field(["producer"]),
     },
     inferableContext: {
@@ -118,6 +118,53 @@ function r01DraftMissingAdvanceRate() {
 }
 
 describe("agent operation brief worker", () => {
+  it("builds active work memory only from the bound project, objective revision and source manifest", () => {
+    const objectiveFingerprint = "c".repeat(64);
+    const projectId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    const objectiveId = "11111111-1111-4111-8111-111111111111";
+    const manifestId = "22222222-2222-4222-8222-222222222222";
+    const workstream = {
+      label: "Analisar", purpose: "Entender o caso", sources: [], analyses: ["crédito"],
+      output: "análise", dependencies: [],
+    };
+    const compiled = governedActiveWorkContext(job.organization_id, {
+      session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+      message: "Continue.", message_metadata: {}, brief: {}, snapshot_fingerprint: "d".repeat(64),
+      projection_updated_at: "2026-09-07T02:00:00.000Z", manifest_id: manifestId,
+      project: {id: projectId, name: "Projeto Camil", entryJob: "capital_planning", accessBasis: "authorized_private", phase: "analyze", status: "active"},
+      latest_execution_brief: {
+        id: objectiveId, version: 4, fingerprint: objectiveFingerprint,
+        visibleSnapshot: {
+          schemaVersion: "execution-brief.v1", fingerprint: objectiveFingerprint, locale: "pt-BR",
+          objective: "Preparar decisão de capital", currentContext: [], proposedDeliverable: "Memo",
+          workstreams: [workstream, {...workstream, label: "Estruturar"}, {...workstream, label: "Revisar"}],
+          assumptions: [], checkpoints: [], executionMode: "start_after_display",
+        },
+      },
+      company_profile: {}, professional_context: null, institution_capabilities: null, organization_methodology: null,
+      related_project_memory: [], documents: [{id: "33333333-3333-4333-8333-333333333333", name: "Balanço.xlsx", kind: "financial", status: "ready"}],
+      tasks: [], artifacts: [],
+      recent_messages: [{id: "44444444-4444-4444-8444-444444444444", role: "assistant", content: "Segredo histórico que não é evidência", created_at: "2026-09-07T01:00:00.000Z"}],
+    });
+    expect(compiled).toMatchObject({
+      context: {
+        organizationId: job.organization_id, projectId, revision: 4,
+        objective: {id: objectiveId, revision: 4, fingerprint: objectiveFingerprint},
+        sourceManifest: {id: manifestId, fingerprint: "d".repeat(64), documentIds: ["33333333-3333-4333-8333-333333333333"]},
+      },
+      binding: {
+        objectiveId, objectiveRevision: 4, sourceManifestId: manifestId,
+        sourceManifestDocumentIds: ["33333333-3333-4333-8333-333333333333"],
+        sourceManifestEvidenceObjectIds: [projectId, objectiveId],
+        sourceManifestMembershipFingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+        activeWorkObjectBindings: expect.arrayContaining([
+          expect.objectContaining({id: expect.stringMatching(/^project:/), fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/)}),
+        ]),
+      },
+    });
+    expect(JSON.stringify(compiled)).not.toContain("Segredo histórico");
+  });
+
   it("applies a bound R01 answer without a model and records the resulting draft revision", async () => {
     let storedPatch: Record<string, unknown> | undefined;
     let response: Record<string, unknown> | undefined;
@@ -496,13 +543,25 @@ describe("agent operation brief worker", () => {
       complete: async (_job: unknown, value: unknown) => { completion = value; },
       recordAgentFailure: async () => {}, fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
-    let completed = false;
+    let completed = 0;
     const gateway = {
-      complete: async () => {
-        completed = true;
-        return {output: validLiveRoutingOutput(), model: "CLIENT_SECRET_MODEL", provider: "anthropic"};
+      complete: async (request: {task: string; schemaName: string}) => {
+        completed += 1;
+        const live = validLiveRoutingOutput();
+        let output: unknown;
+        if (request.task === "extract_semantic_objects") output = {
+          objects: [{candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start: 10, end: 24, text: "Magazine Luiza"}}, modifiers: []}],
+          activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+        };
+        else if (request.schemaName === "live_preview_turn_output") output = {turn: live.turn};
+        else { const {turn: _turn, ...route} = live; output = route; }
+        return {
+          output, model: "CLIENT_SECRET_MODEL", provider: "anthropic", effort: "low", costUsd: 0.02, latencyMs: 1,
+          retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+          attempts: [{provider: "anthropic", model: "CLIENT_SECRET_MODEL", outcome: "ok"}],
+        };
       },
-      spent: () => ({costUsd: completed ? 0.02 : 0, calls: completed ? 1 : 0, unknownCostCalls: 0, budgetExposureUsd: completed ? 0.02 : 0}),
+      spent: () => ({costUsd: completed * 0.02, calls: completed, unknownCostCalls: 0, budgetExposureUsd: completed * 0.02}),
     } as unknown as ModelGateway;
 
     const result = await processAgentOperationBriefJob(previewJob, {
@@ -511,9 +570,14 @@ describe("agent operation brief worker", () => {
     });
 
     expect(result.status).toBe("succeeded");
-    expect(envelopeRecord).toMatchObject({model: "governed_model_route", costUsd: 0.02});
-    expect(stage).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
-    expect(logged).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
+    expect(envelopeRecord).toMatchObject({model: "governed_model_route", costUsd: 0.06});
+    expect(envelopeRecord).toMatchObject({classifier: {
+      routingAttempt: {provider: "anthropic", model: "unknown"},
+      semanticObjectAttempt: {provider: "anthropic", model: "unknown"},
+      previewTurnAttempt: {provider: "anthropic", model: "unknown"},
+    }});
+    expect(stage).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.06, calls: 3});
+    expect(logged).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.06, calls: 3});
     expect(JSON.stringify({result, envelopeRecord, response, stage, completion, logged})).not.toContain("CLIENT_SECRET_MODEL");
   });
 

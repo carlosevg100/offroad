@@ -1,16 +1,14 @@
 /**
  * live_intelligence_preview: the semantic router decides a preview turn.
  *
- * One model call reads the turn into an Intent Envelope (the shadow classifier's contract) plus
- * what the preview desk needs to act: companies named, premise changes, a question about a
- * number, a request for material, answers to open questions. Everything after the call is
- * deterministic: the company resolves to a frozen corpus or to nothing, the composition is
- * derived from the envelope, the plan is compiled by the same compiler the skeleton uses, and the
- * reply states what was understood, at what cost, and where the router abstained. A company
+ * The canonical route contract and independent semantic-object contract run before a supplemental
+ * preview-control extraction. Everything after those calls is deterministic: the company resolves
+ * to a frozen corpus or to nothing, the plan is compiled by the same compiler the skeleton uses,
+ * and the reply states what was understood, at what cost, and where the router abstained. A company
  * without a frozen corpus never receives another company's objects.
  */
 import type {IntentEnvelope} from "@offroad/agent-contracts";
-import {buildIntentClassifierInput, canonicalizeIntentClassifierOutput, intentDepthSchema} from "@offroad/agent-contracts";
+import {intentDepthSchema} from "@offroad/agent-contracts";
 import {preview} from "@offroad/credit-playbook";
 
 const {describePremises} = preview;
@@ -19,9 +17,8 @@ import {buildOriginationResearchPlan, runPublicResearch, type PublicSearchProvid
 import {z} from "zod";
 
 import {
-  SHADOW_ROUTING_SYSTEM,
+  shadowIntentEnvelope,
   shadowRoutingOutputSchema,
-  stampIntentEnvelope,
   type ShadowRoutingContext,
 } from "./intent-shadow";
 import {
@@ -34,7 +31,7 @@ import {
   type PreviewStepOutput,
   type PreviewTurnInput,
 } from "./integration-preview";
-import {governedModelRoute, safeModelTurnTelemetry} from "./model-call-log";
+import {governedModelRoute, safeModelTurnTelemetry, safeSuccessfulModelCall} from "./model-call-log";
 
 export const LIVE_MARK = "[Validação interna, live_intelligence_preview]";
 export const LIVE_MARK_EN = "[Internal validation, live_intelligence_preview]";
@@ -123,10 +120,11 @@ export const liveRoutingOutputSchema = shadowRoutingOutputSchema.extend({
 });
 export type LiveRoutingOutput = Omit<z.infer<typeof liveRoutingOutputSchema>, "turn"> & {turn: PreviewTurn};
 
-export const LIVE_ROUTING_SYSTEM = `${SHADOW_ROUTING_SYSTEM}
+const liveTurnExtractionOutputSchema = z.object({turn: previewTurnSchema}).strict();
 
-You are also the reader of an internal validation desk that analyses one company at a time from a
-frozen evidence base. Besides the envelope, fill "turn":
+export const LIVE_ROUTING_SYSTEM = `You extract supplemental, non-routing controls for an internal validation desk.
+The canonical route and semantic objects are decided by separate governed contracts. You must not
+classify, route, plan, answer or execute the request. Fill only "turn":
 - companies: every company the person names or clearly refers to, the mention as written, with its
   role (subject of the work, counterparty, comparable, other). A company written in the message is
   always listed; never invent one.
@@ -152,6 +150,9 @@ export type LiveUnderstanding = {
   costUsd: number;
   latencyMs: number;
   calls: number;
+  routingAttempt: ReturnType<typeof safeSuccessfulModelCall>;
+  semanticObjectAttempt: ReturnType<typeof safeSuccessfulModelCall>;
+  previewTurnAttempt: ReturnType<typeof safeSuccessfulModelCall>;
 };
 
 export type LiveTurnContext = ShadowRoutingContext & {
@@ -162,19 +163,16 @@ export type LiveTurnContext = ShadowRoutingContext & {
   requestKind: "message" | "execution_brief_edit" | "information_request_response";
 };
 
-/** One model call: the turn read into an envelope and the preview-desk fields. Throws on model or schema failure. */
+/**
+ * The canonical two-contract router runs first. A third, non-routing contract may then extract
+ * preview-only controls. If route or semantic coverage fails, this function fails closed before
+ * the supplemental contract can influence an envelope or a workflow.
+ */
 export async function understandLiveTurn(input: {gateway: ModelGateway; context: LiveTurnContext; now?: () => Date}): Promise<LiveUnderstanding> {
   const {context} = input;
   const spentBefore = input.gateway.spent();
   const startedAt = Date.now();
-  const classifierInput = buildIntentClassifierInput({
-    locale: context.locale,
-    latestUserMessage: context.message,
-    recentConversation: context.recentMessages.slice(-8),
-    entryJob: context.entryJob,
-    documentCount: context.documentIds.length,
-    professionalContext: context.professionalContext,
-  });
+  const canonical = await shadowIntentEnvelope({gateway: input.gateway, context, ...(input.now ? {now: input.now} : {})});
   const completion = await input.gateway.complete({
     task: "route_intent",
     system: LIVE_ROUTING_SYSTEM,
@@ -192,43 +190,26 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
         requestKind: context.requestKind,
       }),
     }],
-    schema: liveRoutingOutputSchema,
-    schemaName: "live_preview_routing_output",
+    schema: liveTurnExtractionOutputSchema,
+    schemaName: "live_preview_turn_output",
     // The envelope schema is too large for the provider's compiled grammar; the schema travels in the prompt.
     outputMode: "prompted_json",
     thinking: "off",
     metadata: {surface: "live_preview_router"},
   });
-  const previewComposition = completion.output.composition;
   const normalizedTurn = normalizePreviewTurn(completion.output.turn);
-  const hasPremiseChange = Object.values(normalizedTurn.premiseChanges).some((value) => value !== null);
-  const hasGovernedContinuation = normalizedTurn.answers.length > 0
-    || Object.values(normalizedTurn.scopeChanges).some((value) => value !== null);
-  const compatibilityComposition = previewComposition === "deepen"
-    ? "understand_company_sector_asset"
-    : previewComposition ?? (hasPremiseChange
-      ? "build_or_review_model"
-      : normalizedTurn.material.requested
-        ? "prepare_material"
-        : hasGovernedContinuation
-          ? "understand_company_sector_asset"
-          : null);
-  const classifier = canonicalizeIntentClassifierOutput({
-    ...completion.output,
-    // `deepen` exists only on this compatibility rail and is restored after the canonical
-    // classifier boundary has decided whether the turn must fail closed.
-    composition: compatibilityComposition,
-  }, classifierInput);
   const output: LiveRoutingOutput = {
-    ...classifier,
-    composition: classifier.abstain ? null : previewComposition,
+    ...canonical.output,
     turn: normalizedTurn,
   };
   const telemetry = safeModelTurnTelemetry(spentBefore, input.gateway.spent(), Date.now() - startedAt);
   return {
-    envelope: stampIntentEnvelope(output, context, input.now),
+    envelope: canonical.envelope,
     output,
     modelRoute: governedModelRoute,
+    routingAttempt: canonical.routingAttempt,
+    semanticObjectAttempt: canonical.semanticObjects.routingAttempt,
+    previewTurnAttempt: safeSuccessfulModelCall(completion),
     ...telemetry,
   };
 }
@@ -284,6 +265,15 @@ type Composition = PreviewComposition;
 const t = (locale: "pt-BR" | "en-US", pt: string, en: string) => (locale === "en-US" ? en : pt);
 
 const knownAudiences = new Set(["vp", "board", "committee", "cfo", "ceo", "companhia", "investors"]);
+const canonicalAudience: Record<LiveRoutingOutput["routingCore"]["audienceType"]["value"], string | null> = {
+  self: "self",
+  internal_senior: "vp",
+  company_management: "cfo",
+  board_or_committee: "board",
+  capital_provider: "investors",
+  market: "market",
+  unspecified: null,
+};
 
 function normalizeAudience(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -409,6 +399,63 @@ function pagesInText(message: string): number | null {
   return value && value >= 1 && value <= 60 ? value : null;
 }
 
+function numericValuesInText(message: string): number[] {
+  return [...unquoted(message).matchAll(/\b\d+(?:[.,]\d+)?\b/g)]
+    .map((match) => Number(match[0].replace(",", ".")))
+    .filter(Number.isFinite);
+}
+
+function hasNumericValue(message: string, expected: number): boolean {
+  const tolerance = Math.max(0.000_001, Math.abs(expected) * 0.000_001);
+  return numericValuesInText(message).some((value) => Math.abs(value - expected) <= tolerance);
+}
+
+/**
+ * Keeps only premise values attributable to the current user message. Unit conversions are
+ * explicit and bounded: decimal rate ↔ percentage, years ↔ months and percentage spread ↔ bps.
+ * A supplemental extraction may locate these values; it may never invent one or carry it from a
+ * prior turn.
+ */
+function attributablePremiseTurn(turn: PreviewTurn, message: string): PreviewTurn {
+  const changes = turn.premiseChanges;
+  const annualRate = changes.newDebtAnnualRate;
+  const spreadBps = changes.cdiSpreadBps;
+  const termMonths = changes.newDebtTermMonths;
+  const graceMonths = changes.newDebtGraceMonths;
+  const normalized = normalizeText(unquoted(message));
+  const raw = unquoted(message).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const rateContext = /\b(?:taxa|juros|interest|rate|cdi|a\.?a\.?)\b/.test(raw) && /%/.test(raw);
+  const spreadContext = /\b(?:cdi|spread|bps|pontos?[- ]base|basis points?)\b/.test(raw);
+  const supportsMonths = (months: number, kind: "term" | "grace") => {
+    if (hasNumericValue(message, months) && new RegExp(`\\b${months}\\s*(?:mes|meses|months?)\\b`, "i").test(normalized)) return true;
+    if (months % 12 !== 0) return false;
+    const years = months / 12;
+    if (!hasNumericValue(message, years)) return false;
+    return kind === "grace"
+      ? new RegExp(`\\b${years}\\b[^.!?]{0,24}\\b(?:carencia|grace)\\b|\\b(?:carencia|grace)\\b[^.!?]{0,24}\\b${years}\\b`, "i").test(normalized)
+      : new RegExp(`\\b${years}\\s*(?:ano|anos|year|years)\\b`, "i").test(normalized);
+  };
+  return {
+    ...turn,
+    premiseChanges: {
+      newDebtAnnualRate: annualRate !== null && rateContext && (hasNumericValue(message, annualRate) || hasNumericValue(message, annualRate * 100)) ? annualRate : null,
+      cdiSpreadBps: spreadBps !== null && spreadContext && (hasNumericValue(message, spreadBps) || hasNumericValue(message, spreadBps / 100)) ? spreadBps : null,
+      newDebtTermMonths: termMonths !== null && supportsMonths(termMonths, "term") ? termMonths : null,
+      newDebtGraceMonths: graceMonths !== null && supportsMonths(graceMonths, "grace") ? graceMonths : null,
+    },
+  };
+}
+
+function explicitNumberQuestion(message: string, mentioned: string): boolean {
+  const plain = unquoted(message);
+  const values = numericValuesInText(plain);
+  const mentionedValues = numericValuesInText(mentioned);
+  if (values.length === 0 || mentionedValues.length === 0
+    || !mentionedValues.every((expected) => values.some((value) => Math.abs(value - expected) <= 0.000_001))) return false;
+  return /\?/.test(plain)
+    || /\b(?:de onde|qual (?:e|é) a origem|como (?:cheg|calcul)|por que|porque|explique|mostre)\b/i.test(normalizeText(plain));
+}
+
 /**
  * Decides the turn from the understanding. Deterministic: the model spoke once, in
  * `understandLiveTurn`; everything here is derivation the person can audit in the reply.
@@ -420,10 +467,12 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const hasAnalysis = input.artifactTypes.includes("preview_alternatives");
   const priorUserTurns = input.recentMessages.filter((message) => message.role === "user").map((message) => message.content);
   const sponsorInstruction = (understanding.envelope.executionContext.sponsorInstruction.value ?? [...priorUserTurns, input.message].join("\n")).slice(0, 4_000);
-  const mentions = [
-    ...output.turn.companies.map((company) => company.mention),
-    ...core.object.value.filter((object) => object.kind === "company" && object.reference).map((object) => object.reference as string),
-  ];
+  // Company identity is routing authority, not a preview-control hint. Only the semantic-object
+  // contract may contribute a model-derived mention. The raw message is still checked below by
+  // the deterministic alias registry, so an exact name cannot be lost to an extractor miss.
+  const mentions = core.object.value
+    .filter((object) => object.kind === "company")
+    .flatMap((object) => object.slots.filter(({key}) => key === "entity").map(({value}) => value));
   // The classifier sometimes leaves a named company out of its list; the registry's aliases are
   // matched against the message itself as well, as whole words, so a company the person wrote
   // is never "not identified" because of the model.
@@ -432,14 +481,16 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const resolution = fromClassifier.kind === "resolved" ? fromClassifier : fromText.kind === "resolved" ? fromText : fromClassifier;
   const priorCorpus = input.priorCaseId ? preview.corpusByCaseId(input.priorCaseId) : null;
   const corpusRecord = (corpus: preview.PreviewCorpus | null) => corpus ? {caseId: corpus.caseId, sourcePackId: corpus.sourcePackId, company: corpus.company.legalName} : null;
-  // The audience the model names, else the first audience of the envelope; a decision body written
-  // in the message (board, committee) wins, because it defines the form of the work.
-  const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
+  // Audience and depth are canonical routing axes. Neither the supplemental extraction nor a
+  // keyword shortcut may replace them: quoted, historical or negated mentions of a board are not
+  // the audience of the current request.
   // Among the audiences the classifier lists, a known role wins over free text ("banker (self)"),
   // so the headline names the reader of the work, not the person writing the request.
-  const listedAudiences = core.audience.value.map((item) => normalizeAudience(item));
-  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? listedAudiences.find((item) => item === "board" || item === "committee") ?? decisionBodyInText ?? listedAudiences.find((item) => item !== null && knownAudiences.has(item)) ?? listedAudiences[0] ?? "vp";
-  const depth = output.turn.scopeChanges.depth ?? core.depth.value;
+  const classifiedAudience = canonicalAudience[core.audienceType.value];
+  const audience = (classifiedAudience && knownAudiences.has(classifiedAudience) ? classifiedAudience : null)
+    ?? classifiedAudience
+    ?? "vp";
+  const depth = core.depth.value;
   // Three readings of the message itself, for what the classifier got wrong in the gate: it filed
   // "para o conselho" as a board deck request, filed a request for pages as an answer to the format
   // question, and carried a rate from an earlier turn into a message with no number. The text adds
@@ -448,9 +499,15 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   // Without the classifier's flag, only an imperative aimed at the deliverable or a stated page
   // count counts: "meu VP me pediu para preparar material" is the story of the request, not one.
   const imperativeMaterial = /^\s*(vamos|monte|monta|prepare|prepara|preparem|fa[c\u00e7]a|faz|gere|gera|produza|escreva|redija|quero|precis\w+)\b[^.!?]{0,40}\b(material|p[a\u00e1]ginas?|pitch|deck|memo|apresenta[c\u00e7][a\u00e3]o|briefing)\b/i;
-  const materialExplicit = hasAnalysis && materialWords.test(unquoted(input.message)) && (output.turn.material.requested || imperativeMaterial.test(unquoted(input.message)) || pagesInText(unquoted(input.message)) !== null);
-  const statesNumbers = /\d/.test(unquoted(input.message));
-  const turnPremises = statesNumbers ? premisesFromTurn(output.turn) : premisesFromTurn({...output.turn, premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}});
+  const materialExplicit = hasAnalysis
+    && materialWords.test(unquoted(input.message))
+    && (output.composition === "prepare_material" || imperativeMaterial.test(unquoted(input.message)) || pagesInText(unquoted(input.message)) !== null);
+  const premiseCompatible = output.composition === "build_or_review_model"
+    || (output.composition === "answer_a_question" && input.answeredQuestion !== undefined);
+  const governedPremiseTurn = premiseCompatible
+    ? attributablePremiseTurn(output.turn, input.message)
+    : {...output.turn, premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}};
+  const turnPremises = premisesFromTurn(governedPremiseTurn);
   const base = (composition: Composition | null, corpus: preview.PreviewCorpus | null, abstained: boolean, abstainReason: string | null) => ({
     composition,
     corpus: corpusRecord(corpus),
@@ -523,8 +580,11 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     ...(input.registryVersion ? {registryVersion: input.registryVersion} : {}),
   };
 
-  // A question about a number is answered from the signed objects, never by the model.
-  if (output.turn.numberQuestion && hasAnalysis) {
+  // A question about a number is answered from signed objects only when the canonical route says
+  // answer and the referenced number plus question language are present in the current message.
+  const numberQuestion = output.turn.numberQuestion;
+  if (output.composition === "answer_a_question" && numberQuestion?.mentioned && hasAnalysis
+    && explicitNumberQuestion(input.message, numberQuestion.mentioned)) {
     return {
       kind: "answer", composition: null, activation: null,
       reply: `${headline(input, null, corpusRecord(corpus), audience, depth)}\n${answerFromObjects(turnInput)}`,
@@ -544,16 +604,23 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   // Answers to open questions, from the classifier or quoted in the text; the merged list rides in
   // the brief for the planner and the audit.
   const knownQuestionIds = new Set(input.openQuestions.map((question) => question.id));
-  const classifierAnswers = output.turn.answers.filter((answer) => knownQuestionIds.has(answer.questionId));
+  const governedScopeEffect: PreviewTurn["scopeChanges"] = {
+    audience: classifiedAudience ?? null,
+    depth: core.depth.state === "explicit" || core.depth.state === "inferred" ? core.depth.value : null,
+    form: output.turn.scopeChanges.form,
+  };
+  const classifierAnswers = output.turn.answers
+    .filter((answer) => knownQuestionIds.has(answer.questionId))
+    .map((answer) => ({...answer, effect: {...answer.effect, audience: governedScopeEffect.audience, depth: governedScopeEffect.depth}}));
   const governedAnswers: PreviewTurn["answers"] = input.answeredQuestion ? [{
     questionId: input.answeredQuestion.id,
     answer: input.message,
-    effect: {audience: output.turn.scopeChanges.audience, depth: output.turn.scopeChanges.depth, scope: null},
+    effect: {audience: governedScopeEffect.audience, depth: governedScopeEffect.depth, scope: null},
   }] : [];
   const answers = [
     ...governedAnswers,
     ...classifierAnswers.filter((answer) => !governedAnswers.some((governed) => governed.questionId === answer.questionId)),
-    ...answersQuotedInText(input.message, input.openQuestions, output.turn.scopeChanges).filter((quoted) => !governedAnswers.some((governed) => governed.questionId === quoted.questionId) && !classifierAnswers.some((answer) => answer.questionId === quoted.questionId)),
+    ...answersQuotedInText(input.message, input.openQuestions, governedScopeEffect).filter((quoted) => !governedAnswers.some((governed) => governed.questionId === quoted.questionId) && !classifierAnswers.some((answer) => answer.questionId === quoted.questionId)),
   ];
   const mergedAnswers = [...input.priorAnswers.filter((existing) => !answers.some((answer) => answer.questionId === existing.questionId)), ...answers.map((answer) => ({questionId: answer.questionId, answer: answer.answer}))];
   const answerText = answers.map((answer) => `${answer.questionId}: ${answer.answer}`).join("; ");
@@ -629,7 +696,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   }
   const form: PreviewRequest["form"] = composition === "prepare_decision" ? "board_deck" : output.turn.scopeChanges.form === "memo" ? "internal_briefing" : output.turn.scopeChanges.form ?? "first_deliverable";
   const undefinedAspects: PreviewRequest["undefinedAspects"] = [
-    ...(core.desiredOutcome.state === "unknown" || core.desiredOutcome.state === "ambiguous" ? ["thesis" as const] : []),
+    ...(output.composition === null ? ["thesis" as const] : []),
     ...(output.turn.scopeChanges.form === null && composition !== "prepare_decision" ? ["format" as const] : []),
     ...(core.depth.state === "unknown" || core.depth.state === "ambiguous" ? ["depth" as const] : []),
   ];
@@ -638,8 +705,8 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   return {
     kind: "activate", composition,
     reply: `${headline(input, composition, corpusRecord(corpus), audience, depth)}\n${t(locale,
-      `Entendi: ${core.desiredOutcome.value}. Companhia: ${corpus.company.legalName} (base congelada do Caso 01, ${corpus.basis}, versão ${corpus.version}). Composição: ${compositionLabels[composition].pt}; audiência ${audience}; profundidade ${depth}.${question} Começo agora sobre a base congelada: dívida instrumento a instrumento, conciliação, covenants, vencimentos, juros, custo de saída, cenários, comparação antes e depois e a devolutiva.`,
-      `Understood: ${core.desiredOutcome.value}. Company: ${corpus.company.legalName} (frozen Case 01 base, ${corpus.basis}, version ${corpus.version}). Composition: ${compositionLabels[composition].en}; audience ${audience}; depth ${depth}.${question} I start now on the frozen base: debt instrument by instrument, reconciliation, covenants, maturities, interest, exit cost, scenarios, the before-and-after comparison and the readout.`)}`,
+      `Entendi: ${understanding.envelope.routingCore.desiredOutcome.value}. Companhia: ${corpus.company.legalName} (base congelada do Caso 01, ${corpus.basis}, versão ${corpus.version}). Composição: ${compositionLabels[composition].pt}; audiência ${audience}; profundidade ${depth}.${question} Começo agora sobre a base congelada: dívida instrumento a instrumento, conciliação, covenants, vencimentos, juros, custo de saída, cenários, comparação antes e depois e a devolutiva.`,
+      `Understood: ${understanding.envelope.routingCore.desiredOutcome.value}. Company: ${corpus.company.legalName} (frozen Case 01 base, ${corpus.basis}, version ${corpus.version}). Composition: ${compositionLabels[composition].en}; audience ${audience}; depth ${depth}.${question} I start now on the frozen base: debt instrument by instrument, reconciliation, covenants, maturities, interest, exit cost, scenarios, the before-and-after comparison and the readout.`)}`,
     activation: buildPreviewActivation(composition, request, {}, turnInput),
     record: base(composition, corpus, false, null),
   };

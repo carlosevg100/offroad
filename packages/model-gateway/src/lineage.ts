@@ -2,6 +2,10 @@ import {z} from "zod";
 
 export const gatewayCallLogSchema = z.object({
   invocationId: z.uuid(),
+  previousInvocationId: z.uuid().optional(),
+  repairGuidanceFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  validationIssueCodeFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  repairValidationIssueCodeFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   task: z.enum([
     "classify_document",
     "locate_fields",
@@ -19,8 +23,14 @@ export const gatewayCallLogSchema = z.object({
     "write_output",
     "audit_evidence",
     "localize",
+    "route_intent",
+    "extract_semantic_objects",
+    "preview_questions",
+    "preview_synthesis",
+    "baseline_generalist",
   ]),
   provider: z.enum(["anthropic", "openai"]),
+  configuredModel: z.string().min(1).optional(),
   model: z.string().min(1),
   effort: z.enum(["low", "medium", "high", "xhigh", "max"]),
   outcome: z.enum(["ok", "refusal", "error", "invalid_output", "policy_rejected"]),
@@ -40,9 +50,17 @@ export const gatewayCallLogSchema = z.object({
   latencyMs: z.number().nonnegative(),
   stopReason: z.enum(["end", "max_tokens", "refusal", "other"]),
   usedFallback: z.boolean(),
+  retryOrdinal: z.number().int().nonnegative().max(1).optional(),
+  isSameModelRepair: z.boolean().optional(),
+  usedProviderFallback: z.boolean().optional(),
   fromCassette: z.boolean(),
   schemaName: z.string().min(1),
   dataClassification: z.enum(["public", "internal", "confidential", "restricted"]).optional(),
   providerPolicyVersion: z.string().min(1).optional(),
   metadata: z.record(z.string(), z.string()).optional(),
+  validationIssues: z.array(z.object({
+    path: z.string(), code: z.string(), message: z.string(),
+    allowedValues: z.array(z.union([z.string(), z.number(), z.boolean()])).optional(),
+  })).optional(),
+  validationSource: z.enum(["schema", "deterministic"]).optional(),
 });

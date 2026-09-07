@@ -27,6 +27,7 @@ export type TaskKind =
   | "audit_evidence"
   | "localize"
   | "route_intent"
+  | "extract_semantic_objects"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";
@@ -51,8 +52,25 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   /** Zod schema of the expected structured output; also used to derive the provider JSON schema. */
   schema: TSchema;
   schemaName: string;
+  /**
+   * Optional deterministic acceptance gate applied after schema parsing and before an attempt can
+   * succeed. This is for contracts whose safety depends on semantics that JSON Schema cannot
+   * express (for example attributable-span coverage). A rejection participates in the same bounded
+   * same-model repair and provider-fallback rail as a schema rejection.
+   *
+   * Issues must be content-free: only stable paths/codes and generic messages are persisted or
+   * included in repair guidance.
+   */
+  validateOutput?: (output: z.infer<TSchema>) =>
+    | {accepted: true}
+    | {accepted: false; issues: ValidationIssueDiagnostic[]};
   /** Overrides the policy's primary model (must still be allowlisted). */
   model?: Partial<ModelRef>;
+  /**
+   * Disables provider fallback for a single request. Used by provider preflights that must prove
+   * each configured route independently instead of succeeding through another provider.
+   */
+  allowFallback?: boolean;
   maxOutputTokens?: number;
   timeoutMs?: number;
   /** Route to the policy's shadow model instead of the primary (second opinion). */
@@ -119,12 +137,26 @@ export type GatewayResult<T> = {
   costUsd: number;
   latencyMs: number;
   stopReason: StopReason;
-  /** True when the primary model failed/refused and a fallback produced this result. */
+  /** Legacy compatibility bit: true for any successful non-initial attempt. */
   usedFallback: boolean;
+  /** Unambiguous alias: true only when the successful attempt changed provider or model. */
+  usedProviderFallback?: boolean;
+  /** Zero for the first attempt; one for the bounded same-model schema repair. */
+  retryOrdinal?: number;
+  /** True only for the bounded prompted-JSON repair on the same model. */
+  isSameModelRepair?: boolean;
   /** True when the response came from a recorded cassette (tests/CI). */
   fromCassette: boolean;
   requestId?: string;
-  attempts: Array<{provider: Provider; model: string; outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected"; message?: string}>;
+  attempts: Array<{
+    provider: Provider;
+    model: string;
+    outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
+    message?: string;
+    retryOrdinal?: number;
+    isSameModelRepair?: boolean;
+    usedProviderFallback?: boolean;
+  }>;
 };
 
 export type ProviderErrorDiagnostic = {
@@ -142,12 +174,24 @@ export type ValidationIssueDiagnostic = {
   path: string;
   code: string;
   message: string;
+  /** Schema-owned enum members only; never contains the rejected provider value. */
+  allowedValues?: Array<string | number | boolean>;
 };
 
 export type GatewayCallLog = {
   invocationId: string;
+  /** Present only on a bounded same-model repair; identifies the rejected attempt it repairs. */
+  previousInvocationId?: string;
+  /** SHA-256 of the exact content-free repair guidance sent to the model. */
+  repairGuidanceFingerprint?: string;
+  /** SHA-256 of the stable path/code pairs rejected on this invocation. */
+  validationIssueCodeFingerprint?: string;
+  /** On a repair, the issue-code fingerprint of the rejected invocation it is repairing. */
+  repairValidationIssueCodeFingerprint?: string;
   task: TaskKind;
   provider: Provider;
+  /** Policy-selected request model. `model` may be the provider's resolved/versioned model name. */
+  configuredModel?: string;
   model: string;
   effort: Effort;
   outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
@@ -160,7 +204,14 @@ export type GatewayCallLog = {
   costStatus: "measured" | "unknown" | "cassette" | "not_called";
   latencyMs: number;
   stopReason: StopReason;
+  /** Legacy compatibility bit: true for any non-initial attempt. */
   usedFallback: boolean;
+  /** Zero for the first attempt; one for the bounded same-model schema repair. */
+  retryOrdinal?: number;
+  /** Distinguishes a schema repair from a provider/model fallback. */
+  isSameModelRepair?: boolean;
+  /** True only after moving from the primary provider/model to the configured fallback. */
+  usedProviderFallback?: boolean;
   fromCassette: boolean;
   schemaName: string;
   dataClassification?: DataHandlingContext["classification"];
@@ -168,6 +219,8 @@ export type GatewayCallLog = {
   metadata?: Record<string, string>;
   providerError?: ProviderErrorDiagnostic;
   validationIssues?: ValidationIssueDiagnostic[];
+  /** Identifies the deterministic builder needed to reconstruct a bounded repair prompt. */
+  validationSource?: "schema" | "deterministic";
 };
 
 export class ModelGatewayError extends Error {

@@ -1,29 +1,30 @@
-import {intentEnvelopeSchema, type PrimaryWork} from "@offroad/agent-contracts";
+import {compositionPolicy, intentEnvelopeSchema, type NamedComposition, type PrimaryWork} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 
 import {observeIntentObjectiveRoute, resolveIntentObjective} from "./intent-objective-resolution";
 
 function envelope(input: {
-  composition?: string | null;
+  composition?: NamedComposition | null;
   works: PrimaryWork[];
   depth?: "point" | "preliminary" | "institutional";
-  objects?: Array<"company" | "document" | "decision" | "operation" | "market">;
+  objects?: Array<"company" | "document" | "decision" | "operation" | "market" | "instrument">;
   audience?: string[];
   documentIds?: string[];
 }) {
   const explicit = <T>(value: T) => ({value, state: "explicit" as const});
   const system = <T>(value: T) => ({value, state: "system" as const});
+  const policy = input.composition ? compositionPolicy(input.composition) : null;
   return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
-      action: explicit(["analisar"]),
+      action: explicit([policy?.canonicalAction ?? "analyze"]),
       object: explicit((input.objects ?? ["company"]).map((kind) => ({kind}))),
       desiredOutcome: explicit("produzir o resultado profissional pedido"),
       decision: explicit(null),
       audience: explicit(input.audience ?? ["usuário"]),
-      depth: explicit(input.depth ?? "institutional"),
+      depth: explicit(policy?.depth ?? input.depth ?? "institutional"),
       continuity: explicit("new"),
-      workResponsibility: explicit(["producer"]),
+      workResponsibility: explicit(policy ? [...policy.workResponsibilities] : ["producer"]),
     },
     executionContext: {
       evidenceRegime: system(input.documentIds?.length ? "private_authorized" : "public"),
@@ -41,9 +42,9 @@ function envelope(input: {
       urgency: explicit(null),
       availableInputs: explicit([]),
     },
-    primaryWorks: input.works.map((work, index) => ({work, confidence: 0.95 - index * 0.05})),
+    primaryWorks: (policy?.primaryWorks ?? input.works).map((work, index) => ({work, confidence: 0.95 - index * 0.05})),
     composition: input.composition ?? null,
-    effect: "none",
+    effect: policy?.effect ?? "none",
     createdAt: "2026-09-07T12:00:00.000Z",
   });
 }
@@ -79,14 +80,15 @@ describe("semantic intent to objective resolution", () => {
     });
   });
 
-  it("names an unknown future composition as a coverage gap instead of inventing a generic plan", () => {
-    const composition = "new_model_composition";
-    const reasonCode = "unknown_named_composition";
-    const works = ["model"] as const;
-    expect(resolveIntentObjective(envelope({composition, works: [...works]}))).toMatchObject({
-      status: "coverage_gap",
-      objectiveKind: "ambiguous",
-      reasonCode,
+  it("supports an instrument explanation without forcing a company object", () => {
+    expect(resolveIntentObjective(envelope({
+      composition: "understand_company_sector_asset",
+      works: ["understand"],
+      objects: ["instrument"],
+    }))).toMatchObject({
+      status: "resolved",
+      objectiveKind: "factual_question",
+      reasonCode: "horizontal_understanding_without_company",
       requiredContext: [],
     });
   });

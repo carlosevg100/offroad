@@ -5,7 +5,7 @@
 Atualizado em: 2026-09-07T08:37:45.000-03:00
 Baseline: `main@b76016734e860358d8b9d2f076d47c527346b0d3`
 Capability Ledger: `2026.09.07-v13@cb5f674`
-Fingerprint do board: `76fb67d712d86cc314f67dad054149a5d4dbfb7eefb58d107be9ac8bb0dd1db0`
+Fingerprint do board: `fcc7d3122ee004c7318fa7bbb4c7889db1868dedf9a04ed952ef17f926a36b0a`
 
 ## Leitura executiva
 
@@ -37,7 +37,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 
 | ID | Estado | Resultado | Dependências | Bloqueadores abertos |
 |---|---|---|---|---|
-| RT-01 | Em implementação | Intenção, objeto, trabalho, entrega, audiência e continuidade resolvidos sem cargo como regra. | CTRL-02 | sem blocker |
+| RT-01 | Code complete | Intenção, objeto, trabalho, entrega, audiência e continuidade resolvidos sem cargo como regra. | CTRL-02 | sem blocker |
 | RT-02 | Backlog | Contexto autorizado e objetos existentes são recuperados, classificados e reaproveitados somente quando relevantes. | RT-01 | sem blocker |
 | RT-03 | Backlog | O produto solicitado define o terminal e muda o grafo antes da execução. | RT-01 | sem blocker |
 | RT-04 | Backlog | Necessidade, análise, instrumento, setor e jurisdição compõem profundidade sem soluções fragmentadas. | RT-01, RT-03 | sem blocker |
@@ -145,25 +145,6 @@ Critérios de aceite:
 - CTRL-01.AC02: Toda divergência material aparece como finding com owner · **pending**
 - CTRL-01.AC03: Nenhuma capacidade é promovida pela reconciliação · **passed** · EV-CAPABILITY-LEDGER
 
-### RT-01: Intent Envelope universal
-
-Estado: **Em implementação** · owner: Intent and work-control engineer
-
-Subtarefas:
-
-- [ ] RT-01.01: Consolidar núcleo inferível e contexto governado (in_progress)
-- [ ] RT-01.02: Bloquear inferência de autoridade e evidence regime (pending)
-- [ ] RT-01.03: Cobrir intenção sem companhia (pending)
-- [ ] RT-01.04: Ampliar corpus gold e adversarial (pending)
-
-Critérios de aceite:
-
-- RT-01.AC01: Paráfrases preservam identidade de workflow · **passed** · EV-INTENT-GATE
-- RT-01.AC02: Intenções economicamente diferentes não colapsam · **pending**
-- RT-01.AC03: Autoridade nunca é inferida · **pending**
-
-Transição planejada: `intent.semantic-envelope-shadow` · implemented → tested (planned).
-
 ### MAT-01: Apresentação governada
 
 Estado: **Bloqueado** · owner: Governed materials engineer
@@ -213,5 +194,6 @@ Critérios de aceite:
 | EV-PR523 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/523 |
 | EV-PR523-E2E | ci_run | ci | https://github.com/carlosevg100/offroad/actions/runs/34114239951/job/101717356881 |
 | EV-INTENT-GATE | ci_run | ci | https://github.com/carlosevg100/offroad/actions/runs/34096964058 |
+| EV-RT01-LOCAL | test | repository | packages/evals/src/intent-router-gate.test.ts |
 | EV-CTRL02-LOCAL-GATE | test | repository | packages/release-governance/src/endgame-program-board.test.ts |
 

@@ -13,14 +13,14 @@ function envelope(overrides: Record<string, unknown> = {}) {
   return intentEnvelopeSchema.parse({
     schemaVersion: "intent-envelope.v1",
     routingCore: {
-      action: {value: ["levantar", "compreender"], state: "inferred", confidence: 0.8},
+      action: {value: ["prepare_meeting"], state: "inferred", confidence: 0.8},
       object: {value: [{kind: "company", reference: "Camil"}], state: "explicit"},
       desiredOutcome: {value: "material revisável para o VP", state: "inferred", confidence: 0.7},
       decision: {value: "qual tese levar", state: "inferred", confidence: 0.6},
       audience: {value: ["vp"], state: "explicit"},
       depth: {value: "preliminary", state: "inferred", confidence: 0.7},
       continuity: {value: "new", state: "inferred", confidence: 0.9},
-      workResponsibility: {value: ["producer"], state: "explicit"},
+      workResponsibility: {value: ["producer", "coordinator"], state: "explicit"},
     },
     executionContext: {
       evidenceRegime: {value: "public", state: "system"},
@@ -38,7 +38,7 @@ function envelope(overrides: Record<string, unknown> = {}) {
       urgency: {value: "this_week", state: "inferred", confidence: 0.8},
       availableInputs: {value: ["conversa"], state: "explicit"},
     },
-    primaryWorks: [{work: "understand", confidence: 0.8}, {work: "capital_strategy", confidence: 0.6}],
+    primaryWorks: [{work: "understand", confidence: 0.8}, {work: "capital_strategy", confidence: 0.7}, {work: "model", confidence: 0.6}],
     composition: "prepare_meeting",
     effect: "none",
     createdAt: now,
@@ -56,7 +56,7 @@ describe("intent envelope v1", () => {
 
   it("requires a confidence on anything inferred, so an inference stays corrigible", () => {
     expect(() => envelope({
-      routingCore: {...envelope().routingCore, depth: {value: "institutional", state: "inferred"}},
+      routingCore: {...envelope().routingCore, depth: {value: "preliminary", state: "inferred"}},
     })).toThrow(/confidence/);
   });
 
@@ -75,13 +75,21 @@ describe("intent envelope v1", () => {
       for (const work of composition.primaryWorks) expect(works.has(work)).toBe(true);
     }
     expect(atlasIds.size).toBe(20);
-    expect(namedCompositions.review_work.modifiers.workResponsibility).toBe("reviewer");
-    expect(namedCompositions.introduce.modifiers.effect).toBe("external");
+    expect(namedCompositions.review_work.workResponsibilities).toContain("reviewer");
+    expect(namedCompositions.introduce.effect).toBe("external");
   });
 
   it("refuses prose in the classifier composition field", () => {
     const classifier = {
-      routingCore: envelope().routingCore,
+      routingCore: {
+        action: {value: ["prepare_meeting"], state: "inferred", confidence: 0.9},
+        object: {value: [{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Camil"}]}], state: "explicit", confidence: 1},
+        decisionType: {value: "capital", state: "inferred", confidence: 0.9},
+        audienceType: {value: "internal_senior", state: "explicit", confidence: 1},
+        depth: {value: "preliminary", state: "inferred", confidence: 0.9},
+        continuity: {value: "new", state: "explicit", confidence: 1},
+        workResponsibility: {value: ["producer"], state: "inferred", confidence: 0.9},
+      },
       inferableContext: {
         jurisdiction: {value: ["BR"], state: "inferred", confidence: 0.9},
         asOfDate: {value: null, state: "unknown"},

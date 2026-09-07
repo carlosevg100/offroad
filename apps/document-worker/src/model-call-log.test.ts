@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {GatewayCallLog} from "@offroad/model-gateway";
 
-import {modelCallLogDetail, safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
+import {modelCallLogDetail, safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend, safeSuccessfulModelCall} from "./model-call-log";
 
 const call: GatewayCallLog = {
   invocationId: "10000000-0000-4000-8000-000000000001",
@@ -23,6 +23,10 @@ const call: GatewayCallLog = {
   schemaName: "live_preview_routing_output",
   metadata: {surface: "live_preview_router", accidentalFutureContent: "must-not-be-logged"},
   validationIssues: [{path: "routingCore.action", code: "invalid_type", message: "rejected value must-not-be-logged"}],
+  previousInvocationId: "10000000-0000-4000-8000-000000000000",
+  repairGuidanceFingerprint: "d".repeat(64),
+  validationIssueCodeFingerprint: "e".repeat(64),
+  repairValidationIssueCodeFingerprint: "f".repeat(64),
 };
 
 describe("modelCallLogDetail", () => {
@@ -31,17 +35,32 @@ describe("modelCallLogDetail", () => {
     expect(detail).toMatchObject({
       job: "20000000-0000-4000-8000-000000000002",
       task: "route_intent",
+      provider: "anthropic",
+      model: "claude-sonnet-5",
       outcome: "invalid_output",
       providerHttpStatus: null,
       providerFailureCategory: "unknown",
       validationIssueCount: 1,
+      previousInvocationId: "10000000-0000-4000-8000-000000000000",
+      repairGuidanceFingerprint: "d".repeat(64),
+      validationIssueCodeFingerprint: "e".repeat(64),
+      repairValidationIssueCodeFingerprint: "f".repeat(64),
     });
     expect(JSON.stringify(detail)).not.toContain("must-not-be-logged");
     expect(detail).not.toHaveProperty("metadata");
-    expect(detail).not.toHaveProperty("model");
     expect(detail).not.toHaveProperty("schemaName");
     expect(detail).not.toHaveProperty("providerError");
     expect(detail).not.toHaveProperty("validationIssues");
+  });
+
+  it("persists only allowlisted successful provider/model lineage", () => {
+    expect(safeSuccessfulModelCall({...call, retryOrdinal: 1, isSameModelRepair: true})).toMatchObject({
+      provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 1,
+      isSameModelRepair: true, usedProviderFallback: false,
+    });
+    expect(safeSuccessfulModelCall({...call, provider: "customer-secret", model: "customer-secret-model"})).toMatchObject({
+      provider: "unknown", model: "unknown",
+    });
   });
 
   it("reduces malicious provider strings to closed values and counts", () => {
@@ -54,6 +73,10 @@ describe("modelCallLogDetail", () => {
       providerError: {name: "customer-secret-error", status: 429, code: "customer-secret-code", type: "customer-secret-type"},
       validationIssues: [{path: "customer.secret.account", code: "customer-secret-code", message: "customer-secret-message"}],
       promptFingerprint: "customer-secret-prompt",
+      previousInvocationId: "customer-secret-previous-id",
+      repairGuidanceFingerprint: "customer-secret-guidance",
+      validationIssueCodeFingerprint: "customer-secret-issues",
+      repairValidationIssueCodeFingerprint: "customer-secret-repair-issues",
     } satisfies GatewayCallLog;
 
     const detail = modelCallLogDetail("20000000-0000-4000-8000-000000000002", poisoned);
@@ -85,5 +108,14 @@ describe("modelCallLogDetail", () => {
       latencyMs: null,
       costUsd: null,
     });
+  });
+
+  it("keeps legacy fallback telemetry while distinguishing repair from provider fallback", () => {
+    const repair = {...call, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false};
+    const fallback = {...call, outcome: "ok" as const, retryOrdinal: 0, isSameModelRepair: false, usedFallback: true, usedProviderFallback: true};
+    expect(safeModelAttemptDiagnostics([repair, fallback])).toMatchObject([
+      {usedFallback: false, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false},
+      {usedFallback: true, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true},
+    ]);
   });
 });

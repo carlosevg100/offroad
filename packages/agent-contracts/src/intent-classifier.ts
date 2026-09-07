@@ -2,14 +2,20 @@ import {z} from "zod";
 
 import {
   intentContinuitySchema,
+  canonicalIntentActionSchema,
+  intentAudienceTypeSchema,
+  intentDecisionTypeSchema,
   intentDepthSchema,
+  intentObjectCardinalityLimit,
   intentObjectKindSchema,
+  intentObjectSlotKeySchema,
+  compositionPolicy,
+  intentCompositionPolicyPrompt,
   namedCompositionSchema,
   primaryWorkSchema,
+  resolveCompositionPrimaryWorks,
   workResponsibilitySchema,
   type NamedComposition,
-  type PrimaryWork,
-  type WorkResponsibility,
 } from "./intent-envelope";
 
 export const intentClassifierInputSchema = z.object({
@@ -47,20 +53,53 @@ const inferredClassifierField = <T extends z.ZodTypeAny>(value: T) => z.object({
   basis: z.string().max(200).nullish(),
 });
 
+const classifierObjectSlotsSchema = z.array(z.object({
+  key: intentObjectSlotKeySchema,
+  value: z.string().min(1).max(200),
+})).max(12).superRefine((slots, ctx) => {
+  const keys = new Set<string>();
+  for (const [index, slot] of slots.entries()) {
+    if (keys.has(slot.key)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "key"], message: "slot keys are unique within an object"});
+    keys.add(slot.key);
+  }
+});
+
+const classifierObjectInstancesSchema = z.array(z.object({
+  id: z.string().regex(/^object-[1-9]\d*$/),
+  ordinal: z.number().int().min(1).max(intentObjectCardinalityLimit),
+  kind: intentObjectKindSchema,
+  slots: classifierObjectSlotsSchema,
+}).strict()).max(intentObjectCardinalityLimit).superRefine((objects, ctx) => {
+  const ids = new Set<string>();
+  const ordinals = new Set<number>();
+  for (const [index, object] of objects.entries()) {
+    if (ids.has(object.id)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "id"], message: "object ids are unique"});
+    if (ordinals.has(object.ordinal)) ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "ordinal"], message: "object ordinals are unique"});
+    if (object.id !== `object-${object.ordinal}`) {
+      ctx.addIssue({code: z.ZodIssueCode.custom, path: [index, "id"], message: "object id matches its ordinal"});
+    }
+    ids.add(object.id);
+    ordinals.add(object.ordinal);
+  }
+  const ordered = [...ordinals].sort((left, right) => left - right);
+  if (ordered.some((ordinal, index) => ordinal !== index + 1)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, message: "object ordinals are contiguous from one"});
+  }
+});
+
 export const intentClassifierOutputSchema = z.object({
   routingCore: z.object({
     // Empty lists are representable at the model boundary so an honest abstention is valid JSON.
     // `canonicalizeIntentClassifierOutput` then supplies a fail-closed envelope shape; the
     // persisted contract remains strict and never accepts an empty routing core.
-    action: inferredClassifierField(z.array(z.string().min(1).max(400)).max(16)),
-    object: inferredClassifierField(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).max(24)),
-    desiredOutcome: inferredClassifierField(z.string().max(1_200)),
-    decision: inferredClassifierField(z.string().max(1_200).nullable()),
-    audience: inferredClassifierField(z.array(z.string().min(1).max(200)).max(12)),
+    action: inferredClassifierField(z.array(canonicalIntentActionSchema).max(1)),
+    object: inferredClassifierField(classifierObjectInstancesSchema),
+    decisionType: inferredClassifierField(intentDecisionTypeSchema),
+    audienceType: inferredClassifierField(intentAudienceTypeSchema),
     depth: inferredClassifierField(intentDepthSchema),
     continuity: inferredClassifierField(intentContinuitySchema),
     workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).max(8)),
-  }),
+  }).strict(),
   inferableContext: z.object({
     jurisdiction: inferredClassifierField(z.array(z.string().min(1).max(40)).max(8)),
     asOfDate: inferredClassifierField(z.string().max(40).nullable()),
@@ -77,7 +116,7 @@ export const intentClassifierOutputSchema = z.object({
   firstQuestion: z.string().max(600).nullable(),
   abstain: z.boolean(),
   abstainReason: z.string().max(600).nullable(),
-});
+}).strict();
 export type IntentClassifierOutput = z.infer<typeof intentClassifierOutputSchema>;
 
 const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => locale === "pt-BR"
@@ -87,93 +126,151 @@ const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => 
 const normalizeForPolicy = (value: string): string => value
   .normalize("NFKD")
   .replace(/[\u0300-\u036f]/g, "")
-  .toLocaleLowerCase("pt-BR");
+  .toLocaleLowerCase("pt-BR")
+  // Expand common English negative contractions before cue polarity is evaluated. Curly
+  // apostrophes survive NFKD, so both forms are intentional.
+  .replace(/\b(?:don['’]t|doesn['’]t|didn['’]t|won['’]t|wouldn['’]t|shouldn['’]t|can['’]t|cannot|couldn['’]t|isn['’]t|aren['’]t|wasn['’]t|weren['’]t|haven['’]t|hasn['’]t|hadn['’]t)\b/g, " not ");
 
-const worksByComposition: Partial<Record<NamedComposition, readonly PrimaryWork[]>> = {
-  find_and_organize_information: ["find_and_organize"],
-  extract_and_reconcile_data: ["extract_and_reconcile"],
-  understand_company_sector_asset: ["understand"],
-  answer_a_question: ["extract_and_reconcile"],
-  analyze_performance_and_credit: ["analyze", "model"],
-  build_or_review_model: ["model"],
-  diagnose_capital_structure: ["capital_strategy", "analyze", "model"],
-  develop_alternatives: ["capital_strategy", "analyze", "model"],
-  design_indicative_structure: ["capital_strategy", "analyze"],
-  read_contract_covenant_waterfall: ["read_documents", "analyze"],
-  prepare_meeting: ["understand", "capital_strategy", "model"],
-  prepare_material: ["capital_strategy", "analyze", "model"],
-  review_work: ["analyze"],
-  prepare_decision: ["capital_strategy", "analyze", "model"],
-  evaluate_received_opportunity: ["analyze", "read_documents"],
-  map_market_and_precedents: ["market"],
-  identify_capital: ["capital_match", "market"],
-  introduce: ["capital_match"],
-  monitor: ["find_and_organize", "extract_and_reconcile", "analyze"],
-  manage_work: ["find_and_organize"],
-};
-
-const depthByComposition: Partial<Record<NamedComposition, "point" | "preliminary" | "institutional">> = {
-  find_and_organize_information: "preliminary",
-  understand_company_sector_asset: "preliminary",
-  answer_a_question: "point",
-  analyze_performance_and_credit: "preliminary",
-  build_or_review_model: "institutional",
-  diagnose_capital_structure: "institutional",
-  develop_alternatives: "preliminary",
-  design_indicative_structure: "institutional",
-  read_contract_covenant_waterfall: "institutional",
-  prepare_meeting: "preliminary",
-  prepare_material: "institutional",
-  review_work: "institutional",
-  prepare_decision: "institutional",
-  evaluate_received_opportunity: "preliminary",
-  map_market_and_precedents: "preliminary",
-  identify_capital: "preliminary",
-  introduce: "institutional",
-  monitor: "preliminary",
-  manage_work: "point",
-};
-
-const responsibilitiesByComposition: Partial<Record<NamedComposition, readonly WorkResponsibility[]>> = {
-  design_indicative_structure: ["producer", "coordinator"],
-  prepare_meeting: ["producer", "coordinator"],
-  prepare_material: ["producer", "coordinator"],
-  review_work: ["producer", "reviewer"],
-  prepare_decision: ["producer", "sponsor"],
-  evaluate_received_opportunity: ["producer", "reviewer"],
-  identify_capital: ["producer", "coordinator"],
-  introduce: ["coordinator"],
-  manage_work: ["coordinator"],
-};
-
-function policyResponsibilities(composition: NamedComposition, input: IntentClassifierInput): readonly WorkResponsibility[] {
-  const base = responsibilitiesByComposition[composition] ?? ["producer"] as const;
-  const text = normalizeForPolicy(input.latestUserMessage);
-  const ownsDecision = /\b(a decisao(?:\s+de\s+[^.!?]{1,120})?\s+(?:e|eh)\s+minha|eu decido|decisao cabe a mim|i own the decision|my decision)\b/.test(text);
-  return composition === "prepare_decision" && ownsDecision ? [...base, "decision_maker"] : base;
+/** A deterministic override is allowed only for an affirmative cue in its own clause. */
+function hasAffirmedCue(text: string, cue: RegExp): boolean {
+  const flags = cue.flags.includes("g") ? cue.flags : `${cue.flags}g`;
+  for (const match of text.matchAll(new RegExp(cue.source, flags))) {
+    const before = text.slice(Math.max(0, (match.index ?? 0) - 100), match.index ?? 0);
+    const after = text.slice((match.index ?? 0) + match[0].length, (match.index ?? 0) + match[0].length + 100);
+    const clause = before.split(/[.;!?\x0a]|\b(?:mas|porem|contudo|apenas|somente|but|however|only)\b/).at(-1) ?? "";
+    const rejectedAfterQuestion = /^[^.;!\x0a]{0,80}\?\s*(?:nao|not|no)\b/.test(after);
+    if (!/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause) && !rejectedAfterQuestion) return true;
+  }
+  return false;
 }
 
-/** High-precision, auditable rules take precedence only when the person's wording is explicit. */
-function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
-  const text = normalizeForPolicy(input.latestUserMessage);
+/** External side effects require a direct user command, never mere lexical co-occurrence. */
+function hasExplicitExternalOutreach(text: string): boolean {
+  const courtesy = /^(?:(?:ja|agora|por favor|please)\s+)*/;
+  const imperative = /(?:envie|manda|mande|compartilhe|conecte|introduza|apresente|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
+  const modalCommand = /(?:(?:pode|podem|can you|quero que|vamos)\s+)(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
+  const directCommand = new RegExp(`${courtesy.source}(?:${imperative.source}|${modalCommand.source})`);
+  const rejected = /\b(?:nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid|proibid[oa]|forbidden|not allowed|fora de questao|nem pensar|de jeito nenhum|absolutely not|definitely not)\b/;
+  const command = text.match(directCommand);
+  if (!command || rejected.test(text)) return false;
+  const modalAtStart = /^(?:(?:ja|agora|por favor|please)\s+)*(?:pode|podem|can you|quero que|vamos)\s+/;
+  if (text.endsWith("?") && !modalAtStart.test(text)) return false;
+
+  // External effects use a closed grammar for the complete clause: command, bounded direct
+  // object, destination preposition and provider. This prevents a leading word such as "send"
+  // in a label or explanation from combining with "investors" later in the sentence.
+  const remainder = text.slice(command[0].length).trim();
+  const routed = remainder.match(/^(?:(?:this|that|these|those|isso|isto)|(?:a|o|as|os|esse|essa|este|esta|da|do|das|dos|the)\s+[a-z0-9_-]+)\s+(?:a|ao|aos|para|to)\s+(?:(?:os|as|the|tres|three|\d+)\s+)?(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)(.*)$/);
+  if (!routed) return false;
+
+  // Once the provider target is named, only a bounded fit/selection qualifier and terminal
+  // punctuation may follow. Any answer, predicate, retraction or other prose fails closed.
+  const tail = routed[2]!.trim();
+  return /^(?:(?:selecionad[oa]s?|aderentes?|compativeis?|selected|best[- ]?fit)|(?:de|of)\s+(?:credito|credit)|(?:com|with)\s+(?:(?:a|the)\s+)?(?:melhor|best)\s+(?:aderencia|fit)|que\s+(?:(?:voce|you)\s+)?(?:achar|considerar|find|consider)\s+(?:mais\s+|most\s+)?(?:aderentes?|compativeis?|best[- ]?fit)|que\s+(?:tiverem|tenham|have)\s+fit)?[.!?]?$/.test(tail);
+}
+
+/** Classify one affirmative, user-authored clause. Cross-clause noun/verb joins are forbidden. */
+function explicitCompositionForClause(input: IntentClassifierInput, text: string): NamedComposition | null {
   const hasPrior = input.recentConversation.length > 0;
   const material = /\b(material|deck|pitch|memo|one[- ]?pager|apresentacao|presentation|paginas?|pages?|planilha|spreadsheet)\b/.test(text);
   const meeting = /\b(reuniao|meeting|conversa|conversation)\b/.test(text);
   const materialTransition = hasPrior && /\b(gostei|selecion\w*|escolh\w*|vamos preparar|prepare the material|liked|selected|chosen)\b/.test(text);
   const specifiedMaterial = /\b(\d+|tres|three)\s*(paginas?|pages?)\b/.test(text)
     || /\b(deck|memo|one[- ]?pager|planilha|spreadsheet)\b/.test(text);
+  const materialCreation = hasAffirmedCue(text, /\b(produz\w*|prepar\w*|cri\w*|monte|montar|gere|gerar|build|create|produce|prepare|draft|generate)\b/);
 
-  if (/\b(ajusta|ajustar|altera|alterar|atualiza|atualizar|recalcula|recalcular|change|update|recalculate)\b/.test(text)
+  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produz\w*|faz\w*|cri\w*|prepar\w*|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text)
+    || /\b(?:material|deck|pitch|memo|arquivo|file)\b[^.;!\x0a]{0,60}\?\s*(?:nao|not|no)\b/.test(text);
+  const externalOutreach = hasExplicitExternalOutreach(text);
+
+  if (hasAffirmedCue(text, /\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/)
     && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
-  if (/\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/.test(text)
-    || (/\b(por que|why)\b/.test(text) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
-  if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
-  if (/\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/.test(text)) return "find_and_organize_information";
-  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|decision)\b/.test(text)) return "prepare_decision";
-  if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical)\b/.test(text)) return "review_work";
-  if (material && (specifiedMaterial || materialTransition)) return "prepare_material";
+  if (hasAffirmedCue(text, /\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/)
+    || (hasAffirmedCue(text, /\b(por que|why)\b/) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
+  if (hasAffirmedCue(text, /\b(diferenca|difference|como funciona|how does|explique|explain|o que e|what is)\b/)
+    && /\b(debenture|fidc|ccb|bond|loan|instrumento|instrument)\b/.test(text)) return "answer_a_question";
+  if (hasAffirmedCue(text, /\b(construa|construir|monte|montar|revise|revisar|build|review|audit)\b/)
+    && /\b(modelo|model|forecast|projecao|projection)\b/.test(text)) return "build_or_review_model";
+  if (/\b(covenant|headroom)\b/.test(text) && hasAffirmedCue(text, /\b(aguenta|suporta|holds?|cobertura|coverage)\b/)) return "analyze_performance_and_credit";
+  if (/\b(covenant|headroom|folga)\b/.test(text) && hasAffirmedCue(text, /\b(teste|testar|analise|analisar|teste?\b|holds?)\b/)
+    && !/\b(clausula|clause|formula|waterfall)\b/.test(text)) return "analyze_performance_and_credit";
+  if (hasAffirmedCue(text, /\b(leia|ler|analise|analisar|teste|testar|read|analy[sz]e|test)\b/)
+    && /\b(contrato|contract|clausula|clause|covenant|waterfall|escritura|indenture)\b/.test(text)) return "read_contract_covenant_waterfall";
+  if (hasAffirmedCue(text, /\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/)) return "find_and_organize_information";
+  if (hasAffirmedCue(text, /\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/)) return "extract_and_reconcile_data";
+  if (hasAffirmedCue(text, /\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/)) return "manage_work";
+  if (externalOutreach) return "introduce";
+  if (hasAffirmedCue(text, /\b(quem financiaria|quais fundos|matching|capital aderente|who would finance|which funds|find capital)\b/)
+    || hasAffirmedCue(text, /\bidentifi\w*\b[^.;!\x0a]{0,60}\b(investidores?|fundos?|financiadores?|investors?|funds?|lenders?|providers?)\b/)) return "identify_capital";
+  if (hasAffirmedCue(text, /\b(monitor\w*|acompanh\w*|avise quando|todo trimestre|track|alert me|quarterly)\b/)) return "monitor";
+  if (hasAffirmedCue(text, /\b(mapeie|mapear|levante|pesquise|map|research|como esta|how is)\b[^.;!\x0a]{0,60}\b(mercado|emissoes|comparaveis|precedentes|pricing|spread|market|issuances|comparables|precedents)\b/)
+    || hasAffirmedCue(text, /\b(comparaveis|precedentes|condicoes de mercado|pricing|comparables|precedents|market conditions)\b/)) return "map_market_and_precedents";
+  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text)
+    && hasAffirmedCue(text, /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|recomend\w*|prepar\w*|decision)\b/)) return "prepare_decision";
+  if (hasAffirmedCue(text, /\b(revise|revisar|review|critique|criticar|cetico|skeptical|controle de qualidade|quality control)\b/)) return "review_work";
+  if (material && !negatedMaterial && ((specifiedMaterial && materialCreation) || materialTransition)) return "prepare_material";
   if (material && meeting) return "prepare_meeting";
+  if (hasAffirmedCue(text, /\b(recebi|recebemos|received)\b/) && /\b(proposta|deal|oportunidade|opportunity|term sheet)\b/.test(text)) return "evaluate_received_opportunity";
+  if (hasAffirmedCue(text, /\b(estruture|estruturar|desenhe|desenhar|structure|design)\b/)
+    && /\b(operacao|operation|recebiveis|receivables|divida|debt|term sheet)\b/.test(text)) return "design_indicative_structure";
+  if (hasAffirmedCue(text, /\b(compare|comparar|avalie|avaliar|explore|explorar|compare|evaluate|explore)\b[^.;!\x0a]{0,60}\b(alternativas|opcoes|caminhos|alternatives|options|paths)\b/)) return "develop_alternatives";
+  if (hasAffirmedCue(text, /\b(diagnostique|diagnosticar|diagnose)\b/)
+    || hasAffirmedCue(text, /\b(vencimentos|maturity|liquidez|liquidity|estrutura de capital|capital structure|refinanc|repricing)\b/)) return "diagnose_capital_structure";
+  if (hasAffirmedCue(text, /\b(qualidade de credito|credit quality|risco de credito|credit risk|desempenho financeiro|financial performance)\b/)) return "analyze_performance_and_credit";
+  if (hasAffirmedCue(text, /\b(entender|entenda|compreender|understand|explique|explain)\b/)) return "understand_company_sector_asset";
+  if (hasAffirmedCue(text, /\b(levante|localize|ache|baixe|organize|atualize|find|locate|download|organize|update)\b/)) return "find_and_organize_information";
   return null;
+}
+
+/**
+ * High-precision deterministic overrides are intentionally narrower than the model. We remove
+ * quoted/reported source text, rejected rhetorical questions and negative clauses, then accept an
+ * override only when every remaining actionable clause agrees. A conflicting or incomplete turn
+ * stays with the semantic model instead of being guessed from isolated keywords.
+ */
+function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
+  const containsQuotedContent = /["'“”‘’]/.test(input.latestUserMessage);
+  const normalized = normalizeForPolicy(input.latestUserMessage)
+    .replace(/"[^"]*"|'[^']*'|“[^”]*”|‘[^’]*’/g, " ")
+    .replace(/\b(?:source text|source|texto fonte|noticia|documento|contrato)\b[^.;!\x0a]{0,80}\b(?:says?|said|diz|disse|contem a frase)\b[^.;!\x0a]*/g, " ")
+    .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no|nem pensar|de jeito nenhum|absolutely not|definitely not)\b[^.;!\x0a]*/g, " ");
+  const clauses = normalized
+    // Keep question marks inside a clause. `Can you send this?` remains an explicit request,
+    // while `Send this? I refuse` reaches the closed external grammar as one rejected clause.
+    .split(/[.;!\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
+    .map((clause) => clause.trim())
+    .filter(Boolean);
+  const affirmativeClauses = clauses
+    .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause));
+  const exclusive = affirmativeClauses.filter((clause) => /^(?:apenas|somente|so|only|just)\b/.test(clause));
+  const candidates = (exclusive.length > 0 ? exclusive : affirmativeClauses)
+    .map((clause) => explicitCompositionForClause(input, clause))
+    .filter((composition): composition is NamedComposition => composition !== null);
+  const unique = [...new Set(candidates)];
+  if (unique.length === 1 && unique[0] === "introduce") {
+    // Quoted content may be a source instruction, a retraction or an emphasized refusal. The
+    // classifier is not an authorization boundary, so any quotation makes external intent
+    // ambiguous and must be confirmed through a governed path.
+    if (containsQuotedContent) return null;
+    const commandIndex = clauses.findIndex(hasExplicitExternalOutreach);
+    // Once an external command appears, any later authored clause makes its final polarity
+    // unresolved. Fail closed instead of discarding a retraction as an "irrelevant" clause.
+    if (commandIndex < 0 || clauses.slice(commandIndex + 1).some(Boolean)) return null;
+  }
+  return unique.length === 1 ? unique[0]! : null;
+}
+
+/** Requests that explicitly delegate the missing objective, fabricate evidence or route by title. */
+function requiresObjectiveClarification(input: IntentClassifierInput): boolean {
+  const text = normalizeForPolicy(input.latestUserMessage);
+  const asksToFabricate = /\b(invente|inventar|fabrique|fabricar|invent|fabricate|make up)\b/.test(text)
+    && /\b(companhia|empresa|company|documentos?|documents?|evidencias?|evidence)\b/.test(text);
+  const asksToGuessObjective = /\b(conclua|descubra|adivinhe|infira|guess|infer|determine)\b/.test(text)
+    && /\b(qual operacao|o que eu quero|meu objetivo|which operation|what i want|my objective)\b/.test(text);
+  const routesByTitleOnly = /\b(normalmente|padrao|tipic[oa]|normally|standard|typical)\b/.test(text)
+    && /\b(cargo|posicao|funcao|managing director|diretor|analista|banker|role|position|title)\b/.test(text)
+    && !/\b(companhia|empresa|company|contrato|contract|modelo|model|operacao|operation|material|documento|document|mercado|market)\b/.test(text);
+  return asksToFabricate || asksToGuessObjective || routesByTitleOnly;
 }
 
 const policyField = <T>(value: T, composition: NamedComposition) => ({
@@ -193,10 +290,110 @@ function policyContinuity(
   if (/\b(esquece|ignora|novo trabalho|forget|ignore|new task)\b/.test(text)) return policyField("new" as const, composition);
   if (composition === "build_or_review_model"
     && /\b(ajusta|altera|atualiza|recalcula|change|update|recalculate)\b/.test(text)) return policyField("refresh" as const, composition);
+  if (input.recentConversation.length === 0) return policyField("new" as const, composition);
   if (input.recentConversation.length > 0 && [
     "answer_a_question", "review_work", "prepare_material", "prepare_decision", "introduce", "map_market_and_precedents",
   ].includes(composition)) return policyField("resume" as const, composition);
   return output.routingCore.continuity;
+}
+
+/**
+ * Decision domain is a workflow axis, not a second model-authored description of the request.
+ * Most compositions determine it completely. The few polymorphic families use only the current
+ * request and governed active context; a job title never changes the domain.
+ */
+function policyDecisionType(
+  composition: NamedComposition,
+  input: IntentClassifierInput,
+): IntentClassifierOutput["routingCore"]["decisionType"] {
+  // Policy fields may be derived from the current user instruction or from a separately
+  // governed active-work projection. Free-form conversation history is neither: assistant prose
+  // can describe hypothetical domains and old user turns can have been superseded. Until the
+  // governed projection is wired into this contract, current-turn evidence is the only safe
+  // lexical source for polymorphic decision families.
+  const text = normalizeForPolicy(input.latestUserMessage);
+  const fixed: Partial<Record<NamedComposition, IntentClassifierOutput["routingCore"]["decisionType"]["value"]>> = {
+    find_and_organize_information: "none",
+    understand_company_sector_asset: "none",
+    answer_a_question: "none",
+    extract_and_reconcile_data: "document",
+    read_contract_covenant_waterfall: "document",
+    analyze_performance_and_credit: "credit",
+    evaluate_received_opportunity: "credit",
+    diagnose_capital_structure: "capital",
+    develop_alternatives: "capital",
+    design_indicative_structure: "capital",
+    prepare_meeting: "capital",
+    prepare_material: "material",
+    prepare_decision: "capital",
+    map_market_and_precedents: "market",
+    identify_capital: "market",
+    introduce: "external",
+    manage_work: "workflow",
+  };
+  let value = fixed[composition];
+  if (!value && composition === "monitor") {
+    value = /\b(mercado|emiss\w*|spread|market|issuance|pricing)\b/.test(text) ? "market" : "credit";
+  }
+  if (!value && composition === "build_or_review_model") {
+    const updatesCapitalScenario = /\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/.test(normalizeForPolicy(input.latestUserMessage))
+      && /\b(cenario|scenario|taxa|rate|prazo|tenor|cdi|indexador|indexer)\b/.test(normalizeForPolicy(input.latestUserMessage));
+    value = updatesCapitalScenario ? "capital" : "credit";
+  }
+  if (!value && composition === "review_work") {
+    value = /\b(estrutura de capital|capital structure|refinanc|alongamento|emissao|issuance)\b/.test(text)
+      ? "capital"
+      : /\b(contrato|contract|documento|document|clausula|clause)\b/.test(text) ? "document" : "credit";
+  }
+  value ??= "none";
+  return value === "none"
+    ? {value, state: "not_applicable", confidence: null, basis: `deterministic policy for ${composition}`}
+    : policyField(value, composition);
+}
+
+/** Audience means the consumer or external counterparty of this work, never the subject analysed. */
+function policyAudienceType(
+  composition: NamedComposition,
+  input: IntentClassifierInput,
+): IntentClassifierOutput["routingCore"]["audienceType"] {
+  const current = normalizeForPolicy(input.latestUserMessage);
+  // Only user-authored history is a permissible fallback. Assistant prose is never evidence of
+  // the requested audience. A governed active-work context will eventually replace this fallback.
+  const userHistory = normalizeForPolicy(input.recentConversation
+    .filter(({role}) => role === "user")
+    .map(({content}) => content)
+    .join("\n"));
+  const replacesBoardContext = /\b(esquece|ignora|forget|ignore)\b[^.\n]{0,40}\b(conselh\w*|board|comite\w*|committee)\b/.test(current);
+
+  // An audience named in the current instruction always wins over composition defaults. This
+  // matters for requests such as "build the model for my VP" and "shortlist lenders for my VP".
+  if (!replacesBoardContext && /\b(conselh\w*|board|comite\w*|committee)\b/.test(current)) {
+    return policyField("board_or_committee" as const, composition);
+  }
+  if (/\b(?:(?:para|pro|ao|a|for|to)\s+)?(?:o|a|the)?\s*(?:meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(current)) {
+    return policyField("internal_senior" as const, composition);
+  }
+  if (/\b(?:para|pro|ao|aos|for|to)\s+(?:(?:o|a|os|as|the)\s+)?(?:cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current)
+    || (composition === "prepare_meeting" && /\b(?:com|with)\s+(?:(?:o|a|the)\s+)?(?:cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current))) {
+    return policyField("company_management" as const, composition);
+  }
+  if (/\b(?:para|aos|for|to)\s+(?:(?:os|as|the)\s+)?(?:fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(current)) {
+    return policyField("capital_provider" as const, composition);
+  }
+
+  // User-authored history can preserve an audience only when the current turn does not replace it.
+  if (!replacesBoardContext && /\b(conselh\w*|board|comite\w*|committee)\b/.test(userHistory)) {
+    return policyField("board_or_committee" as const, composition);
+  }
+  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(userHistory)) {
+    return policyField("internal_senior" as const, composition);
+  }
+
+  // Composition defaults apply only after explicit/current and user-history evidence.
+  if (composition === "identify_capital" || composition === "introduce") {
+    return policyField("capital_provider" as const, composition);
+  }
+  return policyField("self" as const, composition);
 }
 
 function policyQuestion(
@@ -239,31 +436,37 @@ export function canonicalizeIntentClassifierOutput(
   const locale = input.locale;
   const explicit = explicitComposition(input);
   const composition = explicit ?? output.composition;
-  const mustAbstain = composition === null || (output.abstain && explicit === null);
+  const core = output.routingCore;
+  const assertsMeaning = (state: typeof core.action.state) => state === "explicit" || state === "inferred";
+  const unresolvedSemantics = core.object.value.length === 0
+    || !assertsMeaning(core.object.state)
+    || (explicit === null && (core.action.value.length !== 1 || !assertsMeaning(core.action.state)))
+    || (core.decisionType.value !== "none" && !assertsMeaning(core.decisionType.state))
+    || (core.audienceType.value !== "unspecified" && !assertsMeaning(core.audienceType.state));
+  const mustAbstain = requiresObjectiveClarification(input)
+    || composition === null
+    || (composition === "introduce" && explicit !== "introduce")
+    || unresolvedSemantics
+    || (output.abstain && explicit === null);
 
   if (!mustAbstain) {
-    const works = composition === "design_indicative_structure" && input.documentCount > 0
-      ? ["extract_and_reconcile", "capital_strategy", "analyze"] as const
-      : worksByComposition[composition] ?? output.primaryWorks.map(({work}) => work);
-    const responsibilities = policyResponsibilities(composition, input);
+    const policy = compositionPolicy(composition);
+    const primaryWorks = resolveCompositionPrimaryWorks(composition, {
+      documentsPresent: input.documentCount > 0,
+    });
     return intentClassifierOutputSchema.parse({
-      ...output,
       routingCore: {
         ...output.routingCore,
-        action: output.routingCore.action.value.length > 0 ? output.routingCore.action : {value: [composition], state: "unknown", confidence: null, basis: null},
-        object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{kind: "process", reference: null}], state: "unknown", confidence: null, basis: null},
-        desiredOutcome: output.routingCore.desiredOutcome.value.trim().length > 0 ? output.routingCore.desiredOutcome : {
-          value: locale === "pt-BR" ? "Concluir o trabalho solicitado." : "Complete the requested work.",
-          state: "unknown",
-          confidence: null,
-          basis: null,
-        },
-        audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
-        depth: depthByComposition[composition] ? policyField(depthByComposition[composition], composition) : output.routingCore.depth,
+        action: policyField([policy.canonicalAction], composition),
+        object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{id: "object-1", ordinal: 1, kind: "process", slots: []}], state: "unknown", confidence: null, basis: null},
+        decisionType: policyDecisionType(composition, input),
+        audienceType: policyAudienceType(composition, input),
+        depth: policyField(policy.depth, composition),
         continuity: policyContinuity(composition, output, input),
-        workResponsibility: policyField([...responsibilities], composition),
+        workResponsibility: policyField([...policy.workResponsibilities], composition),
       },
-      primaryWorks: works.slice(0, 3).map((work) => ({work, confidence: 0.99})),
+      inferableContext: output.inferableContext,
+      primaryWorks: primaryWorks.map((work) => ({work, confidence: 0.99})),
       composition,
       firstQuestion: policyQuestion(composition, output, input),
       abstain: false,
@@ -278,22 +481,17 @@ export function canonicalizeIntentClassifierOutput(
     : abstentionQuestion(locale);
 
   return intentClassifierOutputSchema.parse({
-    ...output,
     routingCore: {
       ...output.routingCore,
-      action: {value: [locale === "pt-BR" ? "esclarecer pedido" : "clarify request"], state: "unknown", confidence: null, basis: null},
-      object: {value: [{kind: "document", reference: null}], state: "unknown", confidence: null, basis: null},
-      desiredOutcome: {
-        value: locale === "pt-BR" ? "Entender o resultado esperado antes de iniciar." : "Understand the expected result before starting.",
-        state: "unknown",
-        confidence: null,
-        basis: null,
-      },
-      audience: {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
+      action: {value: ["understand"], state: "unknown", confidence: null, basis: null},
+      object: {value: [{id: "object-1", ordinal: 1, kind: "document", slots: []}], state: "unknown", confidence: null, basis: null},
+      decisionType: {value: "none", state: "not_applicable", confidence: null, basis: null},
+      audienceType: {value: "unspecified", state: "unknown", confidence: null, basis: null},
       depth: {value: "point", state: "unknown", confidence: null, basis: null},
       continuity: {value: "new", state: "unknown", confidence: null, basis: null},
       workResponsibility: {value: ["producer"], state: "unknown", confidence: null, basis: null},
     },
+    inferableContext: output.inferableContext,
     primaryWorks: [{work: "understand", confidence: 0}],
     composition: null,
     firstQuestion: question.slice(0, 600),
@@ -313,39 +511,25 @@ a state and a confidence: "explicit" when the person said it, "inferred" when it
 they said, "ambiguous" when two readings remain, "unknown" when nothing supports a value. Never
 guess authority, evidence regime, permissions or documents: they are not yours to fill.
 
-Primary works (choose one to three, the work that must start first goes first): find_and_organize,
-extract_and_reconcile, understand, analyze, model, capital_strategy, read_documents, market,
-capital_match. Do not add a generic work when the turn names a bounded one. A point question about
-a number starts with extract_and_reconcile. An explicit assumption change starts with model. A
-market terms question starts with market. A received opportunity triage starts with analyze. A
-structure request with attached material starts with extract_and_reconcile before strategy.
-For a vague assignment to prepare for a meeting, start with understand, then capital_strategy.
-For a board or committee decision, include capital_strategy, analyze and model. For a received
-opportunity with documents, include analyze and read_documents. For a financing meeting, include
-capital_strategy, understand and model. For covenant headroom, include analyze and model.
+Use only the canonical enums and codes in the schema. "action" contains exactly one canonical
+action when the request is understood. "decisionType" and "audienceType" classify the decision and
+audience without narrative prose. Objects are distinct instances with stable "object-N" ids,
+one-based contiguous ordinals and canonical slots. Order objects by first material appearance in
+the current message, then append objects resolved only from recent conversation in their first
+historical appearance order; if two objects first appear together, use the schema enum order.
+Never return free-form desired-outcome, decision or audience narratives. Use "entity" only for a
+named or identifier-specific entity and "subject" for a generic category or qualitative subject.
+Normalize amounts to base units, currencies to ISO-4217, percentages to fractional decimal text
+without a percent sign (12% is "0.12"), ratios to decimal multiples (4.7x is "4.7"), indexers to
+their uppercase code, basis-point changes to integer text, tenor to months, page/count values to
+integer text, and cadence to a stable English code such as "weekly" or "quarterly". Do not split
+one object across multiple instances.
 
-Composition is either null or exactly one of these identifiers. Never describe a sequence in this
-field:
-find_and_organize_information, extract_and_reconcile_data, understand_company_sector_asset,
-answer_a_question, analyze_performance_and_credit, build_or_review_model,
-diagnose_capital_structure, develop_alternatives, design_indicative_structure,
-read_contract_covenant_waterfall, prepare_meeting, prepare_material, review_work,
-prepare_decision, evaluate_received_opportunity, map_market_and_precedents, identify_capital,
-introduce, monitor, manage_work.
+Choose the composition that names the requested outcome, not an intermediate step. The complete
+composition and ordered-work policy below is generated from the same executable policy used by
+canonicalization, envelope validation, runtime stamping and fingerprints:
+${intentCompositionPolicyPrompt()}
 
-Choose the composition that names the requested outcome, not an intermediate step. In particular:
-- preparing for a client or management conversation is prepare_meeting;
-- producing an explicitly requested deck, memo or model output is prepare_material;
-- preparing a decision for a board or committee is prepare_decision;
-- explaining or tracing a bounded number is answer_a_question;
-- changing an existing model assumption is build_or_review_model;
-- challenging existing work is review_work;
-- screening a received investment proposal is evaluate_received_opportunity;
-- designing a receivables or other debt structure is design_indicative_structure;
-- asking to send or connect externally is introduce, even if authorization is still missing;
-- collecting without analysis is find_and_organize_information;
-- asking for market terms or precedents is map_market_and_precedents;
-- analysing covenant headroom or credit performance is analyze_performance_and_credit.
 The requested outcome wins over an intermediate task: a board discussion remains prepare_decision
 even though diagnosis is required; an explicit request to produce the selected material remains
 prepare_material even when the file will be used in a meeting. A follow-up such as "revise isso"

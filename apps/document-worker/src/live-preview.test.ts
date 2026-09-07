@@ -1,21 +1,27 @@
 import type {ModelGateway} from "@offroad/model-gateway";
+import {buildIntentClassifierInput, canonicalizeIntentClassifierOutput} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
 
 import {decideLiveTurn, liveRoutingOutputSchema, normalizePreviewTurn, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
+import {shadowRoutingOutputSchema, stampIntentEnvelope} from "./intent-shadow";
 import type {PreviewStepOutput} from "./integration-preview";
 
-const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({value, state, confidence: state === "explicit" ? 1 : 0.7});
+const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
+  value, state, confidence: state === "explicit" ? 1 : 0.7,
+});
 
 /** A classifier output the way the model returns it, with the preview-desk fields. */
 function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & {turn?: Partial<LiveRoutingOutput["turn"]>} = {}): LiveRoutingOutput {
   const base: LiveRoutingOutput = {
     routingCore: {
-      action: field(["preparar material para reunião"]),
-      object: field([{kind: "company" as const, reference: "Camil"}, {kind: "material" as const}]),
-      desiredOutcome: field("material para a reunião com a Camil sobre refinanciamento"),
-      decision: field(null),
-      audience: field(["VP"]),
+      action: field(["prepare_meeting" as const]),
+      object: field([
+        {id: "object-1", ordinal: 1, kind: "company" as const, slots: [{key: "entity" as const, value: "Camil"}]},
+        {id: "object-2", ordinal: 2, kind: "material" as const, slots: []},
+      ]),
+      decisionType: field("material" as const),
+      audienceType: field("internal_senior" as const),
       depth: field("preliminary" as const, "inferred"),
       continuity: field("new" as const),
       workResponsibility: field(["producer" as const]),
@@ -51,12 +57,37 @@ function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & 
 
 function fakeGateway(output: LiveRoutingOutput, costUsd = 0.0021): ModelGateway {
   let spent = 0;
+  let calls = 0;
   return {
-    complete: async () => {
+    complete: async (request: {task: string; schemaName: string; input: Array<{type: string; text: string}>}) => {
       spent += costUsd;
-      return {output, model: "claude-sonnet-5", provider: "anthropic"} as never;
+      calls += 1;
+      let result: unknown;
+      if (request.task === "extract_semantic_objects") {
+        const source = JSON.parse(request.input[0]!.text) as {latestUserMessage: string};
+        const mention = source.latestUserMessage.includes("Camil") ? "Camil" : source.latestUserMessage.split(/\s+/)[0]!;
+        const start = source.latestUserMessage.indexOf(mention);
+        const material = "material";
+        const materialStart = source.latestUserMessage.indexOf(material);
+        result = {
+          objects: [
+            {candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start, end: start + mention.length, text: mention}}, modifiers: []},
+            ...(materialStart >= 0 ? [{candidateId: "candidate-2", kind: "material" as const, head: {key: "subject" as const, span: {source: "latest_user_message" as const, messageIndex: null, start: materialStart, end: materialStart + material.length, text: material}}, modifiers: []}] : []),
+          ],
+          activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+        };
+      } else if (request.schemaName === "live_preview_turn_output") result = {turn: output.turn};
+      else {
+        const {turn: _turn, ...route} = output;
+        result = route;
+      }
+      return {
+        output: result, model: "claude-sonnet-5", provider: "anthropic", effort: "low",
+        costUsd, latencyMs: 1, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+        attempts: [{provider: "anthropic", model: "claude-sonnet-5", outcome: "ok"}],
+      } as never;
     },
-    spent: () => ({costUsd: spent, calls: spent > 0 ? 1 : 0}),
+    spent: () => ({costUsd: spent, calls, unknownCostCalls: 0, budgetExposureUsd: spent}),
   } as unknown as ModelGateway;
 }
 
@@ -68,6 +99,7 @@ const context: LiveTurnContext = {
   projectId: "30000000-0000-4000-8000-000000000001",
   entryJob: "origination_thesis",
   accessBasis: "public_information",
+  authorityGrants: ["read"],
   documentIds: [],
   professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
   openQuestions: [],
@@ -76,7 +108,20 @@ const context: LiveTurnContext = {
 };
 
 async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<typeof decideLiveTurn>[0]> = {}) {
-  const understanding = await understandLiveTurn({gateway: fakeGateway(output), context: {...context, message: overrides.message ?? context.message}});
+  const {turn: _turn, ...route} = output;
+  const compatible = shadowRoutingOutputSchema.parse({...route, composition: output.composition === "deepen" ? "understand_company_sector_asset" : output.composition});
+  const message = overrides.message ?? context.message;
+  const canonical = canonicalizeIntentClassifierOutput(compatible, buildIntentClassifierInput({
+    locale: context.locale, latestUserMessage: message, recentConversation: [], entryJob: context.entryJob,
+    documentCount: context.documentIds.length, professionalContext: context.professionalContext,
+  }));
+  const understanding = {
+    envelope: stampIntentEnvelope(canonical, context), output, modelRoute: "governed_model_route" as const,
+    costUsd: 0.0063, latencyMs: 3, calls: 3,
+    routingAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+    semanticObjectAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+    previewTurnAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+  };
   return decideLiveTurn({
     locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null, priorRequest: null, priorAnswers: [], openQuestions: [], artifactTypes: [], runActive: false,
     priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis", messageId: "10000000-0000-4000-8000-000000000077",
@@ -85,12 +130,79 @@ async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<t
 }
 
 describe("live_intelligence_preview router", () => {
-  it("stamps the envelope with system fields and reports the one call it made", async () => {
+  it("stamps the envelope only after the three governed contracts and reports their lineage", async () => {
     const understanding = await understandLiveTurn({gateway: fakeGateway(classifierOutput()), context});
     expect(understanding.envelope.executionContext.organizationId).toEqual({value: context.organizationId, state: "system"});
-    expect(understanding.envelope.routingCore.audience.value).toEqual(["VP"]);
+    expect(understanding.envelope.routingCore.audience.value).toEqual(["internal senior"]);
     expect(understanding.modelRoute).toBe("governed_model_route");
-    expect(understanding.costUsd).toBeCloseTo(0.0021, 6);
+    expect(understanding.costUsd).toBeCloseTo(0.0063, 6);
+    expect(understanding.calls).toBe(3);
+    expect(understanding).toMatchObject({
+      routingAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+      semanticObjectAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+      previewTurnAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+    });
+  });
+
+  it("fails closed when semantic coverage is incomplete even if preview controls name a company", async () => {
+    let calls = 0;
+    const routed = classifierOutput();
+    const gateway = {
+      complete: async (request: {task: string; schemaName: string}) => {
+        calls += 1;
+        let output: unknown;
+        if (request.task === "extract_semantic_objects") {
+          output = {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []};
+        } else if (request.schemaName === "live_preview_turn_output") {
+          output = {turn: {...routed.turn, companies: [{mention: "Magazine Luiza", role: "subject"}]}};
+        } else {
+          const {turn: _turn, ...route} = routed;
+          output = route;
+        }
+        return {
+          output, provider: "anthropic", model: "claude-sonnet-5", effort: "low", costUsd: 0.001, latencyMs: 1,
+          retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+          attempts: [{provider: "anthropic", model: "claude-sonnet-5", outcome: "ok"}],
+        };
+      },
+      spent: () => ({costUsd: calls * 0.001, calls, unknownCostCalls: 0, budgetExposureUsd: calls * 0.001}),
+    } as unknown as ModelGateway;
+
+    const understanding = await understandLiveTurn({gateway, context});
+    const decision = decideLiveTurn({
+      locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null,
+      priorRequest: null, priorAnswers: [], openQuestions: [], artifactTypes: [], runActive: false,
+      priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis",
+      messageId: "10000000-0000-4000-8000-000000000077",
+    });
+
+    expect(understanding.output).toMatchObject({abstain: true, composition: null});
+    expect(understanding.output.routingCore.object).toMatchObject({value: [{kind: "document"}], state: "unknown"});
+    expect(JSON.stringify(understanding.envelope.routingCore.object)).not.toMatch(/Camil|Magazine Luiza/);
+    expect(understanding.envelope).toMatchObject({composition: null, effect: "none"});
+    expect(decision).toMatchObject({kind: "abstain", activation: null, record: {abstainReason: "semantic_object_coverage_incomplete"}});
+  });
+
+  it("does not let supplemental company, audience, depth or material flags replace canonical routing", async () => {
+    const decision = await decide(classifierOutput({
+      turn: {
+        companies: [{mention: "Magazine Luiza", role: "subject"}],
+        scopeChanges: {audience: "investor", depth: "institutional", form: "board_deck"},
+        material: {requested: true, form: "board_deck", pages: null},
+      },
+    }), {artifactTypes: ["preview_alternatives"]});
+
+    expect(decision).toMatchObject({
+      kind: "activate",
+      composition: "deepen",
+      record: {
+        corpus: {caseId: "gc01-analista-ib-camil", company: "Camil Alimentos S.A."},
+        companiesMentioned: ["Camil"],
+        audience: "vp",
+        depth: "preliminary",
+      },
+    });
+    expect(decision.reply).not.toContain("Magazine Luiza");
   });
 
   it("routes paraphrases of the analyst's request to the same composition and the same frozen corpus", async () => {
@@ -108,7 +220,7 @@ describe("live_intelligence_preview router", () => {
       expect(decision.record.corpus?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.reply).toMatch(/^\[Validação interna, live_intelligence_preview\] composição=prepare_meeting · companhia=Camil Alimentos S\.A\. · corpus=gc01-analista-ib-camil/);
       expect(decision.reply).toContain("rota=governed_model_route");
-      expect(decision.reply).toContain("chamadas=1");
+      expect(decision.reply).toContain("chamadas=3");
       expect(decision.activation?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.activation?.plan.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000077"});
     }
@@ -116,7 +228,7 @@ describe("live_intelligence_preview router", () => {
 
   it("abstains for a company without a frozen corpus and never lends it the Camil objects", async () => {
     const decision = await decide(classifierOutput({
-      routingCore: {...classifierOutput().routingCore, object: field([{kind: "company", reference: "Magazine Luiza"}])},
+      routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Magazine Luiza"}]}])},
       turn: {companies: [{mention: "Magazine Luiza", role: "subject"}]},
     }), {message: "Preciso preparar uma reunião com a Magazine Luiza sobre refinanciamento."});
     expect(decision.kind).toBe("abstain");
@@ -129,7 +241,7 @@ describe("live_intelligence_preview router", () => {
 
   it("routes a CFO preparing a board discussion to prepare_decision with the board as audience", async () => {
     const output = classifierOutput({
-      routingCore: {...classifierOutput().routingCore, audience: field(["conselho de administração"]), workResponsibility: field(["producer", "decision_maker"])},
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), workResponsibility: field(["producer", "decision_maker"])},
       composition: "prepare_decision",
     });
     const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão sobre refinanciar as debêntures."});
@@ -141,7 +253,7 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("recognises a premise change once the analysis exists, converting a CDI spread into a rate", async () => {
-    const output = classifierOutput({composition: null, turn: {companies: [], premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: 150, newDebtTermMonths: 84, newDebtGraceMonths: 24}}});
+    const output = classifierOutput({composition: "build_or_review_model", turn: {companies: [], premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: 150, newDebtTermMonths: 84, newDebtGraceMonths: 24}}});
     expect(premisesFromTurn(output.turn)).toEqual({newDebtAnnualRate: "0.1475", newDebtTermMonths: 84, newDebtGraceMonths: 24});
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_debt_ledger", "preview_alternatives"], message: "Considere CDI + 1,50%, 7 anos com 2 de carência."});
     expect(decision.kind).toBe("activate");
@@ -158,7 +270,7 @@ describe("live_intelligence_preview router", () => {
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives", "preview_covenants"], priorOutputs: new Map([["C09", covenants]]), message: "De onde saiu essa alavancagem de 4,7x?"});
     expect(decision.kind).toBe("answer");
     expect(decision.activation).toBeNull();
-    expect(decision.record.calls).toBe(1);
+    expect(decision.record.calls).toBe(3);
   });
 
   it("plans the material from the objects when the person asks for a deliverable", async () => {
@@ -197,6 +309,7 @@ describe("live_intelligence_preview router", () => {
   it("applies an answer to an open question: scope, audience and depth change, the plan recompiles as deepen", async () => {
     const output = classifierOutput({
       composition: null,
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), depth: field("institutional")},
       turn: {companies: [], answers: [{questionId: "q-angle", answer: "Alternativas mais amplas, para o conselho, análise institucional", effect: {audience: "conselho", depth: "institutional", scope: "alternativas amplas"}}]},
     });
     const decision = await decide(output, {
@@ -214,7 +327,11 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("reads an answer that quotes the desk's question when the classifier returns no id, and does not mistake the board for a deck request", async () => {
-    const output = classifierOutput({composition: null, turn: {companies: [], answers: [], material: {requested: true, form: "board_deck", pages: null}, scopeChanges: {audience: "conselho", depth: "institutional", form: null}}});
+    const output = classifierOutput({
+      composition: null,
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), depth: field("institutional")},
+      turn: {companies: [], answers: [], material: {requested: true, form: "board_deck", pages: null}, scopeChanges: {audience: "conselho", depth: "institutional", form: null}},
+    });
     const decision = await decide(output, {
       priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
       openQuestions: [{id: "q-tese-refinanciamento", text: "Qual tese de refinanciamento o VP quer levar à Camil, e em que formato ele espera o material?"}],
@@ -258,8 +375,49 @@ describe("live_intelligence_preview router", () => {
     expect(decision.composition).not.toBe("change_premise");
   });
 
+  it("keeps canonical self audience when a negated prior board context appears in the message", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: []},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil",
+      artifactTypes: ["preview_alternatives"],
+      message: "Esquece o conselho por enquanto. Preciso entender se o headroom do covenant aguenta a safra da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen", record: {audience: "self"}});
+  });
+
+  it("does not let a supplemental year turn canonical analysis into a number answer", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: [], numberQuestion: {mentioned: "2026", objects: ["covenants"]}},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
+      message: "Atualize a análise de 2026 da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen"});
+  });
+
+  it("does not let an unsupported supplemental rate turn canonical analysis into a premise change", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: [], premiseChanges: {newDebtAnnualRate: 0.12, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
+      message: "Atualize a análise de 2026 da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen"});
+    expect(decision.activation?.brief.premises).toEqual({});
+  });
+
   it("names a known role as the audience when the classifier lists the requester's own description first", async () => {
-    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audience: field(["banker (self), meeting with Camil", "VP"])}});
+    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audienceType: field("internal_senior")}});
     const decision = await decide(output);
     expect(decision.record.audience).toBe("vp");
     expect(decision.reply).toContain("audiência=vp");
@@ -292,7 +450,7 @@ describe("live_intelligence_preview router", () => {
 
   it("resolves the company from the message text when the classifier leaves it out", async () => {
     const output = classifierOutput({
-      routingCore: {...classifierOutput().routingCore, object: field([{kind: "material"}])},
+      routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "material", slots: []}])},
       turn: {companies: []},
     });
     const decision = await decide(output, {message: "Reunião com a Camil segunda-feira: o VP quer algo sobre refinanciamento das debêntures, mas não fechou o ângulo nem o entregável."});
@@ -319,18 +477,15 @@ describe("live_intelligence_preview router", () => {
     expect(() => z.toJSONSchema(liveRoutingOutputSchema)).not.toThrow();
   });
 
-  it("routes a decision body written in the message to prepare_decision even when the classifier names another composition", async () => {
-    const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audience: field(["CFO"])}});
+  it("keeps the canonical composition and audience when message keywords suggest another decision body", async () => {
+    const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audienceType: field("company_management")}});
     const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão de refinanciar as debêntures."});
-    expect(decision.composition).toBe("prepare_decision");
-    expect(decision.record.audience).toBe("board");
+    expect(decision.composition).toBe("prepare_meeting");
+    expect(decision.record.audience).toBe("cfo");
   });
 
-  it("clamps long classifier strings to the envelope contract instead of failing the turn", async () => {
+  it("rejects an overlong canonical object slot at the model boundary", () => {
     const long = "a".repeat(300);
-    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, action: field([long, "b"]), desiredOutcome: field(long)}});
-    const understanding = await understandLiveTurn({gateway: fakeGateway(output), context});
-    expect(understanding.envelope.routingCore.action.value[0]).toHaveLength(60);
-    expect(understanding.envelope.routingCore.desiredOutcome.value).toHaveLength(300);
+    expect(() => classifierOutput({routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: long}]}])}})).toThrow();
   });
 });
