@@ -48,9 +48,9 @@ Claims externos são derivados de objetos tipados. O renderer só pode emitir um
 - Teste de penetração independente: não auditado nem atestado de forma independente.
 - Auditoria independente de produção: não auditado nem atestado de forma independente.
 
-- SOC 2: plano de remediação — concluído com evidência referenciada.
-- ISO/IEC 27001: avaliação de lacunas — planejado.
-- Pentest: contratação externa — planejado.
+- SOC 2: plano de remediação. Status: concluído com evidência referenciada.
+- ISO/IEC 27001: avaliação de lacunas. Status: planejado.
+- Pentest: contratação externa. Status: planejado.
 
 ## Claims canônicos de coverage
 

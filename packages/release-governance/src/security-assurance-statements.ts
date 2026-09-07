@@ -218,8 +218,8 @@ export function renderSecurityAssuranceMilestone(
   const kind = milestoneKindLabel(milestone.kind, locale);
   const status = milestoneStatusLabel(milestone.status, locale);
   return locale === "pt-BR"
-    ? `${framework}: ${kind} — ${status}.`
-    : `${framework}: ${kind} — ${status}.`;
+    ? `${framework}: ${kind}. Status: ${status}.`
+    : `${framework}: ${kind}. Status: ${status}.`;
 }
 
 export function assuranceEvidenceSigningPayload(evidence: Omit<SecurityAssuranceEvidence, "detachedSignature">): Buffer {

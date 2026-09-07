@@ -179,7 +179,7 @@ describe("governed security assurance statements", () => {
       milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment",
       status: "planned", scope, evidenceRef: null,
     });
-    expect(renderSecurityAssuranceMilestone(planned, "pt-BR")).toBe("ISO/IEC 27001: avaliação de lacunas — planejado.");
+    expect(renderSecurityAssuranceMilestone(planned, "pt-BR")).toBe("ISO/IEC 27001: avaliação de lacunas. Status: planejado.");
     expect(() => securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: null})).toThrow(/completed milestone requires evidence/);
     const completed = securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: "SEV-SECURITY-PLAN"});
     const inventedReceipt = Object.freeze({
@@ -203,7 +203,7 @@ describe("governed security assurance statements", () => {
 
   it.each([
     "SOC 2 is certified",
-    "SOC 2 has not been certified — Production has been independently audited",
+    "SOC 2 has not been certified; Production has been independently audited",
     "While SOC 2 is planned, penetration testing has passed",
     "Possuímos certificação ISO 27001 vigente",
   ])("blocks mixed-polarity and arbitrary positive assurance prose: %s", (prose) => {

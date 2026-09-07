@@ -66,8 +66,8 @@ describe("security current-state inventory", () => {
     const generatedPath = fileURLToPath(new URL("../../../docs/security/CURRENT_STATE_INVENTORY.md", import.meta.url));
     const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, decision);
     expect(readFileSync(generatedPath, "utf8")).toBe(rendered);
-    expect(rendered).toContain("SOC 2: plano de remediação — concluído com evidência referenciada.");
-    expect(rendered).toContain("ISO/IEC 27001: avaliação de lacunas — planejado.");
+    expect(rendered).toContain("SOC 2: plano de remediação. Status: concluído com evidência referenciada.");
+    expect(rendered).toContain("ISO/IEC 27001: avaliação de lacunas. Status: planejado.");
   });
 
   it("makes the evaluation OIDC, secret retrieval and provider boundaries explicit", () => {
