@@ -68,9 +68,9 @@ export function InformationRequestCard(props: {
     void answer("custom", value);
   }
 
-  const inputType = props.request.answerKind === "number"
-    ? "number"
-    : props.request.answerKind === "date"
+  // Financial inputs are text with a decimal keyboard: institutional users naturally enter
+  // 72,5%, 1.25x and formatted currency. Native type=number rejects those exact governed forms.
+  const inputType = props.request.answerKind === "date"
     ? "date"
     : "text";
 
