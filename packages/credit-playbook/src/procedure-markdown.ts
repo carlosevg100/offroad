@@ -38,6 +38,22 @@ const frontmatterSchema = z.object({
   required_depth_pack_ids: z.array(z.string().regex(/^[a-z0-9_.-]{3,120}$/)).max(30).default([]),
   /** Explicit precedence only; equal-priority candidates remain a visible conflict. */
   binding_priority: z.coerce.number().int().min(0).max(1_000).default(0),
+  /**
+   * Execution accreditation is separate from implementation evidence. A method may exist and
+   * still be shadow-only, internally exposed or unavailable for customer work. When any field is
+   * present, the runtime projection requires the complete policy instead of filling permissive
+   * defaults.
+   */
+  capability_availability: z.enum(["live", "shadow", "mocked", "specified", "absent"]).optional(),
+  capability_exposure: z.enum(["universal", "allowlisted", "internal", "none"]).optional(),
+  capability_allowed_uses: z.array(z.enum(["internal_validation", "customer_work", "external_material", "external_action"])).optional(),
+  capability_allowed_evidence_regimes: z.array(z.enum(["public_only", "project_private", "mixed_governed"])).optional(),
+  capability_allowed_data_classes: z.array(z.enum(["public", "project_confidential", "restricted_personal"])).optional(),
+  capability_allowed_source_classes: z.array(z.enum(["project_context", "provided_documents", "public_company", "public_market", "house_method", "capital_network"])).optional(),
+  capability_allowed_provider_ids: z.array(z.string().min(1)).optional(),
+  capability_allowed_tool_ids: z.array(z.string().min(1)).optional(),
+  capability_provider_required: z.enum(["true", "false"]).transform((value) => value === "true").optional(),
+  capability_maximum_effect: z.enum(["none", "propose_state", "commit", "external"]).optional(),
   calculation_ids: z.array(z.string().regex(/^[a-z][a-z0-9_.-]*$/)).default([]),
   gold_cases: z.array(z.string().min(1)).default([]),
   dependencies: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
@@ -80,6 +96,19 @@ export type MethodDocument = {
   /** Minimum inputs and their accepted substitutes. */
   inputs: string[];
 };
+
+const capabilityFieldNames = [
+  "capability_availability",
+  "capability_exposure",
+  "capability_allowed_uses",
+  "capability_allowed_evidence_regimes",
+  "capability_allowed_data_classes",
+  "capability_allowed_source_classes",
+  "capability_allowed_provider_ids",
+  "capability_allowed_tool_ids",
+  "capability_provider_required",
+  "capability_maximum_effect",
+] as const satisfies readonly (keyof MethodFrontmatter)[];
 
 export class MethodCompileError extends Error {
   constructor(readonly sourcePath: string, message: string) {
@@ -220,6 +249,10 @@ export type ReviewLookup = (reviewId: string) => AiIndependentReview | null;
 
 export function compileMethodDocument(text: string, sourcePath: string, lookupReview: ReviewLookup = () => null): MethodDocument {
   const {frontmatter, body} = parseFrontmatter(text, sourcePath);
+  const capabilityFields = capabilityFieldNames.map((field) => frontmatter[field]);
+  if (capabilityFields.some((field) => field !== undefined) && capabilityFields.some((field) => field === undefined)) {
+    throw new MethodCompileError(sourcePath, "execution capability needs availability, exposure, uses, evidence regimes, data classes, source classes, providers, tools, provider requirement and maximum effect together");
+  }
   const reviews = frontmatter.review_ids.map((reviewId) => {
     const record = lookupReview(reviewId);
     if (!record) throw new MethodCompileError(sourcePath, `review ${reviewId} is not on record`);

@@ -4,7 +4,12 @@ import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 
 import {loadMethodLibrary} from "./procedure-markdown";
-import {specialistMethodRuntimeManifest, specialistMethodRuntimeManifestHash} from "./method-runtime-manifest";
+import {
+  specialistMethodRuntimeManifest,
+  specialistMethodRuntimeManifestHash,
+  specialistTaskCapabilityRuntimeManifest,
+  specialistTaskCapabilityRuntimeManifestHash,
+} from "./method-runtime-manifest";
 
 const here = resolve(fileURLToPath(new URL(".", import.meta.url)));
 
@@ -30,5 +35,36 @@ describe("specialist method runtime manifest", () => {
     });
     expect(specialistMethodRuntimeManifest).toEqual(expected);
     expect(specialistMethodRuntimeManifestHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("is an exact bundled projection of each method's execution accreditation", () => {
+    const library = loadMethodLibrary(
+      resolve(here, "../knowledge/procedures"),
+      resolve(here, "../knowledge/reviews"),
+    );
+    const expected = library.methods.flatMap((method) => {
+      const frontmatter = method.frontmatter;
+      if (frontmatter.capability_availability === undefined) return [];
+      return frontmatter.task_specs.map((taskId) => ({
+        taskId,
+        executorKey: `${frontmatter.implementation_module}#${frontmatter.implementation_export}`,
+        executorVersion: frontmatter.version,
+        procedure: {id: frontmatter.id, version: frontmatter.version},
+        availability: frontmatter.capability_availability,
+        exposure: frontmatter.capability_exposure,
+        allowedUses: frontmatter.capability_allowed_uses,
+        allowedEvidenceRegimes: frontmatter.capability_allowed_evidence_regimes,
+        allowedDataClasses: frontmatter.capability_allowed_data_classes,
+        allowedSourceClasses: frontmatter.capability_allowed_source_classes,
+        allowedProviderIds: frontmatter.capability_allowed_provider_ids,
+        allowedToolIds: frontmatter.capability_allowed_tool_ids,
+        providerRequired: frontmatter.capability_provider_required,
+        maximumEffect: frontmatter.capability_maximum_effect,
+        allowlistedTenantIds: [],
+        allowlistedProjectIds: [],
+      }));
+    });
+    expect(specialistTaskCapabilityRuntimeManifest).toEqual(expected);
+    expect(specialistTaskCapabilityRuntimeManifestHash).toMatch(/^[a-f0-9]{64}$/);
   });
 });

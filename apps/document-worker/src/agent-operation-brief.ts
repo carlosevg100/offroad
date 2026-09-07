@@ -14,13 +14,18 @@ import {
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 import {bindObjectiveMethods, compileObjectiveSpecialization} from "@offroad/dcm-specialization";
-import {specialistMethodRuntimeManifest, specialistMethodRuntimeManifestHash} from "@offroad/credit-playbook";
+import {
+  specialistMethodRuntimeManifest,
+  specialistMethodRuntimeManifestHash,
+  specialistTaskCapabilityRuntimeManifest,
+} from "@offroad/credit-playbook";
 import {
   capitalProjectJobSchema,
   compileObjectiveToPlan,
   evaluateObjectivePlanReadiness,
   expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
+  taskExecutionCapabilitySchema,
 } from "@offroad/work-plan";
 import {z} from "zod";
 
@@ -41,6 +46,21 @@ const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   requiredPackIds: [...method.requiredPackIds],
   executor: {...method.executor},
 }));
+
+const specialistCapabilities = specialistTaskCapabilityRuntimeManifest.map((capability) => (
+  taskExecutionCapabilitySchema.parse({
+    ...capability,
+    procedure: {...capability.procedure},
+    allowedUses: [...capability.allowedUses],
+    allowedEvidenceRegimes: [...capability.allowedEvidenceRegimes],
+    allowedDataClasses: [...capability.allowedDataClasses],
+    allowedSourceClasses: [...capability.allowedSourceClasses],
+    allowedProviderIds: [...capability.allowedProviderIds],
+    allowedToolIds: [...capability.allowedToolIds],
+    allowlistedTenantIds: [...capability.allowlistedTenantIds],
+    allowlistedProjectIds: [...capability.allowlistedProjectIds],
+  })
+));
 
 const contextSchema = z.object({
   session_id: z.uuid(),
@@ -654,7 +674,7 @@ function compileObjectivePreflight(context: AgentContext) {
   const confidential = context.documents.length > 0 || context.project?.accessBasis !== "public_information";
   const preflightDecision = evaluateObjectivePlanReadiness({
     graph: methodBinding.graph,
-    capabilities: [],
+    capabilities: specialistCapabilities,
     context: {
       use: "internal_validation",
       authority: "project_write",
@@ -663,7 +683,17 @@ function compileObjectivePreflight(context: AgentContext) {
       projectId: context.project?.id ?? null,
       internalActor: true,
       externalAuthorizationRef: null,
-      resourcesByTaskId: Object.fromEntries(methodBinding.graph.tasks.map((task) => [task.id, {
+      resourcesByTaskId: Object.fromEntries(methodBinding.graph.tasks.map((task) => [task.id, task.id === "R01" ? {
+        providerId: null,
+        toolIds: [],
+        // Receivables underwriting consumes the governed project room and house policy only.
+        // Public company/market research may support the broader objective but is not an input
+        // to title-level eligibility, reconciliation, borrowing base or waterfall mathematics.
+        sourceClasses: objectivePlan.sourcePlan.filter((source) => (
+          source === "project_context" || source === "provided_documents" || source === "house_method"
+        )),
+        dataClasses: confidential ? ["project_confidential" as const] : ["public" as const],
+      } : {
         providerId: null,
         toolIds: [],
         sourceClasses: [...objectivePlan.sourcePlan],
