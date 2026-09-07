@@ -2,7 +2,7 @@ import {readFile} from "node:fs/promises";
 
 import {buildDecisionArtifactContract, type DecisionArtifactContractInput} from "@offroad/case-understanding";
 import JSZip from "jszip";
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {offroadHousePresentationTemplate, renderInstitutionalPresentation} from "./presentation";
 
@@ -48,8 +48,20 @@ describe("institutional presentation renderer", () => {
     const contract = buildDecisionArtifactContract(fixture());
     const template = {...offroadHousePresentationTemplate, logo: {data: logo, extension: "png" as const}};
     const input = {contract, title: "Camil · Estrutura de capital", subtitle: "Leitura preliminar para discussão com o conselho", companyName: "Camil Alimentos", audience: "Conselho de Administração", locale: "pt-BR" as const, template};
-    const first = await renderInstitutionalPresentation(input);
-    const second = await renderInstitutionalPresentation(input);
+    let first: Awaited<ReturnType<typeof renderInstitutionalPresentation>>;
+    let second: Awaited<ReturnType<typeof renderInstitutionalPresentation>>;
+    // DOS ZIP timestamps have two-second granularity. Move a Date-only fake clock across a known
+    // three-second boundary so this regression cannot pass merely because both renders landed in
+    // the same timestamp bucket. Async scheduling remains real.
+    vi.useFakeTimers({toFake: ["Date"]});
+    try {
+      vi.setSystemTime(new Date("2026-09-07T12:00:00.000Z"));
+      first = await renderInstitutionalPresentation(input);
+      vi.setSystemTime(new Date("2026-09-07T12:00:03.000Z"));
+      second = await renderInstitutionalPresentation(input);
+    } finally {
+      vi.useRealTimers();
+    }
 
     expect(Buffer.compare(first.bytes, second.bytes)).toBe(0);
     expect(first.audit).toMatchObject({slideCount: 5, renderedBlockIds: ["situation", "direction", "gaps", "sources"], renderedClaimIds: ["claim-cash", "claim-direction", "claim-leverage"], packageInspection: {valid: true, missingParts: []}, visualInspection: {state: "not_run", reviewedPageCount: 0}, releaseEligible: false});

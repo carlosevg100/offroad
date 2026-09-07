@@ -322,7 +322,10 @@ function slideRelationships(logoPath?: string): string {
 }
 
 async function addFile(zip: JSZip, path: string, data: string | Uint8Array): Promise<void> {
-  zip.file(path, data, {date: FIXED_ZIP_DATE, createFolders: true});
+  // ZIP directory entries are not required. Letting JSZip create them implicitly stamps those
+  // entries with the current time, so identical governed inputs occasionally produced different
+  // package bytes across the second boundary even though every real file had a fixed date.
+  zip.file(path, data, {date: FIXED_ZIP_DATE, createFolders: false});
 }
 
 export async function renderInstitutionalPresentation(input: InstitutionalPresentationInput): Promise<InstitutionalPresentationResult> {
