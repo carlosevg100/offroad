@@ -337,6 +337,11 @@ function policyDecisionType(
       && /\b(cenario|scenario|taxa|rate|prazo|tenor|cdi|indexador|indexer)\b/.test(normalizeForPolicy(input.latestUserMessage));
     value = updatesCapitalScenario ? "capital" : "credit";
   }
+  if (!value && composition === "review_work") {
+    value = /\b(estrutura de capital|capital structure|refinanc|alongamento|emissao|issuance)\b/.test(text)
+      ? "capital"
+      : /\b(contrato|contract|documento|document|clausula|clause)\b/.test(text) ? "document" : "credit";
+  }
   value ??= "none";
   return value === "none"
     ? {value, state: "not_applicable", confidence: null, basis: `deterministic policy for ${composition}`}
@@ -357,7 +362,8 @@ function policyAudienceType(
   const current = normalizeForPolicy(input.latestUserMessage);
   const history = normalizeForPolicy(input.recentConversation.map(({content}) => content).join("\n"));
   const all = `${history}\n${current}`;
-  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(current)) {
+  const replacesBoardContext = /\b(esquece|ignora|forget|ignore)\b[^.\n]{0,40}\b(conselh\w*|board|comite\w*|committee)\b/.test(current);
+  if (!replacesBoardContext && /\b(conselh\w*|board|comite\w*|committee)\b/.test(current)) {
     return policyField("board_or_committee" as const, composition);
   }
   if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(current)) {
