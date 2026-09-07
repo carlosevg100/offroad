@@ -1,5 +1,23 @@
 # Acceptance Evidence
 
+## Acceptance Evidence trust boundary, candidate, 07/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| API pública | schema estrito de `evaluateEvidenceRegistry` | caller não fornece root, allowlist, verifier ou clock; campos extras invalidam o request |
+| Control plane | `evidence-registry-control-plane.ts` | roots, manifests e receipts entram no fingerprint; registro real vazio |
+| Binding semântico | manifest canônico + payload Ed25519 | caller não define claim, criterion ou limitations aceitos |
+| Isolamento | root single-purpose | scope, subject, collector, gate, tipo e identidade OIDC são exatos |
+| Freshness | relógio e primeiro receipt internos | validade, TTL, max-age e issuance-to-receipt são limitados |
+| Integridade | referência `artifact://sha256/<digest>` + bytes resolvidos | outra referência e outros bytes não verificam |
+| Replay de promoção | decisão persistida por ID opaco + CAS atômico | alvo vem do manifest; conjunto exato de receipts, replay, cross-target e hashes públicos forjados falham |
+| Gate focado | Node 24, package test/typecheck | 8 arquivos/169 testes verdes; tipos verdes |
+| Gate integral | Node 24, `pnpm check` | lint, typecheck, testes e build verdes; 43/43 targets |
+
+Status: **candidate local evidence**. O teste positivo usa root efêmera somente no evaluator interno.
+Não existe root real, collector, artifact store, receipt persistido, adapter CAS durável, index
+populado ou promoção. O gate integral local está verde; revisão independente ainda é necessária.
+
 ## Endgame Program Board executável, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
