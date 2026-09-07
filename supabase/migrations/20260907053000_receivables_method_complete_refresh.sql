@@ -47,9 +47,15 @@ declare
   draft_row private.receivables_method_supplement_drafts;
   existing private.receivables_method_refreshes;
   source_message public.agent_messages;
-  started jsonb;
   refresh_run_id uuid;
   refresh_job_id uuid;
+  next_run_no integer;
+  monthly_ceiling numeric;
+  refresh_budget jsonb := jsonb_build_object(
+    'max_cost_usd',1.5,'max_calls',8,
+    'document_max_cost_usd',0.75,'document_max_calls',4,
+    'case_max_cost_usd',1,'case_max_calls',4
+  );
 begin
   if job_row.kind <> 'agent_operation_brief'
     or coalesce(p_draft_fingerprint,'') !~ '^[0-9a-f]{64}$'
@@ -108,20 +114,51 @@ begin
     and message.role = 'user';
   if not found then raise exception 'receivables_method_refresh_source_message_missing' using errcode = 'P0002'; end if;
 
-  started := private.begin_processing_run(
-    job_row.organization_id,
-    job_row.intake_session_id,
-    'answer',
-    '[]'::jsonb,
-    session_row.pipeline_version,
+  if session_row.status not in ('collecting', 'processing', 'review_ready', 'failed') then
+    raise exception 'receivables_method_refresh_session_not_processable' using errcode = '22023';
+  end if;
+  select organization.model_monthly_ceiling_usd into monthly_ceiling
+  from public.organizations organization where organization.id = job_row.organization_id;
+  if monthly_ceiling is not null
+    and private.month_spend_usd(job_row.organization_id) >= monthly_ceiling then
+    raise exception 'model_month_ceiling_reached' using errcode = '53400';
+  end if;
+
+  -- This is an internal transition, not a tenant command. The leased job capability already
+  -- binds organization, session and caller; impersonating the source user would weaken that
+  -- boundary. Create only the reuse-only run here, then let the canonical case enqueue helper
+  -- create its controlled execution and budgeted job.
+  select coalesce(max(run.run_no), 0) + 1 into next_run_no
+  from public.processing_runs run
+  where run.organization_id = job_row.organization_id
+    and run.intake_session_id = job_row.intake_session_id;
+
+  insert into public.processing_runs (
+    organization_id, intake_session_id, run_no, trigger, status, pipeline_version,
+    budget, versions, created_by
+  ) values (
+    job_row.organization_id, job_row.intake_session_id, next_run_no, 'answer', 'queued',
+    session_row.pipeline_version, refresh_budget,
     jsonb_build_object(
-      'max_cost_usd',1.5,'max_calls',8,
-      'document_max_cost_usd',0.75,'document_max_calls',4,
-      'case_max_cost_usd',1,'case_max_calls',4
-    )
+      'activatedBy', 'receivables_complete_draft_refresh_v1',
+      'supplementDraftId', draft_row.id,
+      'draftFingerprint', p_draft_fingerprint,
+      'compiledSupplementFingerprint', p_compiled_supplement_fingerprint,
+      'causedByAgentJobId', job_row.id
+    ),
+    source_message.created_by
+  ) returning id into refresh_run_id;
+
+  update public.document_intake_sessions session
+  set status = 'processing', current_run_id = refresh_run_id,
+      processing_started_at = now(), processing_completed_at = null,
+      updated_at = now()
+  where session.organization_id = job_row.organization_id
+    and session.id = job_row.intake_session_id;
+
+  refresh_job_id := private.enqueue_primary_case_analysis(
+    job_row.organization_id, refresh_run_id, job_row.intake_session_id
   );
-  refresh_run_id := nullif(started ->> 'processing_run_id','')::uuid;
-  refresh_job_id := nullif(started #>> '{job_ids,0}','')::uuid;
   if refresh_run_id is null or refresh_job_id is null
     or not exists (
       select 1 from public.processing_jobs queued
@@ -130,11 +167,6 @@ begin
     ) then
     raise exception 'receivables_method_refresh_case_job_not_created' using errcode = '55000';
   end if;
-
-  update public.processing_runs set created_by = source_message.created_by
-  where organization_id = job_row.organization_id and id = refresh_run_id;
-  update public.controlled_case_executions set created_by = source_message.created_by
-  where organization_id = job_row.organization_id and processing_run_id = refresh_run_id;
 
   insert into private.receivables_method_refreshes (
     organization_id, capital_project_id, intake_session_id, supplement_draft_id,

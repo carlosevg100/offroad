@@ -2,7 +2,13 @@ import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 export const WORKER_RUNTIME_SCHEMA_VERSION =
-  "document-worker-runtime.2026-09-07.r01-complete-refresh.v2" as const;
+  "document-worker-runtime.2026-09-07.r01-governed-answer.v1" as const;
+
+export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
+  "integration-preview-workflow-continuity.v1",
+  "receivables-information-request-bindings.v1",
+  "receivables-complete-draft-refresh.v1",
+] as const;
 
 const runtimeSchemaContract = z.object({
   schemaVersion: z.literal(WORKER_RUNTIME_SCHEMA_VERSION),
@@ -32,6 +38,12 @@ export async function assertWorkerRuntimeSchema(
     throw new Error(
       `worker database schema contract mismatch: expected ${WORKER_RUNTIME_SCHEMA_VERSION}, received ${actual}`,
     );
+  }
+  const missing = REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter(
+    (capability) => !parsed.data.capabilities.includes(capability),
+  );
+  if (missing.length > 0) {
+    throw new Error(`worker database schema contract is missing capabilities: ${missing.join(", ")}`);
   }
   return parsed.data;
 }

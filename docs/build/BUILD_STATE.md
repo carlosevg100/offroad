@@ -2639,5 +2639,7 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   janela recente do chat. O R01 continua em sombra e não autoriza recomendação ou material externo.
 - O teste de orquestração prova os dois ramos: input incompleto não enfileira; resposta que fecha
   exatamente `structure.advanceRate` compila o draft e inicia o refresh sem chamada de modelo.
-- A migration e o contrato de boot v2 ainda precisam ser promovidos nos dois bancos, passar pela CI
-  integral e estabilizar no ECS antes de esta fatia contar como live.
+- A migration e a capacidade aditiva do contrato de boot ainda precisam ser promovidas em
+  produção, passar pela CI integral e estabilizar no ECS antes de esta fatia contar como live. O
+  número de versão permanece compatível com a imagem anterior durante o rollout; a imagem nova
+  exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila.

@@ -2,7 +2,11 @@ import {readFileSync, readdirSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {describe, expect, it, vi} from "vitest";
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {assertWorkerRuntimeSchema, WORKER_RUNTIME_SCHEMA_VERSION} from "./runtime-schema";
+import {
+  assertWorkerRuntimeSchema,
+  REQUIRED_WORKER_RUNTIME_CAPABILITIES,
+  WORKER_RUNTIME_SCHEMA_VERSION,
+} from "./runtime-schema";
 
 function clientWith(result: {data: unknown; error: {code?: string} | null}): SupabaseClient {
   return {rpc: vi.fn().mockResolvedValue(result)} as unknown as SupabaseClient;
@@ -39,6 +43,16 @@ describe("worker runtime schema preflight", () => {
     }))).rejects.toThrow(`expected ${WORKER_RUNTIME_SCHEMA_VERSION}`);
   });
 
+  it("stops when the version matches but an additive command is missing", async () => {
+    await expect(assertWorkerRuntimeSchema(clientWith({
+      data: {
+        schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+        capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
+      },
+      error: null,
+    }))).rejects.toThrow("missing capabilities: receivables-complete-draft-refresh.v1");
+  });
+
   it("keeps the image constant aligned with the latest contract migration", () => {
     const migrationsDirectory = fileURLToPath(new URL("../../../supabase/migrations/", import.meta.url));
     const contractMigration = readdirSync(migrationsDirectory)
@@ -49,5 +63,8 @@ describe("worker runtime schema preflight", () => {
     expect(contractMigration).toBeDefined();
     const sql = readFileSync(`${migrationsDirectory}/${contractMigration}`, "utf8");
     expect(sql).toContain(`'schemaVersion', '${WORKER_RUNTIME_SCHEMA_VERSION}'`);
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES) {
+      expect(sql).toContain(`'${capability}'`);
+    }
   });
 });
