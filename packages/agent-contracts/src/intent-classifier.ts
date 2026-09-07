@@ -230,13 +230,20 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     // while `Send this? I refuse` reaches the closed external grammar as one rejected clause.
     .split(/[.;!\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
     .map((clause) => clause.trim())
-    .filter(Boolean)
+    .filter(Boolean);
+  const affirmativeClauses = clauses
     .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause));
-  const exclusive = clauses.filter((clause) => /^(?:apenas|somente|so|only|just)\b/.test(clause));
-  const candidates = (exclusive.length > 0 ? exclusive : clauses)
+  const exclusive = affirmativeClauses.filter((clause) => /^(?:apenas|somente|so|only|just)\b/.test(clause));
+  const candidates = (exclusive.length > 0 ? exclusive : affirmativeClauses)
     .map((clause) => explicitCompositionForClause(input, clause))
     .filter((composition): composition is NamedComposition => composition !== null);
   const unique = [...new Set(candidates)];
+  if (unique.length === 1 && unique[0] === "introduce") {
+    const commandIndex = clauses.findIndex(hasExplicitExternalOutreach);
+    // Once an external command appears, any later authored clause makes its final polarity
+    // unresolved. Fail closed instead of discarding a retraction as an "irrelevant" clause.
+    if (commandIndex < 0 || clauses.slice(commandIndex + 1).some(Boolean)) return null;
+  }
   return unique.length === 1 ? unique[0]! : null;
 }
 
