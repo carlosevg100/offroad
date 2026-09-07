@@ -1,7 +1,7 @@
 /**
  * Runs the production Intent Classifier contract on the canonical synthetic turns.
  *
- * All sixteen turns run once for accuracy. Six plan-changing turns run three times by default
+ * All canonical turns run once for accuracy. Six plan-changing turns run three times by default
  * to prove that the same prompt preserves the same workflow identity. The report is evidence
  * for promotion; this script never promotes or changes the production router.
  */
@@ -99,6 +99,7 @@ async function main(): Promise<void> {
       });
       const startedAt = Date.now();
       let actual: IntentClassifierOutput | null = null;
+      let rawActual: IntentClassifierOutput | undefined;
       let error: string | null = null;
       let provider: string | null = null;
       let model: string | null = null;
@@ -115,7 +116,8 @@ async function main(): Promise<void> {
           thinking: "off",
           metadata: {surface: "intent_router_gold", caseId: turn.caseId, turnId: turn.id, repeat: String(repeat)},
         });
-        actual = canonicalizeIntentClassifierOutput(result.output, turn.locale);
+        rawActual = result.output;
+        actual = canonicalizeIntentClassifierOutput(rawActual, classifierInput);
         provider = result.provider;
         model = result.model;
         costUsd = result.costUsd;
@@ -128,6 +130,7 @@ async function main(): Promise<void> {
         turnId: turn.id,
         repeat,
         expected: turn.expected,
+        rawActual,
         actual,
         error,
         checks: scoreIntentGoldTurn(turn, actual),

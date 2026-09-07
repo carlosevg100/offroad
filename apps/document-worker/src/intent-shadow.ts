@@ -104,19 +104,20 @@ export async function shadowIntentEnvelope(input: {
 }): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; model: string; costUsd: number}> {
   const {context} = input;
   const spentBefore = input.gateway.spent().costUsd;
+  const classifierInput = buildIntentClassifierInput({
+    locale: context.locale,
+    latestUserMessage: context.message,
+    recentConversation: context.recentMessages.slice(-8),
+    entryJob: context.entryJob,
+    documentCount: context.documentIds.length,
+    professionalContext: context.professionalContext,
+  });
   const completion = await input.gateway.complete({
     task: "route_intent",
     system: SHADOW_ROUTING_SYSTEM,
     input: [{
       type: "text",
-      text: JSON.stringify(buildIntentClassifierInput({
-        locale: context.locale,
-        latestUserMessage: context.message,
-        recentConversation: context.recentMessages.slice(-8),
-        entryJob: context.entryJob,
-        documentCount: context.documentIds.length,
-        professionalContext: context.professionalContext,
-      })),
+      text: JSON.stringify(classifierInput),
     }],
     schema: shadowRoutingOutputSchema,
     schemaName: "shadow_routing_output",
@@ -125,7 +126,7 @@ export async function shadowIntentEnvelope(input: {
     thinking: "off",
     metadata: {surface: "shadow_router"},
   });
-  const output = canonicalizeIntentClassifierOutput(completion.output, context.locale);
+  const output = canonicalizeIntentClassifierOutput(completion.output, classifierInput);
   const envelope = stampIntentEnvelope(output, context, input.now);
   return {envelope, output, model: completion.model, costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore)};
 }

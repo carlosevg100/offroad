@@ -7,6 +7,9 @@ import {
   namedCompositionSchema,
   primaryWorkSchema,
   workResponsibilitySchema,
+  type NamedComposition,
+  type PrimaryWork,
+  type WorkResponsibility,
 } from "./intent-envelope";
 
 export const intentClassifierInputSchema = z.object({
@@ -81,23 +84,198 @@ const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => 
   ? "Qual material, documento ou assunto você quer que eu examine, e qual resultado você espera?"
   : "Which material, document or subject should I examine, and what result do you expect?";
 
+const normalizeForPolicy = (value: string): string => value
+  .normalize("NFKD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLocaleLowerCase("pt-BR");
+
+const worksByComposition: Partial<Record<NamedComposition, readonly PrimaryWork[]>> = {
+  find_and_organize_information: ["find_and_organize"],
+  extract_and_reconcile_data: ["extract_and_reconcile"],
+  understand_company_sector_asset: ["understand"],
+  answer_a_question: ["extract_and_reconcile"],
+  analyze_performance_and_credit: ["analyze", "model"],
+  build_or_review_model: ["model"],
+  diagnose_capital_structure: ["capital_strategy", "analyze", "model"],
+  develop_alternatives: ["capital_strategy", "analyze", "model"],
+  design_indicative_structure: ["capital_strategy", "analyze"],
+  read_contract_covenant_waterfall: ["read_documents", "analyze"],
+  prepare_meeting: ["understand", "capital_strategy", "model"],
+  prepare_material: ["capital_strategy", "analyze", "model"],
+  review_work: ["analyze"],
+  prepare_decision: ["capital_strategy", "analyze", "model"],
+  evaluate_received_opportunity: ["analyze", "read_documents"],
+  map_market_and_precedents: ["market"],
+  identify_capital: ["capital_match", "market"],
+  introduce: ["capital_match"],
+  monitor: ["find_and_organize", "extract_and_reconcile", "analyze"],
+  manage_work: ["find_and_organize"],
+};
+
+const depthByComposition: Partial<Record<NamedComposition, "point" | "preliminary" | "institutional">> = {
+  find_and_organize_information: "preliminary",
+  understand_company_sector_asset: "preliminary",
+  answer_a_question: "point",
+  analyze_performance_and_credit: "preliminary",
+  build_or_review_model: "institutional",
+  diagnose_capital_structure: "institutional",
+  develop_alternatives: "preliminary",
+  design_indicative_structure: "institutional",
+  read_contract_covenant_waterfall: "institutional",
+  prepare_meeting: "preliminary",
+  prepare_material: "institutional",
+  review_work: "institutional",
+  prepare_decision: "institutional",
+  evaluate_received_opportunity: "preliminary",
+  map_market_and_precedents: "preliminary",
+  identify_capital: "preliminary",
+  introduce: "institutional",
+  monitor: "preliminary",
+  manage_work: "point",
+};
+
+const responsibilitiesByComposition: Partial<Record<NamedComposition, readonly WorkResponsibility[]>> = {
+  design_indicative_structure: ["producer", "coordinator"],
+  prepare_meeting: ["producer", "coordinator"],
+  prepare_material: ["producer", "coordinator"],
+  review_work: ["producer", "reviewer"],
+  prepare_decision: ["producer", "sponsor"],
+  evaluate_received_opportunity: ["producer", "reviewer"],
+  identify_capital: ["producer", "coordinator"],
+  introduce: ["coordinator"],
+  manage_work: ["coordinator"],
+};
+
+function policyResponsibilities(composition: NamedComposition, input: IntentClassifierInput): readonly WorkResponsibility[] {
+  const base = responsibilitiesByComposition[composition] ?? ["producer"] as const;
+  const text = normalizeForPolicy(input.latestUserMessage);
+  const ownsDecision = /\b(a decisao (e|eh) minha|eu decido|decisao cabe a mim|i own the decision|my decision)\b/.test(text);
+  return composition === "prepare_decision" && ownsDecision ? [...base, "decision_maker"] : base;
+}
+
+/** High-precision, auditable rules take precedence only when the person's wording is explicit. */
+function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
+  const text = normalizeForPolicy(input.latestUserMessage);
+  const hasPrior = input.recentConversation.length > 0;
+  const material = /\b(material|deck|pitch|memo|one[- ]?pager|apresentacao|presentation|paginas?|pages?|planilha|spreadsheet)\b/.test(text);
+  const meeting = /\b(reuniao|meeting|conversa|conversation)\b/.test(text);
+  const materialTransition = hasPrior && /\b(gostei|selecion\w*|escolh\w*|vamos preparar|prepare the material|liked|selected|chosen)\b/.test(text);
+  const specifiedMaterial = /\b(\d+|tres|three)\s*(paginas?|pages?)\b/.test(text)
+    || /\b(deck|memo|one[- ]?pager|planilha|spreadsheet)\b/.test(text);
+
+  if (/\b(ajusta|ajustar|altera|alterar|atualiza|atualizar|recalcula|recalcular|change|update|recalculate)\b/.test(text)
+    && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
+  if (/\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/.test(text)
+    || (/\b(por que|why)\b/.test(text) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
+  if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
+  if (/\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/.test(text)) return "find_and_organize_information";
+  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|decision)\b/.test(text)) return "prepare_decision";
+  if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical)\b/.test(text)) return "review_work";
+  if (material && (specifiedMaterial || materialTransition)) return "prepare_material";
+  if (material && meeting) return "prepare_meeting";
+  return null;
+}
+
+const policyField = <T>(value: T, composition: NamedComposition) => ({
+  value,
+  state: "inferred" as const,
+  confidence: 0.99,
+  basis: `deterministic policy for ${composition}`,
+});
+
+function policyContinuity(
+  composition: NamedComposition,
+  output: IntentClassifierOutput,
+  input: IntentClassifierInput,
+): IntentClassifierOutput["routingCore"]["continuity"] {
+  const text = normalizeForPolicy(input.latestUserMessage);
+  if (composition === "monitor") return policyField("monitor" as const, composition);
+  if (/\b(esquece|ignora|novo trabalho|forget|ignore|new task)\b/.test(text)) return policyField("new" as const, composition);
+  if (composition === "build_or_review_model"
+    && /\b(ajusta|altera|atualiza|recalcula|change|update|recalculate)\b/.test(text)) return policyField("refresh" as const, composition);
+  if (input.recentConversation.length > 0 && [
+    "answer_a_question", "review_work", "prepare_material", "prepare_decision", "introduce", "map_market_and_precedents",
+  ].includes(composition)) return policyField("resume" as const, composition);
+  return output.routingCore.continuity;
+}
+
+function policyQuestion(
+  composition: NamedComposition,
+  output: IntentClassifierOutput,
+  input: IntentClassifierInput,
+): string | null {
+  if (composition === "introduce") return input.locale === "pt-BR"
+    ? "Você confirma a autorização para compartilhar externamente e qual estrutura ou termos devem orientar o envio?"
+    : "Do you confirm authorization to share externally, and which structure or terms should govern the outreach?";
+  if (composition === "prepare_material") {
+    const text = normalizeForPolicy(input.latestUserMessage);
+    const destinationIsExplicit = /\b(interno|interna|internal|cliente|client[- ]?ready|companhia|board|conselho|comite|committee)\b/.test(text);
+    if (!destinationIsExplicit) return input.locale === "pt-BR"
+      ? "Esse material deve ir diretamente à companhia ou ao cliente, ou primeiro passar por revisão interna?"
+      : "Should this material go directly to the company or client, or first go through internal review?";
+  }
+  if (composition === "prepare_meeting" && output.firstQuestion) {
+    const question = normalizeForPolicy(output.firstQuestion);
+    const changesAngle = /\b(angulo|tese|alternativa|angle|thesis)\b/.test(question);
+    const changesForm = /\b(formato|material|paginas?|deck|memo|format|pages?)\b/.test(question);
+    return changesAngle && changesForm ? output.firstQuestion : null;
+  }
+  // Evidence gaps belong to the selected executor's coverage map, not to routing.
+  return null;
+}
+
 /**
- * Converts a model-written abstention into the minimum persisted envelope shape. This is a
- * boundary adapter, not a guessed route: composition stays null and `abstain` remains the signal
- * that prevents execution. It also fails closed when the model claims confidence while omitting
- * a field the persisted envelope requires.
+ * Turns semantic reading into a stable workflow identity. The model reads the turn; finite policy
+ * derives plan-driving fields from the named composition and explicit control cues. This keeps
+ * prose flexible while composition, order, depth and responsibilities are versioned and testable.
  */
 export function canonicalizeIntentClassifierOutput(
   output: IntentClassifierOutput,
-  locale: IntentClassifierInput["locale"],
+  inputOrLocale: IntentClassifierInput | IntentClassifierInput["locale"],
 ): IntentClassifierOutput {
-  const incomplete = output.routingCore.action.value.length === 0
-    || output.routingCore.object.value.length === 0
-    || output.routingCore.desiredOutcome.value.trim().length === 0
-    || output.routingCore.audience.value.length === 0
-    || output.routingCore.workResponsibility.value.length === 0
-    || output.primaryWorks.length === 0;
-  if (!output.abstain && !incomplete) return output;
+  const input: IntentClassifierInput = typeof inputOrLocale === "string"
+    ? {locale: inputOrLocale, latestUserMessage: "", recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null}
+    : inputOrLocale;
+  const locale = input.locale;
+  const explicit = explicitComposition(input);
+  const composition = explicit ?? output.composition;
+  const mustAbstain = composition === null || (output.abstain && explicit === null);
+
+  if (!mustAbstain) {
+    const works = composition === "design_indicative_structure" && input.documentCount > 0
+      ? ["extract_and_reconcile", "capital_strategy", "analyze"] as const
+      : worksByComposition[composition] ?? output.primaryWorks.map(({work}) => work);
+    const responsibilities = policyResponsibilities(composition, input);
+    return intentClassifierOutputSchema.parse({
+      ...output,
+      routingCore: {
+        ...output.routingCore,
+        action: output.routingCore.action.value.length > 0 ? output.routingCore.action : {value: [composition], state: "unknown", confidence: null, basis: null},
+        object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{kind: "process", reference: null}], state: "unknown", confidence: null, basis: null},
+        desiredOutcome: output.routingCore.desiredOutcome.value.trim().length > 0 ? output.routingCore.desiredOutcome : {
+          value: locale === "pt-BR" ? "Concluir o trabalho solicitado." : "Complete the requested work.",
+          state: "unknown",
+          confidence: null,
+          basis: null,
+        },
+        audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
+        depth: depthByComposition[composition] ? policyField(depthByComposition[composition], composition) : output.routingCore.depth,
+        continuity: policyContinuity(composition, output, input),
+        workResponsibility: policyField([...responsibilities], composition),
+      },
+      primaryWorks: works.slice(0, 3).map((work) => ({work, confidence: 0.99})),
+      composition,
+      firstQuestion: policyQuestion(composition, output, input),
+      abstain: false,
+      abstainReason: null,
+    });
+  }
+
+  const modelQuestion = output.firstQuestion?.trim() || "";
+  const asksOutcome = /\b(resultado|objetivo|espera|precisa|result|outcome|expect)\b/.test(normalizeForPolicy(modelQuestion));
+  const question = modelQuestion
+    ? `${modelQuestion}${asksOutcome ? "" : (locale === "pt-BR" ? " E qual resultado você espera?" : " And what result do you expect?")}`
+    : abstentionQuestion(locale);
 
   return intentClassifierOutputSchema.parse({
     ...output,
@@ -118,7 +296,7 @@ export function canonicalizeIntentClassifierOutput(
     },
     primaryWorks: [{work: "understand", confidence: 0}],
     composition: null,
-    firstQuestion: output.firstQuestion?.trim() || abstentionQuestion(locale),
+    firstQuestion: question.slice(0, 600),
     abstain: true,
     abstainReason: output.abstainReason?.trim() || (locale === "pt-BR"
       ? "O objeto e o resultado esperado ainda não estão identificados."
@@ -193,6 +371,9 @@ prior objective.
 If the turn is too ambiguous to identify the referenced object and desired outcome, set abstain to
 true, composition to null and ask one question that identifies both. If one answer would change the
 work family, ordering, audience or deliverable, put that single question in firstQuestion.
+A firstQuestion does not mean abstention. When a named composition is identifiable, set abstain to
+false, select it and ask the question while work begins. A sponsor asking for meeting preparation
+is prepare_meeting even when the thesis angle or output format still needs confirmation.
 Questions about missing evidence belong to the downstream coverage engine, not here, unless the
 missing fact changes the workflow itself. For a point explanation, explicit model update, review,
 collection-only request, market query or bounded covenant analysis, leave firstQuestion null.

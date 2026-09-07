@@ -185,7 +185,7 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("abstains when the classifier abstains, and redirects a request outside the desk", async () => {
-    const abstained = await decide(classifierOutput({abstain: true, abstainReason: "two readings remain", composition: null, firstQuestion: "É para a Camil ou para outra companhia?"}));
+    const abstained = await decide(classifierOutput({abstain: true, abstainReason: "two readings remain", composition: null, firstQuestion: "É para a Camil ou para outra companhia?"}), {message: "Olha isso para mim."});
     expect(abstained.kind).toBe("abstain");
     expect(abstained.reply).toContain("É para a Camil ou para outra companhia?");
     const outside = await decide(classifierOutput({composition: "introduce", primaryWorks: [{work: "capital_match", confidence: 0.9}]}), {message: "Apresente a Camil para três fundos de crédito."});
