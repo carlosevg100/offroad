@@ -25,8 +25,11 @@ CTRL-01/CTRL-02 e não promove capacidade de produto.
 | Evidência | Verificação | Resultado |
 |---|---|---|
 | Política única | `namedCompositions` + schema/canonicalizador/stamp/fingerprint | vinte composições derivam os mesmos works, profundidade, responsabilidades e efeito; divergência é rejeitada |
+| Condição de execução | policy + control plane | `documents_present` ativa conciliação antes de estratégia somente com documentos governados; o prompt é renderizado da policy |
 | Cobertura candidate | `intent-gold.ts` | 40 turnos, vinte composições e quatro suítes: jornada, horizontal, confusão e adversarial |
-| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências ligadas aos objetos, resultado, decisão e audiência são verificados na resposta bruta; números e entidades materiais são preservados |
+| Oracle independente | `intent-gold.ts` | expectativas de aceitação não importam nem derivam a policy de produção; mudança errada na policy quebra o gate |
+| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências ligadas aos objetos, resultado, decisão e audiência são verificados na resposta bruta; polaridade estruturada impede negação por keyword |
+| Slots materiais | normalizador + gold | BRL/R$, ticket, percentual, indexador e prazo são canônicos; `R$ 50 milhões`=`BRL50m`, sete anos=84 meses, mas ausência material reprova |
 | Autoridade e evidência | carimbo do control plane + testes negativos | nunca inferidas pelo modelo; acesso ausente fica `unresolved`; cargo não concede decisão ou efeito externo |
 | Repetibilidade candidate | manifesto imutável | 40 bases + duas paráfrases reais em seis IDs = 52 observações; missing, extra, duplicate e mesmos bytes reprovam |
 | Regra | summary v2 | manifesto, quatro suítes, todos os checks e seis trios exigem 100% |

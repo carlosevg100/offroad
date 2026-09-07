@@ -21,6 +21,12 @@ mesma tabela tipada alimenta schema, canonicalizador, carimbo de runtime e finge
 - responsabilidades do trabalho;
 - efeito externo.
 
+Quando a ordem depende do contexto, a condição também pertence à policy. Para estrutura indicativa,
+documentos efetivamente presentes no control plane ativam `extract_and_reconcile` antes de
+`capital_strategy` e `analyze`; sem documentos, a sequência base continua estratégia e análise. O
+schema rejeita a variante documental quando não há documentos governados. O texto enviado ao
+classificador é renderizado dessa policy, em vez de manter uma segunda lista manual de regras.
+
 O envelope persistido rejeita qualquer divergência nesses campos. Cargo continua sendo contexto,
 nunca autoridade. Regime de evidência, grants, permissões e acesso são carimbados apenas pelo
 control plane; acesso ausente vira `unresolved`, não público. Pedidos horizontais sobre instrumento,
@@ -44,10 +50,21 @@ antes de reparos do canonicalizador, além de
 composição, abstenção, profundidade, continuidade, trabalhos, responsabilidades e pergunta.
 JSON válido ou campo meramente preenchido não é acerto.
 
+Resultado desejado, decisão e audiência carregam polaridade estruturada (`affirmed`, `negated`,
+`uncertain` ou `not_applicable`). Assim, “não preparar”, “não existe decisão” ou “não é para o VP”
+não passam pela simples presença das palavras preparar, decisão ou VP e alteram o fingerprint.
+Valores financeiros são comparados por slots canônicos: montante, moeda, percentual, indexador e
+prazo. `R$ 50 milhões` e `BRL50m`, assim como sete e 7 anos, são equivalentes; omitir BRL, ticket,
+CDI, 12% ou 84 meses quando material reprova.
+
 Um teste de integração passa uma resposta bruta semanticamente correta pelos 52 textos autorais e
 pelo canonicalizador de produção. Ele exerce precedência, negações, flexões verbais, mudança de
 continuidade e a abstenção. Esse teste local prova o contrato determinístico; não substitui a
 corrida futura com o provedor real.
+
+As expectativas do gold são um oracle de aceitação escrito no pacote de evals. Elas não importam
+nem derivam a policy de produção; desse modo, uma alteração equivocada na policy faz a integração
+falhar em vez de atualizar automaticamente a resposta considerada correta.
 
 ## Manifesto imutável e estabilidade
 

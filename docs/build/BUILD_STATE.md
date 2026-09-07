@@ -4,7 +4,9 @@
 
 - Uma única policy tipada governa as vinte composições e é consumida por schema, classificador,
   carimbo do runtime e fingerprint. O envelope rejeita divergência em works, profundidade,
-  responsabilidades ou efeito.
+  responsabilidades ou efeito. O prompt é renderizado dessa mesma policy. A condição
+  `documents_present` é governada: estrutura com anexos começa por conciliação; sem anexos, a
+  variante documental é recusada.
 - Autoridade e regime de evidência continuam exclusivos do control plane. Ausência de access basis
   resulta em `unresolved`; cargo ou contexto profissional não concedem autoridade. Pedidos
   horizontais podem operar sobre documento, instrumento ou mercado sem companhia artificial.
@@ -13,7 +15,11 @@
   observações: 40 bases e duas paráfrases autorais adicionais em seis IDs.
 - O score exige, na resposta bruta anterior ao reparo canônico, significado correto para ação,
   objetos, referências ligadas ao objeto, resultado, decisão e audiência. Números e entidades
-  materiais entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`.
+  materiais entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`. Outcome,
+  decisão e audiência têm polaridade estruturada, portanto uma negação não passa por keyword.
+- O oracle gold é independente da policy de produção. Slots normalizados preservam montante,
+  moeda, percentual, indexador e prazo; o Caso 03 exige BRL 50 milhões e começa pela conciliação
+  dos dois anexos, enquanto reunião de financiamento começa por entendimento.
 - Os 52 textos passam por um teste local raw-to-canonicalizer. O summary recompõe checks,
   fingerprint e manifesto, e rejeita resposta nula, erro de provedor, expected, checks ou hashes
   forjados. Missing, extra, duplicate, suíte errada e bytes repetidos também reprovam.
