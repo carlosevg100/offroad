@@ -100,7 +100,8 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
 
   const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produzir|fazer|criar|prepare|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text);
   const negatedMonitor = /\b(nao|not|sem|without)\s+(?:quero\s+|want\s+to\s+)?(?:monitorar|acompanhar|monitor|track)\b/.test(text);
-  const externalOutreach = /\b(envia|enviar|manda|mandar|apresenta|apresentar|conecta|conectar|introduz|introduzir|send|share|connect|introduce)\b/.test(text)
+  const negatedOutreach = /\b(nao|not|sem|without)\s+(?:envie|enviar|contate|contatar|conecte|conectar|introduza|introduzir|send|contact|connect|introduce)\b/.test(text);
+  const externalOutreach = !negatedOutreach && /\b(envia|enviar|manda|mandar|apresenta|apresentar|conecta|conectar|introduz|introduzir|send|share|connect|introduce)\b/.test(text)
     && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text);
 
   if (/\b(ajusta|ajustar|altera|alterar|atualiza|atualizar|recalcula|recalcular|change|update|recalculate)\b/.test(text)
@@ -118,7 +119,7 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
   if (/\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/.test(text)) return "extract_and_reconcile_data";
   if (/\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/.test(text)) return "manage_work";
   if (externalOutreach) return "introduce";
-  if (/\b(quem financiaria|quais fundos|matching|capital aderente|who would finance|which funds|find capital)\b/.test(text)) return "identify_capital";
+  if (/\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ investidores|who would finance|which funds|find capital|identify investors)\b/.test(text)) return "identify_capital";
   if (!negatedMonitor && /\b(monitore|monitorar|acompanhe|acompanhar|avise quando|todo trimestre|monitor|track|alert me|quarterly)\b/.test(text)) return "monitor";
   if (/\b(comparaveis|precedentes|condicoes de mercado|como esta o mercado|pricing|spread|comparables|precedents|market conditions)\b/.test(text)) return "map_market_and_precedents";
   if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|decision)\b/.test(text)) return "prepare_decision";
@@ -133,6 +134,19 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
   if (/\b(entender|entenda|compreender|understand|explique|explain)\b/.test(text)) return "understand_company_sector_asset";
   if (/\b(levante|localize|ache|baixe|organize|atualize|find|locate|download|organize|update)\b/.test(text)) return "find_and_organize_information";
   return null;
+}
+
+/** Requests that explicitly delegate the missing objective, fabricate evidence or route by title. */
+function requiresObjectiveClarification(input: IntentClassifierInput): boolean {
+  const text = normalizeForPolicy(input.latestUserMessage);
+  const asksToFabricate = /\b(invente|inventar|fabrique|fabricar|invent|fabricate|make up)\b/.test(text)
+    && /\b(companhia|empresa|company|documentos?|documents?|evidencias?|evidence)\b/.test(text);
+  const asksToGuessObjective = /\b(conclua|descubra|adivinhe|infira|guess|infer|determine)\b/.test(text)
+    && /\b(qual operacao|o que eu quero|meu objetivo|which operation|what i want|my objective)\b/.test(text);
+  const routesByTitleOnly = /\b(normalmente|padrao|tipic[oa]|normally|standard|typical)\b/.test(text)
+    && /\b(cargo|posicao|funcao|managing director|diretor|analista|banker|role|position|title)\b/.test(text)
+    && !/\b(companhia|empresa|company|contrato|contract|modelo|model|operacao|operation|material|documento|document|mercado|market)\b/.test(text);
+  return asksToFabricate || asksToGuessObjective || routesByTitleOnly;
 }
 
 const policyField = <T>(value: T, composition: NamedComposition) => ({
@@ -198,7 +212,9 @@ export function canonicalizeIntentClassifierOutput(
   const locale = input.locale;
   const explicit = explicitComposition(input);
   const composition = explicit ?? output.composition;
-  const mustAbstain = composition === null || (output.abstain && explicit === null);
+  const mustAbstain = requiresObjectiveClarification(input)
+    || composition === null
+    || (output.abstain && explicit === null);
 
   if (!mustAbstain) {
     const policy = compositionPolicy(composition);

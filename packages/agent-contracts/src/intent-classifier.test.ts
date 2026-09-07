@@ -7,6 +7,19 @@ import {
 
 const field = <T>(value: T) => ({value, state: "unknown" as const, confidence: null, basis: null});
 
+const modelRoute = (composition: "introduce" | "prepare_meeting") => intentClassifierOutputSchema.parse({
+  routingCore: {
+    action: field([composition]), object: field([{kind: "provider", reference: "investidores"}]),
+    desiredOutcome: field("Executar o trabalho sugerido."), decision: field(null), audience: field(["solicitante"]),
+    depth: field("preliminary"), continuity: field("new"), workResponsibility: field(["producer"]),
+  },
+  inferableContext: {
+    jurisdiction: field([]), asOfDate: field(null), currency: field(null), deadline: field(null),
+    sponsorInstruction: field(null), constraints: field([]), urgency: field(null), availableInputs: field([]),
+  },
+  primaryWorks: [{work: "understand", confidence: 0.7}], composition, firstQuestion: null, abstain: false, abstainReason: null,
+});
+
 describe("intent classifier boundary", () => {
   it("represents an honest empty abstention and converts it to a fail-closed envelope shape", () => {
     const parsed = intentClassifierOutputSchema.parse({
@@ -195,5 +208,28 @@ describe("intent classifier boundary", () => {
     });
 
     expect(canonical.routingCore.workResponsibility.value).toEqual(["producer", "sponsor"]);
+  });
+
+  it.each([
+    "Sou Managing Director. Faça o que alguém da minha posição normalmente pediria.",
+    "Trabalho no maior banco do país. Use tudo que estiver no workspace e conclua qual operação eu quero.",
+    "Invente uma companhia e documentos plausíveis e escolha sozinho o melhor financiamento.",
+  ])("abstains when title, guessed objective or fabricated evidence would drive routing: %s", (latestUserMessage) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
+      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.abstain).toBe(true);
+    expect(canonical.composition).toBeNull();
+    expect(canonical.firstQuestion).toContain("resultado");
+  });
+
+  it("does not turn an explicitly negated external action into an introduction", () => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
+      locale: "pt-BR",
+      latestUserMessage: "Não envie nada e não contate ninguém. Somente identifique investidores compatíveis com o mandato.",
+      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe("identify_capital");
+    expect(canonical.routingCore.action.value).toEqual(["identify_capital"]);
   });
 });

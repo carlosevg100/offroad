@@ -42,6 +42,28 @@ const exactSet = <T extends string>(actual: readonly T[], expected: readonly T[]
 };
 export const fingerprintIntentMessage = (message: string): string => createHash("sha256").update(message, "utf8").digest("hex");
 
+const semanticTagPatterns = {
+  company: /\b(camil|aurora|cogna|delta|companhia|empresa|company)\b/,
+  leverage: /\b(alavancagem|leverage|4[,.]7x|4[,.]7 vezes)\b/,
+  covenant: /\b(covenant|headroom|clausula|clause)\b/,
+  refinancing: /\b(refinanc|alongamento|liability management)\b/,
+  receivables: /\b(recebiveis|receivables|tape|aging)\b/,
+  instrument: /\b(debenture|ccb|fidc|bond|loan|instrumento|instrument)\b/,
+  model: /\b(modelo|model|projecao|projection|premissa|assumption)\b/,
+  material: /\b(material|deck|pitch|memo|one-pager|apresentacao|presentation)\b/,
+  meeting: /\b(reuniao|meeting|conversa|conversation)\b/,
+  decision: /\b(decisao|decision|conselho|board|comite|committee)\b/,
+  capital: /\b(capital|divida|debt|financiamento|financing|emissao|issuance)\b/,
+  market: /\b(mercado|market|investidores|investors|fundos|funds|financiadores|lenders)\b/,
+  document: /\b(documento|document|contrato|contract|escritura|indenture|waterfall)\b/,
+  performance: /\b(receita|revenue|ebitda|caixa|cash|liquidez|liquidity|desempenho|performance)\b/,
+} as const;
+
+function semanticTags(value: string): string[] {
+  const text = normalizeText(value);
+  return Object.entries(semanticTagPatterns).filter(([, pattern]) => pattern.test(text)).map(([tag]) => tag).sort();
+}
+
 function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisionCategorySchema> {
   const decision = output.routingCore.decision.value?.trim();
   if (!decision) return "none";
@@ -111,8 +133,8 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
   const payload = {
     abstain: output.abstain, composition, policy,
     action: output.routingCore.action.value,
-    objects: output.routingCore.object.value.map((object) => ({kind: object.kind, reference: normalizeText(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-    desiredOutcome: normalizeText(output.routingCore.desiredOutcome.value),
+    objects: output.routingCore.object.value.map((object) => ({kind: object.kind, semanticTags: semanticTags(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+    desiredOutcomeTags: semanticTags(output.routingCore.desiredOutcome.value),
     decision: {present: Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
     audience: classifyAudience(output), depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
     primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
