@@ -3454,4 +3454,13 @@ campo exato, tipo, unidade, limites, opções e dataset; somente uma resposta vi
 patch. O worker valida e normaliza sem modelo, persiste uma nova revisão acumulada e preserva a
 linhagem até o usuário e a pergunta. Isso substitui a dependência de texto recente por estado de
 projeto, mas não promove a análise de recebíveis a expert nem autoriza output externo. A migration
-de staging é `20260907050148_receivables_information_request_bindings.sql`.
+de produção é `20260907051254_receivables_information_request_bindings.sql`.
+
+O rollout agora também tem uma barreira dentro do próprio processo. Após autenticar e antes de
+construir a fila, a imagem consulta `worker_runtime_schema_contract_v1` e compara a versão exata
+com a constante compilada. Banco atrasado, endpoint ausente ou resposta malformada encerram a task
+nova antes de qualquer claim; o ECS não substitui a versão saudável. O contrato não contém dados
+de cliente, não aceita `anon` e tem teste que mantém SQL e TypeScript alinhados. A migration foi
+aplicada em staging e produção e usa no repositório o carimbo efetivo de produção
+`20260907051611_worker_runtime_schema_contract.sql`; CI e estabilização do serviço ainda são a
+prova operacional restante.

@@ -30,6 +30,7 @@ import {processIntegrationPreviewRunJob} from "./integration-preview";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
+import {assertWorkerRuntimeSchema} from "./runtime-schema";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -70,6 +71,12 @@ async function main(): Promise<void> {
   });
   if (signInError) throw new Error(`the worker could not sign in: ${signInError.message}`);
   log("worker.signed_in");
+
+  const runtimeSchema = await assertWorkerRuntimeSchema(supabase);
+  log("worker.schema_contract_verified", {
+    schemaVersion: runtimeSchema.schemaVersion,
+    capabilities: runtimeSchema.capabilities.length,
+  });
 
   const queue = createQueueClient(supabase, {
     workerToken: config.OFFROAD_WORKER_TOKEN,
