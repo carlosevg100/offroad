@@ -5,6 +5,7 @@ import {describe, expect, it} from "vitest";
 import {buildDecisionArtifactContract, type DecisionArtifactContractInput} from "./decision-artifact";
 import {
   bindRenderedMaterialToDecisionArtifact,
+  bindRenderedMaterialsToDecisionArtifact,
   buildRenderedMaterialManifest,
   renderedMaterialManifestSchema,
   type RenderedMaterialManifestInput,
@@ -67,7 +68,7 @@ function decisionFixture(): DecisionArtifactContractInput {
 }
 
 describe("governed rendered material", () => {
-  it("signs the exact bytes, tenant path, renderer and template", () => {
+  it("fingerprints the exact bytes, tenant path, renderer and template", () => {
     const manifest = buildRenderedMaterialManifest(materialFixture());
     verifyRenderedMaterialBytes(manifest, bytes);
     expect(renderedMaterialManifestSchema.parse(manifest).manifestFingerprint).toHaveLength(64);
@@ -80,6 +81,24 @@ describe("governed rendered material", () => {
 
   it("refuses tenant path traversal", () => {
     expect(() => buildRenderedMaterialManifest(materialFixture({storage: {bucket: "case-artifacts", objectPath: `${organizationId}/${projectId}/materials/../other.xlsx`, state: "stored", etag: "etag"}}))).toThrow(/organization and project material scope/);
+  });
+
+  it.each([
+    "camil\r\nX-Evil: injected.xlsx",
+    "camil\u0085X-Evil: injected.xlsx",
+    "camil%0aX-Evil.xlsx",
+    "camil%0dX-Evil.xlsx",
+    "camil\"quote.xlsx",
+    "camil%22quote.xlsx",
+    "camil'quote.xlsx",
+    "camil%27quote.xlsx",
+    "../camil.xlsx",
+    "folder/camil.xlsx",
+    "folder%2fcamil.xlsx",
+    "folder\\camil.xlsx",
+    "folder%5ccamil.xlsx",
+  ])("refuses an unsafe material file name: %s", (fileName) => {
+    expect(() => buildRenderedMaterialManifest(materialFixture({fileName}))).toThrow(/unsafe path or header characters/);
   });
 
   it("does not call an uninspected material release eligible", () => {
@@ -98,5 +117,33 @@ describe("governed rendered material", () => {
     const contract = buildDecisionArtifactContract(decisionFixture());
     const manifest = buildRenderedMaterialManifest(materialFixture());
     expect(() => bindRenderedMaterialToDecisionArtifact(contract, manifest)).toThrow(/different decision contract/);
+  });
+
+  it("binds workbook and presentation receipts in one contract rebuild", () => {
+    const contract = buildDecisionArtifactContract(decisionFixture());
+    const workbook = buildRenderedMaterialManifest(materialFixture({decisionContractFingerprint: contract.contractFingerprint}));
+    const presentationBytes = new TextEncoder().encode("governed presentation bytes");
+    const presentationSha = createHash("sha256").update(presentationBytes).digest("hex");
+    const presentation = buildRenderedMaterialManifest({
+      ...materialFixture({decisionContractFingerprint: contract.contractFingerprint}),
+      id: "gc02-presentation-v1",
+      surface: "presentation",
+      format: "pptx",
+      fileName: "camil-estrutura-capital-v1.pptx",
+      mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      byteLength: presentationBytes.byteLength,
+      contentSha256: presentationSha,
+      storage: {bucket: "case-artifacts", objectPath: `${organizationId}/${projectId}/materials/${presentationSha}.pptx`, state: "stored", etag: "etag-deck"},
+    });
+    const bound = bindRenderedMaterialsToDecisionArtifact(contract, [workbook, presentation]);
+    expect(bound.views.find((view) => view.surface === "workbook")?.artifactFingerprint).toBe(contentSha256);
+    expect(bound.views.find((view) => view.surface === "presentation")?.artifactFingerprint).toBe(presentationSha);
+  });
+
+  it("fails closed if one receipt in a multi-surface binding set belongs to another snapshot", () => {
+    const contract = buildDecisionArtifactContract(decisionFixture());
+    const valid = buildRenderedMaterialManifest(materialFixture({decisionContractFingerprint: contract.contractFingerprint}));
+    const stale = buildRenderedMaterialManifest({...materialFixture(), id: "stale-deck", surface: "presentation", format: "pptx", fileName: "stale.pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"});
+    expect(() => bindRenderedMaterialsToDecisionArtifact(contract, [valid, stale])).toThrow(/different decision contract/);
   });
 });

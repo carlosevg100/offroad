@@ -162,6 +162,24 @@ por este trabalho. Capability ledger, Control Register, jornadas, Execution Brie
 progresso seguro são executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work
 products de referência, os eventos narrativos por frente e a edição governada do plano.
 
+## Fundação de materiais institucionais governados, 07/09/2026
+
+- O contrato universal de decisão passou a representar séries financeiras com linhagem por ponto,
+  além de claims, fontes, premissas e lacunas. O mesmo vencimento contratual alimenta conversa,
+  workbook e apresentação sem ser redigitado em cada superfície.
+- O renderer de apresentações produz PPTX nativo 16:9 a partir do contrato, com gráfico real de
+  vencimentos, paginação de blocos densos e os símbolos circulares atuais da marca. Nenhum número é
+  criado pelo layout.
+- No preview allowlisted, o worker renderiza o arquivo com LibreOffice, inspeciona PDF e páginas,
+  armazena os bytes exatos por capability de uso único e vincula o SHA-256 à superfície de
+  apresentação. A rota autenticada revalida tamanho e hash antes do download.
+- O manifesto mantém o material como `internal_only` e não elegível para liberação enquanto a
+  revisão visual estiver pendente. O código desta fundação está presente, mas sua transição no
+  Program Board continua planejada e a qualidade permanece `unsupported` até existirem CI, merge e
+  gate real. Não há aprovação de template de cliente nem promoção da suite completa de materiais.
+- A próxima lacuna desta frente é ligar o modelo financeiro governado ao mesmo ciclo de armazenamento
+  e revisão, depois incorporar DOCX nativo, ingestão de template e diff visual/versionado.
+
 ## Polimento da entrada e correção do menu, 04/09/2026
 
 - Corrigido um defeito que eu mesmo introduzi: recolher o menu escondia o próprio botão de
@@ -2712,3 +2730,32 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   executor geral empacotado e sua capability ainda é shadow.
 - Vitest e typecheck focados estão verdes. O Docker local está indisponível; migration, RLS e SQL
   adversarial permanecem pendentes do gate Supabase da CI antes de qualquer promoção para tested.
+
+## Materiais Office governados no Caso 01, candidate/internal, 07/09/2026
+
+- A apresentação e o workbook de decisão partem do mesmo `Decision Artifact` governado por
+  fingerprint. Os dois
+  arquivos são gerados como Office nativo, passam pela suíte LibreOffice/pdfinfo/pdftoppm, são
+  armazenados no bucket privado por capability de uso único e recebem manifesto com SHA-256,
+  tenant, projeto, renderer, template, qualidade, lineage e estado de release.
+- Os dois manifestos são vinculados em uma única reconstrução do contrato. Isso não é uma transação
+  atômica com Storage: upload, registro do artifact e persistência do contrato são operações
+  separadas. Uma falha posterior pode deixar um objeto privado imutável sem referência; ainda não
+  existe um reconciliador ou coletor para esses objetos. O download autenticado
+  falha fechado se faltar manifesto, se organização/projeto divergirem, se o contrato mais recente
+  não contiver o binding exato ou se os bytes baixados tiverem sido alterados.
+- A planilha ad hoc, antes reconstruída pela rota web a partir da síntese, foi removida. Sem a suíte
+  de inspeção completa, o plano conversacional pode terminar, mas nenhum PPTX/XLSX é gravado,
+  vinculado ou exposto. O run registra um status operacional `governed_material_pipeline_unavailable`
+  separado das lacunas econômicas, marca a etapa de materiais como `skipped` e a conversa explica
+  por que nenhum arquivo foi criado. O job geral conclui apenas para publicar essa explicação; nenhuma
+  interface deve representar a etapa como material concluído. Esse ramo é separado do teste que prova
+  geração, inspeção e storage reais.
+- O bloqueio observado no E2E do PR #523 não era lentidão: o job falhou em 646 ms com
+  `spawn soffice ENOENT`, mas a jornada aguardou por 180 segundos uma mensagem que nunca chegaria.
+  O boot agora mede LibreOffice, pdfinfo e pdftoppm e só injeta a capacidade quando os três estão
+  presentes; aumentar o timeout teria apenas escondido o diagnóstico.
+- O XLSX entregue nesta fatia é um **workbook de decisão**: projeta claims, premissas editáveis,
+  séries, fontes e lacunas já presentes no contrato e preserva seus identificadores. Não projeta
+  dimensões ausentes e não deve ser chamado de modelo financeiro integrado. O modelo institucional
+  integrado, templates de cliente, revisão visual aprovada e DOCX nativo continuam fora do escopo.

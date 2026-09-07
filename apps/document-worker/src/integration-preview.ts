@@ -11,9 +11,10 @@
  *
  * Everything it writes carries the preview mark. Methods stay in the implemented rung.
  */
-import {randomUUID} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
-import {fingerprintJson, type DecisionArtifactContract} from "@offroad/case-understanding";
+import {renderDecisionWorkbook, renderInstitutionalPresentation, type InstitutionalPresentationTemplate} from "@offroad/case-export";
+import {bindRenderedMaterialsToDecisionArtifact, buildRenderedMaterialManifest, decisionArtifactIdentityReport, fingerprintJson, verifyRenderedMaterialBytes, type DecisionArtifactContract, type RenderedMaterialManifest} from "@offroad/case-understanding";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 
@@ -45,6 +46,7 @@ import {z} from "zod";
 
 import {describeJobFailure} from "./job-failure";
 import {compilePreviewDecisionArtifact} from "./preview-decision-artifact";
+import type {MaterialRenderInspector} from "./material-render-inspection";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 export const PREVIEW_MARK = "[Validação interna, integration_preview]";
@@ -236,8 +238,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        "Resposta vinculada à pergunta em aberto. Vou incorporá-la ao contexto, recompilar o plano e preservar por fingerprint o trabalho que não mudou.",
-        "Answer bound to the open question. I will incorporate it into context, recompile the plan, and preserve unchanged work by fingerprint.")}`,
+        "Resposta vinculada à pergunta em aberto. Vou incorporá-la ao contexto, recompilar o plano e preservar o trabalho que não mudou.",
+        "Answer bound to the open question. I will incorporate it into context, recompile the plan, and preserve the work that did not change.")}`,
       activation: buildPreviewActivation(composition, request, {}, input, {answers: [{questionId: input.answeredQuestion.id, answer: input.message}]}),
     };
   }
@@ -253,8 +255,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Vou planejar o material a partir dos objetos já assinados: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
-        `I will plan the material from the signed objects: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
+        `Vou planejar o material a partir das informações governadas e rastreáveis: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
+        `I will plan the material from governed and traceable information: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
       activation: buildPreviewActivation("prepare_material", request, {}, input),
     };
   }
@@ -268,8 +270,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Premissa registrada (${describePremises(premises)}). Só os nós cujas entradas mudam recalculam: a comparação antes e depois e o plano da devolutiva; ledger, conciliação, covenants, vencimentos, juros, custo de saída e cenários ficam como estavam, por fingerprint.`,
-        `Premise recorded (${describePremises(premises)}). Only the nodes whose inputs change recompute: the before-and-after comparison and the readout plan; ledger, reconciliation, covenants, maturities, interest, exit cost and scenarios stay as they were, by fingerprint.`)}`,
+        `Premissa registrada (${describePremises(premises)}). Só o que depende dela será recalculado: a comparação antes e depois e o plano da devolutiva; ledger, conciliação, covenants, vencimentos, juros, custo de saída e cenários permanecem como estavam.`,
+        `Premise recorded (${describePremises(premises)}). Only the work that depends on it will be recalculated: the before-and-after comparison and the readout plan; ledger, reconciliation, covenants, maturities, interest, exit cost and scenarios remain unchanged.`)}`,
       activation: buildPreviewActivation("change_premise", request, premises, input),
     };
   }
@@ -289,7 +291,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
 
   if (patterns.deepen.test(input.message)) {
     const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: "vp", others: []}, form: "first_deliverable", pages: null, sponsorInstruction, undefinedAspects: []};
-    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou replica por fingerprint e o que estiver bloqueado continua declarado como lacuna.", "I will rerun the analysis on the same state; whatever is unchanged replays by fingerprint and whatever is blocked stays declared as a gap.")}`, activation: buildPreviewActivation("deepen", request, {}, input)};
+    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou será reaproveitado e o que estiver bloqueado continuará declarado como lacuna.", "I will rerun the analysis on the same state; unchanged work will be reused and anything blocked will remain declared as a gap.")}`, activation: buildPreviewActivation("deepen", request, {}, input)};
   }
 
   return {kind: "converse", reply: `${mark} ${t(locale,
@@ -297,7 +299,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     "The analysis is already in the project. I can prepare the material (\"let's prepare the material: three pitch pages\"), change a premise (\"assume a rate of 15.50% per year\") or explain where a number came from (\"where did the leverage come from?\").")}`, activation: null};
 }
 
-/** A question about a number is answered from the signed objects, with the definition and the anchors they carry. */
+/** A question about a number is answered from fingerprint-governed objects, with their definition and anchors. */
 export function answerFromObjects(input: PreviewTurnInput): string {
   const locale = input.locale;
   if (patterns.leverage.test(input.message)) {
@@ -318,8 +320,8 @@ export function answerFromObjects(input: PreviewTurnInput): string {
   }
   const steps = case01PreviewSteps.filter((step) => input.priorOutputs.has(step.taskId));
   return t(locale,
-    `Cada número vem de um objeto assinado: ${steps.map((step) => `${step.label.pt} (${step.methodId} ${step.methodVersion})`).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e âncoras.`,
-    `Every number comes from a signed object: ${steps.map((step) => `${step.label.en} (${step.methodId} ${step.methodVersion})`).join("; ")}. Ask for the number you want to trace, such as leverage, and I bring the definition, period, accounts and anchors.`);
+    `Cada número vem de informações governadas e rastreáveis: ${steps.map((step) => step.label.pt).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e fontes.`,
+    `Every number comes from governed and traceable information: ${steps.map((step) => step.label.en).join("; ")}. Ask for the number you want to trace, such as leverage, and I will bring the definition, period, accounts and sources.`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -355,6 +357,10 @@ export type IntegrationPreviewDependencies = {
   queue: QueueClient;
   /** In live mode the run makes one bounded call for the questions; without it the fixed alignment points are used. */
   gateway?: ModelGateway;
+  /** Exact Office render + independent PDF/page raster gate; supplied by the production worker. */
+  materialInspector?: MaterialRenderInspector;
+  /** Brand/client template selected before execution; visual choices never alter economic objects. */
+  presentationTemplate?: InstitutionalPresentationTemplate;
   log?: (event: string, detail?: Record<string, unknown>) => void;
   now?: () => Date;
 };
@@ -453,6 +459,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const artifactByTask = new Map<string, {id: string; artifactFingerprint: string; replayed: boolean}>();
     const decisionContractArtifacts: Array<{id: string; artifactFingerprint: string}> = [];
     const decisionContracts: DecisionArtifactContract[] = [];
+    let materialExecutionStatus: {state: "unavailable"; code: string; messagePt: string; messageEn: string} | null = null;
     const previousBriefArtifact = priorByTask.get("A01");
     const previousBriefOutput = previousBriefArtifact ? outputOf(previousBriefArtifact) : null;
     const runContext: PreviewRunContext = {
@@ -464,12 +471,151 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     };
     const hadPriorDecisionContract = context.prior_artifacts.some((artifact) => artifact.artifact_type === "preview_decision_contract");
     const recordDecisionContract = async (input: {taskRunId: string; inputFingerprint: string; dependencies: Array<{artifactId: string; artifactFingerprint: string}>}) => {
-      const contract = compilePreviewDecisionArtifact({
+      let contract = compilePreviewDecisionArtifact({
         caseId: case01.case01EvidenceManifest.caseId,
         asOf: case01.case01EvidenceManifest.referenceDate,
         outputs,
         premises,
       });
+      const contractDependencies = [...input.dependencies];
+      if (context.preview.composition === "prepare_material"
+        && dependencies.materialInspector
+        && queue.storeCapitalProjectMaterial) {
+        const companyName = typeof context.session.company_profile.name === "string"
+          ? context.session.company_profile.name
+          : null;
+        const inspectedAt = (dependencies.now?.() ?? new Date()).toISOString();
+        const sourceContract = contract;
+        const materialManifests: RenderedMaterialManifest[] = [];
+
+        if (dependencies.presentationTemplate) {
+          const rendered = await renderInstitutionalPresentation({
+            contract: sourceContract,
+            title: `${companyName ?? context.project.project_name} · Estrutura de capital`,
+            subtitle: request.form === "board_deck" ? "Análise para discussão com o Conselho de Administração" : "Material de trabalho para discussão",
+            ...(companyName ? {companyName} : {}),
+            ...(request.audience?.primary ? {audience: request.audience.primary} : {}),
+            locale,
+            template: dependencies.presentationTemplate,
+          });
+          const inspection = await dependencies.materialInspector.inspect({bytes: rendered.bytes, contentSha256: rendered.audit.fileSha256, format: "pptx", inspectedAt});
+          const stored = await queue.storeCapitalProjectMaterial(job, {bytes: rendered.bytes, contentSha256: rendered.audit.fileSha256, format: "pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"});
+          const templateFingerprint = fingerprintJson({
+            id: dependencies.presentationTemplate.id, version: dependencies.presentationTemplate.version, origin: dependencies.presentationTemplate.origin,
+            colors: dependencies.presentationTemplate.colors, fonts: dependencies.presentationTemplate.fonts,
+            logo: dependencies.presentationTemplate.logo ? createHash("sha256").update(dependencies.presentationTemplate.logo.data).digest("hex") : null,
+            logoOnDark: dependencies.presentationTemplate.logoOnDark ? createHash("sha256").update(dependencies.presentationTemplate.logoOnDark.data).digest("hex") : null,
+          });
+          const manifest = buildRenderedMaterialManifest({
+            schemaVersion: "2026.09.07-v1", id: `preview-presentation-${rendered.audit.fileSha256.slice(0, 16)}`,
+            organizationId: context.project.organization_id, projectId: context.project.id, caseId: sourceContract.caseId,
+            decisionContractFingerprint: sourceContract.contractFingerprint, surface: "presentation", format: "pptx",
+            fileName: `offroad-${sourceContract.caseId}-${sourceContract.asOf}.pptx`, mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            byteLength: rendered.bytes.byteLength, contentSha256: rendered.audit.fileSha256,
+            renderer: {id: "offroad-institutional-presentation", version: rendered.audit.rendererVersion},
+            template: {id: dependencies.presentationTemplate.id, version: dependencies.presentationTemplate.version, fingerprint: templateFingerprint, origin: dependencies.presentationTemplate.origin},
+            storage: {bucket: "case-artifacts", objectPath: stored.objectPath, state: "stored", etag: stored.storageEtag}, generatedAt: inspectedAt,
+            quality: {schemaValidated: rendered.audit.packageInspection.valid, numericIdentityPassed: decisionArtifactIdentityReport(sourceContract).valid, formulaAuditPassed: true, visualInspection: "not_run", openIssues: [{code: "visual_review_pending", severity: "high", detail: `Renderability passed for ${inspection.pdf.pageCount} pages; visual approval remains required before release.`}], releaseEligible: false},
+            release: {state: "internal_only", recipientIds: []}, claimIds: rendered.audit.renderedClaimIds, sourceIds: rendered.audit.renderedSourceIds, assumptionIds: rendered.audit.renderedAssumptionIds, gapIds: rendered.audit.renderedGapIds,
+          });
+          verifyRenderedMaterialBytes(manifest, rendered.bytes);
+          const materialArtifact = await queue.recordCapitalProjectArtifact(job, {
+            taskRunId: input.taskRunId, artifactType: "preview_presentation_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
+            // Every output produced by one TaskRun is bound to that run's exact input fingerprint.
+            // The format-specific derivation stays explicit in the artifact content and therefore
+            // in the immutable artifact fingerprint; it must not impersonate a different task input.
+            inputFingerprint: input.inputFingerprint,
+            content: {
+              manifest,
+              rendererAudit: rendered.audit,
+              renderInspection: inspection,
+              derivationFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "pptx", template: templateFingerprint}),
+            },
+            evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}], dependencies: input.dependencies,
+          });
+          materialManifests.push(manifest);
+          contractDependencies.push({artifactId: materialArtifact.id, artifactFingerprint: materialArtifact.artifactFingerprint});
+          log("integration_preview.presentation_stored", {job: job.job_id, pages: inspection.pdf.pageCount, bytes: rendered.bytes.byteLength, replayed: stored.replayed});
+        }
+
+        const workbook = await renderDecisionWorkbook({contract: sourceContract, locale, title: `${companyName ?? context.project.project_name} · Workbook de decisão`, ...(companyName ? {companyName} : {})});
+        const workbookInspection = await dependencies.materialInspector.inspect({bytes: workbook.bytes, contentSha256: workbook.audit.contentSha256, format: "xlsx", inspectedAt});
+        const workbookStored = await queue.storeCapitalProjectMaterial(job, {bytes: workbook.bytes, contentSha256: workbook.audit.contentSha256, format: "xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+        const workbookTemplateFingerprint = fingerprintJson({id: "offroad-decision-workbook", version: workbook.audit.rendererVersion, origin: "offroad_house", artifactClass: "decision_workbook"});
+        const workbookManifest = buildRenderedMaterialManifest({
+          schemaVersion: "2026.09.07-v1", id: `preview-workbook-${workbook.audit.contentSha256.slice(0, 16)}`,
+          organizationId: context.project.organization_id, projectId: context.project.id, caseId: sourceContract.caseId,
+          decisionContractFingerprint: sourceContract.contractFingerprint, surface: "workbook", format: "xlsx",
+          fileName: `offroad-${sourceContract.caseId}-${sourceContract.asOf}-decision-workbook.xlsx`, mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          byteLength: workbook.bytes.byteLength, contentSha256: workbook.audit.contentSha256,
+          renderer: {id: "offroad-decision-workbook", version: workbook.audit.rendererVersion},
+          template: {id: "offroad-decision-workbook", version: workbook.audit.rendererVersion, fingerprint: workbookTemplateFingerprint, origin: "offroad_house"},
+          storage: {bucket: "case-artifacts", objectPath: workbookStored.objectPath, state: "stored", etag: workbookStored.storageEtag}, generatedAt: inspectedAt,
+          quality: {schemaValidated: true, numericIdentityPassed: decisionArtifactIdentityReport(sourceContract).valid, formulaAuditPassed: workbook.audit.formulaCoveragePassed && workbook.audit.styleCoveragePassed && workbook.audit.hardcodeViolations.length === 0, visualInspection: "not_run", openIssues: [{code: "visual_review_pending", severity: "high", detail: `Renderability passed for ${workbookInspection.pdf.pageCount} pages; visual approval remains required before release.`}], releaseEligible: false},
+          release: {state: "internal_only", recipientIds: []}, claimIds: workbook.audit.renderedClaimIds, sourceIds: workbook.audit.renderedSourceIds, assumptionIds: workbook.audit.renderedAssumptionIds, gapIds: workbook.audit.renderedGapIds,
+        });
+        verifyRenderedMaterialBytes(workbookManifest, workbook.bytes);
+        const workbookArtifact = await queue.recordCapitalProjectArtifact(job, {
+          taskRunId: input.taskRunId, artifactType: "preview_workbook_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
+          inputFingerprint: input.inputFingerprint,
+          content: {
+            manifest: workbookManifest,
+            rendererAudit: workbook.audit,
+            renderInspection: workbookInspection,
+            derivationFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "xlsx", template: workbookTemplateFingerprint}),
+          },
+          evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}], dependencies: input.dependencies,
+        });
+        materialManifests.push(workbookManifest);
+        contractDependencies.push({artifactId: workbookArtifact.id, artifactFingerprint: workbookArtifact.artifactFingerprint});
+        log("integration_preview.workbook_stored", {job: job.job_id, pages: workbookInspection.pdf.pageCount, bytes: workbook.bytes.byteLength, replayed: workbookStored.replayed, artifactClass: "decision_workbook"});
+        contract = bindRenderedMaterialsToDecisionArtifact(sourceContract, materialManifests);
+      } else if (context.preview.composition === "prepare_material") {
+        const reason = !dependencies.materialInspector ? "inspection_toolchain_unavailable" : "private_storage_capability_unavailable";
+        const inspectionUnavailable = reason === "inspection_toolchain_unavailable";
+        materialExecutionStatus = {
+          state: "unavailable",
+          code: "governed_material_pipeline_unavailable",
+          messagePt: inspectionUnavailable
+            ? "A apresentação e a planilha não foram criadas porque a renderização e a inspeção seguras não estão disponíveis neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem inspeção foi exposto."
+            : "A apresentação e a planilha não foram criadas porque o armazenamento privado seguro não está disponível neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem vínculo ao projeto foi exposto.",
+          messageEn: inspectionUnavailable
+            ? "The presentation and spreadsheet were not created because secure rendering and inspection are unavailable in this environment. The plan and analysis were preserved; no uninspected file was exposed."
+            : "The presentation and spreadsheet were not created because secure private storage is unavailable in this environment. The plan and analysis were preserved; no file without a project binding was exposed.",
+        };
+        const statusArtifact = await queue.recordCapitalProjectArtifact(job, {
+          taskRunId: input.taskRunId,
+          artifactType: "preview_material_execution_status",
+          schemaVersion: "material-execution-status.2026.09.07-v1",
+          status: "draft",
+          inputFingerprint: input.inputFingerprint,
+          content: {
+            preview: {mode: "integration_preview", role: "material_execution_status"},
+            state: materialExecutionStatus.state,
+            code: materialExecutionStatus.code,
+            reason,
+            derivationFingerprint: fingerprintJson({contract: contract.contractFingerprint, state: materialExecutionStatus.state, code: materialExecutionStatus.code, reason}),
+            requestedFormats: ["pptx", "xlsx"],
+            message: {pt: materialExecutionStatus.messagePt, en: materialExecutionStatus.messageEn},
+            release: {state: "internal_only", recipientIds: []},
+          },
+          evidenceRefs: [],
+          dependencies: input.dependencies,
+        });
+        contractDependencies.push({artifactId: statusArtifact.id, artifactFingerprint: statusArtifact.artifactFingerprint});
+        await queue.writeStage(job, `${stage}:materials`, "skipped", {
+          summary_pt: inspectionUnavailable
+            ? "Apresentação e planilha não criadas: renderização e inspeção seguras indisponíveis neste ambiente"
+            : "Apresentação e planilha não criadas: armazenamento privado seguro indisponível neste ambiente",
+          summary_en: inspectionUnavailable
+            ? "Presentation and spreadsheet not created: secure rendering and inspection unavailable in this environment"
+            : "Presentation and spreadsheet not created: secure private storage unavailable in this environment",
+          code: materialExecutionStatus.code,
+          reason,
+          state: materialExecutionStatus.state,
+        });
+        log("integration_preview.materials_unavailable", {job: job.job_id, code: materialExecutionStatus.code, reason});
+      }
       const recorded = await queue.recordCapitalProjectArtifact(job, {
         taskRunId: input.taskRunId,
         artifactType: "preview_decision_contract",
@@ -486,7 +632,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           contract,
         },
         evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
-        dependencies: input.dependencies,
+        dependencies: contractDependencies,
       });
       decisionContracts.push(contract);
       decisionContractArtifacts.push(recorded);
@@ -576,7 +722,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             qualityResults: [{id: "replayed_by_fingerprint", passed: true, detail: `input fingerprint unchanged since artifact ${prior.id}; the object was replayed, not recomputed`}],
             usage: {modelCalls: 0, costUsd: 0},
           });
-          await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: replicada por fingerprint (sem recálculo)`, summary_en: `${step.label.en}: replayed by fingerprint (no recomputation)`, task_spec_id: step.taskId, replayed: true});
+          await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: reaproveitada sem recálculo`, summary_en: `${step.label.en}: reused without recomputation`, task_spec_id: step.taskId, replayed: true});
           log("integration_preview.step_replayed", {job: job.job_id, task: step.taskId, method: step.methodId, replayOf: prior.id});
           continue;
         }
@@ -652,7 +798,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const final = artifactByTask.get(workflowSteps.at(-1)!.taskId)!;
     const decisionContractArtifact = decisionContractArtifacts.at(-1) ?? null;
     const decisionArtifact = decisionContracts.at(-1) ?? compilePreviewDecisionArtifact({caseId: case01.case01EvidenceManifest.caseId, asOf: case01.case01EvidenceManifest.referenceDate, outputs, premises});
-    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult, decisionArtifact});
+    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult, decisionArtifact, materialExecutionStatus});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
     await queue.writeStage(job, stage, "succeeded", {summary_pt: "Validação interna concluída: devolutiva publicada na conversa", summary_en: "Internal validation finished: readout published in the conversation", artifactId: final.id});
@@ -682,7 +828,7 @@ export function stateLabel(state: string, locale: "pt-BR" | "en-US"): string {
 }
 
 /** The readout the conversation receives: states, facts and gaps read from the objects, never written by hand. */
-export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null; decisionArtifact?: DecisionArtifactContract | null}): string {
+export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null; decisionArtifact?: DecisionArtifactContract | null; materialExecutionStatus?: {state: "unavailable"; code: string; messagePt: string; messageEn: string} | null}): string {
   const {locale, outputs} = input;
   const mark = locale === "en-US" ? PREVIEW_MARK_EN : PREVIEW_MARK;
   const lines: string[] = [];
@@ -690,7 +836,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
   if (previewOutcome(input.composition) === "material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
-    lines.push(t(locale, "Plano do material a partir dos objetos assinados.", "Material plan from the signed objects."));
+    lines.push(t(locale, "Plano do material a partir das informações governadas e rastreáveis.", "Material plan from governed and traceable information."));
     if (plan) {
       lines.push(t(locale, `Estado do plano: ${stateLabel(plan.state, locale)}.`, `Plan state: ${stateLabel(plan.state, locale)}.`));
       for (const [index, page] of (plan.pages ?? []).entries()) lines.push(`${index + 1}. ${page.title}: ${page.blocks.join(", ")}`);
@@ -699,9 +845,10 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
     const change = brief?.change_note && typeof brief.change_note === "object" ? (brief.change_note as {changes: string[]}) : null;
     if (change?.changes?.length) lines.push(t(locale, `O que mudou desde a devolutiva anterior: ${change.changes.join("; ")}.`, `What changed since the previous readout: ${change.changes.join("; ")}.`));
     else lines.push(t(locale, "Números e premissas da devolutiva anterior preservados por referência; nada foi copiado à mão.", "Numbers and premises of the previous readout preserved by reference; nothing retyped."));
+    if (input.materialExecutionStatus) lines.push(locale === "en-US" ? input.materialExecutionStatus.messageEn : input.materialExecutionStatus.messagePt);
   } else {
     lines.push(input.composition === "change_premise"
-      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps replayed without recomputation, by fingerprint.`)
+      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas foram reaproveitadas sem recálculo.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps were reused without recomputation.`)
       : t(locale, "Concluí a primeira leitura financeira e organizei o que ela sustenta, o que ainda depende de informação e por onde vale aprofundar.", "I completed the first financial readout and organized what it supports, what still depends on information, and where it is worth going deeper."));
     if (input.decisionArtifact) {
       const conversation = input.decisionArtifact.views.find((view) => view.surface === "conversation");

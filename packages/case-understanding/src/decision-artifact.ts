@@ -71,6 +71,28 @@ export const decisionClaimSchema = z.object({
   gapIds: z.array(idSchema),
 });
 
+/** Ordered chart/table data whose individual points retain the same lineage discipline as claims. */
+export const decisionSeriesSchema = z.object({
+  id: idSchema,
+  label: z.string().min(1),
+  unit: z.string().min(1).nullable(),
+  chartKind: z.enum(["column", "bar", "line"]),
+  object: z.object({
+    id: idSchema,
+    type: idSchema,
+    fingerprint: fingerprintSchema,
+    path: z.string().min(1),
+  }),
+  points: z.array(z.object({
+    label: z.string().min(1),
+    value: z.number().finite().nullable(),
+    evidenceState: decisionEvidenceStateSchema,
+    sourceIds: z.array(idSchema),
+    assumptionIds: z.array(idSchema),
+    gapIds: z.array(idSchema),
+  })).min(1).max(120),
+});
+
 export const decisionArtifactBlockSchema = z.object({
   id: idSchema,
   kind: z.enum(["headline", "metric", "table", "chart", "narrative", "decision", "gap", "source_register"]),
@@ -79,6 +101,7 @@ export const decisionArtifactBlockSchema = z.object({
   sourceIds: z.array(idSchema),
   assumptionIds: z.array(idSchema),
   gapIds: z.array(idSchema),
+  seriesIds: z.array(idSchema).optional(),
 });
 
 export const decisionArtifactViewSchema = z.object({
@@ -103,6 +126,7 @@ const decisionArtifactBodySchema = z.object({
   assumptions: z.array(decisionAssumptionSchema),
   gaps: z.array(decisionGapSchema),
   claims: z.array(decisionClaimSchema).min(1),
+  series: z.array(decisionSeriesSchema).optional(),
   views: z.array(decisionArtifactViewSchema).min(1),
   identityRequirements: z.array(z.object({
     claimId: idSchema,
@@ -156,6 +180,7 @@ function validateDecisionArtifact(contract: DecisionArtifactContract, context: z
   unique(contract.assumptions.map((assumption) => assumption.id), ["assumptions"], context);
   unique(contract.gaps.map((gap) => gap.id), ["gaps"], context);
   unique(contract.claims.map((claim) => claim.id), ["claims"], context);
+  unique((contract.series ?? []).map((series) => series.id), ["series"], context);
   unique(contract.views.map((view) => view.surface), ["views"], context);
   unique(contract.identityRequirements.map((requirement) => requirement.claimId), ["identityRequirements"], context);
 
@@ -163,6 +188,7 @@ function validateDecisionArtifact(contract: DecisionArtifactContract, context: z
   const assumptionIds = new Set(contract.assumptions.map((assumption) => assumption.id));
   const gapIds = new Set(contract.gaps.map((gap) => gap.id));
   const claimIds = new Set(contract.claims.map((claim) => claim.id));
+  const seriesIds = new Set((contract.series ?? []).map((series) => series.id));
 
   for (const [index, assumption] of contract.assumptions.entries()) {
     referencesExist(assumption.sourceIds, sourceIds, ["assumptions", index, "sourceIds"], context);
@@ -178,6 +204,20 @@ function validateDecisionArtifact(contract: DecisionArtifactContract, context: z
       context.addIssue({code: "custom", path: ["claims", index, "value"], message: "not_computable claims cannot carry a value"});
     }
   }
+  for (const [seriesIndex, series] of (contract.series ?? []).entries()) {
+    for (const [pointIndex, point] of series.points.entries()) {
+      const path = ["series", seriesIndex, "points", pointIndex];
+      unique(point.sourceIds, [...path, "sourceIds"], context);
+      unique(point.assumptionIds, [...path, "assumptionIds"], context);
+      unique(point.gapIds, [...path, "gapIds"], context);
+      referencesExist(point.sourceIds, sourceIds, [...path, "sourceIds"], context);
+      referencesExist(point.assumptionIds, assumptionIds, [...path, "assumptionIds"], context);
+      referencesExist(point.gapIds, gapIds, [...path, "gapIds"], context);
+      if (point.evidenceState === "not_computable" && point.value !== null) {
+        context.addIssue({code: "custom", path: [...path, "value"], message: "not_computable series points cannot carry a value"});
+      }
+    }
+  }
   for (const [viewIndex, view] of contract.views.entries()) {
     const expectedKind = {conversation: "chat_readout", workbook: "xlsx", presentation: "pptx"}[view.surface];
     if (view.artifactKind !== expectedKind) {
@@ -190,11 +230,13 @@ function validateDecisionArtifact(contract: DecisionArtifactContract, context: z
       unique(block.sourceIds, [...path, "sourceIds"], context);
       unique(block.assumptionIds, [...path, "assumptionIds"], context);
       unique(block.gapIds, [...path, "gapIds"], context);
+      unique(block.seriesIds ?? [], [...path, "seriesIds"], context);
       referencesExist(block.claimIds, claimIds, [...path, "claimIds"], context);
       referencesExist(block.sourceIds, sourceIds, [...path, "sourceIds"], context);
       referencesExist(block.assumptionIds, assumptionIds, [...path, "assumptionIds"], context);
       referencesExist(block.gapIds, gapIds, [...path, "gapIds"], context);
-      if (block.claimIds.length + block.sourceIds.length + block.assumptionIds.length + block.gapIds.length === 0) {
+      referencesExist(block.seriesIds ?? [], seriesIds, [...path, "seriesIds"], context);
+      if (block.claimIds.length + block.sourceIds.length + block.assumptionIds.length + block.gapIds.length + (block.seriesIds?.length ?? 0) === 0) {
         context.addIssue({code: "custom", path, message: "a displayed block must carry governed lineage"});
       }
     }

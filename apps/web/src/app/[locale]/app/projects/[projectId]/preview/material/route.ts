@@ -1,16 +1,15 @@
 import {materialToDocx} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
-import * as XLSX from "xlsx";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
+import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
 
 /**
- * The preview material as a real file: a Word document with the synthesis sections and the
- * signed figures, or a spreadsheet with the ledger, the schedule and the alternatives. Built
- * deterministically from the latest `preview_material` artifact and the objects it read, so a
- * new version of the objects is a new version of the file. Internal validation only: the
- * project must run in integration_preview, and the workspace boundary scopes every read.
+ * Authenticated retrieval for governed presentation/workbook bytes plus the basic internal Word
+ * preview. Office decision surfaces are never regenerated here: their fingerprinted manifest, private
+ * object, exact SHA and binding in the latest Decision Artifact must all agree. Internal
+ * validation only; the project must run in integration_preview and every read remains scoped.
  */
 type Params = {params: Promise<{locale: string; projectId: string}>};
 
@@ -51,7 +50,8 @@ const tableKeys: Record<string, {key: string; caption: {pt: string; en: string}}
 export async function GET(request: Request, {params}: Params) {
   const {locale, projectId} = await params;
   const lang = locale === "en-US" ? "en" : "pt";
-  const format = new URL(request.url).searchParams.get("format") === "xlsx" ? "xlsx" : "docx";
+  const requestedFormat = new URL(request.url).searchParams.get("format");
+  const format = requestedFormat === "xlsx" || requestedFormat === "pptx" ? requestedFormat : "docx";
   const {supabase, organization} = await requireWorkspace(locale);
   const status = await loadIntegrationPreviewStatus(supabase, organization.id);
   if (!integrationPreviewCoversProject(status, projectId)) return new Response("Not found", {status: 404});
@@ -64,6 +64,41 @@ export async function GET(request: Request, {params}: Params) {
   const artifacts = (data ?? []) as ArtifactRow[];
   const latestByType = new Map<string, ArtifactRow>();
   for (const artifact of artifacts) if (!latestByType.has(artifact.artifact_type)) latestByType.set(artifact.artifact_type, artifact);
+  if (format === "pptx" || format === "xlsx") {
+    const artifact = latestByType.get(format === "pptx" ? "preview_presentation_material" : "preview_workbook_material");
+    const decisionContract = latestByType.get("preview_decision_contract");
+    let manifest;
+    try {
+      manifest = resolveGovernedMaterialDownload({
+        materialContent: artifact?.content,
+        decisionContractContent: decisionContract?.content,
+        format,
+        organizationId: organization.id,
+        projectId,
+      });
+    } catch {
+      const label = format === "pptx" ? (lang === "pt" ? "A apresentação governada" : "The governed presentation") : (lang === "pt" ? "O workbook governado" : "The governed workbook");
+      return new Response(`${label} ${lang === "pt" ? "ainda não está pronto." : "is not ready yet."}`, {status: 409});
+    }
+    const download = await supabase.storage.from(manifest.storage.bucket).download(manifest.storage.objectPath);
+    if (download.error || !download.data) {
+      return new Response(lang === "pt" ? "Não foi possível recuperar o material armazenado." : "The stored material could not be retrieved.", {status: 502});
+    }
+    const bytes = new Uint8Array(await download.data.arrayBuffer());
+    try {
+      verifyGovernedMaterialDownload(manifest, bytes);
+    } catch {
+      return new Response(lang === "pt" ? "O material armazenado não corresponde ao manifesto governado." : "The stored material does not match its governed manifest.", {status: 409});
+    }
+    return new Response(bytes, {headers: {
+      "content-type": manifest.mimeType,
+      "content-disposition": `attachment; filename="${manifest.fileName}"`,
+      "cache-control": "private, no-store",
+      "x-material-sha256": manifest.contentSha256,
+      "x-material-manifest-fingerprint": manifest.manifestFingerprint,
+      "x-material-release-state": manifest.release.state,
+    }});
+  }
   const material = latestByType.get("preview_material");
   if (!material) return new Response(lang === "pt" ? "A síntese ainda não foi produzida." : "The synthesis has not been produced yet.", {status: 409});
   const materialContent = isRecord(material.content) ? material.content : {};
@@ -77,31 +112,6 @@ export async function GET(request: Request, {params}: Params) {
     "x-preview-artifact-fingerprint": material.artifact_fingerprint,
     "cache-control": "private, no-store",
   };
-
-  if (format === "xlsx") {
-    const workbook = XLSX.utils.book_new();
-    const synthesisRows = [["Seção", "Parágrafo", "Referências"], ...sections.flatMap((section) => section.paragraphs.map((paragraph) => [section.title, paragraph.text, paragraph.references.join(", ")]))];
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(synthesisRows), lang === "pt" ? "Síntese" : "Synthesis");
-    for (const [type, tables] of Object.entries(tableKeys)) {
-      const artifact = latestByType.get(type);
-      const output = artifact && isRecord(artifact.content) && isRecord(artifact.content.output) ? artifact.content.output : null;
-      if (!output) continue;
-      for (const table of tables) {
-        const rows = tableRows(output, table.key);
-        if (!rows) continue;
-        XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([rows.head, ...rows.rows]), table.caption[lang].slice(0, 31));
-      }
-    }
-    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
-      ["Validação interna", "integration_preview"],
-      ["Artefato", material.id], ["Versão", String(material.artifact_version)], ["Fingerprint", material.artifact_fingerprint],
-      ["Fonte da síntese", String(source.kind ?? "")], ["Modelo", String(source.model ?? "")], ["Custo (US$)", String(source.costUsd ?? 0)],
-      ["Números verificados", String(numbers.verified ?? 0)], ["Frases removidas", String(Array.isArray(numbers.removed) ? numbers.removed.length : 0)],
-      ...changeNote.map((note) => ["Mudança", note]),
-    ]), lang === "pt" ? "Origem" : "Provenance");
-    const bytes = XLSX.write(workbook, {type: "array", bookType: "xlsx"}) as ArrayBuffer;
-    return new Response(new Uint8Array(bytes), {headers: {...headers, "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": `attachment; filename="material-preview-${projectId.slice(0, 8)}-v${material.artifact_version}.xlsx"`}});
-  }
 
   const blocks: MaterialBlock[] = [
     {type: "callout", title: {pt: "Validação interna", en: "Internal validation"}, items: [

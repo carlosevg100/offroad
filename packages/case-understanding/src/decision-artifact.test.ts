@@ -77,4 +77,22 @@ describe("governed decision artifact", () => {
     input.views[0]!.blocks[0]!.claimIds.push("claim-debt-divergent");
     expect(() => buildDecisionArtifactContract(input)).toThrow(/carries divergent values/);
   });
+
+  it("governs chart points and their lineage instead of allowing display-only numbers", () => {
+    const input = fixture();
+    input.series = [{
+      id: "series-maturity",
+      label: "Vencimentos",
+      unit: "R$ milhões",
+      chartKind: "column",
+      object: {id: "obj-wall", type: "maturity_wall", fingerprint: hash("c"), path: "grossSchedule"},
+      points: [{label: "2027", value: 100, evidenceState: "calculated", sourceIds: ["src-itr"], assumptionIds: [], gapIds: []}],
+    }];
+    input.views[2]!.blocks[0]!.seriesIds = ["series-maturity"];
+    const contract = buildDecisionArtifactContract(input);
+    expect(contract.series?.[0]?.points[0]?.value).toBe(100);
+
+    input.series[0]!.points[0]!.sourceIds = ["unknown-source"];
+    expect(() => buildDecisionArtifactContract(input)).toThrow(/unknown reference unknown-source/);
+  });
 });

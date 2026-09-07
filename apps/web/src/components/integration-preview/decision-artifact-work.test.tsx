@@ -43,4 +43,12 @@ describe("DecisionArtifactWork", () => {
     const html = renderToStaticMarkup(<DecisionArtifactWork contract={contract("c".repeat(64))} locale="pt-BR" materialHref="/material" />);
     expect(html).toContain("href=\"/material?format=xlsx\"");
   });
+
+  it("offers the presentation only after the contract carries its immutable stored fingerprint", () => {
+    const ready = contract();
+    ready.views.find((view) => view.surface === "presentation")!.artifactFingerprint = "d".repeat(64);
+    const html = renderToStaticMarkup(<DecisionArtifactWork contract={ready} locale="pt-BR" materialHref="/material" />);
+    expect(html).toContain("href=\"/material?format=pptx\"");
+    expect(html).toContain("Baixar apresentação");
+  });
 });

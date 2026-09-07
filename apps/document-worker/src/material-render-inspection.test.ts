@@ -4,7 +4,7 @@ import {join} from "node:path";
 
 import {describe, expect, it, vi} from "vitest";
 
-import {createMaterialRenderInspector} from "./material-render-inspection";
+import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./material-render-inspection";
 
 const source = new TextEncoder().encode("synthetic xlsx bytes");
 const sourceSha = createHash("sha256").update(source).digest("hex");
@@ -37,6 +37,13 @@ function successfulRunner(pageFiles = 2) {
 }
 
 describe("generated material render inspection", () => {
+  it("advertises inspection only with the complete Office toolchain", () => {
+    expect(materialRenderToolsAvailable({sofficeVersion: "LibreOffice 25.2", pdfinfoVersion: "25.06", pdftoppmVersion: "25.06"})).toBe(true);
+    expect(materialRenderToolsAvailable({sofficeVersion: "unavailable", pdfinfoVersion: "25.06", pdftoppmVersion: "25.06"})).toBe(false);
+    expect(materialRenderToolsAvailable({sofficeVersion: "LibreOffice 25.2", pdfinfoVersion: "unavailable", pdftoppmVersion: "25.06"})).toBe(false);
+    expect(materialRenderToolsAvailable({sofficeVersion: "LibreOffice 25.2", pdfinfoVersion: "25.06", pdftoppmVersion: "unavailable"})).toBe(false);
+  });
+
   it("proves exact bytes can be opened and rasterised without claiming visual approval", async () => {
     const run = successfulRunner();
     const inspector = createMaterialRenderInspector({

@@ -59,37 +59,46 @@ function toCell(cell: Cell): XLSX.CellObject | undefined {
  * fact. Naming the desk's own assumptions on the first sheet is the difference between a model
  * and a claim.
  */
-function coverSheet(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkSheet {
+export type WorkbookCover = {
+  title?: string;
+  description?: string;
+  controls?: string;
+  sources?: string;
+  assumptionHeading?: string;
+  disclaimer?: string;
+};
+
+function coverSheet(model: FinancialModel, lang: "pt" | "en", cover: WorkbookCover = {}): XLSX.WorkSheet {
   const assumptionsName = lang === "pt" ? "Premissas" : "Assumptions";
   const sourcesName = lang === "pt" ? "Fontes" : "Sources";
 
   const rows: string[][] = [
     ["Offroad Capital"],
-    [lang === "pt" ? "Modelo de crédito, indicativo" : "Credit model, indicative"],
+    [cover.title ?? (lang === "pt" ? "Modelo de crédito, indicativo" : "Credit model, indicative")],
     [],
     [
-      lang === "pt"
+      cover.description ?? (lang === "pt"
         ? "Este é um modelo de crédito: leva a receita ao EBITDA, ao caixa disponível para o serviço da dívida e à cobertura. Não projeta balanço patrimonial."
-        : "This is a credit model: it runs revenue to EBITDA to cash available for debt service to coverage. It does not project a balance sheet.",
+        : "This is a credit model: it runs revenue to EBITDA to cash available for debt service to coverage. It does not project a balance sheet."),
     ],
     [
-      lang === "pt"
+      cover.controls ?? (lang === "pt"
         ? `Toda célula editável está na aba ${assumptionsName}. As demais abas são fórmulas: mude uma premissa e o modelo inteiro recalcula. Não há número digitado escondido em nenhuma projeção.`
-        : `Every editable cell is on the ${assumptionsName} sheet. Every other sheet is formulas: change an assumption and the whole model recalculates. No hardcoded number is hidden in any projection.`,
+        : `Every editable cell is on the ${assumptionsName} sheet. Every other sheet is formulas: change an assumption and the whole model recalculates. No hardcoded number is hidden in any projection.`),
     ],
     [
-      lang === "pt"
+      cover.sources ?? (lang === "pt"
         ? `Cada número histórico vem de um documento da companhia e está rastreado na aba ${sourcesName}, com o campo, o rank de evidência e o arquivo de origem.`
-        : `Every historical number comes from one of the company's documents and is traced on the ${sourcesName} sheet, with the field, the evidence rank, and the source file.`,
+        : `Every historical number comes from one of the company's documents and is traced on the ${sourcesName} sheet, with the field, the evidence rank, and the source file.`),
     ],
     [],
-    [lang === "pt" ? "Premissas que a Offroad supriu porque o data room não as trouxe" : "Assumptions Offroad supplied because the data room did not provide them"],
+    [cover.assumptionHeading ?? (lang === "pt" ? "Premissas que a Offroad supriu porque o data room não as trouxe" : "Assumptions Offroad supplied because the data room did not provide them")],
     ...model.deskAssumptions.map((assumption) => [`•  ${assumption}`]),
     [],
     [
-      lang === "pt"
+      cover.disclaimer ?? (lang === "pt"
         ? "Documento indicativo. Não constitui proposta firme, compromisso de crédito, aprovação ou garantia de captação. O custo da dívida nas Premissas é uma entrada editável de sensibilidade. Quando existe referência de mercado governada, o ponto médio da faixa é identificado, sem representar taxa disponível ou proposta de financiador."
-        : "Indicative document. Not a firm offer, credit commitment, approval, or guarantee of funding. The cost of debt on the Assumptions sheet is an editable sensitivity input. When a governed market reference exists, the midpoint is identified without representing an available rate or lender offer.",
+        : "Indicative document. Not a firm offer, credit commitment, approval, or guarantee of funding. The cost of debt on the Assumptions sheet is an editable sensitivity input. When a governed market reference exists, the midpoint is identified without representing an available rate or lender offer."),
     ],
   ];
 
@@ -98,9 +107,9 @@ function coverSheet(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkSheet {
   return sheet;
 }
 
-export function toWorkbook(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkBook {
+export function toWorkbook(model: FinancialModel, lang: "pt" | "en", cover?: WorkbookCover): XLSX.WorkBook {
   const book = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(book, coverSheet(model, lang), lang === "pt" ? "Leia-me" : "Read me");
+  XLSX.utils.book_append_sheet(book, coverSheet(model, lang, cover), lang === "pt" ? "Leia-me" : "Read me");
 
   for (const sheet of model.sheets) {
     const worksheet: XLSX.WorkSheet = {};
@@ -132,6 +141,6 @@ export function toWorkbook(model: FinancialModel, lang: "pt" | "en"): XLSX.WorkB
  * `type: "array"` yields an ArrayBuffer, not a typed array — asserting the return type without
  * wrapping it produced an object that looked right to TypeScript and had no indexable bytes.
  */
-export function toXlsxBuffer(model: FinancialModel, lang: "pt" | "en"): Uint8Array {
-  return new Uint8Array(XLSX.write(toWorkbook(model, lang), {bookType: "xlsx", type: "array"}) as ArrayBuffer);
+export function toXlsxBuffer(model: FinancialModel, lang: "pt" | "en", cover?: WorkbookCover): Uint8Array {
+  return new Uint8Array(XLSX.write(toWorkbook(model, lang, cover), {bookType: "xlsx", type: "array"}) as ArrayBuffer);
 }

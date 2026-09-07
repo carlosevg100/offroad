@@ -68,6 +68,21 @@ export type MaterialRenderInspector = {
   }): Promise<MaterialRenderInspection>;
 };
 
+/**
+ * Rendering is an optional worker capability, not a boot-time assumption.
+ * Local and E2E workers deliberately run without the Office toolchain. They may still plan a
+ * material, but must not advertise an inspector and then fail the run on spawn(ENOENT).
+ */
+export function materialRenderToolsAvailable(input: {
+  sofficeVersion: string;
+  pdftoppmVersion: string;
+  pdfinfoVersion: string;
+}): boolean {
+  return input.sofficeVersion !== "unavailable"
+    && input.pdftoppmVersion !== "unavailable"
+    && input.pdfinfoVersion !== "unavailable";
+}
+
 export function createMaterialRenderInspector(options: {
   sofficeBin: string;
   pdftoppmBin: string;

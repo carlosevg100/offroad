@@ -16,7 +16,10 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
-    "@offroad/case-materials": "workspace:*"
+    "@offroad/case-materials": "workspace:*",
+    "@offroad/case-understanding": "workspace:*",
+    "@offroad/financial-model": "workspace:*",
+    "jszip": "3.10.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

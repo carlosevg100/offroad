@@ -102,6 +102,21 @@ export function buildGc02DecisionArtifactContract(
     claim("CLM-2030-LEVERAGE", "Dívida líquida / EBITDA em 2030/31", leverage2030, "x", "mixed", snapshotObject(`projections.rollover[${rollover2030Index}].leverage`), ["SRC-01", "SRC-04", "SRC-05", "SRC-07", "SRC-08"], ["ASM-REV-GROWTH", "ASM-EBITDA-MARGIN", "ASM-REFI-SHARE", "ASM-ROLLOVER-RATE", "ASM-IPCA-CURVE"], ["GAP-03", "GAP-04"]),
     claim("CLM-COVENANT-HEADROOM", "Headroom prospectivo de covenant", null, "x", "not_computable", covenantObject("prospective_headroom"), ["SRC-03"], [], ["GAP-01"]),
   ];
+  const series: NonNullable<DecisionArtifactContractInput["series"]> = [{
+    id: "SER-MATURITY-WALL",
+    label: "Vencimentos contratuais",
+    unit: snapshot.unit,
+    chartKind: "column",
+    object: wallObject("debt.grossContractualSchedule"),
+    points: snapshot.debt.grossContractualSchedule.map((row) => ({
+      label: row.period,
+      value: row.amount,
+      evidenceState: "calculated" as const,
+      sourceIds: ["SRC-01", "SRC-07"],
+      assumptionIds: [],
+      gapIds: [],
+    })),
+  }];
 
   const projectionClaims = ["CLM-2030-LIQUIDITY", "CLM-2030-CLOSING-CASH", "CLM-2030-LEVERAGE"];
   const currentClaims = ["CLM-GROSS-DEBT", "CLM-CONTRACTUAL-PRINCIPAL", "CLM-CASH", "CLM-REPORTED-LEVERAGE", "CLM-PEAK-MATURITY"];
@@ -120,9 +135,10 @@ export function buildGc02DecisionArtifactContract(
   ];
   const presentationBlocks = [
     block("DECK-STRUCTURE", "metric", "Estrutura de capital atual", currentClaims, [], [], []),
-    block("DECK-MATURITY", "chart", "Vencimentos contratuais", ["CLM-PEAK-MATURITY"], [], [], []),
+    block("DECK-MATURITY", "chart", "Vencimentos contratuais", ["CLM-PEAK-MATURITY"], [], [], [], ["SER-MATURITY-WALL"]),
     block("DECK-FORWARD", "chart", "Liquidez e alavancagem", projectionClaims, [], assumptionIds, ["GAP-03", "GAP-04", "GAP-05", "GAP-06"]),
     block("DECK-GAPS", "gap", "Informação necessária antes de decidir", ["CLM-COVENANT-HEADROOM"], [], [], gapIds),
+    block("DECK-SOURCES", "source_register", "Fontes e data-base", [], sourceIds, [], []),
   ];
 
   return buildDecisionArtifactContract({
@@ -142,6 +158,7 @@ export function buildGc02DecisionArtifactContract(
     assumptions: [...assumptions],
     gaps,
     claims,
+    series,
     views: [
       {surface: "conversation", artifactId: "GC02_CHAT_READOUT_v1", artifactKind: "chat_readout", artifactFingerprint: fingerprintJson({snapshot: snapshot.fingerprint, blocks: conversationBlocks}), blocks: conversationBlocks},
       {surface: "workbook", artifactId: referenceFiles.workbook, artifactKind: "xlsx", artifactFingerprint: artifactFingerprints.workbook, blocks: workbookBlocks},
@@ -184,6 +201,7 @@ function block(
   sourceIds: string[],
   assumptionIds: string[],
   gapIds: string[],
+  seriesIds: string[] = [],
 ) {
-  return {id, kind, title, claimIds, sourceIds, assumptionIds, gapIds};
+  return {id, kind, title, claimIds, sourceIds, assumptionIds, gapIds, seriesIds};
 }

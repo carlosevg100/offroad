@@ -228,9 +228,12 @@ test.describe("integration_preview: Case 01 end to end", () => {
 
   test("material: the transition plans three pitch pages from the signed objects", async () => {
     await send(page, "Vamos preparar o material: meu VP quer três páginas de pitch, situação atual, alternativas e impacto nos indicadores.");
-    const acknowledged = await waitForAssistant(page, /Vou planejar o material a partir dos objetos já assinados: 3 páginas/);
+    const acknowledged = await waitForAssistant(
+      page,
+      /Vou planejar o material a partir das informações governadas e rastreáveis: 3 páginas/,
+    );
     record("transição para o material", acknowledged);
-    const plan = await waitForAssistant(page, /Plano do material a partir dos objetos assinados/);
+    const plan = await waitForAssistant(page, /Plano do material a partir das informações governadas e rastreáveis/);
     expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
     record("plano do material", plan);
     const decisionArtifact = page.getByTestId("preview-decision-artifact");
@@ -253,7 +256,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await send(page, "Altere a taxa da nova dívida para 15,50% a.a.");
     const acknowledged = await waitForAssistant(page, /Premissa registrada \(taxa da nova dívida 15[.,]50% a\.a\.\)/);
     record("premissa alterada", acknowledged);
-    const updated = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
+    const updated = await waitForAssistant(page, /7 de 9 etapas foram reaproveitadas sem recálculo/);
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
     const decisionArtifact = page.getByTestId("preview-decision-artifact");

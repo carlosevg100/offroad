@@ -1,10 +1,12 @@
 import {createHash} from "node:crypto";
 
-import {decisionArtifactContractSchema, decisionArtifactIdentityReport} from "@offroad/case-understanding";
+import {offroadHousePresentationTemplate} from "@offroad/case-export";
+import {decisionArtifactContractSchema, decisionArtifactIdentityReport, renderedMaterialManifestSchema} from "@offroad/case-understanding";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
 import {buildPreviewInformationRequestProjection, parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
+import type {MaterialRenderInspector} from "./material-render-inspection";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const ids = {
@@ -55,7 +57,9 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
   let completion: {content: string; artifactId: string; result: unknown} | null = null;
   let failure: unknown = null;
   let questionProjection: Record<string, unknown> | null = null;
+  const storedMaterials: Array<{bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}> = [];
   const runsByTask = new Map<string, string>();
+  const inputFingerprintByRun = new Map<string, string>();
   const queue = {
     writeStage: async (_job: unknown, stage: string, status: string) => { stages.push({stage, status}); },
     loadCapitalProjectContext: async () => ({
@@ -69,17 +73,36 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       prior_artifacts: (input.prior ?? []).map((artifact) => ({task_id: artifact.taskId, id: artifact.id, artifact_type: artifact.artifactType, artifact_version: 1, artifact_fingerprint: artifact.artifactFingerprint, input_fingerprint: artifact.inputFingerprint, status: "draft", content: artifact.content})),
       recent_messages: [],
     }),
-    startCapitalTask: async (_job: unknown, task: {taskId: string}) => { started.push(task.taskId); const id = `run-${task.taskId}`; runsByTask.set(task.taskId, id); return id; },
+    startCapitalTask: async (_job: unknown, task: {taskId: string; inputFingerprint: string}) => {
+      started.push(task.taskId);
+      const id = `run-${task.taskId}`;
+      runsByTask.set(task.taskId, id);
+      inputFingerprintByRun.set(id, task.inputFingerprint);
+      return id;
+    },
     recordCapitalProjectArtifact: async (_job: unknown, artifact: {taskRunId: string; artifactType: string; inputFingerprint: string; content: unknown; evidenceRefs?: Array<Record<string, unknown>>}) => {
       // The database refuses an evidence reference without sourceType and sourceId.
       for (const reference of artifact.evidenceRefs ?? []) {
         if (typeof reference.sourceType !== "string" || typeof reference.sourceId !== "string") throw new Error("capital_project_artifact_evidence_invalid");
+      }
+      // Mirrors private.worker_record_capital_project_artifact: auxiliary outputs from a
+      // TaskRun may have different artifact types, but never a different task input identity.
+      if (inputFingerprintByRun.get(artifact.taskRunId) !== artifact.inputFingerprint) {
+        throw new Error("capital_task_run_not_available");
       }
       const taskId = artifact.taskRunId.replace("run-", "");
       const artifactFingerprint = createHash("sha256").update(JSON.stringify(artifact.content)).digest("hex");
       const id = `00000000-0000-4000-8000-${String(recorded.length + 10).padStart(12, "0")}`;
       recorded.push({taskId, artifactType: artifact.artifactType, inputFingerprint: artifact.inputFingerprint, content: artifact.content as Record<string, unknown>, id, artifactFingerprint});
       return {id, artifactFingerprint, artifactVersion: 1, replayed: false};
+    },
+    storeCapitalProjectMaterial: async (_job: unknown, material: {bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}) => {
+      storedMaterials.push(material);
+      return {
+        objectPath: `${ids.organization}/${ids.project}/materials/${material.contentSha256}.${material.format}`,
+        storageEtag: `etag-${material.contentSha256}`,
+        replayed: false,
+      };
     },
     finishCapitalTask: async () => "finished",
     syncProjectInformationRequests: async (_job: unknown, projection: unknown) => {
@@ -89,7 +112,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
     completeIntegrationPreviewRun: async (_job: unknown, value: {content: string; artifactId: string; result: unknown}) => { completion = value; return {replayed: false}; },
     fail: async (_job: unknown, error: unknown) => { failure = error; },
   } as unknown as QueueClient;
-  return {queue, recorded, started, stages, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
+  return {queue, recorded, started, stages, storedMaterials, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
 }
 
 describe("integration_preview governed questions", () => {
@@ -146,7 +169,7 @@ describe("integration_preview turn router", () => {
     const unrecognised = routeIntegrationPreviewTurn({...base, message: "Mude a premissa de crescimento", artifactTypes: ["preview_alternatives"]});
     expect(unrecognised.kind).toBe("converse");
   });
-  it("answers where a number came from out of the signed covenant object", () => {
+  it("answers where a number came from out of the fingerprint-governed covenant object", () => {
     const covenants = executors.reconcileCovenantDefinitions(case01.case01Evidence()["reconcile-covenant-definitions"]) as unknown as PreviewStepOutput;
     const decision = routeIntegrationPreviewTurn({...base, message: "De onde saiu essa alavancagem de 4,7x?", artifactTypes: ["preview_alternatives"], priorOutputs: new Map([["C09", covenants]])});
     expect(decision.kind).toBe("answer");
@@ -232,7 +255,7 @@ describe("integration_preview run processor", () => {
     expect(fake.started).toEqual(steps);
     expect(fake.recorded.some((artifact) => artifact.artifactType === "preview_material")).toBe(true);
     expect(fake.recorded.at(-1)?.artifactType).toBe("preview_decision_contract");
-    expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos assinados");
+    expect(fake.completion()?.content).toContain("Plano do material a partir das informações governadas e rastreáveis");
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
@@ -250,7 +273,7 @@ describe("integration_preview run processor", () => {
     expect(changedOutcome.status).toBe("succeeded");
     expect(changed.started).toEqual(steps.slice(0, 9));
     expect(changed.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
-    expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
+    expect(changed.completion()?.content).toContain("7 de 9 etapas foram reaproveitadas sem recálculo");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
   });
@@ -265,7 +288,7 @@ describe("integration_preview run processor", () => {
     expect(backfill.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_decision_contract"]);
     expect(decisionArtifactContractSchema.parse(backfill.recorded[0]!.content.contract).claims).not.toHaveLength(0);
   });
-  it("prepares the material on a later turn from the signed objects, with a change note against the first readout", async () => {
+  it("prepares the material on a later turn from fingerprint-governed objects, with a change note against the first readout", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
     await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
     const material = fakeQueue({composition: "prepare_material", prior: first.recorded, request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []}});
@@ -273,10 +296,91 @@ describe("integration_preview run processor", () => {
     expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(material.started).toEqual(steps);
-    expect(material.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
+    expect(material.recorded.filter((artifact) => !["preview_decision_contract", "preview_material_execution_status"].includes(artifact.artifactType)).map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
     expect(material.completion()?.content).toContain("Plano do material");
     const brief = material.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
     expect(brief.page_plan.pages).toHaveLength(3);
+    // A runner without the complete Office inspection suite may still finish the governed plan,
+    // but must not claim that it created or stored a binary material.
+    expect(material.storedMaterials).toEqual([]);
+    expect(material.recorded.some((artifact) => artifact.artifactType === "preview_presentation_material" || artifact.artifactType === "preview_workbook_material")).toBe(false);
+    expect(material.recorded.find((artifact) => artifact.artifactType === "preview_material_execution_status")?.content).toMatchObject({
+      state: "unavailable",
+      code: "governed_material_pipeline_unavailable",
+      reason: "inspection_toolchain_unavailable",
+      requestedFormats: ["pptx", "xlsx"],
+      release: {state: "internal_only", recipientIds: []},
+    });
+    expect(material.completion()?.content).toContain("A apresentação e a planilha não foram criadas");
+    expect(material.completion()?.content).not.toContain("objetos governados por fingerprint");
+    expect(material.stages.filter((entry) => entry.stage === "integration_preview:materials")).toEqual([
+      {stage: "integration_preview:materials", status: "skipped"},
+    ]);
+    const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
+    expect(contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint).toBeNull();
+    expect(contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint).toBeNull();
+  });
+  it("renders, inspects, stores and binds exact presentation and decision-workbook bytes when the suite is present", async () => {
+    const first = fakeQueue({composition: "prepare_meeting"});
+    await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
+    const material = fakeQueue({
+      composition: "prepare_material",
+      prior: first.recorded,
+      request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []},
+    });
+    const inspected: Array<{format: string; sha256: string; byteLength: number}> = [];
+    const inspector: MaterialRenderInspector = {
+      inspect: async (input) => {
+        expect(createHash("sha256").update(input.bytes).digest("hex")).toBe(input.contentSha256);
+        inspected.push({format: input.format, sha256: input.contentSha256, byteLength: input.bytes.byteLength});
+        return ({
+        version: "2026.09.07-v1",
+        source: {format: input.format, byteLength: input.bytes.byteLength, sha256: input.contentSha256},
+        renderer: {id: "libreoffice", version: "test"},
+        pdf: {byteLength: 999, sha256: "1".repeat(64), pageCount: 9},
+        pages: [{pageNumber: 1, byteLength: 111, sha256: "2".repeat(64), widthPx: 1600, heightPx: 900}],
+        renderabilityPassed: true,
+        visualInspection: "awaiting_review",
+        releaseEligible: false,
+        inspectedAt: input.inspectedAt,
+        receiptFingerprint: "3".repeat(64),
+        });
+      },
+    };
+    const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {
+      queue: material.queue,
+      materialInspector: inspector,
+      presentationTemplate: offroadHousePresentationTemplate,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    });
+    expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
+    expect(outcome.status).toBe("succeeded");
+    expect(inspected.map((item) => item.format)).toEqual(["pptx", "xlsx"]);
+    expect(material.storedMaterials.map((item) => item.format)).toEqual(["pptx", "xlsx"]);
+    expect(material.storedMaterials.every((item) => new TextDecoder().decode(item.bytes.slice(0, 2)) === "PK")).toBe(true);
+    for (const stored of material.storedMaterials) {
+      expect(createHash("sha256").update(stored.bytes).digest("hex")).toBe(stored.contentSha256);
+      expect(inspected).toContainEqual({format: stored.format, sha256: stored.contentSha256, byteLength: stored.bytes.byteLength});
+    }
+    const presentationArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_presentation_material")!;
+    const workbookArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_workbook_material")!;
+    const presentationManifest = renderedMaterialManifestSchema.parse(presentationArtifact.content.manifest);
+    const workbookManifest = renderedMaterialManifestSchema.parse(workbookArtifact.content.manifest);
+    for (const manifest of [presentationManifest, workbookManifest]) {
+      expect(manifest.storage.state).toBe("stored");
+      expect(manifest.quality).toMatchObject({schemaValidated: true, numericIdentityPassed: true, visualInspection: "not_run", releaseEligible: false});
+      expect(manifest.release.state).toBe("internal_only");
+    }
+    expect((workbookArtifact.content.rendererAudit as {decisionContractFingerprint: string}).decisionContractFingerprint).toBe(workbookManifest.decisionContractFingerprint);
+    const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
+    expect(contract.views.find((view) => view.surface === "presentation")).toMatchObject({
+      artifactId: presentationManifest.id,
+      artifactFingerprint: presentationManifest.contentSha256,
+    });
+    expect(contract.views.find((view) => view.surface === "workbook")).toMatchObject({
+      artifactId: workbookManifest.id,
+      artifactFingerprint: workbookManifest.contentSha256,
+    });
   });
 });
