@@ -44,6 +44,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Kernels financeiros determinísticos | live | internal | implemented | não formam modelo institucional integrado |
 | Modelo institucional integrado | specified | none | specified | sem fechamento completo e drivers setoriais promovidos |
 | DOCX/XLSX básico do preview | live | allowlisted | tested | não passou gate top-tier ou template fidelity |
+| Fundação Office nativa governada | live | allowlisted | implemented | PPTX do Caso 01 é armazenado e verificado; revisão visual, XLSX runtime, DOCX nativo e template de cliente ainda faltam |
 | Suite de artifacts template-faithful | specified | none | specified | referências ainda não aprovadas |
 | Verifier universal | specified | none | specified | gates atuais são estreitos |
 | Matching com mandatos sintéticos | mocked | internal | implemented | sem base live suficiente |

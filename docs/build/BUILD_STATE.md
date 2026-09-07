@@ -162,6 +162,23 @@ por este trabalho. Capability ledger, Control Register, jornadas, Execution Brie
 progresso seguro são executáveis; os próximos gates são a baseline SEC-001 a SEC-015, os work
 products de referência, os eventos narrativos por frente e a edição governada do plano.
 
+## Fundação de materiais institucionais governados, 07/09/2026
+
+- O contrato universal de decisão passou a representar séries financeiras com linhagem por ponto,
+  além de claims, fontes, premissas e lacunas. O mesmo vencimento contratual alimenta conversa,
+  workbook e apresentação sem ser redigitado em cada superfície.
+- O renderer de apresentações produz PPTX nativo 16:9 a partir do contrato, com gráfico real de
+  vencimentos, paginação de blocos densos e os símbolos circulares atuais da marca. Nenhum número é
+  criado pelo layout.
+- No preview allowlisted, o worker renderiza o arquivo com LibreOffice, inspeciona PDF e páginas,
+  armazena os bytes exatos por capability de uso único e vincula o SHA-256 à superfície de
+  apresentação. A rota autenticada revalida tamanho e hash antes do download.
+- O manifesto mantém o material como `internal_only` e não elegível para liberação enquanto a
+  revisão visual estiver pendente. Isso é fundação implementada, não aprovação de template de
+  cliente nem promoção da suite completa de materiais.
+- A próxima lacuna desta frente é ligar o modelo financeiro governado ao mesmo ciclo de armazenamento
+  e revisão, depois incorporar DOCX nativo, ingestão de template e diff visual/versionado.
+
 ## Polimento da entrada e correção do menu, 04/09/2026
 
 - Corrigido um defeito que eu mesmo introduzi: recolher o menu escondia o próprio botão de
