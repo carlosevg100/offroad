@@ -120,4 +120,54 @@ describe("governed receivables supplement draft", () => {
       patch: patch("p1", {sourceDatasetHash: "b".repeat(64)}),
     })).toThrow("receivables_supplement_patch_dataset_mismatch");
   });
+
+  it("accumulates policy and structure at field level before compiling", () => {
+    const {policy: _policy, structure: _structure, ...documentSections} = sections;
+    const fields = [
+      ...Object.entries(policy).map(([key, value]) => ({path: `/policy/${key}`, value})),
+      ...Object.entries(sections.structure.value)
+        .filter(([key]) => key !== "waterfall")
+        .map(([key, value]) => ({path: `/structure/${key}`, value})),
+      ...Object.entries(sections.structure.value.waterfall)
+        .map(([key, value]) => ({path: `/structure/waterfall/${key}`, value})),
+    ];
+    const draft = applyReceivablesSupplementPatch({
+      draft: newReceivablesSupplementDraft(datasetHash),
+      patch: patch("p-fields", {sections: documentSections, fields}),
+    });
+    const compiled = compileReceivablesSupplementDraft(draft);
+    expect(compiled).toMatchObject({state: "complete", missingSections: []});
+    expect(compiled.supplement?.structure).toMatchObject({advanceRate: "0.5", waterfall: {seniorPrincipalDue: "50"}});
+  });
+
+  it("opens and explicitly resolves a conflict on one incremental premise", () => {
+    const first = applyReceivablesSupplementPatch({
+      draft: newReceivablesSupplementDraft(datasetHash),
+      patch: patch("p1", {
+        sections: {}, fields: [{path: "/structure/advanceRate", value: "0.5"}],
+        evidence: {facilityAndWaterfall: evidence.facilityAndWaterfall},
+      }),
+    });
+    const conflicted = applyReceivablesSupplementPatch({
+      draft: first,
+      patch: patch("p2", {
+        sections: {}, fields: [{path: "/structure/advanceRate", value: "0.6"}],
+        evidence: {facilityAndWaterfall: evidence.facilityAndWaterfall},
+      }),
+    });
+    expect(conflicted.fields["/structure/advanceRate"]?.value).toBe("0.5");
+    expect(compileReceivablesSupplementDraft(conflicted).state).toBe("conflicted");
+    const resolved = applyReceivablesSupplementPatch({
+      draft: conflicted,
+      patch: patch("p3", {
+        sections: {}, fields: [{
+          path: "/structure/advanceRate", value: "0.6",
+          supersedesFingerprint: first.fields["/structure/advanceRate"]!.fingerprint,
+        }],
+        evidence: {facilityAndWaterfall: evidence.facilityAndWaterfall},
+      }),
+    });
+    expect(resolved.fields["/structure/advanceRate"]?.value).toBe("0.6");
+    expect(resolved.conflicts[0]).toMatchObject({section: "/structure/advanceRate", status: "resolved"});
+  });
 });
