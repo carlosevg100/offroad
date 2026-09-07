@@ -233,7 +233,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
       /Vou planejar o material a partir das informações governadas e rastreáveis: 3 páginas/,
     );
     record("transição para o material", acknowledged);
-    const plan = await waitForAssistant(page, /Plano do material a partir dos objetos assinados/);
+    const plan = await waitForAssistant(page, /Plano do material a partir das informações governadas e rastreáveis/);
     expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
     record("plano do material", plan);
     const decisionArtifact = page.getByTestId("preview-decision-artifact");
