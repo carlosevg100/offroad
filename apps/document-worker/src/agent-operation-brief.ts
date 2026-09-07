@@ -42,7 +42,7 @@ import {z} from "zod";
 import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
-import {shadowIntentEnvelope} from "./intent-shadow";
+import {governedShadowAccessBasis, shadowIntentEnvelope} from "./intent-shadow";
 import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
@@ -356,7 +356,8 @@ export async function processAgentOperationBriefJob(
             organizationId: job.organization_id,
             projectId: context.project?.id ?? null,
             entryJob: context.project?.entryJob ?? null,
-            accessBasis: context.project?.accessBasis ?? null,
+            accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
+            authorityGrants: ["read"],
             documentIds: context.documents.map((document) => document.id),
             professionalContext: context.professional_context
               ? {
@@ -412,7 +413,8 @@ export async function processAgentOperationBriefJob(
           organizationId: job.organization_id,
           projectId: context.project?.id ?? null,
           entryJob: context.project?.entryJob ?? null,
-          accessBasis: context.project?.accessBasis ?? null,
+          accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
+          authorityGrants: ["read"] as const,
           documentIds: context.documents.map((document) => document.id),
           professionalContext: context.professional_context
             ? {

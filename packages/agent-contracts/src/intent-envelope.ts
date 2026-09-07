@@ -1,6 +1,6 @@
 import {z} from "zod";
 
-import {dcmWorkEffectSchema} from "./work-system";
+import {dcmWorkEffectSchema, type DcmWorkEffect} from "./work-system";
 
 /**
  * Intent Envelope v1: the unit of routing decided in ADR 0021 and shaped by the architecture
@@ -77,8 +77,17 @@ export const intentObjectKindSchema = z.enum([
   "decision",
 ]);
 
-export const evidenceRegimeSchema = z.enum(["public", "private_authorized", "hybrid", "received"]);
+export const evidenceRegimeSchema = z.enum(["unresolved", "public", "private_authorized", "hybrid", "received"]);
+export type EvidenceRegime = z.infer<typeof evidenceRegimeSchema>;
 export const authorityGrantSchema = z.enum(["read", "modify", "approve_internal", "share", "introduce"]);
+export type AuthorityGrant = z.infer<typeof authorityGrantSchema>;
+export const canonicalIntentActionSchema = z.enum([
+  "find_and_organize", "extract_and_reconcile", "understand", "answer", "analyze", "model",
+  "diagnose", "compare", "structure", "read_document", "prepare_meeting", "prepare_material",
+  "review", "prepare_decision", "evaluate", "map_market", "identify_capital", "introduce",
+  "monitor", "manage_work",
+]);
+export type CanonicalIntentAction = z.infer<typeof canonicalIntentActionSchema>;
 
 const inferable = <T extends z.ZodTypeAny>(value: T) => z.object({
   value,
@@ -154,45 +163,78 @@ export const namedCompositionKeys = [
 export const namedCompositionSchema = z.enum(namedCompositionKeys);
 export type NamedComposition = z.infer<typeof namedCompositionSchema>;
 
+export type NamedCompositionPolicy = {
+  atlas: `I${string}`;
+  canonicalAction: CanonicalIntentAction;
+  primaryWorks: readonly [PrimaryWork, ...PrimaryWork[]];
+  depth: z.infer<typeof intentDepthSchema>;
+  workResponsibilities: readonly [WorkResponsibility, ...WorkResponsibility[]];
+  effect: DcmWorkEffect;
+};
+
+/**
+ * Single executable policy for the twenty Atlas families. Schema validation, classifier
+ * canonicalization, system stamping and eval fingerprints all consume this object. Adding a
+ * second composition table anywhere else is a policy fork and must fail review.
+ */
+export const namedCompositions = {
+  find_and_organize_information: {atlas: "I01", canonicalAction: "find_and_organize", primaryWorks: ["find_and_organize"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  extract_and_reconcile_data: {atlas: "I02", canonicalAction: "extract_and_reconcile", primaryWorks: ["extract_and_reconcile"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
+  understand_company_sector_asset: {atlas: "I03", canonicalAction: "understand", primaryWorks: ["understand"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  answer_a_question: {atlas: "I04", canonicalAction: "answer", primaryWorks: ["extract_and_reconcile"], depth: "point", workResponsibilities: ["producer"], effect: "none"},
+  analyze_performance_and_credit: {atlas: "I05", canonicalAction: "analyze", primaryWorks: ["analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  build_or_review_model: {atlas: "I06", canonicalAction: "model", primaryWorks: ["model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
+  diagnose_capital_structure: {atlas: "I07", canonicalAction: "diagnose", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
+  develop_alternatives: {atlas: "I08", canonicalAction: "compare", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  design_indicative_structure: {atlas: "I09", canonicalAction: "structure", primaryWorks: ["capital_strategy", "analyze"], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none"},
+  read_contract_covenant_waterfall: {atlas: "I10", canonicalAction: "read_document", primaryWorks: ["read_documents", "analyze"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
+  prepare_meeting: {atlas: "I11", canonicalAction: "prepare_meeting", primaryWorks: ["understand", "capital_strategy", "model"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none"},
+  prepare_material: {atlas: "I12", canonicalAction: "prepare_material", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none"},
+  review_work: {atlas: "I13", canonicalAction: "review", primaryWorks: ["analyze"], depth: "institutional", workResponsibilities: ["producer", "reviewer"], effect: "none"},
+  prepare_decision: {atlas: "I14", canonicalAction: "prepare_decision", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "sponsor"], effect: "none"},
+  evaluate_received_opportunity: {atlas: "I15", canonicalAction: "evaluate", primaryWorks: ["analyze", "read_documents"], depth: "preliminary", workResponsibilities: ["producer", "reviewer"], effect: "none"},
+  map_market_and_precedents: {atlas: "I16", canonicalAction: "map_market", primaryWorks: ["market"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  identify_capital: {atlas: "I17", canonicalAction: "identify_capital", primaryWorks: ["capital_match", "market"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none"},
+  introduce: {atlas: "I18", canonicalAction: "introduce", primaryWorks: ["capital_match"], depth: "institutional", workResponsibilities: ["coordinator"], effect: "external"},
+  monitor: {atlas: "I19", canonicalAction: "monitor", primaryWorks: ["find_and_organize", "extract_and_reconcile", "analyze"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
+  manage_work: {atlas: "I20", canonicalAction: "manage_work", primaryWorks: ["find_and_organize"], depth: "point", workResponsibilities: ["coordinator"], effect: "propose_state"},
+} as const satisfies Record<NamedComposition, NamedCompositionPolicy>;
+
+export function compositionPolicy(composition: NamedComposition): NamedCompositionPolicy {
+  return namedCompositions[composition];
+}
+
+const sameOrderedValues = <T extends string>(actual: readonly T[], expected: readonly T[]): boolean =>
+  actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+
 export const intentEnvelopeSchema = z.object({
   schemaVersion: z.literal("intent-envelope.v1"),
   routingCore: routingCoreSchema,
   executionContext: governedExecutionContextSchema,
   /** One to three primary works, the first being the one the plan starts from. */
   primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).min(1).max(3),
-  /** A named composition when one applies (see `namedCompositions`). Never required. */
-  composition: z.string().max(60).nullable(),
+  /** A named composition when one applies. Unknown strings are rejected at the boundary. */
+  composition: namedCompositionSchema.nullable(),
   effect: dcmWorkEffectSchema,
   createdAt: z.string().datetime({offset: true}),
+}).superRefine((envelope, ctx) => {
+  if (envelope.composition === null) return;
+  const policy = compositionPolicy(envelope.composition);
+  const works = envelope.primaryWorks.map(({work}) => work);
+  if (!sameOrderedValues(works, policy.primaryWorks)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["primaryWorks"], message: "primary works must match the canonical composition policy"});
+  }
+  if (envelope.routingCore.depth.value !== policy.depth) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "depth"], message: "depth must match the canonical composition policy"});
+  }
+  if (!sameOrderedValues(envelope.routingCore.workResponsibility.value, policy.workResponsibilities)) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["routingCore", "workResponsibility"], message: "responsibilities must match the canonical composition policy"});
+  }
+  if (envelope.effect !== policy.effect) {
+    ctx.addIssue({code: z.ZodIssueCode.custom, path: ["effect"], message: "effect must match the canonical composition policy"});
+  }
 });
 export type IntentEnvelope = z.infer<typeof intentEnvelopeSchema>;
-
-/**
- * The twenty families of the Atlas survive as named compositions: a primary work plus fixed
- * modifier values. Derived as data, the catalogue and the router cannot drift apart.
- */
-export const namedCompositions = {
-  find_and_organize_information: {atlas: "I01", primaryWorks: ["find_and_organize"], modifiers: {}},
-  extract_and_reconcile_data: {atlas: "I02", primaryWorks: ["extract_and_reconcile"], modifiers: {}},
-  understand_company_sector_asset: {atlas: "I03", primaryWorks: ["understand"], modifiers: {}},
-  answer_a_question: {atlas: "I04", primaryWorks: ["extract_and_reconcile", "understand"], modifiers: {depth: "point"}},
-  analyze_performance_and_credit: {atlas: "I05", primaryWorks: ["analyze"], modifiers: {}},
-  build_or_review_model: {atlas: "I06", primaryWorks: ["model"], modifiers: {}},
-  diagnose_capital_structure: {atlas: "I07", primaryWorks: ["capital_strategy"], modifiers: {stage: "diagnose"}},
-  develop_alternatives: {atlas: "I08", primaryWorks: ["capital_strategy"], modifiers: {stage: "compare"}},
-  design_indicative_structure: {atlas: "I09", primaryWorks: ["capital_strategy"], modifiers: {stage: "design"}},
-  read_contract_covenant_waterfall: {atlas: "I10", primaryWorks: ["read_documents"], modifiers: {}},
-  prepare_meeting: {atlas: "I11", primaryWorks: ["understand", "capital_strategy"], modifiers: {outputForm: "artifact", audienceKind: "counterparty"}},
-  prepare_material: {atlas: "I12", primaryWorks: ["capital_strategy"], modifiers: {outputForm: "file"}},
-  review_work: {atlas: "I13", primaryWorks: ["analyze"], modifiers: {workResponsibility: "reviewer"}},
-  prepare_decision: {atlas: "I14", primaryWorks: ["capital_strategy"], modifiers: {outputForm: "file", audienceKind: "committee"}},
-  evaluate_received_opportunity: {atlas: "I15", primaryWorks: ["analyze", "read_documents"], modifiers: {evidenceRegime: "received", workResponsibility: "recipient"}},
-  map_market_and_precedents: {atlas: "I16", primaryWorks: ["market"], modifiers: {}},
-  identify_capital: {atlas: "I17", primaryWorks: ["capital_match"], modifiers: {}},
-  introduce: {atlas: "I18", primaryWorks: ["capital_match"], modifiers: {effect: "external"}},
-  monitor: {atlas: "I19", primaryWorks: ["find_and_organize", "extract_and_reconcile"], modifiers: {continuity: "monitor"}},
-  manage_work: {atlas: "I20", primaryWorks: [], modifiers: {workspaceFunction: true}},
-} as const satisfies Record<NamedComposition, {atlas: string; primaryWorks: readonly PrimaryWork[]; modifiers: Record<string, string | boolean>}>;
 
 /**
  * The fields the model may never fill. A classifier output that marks any of them as inferred

@@ -4,6 +4,9 @@ import {
   canonicalizeIntentClassifierOutput,
   intentClassifierOutputSchema,
   intentEnvelopeSchema,
+  compositionPolicy,
+  authorityGrantSchema,
+  type AuthorityGrant,
   type IntentEnvelope,
   type IntentClassifierOutput,
 } from "@offroad/agent-contracts";
@@ -34,14 +37,22 @@ export type ShadowRoutingContext = {
   organizationId: string;
   projectId: string | null;
   entryJob: string | null;
-  accessBasis: string | null;
+  accessBasis: "public_information" | "authorized_private" | null;
+  /** Granted by the control plane for this turn. Project membership is not a grant. */
+  authorityGrants: readonly AuthorityGrant[];
   documentIds: string[];
   professionalContext: {useForms: string[]; professionalRoles: string[]; practiceAreas: string[]; primaryObjectives: string[]} | null;
 };
 
-function evidenceRegime(accessBasis: string | null, documentCount: number): "public" | "private_authorized" | "hybrid" | "received" {
-  if (accessBasis === "authorized_private" || accessBasis === "private_authorized") return documentCount > 0 ? "private_authorized" : "hybrid";
-  return "public";
+export function governedShadowAccessBasis(value: string | null | undefined): ShadowRoutingContext["accessBasis"] {
+  if (value === "public_information" || value === "authorized_private") return value;
+  return null;
+}
+
+function evidenceRegime(accessBasis: ShadowRoutingContext["accessBasis"]): "unresolved" | "public" | "private_authorized" {
+  if (accessBasis === "public_information") return "public";
+  if (accessBasis === "authorized_private") return "private_authorized";
+  return "unresolved";
 }
 
 const asSystemOrInferred = <T>(field: {value: T; state: string; confidence?: number | null | undefined; basis?: string | null | undefined}) => ({
@@ -59,7 +70,7 @@ const clampField = <T, U>(field: {value: T; state: string; confidence?: number |
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Stamps the system fields around a classifier output and clamps every value to the envelope contract; the model never writes the system fields. */
-export function stampIntentEnvelope(output: Omit<ShadowRoutingOutput, "composition"> & {composition: string | null}, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
+export function stampIntentEnvelope(output: ShadowRoutingOutput, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
   const core = output.routingCore;
   const ctx = output.inferableContext;
   return intentEnvelopeSchema.parse({
@@ -75,8 +86,8 @@ export function stampIntentEnvelope(output: Omit<ShadowRoutingOutput, "compositi
       workResponsibility: asSystemOrInferred(clampField(core.workResponsibility, (items) => clampList([...new Set(items)], 4))),
     },
     executionContext: {
-      evidenceRegime: {value: evidenceRegime(context.accessBasis, context.documentIds.length), state: "system"},
-      authority: {value: context.projectId ? ["read", "modify"] : ["read"], state: "system"},
+      evidenceRegime: {value: evidenceRegime(context.accessBasis), state: "system"},
+      authority: {value: [...new Set(context.authorityGrants.map((grant) => authorityGrantSchema.parse(grant)))], state: "system"},
       organizationId: {value: context.organizationId, state: "system"},
       projectId: {value: context.projectId, state: "system"},
       availableDocumentIds: {value: context.documentIds.slice(0, 500), state: "system"},
@@ -92,8 +103,8 @@ export function stampIntentEnvelope(output: Omit<ShadowRoutingOutput, "compositi
       availableInputs: asSystemOrInferred(clampField(ctx.availableInputs, (items) => clampList(items.map((item) => clampText(item, 120)).filter(Boolean), 40))),
     },
     primaryWorks: clampList(output.primaryWorks, 3),
-    composition: output.composition === null ? null : clampText(output.composition, 60),
-    effect: "none",
+    composition: output.composition,
+    effect: output.composition === null ? "none" : compositionPolicy(output.composition).effect,
     createdAt: now().toISOString(),
   });
 }

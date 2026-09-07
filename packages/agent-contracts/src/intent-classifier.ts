@@ -4,12 +4,11 @@ import {
   intentContinuitySchema,
   intentDepthSchema,
   intentObjectKindSchema,
+  compositionPolicy,
   namedCompositionSchema,
   primaryWorkSchema,
   workResponsibilitySchema,
   type NamedComposition,
-  type PrimaryWork,
-  type WorkResponsibility,
 } from "./intent-envelope";
 
 export const intentClassifierInputSchema = z.object({
@@ -89,70 +88,6 @@ const normalizeForPolicy = (value: string): string => value
   .replace(/[\u0300-\u036f]/g, "")
   .toLocaleLowerCase("pt-BR");
 
-const worksByComposition: Partial<Record<NamedComposition, readonly PrimaryWork[]>> = {
-  find_and_organize_information: ["find_and_organize"],
-  extract_and_reconcile_data: ["extract_and_reconcile"],
-  understand_company_sector_asset: ["understand"],
-  answer_a_question: ["extract_and_reconcile"],
-  analyze_performance_and_credit: ["analyze", "model"],
-  build_or_review_model: ["model"],
-  diagnose_capital_structure: ["capital_strategy", "analyze", "model"],
-  develop_alternatives: ["capital_strategy", "analyze", "model"],
-  design_indicative_structure: ["capital_strategy", "analyze"],
-  read_contract_covenant_waterfall: ["read_documents", "analyze"],
-  prepare_meeting: ["understand", "capital_strategy", "model"],
-  prepare_material: ["capital_strategy", "analyze", "model"],
-  review_work: ["analyze"],
-  prepare_decision: ["capital_strategy", "analyze", "model"],
-  evaluate_received_opportunity: ["analyze", "read_documents"],
-  map_market_and_precedents: ["market"],
-  identify_capital: ["capital_match", "market"],
-  introduce: ["capital_match"],
-  monitor: ["find_and_organize", "extract_and_reconcile", "analyze"],
-  manage_work: ["find_and_organize"],
-};
-
-const depthByComposition: Partial<Record<NamedComposition, "point" | "preliminary" | "institutional">> = {
-  find_and_organize_information: "preliminary",
-  understand_company_sector_asset: "preliminary",
-  answer_a_question: "point",
-  analyze_performance_and_credit: "preliminary",
-  build_or_review_model: "institutional",
-  diagnose_capital_structure: "institutional",
-  develop_alternatives: "preliminary",
-  design_indicative_structure: "institutional",
-  read_contract_covenant_waterfall: "institutional",
-  prepare_meeting: "preliminary",
-  prepare_material: "institutional",
-  review_work: "institutional",
-  prepare_decision: "institutional",
-  evaluate_received_opportunity: "preliminary",
-  map_market_and_precedents: "preliminary",
-  identify_capital: "preliminary",
-  introduce: "institutional",
-  monitor: "preliminary",
-  manage_work: "point",
-};
-
-const responsibilitiesByComposition: Partial<Record<NamedComposition, readonly WorkResponsibility[]>> = {
-  design_indicative_structure: ["producer", "coordinator"],
-  prepare_meeting: ["producer", "coordinator"],
-  prepare_material: ["producer", "coordinator"],
-  review_work: ["producer", "reviewer"],
-  prepare_decision: ["producer", "sponsor"],
-  evaluate_received_opportunity: ["producer", "reviewer"],
-  identify_capital: ["producer", "coordinator"],
-  introduce: ["coordinator"],
-  manage_work: ["coordinator"],
-};
-
-function policyResponsibilities(composition: NamedComposition, input: IntentClassifierInput): readonly WorkResponsibility[] {
-  const base = responsibilitiesByComposition[composition] ?? ["producer"] as const;
-  const text = normalizeForPolicy(input.latestUserMessage);
-  const ownsDecision = /\b(a decisao(?:\s+de\s+[^.!?]{1,120})?\s+(?:e|eh)\s+minha|eu decido|decisao cabe a mim|i own the decision|my decision)\b/.test(text);
-  return composition === "prepare_decision" && ownsDecision ? [...base, "decision_maker"] : base;
-}
-
 /** High-precision, auditable rules take precedence only when the person's wording is explicit. */
 function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
   const text = normalizeForPolicy(input.latestUserMessage);
@@ -163,16 +98,40 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
   const specifiedMaterial = /\b(\d+|tres|three)\s*(paginas?|pages?)\b/.test(text)
     || /\b(deck|memo|one[- ]?pager|planilha|spreadsheet)\b/.test(text);
 
+  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produzir|fazer|criar|prepare|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text);
+  const negatedMonitor = /\b(nao|not|sem|without)\s+(?:quero\s+|want\s+to\s+)?(?:monitorar|acompanhar|monitor|track)\b/.test(text);
+  const externalOutreach = /\b(envia|enviar|manda|mandar|apresenta|apresentar|conecta|conectar|introduz|introduzir|send|share|connect|introduce)\b/.test(text)
+    && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text);
+
   if (/\b(ajusta|ajustar|altera|alterar|atualiza|atualizar|recalcula|recalcular|change|update|recalculate)\b/.test(text)
     && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
+  if (/\b(construa|construir|monte|montar|revise|revisar|build|review|audit)\b/.test(text)
+    && /\b(modelo|model|forecast|projecao|projection)\b/.test(text)) return "build_or_review_model";
   if (/\b(de onde saiu|qual a origem|como chegou|where did|how did)\b/.test(text)
     || (/\b(por que|why)\b/.test(text) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
+  if (/\b(diferenca|difference|como funciona|how does|explique|explain|o que e|what is)\b/.test(text)
+    && /\b(debenture|fidc|ccb|bond|loan|instrumento|instrument)\b/.test(text)) return "answer_a_question";
+  if (/\b(leia|ler|analise|analisar|teste|testar|read|analy[sz]e|test)\b/.test(text)
+    && /\b(contrato|contract|clausula|clause|covenant|waterfall|escritura|indenture)\b/.test(text)) return "read_contract_covenant_waterfall";
   if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
   if (/\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/.test(text)) return "find_and_organize_information";
+  if (/\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/.test(text)) return "extract_and_reconcile_data";
+  if (/\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/.test(text)) return "manage_work";
+  if (externalOutreach) return "introduce";
+  if (/\b(quem financiaria|quais fundos|matching|capital aderente|who would finance|which funds|find capital)\b/.test(text)) return "identify_capital";
+  if (!negatedMonitor && /\b(monitore|monitorar|acompanhe|acompanhar|avise quando|todo trimestre|monitor|track|alert me|quarterly)\b/.test(text)) return "monitor";
+  if (/\b(comparaveis|precedentes|condicoes de mercado|como esta o mercado|pricing|spread|comparables|precedents|market conditions)\b/.test(text)) return "map_market_and_precedents";
   if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|decision)\b/.test(text)) return "prepare_decision";
-  if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical)\b/.test(text)) return "review_work";
-  if (material && (specifiedMaterial || materialTransition)) return "prepare_material";
+  if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical|controle de qualidade|quality control)\b/.test(text)) return "review_work";
+  if (material && !negatedMaterial && (specifiedMaterial || materialTransition)) return "prepare_material";
   if (material && meeting) return "prepare_meeting";
+  if (/\b(recebi|recebemos|received)\b/.test(text) && /\b(proposta|deal|oportunidade|opportunity|term sheet)\b/.test(text)) return "evaluate_received_opportunity";
+  if (/\b(estruture|estruturar|desenhe|desenhar|structure|design)\b/.test(text) && /\b(operacao|operation|recebiveis|receivables|divida|debt|term sheet)\b/.test(text)) return "design_indicative_structure";
+  if (/\b(alternativas|opcoes|caminhos|compare|alternatives|options)\b/.test(text)) return "develop_alternatives";
+  if (/\b(vencimentos|maturity|liquidez|liquidity|estrutura de capital|capital structure|refinanc|repricing)\b/.test(text)) return "diagnose_capital_structure";
+  if (/\b(qualidade de credito|credit quality|risco de credito|credit risk|desempenho financeiro|financial performance)\b/.test(text)) return "analyze_performance_and_credit";
+  if (/\b(entender|entenda|compreender|understand|explique|explain)\b/.test(text)) return "understand_company_sector_asset";
+  if (/\b(levante|localize|ache|baixe|organize|atualize|find|locate|download|organize|update)\b/.test(text)) return "find_and_organize_information";
   return null;
 }
 
@@ -242,15 +201,12 @@ export function canonicalizeIntentClassifierOutput(
   const mustAbstain = composition === null || (output.abstain && explicit === null);
 
   if (!mustAbstain) {
-    const works = composition === "design_indicative_structure" && input.documentCount > 0
-      ? ["extract_and_reconcile", "capital_strategy", "analyze"] as const
-      : worksByComposition[composition] ?? output.primaryWorks.map(({work}) => work);
-    const responsibilities = policyResponsibilities(composition, input);
+    const policy = compositionPolicy(composition);
     return intentClassifierOutputSchema.parse({
       ...output,
       routingCore: {
         ...output.routingCore,
-        action: output.routingCore.action.value.length > 0 ? output.routingCore.action : {value: [composition], state: "unknown", confidence: null, basis: null},
+        action: policyField([policy.canonicalAction], composition),
         object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{kind: "process", reference: null}], state: "unknown", confidence: null, basis: null},
         desiredOutcome: output.routingCore.desiredOutcome.value.trim().length > 0 ? output.routingCore.desiredOutcome : {
           value: locale === "pt-BR" ? "Concluir o trabalho solicitado." : "Complete the requested work.",
@@ -259,11 +215,11 @@ export function canonicalizeIntentClassifierOutput(
           basis: null,
         },
         audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
-        depth: depthByComposition[composition] ? policyField(depthByComposition[composition], composition) : output.routingCore.depth,
+        depth: policyField(policy.depth, composition),
         continuity: policyContinuity(composition, output, input),
-        workResponsibility: policyField([...responsibilities], composition),
+        workResponsibility: policyField([...policy.workResponsibilities], composition),
       },
-      primaryWorks: works.slice(0, 3).map((work) => ({work, confidence: 0.99})),
+      primaryWorks: policy.primaryWorks.map((work) => ({work, confidence: 0.99})),
       composition,
       firstQuestion: policyQuestion(composition, output, input),
       abstain: false,

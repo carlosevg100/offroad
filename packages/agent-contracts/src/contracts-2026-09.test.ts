@@ -20,7 +20,7 @@ function envelope(overrides: Record<string, unknown> = {}) {
       audience: {value: ["vp"], state: "explicit"},
       depth: {value: "preliminary", state: "inferred", confidence: 0.7},
       continuity: {value: "new", state: "inferred", confidence: 0.9},
-      workResponsibility: {value: ["producer"], state: "explicit"},
+      workResponsibility: {value: ["producer", "coordinator"], state: "explicit"},
     },
     executionContext: {
       evidenceRegime: {value: "public", state: "system"},
@@ -38,7 +38,7 @@ function envelope(overrides: Record<string, unknown> = {}) {
       urgency: {value: "this_week", state: "inferred", confidence: 0.8},
       availableInputs: {value: ["conversa"], state: "explicit"},
     },
-    primaryWorks: [{work: "understand", confidence: 0.8}, {work: "capital_strategy", confidence: 0.6}],
+    primaryWorks: [{work: "understand", confidence: 0.8}, {work: "capital_strategy", confidence: 0.7}, {work: "model", confidence: 0.6}],
     composition: "prepare_meeting",
     effect: "none",
     createdAt: now,
@@ -56,7 +56,7 @@ describe("intent envelope v1", () => {
 
   it("requires a confidence on anything inferred, so an inference stays corrigible", () => {
     expect(() => envelope({
-      routingCore: {...envelope().routingCore, depth: {value: "institutional", state: "inferred"}},
+      routingCore: {...envelope().routingCore, depth: {value: "preliminary", state: "inferred"}},
     })).toThrow(/confidence/);
   });
 
@@ -75,8 +75,8 @@ describe("intent envelope v1", () => {
       for (const work of composition.primaryWorks) expect(works.has(work)).toBe(true);
     }
     expect(atlasIds.size).toBe(20);
-    expect(namedCompositions.review_work.modifiers.workResponsibility).toBe("reviewer");
-    expect(namedCompositions.introduce.modifiers.effect).toBe("external");
+    expect(namedCompositions.review_work.workResponsibilities).toContain("reviewer");
+    expect(namedCompositions.introduce.effect).toBe("external");
   });
 
   it("refuses prose in the classifier composition field", () => {

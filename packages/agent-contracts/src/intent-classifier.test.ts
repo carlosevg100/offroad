@@ -194,6 +194,6 @@ describe("intent classifier boundary", () => {
       professionalContext: null,
     });
 
-    expect(canonical.routingCore.workResponsibility.value).toEqual(["producer", "sponsor", "decision_maker"]);
+    expect(canonical.routingCore.workResponsibility.value).toEqual(["producer", "sponsor"]);
   });
 });

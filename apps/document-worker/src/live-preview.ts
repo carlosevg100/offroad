@@ -226,7 +226,7 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
   };
   const telemetry = safeModelTurnTelemetry(spentBefore, input.gateway.spent(), Date.now() - startedAt);
   return {
-    envelope: stampIntentEnvelope(output, context, input.now),
+    envelope: stampIntentEnvelope({...output, composition: classifier.composition}, context, input.now),
     output,
     modelRoute: governedModelRoute,
     ...telemetry,

@@ -68,6 +68,7 @@ const context: LiveTurnContext = {
   projectId: "30000000-0000-4000-8000-000000000001",
   entryJob: "origination_thesis",
   accessBasis: "public_information",
+  authorityGrants: ["read"],
   documentIds: [],
   professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
   openQuestions: [],
@@ -330,7 +331,7 @@ describe("live_intelligence_preview router", () => {
     const long = "a".repeat(300);
     const output = classifierOutput({routingCore: {...classifierOutput().routingCore, action: field([long, "b"]), desiredOutcome: field(long)}});
     const understanding = await understandLiveTurn({gateway: fakeGateway(output), context});
-    expect(understanding.envelope.routingCore.action.value[0]).toHaveLength(60);
+    expect(understanding.envelope.routingCore.action.value).toEqual(["prepare_meeting"]);
     expect(understanding.envelope.routingCore.desiredOutcome.value).toHaveLength(300);
   });
 });
