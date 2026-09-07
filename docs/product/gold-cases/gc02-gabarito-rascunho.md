@@ -1,6 +1,12 @@
-# Caso 02: gabarito econômico, rascunho v0.2 para revisão independente
+# Caso 02: gabarito econômico, rascunho v0.3 após primeira revisão independente
 
-Status: **rascunho v0.2**, ainda sem revisão. A v0.2 acrescenta a comparação de alternativas (seção 6) calculada pelos executores `estimate-exit-cost-by-series` v2 e `compare-refinancing-before-after` v2 (`pnpm --filter @offroad/evals gc02:alternatives`). Caso `gc02-cfo-camil-conselho` (definição congelada em
+Status: **rascunho v0.3**, revisado por Codex, ainda não homologado para produção. A v0.3 corrige
+sete erros conceituais do rascunho anterior: custo de transação do balanço versus ajuste do
+cronograma, liquidação do IPCA capitalizado no vencimento, distinção entre DSCR e cobertura de
+liquidez, definição do caixa operacional, amortização com caixa sem termos comprovados, comparação
+de alternativas sem condições de saída comprovadas e juros omitidos sobre a dívida refinanciada. A seção 6 é calculada
+pelos executores atuais `estimate-exit-cost-by-series` v4 e
+`compare-refinancing-before-after` v7 (`pnpm --filter @offroad/evals gc02:alternatives`). Caso `gc02-cfo-camil-conselho` (definição congelada em
 `02-cfo-camil-conselho.md`). Este gabarito tem duas metades com naturezas diferentes e o sistema
 precisa tratá-las de forma diferente:
 
@@ -15,10 +21,12 @@ precisa tratá-las de forma diferente:
    documentos" são gerados por `packages/testing-fixtures/scripts/build-camil-management.ts` a
    partir de `src/camil-management/truth.ts`, com a frase de rótulo na primeira linha de cada um, e
    calibrados às demonstrações públicas (ITR de 31/05/2026) onde há fato público: o cronograma
-   contratual fecha, ano a ano, com os totais da nota 15; a dívida de abertura é o ledger do Caso
-   01, série a série. Toda tabela numérica das seções 3 a 6 é impressa pelo mesmo script, que
-   chama o `financial-core` (`buildIndexedDebtSchedule`, `aggregateIndexedDebtSchedules`,
-   `calculateLiquidityCoverage`); nada foi calculado à mão.
+   contratual bruto reconcilia, ano a ano, com os totais de base contábil mista da nota 15 por um
+   bridge explícito de custos de transação; a dívida de abertura é o ledger do Caso 01, série a
+   série. As tabelas numéricas das seções 3 a 5 são impressas pelo script do fixture, que chama o
+   `financial-core` (`buildIndexedDebtSchedule`, `aggregateIndexedDebtSchedules`,
+   `calculateLiquidityCoverage`). A seção 6 vem do executor de alternativas indicado nela; nada
+   foi calculado à mão.
 
 Unidade: R$ mil, consolidado, ano safra de junho a maio, exceto onde indicado.
 
@@ -39,10 +47,10 @@ Unidade: R$ mil, consolidado, ano safra de junho a maio, exceto onde indicado.
 
 | Arquivo | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `01_Orcamento_2026_2027.xlsx` | 18.258 | `4a405d7a109316f4…` |
-| `02_Plano_Capex.xlsx` | 16.856 | `64586544efb86491…` |
+| `01_Orcamento_2026_2027.xlsx` | 18.619 | `f78c890a4053b9f7…` |
+| `02_Plano_Capex.xlsx` | 17.159 | `78ebe88eb8856dd4…` |
 | `03_Politica_Caixa_Minimo.docx` | 1.624 | `238d4ab4df900835…` |
-| `04_Cronograma_Contratual_Amortizacoes.xlsx` | 25.205 | `51c672f7a8a795b8…` |
+| `04_Cronograma_Contratual_Amortizacoes.xlsx` | 27.210 | `54a37137740f6a13…` |
 
 Manifesto: `packages/testing-fixtures/assets/camil-management/manifest.json`. Regenerar com
 `pnpm --filter @offroad/testing-fixtures camil-management`; o teste `truth.test.ts` prova que os
@@ -81,23 +89,26 @@ implícita por vértice da ETTJ ANBIMA de 04/09/2026 (6,05%, 5,76%, 5,65%, 5,64%
 SOFR assumida em 4,30% (sintética). As taxas das linhas bancárias (CDI + 1,50%; SOFR + 2,00%;
 7,0% e 7,5% prefixadas em CLP e PEN) são gerenciais sintéticas: o ITR prova a moeda, não o termo,
 e o Caso 01 as mantém `insufficient_evidence` na base pública. Câmbio constante. Séries IPCA
-com a atualização capitalizada e o cupom pago (variante base; o Caso 01 pede as duas).
+com atualização capitalizada, cupom pago em caixa e principal atualizado liquidado no vencimento.
+Essa mecânica é uma variante sintética: a confirmação por série continua dependente da escritura
+e do fluxo contratual completo.
 
 ## 3. Cronograma contratual por série
 
-O cronograma gerencial é a única fonte da alocação por série; a nota 15 dá só os totais por ano.
-Regra de construção: debênture no vencimento; quando um ano do ITR não comporta os vencimentos,
-o excesso vira amortização parcial no ano anterior, declarada; linhas bancárias preenchem o resto
-pro rata ao saldo. Os totais por ano são os do ITR por construção (o teste prova).
+O cronograma gerencial é a única fonte da alocação sintética por série; a nota 15 dá os totais por
+ano em base contábil mista. Regra de construção: debênture no vencimento; quando um ano do ITR não
+comporta os vencimentos, o excesso vira amortização parcial no ano anterior, declarada; linhas
+bancárias preenchem o restante pro rata ao saldo. O principal de caixa é bruto. Uma linha separada
+de custo de transação reconcilia esse principal aos buckets públicos (o teste prova).
 
-### Cronograma contratual por série (sintético, totais iguais ao ITR)
+### Cronograma contratual por série (sintético, principal bruto)
 
 | Série | 2026/27 | 2027/28 | 2028/29 | 2029/30 | 2030/31 | after 2031 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Capital de giro, moeda nacional | 666.686 | 421.138 | 143.470 | 74.018 | 0 | 0 |
-| Capital de giro, USD | 442.943 | 279.802 | 95.321 | 49.177 | 0 | 0 |
-| Capital de giro, CLP | 27.672 | 17.480 | 5.955 | 3.072 | 0 | 0 |
-| Capital de giro, PEN | 92.526 | 58.448 | 19.912 | 10.273 | 0 | 0 |
+| Capital de giro, moeda nacional | 671.334 | 424.074 | 144.470 | 74.534 | 0 | 0 |
+| Capital de giro, USD | 442.944 | 279.802 | 95.321 | 49.177 | 0 | 0 |
+| Capital de giro, CLP | 27.672 | 17.480 | 5.956 | 3.072 | 0 | 0 |
+| Capital de giro, PEN | 92.526 | 58.448 | 19.911 | 10.273 | 0 | 0 |
 | Debêntures 11ª emissão, 1ª série | 0 | 0 | 151.795 | 0 | 0 | 0 |
 | Debêntures 11ª emissão, 2ª série | 0 | 0 | 505.984 | 0 | 0 | 0 |
 | Debêntures 13ª emissão, 1ª série | 0 | 0 | 306.038 | 0 | 0 | 0 |
@@ -110,135 +121,133 @@ pro rata ao saldo. Os totais por ano são os do ITR por construção (o teste pr
 | Debêntures 15ª emissão, 2ª série | 0 | 0 | 0 | 0 | 61.103 | 347.600 |
 | Debêntures 15ª emissão, 3ª série | 0 | 0 | 0 | 0 | 0 | 50.401 |
 | Debêntures 15ª emissão, 4ª série | 0 | 0 | 0 | 0 | 0 | 30.793 |
-| Total | 1.229.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
+| Principal bruto | 1.234.476 | 779.804 | 1.229.475 | 695.013 | 994.544 | 809.198 |
+| Ajuste do bridge das linhas | (4.648) | (2.936) | (1.000) | (516) | 0 | 0 |
+| Cronograma público | 1.229.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
+
+O ajuste do bridge soma 9.100: custo de transação das linhas de 9.099 mais a diferença de
+arredondamento de 1 entre as duas apresentações da nota. Essa diferença é compensada pelo custo de
+debêntures de 63.224 no cronograma e 63.225 no balanço; as duas rotas chegam ao saldo contábil de
+5.670.186.
 
 Parciais: deb-15-2: 61.103 amortizados em 2030/31 (parcial, sintético); deb-15-1: 119.039 amortizados em 2029/30 (parcial, sintético).
 
 ### Serviço da dívida por ano safra (financial-core, cenário base)
 
-| Ano safra | Principal | Juros caixa | IPCA capitalizado | Serviço caixa |
-| --- | ---: | ---: | ---: | ---: |
-| 2026/27 | 1.229.828 | 706.751 | 45.024 | 1.936.579 |
-| 2027/28 | 776.868 | 570.315 | 45.426 | 1.347.183 |
-| 2028/29 | 1.228.475 | 485.383 | 47.176 | 1.713.858 |
-| 2029/30 | 694.497 | 312.482 | 49.738 | 1.006.979 |
-| 2030/31 | 994.544 | 219.696 | 52.857 | 1.214.240 |
-| after 2031 | 809.198 | 100.851 | 40.230 | 910.049 |
-
-### CFADS e cobertura sem rolagem (financial-core)
-
-| Ano safra | EBITDA | CFADS | Caixa inicial | Serviço | Cobertura | Caixa final | Déficit |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2026/27 | 894.000 | 384.000 | 1.455.809 | 2.086.579 | 0.88 | -246.770 | 246.770 |
-| 2027/28 | 911.880 | 617.080 | -246.770 | 1.498.983 | 0.25 | -1.128.673 | 1.128.673 |
-| 2028/29 | 930.118 | 630.422 | -1.128.673 | 1.867.494 | -0.27 | -2.365.745 | 2.365.745 |
-| 2029/30 | 948.720 | 644.030 | -2.365.745 | 1.162.487 | -1.48 | -2.884.202 | 2.884.202 |
-| 2030/31 | 967.694 | 657.911 | -2.884.202 | 1.371.659 | -1.62 | -3.597.951 | 3.597.951 |
-| after 2031 | 987.048 | 672.069 | -3.597.951 | 1.069.416 | -2.74 | -3.995.298 | 3.995.298 |
-
-### Cobertura com rolagem integral do principal (financial-core)
-
-| Ano safra | Serviço | Cobertura | Caixa final | Piso da política | Folga sobre o piso |
+| Ano safra | Principal contratual sintético | Principal caixa após IPCA | Juros caixa | IPCA capitalizado | Serviço de dívida caixa |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 2026/27 | 2.086.579 | 1.47 | 983.058 | 900.000 | 83.058 |
-| 2027/28 | 1.498.983 | 1.59 | 878.023 | 900.000 | -21.977 |
-| 2028/29 | 1.867.494 | 1.47 | 869.426 | 900.000 | -30.574 |
-| 2029/30 | 1.162.487 | 1.90 | 1.045.466 | 900.000 | 145.466 |
-| 2030/31 | 1.371.659 | 1.97 | 1.326.261 | 900.000 | 426.261 |
-| after 2031 | 1.069.416 | 2.63 | 1.738.112 | 900.000 | 838.112 |
+| 2026/27 | 1.234.476 | 1.234.476 | 708.153 | 45.024 | 1.942.629 |
+| 2027/28 | 779.804 | 779.804 | 571.001 | 45.426 | 1.350.805 |
+| 2028/29 | 1.229.475 | 1.229.475 | 485.617 | 47.176 | 1.715.092 |
+| 2029/30 | 695.013 | 695.013 | 312.561 | 49.738 | 1.007.574 |
+| 2030/31 | 994.544 | 1.085.717 | 219.696 | 52.857 | 1.305.412 |
+| after 2031 | 809.198 | 993.251 | 94.737 | 35.004 | 1.087.989 |
 
-### Trajetória de alavancagem com rolagem (dívida líquida sobre EBITDA)
+`Principal contratual sintético` é o principal bruto da fonte gerencial simulada. `Principal caixa
+após IPCA` inclui a atualização capitalizada das séries sinteticamente tratadas como bullet. A
+diferença não é juros pagos no ano. A ponte para o cronograma publicado está na tabela anterior.
 
-| Ano safra | EBITDA | Dívida bruta | Caixa | Dívida líquida | Índice | Contra 4,00x | Contra 3,50x |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 2026/27 | 894.000 | 5.715.211 | 983.058 | 4.732.153 | 5.29x | -1.29 | -1.79 |
-| 2027/28 | 911.880 | 5.760.637 | 878.023 | 4.882.614 | 5.35x | -1.35 | -1.85 |
-| 2028/29 | 930.118 | 5.807.814 | 869.426 | 4.938.388 | 5.31x | -1.31 | -1.81 |
-| 2029/30 | 948.720 | 5.857.552 | 1.045.466 | 4.812.086 | 5.07x | -1.07 | -1.57 |
-| 2030/31 | 967.694 | 5.910.409 | 1.326.261 | 4.584.148 | 4.74x | -0.74 | -1.24 |
-| after 2031 | 987.048 | 5.950.639 | 1.738.112 | 4.212.527 | 4.27x | -0.27 | -0.77 |
+### DSCR e liquidez sem rolagem (financial-core)
 
-## 6. Alternativas comparadas no mesmo modelo (executores do Caso 01)
+| Ano safra | Receita | EBITDA | CFADS | Caixa inicial | Serviço de dívida | DSCR | Usos de caixa | Cobertura de liquidez | Caixa final | Déficit |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2026/27 | 10.900.000 | 894.000 | 384.000 | 1.430.714 | 1.942.629 | 0,20x | 2.092.629 | 0,87x | (277.915) | 277.915 |
+| 2027/28 | 11.118.000 | 911.880 | 617.080 | (277.915) | 1.350.805 | 0,46x | 1.502.605 | 0,23x | (1.163.440) | 1.163.440 |
+| 2028/29 | 11.340.360 | 930.118 | 630.422 | (1.163.440) | 1.715.092 | 0,37x | 1.868.728 | (0,29x) | (2.401.746) | 2.401.746 |
+| 2029/30 | 11.567.167 | 948.720 | 644.030 | (2.401.746) | 1.007.574 | 0,64x | 1.163.083 | (1,51x) | (2.920.798) | 2.920.798 |
+| 2030/31 | 11.798.511 | 967.694 | 657.911 | (2.920.798) | 1.305.412 | 0,50x | 1.462.831 | (1,55x) | (3.725.719) | 3.725.719 |
+| after 2031 | 12.034.481 | 987.048 | 672.069 | (3.725.719) | 1.087.989 | 0,62x | 1.247.356 | (2,45x) | (4.301.006) | 4.301.006 |
 
-Data de referência 04/09/2026 (data do pack); antes = ledger de 31/05/2026 com caixa e aplicações de 1.455.809; taxa média de 12,46% derivada do serviço base da seção 3; covenant `insufficient_evidence` e comparação condicionada, logo sem headroom; discriminador declarado: pico de amortização em valor.
+DSCR = CFADS / (principal caixa + juros caixa). Cobertura de liquidez = (caixa inicial + CFADS +
+fontes contratadas) / (serviço da dívida + arrendamentos + dividendos planejados). São métricas
+diferentes e permanecem separadas.
 
-### Custo de saída das séries DI e da 11ª (executor `estimate-exit-cost-by-series` v2, em 04/09/2026)
+### Liquidez com rolagem integral do principal (financial-core; rolagem a 15,41% a.a.)
 
-| Série | Mecanismo | Estado | Base | Prêmio | Total |
-| --- | --- | --- | ---: | ---: | ---: |
-| 11ª emissão, 1ª série | redemption_offer | base_priced_premium_open | 151.795 | n/a | n/a |
-| 11ª emissão, 2ª série | redemption_offer | base_priced_premium_open | 505.984 | n/a | n/a |
-| 13ª emissão, 1ª série | flat_premium_pro_rata | estimated | 306.038 | 2.696 | 308.734 |
-| 14ª emissão, 1ª série | flat_premium_pro_rata | estimated | 438.918 | 4.884 | 443.802 |
+A taxa da dívida refinanciada é uma premissa sintética igual ao CDI spot anualizado de 13,91%
+mais 1,50%. Cada principal refinanciado permanece bullet além do horizonte e passa a pagar juros
+em caixa no período seguinte. Isso é um cenário de análise, não prova de disponibilidade, prazo ou
+preço de mercado.
 
-### Antes e depois por alternativa (executor `compare-refinancing-before-after` v1)
+| Ano safra | Serviço de dívida | Juros da rolagem | Proventos de rolagem | DSCR | Cobertura de liquidez | Caixa final | Piso da política | Folga sobre o piso |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2026/27 | 1.942.629 | 0 | 1.234.476 | 0,20x | 1,46x | 956.561 | 900.000 | 56.561 |
+| 2027/28 | 1.541.037 | 190.233 | 779.804 | 0,40x | 1,39x | 660.608 | 900.000 | (239.392) |
+| 2028/29 | 2.025.492 | 310.401 | 1.229.475 | 0,31x | 1,16x | 341.376 | 900.000 | (558.624) |
+| 2029/30 | 1.507.437 | 499.863 | 695.013 | 0,43x | 1,01x | 17.474 | 900.000 | (882.526) |
+| 2030/31 | 1.912.377 | 606.964 | 1.085.717 | 0,34x | 0,85x | (308.695) | 900.000 | (1.208.695) |
+| after 2031 | 1.862.262 | 774.273 | 993.251 | 0,36x | 0,67x | (665.004) | 900.000 | (1.565.004) |
 
-Antes: dívida bruta 5.670.186, caixa 1.455.809, dívida líquida contratual 4.228.477, alavancagem 4.72x, pico 2027 com 1.229.828 (21.45% da dívida). Headroom não medido: headroom is not measured: covenant limit insufficient_evidence, comparability conditional; offer-11th: exit cost is not priced for deb-11-1, deb-11-2; the alternative cannot be compared.
+### Trajetória de alavancagem econômica com rolagem (não é teste de covenant)
 
-| Alternativa | Estado | Custo de saída | Dívida bruta depois | Caixa depois | Dívida líquida contratual | Alavancagem | Pico depois | Participação do pico | Custo all-in da nova dívida |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| Abater 300.000 das linhas bancárias de 2026/27 com caixa, ao par | compared | 0 | 5.370.186 | 1.455.809 | 3.928.477 | 4.39x | 2029: 1.228.475 | 22.61% | n/a |
-| Alongar o pico de 2028/29: nova dívida de sete anos (CDI + 1,25%, dois de carência, SAC) retirando a 13ª 1ª série pelo prêmio da escritura | compared | 2.696 | 5.670.186 | 1.451.583 | 4.232.703 | 4.72x | 2027: 1.229.828 | 21.45% | 15.36% |
-| Alongar os dois picos: nova dívida de sete anos retirando a 13ª 1ª série e a 14ª 1ª série pelo prêmio da escritura | compared | 7.580 | 5.670.186 | 1.444.504 | 4.239.782 | 4.73x | 2027: 1.229.828 | 21.45% | 15.38% |
-| Retirar a 11ª emissão por oferta de resgate (prêmio a negociar) | blocked: exit cost is not priced for deb-11-1, deb-11-2; the alternative cannot be compared | | | | | | | | |
-| Manter a estrutura e rolar as linhas bancárias | compared | 0 | 5.670.186 | 1.455.809 | 4.228.477 | 4.72x | 2027: 1.229.828 | 21.45% | n/a |
+A dívida prospectiva parte do principal contratual bruto do cronograma gerencial sintético. É uma
+visão de caixa, não o saldo contábil prospectivo: o fixture não contém a curva de apropriação dos
+custos pelo método da taxa efetiva.
 
-### Concentração por ano civil de término do ano safra, depois de cada alternativa
+| Ano safra | EBITDA | Principal contratual bruto | Caixa elegível | Dívida líquida econômica | Índice econômico |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2026/27 | 894.000 | 5.787.534 | 956.561 | 4.830.973 | 5,40x |
+| 2027/28 | 911.880 | 5.832.960 | 660.608 | 5.172.353 | 5,67x |
+| 2028/29 | 930.118 | 5.880.137 | 341.376 | 5.538.761 | 5,95x |
+| 2029/30 | 948.720 | 5.929.875 | 17.474 | 5.912.401 | 6,23x |
+| 2030/31 | 967.694 | 5.982.732 | (308.695) | 6.291.426 | 6,50x |
+| after 2031 | 987.048 | 6.017.736 | (665.004) | 6.682.740 | 6,77x |
 
-| Alternativa | 2027 | 2028 | 2029 | 2030 | 2031 | 2032+ |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| cash-paydown | 929.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
-| extend-di-2028 | 1.229.828 | 792.170 | 983.645 | 755.705 | 1.055.752 | 916.311 |
-| extend-di-2028-and-2029 | 1.229.828 | 814.116 | 1.071.428 | 404.570 | 1.143.535 | 1.069.933 |
-| status-quo | 1.229.828 | 776.868 | 1.228.475 | 694.497 | 994.544 | 809.198 |
+Esses índices não medem covenant. O EBITDA contratual, os ajustes permitidos, o caixa dedutível e
+o limite aplicável por instrumento não estão resolvidos para o horizonte.
 
-### Ordenação pelo discriminador declarado (peak_amount)
+## 6. Alternativas testadas no mesmo modelo
 
-Racional: o conselho pediu se a estrutura aguenta os próximos anos; o pico de amortização em valor é o que a rolagem integral precisa vencer, e o custo all-in é a segunda leitura.
+Data de referência 04/09/2026. Antes = ledger de 31/05/2026 com caixa dedutível contratual de
+1.455.809. A taxa de 12,49% é uma proxy anual de juros caixa, não custo efetivo contábil nem all-in.
+O covenant continua `insufficient_evidence`. Não existe ranking: o conselho ainda não definiu os
+pesos de liquidez, custo, prazo e flexibilidade, e quatro alternativas não têm custo de saída
+comprovado.
 
-| Posição | Alternativa | Valor | Motivo |
-| --- | --- | ---: | --- |
-| 1 | cash-paydown | 1.228.475 | best peak_amount |
-| 2 | extend-di-2028 | 1.229.828 | ranks below by peak_amount |
-| 3 | extend-di-2028-and-2029 | 1.229.828 | ranks below by peak_amount |
-| 4 | status-quo | 1.229.828 | ranks below by peak_amount |
+### Antes e depois por alternativa (executor `compare-refinancing-before-after` v7)
 
-Fingerprints: exit 907ac6ee70942edf; before/after c8e2523fc33fe296.
+| Alternativa | Estado | Consequência |
+| --- | --- | --- |
+| Abater 300.000 das linhas bancárias de 2026/27 com caixa | bloqueada | condição e custo de pré-pagamento não comprovados |
+| Alongar o pico de 2028/29 com dívida de sete anos | bloqueada | base de liquidação e custo de saída da 13ª 1ª série não comprovados |
+| Alongar os picos de 2028/29 e 2029/30 | bloqueada | bases de liquidação e custos de saída da 13ª 1ª e 14ª 1ª séries não comprovados |
+| Retirar a 11ª emissão por oferta de resgate | bloqueada | prêmio e adesão não comprovados |
+| Manter a estrutura e rolar as linhas bancárias | comparada | cenário de referência, sem afirmar disponibilidade ou preço da rolagem |
+
+O fato de uma alternativa estar bloqueada não a elimina do debate. Ela pode aparecer como cenário
+indicativo, com inputs editáveis e rótulo de premissa, mas não pode ser apresentada como estrutura
+comparada ou custo verificado. O output executável completo permanece reproduzível por
+`pnpm --filter @offroad/evals gc02:alternatives`.
 
 ## 7. Achados esperados do Caso 02 (além dos do Caso 01)
 
-1. **Em que ano o serviço da dívida pressiona o caixa no cenário base:** em todos, sem rolagem;
-   o CFADS de 2026/27 (384.000) cobre 0,88x do serviço caixa (2.086.579, juros de 706.751 mais
-   principal de 1.229.828 mais arrendamentos e dividendos), e o caixa fica negativo já no
-   primeiro ano. Com rolagem integral do principal, a cobertura fica entre 1,47x e 2,63x e o
-   caixa final fura o piso da política em 2027/28 (21.977 abaixo) e 2028/29 (30.574 abaixo). A
-   leitura para o conselho: a estrutura depende de rolagem integral, e mesmo assim o piso não se
-   sustenta nos dois anos de pico sem redução de capex de crescimento, de dividendos ou de dívida.
-   Tudo isso depende do plano gerencial sintético e deve ser marcado como tal.
-2. **Qual covenant tem o menor headroom:** com rolagem e o EBITDA orçado, a dívida líquida sobre
-   EBITDA fica em 5,29x em 2026/27 e só volta abaixo de 4,74x em 2030/31; contra 4,00x o headroom
-   é negativo em todos os anos (de -1,35 a -0,27), e contra 3,50x pior. Como no Caso 01, nada
-   disso é "rompido": a medição é anual, em fevereiro, com a definição contratual da companhia
-   (EBITDA não aberto) e o degrau de 4,00x condicionado à quitação dos CRA. O achado é a
-   dependência: sem desalavancagem (EBITDA acima do orçado, venda de ativos, capital) a trajetória
-   não cruza 4,00x dentro do horizonte.
+1. **Em que ano o serviço da dívida pressiona o caixa no cenário base:** sem rolagem, o primeiro
+   ano já é inviável. O CFADS de 2026/27 (384.000) cobre somente 0,20x do principal e dos juros
+   pagos em caixa (DSCR), a cobertura de liquidez é 0,87x e o caixa final fica negativo. Com
+   rolagem integral do principal a 15,41% a.a., a cobertura de liquidez cai de 1,46x para 0,67x ao
+   longo do horizonte. O caixa fica abaixo do piso já em 2027/28 e negativo em 2030/31 porque os
+   juros da dívida refinanciada se acumulam. A leitura para o conselho é que rolar o principal não
+   resolve por si só a pressão de caixa; prazo, custo, amortização, geração operacional, capex e
+   dividendos precisam ser tratados conjuntamente. Essas métricas não são intercambiáveis: DSCR
+   mede CFADS sobre principal e juros caixa; cobertura de liquidez incorpora o caixa de abertura e
+   as fontes contratadas; usos de caixa incluem também arrendamentos e dividendos.
+2. **Qual covenant tem o menor headroom:** não está demonstrado. A série de dívida líquida sobre
+   EBITDA da seção 3 é uma métrica econômica, não o covenant contratual. Faltam a definição de
+   EBITDA, a regra de caixa dedutível e o degrau aplicável em cada data de medição. O sistema pode
+   mostrar a trajetória econômica e sensibilidades, mas deve bloquear qualquer afirmação de
+   cumprimento, rompimento ou headroom até que os documentos contratuais resolvam essas três
+   dimensões.
 3. **Qual alternativa reduz o pico de amortização sem elevar o custo total além da tolerância:**
-   depende do pico que o conselho olha, e o gabarito exige que o sistema diga isso em vez de
-   escolher. Sobre o horizonte inteiro (seção 6), o pico em valor é o de 2026/27 (1.229.828,
-   linhas bancárias que o cenário base assume roladas); só o abatimento com caixa o reduz, e por
-   1.353 apenas, deslocando o pico para 2028/29. Sobre a parede de debêntures de 2028/29, alongar
-   a 1ª série da 13ª (306.038) com dívida nova de sete anos a CDI + 1,25% baixa o ano de 1.228.475
-   para 983.645 ao custo de saída de 2.696 (0,40% a.a. pro rata) e custo all-in de 15,36%; alongar
-   também a 1ª série da 14ª baixa 2029/30 para 404.570 mas devolve 1.071.428 a 2028/29 pela
-   amortização SAC da dívida maior. A retirada da 11ª fica bloqueada: a base precifica só a base da
-   oferta, o prêmio é negociado. Nenhuma alternativa muda a alavancagem de partida (4,72x) além do
-   custo de saída; o headroom não é medido porque o limite continua `insufficient_evidence` e a
-   comparação, condicionada. Tolerância de custo: parâmetro `policy.structure.covenant_headroom`
-   e `policy.capacity.minimum_headroom` em `draft`; o custo all-in de 15,36% contra a taxa média
-   de 12,46% da dívida atual é o preço declarado do alongamento, não um veredito.
+   ainda não pode ser respondida de forma comparável. Todas as transações que retiram dívida
+   existente estão bloqueadas pela falta do principal nominal, juros acumulados, encargos e
+   condições de pré-pagamento na data de saída. Cenários continuam permitidos quando o usuário
+   transforma essas variáveis em premissas explícitas e editáveis, mas não podem virar ranking ou
+   recomendação. O uso de caixa, antes dos custos de saída, reduz caixa e dívida no mesmo valor e,
+   portanto, não reduz a dívida líquida por si só.
 
-4. **Hedge e exposição por indexador** (participações do executor `build-debt-ledger` v4 sobre a
-   dívida bruta antes dos custos de transação, 5.742.510): linhas bancárias com indexador não
+4. **Hedge e exposição por indexador** (participações do executor `build-debt-ledger` v4 sobre
+   5.742.510, soma dos saldos contábeis das linhas antes dos custos de transação; não a dívida
+   bruta apresentada no balanço): linhas bancárias com indexador não
    provado na base pública 42,1% (2.416.994, das quais 1.102.582 em moeda estrangeira, 19,2%),
    debêntures em CDI 37,8% (2.172.858), IPCA 13,0% (743.955), prefixada 7,1% (408.703). Nenhuma
    prova de hedge contratado na base pública (derivativos de 14.335 passivos e 235 ativos, nota
@@ -271,6 +280,25 @@ questionado antes de usar.
 
 ## 10. Revisão
 
-Nenhuma ainda. Próxima: revisão independente por IA (Codex) deste rascunho e do gerador, com
-recálculo independente das tabelas da seção 3 a partir dos arquivos sintéticos e das premissas de
-mercado do pack.
+Primeira revisão independente concluída em 7 de setembro de 2026, com recálculo das tabelas a
+partir dos arquivos sintéticos e inspeção dos executores. Foram corrigidos sete problemas que
+impediam usar o gabarito como referência institucional:
+
+1. DSCR, cobertura de juros, cobertura de liquidez e usos de caixa estavam tratados como se fossem
+   a mesma métrica;
+2. a abertura da dívida usava o custo de transação do cronograma (63.224) no lugar do saldo de
+   balanço (63.225);
+3. o principal corrigido por IPCA não era liquidado integralmente no vencimento bullet;
+4. o caixa operacional incluía 25.095 de aplicações que a própria política sintética exclui por
+   não serem equivalentes de caixa;
+5. o cenário de amortização com caixa pressupunha pré-pagamento a par sem fonte e produzia uma
+   redução incorreta de dívida líquida; e
+6. as alternativas estavam ranqueadas com custos de saída incompletos; e
+7. a rolagem mantinha o principal no balanço sem cobrar os juros futuros da dívida refinanciada.
+
+O gabarito permanece preliminar. Antes de qualquer homologação faltam: datas e condições exatas de
+juros e amortização das linhas bancárias; principal nominal, juros acumulados, encargos e condições
+de pré-pagamento na data de saída; cronograma de apropriação dos custos de transação pelo método dos
+juros efetivos; definições contratuais e degraus de covenant; posição e política de hedge; efeitos
+tributários das alternativas; e sazonalidade trimestral do caixa. Até lá, esses itens devem aparecer
+como lacunas materiais, não como conclusões.

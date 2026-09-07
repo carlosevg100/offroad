@@ -1407,3 +1407,14 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Compatibilidade de rollout | `worker_runtime_schema_contract.sql` e `runtime-schema.test.ts` | a imagem que chama o refresh exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila; a capacidade é aditiva e mantém a versão aceita pela imagem anterior durante o rollout | 2026-09-07 |
 | Banco de produção preparado | migrations `20260907054112` e `20260907054118` | comando de refresh e capacidade nominal aplicados em ordem; a imagem anterior permanece compatível até o rollout do novo caller | 2026-09-07 |
 | Limite | código e testes | refresh executa o case rail atual e o especialista R01 permanece interno e em sombra; nenhuma alegação de expertise ou output externo é liberada | 2026-09-07 |
+
+## Revisão econômica independente do Caso 02, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Serviço de dívida indexada | `indexed-debt.test.ts` | principal IPCA capitalizado é liquidado integralmente no bullet; `repayAll` não pode coexistir com amortização explícita | 2026-09-07 |
+| Projeção gerencial sintética | `truth.test.ts` e `projection.ts` | dívida contábil de abertura 5.670.186; principal contratual bruto 5.742.510, reconciliado ao cronograma público de 5.733.410 por bridge de 9.100 (custo de linhas de 9.099 e diferença de arredondamento de 1); caixa operacional 1.430.714; saldo final do principal zero | 2026-09-07 |
+| Métricas não intercambiáveis | `truth.test.ts` e `gc02-gabarito-rascunho.md` | DSCR usa CFADS sobre principal e juros caixa; cobertura de juros usa EBITDA sobre juros; cobertura de liquidez incorpora caixa e fontes contratadas | 2026-09-07 |
+| Custo da rolagem | `truth.test.ts` e `projection.ts` | cenário de rolagem exige taxa explícita; cada principal refinanciado permanece no saldo e seus juros entram no serviço a partir do período seguinte | 2026-09-07 |
+| Alternativas fail-closed | `build-gc02-alternatives.ts` | quatro transações de retirada bloqueadas sem principal nominal, juros acumulados, encargos e condições de pré-pagamento; nenhum ranking é emitido | 2026-09-07 |
+| Limite | gabarito v0.3 | trajetória econômica não é chamada de covenant; efeitos tributários, hedge, apropriação dos custos, sazonalidade e termos contratuais continuam lacunas explícitas | 2026-09-07 |

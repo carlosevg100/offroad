@@ -14,7 +14,7 @@ import Decimal from "decimal.js";
 import * as XLSX from "xlsx";
 
 import {projectCamil} from "../src/camil-management/projection";
-import {allocateContractualSchedule, budget2026_27, camilManagementLabel, itrDebentureCosts, itrScheduleBuckets, managementSeries, minimumCashPolicy} from "../src/camil-management/truth";
+import {allocateContractualSchedule, budget2026_27, camilManagementLabel, itrScheduleBuckets, itrScheduleDebentureCosts, managementSeries, marketAssumptions, minimumCashPolicy} from "../src/camil-management/truth";
 import {writeDocx, type DocxBlock} from "../src/fakeco/docx";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -24,8 +24,8 @@ const d = (value: Decimal.Value) => new Decimal(value);
 const fmt = (value: Decimal.Value) => d(value).toDecimalPlaces(0).toNumber().toLocaleString("pt-BR");
 const periods = itrScheduleBuckets.map((bucket) => bucket.period);
 
-// 1. Contractual amortization schedule, allocated in the truth module and tied to the ITR buckets there.
-const {rows: scheduleRows, partials, totalByPeriod: byPeriod} = allocateContractualSchedule();
+// 1. Gross contractual amortization schedule plus the transaction-cost bridge to the ITR buckets.
+const {rows: scheduleRows, partials, totalByPeriod: byPeriod, loanScheduleBridgeByPeriod} = allocateContractualSchedule();
 
 // 2 to 4. Debt service, CFADS, coverage and the leverage path come from the shared projection module.
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
@@ -35,7 +35,8 @@ const budgetYear = {
   leases: sum(budget2026_27.leasePayments), dividends: sum(budget2026_27.dividends),
 };
 const noRollover = projectCamil({rollover: false}).years;
-const rollover = projectCamil({rollover: true}).years;
+const rolloverAnnualRate = new Decimal(marketAssumptions.cdiAnnualPercent).plus(1.5).div(100);
+const rollover = projectCamil({rollover: true, rolloverAnnualRate}).years;
 
 // 5. Files.
 const written: Array<{name: string; bytes: number; sha256: string}> = [];
@@ -43,13 +44,17 @@ const emit = (name: string, bytes: Uint8Array) => {
   writeFileSync(join(outDir, name), bytes);
   written.push({name, bytes: bytes.byteLength, sha256: createHash("sha256").update(bytes).digest("hex")});
 };
-const sheet = (sheets: Array<{name: string; rows: (string | number)[][]}>) => {
+const sheet = (sheets: Array<{name: string; rows: (string | number)[][]; widths?: number[]}>) => {
   const book = XLSX.utils.book_new();
-  for (const entry of sheets) XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet(entry.rows), entry.name);
+  for (const entry of sheets) {
+    const worksheet = XLSX.utils.aoa_to_sheet(entry.rows);
+    if (entry.widths) worksheet["!cols"] = entry.widths.map((wch) => ({wch}));
+    XLSX.utils.book_append_sheet(book, worksheet, entry.name);
+  }
   return new Uint8Array(XLSX.write(book, {type: "array", bookType: "xlsx"}));
 };
 const label = [camilManagementLabel];
-emit("01_Orcamento_2026_2027.xlsx", sheet([{name: "Orcamento", rows: [
+emit("01_Orcamento_2026_2027.xlsx", sheet([{name: "Orcamento", widths: [46, 22, 22, 22, 22, 18], rows: [
   label, ["Camil Alimentos S.A. (simulação), orçamento do ano safra 2026/27, R$ mil, consolidado"], [],
   ["Linha", ...budget2026_27.quarters, "Ano"],
   ["Receita líquida", ...budget2026_27.netRevenue, budgetYear.revenue],
@@ -62,7 +67,7 @@ emit("01_Orcamento_2026_2027.xlsx", sheet([{name: "Orcamento", rows: [
   ["Dividendos", ...budget2026_27.dividends, budgetYear.dividends],
   [], ["Anos seguintes: crescimento nominal de 2% ao ano, capex só de manutenção, variação de capital de giro de R$ 50 milhões por ano (premissa gerencial sintética)"],
 ]}]));
-emit("02_Plano_Capex.xlsx", sheet([{name: "Capex", rows: [
+emit("02_Plano_Capex.xlsx", sheet([{name: "Capex", widths: [48, 20, 18, 18, 18], rows: [
   label, ["Plano de capex 2026/27 a 2028/29, R$ mil"], [],
   ["Projeto", "Classe", "2026/27", "2027/28", "2028/29"],
   ["Manutenção das plantas de arroz e feijão", "manutenção", sum(budget2026_27.maintenanceCapex), Math.round(sum(budget2026_27.maintenanceCapex) * 1.02), Math.round(sum(budget2026_27.maintenanceCapex) * 1.0404)],
@@ -78,34 +83,37 @@ const policy: DocxBlock[] = [
 ];
 emit("03_Politica_Caixa_Minimo.docx", await writeDocx(policy));
 emit("04_Cronograma_Contratual_Amortizacoes.xlsx", sheet([
-  {name: "Cronograma", rows: [
-    label, ["Cronograma contratual de amortizações por série, ano safra (junho a maio), R$ mil; totais por ano iguais à nota 15 do ITR de 31/05/2026; alocação por série sintética"], [],
+  {name: "Cronograma", widths: [42, 18, 24, 62, 15, 15, 15, 15, 15, 15, 16], rows: [
+    label, ["Cronograma contratual sintético de amortizações por série, ano safra (junho a maio), R$ mil; principal bruto reconciliado separadamente ao cronograma contábil da nota 15 do ITR de 31/05/2026"], [],
     ["Série", "Vencimento", "Remuneração", "Fonte da taxa", ...periods, "Total"],
     ...managementSeries.map((series) => {
       const amounts = periods.map((period) => scheduleRows.filter((row) => row.period === period && row.id === series.id).reduce((total, row) => total.plus(row.amount), d(0)));
       const rate = series.rate.type === "fixed" ? `prefixada ${series.rate.rate}% a.a.` : series.rate.type === "percent_of_index" ? `${series.rate.percent}% do ${series.rate.index}` : `${series.rate.index} + ${series.rate.spread}% a.a.`;
       return [series.label, series.maturity ?? "linhas rotativas", rate, series.rateSource === "public" ? "relatório do agente fiduciário" : "gerencial (sintético)", ...amounts.map((amount) => amount.toDecimalPlaces(0).toNumber()), amounts.reduce((total, amount) => total.plus(amount), d(0)).toDecimalPlaces(0).toNumber()];
     }),
-    ["Custos de transação de debêntures", "", "", "ITR nota 15", ...periods.map(() => 0), itrDebentureCosts],
-    ["Total", "", "", "", ...periods.map((period) => byPeriod(period).toDecimalPlaces(0).toNumber()), byPeriod("2026/27").plus(byPeriod("2027/28")).plus(byPeriod("2028/29")).plus(byPeriod("2029/30")).plus(byPeriod("2030/31")).plus(byPeriod("after 2031")).plus(itrDebentureCosts).toDecimalPlaces(0).toNumber()],
+    ["Principal contratual sintético", "", "", "arquivos gerenciais sintéticos", ...periods.map((period) => byPeriod(period).toDecimalPlaces(0).toNumber()), periods.reduce((total, period) => total.plus(byPeriod(period)), d(0)).toDecimalPlaces(0).toNumber()],
+    ["Ajuste de bridge das linhas", "", "", "custos de transação de 9.099 mais diferença de arredondamento de 1", ...periods.map((period) => loanScheduleBridgeByPeriod(period).toDecimalPlaces(0).toNumber()), periods.reduce((total, period) => total.plus(loanScheduleBridgeByPeriod(period)), d(0)).toDecimalPlaces(0).toNumber()],
+    ["Cronograma público da nota 15", "", "", "ITR nota 15", ...itrScheduleBuckets.map((bucket) => bucket.amount), itrScheduleBuckets.reduce((total, bucket) => total + bucket.amount, 0)],
+    ["Custos de transação de debêntures", "", "", "ITR nota 15; não alocados por ano", ...periods.map(() => 0), itrScheduleDebentureCosts],
+    ["Saldo contábil reconciliado", "", "", "cronograma público menos custos de debêntures", ...periods.map(() => 0), itrScheduleBuckets.reduce((total, bucket) => total + bucket.amount, 0) + itrScheduleDebentureCosts],
   ]},
-  {name: "Parciais", rows: [label, ["Amortizações parciais declaradas para caber nos totais do ITR"], ...partials.map((line) => [line])]},
+  {name: "Parciais", widths: [120], rows: [label, ["Amortizações parciais sintéticas usadas na alocação por série"], ...partials.map((line) => [line])]},
 ]));
 const manifest = {schemaVersion: "camil-management.v1", label: camilManagementLabel, generatedBy: "packages/testing-fixtures/scripts/build-camil-management.ts", files: written};
 writeFileSync(join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
 
 // 6. The answer-key tables, printed as Markdown.
 const md: string[] = [];
-md.push("### Cronograma contratual por série (sintético, totais iguais ao ITR)", "", `| Série | ${periods.join(" | ")} |`, `| --- | ${periods.map(() => "---:").join(" | ")} |`);
+md.push("### Cronograma contratual por série (sintético, principal bruto)", "", `| Série | ${periods.join(" | ")} |`, `| --- | ${periods.map(() => "---:").join(" | ")} |`);
 for (const series of managementSeries) md.push(`| ${series.label} | ${periods.map((period) => fmt(scheduleRows.filter((row) => row.period === period && row.id === series.id).reduce((total, row) => total.plus(row.amount), d(0)))).join(" | ")} |`);
-md.push(`| Total | ${periods.map((period) => fmt(byPeriod(period))).join(" | ")} |`, "", `Parciais: ${partials.join("; ")}.`, "");
-md.push("### Serviço da dívida por ano safra (financial-core, cenário base)", "", "| Ano safra | Principal | Juros caixa | IPCA capitalizado | Serviço caixa |", "| --- | ---: | ---: | ---: | ---: |");
-for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.principal)} | ${fmt(year.interest)} | ${fmt(year.indexationCapitalized)} | ${fmt(d(year.principal).plus(year.interest))} |`);
-md.push("", "### CFADS e cobertura sem rolagem (financial-core)", "", "| Ano safra | EBITDA | CFADS | Caixa inicial | Serviço | Cobertura | Caixa final | Déficit |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
-for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.ebitda)} | ${fmt(year.cfads)} | ${fmt(year.openingCash)} | ${fmt(year.debtService)} | ${year.coverage === null ? "n/a" : d(year.coverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(year.deficit)} |`);
-md.push("", "### Cobertura com rolagem integral do principal (financial-core)", "", "| Ano safra | Serviço | Cobertura | Caixa final | Piso da política | Folga sobre o piso |", "| --- | ---: | ---: | ---: | ---: | ---: |");
-for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.debtService)} | ${year.coverage === null ? "n/a" : d(year.coverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(minimumCashPolicy.floor)} | ${fmt(d(year.closingCash).minus(minimumCashPolicy.floor))} |`);
-md.push("", "### Trajetória de alavancagem com rolagem (dívida líquida sobre EBITDA)", "", "| Ano safra | EBITDA | Dívida bruta | Caixa | Dívida líquida | Índice | Contra 4,00x | Contra 3,50x |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
-for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.ebitda)} | ${fmt(year.grossDebt)} | ${fmt(year.closingCash)} | ${fmt(year.netDebt)} | ${d(year.leverage).toFixed(2)}x | ${d(4).minus(year.leverage).toFixed(2)} | ${d(3.5).minus(year.leverage).toFixed(2)} |`);
+md.push(`| Principal bruto | ${periods.map((period) => fmt(byPeriod(period))).join(" | ")} |`, `| Ajuste do bridge das linhas | ${periods.map((period) => fmt(loanScheduleBridgeByPeriod(period))).join(" | ")} |`, `| Cronograma público | ${itrScheduleBuckets.map((bucket) => fmt(bucket.amount)).join(" | ")} |`, "", `Parciais: ${partials.join("; ")}.`, "");
+md.push("### Serviço da dívida por ano safra (financial-core, cenário base)", "", "| Ano safra | Principal contratual sintético | Principal caixa após IPCA | Juros caixa | IPCA capitalizado | Serviço de dívida caixa |", "| --- | ---: | ---: | ---: | ---: | ---: |");
+for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.contractualPrincipal)} | ${fmt(year.principal)} | ${fmt(year.interest)} | ${fmt(year.indexationCapitalized)} | ${fmt(year.cashDebtService)} |`);
+md.push("", "### DSCR e liquidez sem rolagem (financial-core)", "", "| Ano safra | Receita | EBITDA | CFADS | Caixa inicial | Serviço de dívida | DSCR | Usos de caixa | Cobertura de liquidez | Caixa final | Déficit |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
+for (const year of noRollover) md.push(`| ${year.period} | ${fmt(year.revenue)} | ${fmt(year.ebitda)} | ${fmt(year.cfads)} | ${fmt(year.openingCash)} | ${fmt(year.cashDebtService)} | ${year.dscr === null ? "n/a" : d(year.dscr).toFixed(2)} | ${fmt(year.cashUses)} | ${year.liquidityCoverage === null ? "n/a" : d(year.liquidityCoverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(year.deficit)} |`);
+md.push("", `### Liquidez com rolagem integral do principal (financial-core; rolagem a ${rolloverAnnualRate.times(100).toFixed(2)}% a.a.)`, "", "| Ano safra | Serviço de dívida | Juros da rolagem | Proventos de rolagem | DSCR bruto | Cobertura de liquidez | Caixa final | Piso da política | Folga sobre o piso |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
+for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.cashDebtService)} | ${fmt(year.rolloverInterest)} | ${fmt(year.contractedSources)} | ${year.dscr === null ? "n/a" : d(year.dscr).toFixed(2)} | ${year.liquidityCoverage === null ? "n/a" : d(year.liquidityCoverage).toFixed(2)} | ${fmt(year.closingCash)} | ${fmt(minimumCashPolicy.floor)} | ${fmt(d(year.closingCash).minus(minimumCashPolicy.floor))} |`);
+md.push("", "### Trajetória de alavancagem econômica com rolagem (não é teste de covenant)", "", "A dívida prospectiva parte do principal contratual bruto do cronograma gerencial sintético. É uma visão de caixa, não o saldo contábil prospectivo: o fixture ainda não contém a curva de apropriação dos custos pelo método da taxa efetiva.", "", "| Ano safra | EBITDA | Principal contratual bruto | Caixa elegível | Dívida líquida econômica | Índice econômico |", "| --- | ---: | ---: | ---: | ---: | ---: |");
+for (const year of rollover) md.push(`| ${year.period} | ${fmt(year.ebitda)} | ${fmt(year.grossDebt)} | ${fmt(year.closingCash)} | ${fmt(year.netDebt)} | ${d(year.leverage).toFixed(2)}x |`);
 console.log(md.join("\n"));
 console.log("\nfiles:", written.map((file) => `${file.name} ${file.bytes}B ${file.sha256.slice(0, 12)}`).join("; "));

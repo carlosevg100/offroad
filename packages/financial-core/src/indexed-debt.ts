@@ -13,6 +13,11 @@ export type IndexedDebtPeriodInput = {
   drawdown?: Decimal.Value;
   scheduledPrincipal?: Decimal.Value;
   prepayment?: Decimal.Value;
+  /** Repay the full indexed principal after this period's indexation. Mutually exclusive with
+   * explicit scheduled principal and prepayment. This is required for inflation-linked bullets:
+   * the contractual nominal is updated by the index and the updated amount, not the opening
+   * nominal alone, is settled at maturity. */
+  repayAll?: boolean;
 };
 
 export type IndexedDebtInstrumentInput = {
@@ -104,6 +109,9 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     const couponRate = contractualRate(period.couponRate, "coupon rate");
     const scheduledRequested = nonNegative(period.scheduledPrincipal ?? 0, "scheduled principal");
     const prepaymentRequested = nonNegative(period.prepayment ?? 0, "prepayment");
+    if (period.repayAll && (!scheduledRequested.isZero() || !prepaymentRequested.isZero())) {
+      throw new RangeError(`repayAll cannot be combined with scheduled principal or prepayment in ${period.period}`);
+    }
     const preIndexationPrincipal = openingPrincipal.plus(drawdown);
     const indexationAccrued = input.indexationTreatment === "not_applicable"
       ? new Decimal(0)
@@ -111,10 +119,10 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     const indexationPaid = input.indexationTreatment === "cash_paid" ? indexationAccrued : new Decimal(0);
     const indexationCapitalized = input.indexationTreatment === "capitalized_principal" ? indexationAccrued : new Decimal(0);
     const indexedPrincipal = preIndexationPrincipal.plus(indexationCapitalized);
-    const requestedPrincipal = scheduledRequested.plus(prepaymentRequested);
+    const requestedPrincipal = period.repayAll ? indexedPrincipal : scheduledRequested.plus(prepaymentRequested);
     if (requestedPrincipal.gt(indexedPrincipal)) throw new RangeError(`principal payment exceeds outstanding balance in ${period.period}`);
     const paidPrincipal = requestedPrincipal;
-    const scheduledPrincipal = scheduledRequested;
+    const scheduledPrincipal = period.repayAll ? indexedPrincipal : scheduledRequested;
     const prepayment = prepaymentRequested;
     const couponBase = input.couponBase === "opening_principal"
       ? preIndexationPrincipal

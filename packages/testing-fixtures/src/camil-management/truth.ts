@@ -10,7 +10,9 @@ import Decimal from "decimal.js";
  */
 export const camilManagementLabel = "FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.";
 
-/** Safra years of the ITR schedule (note 15, p. 40), in R$ thousand, net of loan transaction costs. */
+/** Safra years of the ITR schedule (note 15, p. 40), in R$ thousand. These buckets mix
+ * debenture principal before transaction costs with loan carrying amounts after transaction
+ * costs. They are a public accounting schedule, not contractual cash principal. */
 export const itrScheduleBuckets = [
   {period: "2026/27", amount: 1_229_828},
   {period: "2027/28", amount: 776_868},
@@ -19,7 +21,12 @@ export const itrScheduleBuckets = [
   {period: "2030/31", amount: 994_544},
   {period: "after 2031", amount: 809_198},
 ] as const;
-export const itrDebentureCosts = -63_224;
+/** Balance-sheet transaction cost in note 15. The maturity table carries a R$1 thousand rounding
+ * difference and is intentionally represented by a separate constant below. */
+export const itrDebentureBalanceCosts = -63_225;
+export const itrScheduleDebentureCosts = -63_224;
+/** @deprecated Use the explicit balance or schedule constant. */
+export const itrDebentureCosts = itrScheduleDebentureCosts;
 
 export type ManagementSeries = {
   id: string;
@@ -95,11 +102,13 @@ export const marketAssumptions = {
 } as const;
 
 /**
- * The contractual schedule by series: debentures at maturity, moved to the previous safra year when a
- * bucket of the ITR would overflow (declared partial amortizations), bank lines filling what remains pro
- * rata to their balances. The per-year totals tie to note 15 by construction; the split is synthetic.
+ * The synthetic contractual schedule by series: debentures at maturity, moved to the previous
+ * safra year when a bucket of the ITR would overflow (declared partial amortizations), and bank
+ * lines filling the remaining public schedule before their transaction-cost add-back. The cash
+ * rows contain gross principal. A separate bridge back to the public mixed-basis buckets is
+ * verified below; the split remains synthetic.
  */
-export function allocateContractualSchedule(): {rows: Array<{period: string; id: string; amount: Decimal}>; partials: string[]; totalByPeriod: (period: string) => Decimal} {
+export function allocateContractualSchedule(): {rows: Array<{period: string; id: string; amount: Decimal}>; partials: string[]; totalByPeriod: (period: string) => Decimal; loanScheduleBridgeByPeriod: (period: string) => Decimal} {
   const d = (value: Decimal.Value) => new Decimal(value);
   const fmt = (value: Decimal.Value) => d(value).toDecimalPlaces(0).toNumber().toLocaleString("pt-BR");
   const periods = itrScheduleBuckets.map((bucket) => bucket.period);
@@ -129,7 +138,8 @@ export function allocateContractualSchedule(): {rows: Array<{period: string; id:
     }
   }
   const loans = managementSeries.filter((series) => series.maturity === null);
-  const loanTotalNet = loans.reduce((sum, series) => sum.plus(series.balance), d(0)).plus(loanTransactionCosts);
+  const loanTotalGross = loans.reduce((sum, series) => sum.plus(series.balance), d(0));
+  const loanTotalNet = loanTotalGross.plus(loanTransactionCosts);
   let loanRemaining = loanTotalNet;
   const loanByPeriod = new Map<string, Decimal>();
   for (const period of periods) {
@@ -141,15 +151,58 @@ export function allocateContractualSchedule(): {rows: Array<{period: string; id:
     loanRemaining = loanRemaining.minus(fill);
   }
   if (!loanRemaining.abs().lte(1)) throw new Error(`loans do not fit the ITR buckets: ${loanRemaining.toFixed()}`);
-  const loanShare = (series: ManagementSeries) => d(series.balance).plus(series.id === "loan-brl" ? loanTransactionCosts : 0).div(loanTotalNet);
+  const unroundedGrossByPeriod = new Map(periods.map((period) => [period, loanByPeriod.get(period)!.div(loanTotalNet).times(loanTotalGross)]));
+  const contractualLoanByPeriod: Map<string, Decimal> = new Map(periods.map((period) => [period, unroundedGrossByPeriod.get(period)!.toDecimalPlaces(0, Decimal.ROUND_HALF_UP)]));
+  const grossRoundingDelta = loanTotalGross.minus([...contractualLoanByPeriod.values()].reduce((sum, value) => sum.plus(value), d(0)));
+  const largestLoanPeriod = [...periods].sort((a, b) => loanByPeriod.get(b)!.comparedTo(loanByPeriod.get(a)!))[0]!;
+  contractualLoanByPeriod.set(largestLoanPeriod, contractualLoanByPeriod.get(largestLoanPeriod)!.plus(grossRoundingDelta));
+
+  // Integer allocation in R$ thousand with both row and column controls. Each period is
+  // apportioned over the remaining balances by largest remainder; the final non-zero period takes
+  // every remaining balance. This prevents a visually rounded workbook from being R$1 thousand
+  // out of balance even when the underlying decimals add exactly.
+  const activeLoanPeriods = periods.filter((period) => contractualLoanByPeriod.get(period)!.gt(0));
+  const remainingByLoan = new Map(loans.map((series) => [series.id, d(series.balance)]));
+  const loanRows: Array<{period: string; id: string; amount: Decimal}> = [];
+  for (const [periodIndex, period] of activeLoanPeriods.entries()) {
+    if (periodIndex === activeLoanPeriods.length - 1) {
+      for (const series of loans) loanRows.push({period, id: series.id, amount: remainingByLoan.get(series.id)!});
+      break;
+    }
+    const target = contractualLoanByPeriod.get(period)!;
+    const totalRemaining = [...remainingByLoan.values()].reduce((sum, value) => sum.plus(value), d(0));
+    const allocations = loans.map((series) => {
+      const quota = target.times(remainingByLoan.get(series.id)!).div(totalRemaining);
+      const floor = quota.toDecimalPlaces(0, Decimal.ROUND_FLOOR);
+      return {series, amount: floor, remainder: quota.minus(floor)};
+    });
+    let units = target.minus(allocations.reduce((sum, entry) => sum.plus(entry.amount), d(0))).toNumber();
+    for (const entry of [...allocations].sort((a, b) => b.remainder.comparedTo(a.remainder) || a.series.id.localeCompare(b.series.id))) {
+      if (units <= 0) break;
+      if (entry.amount.lt(remainingByLoan.get(entry.series.id)!)) {
+        entry.amount = entry.amount.plus(1);
+        units -= 1;
+      }
+    }
+    if (units !== 0) throw new Error(`loan allocation rounding did not close in ${period}`);
+    for (const entry of allocations) {
+      loanRows.push({period, id: entry.series.id, amount: entry.amount});
+      remainingByLoan.set(entry.series.id, remainingByLoan.get(entry.series.id)!.minus(entry.amount));
+    }
+  }
   const rows: Array<{period: string; id: string; amount: Decimal}> = [];
   for (const period of periods) {
     for (const series of debentures) { const amount = allocation.get(period)?.get(series.id); if (amount && amount.gt(0)) rows.push({period, id: series.id, amount}); }
-    for (const series of loans) { const amount = loanByPeriod.get(period)!.times(loanShare(series)); if (amount.gt(0)) rows.push({period, id: series.id, amount}); }
+    rows.push(...loanRows.filter((row) => row.period === period && row.amount.gt(0)));
   }
   const totalByPeriod = (period: string) => rows.filter((row) => row.period === period).reduce((sum, row) => sum.plus(row.amount), d(0));
+  // The public schedule is R$1 thousand below the gross-principal less the disclosed R$9.099
+  // thousand loan transaction cost. The bridge therefore totals R$9.100 thousand; the offset is
+  // paired with the R$1 thousand difference between debenture costs in the schedule and balance.
+  const loanScheduleBridgeByPeriod = (period: string) => loanByPeriod.get(period)!.minus(contractualLoanByPeriod.get(period)!);
   for (const bucket of itrScheduleBuckets) {
-    if (!totalByPeriod(bucket.period).minus(bucket.amount).abs().lte(1)) throw new Error(`bucket ${bucket.period} does not tie: ${totalByPeriod(bucket.period).toFixed()} vs ${bucket.amount}`);
+    const bridged = totalByPeriod(bucket.period).plus(loanScheduleBridgeByPeriod(bucket.period));
+    if (!bridged.minus(bucket.amount).abs().lte(1)) throw new Error(`bucket ${bucket.period} does not tie after transaction costs: ${bridged.toFixed()} vs ${bucket.amount}`);
   }
-  return {rows, partials, totalByPeriod};
+  return {rows, partials, totalByPeriod, loanScheduleBridgeByPeriod};
 }
