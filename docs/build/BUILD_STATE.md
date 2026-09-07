@@ -2746,8 +2746,10 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - A planilha ad hoc, antes reconstruída pela rota web a partir da síntese, foi removida. Sem a suíte
   de inspeção completa, o plano conversacional pode terminar, mas nenhum PPTX/XLSX é gravado,
   vinculado ou exposto. O run registra um status operacional `governed_material_pipeline_unavailable`
-  separado das lacunas econômicas e a conversa explica por que nenhum arquivo foi criado. Esse ramo
-  é separado do teste que prova geração, inspeção e storage reais.
+  separado das lacunas econômicas, marca a etapa de materiais como `skipped` e a conversa explica
+  por que nenhum arquivo foi criado. O job geral conclui apenas para publicar essa explicação; nenhuma
+  interface deve representar a etapa como material concluído. Esse ramo é separado do teste que prova
+  geração, inspeção e storage reais.
 - O bloqueio observado no E2E do PR #523 não era lentidão: o job falhou em 646 ms com
   `spawn soffice ENOENT`, mas a jornada aguardou por 180 segundos uma mensagem que nunca chegaria.
   O boot agora mede LibreOffice, pdfinfo e pdftoppm e só injeta a capacidade quando os três estão

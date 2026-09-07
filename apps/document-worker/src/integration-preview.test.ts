@@ -243,7 +243,7 @@ describe("integration_preview run processor", () => {
     expect(fake.started).toEqual(steps);
     expect(fake.recorded.some((artifact) => artifact.artifactType === "preview_material")).toBe(true);
     expect(fake.recorded.at(-1)?.artifactType).toBe("preview_decision_contract");
-    expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos governados por fingerprint");
+    expect(fake.completion()?.content).toContain("Plano do material a partir das informações governadas e rastreáveis");
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
@@ -261,7 +261,7 @@ describe("integration_preview run processor", () => {
     expect(changedOutcome.status).toBe("succeeded");
     expect(changed.started).toEqual(steps.slice(0, 9));
     expect(changed.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
-    expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
+    expect(changed.completion()?.content).toContain("7 de 9 etapas foram reaproveitadas sem recálculo");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
   });
@@ -300,8 +300,11 @@ describe("integration_preview run processor", () => {
       requestedFormats: ["pptx", "xlsx"],
       release: {state: "internal_only", recipientIds: []},
     });
-    expect(material.completion()?.content).toContain("Os arquivos Office não foram criados");
-    expect(material.stages).toContainEqual({stage: "integration_preview:materials", status: "succeeded"});
+    expect(material.completion()?.content).toContain("A apresentação e a planilha não foram criadas");
+    expect(material.completion()?.content).not.toContain("objetos governados por fingerprint");
+    expect(material.stages.filter((entry) => entry.stage === "integration_preview:materials")).toEqual([
+      {stage: "integration_preview:materials", status: "skipped"},
+    ]);
     const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
     expect(contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint).toBeNull();
     expect(contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint).toBeNull();

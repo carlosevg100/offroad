@@ -238,8 +238,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        "Resposta vinculada à pergunta em aberto. Vou incorporá-la ao contexto, recompilar o plano e preservar por fingerprint o trabalho que não mudou.",
-        "Answer bound to the open question. I will incorporate it into context, recompile the plan, and preserve unchanged work by fingerprint.")}`,
+        "Resposta vinculada à pergunta em aberto. Vou incorporá-la ao contexto, recompilar o plano e preservar o trabalho que não mudou.",
+        "Answer bound to the open question. I will incorporate it into context, recompile the plan, and preserve the work that did not change.")}`,
       activation: buildPreviewActivation(composition, request, {}, input, {answers: [{questionId: input.answeredQuestion.id, answer: input.message}]}),
     };
   }
@@ -255,8 +255,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Vou planejar o material a partir dos objetos governados por fingerprint: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
-        `I will plan the material from the fingerprint-governed objects: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
+        `Vou planejar o material a partir das informações governadas e rastreáveis: ${pages ? `${pages} páginas` : "número de páginas a confirmar"}, audiência ${audience.primary}. Números e premissas da devolutiva anterior entram por referência, nunca copiados à mão; o plano das páginas vem antes de qualquer arquivo.`,
+        `I will plan the material from governed and traceable information: ${pages ? `${pages} pages` : "page count to confirm"}, audience ${audience.primary}. Numbers and premises of the previous readout enter by reference, never retyped; the page plan comes before any file.`)}`,
       activation: buildPreviewActivation("prepare_material", request, {}, input),
     };
   }
@@ -270,8 +270,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Premissa registrada (${describePremises(premises)}). Só os nós cujas entradas mudam recalculam: a comparação antes e depois e o plano da devolutiva; ledger, conciliação, covenants, vencimentos, juros, custo de saída e cenários ficam como estavam, por fingerprint.`,
-        `Premise recorded (${describePremises(premises)}). Only the nodes whose inputs change recompute: the before-and-after comparison and the readout plan; ledger, reconciliation, covenants, maturities, interest, exit cost and scenarios stay as they were, by fingerprint.`)}`,
+        `Premissa registrada (${describePremises(premises)}). Só o que depende dela será recalculado: a comparação antes e depois e o plano da devolutiva; ledger, conciliação, covenants, vencimentos, juros, custo de saída e cenários permanecem como estavam.`,
+        `Premise recorded (${describePremises(premises)}). Only the work that depends on it will be recalculated: the before-and-after comparison and the readout plan; ledger, reconciliation, covenants, maturities, interest, exit cost and scenarios remain unchanged.`)}`,
       activation: buildPreviewActivation("change_premise", request, premises, input),
     };
   }
@@ -291,7 +291,7 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
 
   if (patterns.deepen.test(input.message)) {
     const request: PreviewRequest = {turn: priorUserTurns.length + 1, composition: "deepen", audience: {primary: "vp", others: []}, form: "first_deliverable", pages: null, sponsorInstruction, undefinedAspects: []};
-    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou replica por fingerprint e o que estiver bloqueado continua declarado como lacuna.", "I will rerun the analysis on the same state; whatever is unchanged replays by fingerprint and whatever is blocked stays declared as a gap.")}`, activation: buildPreviewActivation("deepen", request, {}, input)};
+    return {kind: "activate", reply: `${mark} ${t(locale, "Vou reexecutar a análise com o mesmo estado; o que não mudou será reaproveitado e o que estiver bloqueado continuará declarado como lacuna.", "I will rerun the analysis on the same state; unchanged work will be reused and anything blocked will remain declared as a gap.")}`, activation: buildPreviewActivation("deepen", request, {}, input)};
   }
 
   return {kind: "converse", reply: `${mark} ${t(locale,
@@ -320,8 +320,8 @@ export function answerFromObjects(input: PreviewTurnInput): string {
   }
   const steps = case01PreviewSteps.filter((step) => input.priorOutputs.has(step.taskId));
   return t(locale,
-    `Cada número vem de um objeto governado por fingerprint: ${steps.map((step) => `${step.label.pt} (${step.methodId} ${step.methodVersion})`).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e âncoras.`,
-    `Every number comes from a fingerprint-governed object: ${steps.map((step) => `${step.label.en} (${step.methodId} ${step.methodVersion})`).join("; ")}. Ask for the number you want to trace, such as leverage, and I bring the definition, period, accounts and anchors.`);
+    `Cada número vem de informações governadas e rastreáveis: ${steps.map((step) => step.label.pt).join("; ")}. Pergunte pelo número que quer rastrear, como a alavancagem, e eu trago definição, período, contas e fontes.`,
+    `Every number comes from governed and traceable information: ${steps.map((step) => step.label.en).join("; ")}. Ask for the number you want to trace, such as leverage, and I will bring the definition, period, accounts and sources.`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -564,11 +564,11 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           state: "unavailable",
           code: "governed_material_pipeline_unavailable",
           messagePt: inspectionUnavailable
-            ? "Os arquivos Office não foram criados porque a renderização e a inspeção governadas não estão disponíveis neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem inspeção foi exposto."
-            : "Os arquivos Office não foram criados porque o armazenamento privado governado não está disponível neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem vínculo ao projeto foi exposto.",
+            ? "A apresentação e a planilha não foram criadas porque a renderização e a inspeção seguras não estão disponíveis neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem inspeção foi exposto."
+            : "A apresentação e a planilha não foram criadas porque o armazenamento privado seguro não está disponível neste ambiente. O plano e a análise foram preservados; nenhum arquivo sem vínculo ao projeto foi exposto.",
           messageEn: inspectionUnavailable
-            ? "The Office files were not created because governed rendering and inspection are unavailable in this environment. The plan and analysis were preserved; no uninspected file was exposed."
-            : "The Office files were not created because governed private storage is unavailable in this environment. The plan and analysis were preserved; no file without a project binding was exposed.",
+            ? "The presentation and spreadsheet were not created because secure rendering and inspection are unavailable in this environment. The plan and analysis were preserved; no uninspected file was exposed."
+            : "The presentation and spreadsheet were not created because secure private storage is unavailable in this environment. The plan and analysis were preserved; no file without a project binding was exposed.",
         };
         const statusArtifact = await queue.recordCapitalProjectArtifact(job, {
           taskRunId: input.taskRunId,
@@ -589,13 +589,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           dependencies: input.dependencies,
         });
         contractDependencies.push({artifactId: statusArtifact.id, artifactFingerprint: statusArtifact.artifactFingerprint});
-        await queue.writeStage(job, `${stage}:materials`, "succeeded", {
+        await queue.writeStage(job, `${stage}:materials`, "skipped", {
           summary_pt: inspectionUnavailable
-            ? "Arquivos não criados: renderização e inspeção governadas indisponíveis neste ambiente"
-            : "Arquivos não criados: armazenamento privado governado indisponível neste ambiente",
+            ? "Apresentação e planilha não criadas: renderização e inspeção seguras indisponíveis neste ambiente"
+            : "Apresentação e planilha não criadas: armazenamento privado seguro indisponível neste ambiente",
           summary_en: inspectionUnavailable
-            ? "Files not created: governed rendering and inspection unavailable in this environment"
-            : "Files not created: governed private storage unavailable in this environment",
+            ? "Presentation and spreadsheet not created: secure rendering and inspection unavailable in this environment"
+            : "Presentation and spreadsheet not created: secure private storage unavailable in this environment",
           code: materialExecutionStatus.code,
           reason,
           state: materialExecutionStatus.state,
@@ -708,7 +708,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             qualityResults: [{id: "replayed_by_fingerprint", passed: true, detail: `input fingerprint unchanged since artifact ${prior.id}; the object was replayed, not recomputed`}],
             usage: {modelCalls: 0, costUsd: 0},
           });
-          await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: replicada por fingerprint (sem recálculo)`, summary_en: `${step.label.en}: replayed by fingerprint (no recomputation)`, task_spec_id: step.taskId, replayed: true});
+          await queue.writeStage(job, `${stage}:${step.taskId}`, "succeeded", {summary_pt: `${step.label.pt}: reaproveitada sem recálculo`, summary_en: `${step.label.en}: reused without recomputation`, task_spec_id: step.taskId, replayed: true});
           log("integration_preview.step_replayed", {job: job.job_id, task: step.taskId, method: step.methodId, replayOf: prior.id});
           continue;
         }
@@ -822,7 +822,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
   if (previewOutcome(input.composition) === "material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
-    lines.push(t(locale, "Plano do material a partir dos objetos governados por fingerprint.", "Material plan from the fingerprint-governed objects."));
+    lines.push(t(locale, "Plano do material a partir das informações governadas e rastreáveis.", "Material plan from governed and traceable information."));
     if (plan) {
       lines.push(t(locale, `Estado do plano: ${stateLabel(plan.state, locale)}.`, `Plan state: ${stateLabel(plan.state, locale)}.`));
       for (const [index, page] of (plan.pages ?? []).entries()) lines.push(`${index + 1}. ${page.title}: ${page.blocks.join(", ")}`);
@@ -834,7 +834,7 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
     if (input.materialExecutionStatus) lines.push(locale === "en-US" ? input.materialExecutionStatus.messageEn : input.materialExecutionStatus.messagePt);
   } else {
     lines.push(input.composition === "change_premise"
-      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps replayed without recomputation, by fingerprint.`)
+      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas foram reaproveitadas sem recálculo.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps were reused without recomputation.`)
       : t(locale, "Concluí a primeira leitura financeira e organizei o que ela sustenta, o que ainda depende de informação e por onde vale aprofundar.", "I completed the first financial readout and organized what it supports, what still depends on information, and where it is worth going deeper."));
     if (input.decisionArtifact) {
       const conversation = input.decisionArtifact.views.find((view) => view.surface === "conversation");

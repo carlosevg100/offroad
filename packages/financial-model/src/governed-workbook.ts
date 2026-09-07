@@ -236,15 +236,15 @@ export async function toGovernedXlsxBuffer(
   const basic = toXlsxBuffer(model, lang, decisionWorkbook ? {
     title: lang === "pt" ? "Workbook de decisão, interno" : "Decision workbook, internal",
     description: lang === "pt"
-      ? "Este arquivo projeta claims, premissas, séries, fontes e lacunas de um Decision Artifact governado por fingerprint. Não é um modelo financeiro integrado e não cria projeções ausentes."
-      : "This file projects claims, assumptions, series, sources and gaps from a fingerprint-governed Decision Artifact. It is not an integrated financial model and does not create missing projections.",
+      ? "Este arquivo organiza indicadores, premissas, séries, fontes e lacunas a partir de informações governadas e rastreáveis. Não é um modelo financeiro integrado e não cria projeções ausentes."
+      : "This file organizes metrics, assumptions, series, sources and gaps from governed and traceable information. It is not an integrated financial model and does not create missing projections.",
     controls: lang === "pt"
-      ? "As células editáveis estão na aba Premissas. A aba Controle liga os indicadores às linhas governadas de Claims; nenhuma alteração no arquivo modifica o objeto governado que o originou."
-      : "Editable cells are on the Assumptions sheet. The Control sheet links indicators to governed Claim rows; editing this file does not change its governed source object.",
+      ? "As células editáveis estão na aba Premissas. A aba Controle liga os indicadores às informações rastreáveis que os sustentam; nenhuma alteração no arquivo modifica as informações de origem."
+      : "Editable cells are on the Assumptions sheet. The Control sheet links metrics to the traceable information that supports them; editing this file does not change the source information.",
     sources: lang === "pt"
       ? "Claims, séries e premissas mantêm os identificadores de fontes, objetos e lacunas do contrato na própria linha."
       : "Claims, series and assumptions retain the contract's source, object and gap identifiers on the same row.",
-    assumptionHeading: lang === "pt" ? "Premissas editáveis declaradas no Decision Artifact" : "Editable assumptions declared in the Decision Artifact",
+    assumptionHeading: lang === "pt" ? "Premissas editáveis consideradas nesta análise" : "Editable assumptions used in this analysis",
     disclaimer: lang === "pt"
       ? "Uso interno. Este workbook não constitui proposta, aprovação, diligência final, opinião jurídica, distribuição ou recomendação executável."
       : "Internal use. This workbook is not an offer, approval, final diligence, legal opinion, distribution or executable recommendation.",
