@@ -24,7 +24,8 @@ describe("security current-state inventory", () => {
     expect(decision.structurallyValid).toBe(true);
     expect(decision.assuranceReady).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.counts).toMatchObject({environments: 6, systems: 7, dataStores: 7, dataFlows: 13, identities: 9, vendors: 13, openGaps: 17});
+    expect(decision.counts).toMatchObject({environments: 6, systems: 7, dataStores: 7, dataFlows: 17, identities: 10, vendors: 13, openGaps: 17});
+    expect(decision.warnings).toContainEqual({code: "operator_observation_not_independently_verified", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
   });
 
   it("requires every repository evidence reference to exist and keeps the generated view in parity", () => {
@@ -34,7 +35,7 @@ describe("security current-state inventory", () => {
         expect(existsSync(path), `${evidence.evidenceId} -> ${evidence.ref}`).toBe(true);
         expect(() => execFileSync("git", ["cat-file", "-e", `${currentSecurityInventory.baseline.commit}:${evidence.ref}`], {stdio: "pipe"}), `${evidence.evidenceId} must exist in the declared baseline commit`).not.toThrow();
       }
-      if (evidence.kind === "external_snapshot" || evidence.kind === "contract_record") {
+      if (evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") {
         const path = fileURLToPath(new URL(`../../../${evidence.ref}`, import.meta.url));
         expect(existsSync(path), `${evidence.evidenceId} -> ${evidence.ref}`).toBe(true);
         const content = readFileSync(path);
@@ -50,6 +51,33 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue, new Date());
     const generatedPath = fileURLToPath(new URL("../../../docs/security/CURRENT_STATE_INVENTORY.md", import.meta.url));
     expect(readFileSync(generatedPath, "utf8")).toBe(renderSecurityCurrentStateInventory(currentSecurityInventory, decision));
+  });
+
+  it("makes the evaluation OIDC, secret retrieval and provider boundaries explicit", () => {
+    const identity = currentSecurityInventory.identities.find((item) => item.identityId === "ID-GITHUB-EVALS-OIDC");
+    expect(identity).toMatchObject({systemRef: "SYS-GITHUB", privilege: "workload_scoped", status: "partial"});
+
+    const expectedFlows = [
+      "FLOW-GITHUB-EVAL-SECRETS",
+      "FLOW-GITHUB-EVAL-ANTHROPIC",
+      "FLOW-GITHUB-EVAL-OPENAI",
+      "FLOW-GITHUB-EVAL-PERPLEXITY",
+    ];
+    expect(currentSecurityInventory.dataFlows.filter((item) => expectedFlows.includes(item.flowId)).map((item) => item.flowId).sort()).toEqual(expectedFlows.sort());
+    for (const flowId of expectedFlows) {
+      const flow = currentSecurityInventory.dataFlows.find((item) => item.flowId === flowId)!;
+      expect(flow.environmentRefs).toContain("ENV-CI");
+      expect(flow.status).not.toBe("verified");
+      expect(flow.gapRefs).toContain("SG-PROVIDER-ASSURANCE");
+    }
+    expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-GITHUB-EVAL-SECRETS")!.gapRefs).toContain("SG-PRIVILEGED-ACCESS");
+  });
+
+  it("never treats the IAM operator note as an independently verified snapshot", () => {
+    const evidence = currentSecurityInventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!;
+    expect(evidence.kind).toBe("operator_observation");
+    expect(evidence.description).toContain("Unverified operator observation");
+    expect(evidence.description).not.toContain("confirmed");
   });
 
   it("fails closed on duplicate identifiers", () => {

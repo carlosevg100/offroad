@@ -42,7 +42,7 @@ export type SecurityOwner = z.infer<typeof securityOwnerSchema>;
 
 export const securityInventoryEvidenceSchema = z.object({
   evidenceId: evidenceIdSchema,
-  kind: z.enum(["repository_file", "automated_test", "configuration", "external_snapshot", "contract_record", "design_reference"]),
+  kind: z.enum(["repository_file", "automated_test", "configuration", "external_snapshot", "contract_record", "operator_observation", "design_reference"]),
   ref: z.string().min(1),
   capturedAt: dateTimeSchema,
   freshness: z.enum(["immutable", "time_bound"]),
@@ -311,14 +311,17 @@ export function evaluateSecurityCurrentStateInventory(
     if (evidence.freshness === "time_bound" && !evidence.validThrough) {
       blockers.push({code: "time_bound_evidence_requires_expiry", subjectRef: evidence.evidenceId});
     }
-    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record") && evidence.freshness !== "time_bound") {
+    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && evidence.freshness !== "time_bound") {
       blockers.push({code: "external_evidence_must_be_time_bound", subjectRef: evidence.evidenceId});
     }
-    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record") && !evidence.contentFingerprint) {
+    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && !evidence.contentFingerprint) {
       blockers.push({code: "external_evidence_requires_content_fingerprint", subjectRef: evidence.evidenceId});
     }
-    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record") && !evidence.collector) {
+    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && !evidence.collector) {
       blockers.push({code: "external_evidence_requires_collector", subjectRef: evidence.evidenceId});
+    }
+    if (evidence.kind === "operator_observation") {
+      warnings.push({code: "operator_observation_not_independently_verified", subjectRef: evidence.evidenceId});
     }
     if (evidence.validThrough && new Date(evidence.validThrough).getTime() <= evidenceCapturedAt) {
       blockers.push({code: "evidence_validity_window_invalid", subjectRef: evidence.evidenceId});

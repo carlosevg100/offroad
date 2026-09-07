@@ -2,18 +2,19 @@
   "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
   "capturedAt": "2026-09-07T09:20:00.000-03:00",
   "validThrough": "2026-09-14T09:20:00.000-03:00",
-  "source": "read-only effective-policy inspection",
+  "source": "unverified operator observation",
   "collector": {
-    "name": "manual-read-only-policy-inspection",
+    "name": "operator-authored-observation",
     "version": "1",
     "principalClass": "authorized cloud administrator"
   },
   "scope": "worker deployment role",
-  "observation": "required rollout diagnostic actions are absent",
-  "absentActions": [
+  "observation": "the operator reports that required rollout diagnostic actions may be absent; no raw policy document or simulate-principal-policy receipt is attached",
+  "reportedAbsentActions": [
     "ecs:DescribeTasks",
     "ecs:ListTasks",
     "logs:FilterLogEvents"
   ],
-  "redaction": "Cloud account identifiers, role identifiers and policy documents are intentionally excluded."
+  "verificationState": "unverified_operator_observation",
+  "redaction": "Cloud account identifiers, role identifiers and policy documents are intentionally excluded; this prevents independent verification and therefore cannot be treated as an IAM attestation."
 }
