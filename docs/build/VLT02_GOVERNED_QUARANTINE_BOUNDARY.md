@@ -1,4 +1,4 @@
-# VLT-02 — portaria governada de documentos (fatia interna)
+# VLT-02: portaria governada de documentos (fatia interna)
 
 Status: `code_complete_candidate` | exposição: `internal_shadow` | data-base: 7 de setembro de 2026
 
@@ -91,19 +91,19 @@ Os testes cobrem:
 
 `governedDocumentQuarantineRuntimeBoundary` mantém legíveis por máquina os bloqueios desta fatia:
 
-1. **persistência append-only** — `source_documents.scan_result` ainda é JSON mutável e não uma tabela
+1. **persistência append-only:** `source_documents.scan_result` ainda é JSON mutável e não uma tabela
    de receipts com constraint única e histórico inviolável;
-2. **CAS e idempotência transacional** — duas claims concorrentes ainda precisam de lock, comparação
+2. **CAS e idempotência transacional:** duas claims concorrentes ainda precisam de lock, comparação
    da versão/hash/object version e insert-or-return-existing atômico;
-3. **Storage imutável** — o job traz URL, hash e tamanho, mas esta fatia não liga o receipt a uma
+3. **Storage imutável:** o job traz URL, hash e tamanho, mas esta fatia não liga o receipt a uma
    object version não móvel verificada pelo adapter de VLT-01;
-4. **atestação do scanner** — engine, assinatura, freshness e health precisam ser obtidos e
+4. **atestação do scanner:** engine, assinatura, freshness e health precisam ser obtidos e
    verificados; `null` não é evidência de atualização;
-5. **isolamento da task** — usuário não root no container existe, mas não há nesta branch evidência
+5. **isolamento da task:** usuário não root no container existe, mas não há nesta branch evidência
    de read-only root filesystem, capabilities removidas, seccomp, limites de CPU/memória/processos,
    diretório efêmero dedicado ou limpeza comprovada entre documentos;
-6. **egress** — não há evidência nesta branch de deny-by-default e destinos permitidos durante scan;
-7. **validação adversarial em staging** — o contrato e os testes locais não substituem ClamAV real,
+6. **egress:** não há evidência nesta branch de deny-by-default e destinos permitidos durante scan;
+7. **validação adversarial em staging:** o contrato e os testes locais não substituem ClamAV real,
    corpus malicioso controlado, concorrência, crash recovery e prova de não interferência entre jobs.
 
 Até esses bloqueios fecharem, é incorreto afirmar “sandbox live”, “ClamAV verificado”, “data room
