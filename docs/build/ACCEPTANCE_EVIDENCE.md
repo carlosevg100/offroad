@@ -1446,11 +1446,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Vínculo da política | `dispatch-candidate.test.ts` | preflight ready antigo é bloqueado quando `allowedUses` muda, mesmo preservando executor e procedure; hashes de capability manifest e execution context entram no candidato |
 | Ausência de efeito | schema TypeScript + constraints SQL | `internal_shadow`, `willExecute=false` e `externalEffectAllowed=false`; nenhum executor é invocado |
 | Adversariais | `dispatch-candidate.test.ts` | bloqueia readiness não pronta, capability divergente, executor duplicado, tarefa fora do objetivo e workflow não selecionado |
-| Persistência | migration `20260907112546_universal_dispatch_candidate_shadow.sql` | RPC v5 grava a cadeia e o candidato no mesmo capability token, com replay e fingerprints dos registries |
+| Persistência | migration `20260907122628_universal_dispatch_candidate_shadow.sql` | RPC v5 grava a cadeia e o candidato no mesmo capability token, com replay e fingerprints dos registries |
 | Segurança prevista | `objective_plan_preflight.sql` | falsificação de readiness/candidacy, escrita direta, anon e cross-tenant são recusados pelo contrato |
 | Gate focado | dcm-specialization + document-worker | 32 testes da especialização e 231 do worker verdes; typecheck verde |
 | Limite | inspeção de runtime | rail de produção intacto; R01 segue shadow; nenhum workflow universal foi promovido ou executado |
-| Pendência | Supabase local | Docker indisponível nesta worktree; migration/RLS/SQL precisam passar na CI antes de qualidade tested |
+| CI do banco | Quality do PR #524 | histórico reconstruído do zero; migration, RLS, SQL e E2E aprovados antes do merge |
+| Staging remoto | migrations `20260907122411` e `20260907122418` | contrato anuncia `universal-dispatch-candidate-shadow.v1`; RLS e FORCE RLS ativos; `anon` sem leitura e `authenticated` sem escrita direta |
+| Produção remota | migrations `20260907122628` e `20260907122635` | mesma capacidade e matriz de privilégios verificadas antes de repetir o rollout do worker; o candidato continua `internal_shadow`, sem execução ou efeito externo |
 
 Status: **implemented em shadow**. O corte aproxima RT-05/RT-06/RT-07 ao transformar a prontidão
 persistida em uma decisão de dispatch verificável, mas deliberadamente ainda não é um dispatcher.
