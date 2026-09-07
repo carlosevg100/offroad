@@ -3539,3 +3539,12 @@ allowlists, contenção de prompt injection, egress, logs e artefatos ainda não
 baseline não autoriza alegação de SOC 2, ISO, pentest ou compliance. Próximo passo: SEC-008, coleta
 read-only e datada das configurações live, seguida da verificação contratual e dos boundaries
 agentic e de supply chain.
+
+Correção de arquitetura no mesmo PR: assurance externo deixou de depender de interpretação de
+prose por regex. `security-assurance-statements.ts` representa claim, status, escopo, evidência,
+emissão, validade e trust root. O gate verifica assinatura Ed25519, bytes/hash, escopo, emissor,
+janela e revogação antes de permitir `attested`; na ausência ou falha, o renderer rebaixa para
+`not_certified` ou `not_independently_audited`. Gap assessments e planos são milestones separados e
+não viram certificação. O scanner restante é lint conservador para texto adulterado, não NLP. A
+trust store atual está vazia, portanto a implementação evita falsa alegação mas não prova assurance
+externo.

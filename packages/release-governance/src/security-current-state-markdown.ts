@@ -31,12 +31,14 @@ export function renderSecurityCurrentStateInventory(
       statement,
       evidence: [],
       trustedRoots: [],
+      resolvedEvidence: [],
       evaluatedAt: new Date(inventory.generatedAt),
     });
     return renderSecurityAssuranceStatement(statement, assuranceDecision, "pt-BR");
   });
+  const resolvedEvidenceRefs = decision.evidenceResolutions.map((evidence) => evidence.evidenceId);
   const milestoneTexts = currentSecurityAssuranceMilestones.map((milestone) =>
-    renderSecurityAssuranceMilestone(milestone, "pt-BR"));
+    renderSecurityAssuranceMilestone(milestone, "pt-BR", resolvedEvidenceRefs));
   const lines: string[] = [
     "# Inventário atual de segurança da Offroad",
     "",

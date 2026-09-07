@@ -431,7 +431,11 @@ Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem tria
   real contido em `origin/main`, resolve cada referência nesse objeto Git e vincula observações
   locais a bytes, SHA-256 e metadados de origem e autoridade allowlisted. O status dos claims é
   derivado; remover ou reclassificar coverage/gaps falha fechado. A completude live continua aberta
-  em SEC-008 e não é inferida desta baseline;
+  em SEC-008 e não é inferida desta baseline. Claims externos de SOC 2, ISO, pentest e auditoria
+  agora usam objetos, escopo, evidência assinada, validade, revogação e trust root separados; sem
+  esses elementos o renderer emite somente estado não certificado/não atestado. Milestones também
+  são tipados e nunca promovem um claim automaticamente. A fronteira está documentada em
+  `ASSURANCE_CLAIM_TRUST_BOUNDARY.md`;
 - [ ] SEC-008 coletar configuração live read-only de AWS, Supabase, Vercel, GitHub, Sentry e PostHog;
 - [ ] SEC-009 fechar DPA/ZDR/retention/region de OpenAI, Anthropic, Perplexity e Firecrawl;
 - [ ] SEC-010 ativar enforcement fail-closed de provider policy primeiro em staging;

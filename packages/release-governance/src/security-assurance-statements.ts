@@ -26,6 +26,12 @@ export const securityAssuranceScopeSchema = z.object({
   scopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   environmentRefs: z.array(z.string().min(1)).min(1),
   systemRefs: z.array(z.string().min(1)).min(1),
+}).superRefine((scope, context) => {
+  if (new Set(scope.environmentRefs).size !== scope.environmentRefs.length) context.addIssue({code: "custom", path: ["environmentRefs"], message: "scope environment references must be unique"});
+  if (new Set(scope.systemRefs).size !== scope.systemRefs.length) context.addIssue({code: "custom", path: ["systemRefs"], message: "scope system references must be unique"});
+  if (scope.scopeFingerprint !== createSecurityAssuranceScopeFingerprint(scope)) {
+    context.addIssue({code: "custom", path: ["scopeFingerprint"], message: "scope fingerprint does not match the declared scope"});
+  }
 });
 export type SecurityAssuranceScope = z.infer<typeof securityAssuranceScopeSchema>;
 
@@ -47,6 +53,9 @@ export const securityAssuranceStatementSchema = z.object({
     if (attested && value === null) context.addIssue({code: "custom", path: [field], message: "attested statement requires external evidence and validity"});
     if (!attested && value !== null) context.addIssue({code: "custom", path: [field], message: "non-attested statement cannot carry attestation fields"});
   }
+  const certificationClaim = statement.claim === "soc2_type2_examined" || statement.claim === "iso27001_certified";
+  if (certificationClaim && statement.status === "not_independently_audited") context.addIssue({code: "custom", path: ["status"], message: "certification claim requires a certification status"});
+  if (!certificationClaim && statement.status === "not_certified") context.addIssue({code: "custom", path: ["status"], message: "assessment claim requires an independent-assessment status"});
 });
 export type SecurityAssuranceStatement = z.infer<typeof securityAssuranceStatementSchema>;
 
@@ -113,6 +122,7 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
   statement: SecurityAssuranceStatement;
   evidence: SecurityAssuranceEvidence[];
   trustedRoots: SecurityAssuranceTrustRoot[];
+  resolvedEvidence: Array<{evidenceRef: string; immutableRef: string; bytes: Uint8Array}>;
   evaluatedAt: Date;
 }): SecurityAssuranceDecision {
   const source = input.statement;
@@ -133,6 +143,9 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
         if (!root.permittedClaims.includes(attestation.claim)) blockers.push("attestation_claim_not_permitted");
         if (root.revokedAt && new Date(root.revokedAt).getTime() <= now) blockers.push("attestation_trust_root_revoked");
         if (new Date(root.validFrom).getTime() > now || new Date(root.validThrough).getTime() < now) blockers.push("attestation_trust_root_not_current");
+        if (new Date(root.validThrough).getTime() <= new Date(root.validFrom).getTime()) blockers.push("attestation_trust_root_validity_window_invalid");
+        const issuedAt = new Date(attestation.issuedAt).getTime();
+        if (issuedAt < new Date(root.validFrom).getTime() || issuedAt > new Date(root.validThrough).getTime()) blockers.push("attestation_issued_outside_trust_root_window");
         if (!verifyAssuranceEvidenceSignature(attestation, root.publicKeyPem)) blockers.push("attestation_signature_invalid");
       }
       if (attestation.claim !== statement.claim) blockers.push("attestation_claim_mismatch");
@@ -141,6 +154,12 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
       if (attestation.revokedAt && new Date(attestation.revokedAt).getTime() <= now) blockers.push("attestation_revoked");
       if (new Date(attestation.issuedAt).getTime() > now || new Date(attestation.validThrough).getTime() < now) blockers.push("attestation_not_current");
       if (new Date(attestation.validThrough).getTime() <= new Date(attestation.issuedAt).getTime()) blockers.push("attestation_validity_window_invalid");
+      const resolved = input.resolvedEvidence.find((candidate) => candidate.evidenceRef === attestation.evidenceRef);
+      if (!resolved) blockers.push("attestation_bytes_unresolved");
+      else {
+        if (resolved.immutableRef !== attestation.immutableRef) blockers.push("attestation_immutable_ref_mismatch");
+        if (sha256Bytes(resolved.bytes) !== attestation.contentFingerprint) blockers.push("attestation_content_fingerprint_mismatch");
+      }
     }
   }
 
@@ -169,8 +188,12 @@ export function renderSecurityAssuranceStatement(
 export function renderSecurityAssuranceMilestone(
   candidate: SecurityAssuranceMilestone,
   locale: "pt-BR" | "en-US",
+  resolvedEvidenceRefs: readonly string[] = [],
 ): string {
   const milestone = securityAssuranceMilestoneSchema.parse(candidate);
+  if (milestone.status === "completed" && !resolvedEvidenceRefs.includes(milestone.evidenceRef!)) {
+    throw new Error("completed security assurance milestone requires resolved evidence");
+  }
   const framework = frameworkLabel(milestone.framework);
   const kind = milestoneKindLabel(milestone.kind, locale);
   const status = milestoneStatusLabel(milestone.status, locale);
@@ -181,6 +204,16 @@ export function renderSecurityAssuranceMilestone(
 
 export function assuranceEvidenceSigningPayload(evidence: Omit<SecurityAssuranceEvidence, "detachedSignature">): Buffer {
   return Buffer.from(stableJson(evidence), "utf8");
+}
+
+export function createSecurityAssuranceScopeFingerprint(
+  scope: Pick<SecurityAssuranceScope, "scopeId" | "environmentRefs" | "systemRefs">,
+): string {
+  return createHash("sha256").update(stableJson({
+    scopeId: scope.scopeId,
+    environmentRefs: [...scope.environmentRefs].sort(),
+    systemRefs: [...scope.systemRefs].sort(),
+  })).digest("hex");
 }
 
 function verifyAssuranceEvidenceSignature(evidence: SecurityAssuranceEvidence, publicKeyPem: string): boolean {
@@ -249,6 +282,10 @@ function stableJson(value: unknown): string {
 }
 
 function sha256(value: string): string {
+  return `sha256:${createHash("sha256").update(value).digest("hex")}`;
+}
+
+function sha256Bytes(value: Uint8Array): string {
   return `sha256:${createHash("sha256").update(value).digest("hex")}`;
 }
 

@@ -11,21 +11,25 @@ import {createCanonicalSecurityEvidenceManifest} from "./security-current-state-
 import {
   securityAssuranceMilestoneSchema,
   securityAssuranceStatementSchema,
+  createSecurityAssuranceScopeFingerprint,
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
 const baselineCommit = "b2e389757995859cf6a0b250e051d83ba0b53163";
 const capturedAt = "2026-09-07T09:43:00.000-03:00";
 
-const currentAssuranceScope: SecurityAssuranceScope = {
+const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
-  scopeFingerprint: "aa2835d63829161b0eb2876d8b00132005a858e0359f65bf87e50bd6d384e935",
   environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING"],
   systemRefs: ["SYS-WEB", "SYS-SUPABASE", "SYS-WORKER", "SYS-GITHUB"],
 };
+const currentAssuranceScope: SecurityAssuranceScope = {
+  ...currentAssuranceScopeSeed,
+  scopeFingerprint: createSecurityAssuranceScopeFingerprint(currentAssuranceScopeSeed),
+};
 
 /** Current external-assurance truth. No attestation evidence or trusted assessor root exists. */
-export const currentSecurityAssuranceStatements = Object.freeze([
+export const currentSecurityAssuranceStatements = deepFreezeAssuranceRecords([
   securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-SOC2-TYPE2", claim: "soc2_type2_examined", status: "not_certified", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
   securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-ISO27001", claim: "iso27001_certified", status: "not_certified", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
   securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-PENTEST", claim: "penetration_test_passed", status: "not_independently_audited", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
@@ -33,11 +37,17 @@ export const currentSecurityAssuranceStatements = Object.freeze([
 ]);
 
 /** Program milestones are not assurance claims and cannot be rendered as certification. */
-export const currentSecurityAssuranceMilestones = Object.freeze([
+export const currentSecurityAssuranceMilestones = deepFreezeAssuranceRecords([
   securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-REMEDIATION-PLAN", framework: "soc2", kind: "remediation_plan", status: "completed", scope: currentAssuranceScope, evidenceRef: "SEV-SECURITY-PLAN"}),
   securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
   securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-PENTEST", framework: "penetration_test", kind: "external_engagement", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
 ]);
+
+function deepFreezeAssuranceRecords<T>(value: T): T {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value as Record<string, unknown>)) deepFreezeAssuranceRecords(child);
+  return Object.freeze(value);
+}
 
 const owner = (ownerRole: string, backupOwnerRole: string): SecurityOwner => ({
   ownerRole,
