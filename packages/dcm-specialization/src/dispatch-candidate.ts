@@ -213,7 +213,7 @@ export function compileUniversalDispatchCandidate(input: {
     workflowSelectionFingerprint: selection.fingerprint,
     capabilityManifestHash: fingerprint(capabilities),
     executionContextHash: fingerprint(executionContext),
-    executorRegistryHash: fingerprint(executors),
+    executorRegistryHash: fingerprintCandidateExecutorRegistry(executors),
     recipeId: selection.recipeId,
     recipeVersion: selection.recipeVersion,
     sliceFingerprint: selection.sliceFingerprint,
@@ -224,6 +224,20 @@ export function compileUniversalDispatchCandidate(input: {
     externalEffectAllowed: false as const,
   };
   return universalDispatchCandidateSchema.parse({...payload, fingerprint: fingerprint(payload)});
+}
+
+export function computeUniversalDispatchCandidateFingerprint(candidate: UniversalDispatchCandidate): string {
+  const {fingerprint: _fingerprint, ...payload} = universalDispatchCandidateSchema.parse(candidate);
+  return fingerprint(payload);
+}
+
+export function fingerprintCandidateExecutorRegistry(
+  input: readonly CandidateExecutorRegistration[],
+): string {
+  const registrations = z.array(candidateExecutorRegistrationSchema).parse(input)
+    .sort((left, right) => `${left.taskId}:${left.executorKey}:${left.executorVersion}`
+      .localeCompare(`${right.taskId}:${right.executorKey}:${right.executorVersion}`));
+  return fingerprint(registrations);
 }
 
 function capabilityMatches(capability: TaskExecutionCapability, binding: ObjectiveMethodBinding["bindings"][number]): boolean {
