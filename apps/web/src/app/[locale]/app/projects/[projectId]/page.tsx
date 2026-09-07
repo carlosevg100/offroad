@@ -1,4 +1,5 @@
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
+import {decisionArtifactContractSchema} from "@offroad/case-understanding";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
 import {executionBriefChangeSchema, executionBriefNarrativeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
@@ -17,6 +18,7 @@ import {PrivateMarketWork} from "@/components/advisor/private-market-work";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
 import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
+import {DecisionArtifactWork} from "@/components/integration-preview/decision-artifact-work";
 import {IntegrationPreviewWork} from "@/components/integration-preview/integration-preview-work";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -405,6 +407,11 @@ async function ConversationalCapitalProject({
   const previewArtifacts = (artifacts ?? []).filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
     id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content,
   }));
+  const decisionArtifactRow = (artifacts ?? []).find((artifact) => artifact.artifact_type === "preview_decision_contract" && artifact.status !== "superseded");
+  const decisionArtifactContent = decisionArtifactRow?.content && typeof decisionArtifactRow.content === "object" && !Array.isArray(decisionArtifactRow.content)
+    ? decisionArtifactRow.content as Record<string, unknown>
+    : null;
+  const parsedDecisionArtifact = decisionArtifactContractSchema.safeParse(decisionArtifactContent?.contract);
   const originationArtifact = project.entry_job === "origination_thesis"
     ? (artifacts ?? []).find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded")
     : undefined;
@@ -581,7 +588,11 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{previewArtifacts.length ? <IntegrationPreviewWork artifacts={previewArtifacts} locale={locale === "en-US" ? "en-US" : "pt-BR"} /> : null}{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
+    workProduct={<>{parsedDecisionArtifact.success ? <DecisionArtifactWork
+      contract={parsedDecisionArtifact.data}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      materialHref={`/${locale}/app/projects/${project.id}/preview/material`}
+    /> : previewArtifacts.length ? <IntegrationPreviewWork artifacts={previewArtifacts} locale={locale === "en-US" ? "en-US" : "pt-BR"} materialHref={`/${locale}/app/projects/${project.id}/preview/material`} /> : null}{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
       artifact={parsedOrigination.data}
       artifactId={originationArtifact.id}
       decision={originationDecision}
