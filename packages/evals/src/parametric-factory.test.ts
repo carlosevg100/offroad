@@ -10,7 +10,7 @@ import {
   type FactoryScenario,
 } from "@offroad/case-factory";
 import {supportedSemanticAudit} from "@offroad/case-understanding";
-import {toReceivablesCaseFromSimpleTape} from "@offroad/receivables-analysis";
+import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic-receivables-case";
 import {describe, expect, it} from "vitest";
 
 const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "language_conduct", "matching", "outcome"];
@@ -29,7 +29,7 @@ async function runScenario(scenario: FactoryScenario) {
     dealBrief: generated.dealBrief,
     resolvedMandates: generated.mandates,
     ...(generated.loanTape.length > 0 ? {
-      receivablesCase: toReceivablesCaseFromSimpleTape({
+      receivablesCase: buildSyntheticReceivablesCase({
         id: `${scenario.id}-receivables`,
         referenceDate: scenario.referenceDate,
         cedentName: scenario.company.legalName,

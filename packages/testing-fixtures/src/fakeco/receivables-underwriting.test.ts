@@ -1,5 +1,4 @@
 import {
-  toReceivablesCaseFromSimpleTape,
   underwriteReceivablesPool,
   type ReceivablesPoolUnderwritingInput,
 } from "@offroad/receivables-analysis";
@@ -7,11 +6,12 @@ import {describe, expect, it} from "vitest";
 
 import {buildReceivablesTape, receivablesReferenceDate} from "./receivables";
 import {company, interim2026, request} from "./truth";
+import {buildSyntheticReceivablesCase} from "../synthetic-receivables-case";
 
 describe("Aurora receivables underwriting gold", () => {
   it("reproduces the declared Case 03 borrowing base and refuses to overstate coverage", () => {
     const rows = buildReceivablesTape();
-    const simple = toReceivablesCaseFromSimpleTape({
+    const simple = buildSyntheticReceivablesCase({
       id: "gc03-aurora-2026-07",
       referenceDate: receivablesReferenceDate,
       cedentName: company.legalName,

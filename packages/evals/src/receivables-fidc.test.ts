@@ -2,14 +2,14 @@ import {generateCase, receivablesScenario} from "@offroad/case-factory";
 import {
   analyzeReceivables,
   receivablesParametricScenarios,
-  toReceivablesCaseFromSimpleTape,
 } from "@offroad/receivables-analysis";
+import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic-receivables-case";
 import {describe, expect, it} from "vitest";
 
 describe("receivables vertical on the governed case factory", () => {
   it("promotes the factory loan tape into a deterministic portfolio analysis without changing its economics", () => {
     const generated = generateCase(receivablesScenario);
-    const input = toReceivablesCaseFromSimpleTape({
+    const input = buildSyntheticReceivablesCase({
       id: "factory-receivables-vertical",
       referenceDate: generated.scenario.referenceDate,
       cedentName: generated.scenario.company.legalName,
