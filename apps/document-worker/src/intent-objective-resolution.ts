@@ -54,13 +54,10 @@ const compositionObjective: Readonly<Record<string, WorkspaceObjectiveKind>> = {
   build_or_review_model: "company_analysis",
   extract_and_reconcile_data: "documents_to_case",
   review_work: "operation_review",
-};
-
-const unsupportedCompositionReason: Readonly<Record<string, string>> = {
-  find_and_organize_information: "information_organization_objective_not_implemented",
-  map_market_and_precedents: "market_mapping_objective_not_implemented",
-  monitor: "monitoring_objective_not_implemented",
-  manage_work: "workspace_management_objective_not_implemented",
+  find_and_organize_information: "information_organization",
+  map_market_and_precedents: "market_mapping",
+  monitor: "monitoring",
+  manage_work: "workspace_management",
 };
 
 const hasObject = (envelope: IntentEnvelope, kind: IntentEnvelope["routingCore"]["object"]["value"][number]["kind"]) =>
@@ -102,8 +99,8 @@ function primaryWorkFallback(envelope: IntentEnvelope): ResolutionDraft {
   if (first === "understand" && hasObject(envelope, "company")) {
     return resolved("company_analysis", confidence, "understand_company_object", envelope, works);
   }
-  if (first === "market") return coverageGap("market_mapping_objective_not_implemented", envelope, works, confidence);
-  if (first === "find_and_organize") return coverageGap("information_organization_objective_not_implemented", envelope, works, confidence);
+  if (first === "market") return resolved("market_mapping", confidence, "primary_work_market", envelope, works);
+  if (first === "find_and_organize") return resolved("information_organization", confidence, "primary_work_find_and_organize", envelope, works);
   return needsContext("desired_outcome", "semantic_objective_not_materially_resolved", envelope, works, confidence);
 }
 
@@ -180,8 +177,6 @@ export function resolveIntentObjective(
       works,
       confidence,
     );
-  } else if (envelope.composition && unsupportedCompositionReason[envelope.composition]) {
-    draft = coverageGap(unsupportedCompositionReason[envelope.composition]!, envelope, works, confidence);
   } else if (envelope.composition && compositionObjective[envelope.composition]) {
     draft = resolved(compositionObjective[envelope.composition]!, confidence, "named_composition", envelope, works);
   } else if (envelope.composition) {
