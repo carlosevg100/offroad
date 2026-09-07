@@ -1,6 +1,6 @@
 import {createHash} from "node:crypto";
 
-import {case01, executors} from "@offroad/credit-playbook";
+import {case01, executors, preview} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
 import {buildPreviewInformationRequestProjection, parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
@@ -16,8 +16,10 @@ const ids = {
   brief: "77777777-7777-4777-8777-777777777777",
 };
 const steps = ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10", "A01", "A02"];
+type TestComposition = "prepare_meeting" | "prepare_material" | "change_premise" | "deepen" | "prepare_decision";
+const stepsFor = (composition: TestComposition) => preview.previewStepsForComposition(composition).map((step) => step.taskId);
 
-const previewJob = (composition: "prepare_meeting" | "prepare_material" | "change_premise" | "deepen", premises: Record<string, unknown> = {}): CapitalProjectAnalysisJob => ({
+const previewJob = (composition: TestComposition, premises: Record<string, unknown> = {}): CapitalProjectAnalysisJob => ({
   claimed: true,
   job_id: ids.job,
   capability_token: "c".repeat(64),
@@ -34,17 +36,18 @@ const previewJob = (composition: "prepare_meeting" | "prepare_material" | "chang
     capital_project_id: ids.project,
     capital_project_plan_id: ids.plan,
     capital_project_brief_id: ids.brief,
-    capital_task_ids: steps,
+    capital_task_ids: stepsFor(composition),
     capital_artifact_required: true,
     trigger_event: {type: "advisor_semantic_route", mode: "integration_preview"},
     model_budget: {max_cost_usd: 0.01, max_calls: 1},
-    preview: {mode: "integration_preview", composition, caseId: "gc01-analista-ib-camil", workflow: {id: `case01.${composition}`, version: "2026.09.05-v1", fingerprint: "a".repeat(64)}, premises},
+    preview: {mode: "integration_preview", composition, caseId: "gc01-analista-ib-camil", workflow: preview.previewWorkflowIdentity(composition), premises},
   },
 });
 
 type Recorded = {taskId: string; artifactType: string; inputFingerprint: string; content: Record<string, unknown>; id: string; artifactFingerprint: string};
 
-function fakeQueue(input: {composition: "prepare_meeting" | "prepare_material" | "change_premise" | "deepen"; premises?: Record<string, unknown>; request?: Record<string, unknown>; prior?: Recorded[]}) {
+function fakeQueue(input: {composition: TestComposition; premises?: Record<string, unknown>; request?: Record<string, unknown>; prior?: Recorded[]}) {
+  const selectedSteps = stepsFor(input.composition);
   const recorded: Recorded[] = [];
   const started: string[] = [];
   const stages: Array<{stage: string; status: string}> = [];
@@ -56,12 +59,12 @@ function fakeQueue(input: {composition: "prepare_meeting" | "prepare_material" |
     writeStage: async (_job: unknown, stage: string, status: string) => { stages.push({stage, status}); },
     loadCapitalProjectContext: async () => ({
       mode: "integration_preview",
-      preview: {mode: "integration_preview", composition: input.composition, caseId: "gc01-analista-ib-camil", workflow: {id: `case01.${input.composition}`, version: "2026.09.05-v1", fingerprint: "a".repeat(64)}, premises: input.premises ?? {}},
+      preview: {mode: "integration_preview", composition: input.composition, caseId: "gc01-analista-ib-camil", workflow: preview.previewWorkflowIdentity(input.composition), premises: input.premises ?? {}},
       project: {id: ids.project, organization_id: ids.organization, project_name: "Reunião Camil", entry_job: "origination_thesis", access_basis: "public_information", current_phase: "understand"},
       session: {id: ids.session, locale: "pt-BR", company_profile: {name: "Camil Alimentos S.A."}},
       brief: {id: ids.brief, kind: "integration_preview", version: 1, content: {request: input.request ?? {turn: 1, audience: {primary: "vp", others: []}, form: "first_deliverable", pages: null, sponsorInstruction: "refinanciamento", undefinedAspects: ["thesis", "format"]}}, content_fingerprint: "b".repeat(64)},
       plan: {id: ids.plan, version: 2, fingerprint: "d".repeat(64)},
-      tasks: steps.map((id, ordinal) => ({id, ordinal, batch: ordinal, label: id, dependencies: [], execution_class: "deterministic", effect: "propose_state", maturity_at_compile: "implemented"})),
+      tasks: selectedSteps.map((id, ordinal) => ({id, ordinal, batch: ordinal, label: id, dependencies: [], execution_class: "deterministic", effect: "propose_state", maturity_at_compile: "implemented"})),
       prior_artifacts: (input.prior ?? []).map((artifact) => ({task_id: artifact.taskId, id: artifact.id, artifact_type: artifact.artifactType, artifact_version: 1, artifact_fingerprint: artifact.artifactFingerprint, input_fingerprint: artifact.inputFingerprint, status: "draft", content: artifact.content})),
       recent_messages: [],
     }),
@@ -114,7 +117,7 @@ describe("integration_preview turn router", () => {
     const decision = routeIntegrationPreviewTurn({...base, message: "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.", artifactTypes: []});
     expect(decision.kind).toBe("activate");
     expect(decision.activation?.composition).toBe("prepare_meeting");
-    expect(decision.activation?.plan.taskSpecs).toHaveLength(10);
+    expect(decision.activation?.plan.taskSpecs).toHaveLength(9);
     expect(decision.activation?.plan.taskSpecs.every((task) => task.maturity === "implemented")).toBe(true);
     // Every turn compiles its own plan: a plan that already holds runs is never reactivated.
     const later = routeIntegrationPreviewTurn({...base, message: "Vamos preparar a reunião com a Camil: refinanciamento.", artifactTypes: [], messageId: "10000000-0000-4000-8000-000000000077"});
@@ -178,13 +181,13 @@ describe("integration_preview turn router", () => {
 });
 
 describe("integration_preview run processor", () => {
-  it("runs the nine steps on the frozen evidence, records one preview artifact each and publishes the compiled readout", async () => {
+  it("runs the nine-step meeting slice, records one preview artifact each and publishes the compiled readout", async () => {
     const fake = fakeQueue({composition: "prepare_meeting"});
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: fake.queue});
     expect(fake.failure(), JSON.stringify(fake.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
-    expect(fake.started).toEqual(steps);
-    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief", "preview_material"]);
+    expect(fake.started).toEqual(steps.slice(0, 9));
+    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief"]);
     for (const artifact of fake.recorded) {
       expect((artifact.content.preview as {mode: string}).mode).toBe("integration_preview");
       expect((artifact.content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
@@ -193,14 +196,26 @@ describe("integration_preview run processor", () => {
     const completion = fake.completion()!;
     expect(completion.artifactId).toBe(fake.recorded.at(-1)!.id);
     expect(completion.content).toMatch(/^\[Validação interna, integration_preview\]/);
-    expect(completion.content).toContain("Primeira devolutiva do Caso 01");
+    expect(completion.content).toContain("Primeira devolutiva compilada dos objetos rastreáveis");
     expect(completion.content).toContain("Para alinhar com o VP");
     expect(fake.questionProjection()).toMatchObject({
       schemaVersion: "project-information-request-projection.v1",
       sourceNamespace: "integration_preview",
       requests: expect.arrayContaining([expect.objectContaining({requirementKey: "q-angle"})]),
     });
-    expect(fake.stages.filter((stage) => stage.stage.startsWith("integration_preview:") && stage.status === "succeeded")).toHaveLength(10);
+    expect(fake.stages.filter((stage) => stage.stage.startsWith("integration_preview:") && stage.status === "succeeded")).toHaveLength(9);
+  });
+  it("runs the complete material slice when the requested outcome is a board decision", async () => {
+    const fake = fakeQueue({
+      composition: "prepare_decision",
+      request: {turn: 1, audience: {primary: "conselho", others: []}, form: "board_deck", pages: null, sponsorInstruction: "avaliar a estrutura de capital", undefinedAspects: []},
+    });
+    const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_decision"), {queue: fake.queue});
+    expect(fake.failure(), JSON.stringify(fake.failure())).toBeNull();
+    expect(outcome.status).toBe("succeeded");
+    expect(fake.started).toEqual(steps);
+    expect(fake.recorded.at(-1)?.artifactType).toBe("preview_material");
+    expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos assinados");
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
@@ -210,15 +225,15 @@ describe("integration_preview run processor", () => {
     expect(repeat.failure(), JSON.stringify(repeat.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     // A replayed step is still a run of this turn's plan (the plan's dependency gate reads its own runs); no artifact is written.
-    expect(repeat.started).toEqual(steps);
+    expect(repeat.started).toEqual(steps.slice(0, 9));
     expect(repeat.recorded).toEqual([]);
     expect(repeat.completion()?.content).toContain("[Validação interna, integration_preview]");
     const changed = fakeQueue({composition: "change_premise", premises: {newDebtAnnualRate: "0.155"}, prior: first.recorded});
     const changedOutcome = await processIntegrationPreviewRunJob(previewJob("change_premise", {newDebtAnnualRate: "0.155"}), {queue: changed.queue});
     expect(changedOutcome.status).toBe("succeeded");
-    expect(changed.started).toEqual(steps);
-    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01", "A02"]);
-    expect(changed.completion()?.content).toContain("7 de 10 etapas replicaram");
+    expect(changed.started).toEqual(steps.slice(0, 9));
+    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
+    expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
   });

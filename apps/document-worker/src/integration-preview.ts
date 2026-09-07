@@ -28,7 +28,9 @@ const {
   fingerprintOf,
   premisesFor,
   previewArtifactContent,
+  previewOutcome,
   previewPremisesSchema,
+  previewStepsForComposition,
   previewWorkflowIdentity,
   runPreviewStep,
 } = preview;
@@ -278,8 +280,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
     return {
       kind: "activate",
       reply: `${mark} ${t(locale,
-        `Entendi: material para a reunião com a Camil, com a instrução do VP em aberto quanto à tese e ao formato. Começo o trabalho de base agora, sobre a evidência congelada do Caso 01 (ITR de 31/05/2026, escrituras, relatórios do agente fiduciário): dívida instrumento a instrumento, conciliação, covenants pelas escrituras, vencimentos e cobertura, juros e correção, custo de saída, cenários e a comparação antes e depois. Em paralelo, três pontos para alinhar com o VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. Não pergunto nada que o ITR já responda.`,
-        `Understood: material for the Camil meeting, with the VP's instruction open on thesis and format. I start the groundwork now on the frozen evidence of Case 01 (ITR of 31/05/2026, indentures, trustee reports): debt instrument by instrument, reconciliation, covenants from the indentures, maturities and coverage, interest and indexation, exit cost, scenarios and the before-and-after comparison. In parallel, three points to align with the VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. I ask nothing the ITR already answers.`)}`,
+        `Entendi: material para a reunião com a Camil, com a instrução do VP em aberto quanto à tese e ao formato. Começo o trabalho de base agora com as fontes públicas já organizadas neste projeto (ITR de 31/05/2026, escrituras e relatórios do agente fiduciário): dívida instrumento a instrumento, conciliação, covenants pelas escrituras, vencimentos e cobertura, juros e correção, custo de saída, cenários e comparação antes e depois. Em paralelo, três pontos para alinhar com o VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. Não pergunto nada que o ITR já responda.`,
+        `Understood: material for the Camil meeting, with the VP's instruction open on thesis and format. I will start the groundwork with the public sources already organized in this project (ITR dated 31/05/2026, indentures and trustee reports): debt instrument by instrument, reconciliation, covenants from the indentures, maturities and coverage, interest and indexation, exit cost, scenarios and the before-and-after comparison. In parallel, three points to align with the VP: ${points.map((point, index) => `(${index + 1}) ${point}`).join("; ")}. I ask nothing the ITR already answers.`)}`,
       activation: buildPreviewActivation("prepare_meeting", request, {}, input),
     };
   }
@@ -290,8 +292,8 @@ export function routeIntegrationPreviewTurn(input: PreviewTurnInput): PreviewTur
   }
 
   return {kind: "converse", reply: `${mark} ${t(locale,
-    "A análise do Caso 01 já está no projeto. Posso preparar o material (\"vamos preparar o material: três páginas de pitch\"), alterar uma premissa (\"considere taxa de 15,50% a.a.\") ou explicar de onde saiu um número (\"de onde saiu a alavancagem?\").",
-    "The Case 01 analysis is already in the project. I can prepare the material (\"let's prepare the material: three pitch pages\"), change a premise (\"assume a rate of 15.50% per year\") or explain where a number came from (\"where did the leverage come from?\").")}`, activation: null};
+    "A análise já está no projeto. Posso preparar o material (\"vamos preparar o material: três páginas de pitch\"), alterar uma premissa (\"considere taxa de 15,50% a.a.\") ou explicar de onde saiu um número (\"de onde saiu a alavancagem?\").",
+    "The analysis is already in the project. I can prepare the material (\"let's prepare the material: three pitch pages\"), change a premise (\"assume a rate of 15.50% per year\") or explain where a number came from (\"where did the leverage come from?\").")}`, activation: null};
 }
 
 /** A question about a number is answered from the signed objects, with the definition and the anchors they carry. */
@@ -437,7 +439,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
   const {queue} = dependencies;
   const log = dependencies.log ?? (() => {});
   const stage = "integration_preview";
-  await queue.writeStage(job, stage, "started", {summary_pt: "Validação interna: rodando os métodos do Caso 01 sobre a evidência congelada", summary_en: "Internal validation: running the Case 01 methods on the frozen evidence"});
+  await queue.writeStage(job, stage, "started", {summary_pt: "Validação interna: executando os métodos selecionados sobre as fontes do projeto", summary_en: "Internal validation: running the selected methods over the project sources"});
   try {
     const context = contextSchema.parse(await queue.loadCapitalProjectContext(job));
     const premises = previewPremisesSchema.parse(context.preview.premises);
@@ -455,6 +457,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       request,
       previousBrief: previousBriefOutput ? {output: previousBriefOutput, objectFingerprints: Object.fromEntries(context.prior_artifacts.filter((artifact) => artifact.task_id !== "A01").flatMap((artifact) => { const output = outputOf(artifact); return output ? [[artifact.task_id.toLowerCase(), fingerprintOf({...output})]] : []; }))} : null,
     };
+    const workflowSteps = previewStepsForComposition(context.preview.composition);
+    const expectedWorkflow = previewWorkflowIdentity(context.preview.composition);
+    if (context.preview.workflow.id !== expectedWorkflow.id
+      || context.preview.workflow.version !== expectedWorkflow.version
+      || context.preview.workflow.fingerprint !== expectedWorkflow.fingerprint) {
+      throw new Error("the preview workflow identity does not match the selected recipe slice");
+    }
     const planTaskIds = new Set(context.tasks.map((task) => task.id));
     // Answers the person gave to earlier questions ride in the brief and reach the planner.
     const briefAnswers = Array.isArray(context.brief.content.answers)
@@ -465,12 +474,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const previousSynthesis = previousSynthesisArtifact ? outputOf(previousSynthesisArtifact) : null;
     if (previousSynthesis) runContext.previousSynthesis = previousSynthesis as unknown as preview.SynthesisOutput;
     let questionsResult: PreviewQuestionsResult | null = null;
-    for (const step of case01PreviewSteps) {
-      if (!planTaskIds.has(step.taskId)) throw new Error(`the preview plan does not hold TaskSpec ${step.taskId}`);
+    if (planTaskIds.size !== workflowSteps.length) throw new Error("the preview plan task count does not match the selected recipe slice");
+    for (const step of workflowSteps) {
+      if (!planTaskIds.has(step.taskId)) throw new Error(`the preview plan does not hold selected TaskSpec ${step.taskId}`);
     }
 
     let replayedCount = 0;
-    for (const step of case01PreviewSteps) {
+    for (const step of workflowSteps) {
       if (step.methodId === "plan-meeting-brief" && ["prepare_meeting", "prepare_decision", "deepen"].includes(context.preview.composition)) {
         const fixed = preview.meetingBriefInput({...runContext, candidateQuestions: undefined}).candidateQuestions as CandidateQuestion[];
         questionsResult = await generatePreviewQuestions({
@@ -590,14 +600,14 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     }));
     log("integration_preview.questions_projected", {job: job.job_id, ...questionProjection});
 
-    const final = artifactByTask.get(case01PreviewSteps.at(-1)!.taskId)!;
-    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, request, questions: questionsResult});
+    const final = artifactByTask.get(workflowSteps.at(-1)!.taskId)!;
+    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
     await queue.writeStage(job, stage, "succeeded", {summary_pt: "Validação interna concluída: devolutiva publicada na conversa", summary_en: "Internal validation finished: readout published in the conversation", artifactId: final.id});
     await queue.completeIntegrationPreviewRun(job, {
       completionMessageId, artifactId: final.id, artifactFingerprint: final.artifactFingerprint, content,
-      result: {mode: "integration_preview", composition: context.preview.composition, artifact_fingerprint: final.artifactFingerprint, steps: case01PreviewSteps.map((step) => ({taskId: step.taskId, methodId: step.methodId, state: outputs.get(step.taskId)?.state ?? null, replayed: artifactByTask.get(step.taskId)?.replayed ?? false})), replayedCount, modelCalls: 0, costUsd: 0},
+      result: {mode: "integration_preview", composition: context.preview.composition, workflow: expectedWorkflow, artifact_fingerprint: final.artifactFingerprint, steps: workflowSteps.map((step) => ({taskId: step.taskId, methodId: step.methodId, state: outputs.get(step.taskId)?.state ?? null, replayed: artifactByTask.get(step.taskId)?.replayed ?? false})), replayedCount, modelCalls: 0, costUsd: 0},
     });
     log("integration_preview.run_completed", {job: job.job_id, composition: context.preview.composition, replayed: replayedCount});
     return {status: "succeeded", artifactId: final.id};
@@ -621,14 +631,14 @@ export function stateLabel(state: string, locale: "pt-BR" | "en-US"): string {
 }
 
 /** The readout the conversation receives: states, facts and gaps read from the objects, never written by hand. */
-export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null}): string {
+export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null}): string {
   const {locale, outputs} = input;
   const mark = locale === "en-US" ? PREVIEW_MARK_EN : PREVIEW_MARK;
   const lines: string[] = [];
   const brief = outputs.get("A01");
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
   const states = case01PreviewSteps.filter((step) => step.stage !== "material").map((step) => `${step.label[locale === "en-US" ? "en" : "pt"]}: ${stateLabel(String(outputs.get(step.taskId)?.state ?? "blocked"), locale)}`);
-  if (input.composition === "prepare_material") {
+  if (previewOutcome(input.composition) === "material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
     lines.push(t(locale, "Plano do material a partir dos objetos assinados.", "Material plan from the signed objects."));
     if (plan) {
@@ -641,8 +651,8 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
     else lines.push(t(locale, "Números e premissas da devolutiva anterior preservados por referência; nada foi copiado à mão.", "Numbers and premises of the previous readout preserved by reference; nothing retyped."));
   } else {
     lines.push(input.composition === "change_premise"
-      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${case01PreviewSteps.length} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${case01PreviewSteps.length} steps replayed without recomputation, by fingerprint.`)
-      : t(locale, "Primeira devolutiva do Caso 01, compilada dos objetos assinados. Estado de cada método:", "First readout of Case 01, compiled from the signed objects. State of each method:"));
+      ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps replayed without recomputation, by fingerprint.`)
+      : t(locale, "Primeira devolutiva compilada dos objetos rastreáveis. Estado de cada método:", "First readout compiled from traceable objects. State of each method:"));
     lines.push(states.join("; ") + ".");
     if (deliverable) {
       // Facts once each, from the blocks that cite objects; the open questions are listed apart.

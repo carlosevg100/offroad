@@ -4,6 +4,26 @@ Atualizado em: 2026-09-06
 Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Dispatch do preview pelo slice compilado, candidate, 06/09/2026
+
+- O executor de preview deixou de percorrer a cadeia completa de dez tarefas em todo turno. Ele
+  resolve o outcome econômico da composição e consome somente o slice mínimo, fechado por
+  dependências, compilado da receita canônica de refinance e liability management.
+- `prepare_meeting`, `deepen` e `change_premise` terminam em `A01`, com nove tarefas e sem criar
+  material. `prepare_material` e `prepare_decision` terminam em `A02`, com dez tarefas.
+- A identidade persistida deixa de ser `case01.*`: passa a carregar receita, outcome, versão e
+  fingerprint do slice, por exemplo `refinance-liability-management.meeting_plan`. O executor
+  compara essa identidade e o conjunto exato de tarefas com o slice esperado antes de trabalhar.
+- Uma mudança de premissa no plano de reunião recalcula alternativas e plano, replica sete de nove
+  tarefas por fingerprint e não recria Word/Excel. O material anterior permanece versionado, mas
+  não é apresentado como produto do novo plano.
+- O nome Caso 01 saiu da devolutiva visível. Ele permanece somente como fixture e regressão interna;
+  a evidência pública usada por esse preview ainda é congelada e específica da Camil.
+
+Status: **candidate dispatch slice**. Testes e tipos locais estão verdes; banco, E2E e CI integral
+ainda precisam rodar na cadeia do PR. Isso prova dispatch correto para dois outcomes de uma receita,
+não roteamento universal, qualidade top-tier dos outputs ou exposure externa.
+
 ## Seleção de workflow persistida no preflight, candidate, 06/09/2026
 
 - O preflight real agora compila a seleção de receita depois do plano, dos packs econômicos e do
