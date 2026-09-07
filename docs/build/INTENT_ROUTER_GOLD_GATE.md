@@ -1,6 +1,14 @@
 # Gate gold do roteador semântico
 
-Estado em 07/09/2026: implementado e medido com modelo real; ainda não aprovado. Não governa produção.
+Estado em 07/09/2026: aprovado no conjunto gold delimitado e classificado como `tested` para
+validação interna. Não governa produção e não homologa executores nem qualidade analítica.
+
+Evidência controladora: [run 34096964058](https://github.com/carlosevg100/offroad/actions/runs/34096964058),
+executado no commit `919def6a81f88ac9053169ca9950b28b08efa1ad`. Foram 17/17 turnos em
+composição, abstenção, profundidade, continuidade, primeiro trabalho, trabalhos esperados,
+responsabilidades e perguntas; 6/6 entroncamentos repetidos permaneceram invariantes. A corrida
+gerou 29 observações, 31 tentativas de provedor, custo medido de US$ 0,5265 e nenhuma tentativa com
+custo desconhecido.
 
 ## O problema que este gate resolve
 
