@@ -557,6 +557,12 @@ Pedido: "Faça uma matriz de risco deste contrato."
 O projeto é a unidade de continuidade. Conversas, arquivos e runs são interfaces ou eventos do
 projeto, não silos independentes.
 
+A continuidade econômica não pode depender do texto ainda presente na janela do modelo. O estado
+governado do projeto (seleção de workflow, objetos, decisões, perguntas abertas, premissas e suas
+versões) é a âncora. Em um turno subsequente, o sistema herda somente o necessário para recompilar
+o trabalho pedido; intenção econômica nova e explícita sempre prevalece. Estado anterior nunca é
+autoridade para pular validação, ativação ou controles de acesso do novo turno.
+
 ### 7.1 Objetos persistidos
 
 - Objective;
@@ -2386,9 +2392,10 @@ Executar Release 0 nesta ordem, mantendo somente correções P0/P1 em paralelo:
 7. executar BP-058, BP-060, BP-061 e BP-062 para criar a Trust Foundation e a baseline verificável;
 8. converter BP-010 a BP-019 em tickets implementáveis, testáveis e vinculados a controles;
 9. concluir a substituição do compiler fixo do Caso 01 por trás de flag; a primeira receita canônica,
-   sua seleção econômica fail-closed, persistência shadow e dispatch seletivo no preview já existem
-   como candidates. O preview usa identidade de receita e outcome, executa nove tarefas para plano
-   de reunião e dez para material, mas enforcement pelo registro persistido, exposição live e outros
+   sua seleção econômica fail-closed, persistência e dispatch seletivo no preview já existem como
+   candidates. O preview usa identidade de receita e outcome, executa nove tarefas para plano de
+   reunião e dez para material. O registro persistido já governa atomicamente recipe, outcome,
+   fingerprint, TaskSpecs e lotes antes do enqueue; exposição live, E2E após o gate e outros
    workflows ainda não estão provados;
 10. provar Release 1 com seis intenções estruturalmente diferentes e variantes trust-adversarial;
 11. avançar os demais releases por vertical slice, security gate e acceptance evidence.

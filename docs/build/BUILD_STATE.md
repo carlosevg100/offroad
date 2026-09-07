@@ -2569,3 +2569,20 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   anterior, titular formal e credores econômicos distintos, silêncio bloqueia, `complete` só com
   todas as saídas, ids duplicados recusados. Oito dos nove métodos do Caso 01 em `implemented`;
   45 testes de executores.
+
+## Seleção econômica governa a ativação do preview, candidate, 07/09/2026
+
+- O turno em `integration_preview` persiste a receita e o outcome antes de gravar a resposta que
+  ativa execução. O outcome é o produto de trabalho efetivo daquele turno: um pedido que menciona
+  material, mas ainda está alinhando a reunião, seleciona `meeting_plan`; a preparação explícita do
+  arquivo ou decisão de conselho seleciona `material`.
+- `worker_record_agent_response_and_activate_v5` valida, dentro da mesma transação, organização,
+  projeto, job, recipe id/version, slice fingerprint, outcome, conjunto exato de TaskSpecs e lotes.
+  Ausência, ambiguidade ou divergência interrompem a ativação antes de enfileirar o executor.
+- Continuidade deixou de depender das últimas mensagens visíveis. Quando um turno genuinamente
+  subsequente não nomeia uma nova situação econômica, o worker pode carregar somente a seleção
+  imutável mais recente do mesmo projeto, autorizada pelo capability do job atual, e recompila um
+  novo slice. Uma situação econômica explicitamente declarada no turno sempre prevalece; a âncora
+  não copia ativação anterior nem contorna a comparação exata da RPC v5.
+- A mudança está em `candidate/internal`: staging e contratos SQL passaram; E2E e deploy de produção
+  continuam gates obrigatórios antes de qualquer promoção de exposição ou maturidade.

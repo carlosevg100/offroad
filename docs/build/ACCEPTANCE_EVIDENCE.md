@@ -1348,3 +1348,14 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Testes do worker | Vitest e typecheck de `@offroad/document-worker` | 30 arquivos/178 testes verdes; adapter RPC e ativação determinística comprovam gravação do plano e decisão bloqueada sem promover dispatcher | 2026-09-06 |
 | Segurança SQL | `supabase/tests/objective_plan_preflight.sql` | contrato cobre replay, resultado terminal forjado, partição sobreposta, capability falsa, isolamento entre tenants e proibição de escrita direta; execução local aguarda runtime Docker e permanece gate obrigatório da CI | 2026-09-06 |
 | Limite declarado | `current-capability-ledger.ts` | capacidade marcada `shadow/internal/implemented`; ela observa lacunas, mas não autoriza nem bloqueia o trilho fixo e não declara dispatcher universal | 2026-09-06 |
+
+## Enforcement da seleção no preview, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Ordem do turno | `agent-operation-brief.test.ts` | seleção `refinance-liability-management.meeting_plan` é persistida antes da ativação; 188 testes do worker verdes | 2026-09-07 |
+| Gate transacional | `20260907032452_integration_preview_workflow_selection_enforcement.sql` | nova RPC v5 compara seleção e ativação antes de delegar à gravação/ativação atômica existente | 2026-09-07 |
+| Testes negativos | `supabase/tests/objective_plan_preflight.sql` em staging | fingerprint forjado, task slice incompleto, lotes divergentes e capability falsa recusados; `objective_plan_preflight_passed` | 2026-09-07 |
+| Brief e grants | `supabase/tests/execution_brief_foundation.sql` em staging | wrapper v5 preserva o contrato do Execution Brief; `anon` sem execução e `authenticated` com capability; teste passou | 2026-09-07 |
+| Continuidade do workflow | `20260907041815_integration_preview_workflow_continuity_anchor.sql`, `20260907042403_integration_preview_workflow_continuity_grant_parity.sql`, teste SQL e `agent-operation-brief.test.ts` | resposta governada, ajuste do plano e alteração de premissa continuam usando a última seleção econômica imutável do mesmo projeto mesmo depois de o pedido inicial sair da janela curta; capability forjada e projeto distinto não têm acesso; wrapper e implementação têm grant parity; o novo turno recompila e volta a passar pelo gate exato | 2026-09-07 |
+| Advisors | Supabase staging | nenhum novo finding de segurança; dois INFO preexistentes em tabelas `private`; findings de performance preexistentes seguem fora desta fatia | 2026-09-07 |

@@ -13,7 +13,12 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
-import {bindObjectiveMethods, compileObjectiveSpecialization, selectWorkflowRecipeForObjective} from "@offroad/dcm-specialization";
+import {
+  bindObjectiveMethods,
+  compileObjectiveSpecialization,
+  selectWorkflowRecipeForObjective,
+  workflowRecipeSelectionSchema,
+} from "@offroad/dcm-specialization";
 import {
   specialistMethodRuntimeManifest,
   specialistMethodRuntimeManifestHash,
@@ -26,6 +31,7 @@ import {
   expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
   taskExecutionCapabilitySchema,
+  type ObjectiveOutputTerminal,
 } from "@offroad/work-plan";
 import {z} from "zod";
 
@@ -37,7 +43,7 @@ import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
 
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
-import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
+import {routeIntegrationPreviewTurn, type PreviewActivation, type PreviewStepOutput} from "./integration-preview";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -378,6 +384,9 @@ export async function processAgentOperationBriefJob(
         const executionBrief = liveDecision.activation
           ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), liveDecision.activation)
           : undefined;
+        if (liveDecision.activation?.job === "integration_preview") {
+          await recordPreviewWorkflowSelection(queue, job, context, liveDecision.activation);
+        }
         await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveReply}, undefined, liveDecision.activation ?? undefined, executionBrief);
         await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record, ...researchRecord});
         await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: gateway.spent()});
@@ -404,6 +413,9 @@ export async function processAgentOperationBriefJob(
       const executionBrief = decision.activation
         ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), decision.activation)
         : undefined;
+      if (decision.activation?.job === "integration_preview") {
+        await recordPreviewWorkflowSelection(queue, job, context, decision.activation);
+      }
       await queue.recordAgentResponse(job, previewMessageId, previewResponse, undefined, decision.activation ?? undefined, executionBrief);
       await queue.writeStage(job, "agent_operation_brief", "succeeded", {messageId: previewMessageId, state: "idle", mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition, modelCalls: 0});
       await queue.complete(job, {mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition ?? null, assistantMessageId: previewMessageId, spend: gateway.spent()});
@@ -641,10 +653,15 @@ type AgentContext = z.infer<typeof contextSchema>;
  * promoted. The resulting blocked/partial decision is the migration evidence used to build that
  * inventory without ever treating catalogue entries as executable methods.
  */
-function compileObjectivePreflight(context: AgentContext) {
+function compileObjectivePreflight(
+  context: AgentContext,
+  workflowTerminal?: ObjectiveOutputTerminal,
+  objectiveText = context.message,
+  inheritedEconomicPackIds: string[] = [],
+) {
   const entryJob = context.project ? capitalProjectJobSchema.safeParse(context.project.entryJob) : null;
   const baseObjectivePlan = compileObjectiveToPlan({
-    message: context.message,
+    message: objectiveText,
     hasAttachments: context.documents.length > 0,
     ...(entryJob?.success ? {existingProject: {
       entryJob: entryJob.data,
@@ -653,7 +670,8 @@ function compileObjectivePreflight(context: AgentContext) {
     }} : {}),
   });
   const provisionalSpecialization = compileObjectiveSpecialization({
-    objectiveText: context.message,
+    objectiveText,
+    explicitPackIds: inheritedEconomicPackIds,
     taskIds: baseObjectivePlan.taskGraph.tasks.map((task) => task.id),
   });
   const provisionalBinding = bindObjectiveMethods({
@@ -667,7 +685,8 @@ function compileObjectivePreflight(context: AgentContext) {
     provisionalBinding.binding.specialistTaskIds,
   );
   const specialization = compileObjectiveSpecialization({
-    objectiveText: context.message,
+    objectiveText,
+    explicitPackIds: inheritedEconomicPackIds,
     taskIds: objectivePlan.taskGraph.tasks.map((task) => task.id),
   });
   const methodBinding = bindObjectiveMethods({
@@ -712,9 +731,80 @@ function compileObjectivePreflight(context: AgentContext) {
   });
   const workflowSelection = selectWorkflowRecipeForObjective({
     specialization,
-    outputTerminal: objectivePlan.outputTerminal,
+    outputTerminal: workflowTerminal ?? objectivePlan.outputTerminal,
   });
   return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding, workflowSelection};
+}
+
+/**
+ * The preview dispatcher is allowed to execute only the recipe slice compiled for this exact
+ * user turn. Persist it before activation so Postgres can compare the activation payload against
+ * the immutable selection in the same job capability boundary.
+ */
+async function recordPreviewWorkflowSelection(
+  queue: QueueClient,
+  job: AgentOperationBriefJob,
+  context: AgentContext,
+  activation: PreviewActivation,
+) {
+  if (!queue.recordObjectivePlanPreflight) {
+    throw new Error("preview_workflow_selection_recorder_unavailable");
+  }
+  const workflowTerminal: ObjectiveOutputTerminal = activation.composition === "prepare_material"
+      || activation.composition === "prepare_decision"
+    ? "reviewable_material"
+    : "meeting_brief";
+  let compiled = compileObjectivePreflight(context, workflowTerminal);
+  const continuesExistingWork = Boolean(context.answered_information_request)
+    || context.message_metadata.kind === "execution_brief_edit"
+    || activation.composition === "prepare_material"
+    || activation.composition === "deepen"
+    || activation.composition === "change_premise";
+  // A governed answer, plan edit or downstream transition is not a new standalone objective. Try
+  // the current instruction first; only when it omits the economic situation do we inherit the
+  // recent user objective that opened this work. This preserves continuity without letting stale
+  // context override a new, explicit economic situation.
+  if (continuesExistingWork
+    && compiled.workflowSelection.status === "blocked"
+    && compiled.workflowSelection.reason === "economic_situation_not_implemented"
+    && compiled.workflowSelection.activatedEconomicPacks.length === 0) {
+    compiled = compileObjectivePreflight(
+      context,
+      workflowTerminal,
+      durableUserRequestContext(context, 8_000),
+    );
+  }
+  if (continuesExistingWork
+    && compiled.workflowSelection.status === "blocked"
+    && compiled.workflowSelection.reason === "economic_situation_not_implemented"
+    && compiled.workflowSelection.activatedEconomicPacks.length === 0
+    && queue.loadLatestObjectiveWorkflowSelection) {
+    const prior = workflowRecipeSelectionSchema.nullable().parse(
+      await queue.loadLatestObjectiveWorkflowSelection(job),
+    );
+    if (prior?.status === "selected") {
+      compiled = compileObjectivePreflight(
+        context,
+        workflowTerminal,
+        context.message,
+        prior.activatedEconomicPacks,
+      );
+    }
+  }
+  const recorded = await queue.recordObjectivePlanPreflight(job, {
+    objectivePlan: compiled.objectivePlan,
+    preflightDecision: compiled.preflightDecision,
+    specialization: compiled.specialization,
+    methodBinding: compiled.methodBinding,
+    workflowSelection: compiled.workflowSelection,
+  });
+  if (compiled.workflowSelection.status !== "selected"
+    || recorded.workflowSelectionStatus !== "selected"
+    || !recorded.workflowSelectionId
+    || recorded.workflowSelectionFingerprint !== compiled.workflowSelection.fingerprint) {
+    throw new Error(`preview_workflow_selection_not_executable:${compiled.workflowSelection.reason}`);
+  }
+  return recorded;
 }
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {

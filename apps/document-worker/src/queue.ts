@@ -278,6 +278,9 @@ export type QueueClient = {
   ): Promise<{activation?: unknown; executionBrief?: {id: string; version: number; replayed: boolean}}>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   recordIntentEnvelope(job: AgentOperationBriefJob, input: {envelope: unknown; classifier: unknown; model: string; costUsd: number}): Promise<void>;
+  /** Capability-scoped continuity anchor: the last immutable economic workflow selected for this
+   * project. It is consulted only when a downstream turn omits the economic situation. */
+  loadLatestObjectiveWorkflowSelection?(job: AgentOperationBriefJob): Promise<unknown | null>;
   /** Shadow migration record: the objective-specific graph and its fail-closed capability
    * decision. It observes the current fixed rail but does not authorize it. */
   recordObjectivePlanPreflight?(job: AgentOperationBriefJob, input: {
@@ -818,7 +821,7 @@ export function createQueueClient(
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation, executionBrief) {
-      const data = await call("worker_record_agent_response_and_activate_v4", {
+      const data = await call("worker_record_agent_response_and_activate_v5", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
@@ -847,6 +850,13 @@ export function createQueueClient(
         p_classifier: input.classifier,
         p_model: input.model,
         p_cost_usd: input.costUsd,
+      });
+    },
+
+    async loadLatestObjectiveWorkflowSelection(job) {
+      return call("worker_load_latest_objective_workflow_selection_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
       });
     },
 

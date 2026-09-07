@@ -19,6 +19,139 @@ const job: AgentOperationBriefJob = {
 };
 
 describe("agent operation brief worker", () => {
+  it.each([
+    {
+      continuation: "a governed answer",
+      message: "Alternativas de estrutura de capital mais amplas",
+      answeredInformationRequest: {
+        id: "55555555-5555-4555-8555-555555555555",
+        requirementKey: "case01_scope",
+        question: "Você quer uma leitura de refinanciamento ou alternativas mais amplas?",
+        answerSource: "choice" as const,
+      },
+      messageMetadata: {kind: "information_request_response"},
+      recentMessages: [{
+        id: "44444444-4444-4444-8444-444444444444",
+        role: "user" as const,
+        content: "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.",
+        created_at: "2026-09-07T11:55:00.000Z",
+      }],
+      artifacts: [],
+      priorSelection: null,
+    },
+    {
+      continuation: "a plan adjustment",
+      message: "Na comparação, priorize flexibilidade antes de custo e preserve caixa mínimo.",
+      answeredInformationRequest: undefined,
+      messageMetadata: {kind: "execution_brief_edit"},
+      recentMessages: [{
+        id: "44444444-4444-4444-8444-444444444444",
+        role: "user" as const,
+        content: "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.",
+        created_at: "2026-09-07T11:55:00.000Z",
+      }],
+      artifacts: [],
+      priorSelection: null,
+    },
+    {
+      continuation: "a premise change after the opening turn left recent memory",
+      message: "Altere a taxa da nova dívida para 15,50% a.a.",
+      answeredInformationRequest: undefined,
+      messageMetadata: {},
+      recentMessages: [],
+      artifacts: [{
+        id: "33333333-3333-4333-8333-333333333333",
+        type: "preview_alternatives", version: 1, status: "ready",
+      }],
+      priorSelection: {
+        schemaVersion: "workflow-recipe-selection.v1" as const,
+        status: "selected" as const,
+        reason: "selected" as const,
+        recipeId: "refinance-liability-management",
+        recipeVersion: "2026.09.07-v1",
+        recipeFingerprint: "1".repeat(64),
+        sliceFingerprint: "2".repeat(64),
+        outcome: "meeting_plan" as const,
+        taskIds: ["C05", "S10"],
+        parallelBatches: [["C05"], ["S10"]],
+        activatedEconomicPacks: ["objective.refinance-liability-management"],
+        fingerprint: "3".repeat(64),
+      },
+    },
+  ])("persists the selected recipe before an integration preview activation for $continuation", async ({
+    message,
+    answeredInformationRequest,
+    messageMetadata,
+    recentMessages,
+    artifacts,
+    priorSelection,
+  }) => {
+    const events: string[] = [];
+    let selectedWorkflow: Record<string, unknown> | undefined;
+    const previewJob: AgentOperationBriefJob = {
+      ...job,
+      integration_preview: true,
+      integration_preview_mode: "deterministic",
+    };
+    const queue = {
+      writeStage: async () => {},
+      loadIntegrationPreviewArtifacts: async () => [],
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message,
+        answered_information_request: answeredInformationRequest,
+        message_metadata: messageMetadata,
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T12:00:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Camil · reunião",
+          entryJob: "origination_thesis", accessBasis: "public_information",
+          phase: "understand", status: "active",
+        },
+        active_plan: capitalProjectPlanSnapshot("origination_thesis"),
+        company_profile: {name: "Camil"}, documents: [], tasks: [], artifacts,
+        recent_messages: recentMessages,
+      }),
+      loadLatestObjectiveWorkflowSelection: async () => priorSelection,
+      recordObjectivePlanPreflight: async (_job: unknown, input: {workflowSelection: unknown}) => {
+        events.push("selection");
+        selectedWorkflow = input.workflowSelection as Record<string, unknown>;
+        return {
+          id: "99999999-9999-4999-8999-999999999999",
+          status: "blocked" as const, terminalReachable: false, replayed: false,
+          specializationId: "88888888-8888-4888-8888-888888888888",
+          specializationFingerprint: "c".repeat(64), packIds: ["core.institutional-dcm"],
+          minimumMaturity: "implemented" as const, specializationReplayed: false,
+          methodBindingId: "77777777-7777-4777-8777-777777777777",
+          methodBindingFingerprint: "d".repeat(64), methodBindingStatus: "partial" as const,
+          boundTaskIds: [], specialistTaskIds: [], methodBindingReplayed: false,
+          workflowSelectionId: "66666666-6666-4666-8666-666666666666",
+          workflowSelectionFingerprint: (input.workflowSelection as {fingerprint: string}).fingerprint,
+          workflowSelectionStatus: "selected" as const,
+          workflowSelectionReason: "selected", workflowSelectionReplayed: false,
+        };
+      },
+      recordAgentResponse: async () => { events.push("activation"); return {}; },
+      complete: async () => {}, recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new Error("deterministic preview must not call a model"); },
+      spent: () => ({costUsd: 0, calls: 0}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(previewJob, {queue, gateway, log: () => {}, shadowRouting: false});
+    expect(result.status).toBe("succeeded");
+    expect(events).toEqual(["selection", "activation"]);
+    expect(selectedWorkflow).toMatchObject({
+      status: "selected",
+      recipeId: "refinance-liability-management",
+      outcome: "meeting_plan",
+    });
+  });
+
   it("starts public company research and asks meeting context in parallel without a routing model call", async () => {
     let activation: unknown;
     let response: Record<string, unknown> | undefined;
