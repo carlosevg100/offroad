@@ -18,5 +18,6 @@ export * from "./accreditation";
 export * from "./receivables-phase-three";
 export * from "./gold-baseline";
 export * from "./longitudinal-journeys";
+export * from "./gc02-reference-snapshot";
 export * from "./intent-gold";
 export * from "./intent-router-gate";

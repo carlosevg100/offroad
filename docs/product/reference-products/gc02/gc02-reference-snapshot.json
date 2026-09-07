@@ -1,0 +1,1332 @@
+{
+  "schemaVersion": "offroad.gc02.reference-snapshot.v1",
+  "caseId": "gc02-cfo-camil-conselho",
+  "company": "Camil Alimentos S.A.",
+  "asOf": "2026-05-31",
+  "marketAsOf": "2026-09-04",
+  "unit": "R$ mil",
+  "perimeter": "consolidado",
+  "status": "reference_fixture",
+  "disclosure": "FIXTURE SINTÉTICA PARA TESTE DE PLATAFORMA. Dados gerenciais inventados, calibrados às demonstrações públicas da Camil (ITR de 31/05/2026). Não representam informação da companhia.",
+  "economicIdentity": {
+    "accountingGrossDebt": 5670186,
+    "contractualGrossPrincipal": 5742510,
+    "accountingCashAndEquivalents": 1430714,
+    "covenantDeductibleCash": 1455809,
+    "contractualNetDebt": 4228477,
+    "releaseNetDebt": 4214377,
+    "companyReportedProFormaLeverage": 4.72,
+    "reportedLeverageState": "company_reported_not_recomputed",
+    "accountingToContractualBridge": {
+      "contractualGrossPrincipal": 5742510,
+      "loanTransactionCosts": -9099,
+      "debentureBalanceTransactionCosts": -63225,
+      "accountingGrossDebt": 5670186
+    }
+  },
+  "budget": {
+    "periods": [
+      "2T26/27 (jun-ago/26)",
+      "3T26/27 (set-nov/26)",
+      "4T26/27 (dez/26-fev/27)",
+      "1T27/28 (mar-mai/27)"
+    ],
+    "revenue": [
+      2740000,
+      2860000,
+      2560000,
+      2740000
+    ],
+    "ebitda": [
+      222000,
+      240000,
+      205000,
+      227000
+    ],
+    "cashTaxes": [
+      12000,
+      18000,
+      15000,
+      15000
+    ],
+    "maintenanceCapex": [
+      45000,
+      45000,
+      45000,
+      45000
+    ],
+    "growthCapex": [
+      40000,
+      70000,
+      70000,
+      40000
+    ],
+    "workingCapitalChange": [
+      350000,
+      150000,
+      -300000,
+      -150000
+    ],
+    "leases": [
+      15000,
+      15000,
+      15000,
+      15000
+    ],
+    "dividends": [
+      90000,
+      0,
+      0,
+      0
+    ]
+  },
+  "assumptions": {
+    "activeCase": "Base",
+    "caseOptions": [
+      "Base",
+      "Downside"
+    ],
+    "periods": [
+      "2026/27",
+      "2027/28",
+      "2028/29",
+      "2029/30",
+      "2030/31",
+      "after 2031"
+    ],
+    "base": {
+      "revenueGrowth": [
+        0,
+        0.02,
+        0.02,
+        0.02,
+        0.02,
+        0.02
+      ],
+      "ebitdaMargin": [
+        0.08201835,
+        0.08201835,
+        0.08201835,
+        0.08201835,
+        0.08201835,
+        0.08201835
+      ],
+      "cashTaxes": [
+        60000,
+        61200,
+        62424,
+        63672.48,
+        64945.9296,
+        66244.848192
+      ],
+      "capex": [
+        400000,
+        183600,
+        187272,
+        191017.44,
+        194837.7888,
+        198734.544576
+      ],
+      "workingCapitalChange": [
+        50000,
+        50000,
+        50000,
+        50000,
+        50000,
+        50000
+      ],
+      "leases": [
+        60000,
+        60000,
+        60000,
+        60000,
+        60000,
+        60000
+      ],
+      "dividends": [
+        90000,
+        91800,
+        93636,
+        95508.72,
+        97418.8944,
+        99367.272288
+      ],
+      "refinancingShare": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "cdi": [
+        0.1391,
+        0.1391,
+        0.1391,
+        0.1391,
+        0.1391,
+        0.1391
+      ],
+      "ipca": [
+        0.06052,
+        0.057576,
+        0.056539,
+        0.056419,
+        0.056755,
+        0.057323
+      ],
+      "sofr": [
+        0.043,
+        0.043,
+        0.043,
+        0.043,
+        0.043,
+        0.043
+      ]
+    },
+    "downside": {
+      "revenueGrowth": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "ebitdaMargin": [
+        0.08201835,
+        0.07201835,
+        0.07201835,
+        0.07201835,
+        0.07201835,
+        0.07201835
+      ],
+      "cashTaxes": [
+        60000,
+        61200,
+        62424,
+        63672.48,
+        64945.9296,
+        66244.848192
+      ],
+      "capex": [
+        400000,
+        183600,
+        187272,
+        191017.44,
+        194837.7888,
+        198734.544576
+      ],
+      "workingCapitalChange": [
+        50000,
+        75000,
+        75000,
+        75000,
+        75000,
+        75000
+      ],
+      "leases": [
+        60000,
+        60000,
+        60000,
+        60000,
+        60000,
+        60000
+      ],
+      "dividends": [
+        90000,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "refinancingShare": [
+        0.9,
+        0.9,
+        0.9,
+        1,
+        1,
+        1
+      ],
+      "cdi": [
+        0.1591,
+        0.1591,
+        0.1591,
+        0.1591,
+        0.1591,
+        0.1591
+      ],
+      "ipca": [
+        0.07052,
+        0.067576,
+        0.066539,
+        0.066419,
+        0.066755,
+        0.067323
+      ],
+      "sofr": [
+        0.053,
+        0.053,
+        0.053,
+        0.053,
+        0.053,
+        0.053
+      ]
+    },
+    "rationale": [
+      {
+        "driver": "Crescimento de receita",
+        "base": "2,0% nominal após o orçamento",
+        "downside": "0,0%",
+        "basis": "premissa gerencial sintética; substituir por plano por categoria, volume, preço e mix"
+      },
+      {
+        "driver": "Margem EBITDA",
+        "base": "8.20%",
+        "downside": "menos 100 bps após 2026/27",
+        "basis": "orçamento sintético; não substitui build por produto e geografia"
+      },
+      {
+        "driver": "Refinanciamento",
+        "base": "100% do principal",
+        "downside": "90% nos três primeiros anos",
+        "basis": "cenário de execução, não linha comprometida nem oferta"
+      },
+      {
+        "driver": "Custo da rolagem",
+        "base": "15.41% a.a.",
+        "downside": "+200 bps",
+        "basis": "CDI spot mais 1,50%; a curva DI futura e o spread executável permanecem lacunas"
+      },
+      {
+        "driver": "CDI",
+        "base": "13.91% spot anualizado",
+        "downside": "+200 bps",
+        "basis": "SGS 12; curva DI futura ainda ausente"
+      },
+      {
+        "driver": "IPCA",
+        "base": "inflação implícita ANBIMA",
+        "downside": "+100 bps",
+        "basis": "ETTJ 04/09/2026; atualização capitaliza no principal das séries tratadas como bullet"
+      }
+    ]
+  },
+  "debt": {
+    "series": [
+      {
+        "id": "loan-brl",
+        "label": "Capital de giro, moeda nacional",
+        "balance": 1314412,
+        "currency": "BRL",
+        "maturity": null,
+        "rate": "CDI + 1.5000% a.a.",
+        "indexer": "CDI",
+        "rateSource": "synthetic",
+        "guarantee": "não comprovada"
+      },
+      {
+        "id": "loan-usd",
+        "label": "Capital de giro, USD",
+        "balance": 867244,
+        "currency": "USD",
+        "maturity": null,
+        "rate": "SOFR + 2% a.a.",
+        "indexer": "SOFR",
+        "rateSource": "synthetic",
+        "guarantee": "garantia da controladora, sem individualização"
+      },
+      {
+        "id": "loan-clp",
+        "label": "Capital de giro, CLP",
+        "balance": 54180,
+        "currency": "CLP",
+        "maturity": null,
+        "rate": "7.00% a.a.",
+        "indexer": "Prefixado",
+        "rateSource": "synthetic",
+        "guarantee": "garantia da controladora, sem individualização"
+      },
+      {
+        "id": "loan-pen",
+        "label": "Capital de giro, PEN",
+        "balance": 181158,
+        "currency": "PEN",
+        "maturity": null,
+        "rate": "7.50% a.a.",
+        "indexer": "Prefixado",
+        "rateSource": "synthetic",
+        "guarantee": "garantia da controladora, sem individualização"
+      },
+      {
+        "id": "deb-11-1",
+        "label": "Debêntures 11ª emissão, 1ª série",
+        "balance": 151795,
+        "currency": "BRL",
+        "maturity": "2028-10-30",
+        "rate": "CDI + 1.5500% a.a.",
+        "indexer": "CDI",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-11-2",
+        "label": "Debêntures 11ª emissão, 2ª série",
+        "balance": 505984,
+        "currency": "BRL",
+        "maturity": "2028-10-30",
+        "rate": "CDI + 1.5500% a.a.",
+        "indexer": "CDI",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-13-1",
+        "label": "Debêntures 13ª emissão, 1ª série",
+        "balance": 306038,
+        "currency": "BRL",
+        "maturity": "2028-11-16",
+        "rate": "CDI + 0.6500% a.a.",
+        "indexer": "CDI",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-13-2",
+        "label": "Debêntures 13ª emissão, 2ª série",
+        "balance": 282357,
+        "currency": "BRL",
+        "maturity": "2030-11-18",
+        "rate": "IPCA + 6.3416% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-13-3",
+        "label": "Debêntures 13ª emissão, 3ª série",
+        "balance": 110321,
+        "currency": "BRL",
+        "maturity": "2033-11-16",
+        "rate": "IPCA + 6.5264% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-14-1",
+        "label": "Debêntures 14ª emissão, 1ª série",
+        "balance": 438918,
+        "currency": "BRL",
+        "maturity": "2029-06-15",
+        "rate": "104% CDI",
+        "indexer": "CDI",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-14-2",
+        "label": "Debêntures 14ª emissão, 2ª série",
+        "balance": 204059,
+        "currency": "BRL",
+        "maturity": "2031-06-16",
+        "rate": "IPCA + 6.8286% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-14-3",
+        "label": "Debêntures 14ª emissão, 3ª série",
+        "balance": 66024,
+        "currency": "BRL",
+        "maturity": "2034-06-15",
+        "rate": "IPCA + 6.9982% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-15-1",
+        "label": "Debêntures 15ª emissão, 1ª série",
+        "balance": 770123,
+        "currency": "BRL",
+        "maturity": "2030-11-18",
+        "rate": "105% CDI",
+        "indexer": "CDI",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-15-2",
+        "label": "Debêntures 15ª emissão, 2ª série",
+        "balance": 408703,
+        "currency": "BRL",
+        "maturity": "2032-11-16",
+        "rate": "14.15% a.a.",
+        "indexer": "Prefixado",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-15-3",
+        "label": "Debêntures 15ª emissão, 3ª série",
+        "balance": 50401,
+        "currency": "BRL",
+        "maturity": "2032-11-16",
+        "rate": "IPCA + 8.2000% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      },
+      {
+        "id": "deb-15-4",
+        "label": "Debêntures 15ª emissão, 4ª série",
+        "balance": 30793,
+        "currency": "BRL",
+        "maturity": "2035-11-16",
+        "rate": "IPCA + 8.7000% a.a.",
+        "indexer": "IPCA",
+        "rateSource": "public",
+        "guarantee": "quirografária"
+      }
+    ],
+    "publicMaturitySchedule": [
+      {
+        "period": "2026/27",
+        "amount": 1229828
+      },
+      {
+        "period": "2027/28",
+        "amount": 776868
+      },
+      {
+        "period": "2028/29",
+        "amount": 1228475
+      },
+      {
+        "period": "2029/30",
+        "amount": 694497
+      },
+      {
+        "period": "2030/31",
+        "amount": 994544
+      },
+      {
+        "period": "after 2031",
+        "amount": 809198
+      }
+    ],
+    "grossContractualSchedule": [
+      {
+        "period": "2026/27",
+        "amount": 1234476
+      },
+      {
+        "period": "2027/28",
+        "amount": 779804
+      },
+      {
+        "period": "2028/29",
+        "amount": 1229475
+      },
+      {
+        "period": "2029/30",
+        "amount": 695013
+      },
+      {
+        "period": "2030/31",
+        "amount": 994544
+      },
+      {
+        "period": "after 2031",
+        "amount": 809198
+      }
+    ],
+    "contractualScheduleRows": [
+      {
+        "period": "2026/27",
+        "seriesId": "loan-brl",
+        "amount": 671334
+      },
+      {
+        "period": "2026/27",
+        "seriesId": "loan-usd",
+        "amount": 442944
+      },
+      {
+        "period": "2026/27",
+        "seriesId": "loan-clp",
+        "amount": 27672
+      },
+      {
+        "period": "2026/27",
+        "seriesId": "loan-pen",
+        "amount": 92526
+      },
+      {
+        "period": "2027/28",
+        "seriesId": "loan-brl",
+        "amount": 424074
+      },
+      {
+        "period": "2027/28",
+        "seriesId": "loan-usd",
+        "amount": 279802
+      },
+      {
+        "period": "2027/28",
+        "seriesId": "loan-clp",
+        "amount": 17480
+      },
+      {
+        "period": "2027/28",
+        "seriesId": "loan-pen",
+        "amount": 58448
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "deb-11-1",
+        "amount": 151795
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "deb-11-2",
+        "amount": 505984
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "deb-13-1",
+        "amount": 306038
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "loan-brl",
+        "amount": 144470
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "loan-usd",
+        "amount": 95321
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "loan-clp",
+        "amount": 5956
+      },
+      {
+        "period": "2028/29",
+        "seriesId": "loan-pen",
+        "amount": 19911
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "deb-14-1",
+        "amount": 438918
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "deb-15-1",
+        "amount": 119039
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "loan-brl",
+        "amount": 74534
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "loan-usd",
+        "amount": 49177
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "loan-clp",
+        "amount": 3072
+      },
+      {
+        "period": "2029/30",
+        "seriesId": "loan-pen",
+        "amount": 10273
+      },
+      {
+        "period": "2030/31",
+        "seriesId": "deb-13-2",
+        "amount": 282357
+      },
+      {
+        "period": "2030/31",
+        "seriesId": "deb-15-1",
+        "amount": 651084
+      },
+      {
+        "period": "2030/31",
+        "seriesId": "deb-15-2",
+        "amount": 61103
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-13-3",
+        "amount": 110321
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-14-2",
+        "amount": 204059
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-14-3",
+        "amount": 66024
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-15-2",
+        "amount": 347600
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-15-3",
+        "amount": 50401
+      },
+      {
+        "period": "after 2031",
+        "seriesId": "deb-15-4",
+        "amount": 30793
+      }
+    ],
+    "loanCostBridge": [
+      {
+        "period": "2026/27",
+        "amount": -4648
+      },
+      {
+        "period": "2027/28",
+        "amount": -2936
+      },
+      {
+        "period": "2028/29",
+        "amount": -1000
+      },
+      {
+        "period": "2029/30",
+        "amount": -516
+      },
+      {
+        "period": "2030/31",
+        "amount": 0
+      },
+      {
+        "period": "after 2031",
+        "amount": 0
+      }
+    ],
+    "scheduleDebentureCosts": -63224,
+    "partials": [
+      "deb-15-2: 61.103 amortizados em 2030/31 (parcial, sintético)",
+      "deb-15-1: 119.039 amortizados em 2029/30 (parcial, sintético)"
+    ],
+    "mix": [
+      {
+        "label": "Linhas bancárias",
+        "amount": 2416994
+      },
+      {
+        "label": "Debêntures CDI",
+        "amount": 2172858
+      },
+      {
+        "label": "Debêntures IPCA",
+        "amount": 743955
+      },
+      {
+        "label": "Debênture prefixada",
+        "amount": 408703
+      }
+    ]
+  },
+  "projections": {
+    "rollover": [
+      {
+        "period": "2026/27",
+        "revenue": 10900000,
+        "ebitda": 894000,
+        "capex": 400000,
+        "workingCapital": 50000,
+        "taxes": 60000,
+        "cfads": 384000,
+        "leases": 60000,
+        "dividends": 90000,
+        "contractualPrincipal": 1234476,
+        "principal": 1234476,
+        "interest": 708153.18542981,
+        "indexationCapitalized": 45024.1566,
+        "cashDebtService": 1942629.18542981,
+        "legacyInterest": 708153.18542981,
+        "rolloverInterest": 0,
+        "rolledDebt": 1234476,
+        "cashUses": 2092629.18542981,
+        "dscr": 0.19767025,
+        "interestCoverage": 1.26243872,
+        "openingCash": 1430714,
+        "contractedSources": 1234476,
+        "sources": 3049190,
+        "liquidityCoverage": 1.45710956,
+        "closingCash": 956560.81457019,
+        "deficit": 0,
+        "debtService": 2092629.18542981,
+        "coverage": 1.45710956,
+        "grossDebt": 5787534.1566,
+        "netDebt": 4830973.34202981,
+        "leverage": 5.40377331
+      },
+      {
+        "period": "2027/28",
+        "revenue": 11118000,
+        "ebitda": 911880,
+        "capex": 183600,
+        "workingCapital": 50000,
+        "taxes": 61200,
+        "cfads": 617080,
+        "leases": 60000,
+        "dividends": 91800,
+        "contractualPrincipal": 779804,
+        "principal": 779804,
+        "interest": 761233.29260322,
+        "indexationCapitalized": 45426.26392041,
+        "cashDebtService": 1541037.29260322,
+        "legacyInterest": 571000.54100322,
+        "rolloverInterest": 190232.7516,
+        "rolledDebt": 2014280,
+        "cashUses": 1692837.29260322,
+        "dscr": 0.40043158,
+        "interestCoverage": 1.19789821,
+        "openingCash": 956560.81457019,
+        "contractedSources": 779804,
+        "sources": 2353444.81457019,
+        "liquidityCoverage": 1.39023687,
+        "closingCash": 660607.52196697,
+        "deficit": 0,
+        "debtService": 1692837.29260322,
+        "coverage": 1.39023687,
+        "grossDebt": 5832960.42052041,
+        "netDebt": 5172352.89855344,
+        "leverage": 5.67218592
+      },
+      {
+        "period": "2028/29",
+        "revenue": 11340360,
+        "ebitda": 930117.6,
+        "capex": 187272,
+        "workingCapital": 50000,
+        "taxes": 62424,
+        "cfads": 630421.6,
+        "leases": 60000,
+        "dividends": 93636,
+        "contractualPrincipal": 1229475,
+        "principal": 1229475,
+        "interest": 796017.18558944,
+        "indexationCapitalized": 47176.4480708,
+        "cashDebtService": 2025492.18558944,
+        "legacyInterest": 485616.63758944,
+        "rolloverInterest": 310400.548,
+        "rolledDebt": 3243755,
+        "cashUses": 2179128.18558944,
+        "dscr": 0.31124366,
+        "interestCoverage": 1.16846422,
+        "openingCash": 660607.52196697,
+        "contractedSources": 1229475,
+        "sources": 2520504.12196697,
+        "liquidityCoverage": 1.15665712,
+        "closingCash": 341375.93637753,
+        "deficit": 0,
+        "debtService": 2179128.18558944,
+        "coverage": 1.15665712,
+        "grossDebt": 5880136.86859121,
+        "netDebt": 5538760.93221368,
+        "leverage": 5.95490391
+      },
+      {
+        "period": "2029/30",
+        "revenue": 11567167.2,
+        "ebitda": 948719.952,
+        "capex": 191017.44,
+        "workingCapital": 50000,
+        "taxes": 63672.48,
+        "cfads": 644030.032,
+        "leases": 60000,
+        "dividends": 95508.72,
+        "contractualPrincipal": 695013,
+        "principal": 695013,
+        "interest": 812423.63089254,
+        "indexationCapitalized": 49737.96744406,
+        "cashDebtService": 1507436.63089254,
+        "legacyInterest": 312560.98539254,
+        "rolloverInterest": 499862.6455,
+        "rolledDebt": 3938768,
+        "cashUses": 1662945.35089254,
+        "dscr": 0.42723523,
+        "interestCoverage": 1.16776509,
+        "openingCash": 341375.93637753,
+        "contractedSources": 695013,
+        "sources": 1680418.96837753,
+        "liquidityCoverage": 1.01050763,
+        "closingCash": 17473.61748499,
+        "deficit": 0,
+        "debtService": 1662945.35089254,
+        "coverage": 1.01050763,
+        "grossDebt": 5929874.83603527,
+        "netDebt": 5912401.21855028,
+        "leverage": 6.23197731
+      },
+      {
+        "period": "2030/31",
+        "revenue": 11798510.544,
+        "ebitda": 967694.35104,
+        "capex": 194837.7888,
+        "workingCapital": 50000,
+        "taxes": 64945.9296,
+        "cfads": 657910.63264,
+        "leases": 60000,
+        "dividends": 97418.8944,
+        "contractualPrincipal": 994544,
+        "principal": 1085716.62890204,
+        "interest": 826659.9237738,
+        "indexationCapitalized": 52857.05729419,
+        "cashDebtService": 1912376.55267584,
+        "legacyInterest": 219695.7749738,
+        "rolloverInterest": 606964.1488,
+        "rolledDebt": 5024484.62890204,
+        "cashUses": 2069795.44707584,
+        "dscr": 0.34402777,
+        "interestCoverage": 1.17060755,
+        "openingCash": 17473.61748499,
+        "contractedSources": 1085716.62890204,
+        "sources": 1761100.87902703,
+        "liquidityCoverage": 0.85085745,
+        "closingCash": -308694.56804881,
+        "deficit": 308694.56804881,
+        "debtService": 2069795.44707584,
+        "coverage": 0.85085745,
+        "grossDebt": 5982731.89332946,
+        "netDebt": 6291426.46137827,
+        "leverage": 6.50146036
+      },
+      {
+        "period": "after 2031",
+        "revenue": 12034480.75488,
+        "ebitda": 987048.2380608,
+        "capex": 198734.544576,
+        "workingCapital": 50000,
+        "taxes": 66244.848192,
+        "cfads": 672068.8452928,
+        "leases": 60000,
+        "dividends": 99367.272288,
+        "contractualPrincipal": 809198,
+        "principal": 993251.39756617,
+        "interest": 869010.56975828,
+        "indexationCapitalized": 35004.13313878,
+        "cashDebtService": 1862261.96732445,
+        "legacyInterest": 94737.48844448,
+        "rolloverInterest": 774273.0813138,
+        "rolledDebt": 6017736.02646821,
+        "cashUses": 2021629.23961245,
+        "dscr": 0.36088846,
+        "interestCoverage": 1.13582996,
+        "openingCash": -308694.56804881,
+        "contractedSources": 993251.39756617,
+        "sources": 1356625.67481016,
+        "liquidityCoverage": 0.67105563,
+        "closingCash": -665003.56480229,
+        "deficit": 665003.56480229,
+        "debtService": 2021629.23961245,
+        "coverage": 0.67105563,
+        "grossDebt": 6017736.02646824,
+        "netDebt": 6682739.59127053,
+        "leverage": 6.77042857
+      }
+    ],
+    "noRollover": [
+      {
+        "period": "2026/27",
+        "revenue": 10900000,
+        "ebitda": 894000,
+        "capex": 400000,
+        "workingCapital": 50000,
+        "taxes": 60000,
+        "cfads": 384000,
+        "leases": 60000,
+        "dividends": 90000,
+        "contractualPrincipal": 1234476,
+        "principal": 1234476,
+        "interest": 708153.18542981,
+        "indexationCapitalized": 45024.1566,
+        "cashDebtService": 1942629.18542981,
+        "legacyInterest": 708153.18542981,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 2092629.18542981,
+        "dscr": 0.19767025,
+        "interestCoverage": 1.26243872,
+        "openingCash": 1430714,
+        "contractedSources": 0,
+        "sources": 1814714,
+        "liquidityCoverage": 0.8671933,
+        "closingCash": -277915.18542981,
+        "deficit": 277915.18542981,
+        "debtService": 2092629.18542981,
+        "coverage": 0.8671933,
+        "grossDebt": 4553058.1566,
+        "netDebt": 4830973.34202981,
+        "leverage": 5.40377331
+      },
+      {
+        "period": "2027/28",
+        "revenue": 11118000,
+        "ebitda": 911880,
+        "capex": 183600,
+        "workingCapital": 50000,
+        "taxes": 61200,
+        "cfads": 617080,
+        "leases": 60000,
+        "dividends": 91800,
+        "contractualPrincipal": 779804,
+        "principal": 779804,
+        "interest": 571000.54100322,
+        "indexationCapitalized": 45426.26392041,
+        "cashDebtService": 1350804.54100322,
+        "legacyInterest": 571000.54100322,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 1502604.54100322,
+        "dscr": 0.45682405,
+        "interestCoverage": 1.59698623,
+        "openingCash": -277915.18542981,
+        "contractedSources": 0,
+        "sources": 339164.81457019,
+        "liquidityCoverage": 0.22571795,
+        "closingCash": -1163439.72643303,
+        "deficit": 1163439.72643303,
+        "debtService": 1502604.54100322,
+        "coverage": 0.22571795,
+        "grossDebt": 3818680.42052041,
+        "netDebt": 4982120.14695344,
+        "leverage": 5.46356993
+      },
+      {
+        "period": "2028/29",
+        "revenue": 11340360,
+        "ebitda": 930117.6,
+        "capex": 187272,
+        "workingCapital": 50000,
+        "taxes": 62424,
+        "cfads": 630421.6,
+        "leases": 60000,
+        "dividends": 93636,
+        "contractualPrincipal": 1229475,
+        "principal": 1229475,
+        "interest": 485616.63758944,
+        "indexationCapitalized": 47176.4480708,
+        "cashDebtService": 1715091.63758944,
+        "legacyInterest": 485616.63758944,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 1868727.63758944,
+        "dscr": 0.36757313,
+        "interestCoverage": 1.91533306,
+        "openingCash": -1163439.72643303,
+        "contractedSources": 0,
+        "sources": -533018.12643303,
+        "liquidityCoverage": -0.2852305,
+        "closingCash": -2401745.76402247,
+        "deficit": 2401745.76402247,
+        "debtService": 1868727.63758944,
+        "coverage": -0.2852305,
+        "grossDebt": 2636381.86859121,
+        "netDebt": 5038127.63261368,
+        "leverage": 5.4166566
+      },
+      {
+        "period": "2029/30",
+        "revenue": 11567167.2,
+        "ebitda": 948719.952,
+        "capex": 191017.44,
+        "workingCapital": 50000,
+        "taxes": 63672.48,
+        "cfads": 644030.032,
+        "leases": 60000,
+        "dividends": 95508.72,
+        "contractualPrincipal": 695013,
+        "principal": 695013,
+        "interest": 312560.98539254,
+        "indexationCapitalized": 49737.96744406,
+        "cashDebtService": 1007573.98539254,
+        "legacyInterest": 312560.98539254,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 1163082.70539254,
+        "dscr": 0.63918883,
+        "interestCoverage": 3.0353115,
+        "openingCash": -2401745.76402247,
+        "contractedSources": 0,
+        "sources": -1757715.73202247,
+        "liquidityCoverage": -1.51125601,
+        "closingCash": -2920798.43741501,
+        "deficit": 2920798.43741501,
+        "debtService": 1163082.70539254,
+        "coverage": -1.51125601,
+        "grossDebt": 1991106.83603527,
+        "netDebt": 4911905.27345028,
+        "leverage": 5.17740273
+      },
+      {
+        "period": "2030/31",
+        "revenue": 11798510.544,
+        "ebitda": 967694.35104,
+        "capex": 194837.7888,
+        "workingCapital": 50000,
+        "taxes": 64945.9296,
+        "cfads": 657910.63264,
+        "leases": 60000,
+        "dividends": 97418.8944,
+        "contractualPrincipal": 994544,
+        "principal": 1085716.62890204,
+        "interest": 219695.7749738,
+        "indexationCapitalized": 52857.05729419,
+        "cashDebtService": 1305412.40387584,
+        "legacyInterest": 219695.7749738,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 1462831.29827584,
+        "dscr": 0.50398681,
+        "interestCoverage": 4.40470169,
+        "openingCash": -2920798.43741501,
+        "contractedSources": 0,
+        "sources": -2262887.80477501,
+        "liquidityCoverage": -1.54692329,
+        "closingCash": -3725719.10305085,
+        "deficit": 3725719.10305085,
+        "debtService": 1462831.29827584,
+        "coverage": -1.54692329,
+        "grossDebt": 958247.26442742,
+        "netDebt": 4683966.36747827,
+        "leverage": 4.84033658
+      },
+      {
+        "period": "after 2031",
+        "revenue": 12034480.75488,
+        "ebitda": 987048.2380608,
+        "capex": 198734.544576,
+        "workingCapital": 50000,
+        "taxes": 66244.848192,
+        "cfads": 672068.8452928,
+        "leases": 60000,
+        "dividends": 99367.272288,
+        "contractualPrincipal": 809198,
+        "principal": 993251.39756617,
+        "interest": 94737.48844448,
+        "indexationCapitalized": 35004.13313878,
+        "cashDebtService": 1087988.88601065,
+        "legacyInterest": 94737.48844448,
+        "rolloverInterest": 0,
+        "rolledDebt": 0,
+        "cashUses": 1247356.15829865,
+        "dscr": 0.61771665,
+        "interestCoverage": 10.41877143,
+        "openingCash": -3725719.10305085,
+        "contractedSources": 0,
+        "sources": -3053650.25775805,
+        "liquidityCoverage": -2.44809811,
+        "closingCash": -4301006.4160567,
+        "deficit": 4301006.4160567,
+        "debtService": 1247356.15829865,
+        "coverage": -2.44809811,
+        "grossDebt": 3e-8,
+        "netDebt": 4301006.41605673,
+        "leverage": 4.35744298
+      }
+    ]
+  },
+  "currentEvidence": {
+    "ledgerState": "incomplete",
+    "ledgerFingerprint": "7e2755dfa19fae96d17eeb6ea0a2cd0ba6db69f3a4c4033367376a09615d783e",
+    "maturityWallState": "incomplete",
+    "maturityWallFingerprint": "1f55c8a4cb7e515b40637c01c80d9ebacf3e56d0e70264370b20236ee1149664",
+    "covenantState": "conditioned",
+    "covenantFingerprint": "b3a1c0c76f8d69bc6305eed8d9014aba4ec27e30d9e8e577b4456fbcaec9af05"
+  },
+  "options": [
+    {
+      "id": "status_quo",
+      "label": "Manter estrutura e rolar linhas",
+      "state": "reference_only",
+      "boardQuestion": "A companhia aceita depender de refinanciamento integral nos anos de menor folga?",
+      "condition": "capacidade, preço e prazo de rolagem ainda não contratados"
+    },
+    {
+      "id": "extend_2028",
+      "label": "Alongar o pico de 2028/29",
+      "state": "blocked",
+      "boardQuestion": "A redução do pico compensa custo e flexibilidade da nova dívida?",
+      "condition": "base de liquidação e custo de saída da 13ª 1ª série"
+    },
+    {
+      "id": "extend_two_peaks",
+      "label": "Alongar os picos de 2028/29 e 2029/30",
+      "state": "blocked",
+      "boardQuestion": "Uma transação maior reduz risco de execução sem concentrar preço e covenants?",
+      "condition": "bases de liquidação e custos de saída da 13ª 1ª e 14ª 1ª séries"
+    },
+    {
+      "id": "cash_paydown",
+      "label": "Amortizar linhas com caixa",
+      "state": "blocked",
+      "boardQuestion": "Qual caixa excede o piso operacional e qual é o custo de pré-pagamento?",
+      "condition": "termos de pré-pagamento e liquidez diária das aplicações"
+    },
+    {
+      "id": "offer_11th",
+      "label": "Oferta de resgate da 11ª emissão",
+      "state": "blocked",
+      "boardQuestion": "Existe adesão econômica para uma saída negociada?",
+      "condition": "prêmio e adesão de 100% da série abrangida"
+    }
+  ],
+  "coverageGaps": [
+    {
+      "id": "GAP-01",
+      "materiality": "blocking",
+      "topic": "Covenant prospectivo",
+      "missing": "EBITDA contratual, ajustes, caixa dedutível e degrau aplicável por data",
+      "consequence": "não calcular headroom nem afirmar cumprimento"
+    },
+    {
+      "id": "GAP-02",
+      "materiality": "blocking",
+      "topic": "Custo de saída",
+      "missing": "principal nominal, juros acumulados, encargos e termos de pré-pagamento",
+      "consequence": "não ranquear estruturas que retiram dívida"
+    },
+    {
+      "id": "GAP-03",
+      "materiality": "high",
+      "topic": "Curva de juros",
+      "missing": "curva DI futura observável e hedge por instrumento",
+      "consequence": "juros prospectivos permanecem cenário, não preço"
+    },
+    {
+      "id": "GAP-04",
+      "materiality": "high",
+      "topic": "Modelo integrado",
+      "missing": "histórico por linha, balanço, fluxo de caixa e projeções por produto/geografia",
+      "consequence": "modelo atual é de caixa e dívida, não projeção integrada"
+    },
+    {
+      "id": "GAP-05",
+      "materiality": "high",
+      "topic": "Tributos",
+      "missing": "regime, efeitos da reforma e tratamento das alternativas",
+      "consequence": "comparação após impostos permanece aberta"
+    },
+    {
+      "id": "GAP-06",
+      "materiality": "high",
+      "topic": "Liquidez intraperíodo",
+      "missing": "sazonalidade mensal e disponibilidade D0",
+      "consequence": "a análise anual pode esconder picos de caixa"
+    }
+  ],
+  "sources": [
+    {
+      "id": "SRC-01",
+      "title": "ITR 1T26",
+      "file": "01_ITR_1T26_31mai2026.pdf",
+      "asOf": "2026-05-31",
+      "class": "public",
+      "use": "dívida, caixa e cronograma",
+      "anchor": "nota 15, pp. 39-40; nota 3, p. 20"
+    },
+    {
+      "id": "SRC-02",
+      "title": "Release 1T26",
+      "file": "ri_release_1t26.pdf",
+      "asOf": "2026-05-31",
+      "class": "public",
+      "use": "dívida líquida reportada e indicador pro forma",
+      "anchor": "p. 12"
+    },
+    {
+      "id": "SRC-03",
+      "title": "Relatórios e escrituras",
+      "file": "af_11a/13a/14a/15a e escrituras",
+      "asOf": "2026-09-04",
+      "class": "public",
+      "use": "remuneração, vencimento, garantia e covenant",
+      "anchor": "âncoras por série no ledger"
+    },
+    {
+      "id": "SRC-04",
+      "title": "Orçamento sintético",
+      "file": "01_Orcamento_2026_2027.xlsx",
+      "asOf": "2026-09-04",
+      "class": "synthetic_management",
+      "use": "receita, EBITDA, impostos e capital de giro",
+      "anchor": "abas Orçamento e Premissas"
+    },
+    {
+      "id": "SRC-05",
+      "title": "Plano de capex sintético",
+      "file": "02_Plano_Capex.xlsx",
+      "asOf": "2026-09-04",
+      "class": "synthetic_management",
+      "use": "capex de manutenção e crescimento",
+      "anchor": "aba Capex"
+    },
+    {
+      "id": "SRC-06",
+      "title": "Política de caixa sintética",
+      "file": "03_Politica_Caixa_Minimo.docx",
+      "asOf": "2026-09-04",
+      "class": "synthetic_management",
+      "use": "piso de liquidez",
+      "anchor": "corpo do documento"
+    },
+    {
+      "id": "SRC-07",
+      "title": "Cronograma contratual sintético",
+      "file": "04_Cronograma_Contratual_Amortizacoes.xlsx",
+      "asOf": "2026-09-04",
+      "class": "synthetic_management",
+      "use": "principal de caixa por série",
+      "anchor": "aba Cronograma"
+    },
+    {
+      "id": "SRC-08",
+      "title": "Curvas de mercado congeladas",
+      "file": "anbima_ettj_2026-09-04.csv; BCB SGS",
+      "asOf": "2026-09-04",
+      "class": "public_market",
+      "use": "CDI spot, Selic e inflação implícita",
+      "anchor": "ETTJ e séries 12/432"
+    }
+  ],
+  "generatedBy": {
+    "module": "packages/evals/src/gc02-reference-snapshot.ts",
+    "financialCore": [
+      "buildIndexedDebtSchedule",
+      "aggregateIndexedDebtSchedules",
+      "calculateLiquidityCoverage"
+    ],
+    "publicEvidence": {
+      "caseId": "gc01-analista-ib-camil",
+      "company": "Camil Alimentos S.A.",
+      "referenceDate": "2026-05-31",
+      "corpusManifest": "docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json",
+      "basis": "curated_from_frozen_corpus",
+      "note": "Inputs curated by hand from the frozen public corpus of the case, one anchor per value; the product does not extract them live in integration_preview.",
+      "version": "2026.09.05-v1"
+    }
+  },
+  "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343"
+}
