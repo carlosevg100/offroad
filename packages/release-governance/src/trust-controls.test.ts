@@ -173,30 +173,33 @@ describe("assurance claims", () => {
       evaluatedAt,
     });
     expect(withoutReport.allowed).toBe(false);
-    expect(withoutReport.blockers).toContain("current_external_attestation_required:soc2_type2");
+    expect(withoutReport.blockers).toContain("formal_external_claim_requires_governed_signed_statement");
   });
 
-  it("requires a current third-party attestation for the exact system scope", () => {
+  it("never promotes a formal external claim from legacy caller-supplied attestation metadata", () => {
     const controls = [control({state: "independently_tested"})];
     const wrongScope = {...attestation("iso27001_certificate"), scopeFingerprint: "b".repeat(64)};
 
-    expect(evaluateAssuranceClaim({
+    const wrongScopeMetadata = evaluateAssuranceClaim({
       claim: "iso27001_certified",
       controls,
       requiredControlIds: ["DATA-03"],
       scopeFingerprint,
       attestations: [wrongScope],
       evaluatedAt,
-    }).allowed).toBe(false);
+    });
+    expect(wrongScopeMetadata.allowed).toBe(false);
 
-    expect(evaluateAssuranceClaim({
+    const forgedLegacyMetadata = evaluateAssuranceClaim({
       claim: "iso27001_certified",
       controls,
       requiredControlIds: ["DATA-03"],
       scopeFingerprint,
       attestations: [attestation("iso27001_certificate")],
       evaluatedAt,
-    }).allowed).toBe(true);
+    });
+    expect(forgedLegacyMetadata.allowed).toBe(false);
+    expect(forgedLegacyMetadata.blockers).toContain("formal_external_claim_requires_governed_signed_statement");
   });
 
   it("does not accept a declared independent state without current independent evidence", () => {
