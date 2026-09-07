@@ -34,6 +34,7 @@ import {processIntegrationPreviewRunJob} from "./integration-preview";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
+import {modelCallLogDetail, safeModelSpend} from "./model-call-log";
 import {assertWorkerRuntimeSchema} from "./runtime-schema";
 import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./material-render-inspection";
 
@@ -226,7 +227,7 @@ async function main(): Promise<void> {
       },
       onCall: (call) => {
         calls.push(call);
-        log("model.call", {...call});
+        log("model.call", modelCallLogDetail(job.job_id, call));
       },
     });
     return {gateway, calls, researchReserveUsd};
@@ -384,10 +385,16 @@ async function main(): Promise<void> {
                 log,
               })
       : job.kind === "agent_operation_brief"
-        ? processAgentOperationBriefJob(job, {queue, gateway: gatewayRun.gateway, log, research: {providers: research.providers}})
+        ? processAgentOperationBriefJob(job, {
+            queue,
+            gateway: gatewayRun.gateway,
+            modelLineage: () => gatewayRun.calls.map((call) => ({...call})),
+            log,
+            research: {providers: research.providers},
+          })
       : processDocumentJob(job, dependenciesFor(gatewayRun))))
       .then((outcome) => {
-        const spent = gatewayRun.gateway.spent();
+        const spent = safeModelSpend(gatewayRun.gateway.spent());
         log("job.finished", {
           job: job?.job_id,
           status: outcome.status,

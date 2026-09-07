@@ -89,7 +89,7 @@ describe("live_intelligence_preview router", () => {
     const understanding = await understandLiveTurn({gateway: fakeGateway(classifierOutput()), context});
     expect(understanding.envelope.executionContext.organizationId).toEqual({value: context.organizationId, state: "system"});
     expect(understanding.envelope.routingCore.audience.value).toEqual(["VP"]);
-    expect(understanding.model).toBe("claude-sonnet-5");
+    expect(understanding.modelRoute).toBe("governed_model_route");
     expect(understanding.costUsd).toBeCloseTo(0.0021, 6);
   });
 
@@ -107,7 +107,7 @@ describe("live_intelligence_preview router", () => {
       expect(decision.composition).toBe("prepare_meeting");
       expect(decision.record.corpus?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.reply).toMatch(/^\[Validação interna, live_intelligence_preview\] composição=prepare_meeting · companhia=Camil Alimentos S\.A\. · corpus=gc01-analista-ib-camil/);
-      expect(decision.reply).toContain("modelo=claude-sonnet-5");
+      expect(decision.reply).toContain("rota=governed_model_route");
       expect(decision.reply).toContain("chamadas=1");
       expect(decision.activation?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.activation?.plan.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000077"});

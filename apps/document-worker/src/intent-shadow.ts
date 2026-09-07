@@ -9,6 +9,8 @@ import {
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
 
+import {governedModelRoute, safeModelTurnTelemetry} from "./model-call-log";
+
 /**
  * Shadow routing. The classifier reads a turn and writes an Intent Envelope beside the
  * production route without touching it. Nothing here decides anything: the envelope is stored
@@ -101,9 +103,10 @@ export async function shadowIntentEnvelope(input: {
   gateway: ModelGateway;
   context: ShadowRoutingContext;
   now?: () => Date;
-}): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; model: string; costUsd: number}> {
+}): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; modelRoute: typeof governedModelRoute; costUsd: number; calls: number; latencyMs: number}> {
   const {context} = input;
-  const spentBefore = input.gateway.spent().costUsd;
+  const spentBefore = input.gateway.spent();
+  const startedAt = Date.now();
   const classifierInput = buildIntentClassifierInput({
     locale: context.locale,
     latestUserMessage: context.message,
@@ -128,5 +131,6 @@ export async function shadowIntentEnvelope(input: {
   });
   const output = canonicalizeIntentClassifierOutput(completion.output, classifierInput);
   const envelope = stampIntentEnvelope(output, context, input.now);
-  return {envelope, output, model: completion.model, costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore)};
+  const telemetry = safeModelTurnTelemetry(spentBefore, input.gateway.spent(), Date.now() - startedAt);
+  return {envelope, output, modelRoute: governedModelRoute, ...telemetry};
 }
