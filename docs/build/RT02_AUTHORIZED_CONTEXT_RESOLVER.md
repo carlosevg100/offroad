@@ -53,8 +53,10 @@ Within the authorized scope:
 An independently updated second head is a conflict, not an arbitrary tie-break. A newer explicit
 successor is selected and the prior snapshot is recorded as `superseded`. Stale, revoked,
 wrong-jurisdiction, wrong-as-of and permission-denied context becomes a typed gap only when it was
-otherwise material. The resolver returns no prewritten question; the question policy can later use
-the gap and coverage map to decide whether asking changes the work.
+otherwise material. Each gap distinguishes `ask_if_material`, `refresh_source` and
+`obtain_system_authorization`; a missing permission is never disguised as a conversational
+question. The resolver returns no prewritten copy; the question policy can later use the gap and
+coverage map to decide whether asking changes the work.
 
 ## Internal runtime binding
 

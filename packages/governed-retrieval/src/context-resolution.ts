@@ -214,7 +214,7 @@ const contextGapSchema = z.object({
   code: contextGapCodeSchema,
   logicalKey: z.string().min(1).nullable(),
   sourceItemIds: z.array(identitySchema),
-  askIfMaterial: z.literal(true),
+  handling: z.enum(["ask_if_material", "refresh_source", "obtain_system_authorization"]),
 }).strict();
 
 const contextBlockerSchema = z.object({
@@ -325,7 +325,7 @@ export function resolveAuthorizedContext(input: {
     const reasons = relevanceReasons(item, baseIntent);
     const evaluation = evaluateCandidate(item, baseControl, baseIntent, input.now, reasons.length > 0);
     if (evaluation.reason) excluded.push({itemId: item.id, logicalKey: item.logicalKey, reason: evaluation.reason});
-    if (evaluation.gap) gaps.push({code: evaluation.gap, logicalKey: item.logicalKey, sourceItemIds: [item.id], askIfMaterial: true});
+    if (evaluation.gap) gaps.push({code: evaluation.gap, logicalKey: item.logicalKey, sourceItemIds: [item.id], handling: gapHandling(evaluation.gap)});
     if (!evaluation.reason && reasons.length > 0) {
       const values = eligibleByKey.get(item.logicalKey) ?? [];
       values.push({item, reasons});
@@ -339,7 +339,7 @@ export function resolveAuthorizedContext(input: {
     const heads = group.filter(({item}) => !supersededIds.has(item.id));
     if (heads.length !== 1) {
       const sourceItemIds = heads.map(({item}) => item.id).sort();
-      gaps.push({code: "context_conflict", logicalKey, sourceItemIds, askIfMaterial: true});
+      gaps.push({code: "context_conflict", logicalKey, sourceItemIds, handling: "ask_if_material"});
       for (const {item} of group) excluded.push({itemId: item.id, logicalKey, reason: "conflict"});
       continue;
     }
@@ -420,6 +420,12 @@ function evaluateCandidate(
 
 function confirmedState(state: z.infer<typeof intentFieldStateSchema>): boolean {
   return state === "explicit" || state === "reused_confirmed" || state === "system";
+}
+
+function gapHandling(code: z.infer<typeof contextGapCodeSchema>): z.infer<typeof contextGapSchema>["handling"] {
+  if (code === "context_permission_required") return "obtain_system_authorization";
+  if (code === "current_context_required") return "refresh_source";
+  return "ask_if_material";
 }
 
 function relevanceReasons(item: ContextCandidate, intent: ContextResolutionIntent): z.infer<typeof includedContextSchema>["inclusionReasons"] {

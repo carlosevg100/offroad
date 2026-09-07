@@ -167,7 +167,7 @@ describe("authorized context resolution", () => {
       status: "needs_context",
       included: [],
       excluded: [{itemId: "ctx-project-v1", reason: "permission_missing"}],
-      gaps: [{code: "context_permission_required", askIfMaterial: true}],
+      gaps: [{code: "context_permission_required", handling: "obtain_system_authorization"}],
     });
     expect(JSON.stringify(result)).not.toMatch(/quem|qual|please|which/i);
   });
@@ -234,6 +234,7 @@ describe("authorized context resolution", () => {
       expect.objectContaining({itemId: "ctx-revoked", reason: "revoked"}),
     ]));
     expect(result.gaps.map(({code}) => code)).toEqual(["current_context_required", "current_context_required"]);
+    expect(result.gaps.every(({handling}) => handling === "refresh_source")).toBe(true);
   });
 
   it("does not reuse jurisdiction-specific context while jurisdiction is ambiguous", () => {
