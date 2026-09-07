@@ -11,6 +11,25 @@
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
 
+### Engineering update: Acceptance Evidence trust boundary, 7 September 2026
+
+CTRL-03 ganhou seu primeiro slice reconstruído depois de uma revisão adversarial do contrato
+anterior. O evaluator público recebe apenas registry e bytes resolvidos. Trust roots, allowlists,
+verifier labels e tempo pertencem ao control plane e não podem ser injetados pelo caller. O root
+registry atual está vazio; por isso o produto ainda não pode transformar uma atestação em promoção.
+
+O statement Ed25519 vincula claim/criterion, subject, scope, artifact, gate, collector, run, OIDC e
+nonce. Uma root single-purpose autoriza exatamente essas dimensões; o manifest do control plane
+define claims, criteria e limitations. Receipt interno ancora registry, atestação, bytes e primeiro
+recebimento. O control plane persiste decisão por ID opaco com alvo derivado do manifest; promoção
+consome decisão e conjunto exato de receipts em CAS atômico. Hash público não é credencial. O
+caminho positivo continua só em teste.
+
+Isto não conclui CTRL-03. Root onboarding, collector OIDC/KMS, storage privado imutável, adapter CAS
+durável/transacional, current registry, renderer, integração com Ledger/Board e continuous evidence
+continuam pendentes. Nenhuma capability, auditoria ou readiness claim foi promovida. A fronteira e
+as limitações completas estão em `docs/security/ACCEPTANCE_EVIDENCE_TRUST_BOUNDARY.md`.
+
 ### Program reset: executable endgame blueprint, 6 September 2026
 
 `docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` is the proposed canonical execution source for

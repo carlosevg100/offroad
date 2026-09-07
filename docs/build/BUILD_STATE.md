@@ -31,6 +31,23 @@
   mesmos bytes e score parcial. A integração determinística local está verde, mas o novo gate ainda
   não foi executado com modelo real e permanece
   `candidate`. Nenhuma capability foi promovida por esta mudança.
+## Acceptance Evidence trust boundary, candidate, 07/09/2026
+
+- O slice reconstruído de CTRL-03 remove roots, manifests, receipts, verifier labels e relógio do
+  request público. O evaluator obtém um snapshot somente do control plane; o registro governado de
+  roots está vazio, portanto nenhum claim positivo pode ser promovido hoje.
+- A root single-purpose fixa scope, subject, claim, criterion, tipo, collector, gate, OIDC e
+  freshness. Claim, criterion e limitations são definidos pelo control plane. Receipt imutável
+  vincula registry, atestação, bytes, primeiro recebimento, run e nonce. O control plane persiste uma
+  decisão por ID opaco, deriva subject/scope/gate/transição do manifest e exige CAS atômico sobre o
+  conjunto exato de receipts; fingerprint público não autoriza promoção.
+- A lista `verifiedEvidenceIds` inclui somente evidência que passou definição, escopo, root,
+  assinatura, validade, receipt, gate e integridade dos bytes. Erro global zera IDs, precondições
+  de promoção e suporte de claims.
+
+Status: **candidate security boundary**. Ainda faltam root onboarding real, collector OIDC/KMS,
+storage imutável, adapter CAS durável/transacional, current registry, renderer, integração com
+Ledger/Board e continuous evidence. CTRL-03 não está concluído e nenhuma capability foi promovida.
 
 ## Endgame Program Board executável, candidate, 07/09/2026
 
