@@ -2,7 +2,12 @@ import {createHash} from "node:crypto";
 
 import {z} from "zod";
 
-import {compileTaskGraph, type CapitalProjectJob, type CompiledTaskGraph} from "./capital-jobs";
+import {
+  capitalProjectJobSchema,
+  compileTaskGraph,
+  type CapitalProjectJob,
+  type CompiledTaskGraph,
+} from "./capital-jobs";
 
 type ObjectiveEntryHint = Exclude<CapitalProjectJob, "prepare_materials_and_process">;
 
@@ -85,6 +90,71 @@ export type ObjectiveToPlanDecision = {
   reasonCode: string;
   structuralIdentity: string;
 };
+
+const internalGovernedSpecialistTargetManifest = deepFreeze({
+  manifestVersion: "governed-specialist-targets.2026-09-07-v1",
+  targets: {
+    R01: {specialization: "receivables_underwriting", purpose: "Conciliar e testar carteira de recebíveis"},
+  },
+} as const);
+
+/** Read-only inspection snapshot. Authorization always consults the private frozen manifest. */
+export const governedSpecialistTargetManifest = deepFreeze(
+  structuredClone(internalGovernedSpecialistTargetManifest),
+);
+
+export type TrustedObjectivePlanReceipt = Readonly<{
+  planSnapshot: Readonly<ObjectiveToPlanDecision>;
+  specialistTaskIds: readonly string[];
+  specialistManifestVersion: typeof internalGovernedSpecialistTargetManifest.manifestVersion;
+}>;
+
+const trustedObjectivePlanReceipts = new WeakMap<ObjectiveToPlanDecision, TrustedObjectivePlanReceipt>();
+
+const objectiveSourcePlanSchema = z.enum([
+  "project_context", "provided_documents", "public_company", "public_market", "house_method", "capital_network",
+]);
+
+/**
+ * Runtime boundary for a compiled objective plan. A structural identity is an integrity checksum,
+ * not an authorization token: this schema proves that the supplied fields, canonical TaskSpec DAG
+ * and checksum agree with one another. The caller must still obtain the plan from the governed
+ * compiler/control plane rather than from model or user JSON.
+ */
+export const objectiveToPlanDecisionSchema = z.object({
+  schemaVersion: z.literal("objective-plan.v1"),
+  objectiveKind: workspaceObjectiveKindSchema,
+  mode: objectivePlanModeSchema,
+  entryJob: capitalProjectJobSchema.nullable(),
+  outputTerminal: objectiveOutputTerminalSchema,
+  targetTaskIds: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).max(100),
+  taskGraph: z.custom<CompiledTaskGraph>((value) => Boolean(value && typeof value === "object")),
+  sourcePlan: z.array(objectiveSourcePlanSchema).max(6),
+  analysisPlan: z.array(z.string().min(1)).max(30),
+  proposedDeliverable: z.string().min(1),
+  requiredContext: z.array(z.string().min(1)).max(30),
+  reasonCode: z.string().min(1),
+  structuralIdentity: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict().superRefine((plan, context) => {
+  let canonicalGraph: CompiledTaskGraph;
+  try {
+    canonicalGraph = compileTaskGraph(plan.targetTaskIds);
+  } catch (error) {
+    context.addIssue({
+      code: "custom",
+      path: ["targetTaskIds"],
+      message: error instanceof Error ? error.message : "invalid objective TaskSpec target",
+    });
+    return;
+  }
+  if (stableJson(plan.taskGraph) !== stableJson(canonicalGraph)) {
+    context.addIssue({code: "custom", path: ["taskGraph"], message: "task graph does not match canonical target closure"});
+  }
+  if (plan.structuralIdentity !== computeObjectivePlanStructuralIdentity(plan)) {
+    context.addIssue({code: "custom", path: ["structuralIdentity"], message: "objective structural identity mismatch"});
+  }
+  validateObjectivePlanSemantics(plan, context);
+}) as z.ZodType<ObjectiveToPlanDecision>;
 
 type ObjectiveRecipe = Omit<ObjectiveToPlanDecision,
   "schemaVersion" | "taskGraph" | "structuralIdentity" | "mode" | "requiredContext" | "reasonCode">;
@@ -193,6 +263,108 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
   },
 };
 
+function validateObjectivePlanSemantics(plan: ObjectiveToPlanDecision, context: z.RefinementCtx): void {
+  if (plan.objectiveKind === "ambiguous") {
+    const fixed: Array<[keyof ObjectiveToPlanDecision, unknown]> = [
+      ["entryJob", null], ["outputTerminal", "corrigible_scope"], ["sourcePlan", ["project_context"]],
+      ["analysisPlan", ["Confirmar o resultado que precisa existir ao final"]],
+      ["proposedDeliverable", "Entendimento corrigível do pedido"],
+    ];
+    validateFixedObjectiveFields(plan, fixed, context);
+    validateObjectiveState(plan, [{
+      mode: "collect_context", reasonCode: "objective_not_materially_resolved", requiredContext: ["desired_outcome"],
+    }], context);
+    return;
+  }
+
+  const recipe = recipes[plan.objectiveKind];
+  validateFixedObjectiveFields(plan, [
+    ["entryJob", recipe.entryJob], ["outputTerminal", recipe.outputTerminal], ["sourcePlan", recipe.sourcePlan],
+    ["analysisPlan", recipe.analysisPlan], ["proposedDeliverable", recipe.proposedDeliverable],
+  ], context);
+
+  const expectedBaseTargets = canonicalObjectiveRecipeTargetTaskIds(plan);
+  if (expectedBaseTargets.some((taskId) => !plan.targetTaskIds.includes(taskId))) {
+    context.addIssue({code: "custom", path: ["targetTaskIds"], message: "canonical objective target was removed"});
+  }
+  if (new Set(plan.targetTaskIds).size !== plan.targetTaskIds.length) {
+    context.addIssue({code: "custom", path: ["targetTaskIds"], message: "objective targets must be unique"});
+  }
+
+  const ordinary: ObjectiveState[] = [
+    {mode: "create_project", reasonCode: "objective_compiled", requiredContext: []},
+    {mode: "continue_project", reasonCode: "objective_continues_existing_project", requiredContext: []},
+  ];
+  let allowed: ObjectiveState[];
+  switch (plan.objectiveKind) {
+    case "factual_question":
+      allowed = [{mode: "conversation", reasonCode: "bounded_answer_only", requiredContext: []}];
+      break;
+    case "information_organization":
+      allowed = [
+        {mode: "coverage_gap", reasonCode: "public_collection_executor_not_promoted", requiredContext: ["public_source_collection_executor"]},
+        {mode: "create_project", reasonCode: "document_index_compiled", requiredContext: []},
+        {mode: "continue_project", reasonCode: "document_index_continues_existing_project", requiredContext: []},
+      ];
+      break;
+    case "monitoring":
+      allowed = [{mode: "coverage_gap", reasonCode: "monitoring_executor_not_promoted", requiredContext: ["monitoring_baseline", "monitoring_executor"]}];
+      break;
+    case "workspace_management":
+      allowed = [{mode: "coverage_gap", reasonCode: "workspace_action_executor_not_promoted", requiredContext: ["authorized_workspace_action"]}];
+      break;
+    case "capital_matching":
+      allowed = [
+        {mode: "continue_project", reasonCode: "matching_prerequisites_satisfied", requiredContext: []},
+        {mode: "coverage_gap", reasonCode: "matching_prerequisites_missing", requiredContext: ["signed_analytical_snapshot"]},
+        {mode: "coverage_gap", reasonCode: "matching_prerequisites_missing", requiredContext: ["current_mandate_evidence"]},
+        {mode: "coverage_gap", reasonCode: "matching_prerequisites_missing", requiredContext: ["signed_analytical_snapshot", "current_mandate_evidence"]},
+      ];
+      break;
+    case "material_preparation":
+      allowed = [
+        {mode: "coverage_gap", reasonCode: "material_snapshot_required", requiredContext: ["signed_analytical_snapshot"]},
+        {mode: "continue_project", reasonCode: "objective_continues_existing_project", requiredContext: []},
+      ];
+      break;
+    case "risk_matrix":
+    case "operation_review":
+      allowed = [...ordinary, {mode: "collect_context", reasonCode: "review_evidence_required", requiredContext: ["effective_document_set"]}];
+      break;
+    case "documents_to_case":
+      allowed = [
+        ...ordinary,
+        {mode: "create_project", reasonCode: "objective_compiled", requiredContext: ["provided_documents"]},
+        {mode: "continue_project", reasonCode: "objective_continues_existing_project", requiredContext: ["provided_documents"]},
+      ];
+      break;
+    default:
+      allowed = ordinary;
+  }
+  validateObjectiveState(plan, allowed, context);
+}
+
+type ObjectiveState = Pick<ObjectiveToPlanDecision, "mode" | "reasonCode" | "requiredContext">;
+
+function validateFixedObjectiveFields(
+  plan: ObjectiveToPlanDecision,
+  fields: ReadonlyArray<[keyof ObjectiveToPlanDecision, unknown]>,
+  context: z.RefinementCtx,
+): void {
+  for (const [key, expected] of fields) {
+    if (stableJson(plan[key]) !== stableJson(expected)) {
+      context.addIssue({code: "custom", path: [key], message: "field does not match canonical objective recipe"});
+    }
+  }
+}
+
+function validateObjectiveState(plan: ObjectiveToPlanDecision, allowed: readonly ObjectiveState[], context: z.RefinementCtx): void {
+  const actual = {mode: plan.mode, reasonCode: plan.reasonCode, requiredContext: plan.requiredContext};
+  if (!allowed.some((candidate) => stableJson(candidate) === stableJson(actual))) {
+    context.addIssue({code: "custom", path: ["mode"], message: "mode, reason and required context do not match a canonical objective state"});
+  }
+}
+
 /**
  * Compiles a normalized semantic objective into a bounded task contract. This is the architecture
  * boundary: a classifier can improve without gaining authority to invent work. The function
@@ -288,6 +460,13 @@ export function expandObjectivePlanWithTaskTargets(
   plan: ObjectiveToPlanDecision,
   additionalTargetTaskIds: readonly string[],
 ): ObjectiveToPlanDecision {
+  const receipt = assertTrustedObjectivePlan(plan);
+  // Preserve the registry's canonical unknown-task error before applying the narrower specialist
+  // authorization policy.
+  compileTaskGraph(additionalTargetTaskIds);
+  const governedSpecialistTargets = new Set(Object.keys(internalGovernedSpecialistTargetManifest.targets));
+  const ungoverned = additionalTargetTaskIds.find((taskId) => !governedSpecialistTargets.has(taskId));
+  if (ungoverned) throw new Error(`objective target ${ungoverned} lacks a governed specialist manifest binding`);
   const targetTaskIds = [...new Set([...plan.targetTaskIds, ...additionalTargetTaskIds])].sort();
   return finalize({
     objectiveKind: plan.objectiveKind,
@@ -300,7 +479,33 @@ export function expandObjectivePlanWithTaskTargets(
     proposedDeliverable: plan.proposedDeliverable,
     requiredContext: plan.requiredContext,
     reasonCode: plan.reasonCode,
-  });
+  }, [...new Set([...receipt.specialistTaskIds, ...additionalTargetTaskIds])].sort());
+}
+
+/**
+ * Runtime trust boundary for objective plans. The public schema validates shape and deterministic
+ * integrity only; it never grants execution authority. Only plans emitted by this compiler in the
+ * current process have an opaque receipt. A persistence adapter must recompile and reauthorize a
+ * stored plan before it can cross this boundary in a new process.
+ */
+export function assertTrustedObjectivePlan(plan: ObjectiveToPlanDecision): TrustedObjectivePlanReceipt {
+  const receipt = trustedObjectivePlanReceipts.get(plan);
+  if (!receipt) throw new Error("objective plan lacks a trusted compiler attestation");
+  return deepFreeze(structuredClone(receipt));
+}
+
+/**
+ * Returns the targets owned by the base objective recipe. Any remaining target in a verified plan
+ * was added by a governed specialization/depth pack and must survive terminal composition.
+ */
+export function canonicalObjectiveRecipeTargetTaskIds(plan: ObjectiveToPlanDecision): readonly string[] {
+  if (plan.objectiveKind === "ambiguous") return [];
+  if (plan.objectiveKind === "information_organization") {
+    return plan.reasonCode === "document_index_compiled" || plan.reasonCode === "document_index_continues_existing_project"
+      ? ["D02"]
+      : [];
+  }
+  return recipes[plan.objectiveKind].targetTaskIds;
 }
 
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
@@ -333,7 +538,10 @@ function kindFromHint(hint: ObjectiveEntryHint): WorkspaceObjectiveKind {
   }
 }
 
-function finalize(input: Omit<ObjectiveToPlanDecision, "schemaVersion" | "taskGraph" | "structuralIdentity">): ObjectiveToPlanDecision {
+function finalize(
+  input: Omit<ObjectiveToPlanDecision, "schemaVersion" | "taskGraph" | "structuralIdentity">,
+  specialistTaskIds: readonly string[] = [],
+): ObjectiveToPlanDecision {
   const taskGraph = compileTaskGraph(input.targetTaskIds);
   const identityPayload = {
     schemaVersion: "objective-plan.v1",
@@ -347,10 +555,46 @@ function finalize(input: Omit<ObjectiveToPlanDecision, "schemaVersion" | "taskGr
     proposedDeliverable: input.proposedDeliverable,
     requiredContext: input.requiredContext,
   };
-  return {
+  const parsed = objectiveToPlanDecisionSchema.parse({
     schemaVersion: "objective-plan.v1",
     ...input,
     taskGraph,
     structuralIdentity: createHash("sha256").update(JSON.stringify(identityPayload)).digest("hex"),
+  });
+  const plan = deepFreeze(parsed);
+  const planSnapshot = deepFreeze(structuredClone(parsed));
+  trustedObjectivePlanReceipts.set(plan, deepFreeze({
+    planSnapshot,
+    specialistTaskIds: deepFreeze([...specialistTaskIds]),
+    specialistManifestVersion: internalGovernedSpecialistTargetManifest.manifestVersion,
+  }));
+  return plan;
+}
+
+function computeObjectivePlanStructuralIdentity(plan: Omit<ObjectiveToPlanDecision, "structuralIdentity" | "taskGraph">): string {
+  const identityPayload = {
+    schemaVersion: "objective-plan.v1",
+    objectiveKind: plan.objectiveKind,
+    mode: plan.mode,
+    entryJob: plan.entryJob,
+    outputTerminal: plan.outputTerminal,
+    targetTaskIds: plan.targetTaskIds,
+    sourcePlan: plan.sourcePlan,
+    analysisPlan: plan.analysisPlan,
+    proposedDeliverable: plan.proposedDeliverable,
+    requiredContext: plan.requiredContext,
   };
+  return createHash("sha256").update(JSON.stringify(identityPayload)).digest("hex");
+}
+
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, nested: unknown) => nested && typeof nested === "object" && !Array.isArray(nested)
+    ? Object.fromEntries(Object.entries(nested as Record<string, unknown>).sort(([left], [right]) => left.localeCompare(right)))
+    : nested);
+}
+
+function deepFreeze<T>(value: T): T {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child);
+  return Object.freeze(value);
 }
