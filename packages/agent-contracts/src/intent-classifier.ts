@@ -228,6 +228,7 @@ function explicitCompositionForClause(input: IntentClassifierInput, text: string
  * stays with the semantic model instead of being guessed from isolated keywords.
  */
 function explicitComposition(input: IntentClassifierInput): NamedComposition | null {
+  const containsQuotedContent = /["'“”‘’]/.test(input.latestUserMessage);
   const normalized = normalizeForPolicy(input.latestUserMessage)
     .replace(/"[^"]*"|'[^']*'|“[^”]*”|‘[^’]*’/g, " ")
     .replace(/\b(?:source text|source|texto fonte|noticia|documento|contrato)\b[^.;!\x0a]{0,80}\b(?:says?|said|diz|disse|contem a frase)\b[^.;!\x0a]*/g, " ")
@@ -247,6 +248,10 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     .filter((composition): composition is NamedComposition => composition !== null);
   const unique = [...new Set(candidates)];
   if (unique.length === 1 && unique[0] === "introduce") {
+    // Quoted content may be a source instruction, a retraction or an emphasized refusal. The
+    // classifier is not an authorization boundary, so any quotation makes external intent
+    // ambiguous and must be confirmed through a governed path.
+    if (containsQuotedContent) return null;
     const commandIndex = clauses.findIndex(hasExplicitExternalOutreach);
     // Once an external command appears, any later authored clause makes its final polarity
     // unresolved. Fail closed instead of discarding a retraction as an "irrelevant" clause.

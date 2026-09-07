@@ -184,6 +184,12 @@ describe("intent classifier boundary", () => {
     "Envie a seção sobre divulgação para investidores.",
     "Send this to investors?",
     "Envie isto aos investidores?",
+    "Send this to investors. \"I refuse.\"",
+    "Send this to investors. ‘No.’",
+    "Send this to investors. “Actually, do not.”",
+    "Send this to investors ‘forget it’",
+    "Envie isto aos investidores. \"Retiro o pedido.\"",
+    "Envie isto aos investidores. ‘Não.’",
   ])("never preserves a model-proposed introduction when outreach is rejected: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
