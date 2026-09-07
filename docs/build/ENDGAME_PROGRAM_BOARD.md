@@ -2,10 +2,10 @@
 
 > Vista gerada de `current-endgame-program.ts`. Não editar manualmente. O objeto TypeScript é a fonte canônica machine-readable.
 
-Atualizado em: 2026-09-07T08:37:45.000-03:00
-Baseline: `main@b76016734e860358d8b9d2f076d47c527346b0d3`
-Capability Ledger: `2026.09.07-v13@cb5f674`
-Fingerprint do board: `30e2fa86274fe853d1a8dd4a16a0bb6c9e97aff4a82161a9c395dfaf1d8238f3`
+Atualizado em: 2026-09-07T15:03:56.000-03:00
+Baseline: `main@2a96d0125d9ace1929a5bbf5d18739bbf28d4eda`
+Capability Ledger: `2026.09.07-v16@0978740d3d1c88573daab16ddf0fbabec9910475`
+Fingerprint do board: `c77f23f014a5ea011af8ce09c7131f309e6d3aacfc803a692f0c1a1433ea22ef`
 
 ## Leitura executiva
 
@@ -15,10 +15,10 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 
 | Finding | Severidade | Estado | Responsável | Descrição |
 |---|---|---|---|---|
-| PF-BASELINE-DRIFT | high | open | Program integrator | A main observada está em b760167, enquanto o Capability Ledger v13 preserva baseline de verificação cb5f674. O ledger não é falso, mas precisa ser reemitido contra o baseline integrado antes da próxima promoção. |
-| PF-PPTX-NOT-MAIN | high | open | Governed materials engineer | A apresentação governada permanece no PR 523 e o check E2E falhou; ela não é capacidade da main. |
 | PF-NO-CUSTOMER-RELIANCE | high | open | Capability governance owner | Nenhuma capability do ledger atual autoriza customer_work, external_material ou external_action; o produto permanece em validação interna. |
-| PF-ENDGAME-INCOMPLETE | high | open | Program integrator | Dispatcher universal, arbitrary dataroom, modelo institucional, template suite, journeys G2-G8, rede real de capital e assurance externo não estão promovidos. |
+| PF-ENDGAME-INCOMPLETE | high | open | Program integrator | Dispatcher universal, data room arbitrário, modelo institucional, template suite, journeys G2-G8, rede real de capital e assurance externo não estão promovidos. |
+| PF-SECURITY-SNAPSHOT-STALE | medium | open | Security program owner | O inventário SEC-01 é uma base válida, porém está fixado em b2e3897 e não representa mudanças posteriores da main; precisa de refresh governado antes de servir como current state do baseline 2a96d01. |
+| PF-FOUNDATIONS-NOT-PROMOTION | high | open | Capability governance owner | SEC-01, VLT-02 e a fundação Office possuem código e testes delimitados, mas não fornecem evidência operacional ou autorização para uso de cliente, material externo ou claim de assurance. |
 
 ## Sequência de releases
 
@@ -29,7 +29,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | CTRL-01 | Em implementação | Baseline único de código, PRs, deploy, banco, ledger e documentos, sem claims conflitantes. | sem vínculo | sem dependência | sem blocker |
 | CTRL-02 | Code complete | Fonte machine-readable com tarefas, dependências, owners, aceite, evidência, bloqueadores e transições de maturidade. | sem vínculo | sem dependência | sem blocker |
 | CTRL-03 | Backlog | Cada claim de capacidade resolve a evidência vigente, ambiente, gate e validade. | sem vínculo | CTRL-01, CTRL-02 | sem blocker |
-| SEC-01 | Em implementação | AWS, Supabase, Vercel, GitHub, providers, dados, assets e subprocessadores possuem inventário verificável. | sem vínculo | CTRL-01 | sem blocker |
+| SEC-01 | Code complete | Um snapshot validado e conservador representa ambientes, sistemas, dados, fluxos, identities, vendors, evidências, gaps e claims externos sem inferir operação live. | trust.security-current-state-inventory | CTRL-01 | BL-SEC01-LIVE-EVIDENCE, BL-SEC01-REFRESH |
 | SEC-02 | Backlog | Tenancy, documentos, IA, tools, exports, effects, supply chain e insider access têm ameaças e controles. | sem vínculo | SEC-01 | sem blocker |
 | SEC-03 | Backlog | PR, testes, deploy, acessos, providers, exports, vulnerabilities, backup e incidentes geram evidência contínua. | sem vínculo | CTRL-03, SEC-01 | sem blocker |
 
@@ -52,7 +52,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | ID | Estado | Resultado | Capabilities vinculadas | Dependências | Bloqueadores abertos |
 |---|---|---|---|---|---|
 | VLT-01 | Backlog | Todo arquivo, versão, hash, origem, classe, parser, coverage e derivado possui identidade governada. | sem vínculo | RT-02 | sem blocker |
-| VLT-02 | Backlog | Data rooms entram em quarentena, são classificados e processados sob limites e isolamento. | sem vínculo | VLT-01 | sem blocker |
+| VLT-02 | Code complete | Os formatos hoje allowlisted só chegam ao parser após scanner clean, inspeção limitada e receipt vinculado aos bytes e ao escopo exatos. | documents.governed-quarantine-shadow | VLT-01 | BL-VLT02-PERSISTENCE, BL-VLT02-RUNTIME, BL-VLT02-CONTAINERS |
 | VLT-03 | Backlog | O sistema escolhe leitura exata, exaustiva, tabular, cláusula, OCR, planilha ou híbrida conforme o trabalho. | sem vínculo | VLT-02 | sem blocker |
 | VLT-04 | Backlog | Cada fato resolve documento, versão, anchor, período, unidade, moeda, perímetro e rank. | sem vínculo | VLT-03 | sem blocker |
 | VLT-05 | Backlog | Períodos, moedas, escalas, conceitos, EBITDA, dívida, caixa e covenant são conciliados com exceções explícitas. | sem vínculo | VLT-04 | sem blocker |
@@ -74,7 +74,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 
 | ID | Estado | Resultado | Capabilities vinculadas | Dependências | Bloqueadores abertos |
 |---|---|---|---|---|---|
-| MAT-01 | Bloqueado | PPTX nativo, editável, rastreável e privado passa CI, inspeção e armazenamento exato. | sem vínculo | CTRL-01 | BL-PR523-E2E |
+| MAT-01 | Code complete | PPTX editável e decision workbook do Caso 01 são construídos de forma determinística, inspecionados, vinculados ao manifest e mantidos apenas para validação interna. | artifacts.governed-office-foundation | CTRL-01 | BL-MAT01-REAL-GATE |
 | MAT-02 | Backlog | Workbook institucional é renderizado no worker, inspecionado, armazenado e baixado por manifest imutável. | sem vínculo | MAT-01, FIN-04 | sem blocker |
 | MAT-03 | Backlog | Nenhuma superfície chama placeholder, JSON interno ou export improvisado de material pronto. | sem vínculo | MAT-01, MAT-02 | sem blocker |
 | MAT-04 | Backlog | Slides, páginas e sheets recebem inspeção automática, comparação e receipt antes de release. | sem vínculo | MAT-01, MAT-02 | sem blocker |
@@ -136,13 +136,13 @@ Subtarefas:
 
 - [x] CTRL-01.01: Fixar origin/main e inventariar PRs/deploys (done)
 - [x] CTRL-01.02: Comparar ledger, Build State, blueprint e evidências (done)
-- [ ] CTRL-01.03: Registrar divergências e corrigir claims (in_progress)
+- [x] CTRL-01.03: Registrar divergências e corrigir claims (done)
 - [ ] CTRL-01.04: Congelar o baseline reconciliado (pending)
 
 Critérios de aceite:
 
-- CTRL-01.AC01: Commit, ledger, PRs e ambientes têm referências verificáveis · **passed** · EV-MAIN-B760, EV-PR523
-- CTRL-01.AC02: Toda divergência material aparece como finding com owner · **pending**
+- CTRL-01.AC01: Commit, ledger, PRs e ambientes têm referências verificáveis · **passed** · EV-MAIN-2A96, EV-LEDGER-V16
+- CTRL-01.AC02: Toda divergência material aparece como finding com owner · **passed** · EV-CAPABILITY-LEDGER
 - CTRL-01.AC03: Nenhuma capacidade é promovida pela reconciliação · **passed** · EV-CAPABILITY-LEDGER
 
 ### RT-01: Intent Envelope universal
@@ -166,54 +166,24 @@ Capabilities relacionadas: `intent.semantic-envelope-shadow`, `gold.intent-route
 
 Transição planejada: `intent.semantic-envelope-shadow` · implemented → tested (planned).
 
-### MAT-01: Apresentação governada
-
-Estado: **Bloqueado** · owner: Governed materials engineer
-
-Subtarefas:
-
-- [ ] MAT-01.01: Corrigir E2E do PR 523 (blocked)
-- [ ] MAT-01.02: Mesclar implementação (pending)
-- [ ] MAT-01.03: Verificar deploy do worker (pending)
-- [ ] MAT-01.04: Executar geração e inspeção real (pending)
-
-Critérios de aceite:
-
-- MAT-01.AC01: Todos os checks do PR passam · **pending**
-- MAT-01.AC02: Bytes baixados coincidem com manifest · **pending**
-- MAT-01.AC03: Visual review receipt mantém external release bloqueado · **pending**
-
-Transição planejada: `artifacts.governed-office-foundation` · unsupported → implemented (planned).
-
-### SEC-01: Current-state e inventários
-
-Estado: **Em implementação** · owner: Security program owner
-
-Subtarefas:
-
-- [ ] SEC-01.01: Inventariar sistemas e ambientes (in_progress)
-- [ ] SEC-01.02: Mapear data flows e classes (pending)
-- [ ] SEC-01.03: Inventariar identities e vendors (pending)
-- [ ] SEC-01.04: Registrar owners e evidence gaps (pending)
-
-Critérios de aceite:
-
-- SEC-01.AC01: Inventário cobre produção e staging · **pending**
-- SEC-01.AC02: Nenhum segredo aparece no board · **pending**
-- SEC-01.AC03: Owners e freshness estão explícitos · **pending**
-
 ## Evidence Index
 
 | ID | Tipo | Ambiente | Referência |
 |---|---|---|---|
-| EV-MAIN-B760 | repository | repository | https://github.com/carlosevg100/offroad/commit/b76016734e860358d8b9d2f076d47c527346b0d3 |
-| EV-LEDGER-V13 | repository | repository | packages/release-governance/src/current-capability-ledger.ts |
+| EV-MAIN-2A96 | repository | repository | https://github.com/carlosevg100/offroad/commit/2a96d0125d9ace1929a5bbf5d18739bbf28d4eda |
+| EV-LEDGER-V16 | repository | repository | https://github.com/carlosevg100/offroad/commit/0978740d3d1c88573daab16ddf0fbabec9910475 |
 | EV-CAPABILITY-LEDGER | document | repository | docs/build/CAPABILITY_LEDGER.md |
 | EV-BLUEPRINT | document | repository | docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md |
 | EV-SECURITY-PLAN | document | repository | docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md |
+| EV-PR529 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/529 |
+| EV-SEC01-INVENTORY | document | repository | docs/security/CURRENT_STATE_INVENTORY.md |
+| EV-SEC01-TESTS | test | repository | packages/release-governance/src/security-current-state.test.ts; packages/release-governance/src/security-assurance-statements.test.ts |
+| EV-PR537 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/537 |
+| EV-VLT02-BOUNDARY | document | repository | docs/build/VLT02_GOVERNED_QUARANTINE_BOUNDARY.md |
+| EV-VLT02-TESTS | test | repository | packages/document-intelligence/src/governed-document-quarantine.test.ts; apps/document-worker/src/pipeline.test.ts |
 | EV-PR522 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/522 |
-| EV-PR523 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/523 |
-| EV-PR523-E2E | ci_run | ci | https://github.com/carlosevg100/offroad/actions/runs/34114239951/job/101717356881 |
+| EV-MAT-FOUNDATION | pull_request | ci | https://github.com/carlosevg100/offroad/pull/525 |
+| EV-MAT-DETERMINISM | pull_request | ci | https://github.com/carlosevg100/offroad/pull/534 |
 | EV-INTENT-GATE | ci_run | ci | https://github.com/carlosevg100/offroad/actions/runs/34096964058 |
 | EV-CTRL02-LOCAL-GATE | test | repository | packages/release-governance/src/endgame-program-board.test.ts |
 
