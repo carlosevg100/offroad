@@ -496,13 +496,25 @@ describe("agent operation brief worker", () => {
       complete: async (_job: unknown, value: unknown) => { completion = value; },
       recordAgentFailure: async () => {}, fail: async () => { throw new Error("must not fail"); },
     } as unknown as QueueClient;
-    let completed = false;
+    let completed = 0;
     const gateway = {
-      complete: async () => {
-        completed = true;
-        return {output: validLiveRoutingOutput(), model: "CLIENT_SECRET_MODEL", provider: "anthropic"};
+      complete: async (request: {task: string; schemaName: string}) => {
+        completed += 1;
+        const live = validLiveRoutingOutput();
+        let output: unknown;
+        if (request.task === "extract_semantic_objects") output = {
+          objects: [{candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start: 10, end: 24, text: "Magazine Luiza"}}, modifiers: []}],
+          activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+        };
+        else if (request.schemaName === "live_preview_turn_output") output = {turn: live.turn};
+        else { const {turn: _turn, ...route} = live; output = route; }
+        return {
+          output, model: "CLIENT_SECRET_MODEL", provider: "anthropic", effort: "low", costUsd: 0.02, latencyMs: 1,
+          retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+          attempts: [{provider: "anthropic", model: "CLIENT_SECRET_MODEL", outcome: "ok"}],
+        };
       },
-      spent: () => ({costUsd: completed ? 0.02 : 0, calls: completed ? 1 : 0, unknownCostCalls: 0, budgetExposureUsd: completed ? 0.02 : 0}),
+      spent: () => ({costUsd: completed * 0.02, calls: completed, unknownCostCalls: 0, budgetExposureUsd: completed * 0.02}),
     } as unknown as ModelGateway;
 
     const result = await processAgentOperationBriefJob(previewJob, {
@@ -511,9 +523,14 @@ describe("agent operation brief worker", () => {
     });
 
     expect(result.status).toBe("succeeded");
-    expect(envelopeRecord).toMatchObject({model: "governed_model_route", costUsd: 0.02});
-    expect(stage).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
-    expect(logged).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
+    expect(envelopeRecord).toMatchObject({model: "governed_model_route", costUsd: 0.06});
+    expect(envelopeRecord).toMatchObject({classifier: {
+      routingAttempt: {provider: "anthropic", model: "unknown"},
+      semanticObjectAttempt: {provider: "anthropic", model: "unknown"},
+      previewTurnAttempt: {provider: "anthropic", model: "unknown"},
+    }});
+    expect(stage).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.06, calls: 3});
+    expect(logged).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.06, calls: 3});
     expect(JSON.stringify({result, envelopeRecord, response, stage, completion, logged})).not.toContain("CLIENT_SECRET_MODEL");
   });
 

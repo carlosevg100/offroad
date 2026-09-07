@@ -52,6 +52,18 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
   /** Zod schema of the expected structured output; also used to derive the provider JSON schema. */
   schema: TSchema;
   schemaName: string;
+  /**
+   * Optional deterministic acceptance gate applied after schema parsing and before an attempt can
+   * succeed. This is for contracts whose safety depends on semantics that JSON Schema cannot
+   * express (for example attributable-span coverage). A rejection participates in the same bounded
+   * same-model repair and provider-fallback rail as a schema rejection.
+   *
+   * Issues must be content-free: only stable paths/codes and generic messages are persisted or
+   * included in repair guidance.
+   */
+  validateOutput?: (output: z.infer<TSchema>) =>
+    | {accepted: true}
+    | {accepted: false; issues: ValidationIssueDiagnostic[]};
   /** Overrides the policy's primary model (must still be allowlisted). */
   model?: Partial<ModelRef>;
   /**

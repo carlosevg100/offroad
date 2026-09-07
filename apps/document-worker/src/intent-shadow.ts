@@ -9,6 +9,7 @@ import {
   intentClassifierOutputSchema,
   intentEnvelopeSchema,
   semanticObjectExtractorOutputSchema,
+  validateSemanticObjectOutput,
   compositionPolicy,
   authorityGrantSchema,
   type ActiveWorkContext,
@@ -20,7 +21,7 @@ import {
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
 
-import {governedModelRoute, safeModelTurnTelemetry} from "./model-call-log";
+import {governedModelRoute, safeModelTurnTelemetry, safeSuccessfulModelCall} from "./model-call-log";
 
 /**
  * Shadow routing. The classifier reads a turn and writes an Intent Envelope beside the
@@ -150,12 +151,14 @@ export async function shadowIntentEnvelope(input: {
   envelope: IntentEnvelope;
   output: ShadowRoutingOutput;
   rawIntentOutput: ShadowRoutingOutput;
+  routingAttempt: ReturnType<typeof safeSuccessfulModelCall>;
   semanticObjects: {
     rawOutput: SemanticObjectExtractorOutput;
     compilation: SemanticObjectCompilation;
     modelRoute: typeof governedModelRoute;
     successfulAttempt: {costUsd: number; latencyMs: number};
     attemptCount: number;
+    routingAttempt: ReturnType<typeof safeSuccessfulModelCall>;
   };
   modelRoute: typeof governedModelRoute;
   costUsd: number;
@@ -203,6 +206,7 @@ export async function shadowIntentEnvelope(input: {
       outputMode: "prompted_json",
       thinking: "off",
       metadata: {surface: "shadow_semantic_object_extractor"},
+      validateOutput: (output) => validateSemanticObjectOutput(objectInput, output),
     }),
   ]);
   const compilation = compileSemanticObjects(objectInput, objectCompletion.output);
@@ -214,12 +218,14 @@ export async function shadowIntentEnvelope(input: {
     envelope,
     output,
     rawIntentOutput: intentCompletion.output,
+    routingAttempt: safeSuccessfulModelCall(intentCompletion),
     semanticObjects: {
       rawOutput: objectCompletion.output,
       compilation,
       modelRoute: governedModelRoute,
       successfulAttempt: {costUsd: objectCompletion.costUsd, latencyMs: objectCompletion.latencyMs},
       attemptCount: objectCompletion.attempts.length,
+      routingAttempt: safeSuccessfulModelCall(objectCompletion),
     },
     modelRoute: governedModelRoute,
     ...telemetry,

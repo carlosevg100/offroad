@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 import type {GatewayCallLog} from "@offroad/model-gateway";
 
-import {modelCallLogDetail, safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
+import {modelCallLogDetail, safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend, safeSuccessfulModelCall} from "./model-call-log";
 
 const call: GatewayCallLog = {
   invocationId: "10000000-0000-4000-8000-000000000001",
@@ -31,6 +31,8 @@ describe("modelCallLogDetail", () => {
     expect(detail).toMatchObject({
       job: "20000000-0000-4000-8000-000000000002",
       task: "route_intent",
+      provider: "anthropic",
+      model: "claude-sonnet-5",
       outcome: "invalid_output",
       providerHttpStatus: null,
       providerFailureCategory: "unknown",
@@ -38,10 +40,19 @@ describe("modelCallLogDetail", () => {
     });
     expect(JSON.stringify(detail)).not.toContain("must-not-be-logged");
     expect(detail).not.toHaveProperty("metadata");
-    expect(detail).not.toHaveProperty("model");
     expect(detail).not.toHaveProperty("schemaName");
     expect(detail).not.toHaveProperty("providerError");
     expect(detail).not.toHaveProperty("validationIssues");
+  });
+
+  it("persists only allowlisted successful provider/model lineage", () => {
+    expect(safeSuccessfulModelCall({...call, retryOrdinal: 1, isSameModelRepair: true})).toMatchObject({
+      provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 1,
+      isSameModelRepair: true, usedProviderFallback: false,
+    });
+    expect(safeSuccessfulModelCall({...call, provider: "customer-secret", model: "customer-secret-model"})).toMatchObject({
+      provider: "unknown", model: "unknown",
+    });
   });
 
   it("reduces malicious provider strings to closed values and counts", () => {

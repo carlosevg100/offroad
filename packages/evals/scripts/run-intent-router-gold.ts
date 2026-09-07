@@ -20,6 +20,7 @@ import {
   compileSemanticObjects,
   intentClassifierOutputSchema,
   semanticObjectExtractorOutputSchema,
+  validateSemanticObjectOutput,
   type SemanticObjectCompilation,
   type SemanticObjectExtractorOutput,
   type IntentClassifierOutput,
@@ -134,6 +135,7 @@ async function main(): Promise<void> {
       outputMode: "prompted_json",
       thinking: "off",
       metadata: {caseId: preflightTurn.caseId, turnId: preflightTurn.id},
+      validateOutput: (output) => validateSemanticObjectOutput(preflightObjectInput, output),
     }));
   } catch (cause) {
     if (cause instanceof IntentRouterProviderPreflightError) providerPreflight.push(...cause.results);
@@ -195,6 +197,7 @@ async function main(): Promise<void> {
             outputMode: "prompted_json",
             thinking: "off",
             metadata: {surface: "intent_object_gold", caseId: turn.caseId, turnId: turn.id, repeat: String(repeat)},
+            validateOutput: (output) => validateSemanticObjectOutput(objectInput, output),
           }),
         ]);
         if (routeResult.status === "fulfilled") {

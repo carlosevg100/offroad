@@ -1,7 +1,7 @@
 import {ModelGatewayError, type GatewayRequest, type ModelGateway, type ModelRef, type Provider, type TaskKind} from "@offroad/model-gateway";
 import type {z} from "zod";
 
-type IntentRouterRequest = Omit<GatewayRequest<z.ZodType>, "model" | "allowFallback" | "metadata"> & {
+type IntentRouterRequest<TSchema extends z.ZodType> = Omit<GatewayRequest<TSchema>, "model" | "allowFallback" | "metadata"> & {
   metadata?: Record<string, string>;
 };
 
@@ -32,10 +32,10 @@ export class IntentRouterProviderPreflightError extends Error {
  * the paid 52-observation run starts. Fallback is disabled so one healthy provider cannot conceal
  * another provider's outage or contract rejection.
  */
-export async function preflightIntentRouterProviders(
+export async function preflightIntentRouterProviders<TSchema extends z.ZodType>(
   gateway: ModelGateway,
   providers: readonly ModelRef[],
-  request: IntentRouterRequest,
+  request: IntentRouterRequest<TSchema>,
 ): Promise<IntentRouterProviderPreflight[]> {
   const uniqueProviders = providers.filter((ref, index, values) =>
     values.findIndex((candidate) => candidate.provider === ref.provider && candidate.model === ref.model && candidate.effort === ref.effort) === index);

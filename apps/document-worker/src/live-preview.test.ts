@@ -1,8 +1,10 @@
 import type {ModelGateway} from "@offroad/model-gateway";
+import {buildIntentClassifierInput, canonicalizeIntentClassifierOutput} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
 
 import {decideLiveTurn, liveRoutingOutputSchema, normalizePreviewTurn, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
+import {shadowRoutingOutputSchema, stampIntentEnvelope} from "./intent-shadow";
 import type {PreviewStepOutput} from "./integration-preview";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
@@ -55,12 +57,32 @@ function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & 
 
 function fakeGateway(output: LiveRoutingOutput, costUsd = 0.0021): ModelGateway {
   let spent = 0;
+  let calls = 0;
   return {
-    complete: async () => {
+    complete: async (request: {task: string; schemaName: string; input: Array<{type: string; text: string}>}) => {
       spent += costUsd;
-      return {output, model: "claude-sonnet-5", provider: "anthropic"} as never;
+      calls += 1;
+      let result: unknown;
+      if (request.task === "extract_semantic_objects") {
+        const source = JSON.parse(request.input[0]!.text) as {latestUserMessage: string};
+        const mention = source.latestUserMessage.includes("Camil") ? "Camil" : source.latestUserMessage.split(/\s+/)[0]!;
+        const start = source.latestUserMessage.indexOf(mention);
+        result = {
+          objects: [{candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start, end: start + mention.length, text: mention}}, modifiers: []}],
+          activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+        };
+      } else if (request.schemaName === "live_preview_turn_output") result = {turn: output.turn};
+      else {
+        const {turn: _turn, ...route} = output;
+        result = route;
+      }
+      return {
+        output: result, model: "claude-sonnet-5", provider: "anthropic", effort: "low",
+        costUsd, latencyMs: 1, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+        attempts: [{provider: "anthropic", model: "claude-sonnet-5", outcome: "ok"}],
+      } as never;
     },
-    spent: () => ({costUsd: spent, calls: spent > 0 ? 1 : 0}),
+    spent: () => ({costUsd: spent, calls, unknownCostCalls: 0, budgetExposureUsd: spent}),
   } as unknown as ModelGateway;
 }
 
@@ -81,7 +103,20 @@ const context: LiveTurnContext = {
 };
 
 async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<typeof decideLiveTurn>[0]> = {}) {
-  const understanding = await understandLiveTurn({gateway: fakeGateway(output), context: {...context, message: overrides.message ?? context.message}});
+  const {turn: _turn, ...route} = output;
+  const compatible = shadowRoutingOutputSchema.parse({...route, composition: output.composition === "deepen" ? "understand_company_sector_asset" : output.composition});
+  const message = overrides.message ?? context.message;
+  const canonical = canonicalizeIntentClassifierOutput(compatible, buildIntentClassifierInput({
+    locale: context.locale, latestUserMessage: message, recentConversation: [], entryJob: context.entryJob,
+    documentCount: context.documentIds.length, professionalContext: context.professionalContext,
+  }));
+  const understanding = {
+    envelope: stampIntentEnvelope(canonical, context), output, modelRoute: "governed_model_route" as const,
+    costUsd: 0.0063, latencyMs: 3, calls: 3,
+    routingAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+    semanticObjectAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+    previewTurnAttempt: {provider: "anthropic", model: "claude-sonnet-5", effort: "low", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1, costUsd: 0.0021, latencyMs: 1},
+  };
   return decideLiveTurn({
     locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null, priorRequest: null, priorAnswers: [], openQuestions: [], artifactTypes: [], runActive: false,
     priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis", messageId: "10000000-0000-4000-8000-000000000077",
@@ -90,12 +125,79 @@ async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<t
 }
 
 describe("live_intelligence_preview router", () => {
-  it("stamps the envelope with system fields and reports the one call it made", async () => {
+  it("stamps the envelope only after the three governed contracts and reports their lineage", async () => {
     const understanding = await understandLiveTurn({gateway: fakeGateway(classifierOutput()), context});
     expect(understanding.envelope.executionContext.organizationId).toEqual({value: context.organizationId, state: "system"});
     expect(understanding.envelope.routingCore.audience.value).toEqual(["internal senior"]);
     expect(understanding.modelRoute).toBe("governed_model_route");
-    expect(understanding.costUsd).toBeCloseTo(0.0021, 6);
+    expect(understanding.costUsd).toBeCloseTo(0.0063, 6);
+    expect(understanding.calls).toBe(3);
+    expect(understanding).toMatchObject({
+      routingAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+      semanticObjectAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+      previewTurnAttempt: {provider: "anthropic", model: "claude-sonnet-5"},
+    });
+  });
+
+  it("fails closed when semantic coverage is incomplete even if preview controls name a company", async () => {
+    let calls = 0;
+    const routed = classifierOutput();
+    const gateway = {
+      complete: async (request: {task: string; schemaName: string}) => {
+        calls += 1;
+        let output: unknown;
+        if (request.task === "extract_semantic_objects") {
+          output = {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []};
+        } else if (request.schemaName === "live_preview_turn_output") {
+          output = {turn: {...routed.turn, companies: [{mention: "Magazine Luiza", role: "subject"}]}};
+        } else {
+          const {turn: _turn, ...route} = routed;
+          output = route;
+        }
+        return {
+          output, provider: "anthropic", model: "claude-sonnet-5", effort: "low", costUsd: 0.001, latencyMs: 1,
+          retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false,
+          attempts: [{provider: "anthropic", model: "claude-sonnet-5", outcome: "ok"}],
+        };
+      },
+      spent: () => ({costUsd: calls * 0.001, calls, unknownCostCalls: 0, budgetExposureUsd: calls * 0.001}),
+    } as unknown as ModelGateway;
+
+    const understanding = await understandLiveTurn({gateway, context});
+    const decision = decideLiveTurn({
+      locale: "pt-BR", message: context.message, recentMessages: [], understanding, priorCaseId: null,
+      priorRequest: null, priorAnswers: [], openQuestions: [], artifactTypes: [], runActive: false,
+      priorOutputs: new Map<string, PreviewStepOutput>(), entryJob: "origination_thesis",
+      messageId: "10000000-0000-4000-8000-000000000077",
+    });
+
+    expect(understanding.output).toMatchObject({abstain: true, composition: null});
+    expect(understanding.output.routingCore.object).toMatchObject({value: [{kind: "document"}], state: "unknown"});
+    expect(JSON.stringify(understanding.envelope.routingCore.object)).not.toMatch(/Camil|Magazine Luiza/);
+    expect(understanding.envelope).toMatchObject({composition: null, effect: "none"});
+    expect(decision).toMatchObject({kind: "abstain", activation: null, record: {abstainReason: "semantic_object_coverage_incomplete"}});
+  });
+
+  it("does not let supplemental company, audience, depth or material flags replace canonical routing", async () => {
+    const decision = await decide(classifierOutput({
+      turn: {
+        companies: [{mention: "Magazine Luiza", role: "subject"}],
+        scopeChanges: {audience: "investor", depth: "institutional", form: "board_deck"},
+        material: {requested: true, form: "board_deck", pages: null},
+      },
+    }), {artifactTypes: ["preview_alternatives"]});
+
+    expect(decision).toMatchObject({
+      kind: "activate",
+      composition: "deepen",
+      record: {
+        corpus: {caseId: "gc01-analista-ib-camil", company: "Camil Alimentos S.A."},
+        companiesMentioned: ["Camil"],
+        audience: "vp",
+        depth: "preliminary",
+      },
+    });
+    expect(decision.reply).not.toContain("Magazine Luiza");
   });
 
   it("routes paraphrases of the analyst's request to the same composition and the same frozen corpus", async () => {
@@ -113,7 +215,7 @@ describe("live_intelligence_preview router", () => {
       expect(decision.record.corpus?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.reply).toMatch(/^\[Validação interna, live_intelligence_preview\] composição=prepare_meeting · companhia=Camil Alimentos S\.A\. · corpus=gc01-analista-ib-camil/);
       expect(decision.reply).toContain("rota=governed_model_route");
-      expect(decision.reply).toContain("chamadas=1");
+      expect(decision.reply).toContain("chamadas=3");
       expect(decision.activation?.caseId).toBe("gc01-analista-ib-camil");
       expect(decision.activation?.plan.turn).toEqual({messageId: "10000000-0000-4000-8000-000000000077"});
     }
@@ -163,7 +265,7 @@ describe("live_intelligence_preview router", () => {
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives", "preview_covenants"], priorOutputs: new Map([["C09", covenants]]), message: "De onde saiu essa alavancagem de 4,7x?"});
     expect(decision.kind).toBe("answer");
     expect(decision.activation).toBeNull();
-    expect(decision.record.calls).toBe(1);
+    expect(decision.record.calls).toBe(3);
   });
 
   it("plans the material from the objects when the person asks for a deliverable", async () => {
@@ -202,6 +304,7 @@ describe("live_intelligence_preview router", () => {
   it("applies an answer to an open question: scope, audience and depth change, the plan recompiles as deepen", async () => {
     const output = classifierOutput({
       composition: null,
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), depth: field("institutional")},
       turn: {companies: [], answers: [{questionId: "q-angle", answer: "Alternativas mais amplas, para o conselho, análise institucional", effect: {audience: "conselho", depth: "institutional", scope: "alternativas amplas"}}]},
     });
     const decision = await decide(output, {
@@ -219,7 +322,11 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("reads an answer that quotes the desk's question when the classifier returns no id, and does not mistake the board for a deck request", async () => {
-    const output = classifierOutput({composition: null, turn: {companies: [], answers: [], material: {requested: true, form: "board_deck", pages: null}, scopeChanges: {audience: "conselho", depth: "institutional", form: null}}});
+    const output = classifierOutput({
+      composition: null,
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), depth: field("institutional")},
+      turn: {companies: [], answers: [], material: {requested: true, form: "board_deck", pages: null}, scopeChanges: {audience: "conselho", depth: "institutional", form: null}},
+    });
     const decision = await decide(output, {
       priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
       openQuestions: [{id: "q-tese-refinanciamento", text: "Qual tese de refinanciamento o VP quer levar à Camil, e em que formato ele espera o material?"}],

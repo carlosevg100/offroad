@@ -383,11 +383,13 @@ export async function processAgentOperationBriefJob(
             abstainReason: shadow.output.abstainReason,
             firstQuestion: shadow.output.firstQuestion,
             objectiveRouting,
+            routingAttempt: shadow.routingAttempt,
             semanticObjectCompilation: shadow.semanticObjects.compilation,
             semanticObjectExtractor: {
               model: shadow.semanticObjects.modelRoute,
               attemptCount: shadow.semanticObjects.attemptCount,
               successfulAttempt: shadow.semanticObjects.successfulAttempt,
+              routingAttempt: shadow.semanticObjects.routingAttempt,
             },
           },
           model: shadow.modelRoute,
@@ -412,9 +414,9 @@ export async function processAgentOperationBriefJob(
         if (output && typeof output === "object" && !Array.isArray(output)) priorOutputs.set(artifact.task_id, output as PreviewStepOutput);
       }
       if (job.integration_preview_mode === "live") {
-        // live_intelligence_preview: one model call reads the turn; the derivation after it is
-        // deterministic and the reply states composition, company, corpus, model and cost. A
-        // failed call is an abstention with a content-free reason, never a guess.
+        // live_intelligence_preview: canonical route + semantic-object contracts run before the
+        // supplemental preview-control reader. The derivation after them is deterministic. A
+        // failed contract is an abstention with a content-free reason, never a guess.
         const liveContext = {
           locale: context.locale,
           message: context.message,
@@ -470,6 +472,9 @@ export async function processAgentOperationBriefJob(
               surface: "live_preview_router",
               turn: understanding.output.turn,
               objectiveRouting,
+              routingAttempt: understanding.routingAttempt,
+              semanticObjectAttempt: understanding.semanticObjectAttempt,
+              previewTurnAttempt: understanding.previewTurnAttempt,
             },
             model: understanding.modelRoute,
             costUsd: understanding.costUsd,

@@ -274,6 +274,42 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         continue;
       }
 
+      let postValidation: ReturnType<NonNullable<typeof request.validateOutput>> | undefined;
+      if (request.validateOutput) {
+        try {
+          postValidation = request.validateOutput(parsed.data as z.infer<TSchema>);
+        } catch {
+          postValidation = {
+            accepted: false,
+            issues: [{path: "<root>", code: "deterministic_validator_failed", message: "Deterministic output validation failed."}],
+          };
+        }
+      }
+      if (postValidation && !postValidation.accepted) {
+        const validationIssues = postValidation.issues.slice(0, 12).map((issue, index) => {
+          const path = safeContractToken(issue.path, `contract.${index}`, 160);
+          const code = safeContractToken(issue.code, "deterministic_validation_failed", 100);
+          return {path, code, message: `Deterministic validation failed: ${code}.`};
+        });
+        attempts.push({
+          provider: ref.provider,
+          model: ref.model,
+          outcome: "invalid_output",
+          message: validationIssues.slice(0, 5).map(({path, code}) => `${path}:${code}`).join(";"),
+          ...attemptTelemetry,
+        });
+        if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
+          repairGuidance = deterministicRepairGuidance(validationIssues);
+        }
+        emit(config, {
+          request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
+          ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint,
+          inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion,
+          validationIssues,
+        });
+        continue;
+      }
+
       attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
       emit(config, {request, ref, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
       const result: GatewayResult<z.infer<TSchema>> = {
@@ -418,6 +454,23 @@ function schemaRepairGuidance(issues: readonly {path: readonly PropertyKey[]; co
     "Return the entire corrected JSON object. Do not explain the correction and do not repeat the rejected value.",
     ...details,
   ].join("\n").slice(0, 2_000);
+}
+
+/** Content-free correction for deterministic post-schema validation. */
+function deterministicRepairGuidance(issues: readonly ValidationIssueDiagnostic[]): string {
+  const details = issues.slice(0, 8).map(({path, code}) =>
+    `- ${path || "<root>"}: resolve deterministic contract issue ${code}`);
+  return [
+    "CONTRACT REPAIR (one bounded retry): your previous JSON passed the schema but failed deterministic validation.",
+    "Return the entire corrected JSON object. Re-read the supplied source and do not invent evidence.",
+    ...details,
+  ].join("\n").slice(0, 2_000);
+}
+
+function safeContractToken(value: unknown, fallback: string, max: number): string {
+  return typeof value === "string" && value.length > 0 && value.length <= max && /^[A-Za-z0-9_.:[\]-]+$/.test(value)
+    ? value
+    : fallback;
 }
 
 function fingerprint(value: unknown): string {

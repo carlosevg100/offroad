@@ -1,4 +1,4 @@
-import type {ModelGateway} from "@offroad/model-gateway";
+import {createModelGateway, type AdapterResponse, type GatewayCallLog, type ModelGateway, type ProviderAdapter} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 
 import {governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSchema, stampIntentEnvelope, type ShadowRoutingContext} from "./intent-shadow";
@@ -106,10 +106,14 @@ describe("shadow intent observability boundary", () => {
     let completed = 0;
     let objectPayload: unknown;
     let routePayload: unknown;
+    let objectValidator: ((output: ReturnType<typeof validObjectExtraction>) => {accepted: boolean}) | undefined;
     const gateway = {
-      complete: async (request: {task: string; input: Array<{type: string; text: string}>}) => {
+      complete: async (request: {task: string; input: Array<{type: string; text: string}>; validateOutput?: typeof objectValidator}) => {
         completed += 1;
-        if (request.task === "extract_semantic_objects") objectPayload = JSON.parse(request.input[0]!.text);
+        if (request.task === "extract_semantic_objects") {
+          objectPayload = JSON.parse(request.input[0]!.text);
+          objectValidator = request.validateOutput;
+        }
         else routePayload = JSON.parse(request.input[0]!.text);
         return {
           output: request.task === "extract_semantic_objects"
@@ -137,8 +141,74 @@ describe("shadow intent observability boundary", () => {
     });
     expect(objectPayload).toMatchObject({activeWorkContext: {contextId: "work:camil", revision: 1}});
     expect(routePayload).not.toHaveProperty("activeWorkContext");
+    expect(objectValidator?.({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []})).toMatchObject({accepted: false});
     expect(result.semanticObjects.compilation).toMatchObject({status: "incomplete", usableObjects: []});
     expect(result.output).toMatchObject({abstain: true, composition: null});
+  });
+
+  it("repairs a schema-valid but semantically incomplete extraction before canonical routing", async () => {
+    const logs: GatewayCallLog[] = [];
+    let objectAttempt = 0;
+    const adapter: ProviderAdapter = {
+      provider: "anthropic",
+      complete: async (request): Promise<AdapterResponse> => {
+        const output = request.schemaName === "semantic_object_extractor_output"
+          ? (++objectAttempt === 1
+              ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []}
+              : validObjectExtraction())
+          : validOutput();
+        return {output, rawText: JSON.stringify(output), usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: request.model, stopReason: "end"};
+      },
+    };
+    const gateway = createModelGateway({adapters: {anthropic: adapter}, onCall: (call) => logs.push(call)});
+
+    const result = await shadowIntentEnvelope({gateway, context});
+
+    expect(result.output.abstain).toBe(false);
+    expect(result.semanticObjects.compilation.status).toBe("complete");
+    expect(result.semanticObjects.routingAttempt).toMatchObject({
+      provider: "anthropic", model: "claude-sonnet-5", retryOrdinal: 1,
+      isSameModelRepair: true, usedProviderFallback: false, attemptCount: 2,
+    });
+    expect(logs.filter(({task}) => task === "extract_semantic_objects")).toMatchObject([
+      {outcome: "invalid_output", isSameModelRepair: false, usedProviderFallback: false},
+      {outcome: "ok", isSameModelRepair: true, usedProviderFallback: false},
+    ]);
+  });
+
+  it("falls back providers when the bounded semantic repair is still incomplete", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic: ProviderAdapter = {
+      provider: "anthropic",
+      complete: async (request): Promise<AdapterResponse> => {
+        const output = request.schemaName === "semantic_object_extractor_output"
+          ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []}
+          : validOutput();
+        return {output, rawText: JSON.stringify(output), usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: request.model, stopReason: "end"};
+      },
+    };
+    const openai: ProviderAdapter = {
+      provider: "openai",
+      complete: async (request): Promise<AdapterResponse> => {
+        const output = request.schemaName === "semantic_object_extractor_output" ? validObjectExtraction() : validOutput();
+        return {output, rawText: JSON.stringify(output), usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: request.model, stopReason: "end"};
+      },
+    };
+    const gateway = createModelGateway({adapters: {anthropic, openai}, onCall: (call) => logs.push(call)});
+
+    const result = await shadowIntentEnvelope({gateway, context});
+
+    expect(result.output.abstain).toBe(false);
+    expect(result.semanticObjects.routingAttempt).toMatchObject({
+      provider: "openai", model: "gpt-5.6-terra", retryOrdinal: 0,
+      isSameModelRepair: false, usedProviderFallback: true, attemptCount: 3,
+    });
+    expect(logs.filter(({task}) => task === "extract_semantic_objects").map(({outcome, provider, isSameModelRepair, usedProviderFallback}) =>
+      ({outcome, provider, isSameModelRepair, usedProviderFallback}))).toEqual([
+      {outcome: "invalid_output", provider: "anthropic", isSameModelRepair: false, usedProviderFallback: false},
+      {outcome: "invalid_output", provider: "anthropic", isSameModelRepair: true, usedProviderFallback: false},
+      {outcome: "ok", provider: "openai", isSameModelRepair: false, usedProviderFallback: true},
+    ]);
   });
 
   it("fails closed before returning an envelope when spend telemetry is invalid", async () => {

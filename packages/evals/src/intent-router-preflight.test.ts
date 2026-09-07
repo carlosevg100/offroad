@@ -69,4 +69,32 @@ describe("intent router provider preflight", () => {
     ]);
     expect(requests).toHaveLength(2);
   });
+
+  it("runs the caller's deterministic acceptance gate during every provider preflight", async () => {
+    const {gateway, requests} = fakeGateway();
+    const validatedProviders: string[] = [];
+    const guardedGateway = {
+      ...gateway,
+      complete: async (received: GatewayRequest<typeof intentClassifierOutputSchema>) => {
+        const result = await gateway.complete(received);
+        const validation = received.validateOutput?.(result.output);
+        if (validation && !validation.accepted) throw new Error("deterministic contract rejected");
+        validatedProviders.push(String(received.model?.provider));
+        return result;
+      },
+    } as ModelGateway;
+
+    const error = await preflightIntentRouterProviders(guardedGateway, providers, {
+      ...request,
+      validateOutput: () => ({
+        accepted: false,
+        issues: [{path: "coverage", code: "semantic_object_coverage_incomplete", message: "Deterministic coverage is incomplete."}],
+      }),
+    }).catch((cause) => cause);
+
+    expect(error).toBeInstanceOf(IntentRouterProviderPreflightError);
+    expect(requests).toHaveLength(2);
+    expect(requests.every((entry) => typeof entry.validateOutput === "function")).toBe(true);
+    expect(validatedProviders).toEqual([]);
+  });
 });

@@ -363,6 +363,36 @@ describe("gateway", () => {
     });
   });
 
+  it("repairs a schema-valid output rejected by a deterministic contract, then falls back with telemetry", async () => {
+    const logs: GatewayCallLog[] = [];
+    const anthropic = fakeAdapter("anthropic", [
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.1}),
+      ok("claude-sonnet-5", {kind: "other", confidence: 0.2}),
+    ]);
+    const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.9})]);
+    const result = await createModelGateway({
+      adapters: {anthropic, openai},
+      onCall: (log) => logs.push(log),
+    }).complete({
+      ...baseRequest,
+      outputMode: "prompted_json",
+      validateOutput: (output) => output.confidence >= 0.8
+        ? {accepted: true}
+        : {accepted: false, issues: [{path: "coverage", code: "coverage_incomplete", message: "Deterministic coverage is incomplete."}]},
+    });
+
+    expect(anthropic.calls).toHaveLength(2);
+    expect(anthropic.calls[1]?.system).toContain("CONTRACT REPAIR (one bounded retry)");
+    expect(anthropic.calls[1]?.system).toContain("coverage_incomplete");
+    expect(openai.calls).toHaveLength(1);
+    expect(result).toMatchObject({provider: "openai", model: "gpt-5.6-terra", usedProviderFallback: true, retryOrdinal: 0});
+    expect(logs).toMatchObject([
+      {provider: "anthropic", model: "claude-sonnet-5", outcome: "invalid_output", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
+      {provider: "anthropic", model: "claude-sonnet-5", outcome: "invalid_output", retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false},
+      {provider: "openai", model: "gpt-5.6-terra", outcome: "ok", retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true},
+    ]);
+  });
+
   it("can preflight one provider without silently succeeding through fallback", async () => {
     const anthropic = fakeAdapter("anthropic", [new Error("unavailable")]);
     const openai = fakeAdapter("openai", [ok("gpt-5.6-terra", {kind: "other", confidence: 0.5})]);

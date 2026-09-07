@@ -1,4 +1,4 @@
-import type {GatewayCallLog} from "@offroad/model-gateway";
+import {allowedModels, type GatewayCallLog} from "@offroad/model-gateway";
 
 const providers = new Set(["anthropic", "openai"]);
 const efforts = new Set(["low", "medium", "high", "xhigh", "max"]);
@@ -13,6 +13,7 @@ const tasks = new Set([
   "extract_semantic_objects",
   "preview_synthesis", "baseline_generalist",
 ]);
+const models = new Set(Object.values(allowedModels).flat());
 
 function closed(value: unknown, allowed: Set<string>): string {
   return typeof value === "string" && allowed.has(value) ? value : "unknown";
@@ -54,6 +55,31 @@ export function safeModelSpend(value: unknown) {
 }
 
 export const governedModelRoute = "governed_model_route" as const;
+
+/** Closed identity of the successful governed call; never persists an arbitrary provider string. */
+export function safeSuccessfulModelCall(call: {
+  provider: unknown;
+  model: unknown;
+  effort?: unknown;
+  retryOrdinal?: unknown;
+  isSameModelRepair?: unknown;
+  usedProviderFallback?: unknown;
+  attempts?: unknown;
+  costUsd?: unknown;
+  latencyMs?: unknown;
+}) {
+  return {
+    provider: closed(call.provider, providers),
+    model: closed(call.model, models),
+    effort: closed(call.effort, efforts),
+    retryOrdinal: boundedNumber(call.retryOrdinal, true, 1) ?? 0,
+    isSameModelRepair: call.isSameModelRepair === true,
+    usedProviderFallback: call.usedProviderFallback === true,
+    attemptCount: Array.isArray(call.attempts) ? Math.min(call.attempts.length, 8) : null,
+    costUsd: boundedNumber(call.costUsd, false, 10_000),
+    latencyMs: boundedNumber(call.latencyMs, true, 86_400_000),
+  };
+}
 
 /**
  * Validates the telemetry delta for one governed model operation before it is allowed into a
@@ -114,6 +140,7 @@ export function safeModelAttemptDiagnostics(calls: GatewayCallLog[]) {
     invocationId: uuid(call.invocationId),
     task: closed(call.task, tasks),
     provider: closed(call.provider, providers),
+    model: closed(call.model, models),
     effort: closed(call.effort, efforts),
     outcome: closed(call.outcome, outcomes),
     costUsd: boundedNumber(call.costUsd, false, 10_000),
@@ -145,6 +172,7 @@ export function modelCallLogDetail(jobId: string, call: GatewayCallLog): Record<
     invocationId: uuid(call.invocationId),
     task: closed(call.task, tasks),
     provider: closed(call.provider, providers),
+    model: closed(call.model, models),
     effort: closed(call.effort, efforts),
     outcome: closed(call.outcome, outcomes),
     promptFingerprint: fingerprint(call.promptFingerprint),

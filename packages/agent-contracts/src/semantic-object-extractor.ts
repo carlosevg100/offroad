@@ -644,6 +644,33 @@ export function compileSemanticObjects(
 }
 
 /**
+ * Content-free acceptance result for a model gateway. JSON shape is only the first boundary: an
+ * extractor attempt is successful only when deterministic source, normalization and coverage
+ * compilation is complete. Stable codes let the gateway repair/fallback without echoing customer
+ * text into prompts or telemetry.
+ */
+export function validateSemanticObjectOutput(
+  input: SemanticObjectExtractorInput,
+  output: SemanticObjectExtractorOutput,
+): {accepted: true} | {accepted: false; issues: Array<{path: string; code: string; message: string}>} {
+  const compilation = compileSemanticObjects(input, output);
+  if (compilation.status === "complete") return {accepted: true};
+  const issues = compilation.coverage.issues.slice(0, 12).map((issue, index) => ({
+    path: `coverage.issues.${index}`,
+    code: issue.code,
+    message: `Deterministic semantic-object validation failed: ${issue.code}.`,
+  }));
+  return {
+    accepted: false,
+    issues: issues.length > 0 ? issues : [{
+      path: "coverage",
+      code: "semantic_object_coverage_incomplete",
+      message: "Deterministic semantic-object coverage is incomplete.",
+    }],
+  };
+}
+
+/**
  * Pure orchestration seam for the gateway/worker. The classifier remains responsible for intent;
  * this function replaces only its object field after independent semantic compilation. An
  * incomplete or rejected extraction clears asserted object meaning so canonicalization abstains
