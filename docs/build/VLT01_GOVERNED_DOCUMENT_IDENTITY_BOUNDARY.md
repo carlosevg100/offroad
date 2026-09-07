@@ -29,13 +29,16 @@ A raiz resolve e registra:
 - autorização corrente;
 - a linha de `public.source_documents`, seu escopo dual e o projeto/companhia/conversa derivados;
 - origem, source id e connector id a partir de registry server-side;
-- artefatos imutáveis e a versão/configuração exata da ferramenta produtora;
+- artefatos imutáveis, seus pais reais, a execução produtora e a versão/configuração exata da
+  ferramenta, todos ligados por uma atestação assinada ao mesmo escopo e documento corrente;
 - coverage objects com escopo e backlink;
 - predecessor e sucessor persistidos.
 
-As operações `compile` e `append` validam integralmente o objeto antes de retornar. `append` valida
-primeiro todo o núcleo e todo o histórico recebido, incluindo autorização corrente e targets de
-supersessão, e valida novamente o histórico completo após acrescentar a revisão.
+As operações `compile` e `append` validam integralmente o objeto antes de retornar. `append` aceita
+somente a referência opaca `identityRecordId`: a raiz carrega a identidade canônica, autoriza o ator
+para a operação e o escopo e revalida toda a cadeia antes e depois de acrescentar a revisão. Cada
+revisão recebe uma atestação de journal assinada; por isso, recalcular apenas os fingerprints comuns
+de um histórico adulterado não o torna válido.
 
 ## Resolução atômica de `source_documents`
 
@@ -48,6 +51,10 @@ Uma única resolução confiável liga, na mesma atestação assinada:
 - locator derivado de bucket + path, ator, origem e conector registrados;
 - versão da política de autorização e timestamps de autorização/captura/assinatura.
 
+O `object_path` é aceito somente na forma canônica relativa: sem barra inicial ou final, espaços,
+segmentos `.`/`..`, barras duplicadas, backslash, escapes percentuais ou texto fora de NFC. O locator
+é comparado contra essa chave exata; não existe normalização silenciosa após a atestação.
+
 O compile falha fechado se o hash ainda não foi verificado, se faltar object version, se nenhum dos
 dois escopos existir, se locator e linha divergirem, se os bytes mudarem, se a autorização vier após
 a captura, se a assinatura anteceder a verificação ou se a assinatura não validar. Locators
@@ -55,15 +62,19 @@ a captura, se a assinatura anteceder a verificação ou se a assinatura não val
 
 ## Invariantes e testes adversariais
 
-Os testes executáveis reproduzem os sete bypasses da revisão:
+Os testes executáveis reproduzem os bypasses das revisões adversariais:
 
 1. tentativa de injetar tenant, ator ou atestação no comando;
 2. divergência entre escopo, row, versão, bucket/path, object version, hash, bytes e assinatura;
-3. append sobre histórico adulterado e construção com cronologia inválida;
+3. append por referência opaca sobre histórico canônico adulterado, inclusive quando o atacante
+   recalcula o hash comum, e construção com cronologia inválida;
 4. retorno de estado terminal, target inexistente, incoerente ou inativo;
 5. reutilização de layer/derivative id com identidade diferente;
 6. ator de revisão não registrado e origem/conector fora do registry;
-7. escopo de companhia/conversa, cronologia da autorização, locator por conteúdo e relatório opaco.
+7. escopo de companhia/conversa, cronologia da autorização, locator por conteúdo e relatório opaco;
+8. mutação dos métodos da raiz depois do bind, que não altera a facade já capturada;
+9. artefato reatestado com outro tenant, hash de documento ou pai fora do documento corrente;
+10. path ambíguo/traversal e assinaturas com metadados de chave, algoritmo e versão adulterados.
 
 Também permanecem verificados: parent imediato, fingerprints, tool+version+config, pais dos
 derivados, DAG, coverage escopada, confidencialidade, versão corrente única e bytes não relabelados.
@@ -79,7 +90,8 @@ produção. A integração permanece bloqueada até uma próxima fatia implement
 2. assinatura com chave em KMS e rotação verificável;
 3. Storage versionado/imutável e leitura dos bytes da versão atestada;
 4. registries persistidos de atores, origens, conectores, ferramentas e configurações;
-5. persistência append-only idempotente, lock/compare-and-swap e race tests;
+5. persistência append-only idempotente, lock/compare-and-swap e race tests; a facade já exige
+   identidade canônica e journal atestado, mas a atomicidade da gravação pertence ao adapter;
 6. FKs compostas, FORCE RLS, grants mínimos, backfill e rollback;
 7. integração do worker por facade pré-vinculada, sem dependências construídas do payload;
 8. gate de staging com overwrite, revogação, cross-tenant, concorrência e non-interference.
