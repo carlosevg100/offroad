@@ -44,7 +44,7 @@ São exatamente 40 turnos sintéticos distribuídos em quatro suítes:
 As vinte composições aparecem no conjunto. Cada turno possui uma assinatura semântica estruturada:
 uma ação canônica, um tipo canônico de decisão, um tipo canônico de audiência e instâncias de
 objetos identificadas por `id` e `ordinal`. Cada instância declara exatamente os slots materiais que
-precisa preservar — entidade, assunto, montante, moeda, percentual, indexador e prazo em meses.
+precisa preservar: entidade, assunto, montante, moeda, percentual, indexador e prazo em meses.
 O classificador não pode usar prosa livre de resultado, decisão ou audiência como campo de
 roteamento; esses textos são renderizados deterministicamente depois, para a interface.
 
