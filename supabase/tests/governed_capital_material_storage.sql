@@ -152,6 +152,17 @@ begin
     or (completed ->> 'replayed')::boolean then
     raise exception 'stored material was not closed correctly: %', completed;
   end if;
+end;
+$$;
+
+-- Inspect the private control row as the migration runner, not by widening the authenticated
+-- role. The worker has only the security-definer capability functions in production.
+reset role;
+do $$
+declare
+  test_state material_storage_test_state%rowtype;
+begin
+  select * into strict test_state from material_storage_test_state;
   if (select state from private.capital_project_material_upload_grants
       where id = test_state.grant_id) <> 'stored' then
     raise exception 'material grant did not reach stored state';
@@ -160,6 +171,7 @@ end;
 $$;
 
 -- The project member can now read the completed object even though the worker created it.
+set local role authenticated;
 select set_config(
   'request.jwt.claims',
   '{"sub":"10000000-0000-4000-8000-000000000761","role":"authenticated","aal":"aal1"}',
