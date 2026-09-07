@@ -10188,6 +10188,19 @@ button[disabled].workspace-search,
 .case-receivables__metrics dt { color: var(--muted); font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; }
 .case-receivables__metrics dd { font-size: 1.02rem; font-variant-numeric: tabular-nums; font-weight: 650; margin: 0; }
 
+.case-receivables__method-readiness { border: 1px solid var(--line); margin-top: 16px; padding: 16px; }
+.case-receivables__method-readiness--blocked { background: #fbf8ef; border-color: #ded2aa; }
+.case-receivables__method-readiness--ready { background: #f2f6ed; border-color: #c8d4b9; }
+.case-receivables__method-readiness header { align-items: flex-start; display: flex; gap: 20px; justify-content: space-between; }
+.case-receivables__method-readiness h4 { font-size: .9rem; margin: 2px 0 0; }
+.case-receivables__method-readiness header > span { border: 1px solid currentColor; border-radius: 999px; font-size: .66rem; font-weight: 650; padding: 5px 9px; white-space: nowrap; }
+.case-receivables__method-readiness--blocked header > span { color: #866918; }
+.case-receivables__method-readiness--ready header > span { color: #58713f; }
+.case-receivables__method-readiness > p { color: var(--muted); font-size: .78rem; line-height: 1.5; margin: 10px 0 0; max-width: 76ch; }
+.case-receivables__method-readiness ol { counter-reset: method-gap; display: grid; gap: 0; list-style: none; margin: 12px 0 0; padding: 0; }
+.case-receivables__method-readiness li { border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent); font-size: .78rem; line-height: 1.45; padding: 9px 0 9px 26px; position: relative; }
+.case-receivables__method-readiness li::before { color: var(--accent); content: counter(method-gap, decimal-leading-zero); counter-increment: method-gap; font-family: var(--font-mono); font-size: .62rem; left: 0; position: absolute; top: 11px; }
+
 .case-receivables__columns {
   display: grid;
   gap: 24px;

@@ -908,6 +908,11 @@ describe("worker case analysis", () => {
       status: "analyzed",
       classification: {categoryIds: ["trade_receivables"], cellIds: ["mercantil_b2b"]},
       evidenceCoverage: {delivered: 1, searched: 1},
+      methodReadiness: {
+        state: "blocked",
+        primaryReason: "needs_evidence",
+        methodExecutionAllowed: false,
+      },
       pipeline: {
         boundaries: {
           companyFacingRecommendationAllowed: false,

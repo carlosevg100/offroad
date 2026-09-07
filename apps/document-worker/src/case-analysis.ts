@@ -69,6 +69,7 @@ import {
 import type {FactCandidate} from "@offroad/reconciliation";
 import {
   analyzeReceivablesPhaseOne,
+  assessReceivablesPoolMethodReadiness,
   buildReceivablesRawUniverse,
   detectReceivablesRawEvidence,
   receivablesCaseSchema,
@@ -1572,6 +1573,7 @@ type PublicReceivablesVertical = {
   };
   defects: ReceivablesCasePipelineReport["defects"];
   questions: ReceivablesCasePipelineReport["questions"];
+  methodReadiness: Omit<ReturnType<typeof assessReceivablesPoolMethodReadiness>, "validatedInput">;
   pipeline: null | {
     version: ReceivablesCasePipelineReport["version"];
     quality: ReceivablesCasePipelineReport["quality"];
@@ -1623,6 +1625,17 @@ function buildReceivablesVertical(
     documents,
     fiscalArchives,
   });
+  const readinessAssessment = assessReceivablesPoolMethodReadiness({phaseOne: built.phaseOne, detection});
+  const methodReadiness: Omit<typeof readinessAssessment, "validatedInput"> = {
+    version: readinessAssessment.version,
+    state: readinessAssessment.state,
+    primaryReason: readinessAssessment.primaryReason,
+    methodExecutionAllowed: readinessAssessment.methodExecutionAllowed,
+    sourceDatasetHash: readinessAssessment.sourceDatasetHash,
+    dimensions: readinessAssessment.dimensions,
+    gaps: readinessAssessment.gaps,
+    nextQuestions: readinessAssessment.nextQuestions,
+  };
   const fingerprint = fingerprintJson({
     version: "2026.08.28-v1",
     datasetHash,
@@ -1644,6 +1657,7 @@ function buildReceivablesVertical(
     },
     defects: detection.defects,
     questions: detection.questions,
+    methodReadiness,
   };
 
   const requestedAmount = numericString(raw.session.requested_amount);
