@@ -22,8 +22,11 @@ import {
   type GatewayCallLog,
 } from "@offroad/model-gateway";
 
-import {intentGoldTurns, type IntentGoldTurn} from "../src/intent-gold";
+import {assertCanonicalIntentGold, intentGoldTurns, stabilityIntentTurnIds, type IntentGoldTurn} from "../src/intent-gold";
 import {
+  expectedIntentRouterManifest,
+  fingerprintIntentMessage,
+  intentRouterGateObservationSchema,
   intentRoutingFingerprint,
   scoreIntentGoldTurn,
   summarizeIntentRouterGate,
@@ -36,30 +39,19 @@ const option = (name: string, fallback: string): string => {
   return index >= 0 && args[index + 1] ? String(args[index + 1]) : fallback;
 };
 const outDir = resolve(option("out", "results/intent-router-gold"));
-const stabilityRepeats = Number.parseInt(option("stability-repeats", "3"), 10);
 const maxCostUsd = Number(option("max-cost", "3"));
-if (!Number.isInteger(stabilityRepeats) || stabilityRepeats < 2 || stabilityRepeats > 5) {
-  throw new Error("--stability-repeats must be an integer between 2 and 5");
-}
 if (!Number.isFinite(maxCostUsd) || maxCostUsd <= 0 || maxCostUsd > 10) {
   throw new Error("--max-cost must be greater than 0 and no more than 10 USD");
 }
 
-const stabilityTurnIds = new Set([
-  "gc01-t01", // ambiguous sponsor instruction -> meeting work
-  "gc01-t03", // point question inside an existing project
-  "gc02-t03", // explicit correction of objective
-  "gc03-t02", // external-effect request that must not be softened
-  "gc05-t03", // incremental model change
-  "gc05-t04", // abstention
-]);
+const stabilityTurnIds = new Set(stabilityIntentTurnIds);
 
-const professionalContextByCase: Record<IntentGoldTurn["caseId"], {
+const professionalContextByCase: Partial<Record<IntentGoldTurn["caseId"], {
   useForms: string[];
   professionalRoles: string[];
   practiceAreas: string[];
   primaryObjectives: string[];
-}> = {
+}>> = {
   gc01: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_materials"]},
   gc02: {useForms: ["institutional_work"], professionalRoles: ["company_finance"], practiceAreas: ["treasury", "corporate_finance"], primaryObjectives: ["evaluate_capital_structure"]},
   gc03: {useForms: ["institutional_work"], professionalRoles: ["advisor"], practiceAreas: ["structured_credit"], primaryObjectives: ["structure_transactions"]},
@@ -71,11 +63,13 @@ const documentCountByCase: Partial<Record<IntentGoldTurn["caseId"], number>> = {
 const calls: GatewayCallLog[] = [];
 
 async function main(): Promise<void> {
+  assertCanonicalIntentGold();
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY is required; run this gate through its OIDC workflow");
 
-  const plannedCalls = intentGoldTurns.length + stabilityTurnIds.size * (stabilityRepeats - 1);
+  const plannedCalls = expectedIntentRouterManifest().length;
+  if (plannedCalls !== 52) throw new Error(`intent_router_manifest_must_have_52_observations:${plannedCalls}`);
   const gateway = createModelGateway({
     adapters: {
       anthropic: createAnthropicAdapter({apiKey: anthropicKey}),
@@ -87,15 +81,17 @@ async function main(): Promise<void> {
   const observations: IntentRouterGateObservation[] = [];
 
   for (const turn of intentGoldTurns) {
-    const repeats = stabilityTurnIds.has(turn.id) ? stabilityRepeats : 1;
+    const repeats = stabilityTurnIds.has(turn.id) ? 3 : 1;
     for (let repeat = 1; repeat <= repeats; repeat += 1) {
+      const message = repeat === 1 ? turn.message : turn.stabilityParaphrases?.[repeat - 2];
+      if (!message) throw new Error(`missing_authored_paraphrase:${turn.id}:${repeat}`);
       const classifierInput = buildIntentClassifierInput({
         locale: turn.locale,
-        latestUserMessage: turn.message,
+        latestUserMessage: message,
         recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
         entryJob: null,
         documentCount: documentCountByCase[turn.caseId] ?? 0,
-        professionalContext: professionalContextByCase[turn.caseId],
+        professionalContext: professionalContextByCase[turn.caseId] ?? null,
       });
       const startedAt = Date.now();
       let actual: IntentClassifierOutput | null = null;
@@ -128,7 +124,9 @@ async function main(): Promise<void> {
       }
       observations.push({
         turnId: turn.id,
+        suite: turn.suite,
         repeat,
+        messageFingerprint: fingerprintIntentMessage(message),
         expected: turn.expected,
         rawActual,
         actual,
@@ -145,17 +143,19 @@ async function main(): Promise<void> {
     }
   }
 
-  const summary = summarizeIntentRouterGate(observations);
+  const parsedObservations = observations.map((observation) => intentRouterGateObservationSchema.parse(observation));
+  const summary = summarizeIntentRouterGate(parsedObservations);
   const spent = gateway.spent();
   const record = {
     ...summary,
     generatedAt: new Date().toISOString(),
-    stabilityRepeats,
+    stabilityRepeats: 3,
     stabilityTurnIds: [...stabilityTurnIds],
     budget: {maxCostUsd, plannedCalls},
     gatewaySpent: spent,
     contract: {schemaName: "shadow_routing_output", outputMode: "prompted_json", task: "route_intent"},
-    runs: observations,
+    expectedManifest: expectedIntentRouterManifest(),
+    runs: parsedObservations,
     calls,
   };
   mkdirSync(outDir, {recursive: true});
@@ -180,7 +180,8 @@ function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
     "",
     `**Verdict:** ${record.passed ? "PASS" : "FAIL"}`,
     `**Generated:** ${record.generatedAt}`,
-    `**Coverage:** ${record.uniqueTurns} canonical turns; ${record.observations} observations`,
+    `**Coverage:** ${record.uniqueTurns}/40 canonical turns; ${record.observations}/52 observations`,
+    `**Manifest:** ${record.manifestPassed ? "PASS" : "FAIL"}`,
     `**Stability:** ${record.stableTurns}/${record.repeatedTurns} repeated turns (${percent(record.stabilityRate)})`,
     `**Measured cost:** US$ ${record.gatewaySpent.costUsd.toFixed(4)}; ${record.gatewaySpent.calls} provider attempts; ${record.gatewaySpent.unknownCostCalls} attempts with unknown cost`,
     "",
@@ -189,6 +190,12 @@ function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
     "| Metric | Result | Required | Verdict |",
     "| --- | ---: | ---: | --- |",
     ...record.metrics.map((metric) => `| ${metric.name} | ${metric.passed}/${metric.total} (${percent(metric.rate)}) | ${percent(metric.requiredRate)} | ${metric.gatePassed ? "PASS" : "FAIL"} |`),
+    "",
+    "## Suite gates",
+    "",
+    "| Suite | Base observations | Verdict | Failed turns |",
+    "| --- | ---: | --- | --- |",
+    ...record.suiteGates.map((suite) => `| ${suite.suite} | ${suite.observations} | ${suite.passed ? "PASS" : "FAIL"} | ${suite.failedTurnIds.join(", ") || "none"} |`),
     "",
     "## Turn results",
     "",

@@ -1,7 +1,7 @@
-import {namedCompositions, primaryWorkSchema} from "@offroad/agent-contracts";
+import {namedCompositionKeys, namedCompositions, primaryWorkSchema} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 
-import {intentGoldCoverage, intentGoldTurns} from "./intent-gold";
+import {intentGoldCoverage, intentGoldTurns, stabilityIntentTurnIds} from "./intent-gold";
 
 describe("intent gold turns", () => {
   it("covers every primary work, so a constant classifier cannot pass", () => {
@@ -9,9 +9,10 @@ describe("intent gold turns", () => {
     for (const work of primaryWorkSchema.options) expect(coverage.works, work).toContain(work);
   });
 
-  it("covers the responsibilities that change the presentation", () => {
+  it("covers every responsibility encoded by the canonical composition policy", () => {
     const coverage = intentGoldCoverage();
-    for (const responsibility of ["producer", "coordinator", "reviewer", "decision_maker", "sponsor"]) {
+    const policyResponsibilities = [...new Set(Object.values(namedCompositions).flatMap((policy) => policy.workResponsibilities))];
+    for (const responsibility of policyResponsibilities) {
       expect(coverage.responsibilities, responsibility).toContain(responsibility);
     }
   });
@@ -30,9 +31,34 @@ describe("intent gold turns", () => {
     expect(intentGoldTurns.some((entry) => entry.priorTurns.length > 0 && entry.expected.continuity === "new")).toBe(true);
   });
 
-  it("keeps ids unique and tied to the five cases", () => {
+  it("has exactly forty unique base turns across the four required suites", () => {
     const ids = intentGoldTurns.map((entry) => entry.id);
+    expect(intentGoldTurns).toHaveLength(40);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(intentGoldTurns.map((entry) => entry.caseId)).size).toBe(5);
+    expect(Object.fromEntries(["journey", "horizontal", "confusion", "adversarial"].map((suite) => [suite, intentGoldTurns.filter((turn) => turn.suite === suite).length]))).toEqual({
+      journey: 17,
+      horizontal: 8,
+      confusion: 7,
+      adversarial: 8,
+    });
+  });
+
+  it("covers all twenty compositions and has an explicit semantic answer key per turn", () => {
+    expect(new Set(intentGoldCoverage().compositions)).toEqual(new Set(namedCompositionKeys));
+    for (const turn of intentGoldTurns) {
+      expect(turn.expected.semantic.canonicalAction).toBeTruthy();
+      expect(turn.expected.semantic.objectKinds.length).toBeGreaterThan(0);
+      expect(turn.expected.semantic.desiredOutcomeSignals.length).toBeGreaterThan(0);
+      expect(turn.expected.semantic.decision.category).toBeTruthy();
+      expect(turn.expected.semantic.audienceCategory).toBeTruthy();
+    }
+  });
+
+  it("defines exactly six stability triplets with three distinct authored messages", () => {
+    expect(stabilityIntentTurnIds).toHaveLength(6);
+    for (const id of stabilityIntentTurnIds) {
+      const turn = intentGoldTurns.find((candidate) => candidate.id === id)!;
+      expect(new Set([turn.message, ...turn.stabilityParaphrases!]).size).toBe(3);
+    }
   });
 });
