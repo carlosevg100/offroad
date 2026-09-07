@@ -30,15 +30,23 @@ describe("model failure lineage", () => {
     } satisfies GatewayCallLog;
 
     expect(summarizeModelAttempts([call])).toEqual([{
+      attempt: 1,
+      invocationId: null,
+      task: "origination_thesis",
       provider: "anthropic",
-      model: "claude-sonnet-5",
+      effort: "medium",
       outcome: "error",
+      costUsd: 0,
       latencyMs: 60_000,
       costStatus: "unknown",
       usedFallback: false,
+      fromCassette: false,
       stopReason: "other",
-      providerError: {name: "RateLimitError", status: 429, type: "rate_limit_error"},
-      validationIssues: [{path: "meetingQuestions", code: "too_small", message: "Too small: expected array to have >=3 items"}],
+      providerHttpStatus: 429,
+      providerFailureCategory: "rate_limit",
+      validationIssueCount: 1,
     }]);
+    expect(JSON.stringify(summarizeModelAttempts([call]))).not.toContain("Too small");
+    expect(JSON.stringify(summarizeModelAttempts([call]))).not.toContain("RateLimitError");
   });
 });

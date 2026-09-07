@@ -1,4 +1,4 @@
-import type {ModelGateway} from "@offroad/model-gateway";
+import {ModelGatewayError, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   applyReceivablesSupplementPatch,
   compileReceivablesSupplementDraft,
@@ -9,6 +9,7 @@ import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
+import {liveRoutingOutputSchema} from "./live-preview";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 
 const job: AgentOperationBriefJob = {
@@ -23,6 +24,33 @@ const job: AgentOperationBriefJob = {
   processing_run_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
   payload: {message_id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", locale: "pt-BR"},
 };
+
+function validLiveRoutingOutput(company = "Magazine Luiza") {
+  const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
+    value, state, confidence: state === "explicit" ? 1 : 0.7,
+  });
+  return liveRoutingOutputSchema.parse({
+    routingCore: {
+      action: field(["analisar companhia"]),
+      object: field([{kind: "company", reference: company}]),
+      desiredOutcome: field("análise preliminar"), decision: field(null), audience: field(["VP"]),
+      depth: field("preliminary", "inferred"), continuity: field("new"), workResponsibility: field(["producer"]),
+    },
+    inferableContext: {
+      jurisdiction: field(["BR"], "inferred"), asOfDate: field(null, "unknown"), currency: field("BRL", "inferred"),
+      deadline: field(null, "unknown"), sponsorInstruction: field(null, "unknown"), constraints: field([]),
+      urgency: field(null, "unknown"), availableInputs: field([]),
+    },
+    primaryWorks: [{work: "understand", confidence: 0.8}], composition: "understand_company_sector_asset",
+    firstQuestion: null, abstain: false, abstainReason: null,
+    turn: {
+      companies: [{mention: company, role: "subject"}],
+      premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null},
+      numberQuestion: null, material: {requested: false, form: null, pages: null}, answers: [],
+      scopeChanges: {audience: null, depth: null, form: null},
+    },
+  });
+}
 
 function r01DraftMissingAdvanceRate() {
   const datasetHash = "a".repeat(64);
@@ -369,6 +397,212 @@ describe("agent operation brief worker", () => {
       recipeId: "refinance-liability-management",
       outcome: "meeting_plan",
     });
+  });
+
+  it("persists only closed diagnostics when the live router fails", async () => {
+    let completion: Record<string, unknown> | undefined;
+    let failedStage: Record<string, unknown> | undefined;
+    let response: Record<string, unknown> | undefined;
+    let logged: Record<string, unknown> | undefined;
+    const previewJob: AgentOperationBriefJob = {
+      ...job,
+      integration_preview: true,
+      integration_preview_mode: "live",
+    };
+    const queue = {
+      writeStage: async (_job: unknown, stage: string, status: string, detail: unknown) => {
+        if (stage === "live_preview:understand" && status === "failed") failedStage = detail as Record<string, unknown>;
+      },
+      loadIntegrationPreviewArtifacts: async () => [],
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "Prepare uma análise da companhia.",
+        message_metadata: {},
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T12:00:00.000Z", manifest_id: null,
+        project: {
+          id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Projeto",
+          entryJob: "origination_thesis", accessBasis: "authorized_private",
+          phase: "understand", status: "active",
+        },
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordAgentResponse: async (_job: unknown, _id: string, value: unknown) => {
+        response = value as Record<string, unknown>;
+        return {};
+      },
+      complete: async (_job: unknown, value: unknown) => { completion = value as Record<string, unknown>; },
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new ModelGatewayError("customer-secret-provider-message", "CLIENT_SECRET_FROM_PROVIDER" as never); },
+      spent: () => ({costUsd: Number.NaN, calls: Number.POSITIVE_INFINITY, unknownCostCalls: -1, budgetExposureUsd: 20_000, futureMetadata: "customer-secret-spend"}),
+    } as unknown as ModelGateway;
+    const maliciousCall = {
+      invocationId: "10000000-0000-4000-8000-000000000001",
+      task: "route_intent", provider: "anthropic", model: "customer-secret-model", effort: "low",
+      outcome: "error", promptFingerprint: "a".repeat(64), inputFingerprint: "b".repeat(64), outputFingerprint: "c".repeat(64),
+      usage: {inputTokens: 10, outputTokens: 0, cachedInputTokens: 0}, costUsd: 0.03, costStatus: "unknown",
+      latencyMs: 100, stopReason: "other", usedFallback: false, fromCassette: false,
+      schemaName: "customer-secret-schema", providerError: {name: "customer-secret-error", status: 503, code: "customer-secret-code"},
+      validationIssues: [{path: "customer.secret.path", code: "customer-secret-code", message: "customer-secret-message"}],
+    } satisfies GatewayCallLog;
+
+    const result = await processAgentOperationBriefJob(previewJob, {
+      queue,
+      gateway,
+      modelLineage: () => [maliciousCall],
+      log: (event, detail) => { if (event === "live_preview.router_failed") logged = detail; },
+      shadowRouting: false,
+    });
+
+    expect(result.status).toBe("succeeded");
+    expect(response?.reply).toContain("ficou indisponível");
+    expect(completion).toMatchObject({
+      decision: "router_failed",
+      failureCode: "unknown",
+      spend: {costUsd: null, calls: null, unknownCostCalls: null, budgetExposureUsd: null},
+    });
+    expect(failedStage).toMatchObject({code: "live_router_failed", failureCode: "unknown"});
+    expect(logged).toMatchObject({code: "unknown"});
+    const persisted = JSON.stringify({response, completion, failedStage, logged});
+    expect(persisted).not.toContain("customer-secret");
+  });
+
+  it("never exposes a provider-controlled model identifier on a successful live turn", async () => {
+    let envelopeRecord: unknown;
+    let completion: unknown;
+    let stage: unknown;
+    let response: unknown;
+    let logged: unknown;
+    const previewJob: AgentOperationBriefJob = {...job, integration_preview: true, integration_preview_mode: "live"};
+    const queue = {
+      loadIntegrationPreviewArtifacts: async () => [],
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+        message: "Analise a Magazine Luiza.", message_metadata: {}, brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T12:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Projeto", entryJob: "origination_thesis", accessBasis: "public_information", phase: "understand", status: "active"},
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordIntentEnvelope: async (_job: unknown, value: unknown) => { envelopeRecord = value; },
+      recordAgentResponse: async (_job: unknown, _id: string, value: unknown) => { response = value; return {}; },
+      writeStage: async (_job: unknown, name: string, status: string, value: unknown) => {
+        if (name === "live_preview:understand" && status === "succeeded") stage = value;
+      },
+      complete: async (_job: unknown, value: unknown) => { completion = value; },
+      recordAgentFailure: async () => {}, fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    let completed = false;
+    const gateway = {
+      complete: async () => {
+        completed = true;
+        return {output: validLiveRoutingOutput(), model: "CLIENT_SECRET_MODEL", provider: "anthropic"};
+      },
+      spent: () => ({costUsd: completed ? 0.02 : 0, calls: completed ? 1 : 0, unknownCostCalls: 0, budgetExposureUsd: completed ? 0.02 : 0}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(previewJob, {
+      queue, gateway, shadowRouting: false,
+      log: (event, detail) => { if (event === "live_preview.turn_routed") logged = detail; },
+    });
+
+    expect(result.status).toBe("succeeded");
+    expect(envelopeRecord).toMatchObject({model: "governed_model_route", costUsd: 0.02});
+    expect(stage).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
+    expect(logged).toMatchObject({modelRoute: "governed_model_route", costUsd: 0.02, calls: 1});
+    expect(JSON.stringify({result, envelopeRecord, response, stage, completion, logged})).not.toContain("CLIENT_SECRET_MODEL");
+  });
+
+  it("fails closed when a valid live response arrives with invalid spend telemetry", async () => {
+    let envelopeWrites = 0;
+    let completion: unknown;
+    let stage: unknown;
+    let response: unknown;
+    let logged: unknown;
+    const previewJob: AgentOperationBriefJob = {...job, integration_preview: true, integration_preview_mode: "live"};
+    const queue = {
+      loadIntegrationPreviewArtifacts: async () => [],
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+        message: "Analise a Magazine Luiza.", message_metadata: {}, brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T12:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Projeto", entryJob: "origination_thesis", accessBasis: "public_information", phase: "understand", status: "active"},
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordIntentEnvelope: async () => { envelopeWrites += 1; },
+      recordAgentResponse: async (_job: unknown, _id: string, value: unknown) => { response = value; return {}; },
+      writeStage: async (_job: unknown, name: string, status: string, value: unknown) => {
+        if (name === "live_preview:understand" && status === "failed") stage = value;
+      },
+      complete: async (_job: unknown, value: unknown) => { completion = value; },
+      recordAgentFailure: async () => {}, fail: async () => {},
+    } as unknown as QueueClient;
+    let completed = false;
+    const gateway = {
+      complete: async () => {
+        completed = true;
+        return {output: validLiveRoutingOutput(), model: "CLIENT_SECRET_MODEL", provider: "anthropic"};
+      },
+      spent: () => completed
+        ? {costUsd: Number.NaN, calls: Number.POSITIVE_INFINITY, unknownCostCalls: 0, budgetExposureUsd: 20_000}
+        : {costUsd: 0, calls: 0, unknownCostCalls: 0, budgetExposureUsd: 0},
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(previewJob, {
+      queue, gateway, shadowRouting: false,
+      log: (event, detail) => { if (event === "live_preview.router_failed") logged = detail; },
+    });
+
+    expect(["succeeded", "failed"]).toContain(result.status);
+    expect(envelopeWrites).toBe(0);
+    expect(stage).toMatchObject({code: "live_router_failed", failureCode: "unknown"});
+    expect(completion).toMatchObject({decision: "router_failed", spend: {costUsd: null, calls: null}});
+    const persisted = JSON.stringify({result, response, stage, completion, logged});
+    expect(persisted).not.toContain("CLIENT_SECRET_MODEL");
+    expect(persisted).not.toMatch(/NaN|Infinity|20000/);
+  });
+
+  it("logs only a closed code when shadow routing receives invalid telemetry", async () => {
+    let envelopeWrites = 0;
+    let shadowLog: unknown;
+    const previewJob: AgentOperationBriefJob = {...job, integration_preview: true, integration_preview_mode: "deterministic"};
+    const queue = {
+      loadIntegrationPreviewArtifacts: async () => [],
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+        message: "Não sei por onde começar.", message_metadata: {}, brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T12:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Projeto", entryJob: "origination_thesis", accessBasis: "public_information", phase: "understand", status: "active"},
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      recordIntentEnvelope: async () => { envelopeWrites += 1; },
+      recordAgentResponse: async () => ({}), writeStage: async () => {}, complete: async () => {},
+      recordAgentFailure: async () => {}, fail: async () => {},
+    } as unknown as QueueClient;
+    let completed = false;
+    const gateway = {
+      complete: async () => {
+        completed = true;
+        return {output: validLiveRoutingOutput("Camil"), model: "CLIENT_SECRET_MODEL", provider: "anthropic"};
+      },
+      spent: () => completed
+        ? {costUsd: Number.NaN, calls: Number.POSITIVE_INFINITY, unknownCostCalls: 0, budgetExposureUsd: 20_000}
+        : {costUsd: 0, calls: 0, unknownCostCalls: 0, budgetExposureUsd: 0},
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(previewJob, {
+      queue, gateway,
+      log: (event, detail) => { if (event === "agent_operation_brief.shadow_routing_failed") shadowLog = detail; },
+    });
+
+    expect(["succeeded", "failed"]).toContain(result.status);
+    expect(envelopeWrites).toBe(0);
+    expect(shadowLog).toMatchObject({job: job.job_id, code: "unknown", modelDiagnostics: []});
+    expect(JSON.stringify(shadowLog)).not.toMatch(/CLIENT_SECRET_MODEL|invalid_model_telemetry|NaN|Infinity|20000/);
   });
 
   it("starts public company research and asks meeting context in parallel without a routing model call", async () => {

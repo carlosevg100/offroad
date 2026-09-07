@@ -34,6 +34,7 @@ import {
   type PreviewStepOutput,
   type PreviewTurnInput,
 } from "./integration-preview";
+import {governedModelRoute, safeModelTurnTelemetry} from "./model-call-log";
 
 export const LIVE_MARK = "[Validação interna, live_intelligence_preview]";
 export const LIVE_MARK_EN = "[Internal validation, live_intelligence_preview]";
@@ -147,9 +148,10 @@ frozen evidence base. Besides the envelope, fill "turn":
 export type LiveUnderstanding = {
   envelope: IntentEnvelope;
   output: LiveRoutingOutput;
-  model: string;
+  modelRoute: typeof governedModelRoute;
   costUsd: number;
   latencyMs: number;
+  calls: number;
 };
 
 export type LiveTurnContext = ShadowRoutingContext & {
@@ -163,7 +165,7 @@ export type LiveTurnContext = ShadowRoutingContext & {
 /** One model call: the turn read into an envelope and the preview-desk fields. Throws on model or schema failure. */
 export async function understandLiveTurn(input: {gateway: ModelGateway; context: LiveTurnContext; now?: () => Date}): Promise<LiveUnderstanding> {
   const {context} = input;
-  const spentBefore = input.gateway.spent().costUsd;
+  const spentBefore = input.gateway.spent();
   const startedAt = Date.now();
   const classifierInput = buildIntentClassifierInput({
     locale: context.locale,
@@ -222,12 +224,12 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
     composition: classifier.abstain ? null : previewComposition,
     turn: normalizedTurn,
   };
+  const telemetry = safeModelTurnTelemetry(spentBefore, input.gateway.spent(), Date.now() - startedAt);
   return {
     envelope: stampIntentEnvelope(output, context, input.now),
     output,
-    model: completion.model,
-    costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore),
-    latencyMs: Date.now() - startedAt,
+    modelRoute: governedModelRoute,
+    ...telemetry,
   };
 }
 
@@ -270,7 +272,7 @@ export type LiveDecision = {
     abstained: boolean;
     abstainReason: string | null;
     firstQuestion: string | null;
-    model: string;
+    modelRoute: typeof governedModelRoute;
     costUsd: number;
     latencyMs: number;
     calls: number;
@@ -366,8 +368,8 @@ function headline(input: LiveDecisionInput, composition: Composition | null, cor
     `corpus=${corpus ? corpus.caseId : t(input.locale, "nenhum", "none")}`,
     `${t(input.locale, "audiência", "audience")}=${audience}`,
     `${t(input.locale, "profundidade", "depth")}=${depth}`,
-    `${t(input.locale, "modelo", "model")}=${understanding.model}`,
-    `${t(input.locale, "chamadas", "calls")}=1`,
+    `${t(input.locale, "rota", "route")}=${understanding.modelRoute}`,
+    `${t(input.locale, "chamadas", "calls")}=${understanding.calls}`,
     `${t(input.locale, "custo", "cost")}=US$ ${understanding.costUsd.toFixed(4)}`,
   ];
   return `${mark} ${fields.join(" · ")}`;
@@ -460,10 +462,10 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     abstained,
     abstainReason,
     firstQuestion: output.firstQuestion,
-    model: understanding.model,
+    modelRoute: understanding.modelRoute,
     costUsd: understanding.costUsd,
     latencyMs: understanding.latencyMs,
-    calls: 1,
+    calls: understanding.calls,
   });
 
   if (input.runActive) {

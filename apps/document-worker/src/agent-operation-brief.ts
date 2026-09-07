@@ -13,7 +13,7 @@ import {
   type WorkspaceJobActivation,
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
-import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {ModelGatewayError, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   bindObjectiveMethods,
@@ -52,6 +52,7 @@ import {buildReceivablesMethodFieldRequestProjection} from "./receivables-inform
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewActivation, type PreviewStepOutput} from "./integration-preview";
 import {specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
+import {safeGatewayFailureCode, safeModelAttemptDiagnostics, safeModelSpend} from "./model-call-log";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -162,6 +163,8 @@ export type AgentOperationBriefDependencies = {
   shadowRouting?: boolean;
   /** Public research providers of this job, for a company without a frozen corpus in the live preview. */
   research?: {providers: PublicSearchProvider[]};
+  /** Per-job model telemetry; projected through a closed, content-free allowlist before persistence. */
+  modelLineage?: () => GatewayCallLog[];
 };
 
 const SYSTEM = `You are the Offroad Agent inside one persistent private-debt advisory project.
@@ -334,7 +337,7 @@ export async function processAgentOperationBriefJob(
         draftState: applied.status.state,
         refreshProcessingRunId: refresh?.processingRunId ?? null,
         refreshInputFingerprint: refresh?.compiledSupplementFingerprint ?? null,
-        spend: gateway.spent(),
+        spend: safeModelSpend(gateway.spent()),
       });
       return {status: "succeeded"};
     }
@@ -377,11 +380,16 @@ export async function processAgentOperationBriefJob(
             firstQuestion: shadow.output.firstQuestion,
             objectiveRouting,
           },
-          model: shadow.model,
+          model: shadow.modelRoute,
           costUsd: shadow.costUsd,
         });
       } catch (shadowError) {
-        log("agent_operation_brief.shadow_routing_failed", {job: job.job_id, message: shadowError instanceof Error ? shadowError.message.slice(0, 200) : "unknown"});
+        const code = safeGatewayFailureCode(shadowError instanceof ModelGatewayError ? shadowError.code : "unknown");
+        log("agent_operation_brief.shadow_routing_failed", {
+          job: job.job_id,
+          code,
+          modelDiagnostics: safeModelAttemptDiagnostics(dependencies.modelLineage?.() ?? []),
+        });
       }
     }
     // Internal validation: a granted organization's turn is routed by the deterministic preview
@@ -435,7 +443,7 @@ export async function processAgentOperationBriefJob(
           : [];
         const startedAt = Date.now();
         let liveDecision: ReturnType<typeof decideLiveTurn> | null = null;
-        let failure: string | null = null;
+        let failureCode = "unknown";
         try {
           const understanding = await understandLiveTurn({gateway, context: liveContext});
           const objectiveRouting = objectiveRoutingObservation(context, understanding.envelope, {
@@ -452,7 +460,7 @@ export async function processAgentOperationBriefJob(
               turn: understanding.output.turn,
               objectiveRouting,
             },
-            model: understanding.model,
+            model: understanding.modelRoute,
             costUsd: understanding.costUsd,
           }).catch((error) => log("live_preview.envelope_not_recorded", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"}));
           liveDecision = decideLiveTurn({
@@ -476,17 +484,18 @@ export async function processAgentOperationBriefJob(
             }} : {}),
           });
         } catch (error) {
-          failure = error instanceof Error ? error.message.slice(0, 200) : "unknown";
+          failureCode = safeGatewayFailureCode(error instanceof ModelGatewayError ? error.code : "unknown");
         }
         const liveMessageId = randomUUID();
         if (!liveDecision) {
           const reply = context.locale === "en-US"
-            ? `[Internal validation, live_intelligence_preview] composition=none · company=not identified · corpus=none · model=none · calls=0 · cost=US$ 0.0000\nThe live router did not answer this turn (${failure ?? "unknown"}). Nothing was assumed; send the request again or name what you need.`
-            : `[Validação interna, live_intelligence_preview] composição=nenhuma · companhia=não identificada · corpus=nenhum · modelo=nenhum · chamadas=0 · custo=US$ 0.0000\nO roteador vivo não respondeu a este turno (${failure ?? "unknown"}). Nada foi assumido; envie o pedido de novo ou diga o que precisa.`;
+            ? `[Internal validation, live_intelligence_preview] composition=none · company=not identified · corpus=none\nThe live router was unavailable for this turn. Nothing was assumed; send the request again or name what you need.`
+            : `[Validação interna, live_intelligence_preview] composição=nenhuma · companhia=não identificada · corpus=nenhum\nO roteador vivo ficou indisponível neste turno. Nada foi assumido; envie o pedido novamente ou diga o que precisa.`;
+          const modelDiagnostics = safeModelAttemptDiagnostics(dependencies.modelLineage?.() ?? []);
           await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply}, undefined, undefined);
-          await queue.writeStage(job, "live_preview:understand", "failed", {messageId: liveMessageId, mode: "live_intelligence_preview", code: "live_router_failed", latencyMs: Date.now() - startedAt});
-          await queue.complete(job, {mode: "live_intelligence_preview", decision: "router_failed", composition: null, assistantMessageId: liveMessageId, spend: gateway.spent()});
-          log("live_preview.router_failed", {job: job.job_id, message: failure});
+          await queue.writeStage(job, "live_preview:understand", "failed", {messageId: liveMessageId, mode: "live_intelligence_preview", code: "live_router_failed", failureCode, latencyMs: Date.now() - startedAt, modelDiagnostics});
+          await queue.complete(job, {mode: "live_intelligence_preview", decision: "router_failed", composition: null, assistantMessageId: liveMessageId, failureCode, modelDiagnostics, spend: safeModelSpend(gateway.spent())});
+          log("live_preview.router_failed", {job: job.job_id, code: failureCode, modelDiagnostics});
           return {status: "succeeded"};
         }
         let liveReply = liveDecision.reply;
@@ -505,8 +514,8 @@ export async function processAgentOperationBriefJob(
         }
         await queue.recordAgentResponse(job, liveMessageId, {state: "idle", reply: liveReply}, undefined, liveDecision.activation ?? undefined, executionBrief);
         await queue.writeStage(job, "live_preview:understand", "succeeded", {messageId: liveMessageId, mode: "live_intelligence_preview", decision: liveDecision.kind, ...liveDecision.record, ...researchRecord});
-        await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: gateway.spent()});
-        log("live_preview.turn_routed", {job: job.job_id, decision: liveDecision.kind, composition: liveDecision.composition, corpus: liveDecision.record.corpus?.caseId ?? null, abstained: liveDecision.record.abstained, model: liveDecision.record.model, costUsd: liveDecision.record.costUsd, latencyMs: liveDecision.record.latencyMs});
+        await queue.complete(job, {mode: "live_intelligence_preview", decision: liveDecision.kind, composition: liveDecision.composition, assistantMessageId: liveMessageId, spend: safeModelSpend(gateway.spent())});
+        log("live_preview.turn_routed", {job: job.job_id, decision: liveDecision.kind, composition: liveDecision.composition, corpus: liveDecision.record.corpus?.caseId ?? null, abstained: liveDecision.record.abstained, modelRoute: liveDecision.record.modelRoute, costUsd: liveDecision.record.costUsd, latencyMs: liveDecision.record.latencyMs, calls: liveDecision.record.calls});
         return {status: "succeeded"};
       }
       const decision = routeIntegrationPreviewTurn({
@@ -534,7 +543,7 @@ export async function processAgentOperationBriefJob(
       }
       await queue.recordAgentResponse(job, previewMessageId, previewResponse, undefined, decision.activation ?? undefined, executionBrief);
       await queue.writeStage(job, "agent_operation_brief", "succeeded", {messageId: previewMessageId, state: "idle", mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition, modelCalls: 0});
-      await queue.complete(job, {mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition ?? null, assistantMessageId: previewMessageId, spend: gateway.spent()});
+      await queue.complete(job, {mode: "integration_preview", decision: decision.kind, composition: decision.activation?.composition ?? null, assistantMessageId: previewMessageId, spend: safeModelSpend(gateway.spent())});
       log("integration_preview.turn_routed", {job: job.job_id, decision: decision.kind, composition: decision.activation?.composition ?? null});
       return {status: "succeeded"};
     }
@@ -751,7 +760,7 @@ export async function processAgentOperationBriefJob(
       execution_route: executionRoute,
       activated_job: response.activation?.job,
       objective_preflight: objectivePreflight,
-      spend: gateway.spent(),
+      spend: safeModelSpend(gateway.spent()),
     });
     return proposal ? {status: "succeeded", proposalId: proposal.id} : {status: "succeeded"};
   } catch (error) {
@@ -765,7 +774,7 @@ export async function processAgentOperationBriefJob(
         message: recordError instanceof Error ? recordError.message.slice(0, 300) : "unknown",
       });
     }
-    await queue.fail(job, describeJobFailure(error, {code: "agent_processing_failed", stage: "agent_operation_brief", spend: gateway.spent(), retryable: false}), {retryable: false});
+    await queue.fail(job, describeJobFailure(error, {code: "agent_processing_failed", stage: "agent_operation_brief", spend: safeModelSpend(gateway.spent()), retryable: false}), {retryable: false});
     return {status: "failed"};
   }
 }
