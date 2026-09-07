@@ -89,6 +89,13 @@ export const canonicalIntentActionSchema = z.enum([
 ]);
 export type CanonicalIntentAction = z.infer<typeof canonicalIntentActionSchema>;
 
+export const intentDecisionTypeSchema = z.enum(["none", "capital", "credit", "material", "market", "external", "workflow", "document"]);
+export type IntentDecisionType = z.infer<typeof intentDecisionTypeSchema>;
+export const intentAudienceTypeSchema = z.enum(["self", "internal_senior", "company_management", "board_or_committee", "capital_provider", "market", "unspecified"]);
+export type IntentAudienceType = z.infer<typeof intentAudienceTypeSchema>;
+export const intentObjectSlotKeySchema = z.enum(["entity", "subject", "amount", "currency", "percentage", "indexer", "tenor_months"]);
+export type IntentObjectSlotKey = z.infer<typeof intentObjectSlotKeySchema>;
+
 const inferable = <T extends z.ZodTypeAny>(value: T) => z.object({
   value,
   state: intentFieldStateSchema,

@@ -2,8 +2,12 @@ import {z} from "zod";
 
 import {
   intentContinuitySchema,
+  canonicalIntentActionSchema,
+  intentAudienceTypeSchema,
+  intentDecisionTypeSchema,
   intentDepthSchema,
   intentObjectKindSchema,
+  intentObjectSlotKeySchema,
   compositionPolicy,
   intentCompositionPolicyPrompt,
   namedCompositionSchema,
@@ -48,22 +52,20 @@ const inferredClassifierField = <T extends z.ZodTypeAny>(value: T) => z.object({
   basis: z.string().max(200).nullish(),
 });
 
-export const intentAffirmationSchema = z.enum(["affirmed", "negated", "uncertain", "not_applicable"]);
-const assertedClassifierField = <T extends z.ZodTypeAny>(value: T) => inferredClassifierField(value).extend({
-  /** Semantic polarity is explicit so negated or contradictory prose never passes by keyword. */
-  affirmation: intentAffirmationSchema,
-});
-
 export const intentClassifierOutputSchema = z.object({
   routingCore: z.object({
     // Empty lists are representable at the model boundary so an honest abstention is valid JSON.
     // `canonicalizeIntentClassifierOutput` then supplies a fail-closed envelope shape; the
     // persisted contract remains strict and never accepts an empty routing core.
-    action: inferredClassifierField(z.array(z.string().min(1).max(400)).max(16)),
-    object: inferredClassifierField(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).max(24)),
-    desiredOutcome: assertedClassifierField(z.string().max(1_200)),
-    decision: assertedClassifierField(z.string().max(1_200).nullable()),
-    audience: assertedClassifierField(z.array(z.string().min(1).max(200)).max(12)),
+    action: inferredClassifierField(z.array(canonicalIntentActionSchema).max(1)),
+    object: inferredClassifierField(z.array(z.object({
+      id: z.string().regex(/^object-[1-9]\d*$/),
+      ordinal: z.number().int().min(1).max(24),
+      kind: intentObjectKindSchema,
+      slots: z.array(z.object({key: intentObjectSlotKeySchema, value: z.string().min(1).max(200)})).max(12),
+    }).strict()).max(24)),
+    decisionType: inferredClassifierField(intentDecisionTypeSchema),
+    audienceType: inferredClassifierField(intentAudienceTypeSchema),
     depth: inferredClassifierField(intentDepthSchema),
     continuity: inferredClassifierField(intentContinuitySchema),
     workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).max(8)),
@@ -84,7 +86,7 @@ export const intentClassifierOutputSchema = z.object({
   firstQuestion: z.string().max(600).nullable(),
   abstain: z.boolean(),
   abstainReason: z.string().max(600).nullable(),
-});
+}).strict();
 export type IntentClassifierOutput = z.infer<typeof intentClassifierOutputSchema>;
 
 const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => locale === "pt-BR"
@@ -236,15 +238,7 @@ export function canonicalizeIntentClassifierOutput(
       routingCore: {
         ...output.routingCore,
         action: policyField([policy.canonicalAction], composition),
-        object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{kind: "process", reference: null}], state: "unknown", confidence: null, basis: null},
-        desiredOutcome: output.routingCore.desiredOutcome.value.trim().length > 0 ? output.routingCore.desiredOutcome : {
-          value: locale === "pt-BR" ? "Concluir o trabalho solicitado." : "Complete the requested work.",
-          state: "unknown",
-          affirmation: "uncertain",
-          confidence: null,
-          basis: null,
-        },
-        audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", affirmation: "uncertain", confidence: null, basis: null},
+        object: output.routingCore.object.value.length > 0 ? output.routingCore.object : {value: [{id: "object-1", ordinal: 1, kind: "process", slots: []}], state: "unknown", confidence: null, basis: null},
         depth: policyField(policy.depth, composition),
         continuity: policyContinuity(composition, output, input),
         workResponsibility: policyField([...policy.workResponsibilities], composition),
@@ -267,17 +261,10 @@ export function canonicalizeIntentClassifierOutput(
     ...output,
     routingCore: {
       ...output.routingCore,
-      action: {value: [locale === "pt-BR" ? "esclarecer pedido" : "clarify request"], state: "unknown", confidence: null, basis: null},
-      object: {value: [{kind: "document", reference: null}], state: "unknown", confidence: null, basis: null},
-      desiredOutcome: {
-        value: locale === "pt-BR" ? "Entender o resultado esperado antes de iniciar." : "Understand the expected result before starting.",
-        state: "unknown",
-        affirmation: "affirmed",
-        confidence: null,
-        basis: null,
-      },
-      decision: {...output.routingCore.decision, value: null, state: "not_applicable", affirmation: "not_applicable", confidence: null, basis: null},
-      audience: {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", affirmation: "uncertain", confidence: null, basis: null},
+      action: {value: ["understand"], state: "unknown", confidence: null, basis: null},
+      object: {value: [{id: "object-1", ordinal: 1, kind: "document", slots: []}], state: "unknown", confidence: null, basis: null},
+      decisionType: {value: "none", state: "not_applicable", confidence: null, basis: null},
+      audienceType: {value: "unspecified", state: "unknown", confidence: null, basis: null},
       depth: {value: "point", state: "unknown", confidence: null, basis: null},
       continuity: {value: "new", state: "unknown", confidence: null, basis: null},
       workResponsibility: {value: ["producer"], state: "unknown", confidence: null, basis: null},
@@ -301,9 +288,13 @@ a state and a confidence: "explicit" when the person said it, "inferred" when it
 they said, "ambiguous" when two readings remain, "unknown" when nothing supports a value. Never
 guess authority, evidence regime, permissions or documents: they are not yours to fill.
 
-For desiredOutcome, decision and audience, set affirmation explicitly: affirmed when the field is
-asserted, negated when the person rejects it, uncertain when the meaning conflicts or is unclear,
-and not_applicable only when the field truly does not apply. Never encode a negation as affirmed.
+Use only the canonical enums and codes in the schema. "action" contains exactly one canonical
+action when the request is understood. "decisionType" and "audienceType" classify the decision and
+audience without narrative prose. Objects are distinct instances with stable "object-N" ids,
+one-based ordinals and canonical slots. Never return free-form desired-outcome, decision or
+audience narratives. Put named entities or qualitative subjects in "entity" or "subject"; normalize
+amounts to base units, currencies to ISO-4217, percentages to decimal text without a percent sign, indexers to
+their uppercase code and tenor to months. Do not split one object across multiple instances.
 
 Choose the composition that names the requested outcome, not an intermediate step. The complete
 composition and ordered-work policy below is generated from the same executable policy used by

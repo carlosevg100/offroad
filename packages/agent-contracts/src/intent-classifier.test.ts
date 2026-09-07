@@ -9,13 +9,15 @@ import {intentCompositionPolicyPrompt} from "./intent-envelope";
 
 const field = <T>(value: T) => ({
   value, state: "unknown" as const, confidence: null, basis: null,
-  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
+});
+const object = (kind: "provider" | "company" | "material" | "decision", value: string) => ({
+  id: "object-1", ordinal: 1, kind, slots: [{key: kind === "company" || kind === "provider" ? "entity" as const : "subject" as const, value}],
 });
 
 const modelRoute = (composition: "introduce" | "prepare_meeting") => intentClassifierOutputSchema.parse({
   routingCore: {
-    action: field([composition]), object: field([{kind: "provider", reference: "investidores"}]),
-    desiredOutcome: field("Executar o trabalho sugerido."), decision: field(null), audience: field(["solicitante"]),
+    action: field([composition === "introduce" ? "introduce" : "prepare_meeting"]), object: field([object("provider", "investidores")]),
+    decisionType: field(composition === "introduce" ? "external" : "capital"), audienceType: field(composition === "introduce" ? "capital_provider" : "self"),
     depth: field("preliminary"), continuity: field("new"), workResponsibility: field(["producer"]),
   },
   inferableContext: {
@@ -36,9 +38,8 @@ describe("intent classifier boundary", () => {
       routingCore: {
         action: field([]),
         object: field([]),
-        desiredOutcome: field(""),
-        decision: field(null),
-        audience: field([]),
+        decisionType: field("none"),
+        audienceType: field("unspecified"),
         depth: field("point"),
         continuity: field("new"),
         workResponsibility: field([]),
@@ -65,9 +66,9 @@ describe("intent classifier boundary", () => {
     expect(canonical.abstain).toBe(true);
     expect(canonical.composition).toBeNull();
     expect(canonical.routingCore.action.value).toEqual(["esclarecer pedido"]);
-    expect(canonical.routingCore.object.value).toEqual([{kind: "document", reference: null}]);
-    expect(canonical.routingCore.audience.value).toEqual(["solicitante"]);
-    expect(canonical.routingCore.desiredOutcome.value).toContain("resultado esperado");
+    expect(canonical.routingCore.object.value).toEqual([{id: "object-1", ordinal: 1, kind: "document", slots: []}]);
+    expect(canonical.routingCore.audienceType.value).toBe("unspecified");
+    expect(canonical.routingCore.decisionType.value).toBe("none");
     expect(canonical.routingCore.workResponsibility.value).toEqual(["producer"]);
     expect(canonical.primaryWorks).toEqual([{work: "understand", confidence: 0}]);
     expect(canonical.firstQuestion).toContain("qual resultado você espera");
@@ -77,10 +78,9 @@ describe("intent classifier boundary", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
         action: field([]),
-        object: field([{kind: "company", reference: "Camil"}]),
-        desiredOutcome: field("Preparar uma reunião."),
-        decision: field(null),
-        audience: field(["CFO"]),
+        object: field([object("company", "Camil")]),
+        decisionType: field("capital"),
+        audienceType: field("company_management"),
         depth: field("preliminary"),
         continuity: field("new"),
         workResponsibility: field(["producer"]),
@@ -114,10 +114,9 @@ describe("intent classifier boundary", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
         action: field(["prepare meeting material"]),
-        object: field([{kind: "material", reference: "material para reunião"}]),
-        desiredOutcome: field("Preparar o material da alternativa escolhida."),
-        decision: field(null),
-        audience: field([]),
+        object: field([object("material", "material para reunião")]),
+        decisionType: field("material"),
+        audienceType: field("unspecified"),
         depth: field("preliminary"),
         continuity: field("new"),
         workResponsibility: field([]),
@@ -152,10 +151,9 @@ describe("intent classifier boundary", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
         action: field(["preparar material para reunião"]),
-        object: field([{kind: "company", reference: "Camil"}]),
-        desiredOutcome: field("Preparar a reunião sobre refinanciamento."),
-        decision: field(null),
-        audience: field(["VP"]),
+        object: field([object("company", "Camil")]),
+        decisionType: field("capital"),
+        audienceType: field("internal_senior"),
         depth: field("point"),
         continuity: field("new"),
         workResponsibility: field(["producer"]),
@@ -189,10 +187,9 @@ describe("intent classifier boundary", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
         action: field(["comparar alternativas e recomendar"]),
-        object: field([{kind: "decision", reference: "recomendação ao conselho"}]),
-        desiredOutcome: field("Escolher a recomendação de estrutura de capital."),
-        decision: field("Alongar a dívida ou fazer nova emissão."),
-        audience: field(["conselho"]),
+        object: field([object("decision", "recomendação ao conselho")]),
+        decisionType: field("capital"),
+        audienceType: field("board_or_committee"),
         depth: field("institutional"),
         continuity: field("resume"),
         workResponsibility: field(["producer", "sponsor"]),
