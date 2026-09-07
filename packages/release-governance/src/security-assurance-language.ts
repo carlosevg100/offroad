@@ -19,17 +19,17 @@ const claimFamilies: readonly ClaimFamily[] = [
   {
     code: "certification_claim",
     subject: /\b(?:soc\s*2(?:\s+type\s+(?:i|ii|1|2))?|iso(?:\s+iec)?\s*27001|gdpr|lgpd)\b/gu,
-    predicate: /\b(?:certified|compliant|examined|attested|ready|certificad[ao]s?|auditad[ao]s?|pront[ao]s?|em\s+conformidade)\b/gu,
+    predicate: /\b(?:certified|compliant|examined|attested|ready|complete|certificad[ao]s?|auditad[ao]s?|pront[ao]s?|complet[ao]s?|em\s+conformidade)\b/gu,
   },
   {
     code: "pentest_claim",
-    subject: /\b(?:pentest|pen\s+test|penetration\s+test|teste\s+de\s+(?:invas[aã]o|penetra[cç][aã]o))\b/gu,
+    subject: /\b(?:pentest|pen\s+test|penetration\s+test(?:ing)?|teste\s+de\s+(?:invas[aã]o|penetra[cç][aã]o))\b/gu,
     predicate: /\b(?:passed|approved|completed|clean|verified|validated|aprovad[ao]s?|conclu[ií]d[ao]s?|limp[ao]s?|verificad[ao]s?|validad[ao]s?)\b/gu,
   },
   {
     code: "live_assurance_claim",
     subject: /\b(?:live|production(?:\s+controls?)?|operating|produ[cç][aã]o(?:\s+controles?)?|opera[cç][aã]o)\b/gu,
-    predicate: /\b(?:verified|validated|attested|assured|proven|verificad[ao]s?|validad[ao]s?|atestad[ao]s?|comprovad[ao]s?)\b/gu,
+    predicate: /\b(?:verified|validated|attested|assured|proven|audited|verificad[ao]s?|validad[ao]s?|atestad[ao]s?|comprovad[ao]s?|auditad[ao]s?)\b/gu,
   },
 ];
 
@@ -38,7 +38,7 @@ const maximumPolarityTokens = 12;
 const negationToken = /^(?:not|no|never|without|neither|nor|n[aã]o|nunca|jamais|sem)$/u;
 const contractionNegation = /\b(?:isn t|aren t|wasn t|weren t|hasn t|haven t|hadn t|didn t|doesn t|don t)\b/u;
 const contrastBoundary = /\b(?:but|however|although|and|mas|por[eé]m|contudo|todavia|e)\b/gu;
-const deferredPredicate = /\b(?:yet\s+to\s+be|still\s+to\s+be|ainda\s+(?:por\s+ser|n[aã]o))\s*$/u;
+const deferredPredicate = /\b(?:yet\s+to\s+be|still\s+(?:needs?\s+to\s+be|must\s+be|to\s+be)|needs?\s+to\s+be|ainda\s+(?:por\s+ser|precisa\s+ser|deve\s+ser|n[aã]o))\s*$/u;
 
 type LocatedText = {start: number; end: number; text: string};
 
@@ -49,9 +49,13 @@ function normalizeAssuranceClauses(output: string): string[] {
     // prohibited token (for example, `certi\u200bfied`).
     .replace(/\p{Cf}/gu, "")
     .toLocaleLowerCase("en-US")
-    // Sentence punctuation ends polarity scope. Colons and dashes intentionally do not:
-    // "Pentest: passed" and "SOC 2—certified" are single propositions.
+    // ISO/IEC is one standard name, not two assurance propositions separated by a slash.
+    .replace(/\biso\s*\/\s*iec\b/gu, "iso iec")
+    // Sentence punctuation and explicit clause separators end polarity scope. A compact dash stays
+    // intact so label-value forms such as "SOC 2—certified" remain one proposition; a spaced dash
+    // separates natural-language propositions.
     .replace(/[.!?;\r\n]+/gu, "\n")
+    .replace(/\s+[—–-]\s+|[,/]+|\b(?:while|enquanto)\b/gu, "\n")
     .split("\n")
     .map((clause) => clause.replace(/[\p{P}\p{S}\p{Z}\s]+/gu, " ").trim().replace(/\s+/gu, " "))
     .filter(Boolean);
@@ -73,8 +77,14 @@ function bridgeTokenCount(left: LocatedText, right: LocatedText, clause: string)
   return clause.slice(start, end).trim().split(/\s+/u).filter(Boolean).length;
 }
 
-function predicateIsNegated(clause: string, predicateStart: number): boolean {
-  let prefix = clause.slice(0, predicateStart);
+function localPairStart(clause: string, pairStart: number) {
+  const priorTokens = [...clause.slice(0, pairStart).matchAll(/\S+/gu)];
+  return priorTokens.at(-maximumPolarityTokens)?.index ?? 0;
+}
+
+function predicateIsNegated(clause: string, subject: LocatedText, predicate: LocatedText): boolean {
+  const pairStart = Math.min(subject.start, predicate.start);
+  let prefix = clause.slice(localPairStart(clause, pairStart), predicate.start);
   let lastBoundaryEnd = 0;
   contrastBoundary.lastIndex = 0;
   for (const boundary of prefix.matchAll(contrastBoundary)) lastBoundaryEnd = boundary.index + boundary[0].length;
@@ -100,18 +110,19 @@ export function findForbiddenAssuranceClaims(output: string): ForbiddenAssurance
     for (const family of claimFamilies) {
       const subjects = locate(family.subject, clause);
       const predicates = locate(family.predicate, clause);
-      for (const subject of subjects) {
-        for (const predicate of predicates) {
-          if (bridgeTokenCount(subject, predicate, clause) > maximumBridgeTokens) continue;
-          if (predicateIsNegated(clause, predicate.start)) continue;
-          const start = Math.min(subject.start, predicate.start);
-          const end = Math.max(subject.end, predicate.end);
-          const match = clause.slice(start, end);
-          const key = `${family.code}:${match}`;
-          if (seen.has(key)) continue;
-          findings.push({code: family.code, match});
-          seen.add(key);
-        }
+      for (const predicate of predicates) {
+        const subject = subjects
+          .map((candidate) => ({candidate, distance: bridgeTokenCount(candidate, predicate, clause)}))
+          .filter(({distance}) => distance <= maximumBridgeTokens)
+          .sort((left, right) => left.distance - right.distance || left.candidate.start - right.candidate.start)[0]?.candidate;
+        if (!subject || predicateIsNegated(clause, subject, predicate)) continue;
+        const start = Math.min(subject.start, predicate.start);
+        const end = Math.max(subject.end, predicate.end);
+        const match = clause.slice(start, end);
+        const key = `${family.code}:${match}`;
+        if (seen.has(key)) continue;
+        findings.push({code: family.code, match});
+        seen.add(key);
       }
     }
   }
