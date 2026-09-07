@@ -161,4 +161,39 @@ describe("intent classifier boundary", () => {
     expect(canonical.composition).toBe("prepare_meeting");
     expect(canonical.firstQuestion).toBe("Qual tese e formato o VP espera?");
   });
+
+  it("preserves explicit decision ownership across a qualified decision phrase", () => {
+    const parsed = intentClassifierOutputSchema.parse({
+      routingCore: {
+        action: field(["comparar alternativas e recomendar"]),
+        object: field([{kind: "decision", reference: "recomendação ao conselho"}]),
+        desiredOutcome: field("Escolher a recomendação de estrutura de capital."),
+        decision: field("Alongar a dívida ou fazer nova emissão."),
+        audience: field(["conselho"]),
+        depth: field("institutional"),
+        continuity: field("resume"),
+        workResponsibility: field(["producer", "sponsor"]),
+      },
+      inferableContext: {
+        jurisdiction: field(["BR"]), asOfDate: field(null), currency: field("BRL"), deadline: field(null),
+        sponsorInstruction: field(null), constraints: field([]), urgency: field(null), availableInputs: field([]),
+      },
+      primaryWorks: [{work: "capital_strategy", confidence: 0.9}],
+      composition: "prepare_decision",
+      firstQuestion: null,
+      abstain: false,
+      abstainReason: null,
+    });
+
+    const canonical = canonicalizeIntentClassifierOutput(parsed, {
+      locale: "pt-BR",
+      latestUserMessage: "A decisão de qual recomendação levar ao conselho é minha. Compare as alternativas.",
+      recentConversation: [{role: "user", content: "Estou preparando a discussão do conselho."}],
+      entryJob: null,
+      documentCount: 0,
+      professionalContext: null,
+    });
+
+    expect(canonical.routingCore.workResponsibility.value).toEqual(["producer", "sponsor", "decision_maker"]);
+  });
 });

@@ -149,7 +149,7 @@ const responsibilitiesByComposition: Partial<Record<NamedComposition, readonly W
 function policyResponsibilities(composition: NamedComposition, input: IntentClassifierInput): readonly WorkResponsibility[] {
   const base = responsibilitiesByComposition[composition] ?? ["producer"] as const;
   const text = normalizeForPolicy(input.latestUserMessage);
-  const ownsDecision = /\b(a decisao (e|eh) minha|eu decido|decisao cabe a mim|i own the decision|my decision)\b/.test(text);
+  const ownsDecision = /\b(a decisao(?:\s+de\s+[^.!?]{1,120})?\s+(?:e|eh)\s+minha|eu decido|decisao cabe a mim|i own the decision|my decision)\b/.test(text);
   return composition === "prepare_decision" && ownsDecision ? [...base, "decision_maker"] : base;
 }
 
