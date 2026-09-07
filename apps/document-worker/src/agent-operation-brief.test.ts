@@ -19,6 +19,65 @@ const job: AgentOperationBriefJob = {
 };
 
 describe("agent operation brief worker", () => {
+  it("applies a bound R01 answer without a model and records the resulting draft revision", async () => {
+    let storedPatch: Record<string, unknown> | undefined;
+    let response: Record<string, unknown> | undefined;
+    let completion: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "72,5%",
+        message_metadata: {kind: "information_request_response"},
+        answered_information_request: {
+          id: "10000000-0000-4000-8000-000000000001",
+          requirementKey: "receivables.r01.field.structure.advance_rate",
+          question: "Qual advance rate devemos testar?",
+          answerKind: "number",
+          answerSource: "custom",
+          sourceNamespace: "receivables_method_r01_fields",
+          answeredAt: "2026-09-07T02:00:00.000Z",
+          answeredBy: "20000000-0000-4000-8000-000000000001",
+          producerBinding: {
+            schemaVersion: "receivables-information-request-binding.v1",
+            methodId: "R01", sourceDatasetHash: "a".repeat(64),
+            fieldPath: "/structure/advanceRate", valueKind: "percentage",
+            unit: "percent_0_100", minimum: 0, maximum: 100, options: [],
+          },
+        },
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T02:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Aurora", entryJob: "capital_planning", accessBasis: "authorized_private", phase: "analyze", status: "active"},
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      loadReceivablesMethodSupplementDraft: async () => null,
+      applyReceivablesMethodSupplementPatch: async (_job: unknown, input: {patch: unknown; nextDraft: unknown}) => {
+        storedPatch = input as unknown as Record<string, unknown>;
+        return {patchId: "30000000-0000-4000-8000-000000000001", draftId: "40000000-0000-4000-8000-000000000001", revision: 1, draftFingerprint: "b".repeat(64), replayed: false};
+      },
+      recordAgentResponse: async (_job: unknown, _id: string, value: unknown) => { response = value as Record<string, unknown>; return {}; },
+      complete: async (_job: unknown, value: unknown) => { completion = value as Record<string, unknown>; },
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new Error("a governed field answer must not call a model"); },
+      spent: () => ({costUsd: 0, calls: 0}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
+
+    expect(result.status).toBe("succeeded");
+    expect(storedPatch).toMatchObject({
+      patch: {fields: [{path: "/structure/advanceRate", value: "0.725"}]},
+      nextDraft: {revision: 1},
+    });
+    expect(response?.reply).toContain("input confirmado do modelo R01");
+    expect(completion).toMatchObject({mode: "governed_receivables_information_response", draftRevision: 1});
+  });
+
   it.each([
     {
       continuation: "a governed answer",

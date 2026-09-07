@@ -268,6 +268,20 @@ export type QueueClient = {
     preservedClosedCount: number;
     supersededCount: number;
   }>;
+  /** Persists private method/field bindings for typed information requests after the public
+   * projection has been synchronized. The browser sees the question, never the executor binding. */
+  bindReceivablesInformationRequestFields?(job: FullCaseAnalysisJob, projection: unknown): Promise<{
+    boundCount: number;
+    replayedCount: number;
+  }>;
+  /** Synchronizes only the R01 evidence or typed-field namespace. A case run may open either;
+   * an answer turn may advance only the typed-field namespace for that same project. */
+  syncReceivablesInformationRequests?(job: FullCaseAnalysisJob | AgentOperationBriefJob, projection: unknown): Promise<{
+    openCount: number;
+    preservedClosedCount: number;
+    supersededCount: number;
+    boundCount: number;
+  }>;
   recordAgentResponse(
     job: AgentOperationBriefJob,
     assistantMessageId: string,
@@ -817,6 +831,39 @@ export function createQueueClient(
         openCount: parsed.open_count,
         preservedClosedCount: parsed.preserved_closed_count,
         supersededCount: parsed.superseded_count,
+      };
+    },
+
+    async bindReceivablesInformationRequestFields(job, projection) {
+      const data = await call("worker_bind_receivables_information_request_fields_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_projection: projection,
+      });
+      const parsed = z.object({
+        bound_count: z.number().int().nonnegative(),
+        replayed_count: z.number().int().nonnegative(),
+      }).parse(data);
+      return {boundCount: parsed.bound_count, replayedCount: parsed.replayed_count};
+    },
+
+    async syncReceivablesInformationRequests(job, projection) {
+      const data = await call("worker_sync_receivables_information_requests_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_projection: projection,
+      });
+      const parsed = z.object({
+        open_count: z.number().int().min(0).max(3),
+        preserved_closed_count: z.number().int().nonnegative(),
+        superseded_count: z.number().int().nonnegative(),
+        bound_count: z.number().int().min(0).max(3),
+      }).parse(data);
+      return {
+        openCount: parsed.open_count,
+        preservedClosedCount: parsed.preserved_closed_count,
+        supersededCount: parsed.superseded_count,
+        boundCount: parsed.bound_count,
       };
     },
 
