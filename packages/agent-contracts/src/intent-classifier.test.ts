@@ -65,7 +65,7 @@ describe("intent classifier boundary", () => {
 
     expect(canonical.abstain).toBe(true);
     expect(canonical.composition).toBeNull();
-    expect(canonical.routingCore.action.value).toEqual(["esclarecer pedido"]);
+    expect(canonical.routingCore.action.value).toEqual(["understand"]);
     expect(canonical.routingCore.object.value).toEqual([{id: "object-1", ordinal: 1, kind: "document", slots: []}]);
     expect(canonical.routingCore.audienceType.value).toBe("unspecified");
     expect(canonical.routingCore.decisionType.value).toBe("none");
@@ -113,7 +113,7 @@ describe("intent classifier boundary", () => {
   it("derives a material transition deterministically from the conversational state", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
-        action: field(["prepare meeting material"]),
+        action: field(["prepare_meeting"]),
         object: field([object("material", "material para reunião")]),
         decisionType: field("material"),
         audienceType: field("unspecified"),
@@ -150,7 +150,7 @@ describe("intent classifier boundary", () => {
   it("rescues a clear meeting assignment while retaining its workflow-changing question", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
-        action: field(["preparar material para reunião"]),
+        action: field(["prepare_meeting"]),
         object: field([object("company", "Camil")]),
         decisionType: field("capital"),
         audienceType: field("internal_senior"),
@@ -186,7 +186,7 @@ describe("intent classifier boundary", () => {
   it("preserves explicit decision ownership across a qualified decision phrase", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
-        action: field(["comparar alternativas e recomendar"]),
+        action: field(["prepare_decision"]),
         object: field([object("decision", "recomendação ao conselho")]),
         decisionType: field("capital"),
         audienceType: field("board_or_committee"),

@@ -68,6 +68,25 @@ const clampText = (value: string, max: number) => value.trim().slice(0, max);
 const clampList = <T>(values: T[], max: number) => values.slice(0, max);
 const clampField = <T, U>(field: {value: T; state: string; confidence?: number | null | undefined; basis?: string | null | undefined}, map: (value: T) => U) => ({...field, value: map(field.value), ...(field.basis ? {basis: clampText(field.basis, 300)} : {})});
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const decisionLabel = {
+  none: null,
+  capital: "capital decision",
+  credit: "credit decision",
+  material: "material decision",
+  market: "market decision",
+  external: "external action decision",
+  workflow: "workflow decision",
+  document: "document decision",
+} as const;
+const audienceLabel = {
+  self: "requester",
+  internal_senior: "internal senior",
+  company_management: "company management",
+  board_or_committee: "board or committee",
+  capital_provider: "capital provider",
+  market: "market",
+  unspecified: "unspecified",
+} as const;
 
 /** Stamps the system fields around a classifier output and clamps every value to the envelope contract; the model never writes the system fields. */
 export function stampIntentEnvelope(output: ShadowRoutingOutput, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
@@ -77,10 +96,13 @@ export function stampIntentEnvelope(output: ShadowRoutingOutput, context: Shadow
     schemaVersion: "intent-envelope.v1",
     routingCore: {
       action: asSystemOrInferred(clampField(core.action, (items) => clampList(items.map((item) => clampText(item, 60)).filter(Boolean), 8))),
-      object: asSystemOrInferred(clampField(core.object, (items) => clampList(items.map((item) => ({kind: item.kind, ...(item.reference ? {reference: clampText(item.reference, 200)} : {})})), 12))),
-      desiredOutcome: asSystemOrInferred(clampField(core.desiredOutcome, (value) => clampText(value, 300))),
-      decision: asSystemOrInferred(clampField(core.decision, (value) => (value === null ? null : clampText(value, 300)))),
-      audience: asSystemOrInferred(clampField(core.audience, (items) => clampList(items.map((item) => clampText(item, 80)).filter(Boolean), 6))),
+      object: asSystemOrInferred(clampField(core.object, (items) => clampList(items.map((item) => ({
+        kind: item.kind,
+        ...(item.slots.length ? {reference: clampText(item.slots.map(({key, value}) => `${key}:${value}`).join("; "), 200)} : {}),
+      })), 12))),
+      desiredOutcome: asSystemOrInferred({value: output.composition ? compositionPolicy(output.composition).classifierGuidance : "clarify request", state: "inferred", confidence: 0.99, basis: "deterministic composition renderer"}),
+      decision: asSystemOrInferred({...core.decisionType, value: decisionLabel[core.decisionType.value]}),
+      audience: asSystemOrInferred({...core.audienceType, value: [audienceLabel[core.audienceType.value]]}),
       depth: asSystemOrInferred(core.depth),
       continuity: asSystemOrInferred(core.continuity),
       workResponsibility: asSystemOrInferred(clampField(core.workResponsibility, (items) => clampList([...new Set(items)], 4))),

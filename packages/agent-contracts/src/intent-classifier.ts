@@ -69,7 +69,7 @@ export const intentClassifierOutputSchema = z.object({
     depth: inferredClassifierField(intentDepthSchema),
     continuity: inferredClassifierField(intentContinuitySchema),
     workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).max(8)),
-  }),
+  }).strict(),
   inferableContext: z.object({
     jurisdiction: inferredClassifierField(z.array(z.string().min(1).max(40)).max(8)),
     asOfDate: inferredClassifierField(z.string().max(40).nullable()),
@@ -234,7 +234,6 @@ export function canonicalizeIntentClassifierOutput(
       documentsPresent: input.documentCount > 0,
     });
     return intentClassifierOutputSchema.parse({
-      ...output,
       routingCore: {
         ...output.routingCore,
         action: policyField([policy.canonicalAction], composition),
@@ -243,6 +242,7 @@ export function canonicalizeIntentClassifierOutput(
         continuity: policyContinuity(composition, output, input),
         workResponsibility: policyField([...policy.workResponsibilities], composition),
       },
+      inferableContext: output.inferableContext,
       primaryWorks: primaryWorks.map((work) => ({work, confidence: 0.99})),
       composition,
       firstQuestion: policyQuestion(composition, output, input),
@@ -258,7 +258,6 @@ export function canonicalizeIntentClassifierOutput(
     : abstentionQuestion(locale);
 
   return intentClassifierOutputSchema.parse({
-    ...output,
     routingCore: {
       ...output.routingCore,
       action: {value: ["understand"], state: "unknown", confidence: null, basis: null},
@@ -269,6 +268,7 @@ export function canonicalizeIntentClassifierOutput(
       continuity: {value: "new", state: "unknown", confidence: null, basis: null},
       workResponsibility: {value: ["producer"], state: "unknown", confidence: null, basis: null},
     },
+    inferableContext: output.inferableContext,
     primaryWorks: [{work: "understand", confidence: 0}],
     composition: null,
     firstQuestion: question.slice(0, 600),

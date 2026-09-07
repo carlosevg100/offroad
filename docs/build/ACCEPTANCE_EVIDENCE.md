@@ -28,12 +28,12 @@ CTRL-01/CTRL-02 e não promove capacidade de produto.
 | Condição de execução | policy + control plane | `documents_present` ativa conciliação antes de estratégia somente com documentos governados; o prompt é renderizado da policy |
 | Cobertura candidate | `intent-gold.ts` | 40 turnos, vinte composições e quatro suítes: jornada, horizontal, confusão e adversarial |
 | Oracle independente | `intent-gold.ts` | expectativas de aceitação não importam nem derivam a policy de produção; mudança errada na policy quebra o gate |
-| Assinatura semântica | gabarito e scorer v2 | ação, tipos e referências ligadas aos objetos, resultado, decisão e audiência são verificados na resposta bruta; polaridade é derivada da prosa e confrontada com o rótulo não confiável do modelo |
-| Slots materiais | normalizador + gold | BRL/R$, ticket, percentual, indexador e prazo são canônicos; `R$ 50 milhões`=`BRL50m`, sete anos=84 meses; ausência, valor extra ou conflito por objeto reprova |
+| Assinatura semântica | gabarito e scorer v2 | ação, decisão e audiência usam enums canônicos; objetos possuem id, ordinal e slots, verificados na resposta bruta sem aceitar narrativa livre como verdade de roteamento |
+| Slots materiais | schema + gold | entidade, assunto, montante, moeda, percentual, indexador e prazo são slots canônicos; cardinalidade, valores e associação à instância exata são obrigatórios; objeto/slot extra, conflito ou divisão entre objetos reprova |
 | Autoridade e evidência | carimbo do control plane + testes negativos | nunca inferidas pelo modelo; acesso ausente fica `unresolved`; cargo não concede decisão ou efeito externo |
 | Repetibilidade candidate | manifesto imutável | 40 bases + duas paráfrases reais em seis IDs = 52 observações; missing, extra, duplicate e mesmos bytes reprovam |
 | Regra | summary v2 | manifesto, quatro suítes, todos os checks e seis trios exigem 100% |
-| Integração determinística | 52 inputs raw-to-canonicalizer | todos os textos autorais exercitam a precedência e os reparos reais; negações, flexões, abstenção e continuidade têm regressão |
+| Integração determinística | 52 inputs raw-to-canonicalizer | todos os textos autorais exercitam a precedência e os reparos reais; abstenção, continuidade, cardinalidade e associação exata de slots têm regressão |
 | Evidência antifraude | summary v2 + reproduções do revisor | checks, fingerprints e expected são recalculados; null, provider error, associação objeto-referência trocada, CDI/`CDI + 15%` e hashes constantes reprovam |
 | Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
 

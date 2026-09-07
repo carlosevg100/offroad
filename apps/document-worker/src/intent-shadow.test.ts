@@ -5,14 +5,13 @@ import {governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSche
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
   value, state, confidence: state === "explicit" ? 1 : 0.7,
-  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
 });
 
 function validOutput() {
   return shadowRoutingOutputSchema.parse({
     routingCore: {
-      action: field(["analisar companhia"]), object: field([{kind: "company", reference: "Camil"}]),
-      desiredOutcome: field("análise preliminar"), decision: field(null), audience: field(["VP"]),
+      action: field(["understand"]), object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Camil"}]}]),
+      decisionType: field("none"), audienceType: field("internal_senior"),
       depth: field("preliminary", "inferred"), continuity: field("new"), workResponsibility: field(["producer"]),
     },
     inferableContext: {

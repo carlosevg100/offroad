@@ -1,38 +1,27 @@
-import {canonicalizeIntentClassifierOutput, type IntentClassifierOutput} from "@offroad/agent-contracts";
+import {canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 
 import {intentGoldTurns} from "./intent-gold";
 import {
-  deriveSemanticPolarity,
   expectedIntentRouterManifest,
   fingerprintIntentMessage,
   intentRoutingFingerprint,
-  normalizedMaterialSlots,
   scoreIntentGoldTurn,
   summarizeIntentRouterGate,
   type IntentRouterGateObservation,
 } from "./intent-router-gate";
 
-const decisionText = {none: null, capital: "decidir estrutura de capital", credit: "decidir risco de crédito e headroom", material: "decidir deck e material", market: "decidir mercado, fundos e spread", external: "decidir enviar e introduzir", workflow: "decidir status e pendências do projeto", document: "decidir cláusula e fórmula do documento"} as const;
-const audienceText = {self: "solicitante", internal_senior: "VP", company_management: "CFO", board_or_committee: "conselho", capital_provider: "investidores", market: "mercado", unspecified: "desconhecido"} as const;
-const slotSurface = (slot: typeof intentGoldTurns[number]["expected"]["semantic"]["materialSlots"][number]): string => {
-  if (slot.slot === "amount") return `${Number(slot.value) / 1_000_000} milhões`;
-  if (slot.slot === "currency") return slot.value;
-  if (slot.slot === "percentage") return `${slot.value}%`;
-  if (slot.slot === "tenor_months") return `${slot.value} meses`;
-  return slot.value;
-};
-
 const outputFor = (turn = intentGoldTurns[0]!, overrides: Partial<IntentClassifierOutput> = {}): IntentClassifierOutput => ({
   routingCore: {
     action: {value: [turn.expected.semantic.canonicalAction], state: "inferred", confidence: 0.99},
-    object: {value: turn.expected.semantic.objectKinds.map((kind) => ({kind, reference: [
-      ...turn.expected.semantic.materialReferences.filter((entry) => entry.kind === kind).map((entry) => entry.reference),
-      ...turn.expected.semantic.materialSlots.filter((entry) => entry.kind === kind).map(slotSurface),
-    ].join(" ") || null})), state: "explicit"},
-    desiredOutcome: {value: turn.expected.semantic.desiredOutcomeSignals.map((signals) => signals[0]).join(" "), state: "explicit", affirmation: "affirmed"},
-    decision: {value: decisionText[turn.expected.semantic.decision.category], state: turn.expected.semantic.decision.present ? "explicit" : "not_applicable", affirmation: turn.expected.semantic.decision.present ? "affirmed" : "not_applicable"},
-    audience: {value: [audienceText[turn.expected.semantic.audienceCategory]], state: "explicit", affirmation: turn.expected.semantic.audienceCategory === "unspecified" ? "uncertain" : "affirmed"},
+    object: {value: turn.expected.semantic.objects.map((object) => ({
+      id: object.id,
+      ordinal: object.ordinal,
+      kind: object.kind,
+      slots: object.slots.flatMap((slot) => slot.allowedValues.slice(0, slot.cardinality).map((value) => ({key: slot.key, value}))),
+    })), state: "explicit"},
+    decisionType: {value: turn.expected.semantic.decision.category, state: turn.expected.semantic.decision.present ? "explicit" : "not_applicable"},
+    audienceType: {value: turn.expected.semantic.audienceCategory, state: turn.expected.semantic.audienceCategory === "unspecified" ? "unknown" : "explicit"},
     depth: {value: turn.expected.depth, state: "inferred", confidence: 0.99},
     continuity: {value: turn.expected.continuity, state: "inferred", confidence: 0.99},
     workResponsibility: {value: turn.expected.workResponsibility, state: "inferred", confidence: 0.99},
@@ -99,13 +88,9 @@ describe("intent router promotion gate", () => {
     expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn)))).toEqual(expect.arrayContaining([true]));
     expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn))).every(Boolean)).toBe(true);
     const wrongObject = outputFor(turn, {
-      routingCore: {...outputFor(turn).routingCore, object: {value: [{kind: "market"}], state: "explicit"}},
+      routingCore: {...outputFor(turn).routingCore, object: {value: [{id: "object-1", ordinal: 1, kind: "market", slots: []}], state: "explicit"}},
     });
     expect(scoreIntentGoldTurn(turn, wrongObject, wrongObject).objectKindsExact).toBe(false);
-    const wrongOutcome = outputFor(turn, {
-      routingCore: {...outputFor(turn).routingCore, desiredOutcome: {value: "texto genérico", state: "explicit", affirmation: "affirmed"}},
-    });
-    expect(scoreIntentGoldTurn(turn, wrongOutcome, wrongOutcome).desiredOutcome).toBe(false);
     expect(scoreIntentGoldTurn(turn, null, null).completed).toBe(false);
   });
 
@@ -118,98 +103,86 @@ describe("intent router promotion gate", () => {
     expect(actual.routingCore.action.value).toEqual(["prepare_meeting"]);
     expect(scoreIntentGoldTurn(turn, actual, raw).canonicalAction).toBe(false);
 
-    const noDecision = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, decision: {value: null, state: "unknown", affirmation: "not_applicable"}}});
+    const noDecision = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, decisionType: {value: "none", state: "not_applicable"}}});
     const decisionChecks = scoreIntentGoldTurn(turn, actual, noDecision);
     expect(decisionChecks.decisionPresence).toBe(false);
     expect(decisionChecks.decisionCategory).toBe(false);
   });
 
-  it("rejects structured negation and contradiction instead of matching positive keywords", () => {
+  it("excludes narrative routing claims from the strict model contract", () => {
     const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
     const base = outputFor(turn);
-    const contradicted = [
-      outputFor(turn, {routingCore: {...base.routingCore, desiredOutcome: {value: "não preparar reunião", state: "explicit", affirmation: "negated"}}}),
-      outputFor(turn, {routingCore: {...base.routingCore, decision: {value: "não existe decisão de capital", state: "explicit", affirmation: "negated"}}}),
-      outputFor(turn, {routingCore: {...base.routingCore, audience: {value: ["não é para VP"], state: "explicit", affirmation: "negated"}}}),
-    ];
-    expect(scoreIntentGoldTurn(turn, contradicted[0]!, contradicted[0]!).desiredOutcome).toBe(false);
-    expect(scoreIntentGoldTurn(turn, contradicted[1]!, contradicted[1]!).decisionPresence).toBe(false);
-    expect(scoreIntentGoldTurn(turn, contradicted[1]!, contradicted[1]!).decisionCategory).toBe(false);
-    expect(scoreIntentGoldTurn(turn, contradicted[2]!, contradicted[2]!).audienceCategory).toBe(false);
-    for (const output of contradicted) expect(intentRoutingFingerprint(output)).not.toBe(intentRoutingFingerprint(base));
-  });
-
-  it("derives polarity from prose and rejects a classifier that falsely affirms negated claims", () => {
-    const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
-    const base = outputFor(turn);
-    const falselyAffirmed = [
-      outputFor(turn, {routingCore: {...base.routingCore, desiredOutcome: {value: "não preparar reunião", state: "explicit", affirmation: "affirmed"}}}),
-      outputFor(turn, {routingCore: {...base.routingCore, decision: {value: "não existe decisão de capital", state: "explicit", affirmation: "affirmed"}}}),
-      outputFor(turn, {routingCore: {...base.routingCore, audience: {value: ["não é para VP"], state: "explicit", affirmation: "affirmed"}}}),
-    ];
-    expect(deriveSemanticPolarity("não preparar reunião")).toBe("negated");
-    expect(deriveSemanticPolarity("não existe decisão de capital")).toBe("negated");
-    expect(deriveSemanticPolarity(["não é para VP"])).toBe("negated");
-    expect(scoreIntentGoldTurn(turn, falselyAffirmed[0]!, falselyAffirmed[0]!).desiredOutcome).toBe(false);
-    expect(scoreIntentGoldTurn(turn, falselyAffirmed[1]!, falselyAffirmed[1]!).decisionPresence).toBe(false);
-    expect(scoreIntentGoldTurn(turn, falselyAffirmed[1]!, falselyAffirmed[1]!).decisionCategory).toBe(false);
-    expect(scoreIntentGoldTurn(turn, falselyAffirmed[2]!, falselyAffirmed[2]!).audienceCategory).toBe(false);
-    for (const output of falselyAffirmed) expect(intentRoutingFingerprint(output)).not.toBe(intentRoutingFingerprint(base));
+    expect(() => intentClassifierOutputSchema.parse({
+      ...base,
+      routingCore: {
+        ...base.routingCore,
+        desiredOutcome: "não preparar reunião",
+        decision: "não existe decisão",
+        audience: "não é para VP",
+      },
+    })).toThrow();
   });
 
   it("binds each material reference to its object and requires numeric assumptions", () => {
     const capitalTurn = intentGoldTurns.find(({id}) => id === "hx04")!;
     const swapped = outputFor(capitalTurn);
-    swapped.routingCore.object.value = swapped.routingCore.object.value.map((object) => object.kind === "alternative"
-      ? {...object, reference: "R$ 80 milhões"}
-      : {...object, reference: "capex"});
+    const firstSlots = swapped.routingCore.object.value[0]!.slots;
+    swapped.routingCore.object.value[0]!.slots = swapped.routingCore.object.value[1]!.slots;
+    swapped.routingCore.object.value[1]!.slots = firstSlots;
     expect(scoreIntentGoldTurn(capitalTurn, swapped, swapped).materialReferences).toBe(false);
 
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
-    expect(modelTurn.expected.semantic.materialSlots).toEqual(expect.arrayContaining([
-      {kind: "scenario", slot: "indexer", value: "CDI"},
-      {kind: "scenario", slot: "percentage", value: "12"},
-      {kind: "scenario", slot: "tenor_months", value: "84"},
+    expect(modelTurn.expected.semantic.objects.find(({kind}) => kind === "scenario")?.slots).toEqual(expect.arrayContaining([
+      {key: "indexer", allowedValues: ["CDI"], cardinality: 1},
+      {key: "percentage", allowedValues: ["12"], cardinality: 1},
+      {key: "tenor_months", allowedValues: ["84"], cardinality: 1},
     ]));
     const missingRate = outputFor(modelTurn);
-    missingRate.routingCore.object.value = missingRate.routingCore.object.value.map((object) => ({...object, reference: "CDI sete anos"}));
+    missingRate.routingCore.object.value = missingRate.routingCore.object.value.map((object) => object.kind === "scenario"
+      ? {...object, slots: object.slots.filter(({key}) => key !== "percentage")}
+      : object);
     expect(scoreIntentGoldTurn(modelTurn, missingRate, missingRate).materialReferences).toBe(false);
 
     const structureTurn = intentGoldTurns.find(({id}) => id === "gc03-t01")!;
     const missingTicket = outputFor(structureTurn);
     missingTicket.routingCore.object.value = missingTicket.routingCore.object.value.map((object) => object.kind === "operation"
-      ? {...object, reference: "recebíveis"}
+      ? {...object, slots: object.slots.filter(({key}) => key !== "amount" && key !== "currency")}
       : object);
     expect(scoreIntentGoldTurn(structureTurn, missingTicket, missingTicket).materialReferences).toBe(false);
-    expect(normalizedMaterialSlots("captação BRL50m, CDI em 12%, prazo de 7 anos")).toEqual(expect.arrayContaining([
-      {slot: "amount", value: "50000000"}, {slot: "currency", value: "BRL"},
-      {slot: "indexer", value: "CDI"}, {slot: "percentage", value: "12"}, {slot: "tenor_months", value: "84"},
-    ]));
-    expect(normalizedMaterialSlots("captação de R$ 50 milhões, CDI de 12%, prazo de sete anos"))
-      .toEqual(normalizedMaterialSlots("captação BRL50m, CDI em 12%, prazo de 7 anos"));
 
     const conflictingRate = outputFor(modelTurn);
     conflictingRate.routingCore.object.value = conflictingRate.routingCore.object.value.map((object) => object.kind === "scenario"
-      ? {...object, reference: "CDI 12% e CDI 15%, prazo 7 anos"}
+      ? {...object, slots: [...object.slots, {key: "percentage", value: "15"}]}
       : object);
     expect(scoreIntentGoldTurn(modelTurn, conflictingRate, conflictingRate).materialReferences).toBe(false);
+
+    const extraObject = outputFor(structureTurn);
+    extraObject.routingCore.object.value.push({id: "object-4", ordinal: 4, kind: "operation", slots: [{key: "amount", value: "500000000"}, {key: "currency", value: "BRL"}]});
+    expect(scoreIntentGoldTurn(structureTurn, extraObject, extraObject).objectKindsExact).toBe(false);
+
+    const splitSlots = outputFor(modelTurn);
+    const scenario = splitSlots.routingCore.object.value.find(({kind}) => kind === "scenario")!;
+    scenario.slots = scenario.slots.filter(({key}) => key === "indexer");
+    splitSlots.routingCore.object.value.push({id: "object-3", ordinal: 3, kind: "scenario", slots: [{key: "percentage", value: "12"}, {key: "tenor_months", value: "84"}]});
+    expect(scoreIntentGoldTurn(modelTurn, splitSlots, splitSlots).materialReferences).toBe(false);
   });
 
   it("changes the stability fingerprint for every semantic or plan-driving axis", () => {
     const turn = intentGoldTurns[0]!; const base = outputFor(turn); const baseFingerprint = intentRoutingFingerprint(base);
     const mutations: IntentClassifierOutput[] = [
       {...base, routingCore: {...base.routingCore, action: {...base.routingCore.action, value: ["review"]}}},
-      {...base, routingCore: {...base.routingCore, object: {...base.routingCore.object, value: [{kind: "market", reference: "Camil"}]}}},
-      {...base, routingCore: {...base.routingCore, desiredOutcome: {...base.routingCore.desiredOutcome, value: "outro resultado"}}},
-      {...base, routingCore: {...base.routingCore, decision: {...base.routingCore.decision, value: "decidir risco de crédito"}}},
-      {...base, routingCore: {...base.routingCore, audience: {...base.routingCore.audience, value: ["conselho"]}}},
+      {...base, routingCore: {...base.routingCore, object: {...base.routingCore.object, value: [{id: "object-1", ordinal: 1, kind: "market", slots: [{key: "entity", value: "Camil"}]}]}}},
+      {...base, routingCore: {...base.routingCore, decisionType: {...base.routingCore.decisionType, value: "credit"}}},
+      {...base, routingCore: {...base.routingCore, audienceType: {...base.routingCore.audienceType, value: "board_or_committee"}}},
       {...base, routingCore: {...base.routingCore, depth: {...base.routingCore.depth, value: "institutional"}}},
     ];
     for (const changed of mutations) expect(intentRoutingFingerprint(changed)).not.toBe(baseFingerprint);
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
     const cdi = outputFor(modelTurn);
     const cdiPlusSpread = outputFor(modelTurn);
-    cdiPlusSpread.routingCore.object.value = cdiPlusSpread.routingCore.object.value.map((object) => ({...object, reference: "CDI + 15% sete anos"}));
+    cdiPlusSpread.routingCore.object.value = cdiPlusSpread.routingCore.object.value.map((object) => object.kind === "scenario"
+      ? {...object, slots: object.slots.map((slot) => slot.key === "percentage" ? {...slot, value: "15"} : slot)}
+      : object);
     expect(intentRoutingFingerprint(cdiPlusSpread)).not.toBe(intentRoutingFingerprint(cdi));
   });
 
@@ -229,7 +202,7 @@ describe("intent router promotion gate", () => {
     const repeatedBytes = valid.map((entry) => entry.turnId === stability.id && entry.repeat === 2 ? {...entry, messageFingerprint: fingerprintIntentMessage(stability.message)} : entry);
     expect(summarizeIntentRouterGate(repeatedBytes).unstableTurnIds).toContain(stability.id);
     const changedMeaning = valid.map((entry) => entry.turnId === stability.id && entry.repeat === 3
-      ? observation(stability, 3, {...outputFor(stability), routingCore: {...outputFor(stability).routingCore, audience: {value: ["conselho"], state: "explicit", affirmation: "affirmed"}}})
+      ? observation(stability, 3, {...outputFor(stability), routingCore: {...outputFor(stability).routingCore, audienceType: {value: "board_or_committee", state: "explicit"}}})
       : entry);
     expect(summarizeIntentRouterGate(changedMeaning).unstableTurnIds).toContain(stability.id);
   });
@@ -248,7 +221,7 @@ describe("intent router promotion gate", () => {
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
     const conflictingRate = outputFor(modelTurn);
     conflictingRate.routingCore.object.value = conflictingRate.routingCore.object.value.map((object) => object.kind === "scenario"
-      ? {...object, reference: "CDI 12% e CDI 15%, prazo 7 anos"}
+      ? {...object, slots: [...object.slots, {key: "percentage", value: "15"}]}
       : object);
     const observations = completeObservations().map((entry) => entry.turnId === modelTurn.id && entry.repeat === 1
       ? observation(modelTurn, 1, conflictingRate)
@@ -270,7 +243,7 @@ describe("intent router promotion gate", () => {
 
     const forgedChecks = valid.map((entry, index) => index === 1 ? {
       ...entry,
-      rawActual: {...entry.rawActual!, routingCore: {...entry.rawActual!.routingCore, action: {value: ["review"], state: "explicit" as const}}},
+      rawActual: {...entry.rawActual!, routingCore: {...entry.rawActual!.routingCore, action: {value: ["review" as const], state: "explicit" as const}}},
       checks: Object.fromEntries(Object.keys(entry.checks).map((key) => [key, true])) as typeof entry.checks,
     } : entry);
     const forgedChecksSummary = summarizeIntentRouterGate(forgedChecks);

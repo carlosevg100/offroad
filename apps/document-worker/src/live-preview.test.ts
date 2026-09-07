@@ -7,18 +7,19 @@ import type {PreviewStepOutput} from "./integration-preview";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
   value, state, confidence: state === "explicit" ? 1 : 0.7,
-  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
 });
 
 /** A classifier output the way the model returns it, with the preview-desk fields. */
 function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & {turn?: Partial<LiveRoutingOutput["turn"]>} = {}): LiveRoutingOutput {
   const base: LiveRoutingOutput = {
     routingCore: {
-      action: field(["preparar material para reunião"]),
-      object: field([{kind: "company" as const, reference: "Camil"}, {kind: "material" as const}]),
-      desiredOutcome: field("material para a reunião com a Camil sobre refinanciamento"),
-      decision: field(null),
-      audience: field(["VP"]),
+      action: field(["prepare_meeting" as const]),
+      object: field([
+        {id: "object-1", ordinal: 1, kind: "company" as const, slots: [{key: "entity" as const, value: "Camil"}]},
+        {id: "object-2", ordinal: 2, kind: "material" as const, slots: []},
+      ]),
+      decisionType: field("material" as const),
+      audienceType: field("internal_senior" as const),
       depth: field("preliminary" as const, "inferred"),
       continuity: field("new" as const),
       workResponsibility: field(["producer" as const]),
@@ -92,7 +93,7 @@ describe("live_intelligence_preview router", () => {
   it("stamps the envelope with system fields and reports the one call it made", async () => {
     const understanding = await understandLiveTurn({gateway: fakeGateway(classifierOutput()), context});
     expect(understanding.envelope.executionContext.organizationId).toEqual({value: context.organizationId, state: "system"});
-    expect(understanding.envelope.routingCore.audience.value).toEqual(["VP"]);
+    expect(understanding.envelope.routingCore.audience.value).toEqual(["internal senior"]);
     expect(understanding.modelRoute).toBe("governed_model_route");
     expect(understanding.costUsd).toBeCloseTo(0.0021, 6);
   });
@@ -120,7 +121,7 @@ describe("live_intelligence_preview router", () => {
 
   it("abstains for a company without a frozen corpus and never lends it the Camil objects", async () => {
     const decision = await decide(classifierOutput({
-      routingCore: {...classifierOutput().routingCore, object: field([{kind: "company", reference: "Magazine Luiza"}])},
+      routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Magazine Luiza"}]}])},
       turn: {companies: [{mention: "Magazine Luiza", role: "subject"}]},
     }), {message: "Preciso preparar uma reunião com a Magazine Luiza sobre refinanciamento."});
     expect(decision.kind).toBe("abstain");
@@ -133,7 +134,7 @@ describe("live_intelligence_preview router", () => {
 
   it("routes a CFO preparing a board discussion to prepare_decision with the board as audience", async () => {
     const output = classifierOutput({
-      routingCore: {...classifierOutput().routingCore, audience: field(["conselho de administração"]), workResponsibility: field(["producer", "decision_maker"])},
+      routingCore: {...classifierOutput().routingCore, audienceType: field("board_or_committee"), workResponsibility: field(["producer", "decision_maker"])},
       composition: "prepare_decision",
     });
     const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão sobre refinanciar as debêntures."});
@@ -263,7 +264,7 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("names a known role as the audience when the classifier lists the requester's own description first", async () => {
-    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audience: field(["banker (self), meeting with Camil", "VP"])}});
+    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audienceType: field("internal_senior")}});
     const decision = await decide(output);
     expect(decision.record.audience).toBe("vp");
     expect(decision.reply).toContain("audiência=vp");
@@ -296,7 +297,7 @@ describe("live_intelligence_preview router", () => {
 
   it("resolves the company from the message text when the classifier leaves it out", async () => {
     const output = classifierOutput({
-      routingCore: {...classifierOutput().routingCore, object: field([{kind: "material"}])},
+      routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "material", slots: []}])},
       turn: {companies: []},
     });
     const decision = await decide(output, {message: "Reunião com a Camil segunda-feira: o VP quer algo sobre refinanciamento das debêntures, mas não fechou o ângulo nem o entregável."});
@@ -324,17 +325,14 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("routes a decision body written in the message to prepare_decision even when the classifier names another composition", async () => {
-    const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audience: field(["CFO"])}});
+    const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audienceType: field("company_management")}});
     const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão de refinanciar as debêntures."});
     expect(decision.composition).toBe("prepare_decision");
     expect(decision.record.audience).toBe("board");
   });
 
-  it("clamps long classifier strings to the envelope contract instead of failing the turn", async () => {
+  it("rejects an overlong canonical object slot at the model boundary", () => {
     const long = "a".repeat(300);
-    const output = classifierOutput({routingCore: {...classifierOutput().routingCore, action: field([long, "b"]), desiredOutcome: field(long)}});
-    const understanding = await understandLiveTurn({gateway: fakeGateway(output), context});
-    expect(understanding.envelope.routingCore.action.value).toEqual(["prepare_meeting"]);
-    expect(understanding.envelope.routingCore.desiredOutcome.value).toHaveLength(300);
+    expect(() => classifierOutput({routingCore: {...classifierOutput().routingCore, object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: long}]}])}})).toThrow();
   });
 });

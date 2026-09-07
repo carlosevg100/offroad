@@ -284,6 +284,15 @@ type Composition = PreviewComposition;
 const t = (locale: "pt-BR" | "en-US", pt: string, en: string) => (locale === "en-US" ? en : pt);
 
 const knownAudiences = new Set(["vp", "board", "committee", "cfo", "ceo", "companhia", "investors"]);
+const canonicalAudience: Record<LiveRoutingOutput["routingCore"]["audienceType"]["value"], string | null> = {
+  self: "self",
+  internal_senior: "vp",
+  company_management: "cfo",
+  board_or_committee: "board",
+  capital_provider: "investors",
+  market: "market",
+  unspecified: null,
+};
 
 function normalizeAudience(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -422,7 +431,9 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const sponsorInstruction = (understanding.envelope.executionContext.sponsorInstruction.value ?? [...priorUserTurns, input.message].join("\n")).slice(0, 4_000);
   const mentions = [
     ...output.turn.companies.map((company) => company.mention),
-    ...core.object.value.filter((object) => object.kind === "company" && object.reference).map((object) => object.reference as string),
+    ...core.object.value
+      .filter((object) => object.kind === "company")
+      .flatMap((object) => object.slots.filter(({key}) => key === "entity").map(({value}) => value)),
   ];
   // The classifier sometimes leaves a named company out of its list; the registry's aliases are
   // matched against the message itself as well, as whole words, so a company the person wrote
@@ -437,8 +448,12 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
   // Among the audiences the classifier lists, a known role wins over free text ("banker (self)"),
   // so the headline names the reader of the work, not the person writing the request.
-  const listedAudiences = core.audience.value.map((item) => normalizeAudience(item));
-  const audience = normalizeAudience(output.turn.scopeChanges.audience) ?? listedAudiences.find((item) => item === "board" || item === "committee") ?? decisionBodyInText ?? listedAudiences.find((item) => item !== null && knownAudiences.has(item)) ?? listedAudiences[0] ?? "vp";
+  const classifiedAudience = canonicalAudience[core.audienceType.value];
+  const audience = normalizeAudience(output.turn.scopeChanges.audience)
+    ?? decisionBodyInText
+    ?? (classifiedAudience && knownAudiences.has(classifiedAudience) ? classifiedAudience : null)
+    ?? classifiedAudience
+    ?? "vp";
   const depth = output.turn.scopeChanges.depth ?? core.depth.value;
   // Three readings of the message itself, for what the classifier got wrong in the gate: it filed
   // "para o conselho" as a board deck request, filed a request for pages as an answer to the format
@@ -629,7 +644,7 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   }
   const form: PreviewRequest["form"] = composition === "prepare_decision" ? "board_deck" : output.turn.scopeChanges.form === "memo" ? "internal_briefing" : output.turn.scopeChanges.form ?? "first_deliverable";
   const undefinedAspects: PreviewRequest["undefinedAspects"] = [
-    ...(core.desiredOutcome.state === "unknown" || core.desiredOutcome.state === "ambiguous" ? ["thesis" as const] : []),
+    ...(output.composition === null ? ["thesis" as const] : []),
     ...(output.turn.scopeChanges.form === null && composition !== "prepare_decision" ? ["format" as const] : []),
     ...(core.depth.state === "unknown" || core.depth.state === "ambiguous" ? ["depth" as const] : []),
   ];
@@ -638,8 +653,8 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   return {
     kind: "activate", composition,
     reply: `${headline(input, composition, corpusRecord(corpus), audience, depth)}\n${t(locale,
-      `Entendi: ${core.desiredOutcome.value}. Companhia: ${corpus.company.legalName} (base congelada do Caso 01, ${corpus.basis}, versão ${corpus.version}). Composição: ${compositionLabels[composition].pt}; audiência ${audience}; profundidade ${depth}.${question} Começo agora sobre a base congelada: dívida instrumento a instrumento, conciliação, covenants, vencimentos, juros, custo de saída, cenários, comparação antes e depois e a devolutiva.`,
-      `Understood: ${core.desiredOutcome.value}. Company: ${corpus.company.legalName} (frozen Case 01 base, ${corpus.basis}, version ${corpus.version}). Composition: ${compositionLabels[composition].en}; audience ${audience}; depth ${depth}.${question} I start now on the frozen base: debt instrument by instrument, reconciliation, covenants, maturities, interest, exit cost, scenarios, the before-and-after comparison and the readout.`)}`,
+      `Entendi: ${understanding.envelope.routingCore.desiredOutcome.value}. Companhia: ${corpus.company.legalName} (base congelada do Caso 01, ${corpus.basis}, versão ${corpus.version}). Composição: ${compositionLabels[composition].pt}; audiência ${audience}; profundidade ${depth}.${question} Começo agora sobre a base congelada: dívida instrumento a instrumento, conciliação, covenants, vencimentos, juros, custo de saída, cenários, comparação antes e depois e a devolutiva.`,
+      `Understood: ${understanding.envelope.routingCore.desiredOutcome.value}. Company: ${corpus.company.legalName} (frozen Case 01 base, ${corpus.basis}, version ${corpus.version}). Composition: ${compositionLabels[composition].en}; audience ${audience}; depth ${depth}.${question} I start now on the frozen base: debt instrument by instrument, reconciliation, covenants, maturities, interest, exit cost, scenarios, the before-and-after comparison and the readout.`)}`,
     activation: buildPreviewActivation(composition, request, {}, turnInput),
     record: base(composition, corpus, false, null),
   };

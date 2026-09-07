@@ -28,13 +28,12 @@ const job: AgentOperationBriefJob = {
 function validLiveRoutingOutput(company = "Magazine Luiza") {
   const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
     value, state, confidence: state === "explicit" ? 1 : 0.7,
-    affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
   });
   return liveRoutingOutputSchema.parse({
     routingCore: {
-      action: field(["analisar companhia"]),
-      object: field([{kind: "company", reference: company}]),
-      desiredOutcome: field("análise preliminar"), decision: field(null), audience: field(["VP"]),
+      action: field(["understand"]),
+      object: field([{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: company}]}]),
+      decisionType: field("none"), audienceType: field("internal_senior"),
       depth: field("preliminary", "inferred"), continuity: field("new"), workResponsibility: field(["producer"]),
     },
     inferableContext: {

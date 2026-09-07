@@ -41,29 +41,25 @@ São exatamente 40 turnos sintéticos distribuídos em quatro suítes:
 - fronteiras de confusão entre composições próximas;
 - pedidos adversariais, negações e tentativas de inferir cargo, objetivo, evidência ou autoridade.
 
-As vinte composições aparecem no conjunto. Cada turno possui assinatura semântica explícita:
-ação canônica, tipos de objeto, referências materiais ligadas ao objeto correspondente, sinais do
-resultado desejado, presença e categoria da decisão e categoria de audiência. Números, entidades e
-premissas que alteram a decisão fazem parte da referência; por exemplo, o cenário `gc05-t03` exige
-CDI de 12% e prazo de sete anos. O score confere esses significados na resposta bruta do modelo,
-antes de reparos do canonicalizador, além de
-composição, abstenção, profundidade, continuidade, trabalhos, responsabilidades e pergunta.
-JSON válido ou campo meramente preenchido não é acerto.
+As vinte composições aparecem no conjunto. Cada turno possui uma assinatura semântica estruturada:
+uma ação canônica, um tipo canônico de decisão, um tipo canônico de audiência e instâncias de
+objetos identificadas por `id` e `ordinal`. Cada instância declara exatamente os slots materiais que
+precisa preservar — entidade, assunto, montante, moeda, percentual, indexador e prazo em meses.
+O classificador não pode usar prosa livre de resultado, decisão ou audiência como campo de
+roteamento; esses textos são renderizados deterministicamente depois, para a interface.
 
-Resultado desejado, decisão e audiência carregam polaridade estruturada (`affirmed`, `negated`,
-`uncertain` ou `not_applicable`), mas o gate não confia nesse rótulo do classificador. Ele deriva uma
-segunda polaridade diretamente da prosa e exige coerência entre as duas; negação ou ambiguidade
-falham fechadas. Assim, mesmo se o modelo marcar falsamente `affirmed`, “não preparar”, “não existe
-decisão” ou “não é para o VP” não passam por keyword e alteram o fingerprint.
-Valores financeiros são comparados por slots canônicos: montante, moeda, percentual, indexador e
-prazo. `R$ 50 milhões` e `BRL50m`, assim como sete e 7 anos, são equivalentes; omitir BRL, ticket,
-CDI, 12% ou 84 meses quando material reprova. Cada slot é singular por tipo de objeto: valor extra
-ou conflitante também reprova, portanto `CDI 12% e CDI 15%` não satisfaz uma expectativa de 12%.
+O score confere a resposta bruta antes dos reparos do canonicalizador. A correspondência entre gold
+e resposta é bijetiva: quantidade de objetos, identidade, ordem, tipo, conjunto de slots,
+cardinalidade e valores permitidos precisam coincidir. Um segundo objeto, um slot extra, slots de um
+mesmo cenário repartidos entre objetos ou valores conflitantes reprovam. Assim, `CDI 12% e CDI 15%`,
+uma operação adicional de BRL 500 milhões ou CDI num objeto e prazo em outro não satisfazem o gold.
+Negação ou ambiguidade deve ser refletida nos enums canônicos ou em abstenção; não existe mais uma
+frase narrativa que o gate tente interpretar por regex.
 
-Um teste de integração passa uma resposta bruta semanticamente correta pelos 52 textos autorais e
-pelo canonicalizador de produção. Ele exerce precedência, negações, flexões verbais, mudança de
-continuidade e a abstenção. Esse teste local prova o contrato determinístico; não substitui a
-corrida futura com o provedor real.
+Um teste de integração passa uma resposta bruta estruturada pelos 52 textos autorais e pelo
+canonicalizador de produção. Ele exerce precedência, mudança de continuidade, abstenção e os
+limites de cardinalidade. Esse teste local prova o contrato determinístico; não substitui a corrida
+futura com o provedor real.
 
 As expectativas do gold são um oracle de aceitação escrito no pacote de evals. Elas não importam
 nem derivam a policy de produção; desse modo, uma alteração equivocada na policy faz a integração

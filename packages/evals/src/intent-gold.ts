@@ -1,6 +1,7 @@
 import {
   canonicalIntentActionSchema,
   intentObjectKindSchema,
+  intentObjectSlotKeySchema,
   namedCompositionKeys,
   namedCompositionSchema,
   primaryWorkSchema,
@@ -21,12 +22,21 @@ export const materialSlotSchema = z.object({
   value: z.string().min(1),
 });
 
+const expectedObjectInstanceSchema = z.object({
+  id: z.string().regex(/^object-[1-9]\d*$/),
+  ordinal: z.number().int().min(1),
+  kind: intentObjectKindSchema,
+  slots: z.array(z.object({
+    key: intentObjectSlotKeySchema,
+    allowedValues: z.array(z.string().min(1)).min(1),
+    cardinality: z.number().int().min(1),
+  })).default([]),
+  allowAdditional: z.boolean().default(false),
+});
+
 const semanticSignatureSchema = z.object({
   canonicalAction: canonicalIntentActionSchema,
-  objectKinds: z.array(intentObjectKindSchema).min(1),
-  materialReferences: z.array(z.object({kind: intentObjectKindSchema, reference: z.string().min(2)})).default([]),
-  materialSlots: z.array(materialSlotSchema).default([]),
-  desiredOutcomeSignals: z.array(z.array(z.string().min(2)).min(1)).min(1),
+  objects: z.array(expectedObjectInstanceSchema).min(1),
   decision: z.object({present: z.boolean(), category: decisionCategorySchema}),
   audienceCategory: audienceCategorySchema,
 });
@@ -56,12 +66,44 @@ export type IntentGoldTurn = z.infer<typeof intentGoldTurnSchema>;
 
 type GoldInput = {
   id: string; caseId: z.infer<typeof intentGoldTurnSchema>["caseId"]; suite: IntentGoldSuite;
-  message: string; composition: NamedComposition | null; semantic: z.input<typeof semanticSignatureSchema>;
+  message: string; composition: NamedComposition | null; semantic: {
+    canonicalAction: z.infer<typeof canonicalIntentActionSchema>;
+    objectKinds: Array<z.infer<typeof intentObjectKindSchema>>;
+    materialReferences?: Array<{kind: z.infer<typeof intentObjectKindSchema>; reference: string}>;
+    materialSlots?: Array<z.infer<typeof materialSlotSchema>>;
+    desiredOutcomeSignals?: string[][];
+    decision: {present: boolean; category: z.infer<typeof decisionCategorySchema>};
+    audienceCategory: z.infer<typeof audienceCategorySchema>;
+  };
   priorTurns?: string[]; continuity?: z.infer<typeof intentGoldTurnSchema>["expected"]["continuity"];
   documentCount?: number;
   acceptedPlan?: {primaryWorks: PrimaryWork[]; workResponsibility: WorkResponsibility[]; depth: "point" | "preliminary" | "institutional"};
   firstQuestionTheme?: string | null; firstQuestionSignals?: string[][]; stabilityParaphrases?: [string, string];
 };
+
+const entityKinds = new Set(["organization", "user", "company", "provider", "mandate"]);
+
+function expectedObjects(input: GoldInput["semantic"]): z.infer<typeof expectedObjectInstanceSchema>[] {
+  const result: z.infer<typeof expectedObjectInstanceSchema>[] = [];
+  for (const kind of input.objectKinds) {
+    const references = (input.materialReferences ?? []).filter((entry) => entry.kind === kind);
+    const instances = Math.max(1, references.length);
+    for (let index = 0; index < instances; index += 1) {
+      const reference = references[index];
+      const slots = [
+        ...(reference ? [{key: entityKinds.has(kind) ? "entity" as const : "subject" as const, allowedValues: [reference.reference], cardinality: 1}] : []),
+        ...(index === 0 ? (input.materialSlots ?? []).filter((entry) => entry.kind === kind).map((entry) => ({
+          key: entry.slot,
+          allowedValues: [entry.value],
+          cardinality: 1,
+        })) : []),
+      ];
+      const ordinal = result.length + 1;
+      result.push({id: `object-${ordinal}`, ordinal, kind, slots, allowAdditional: false});
+    }
+  }
+  return result;
+}
 
 /** Independent acceptance oracle. It deliberately does not import or derive production policy. */
 const acceptedPlanByComposition: Record<NamedComposition, {primaryWorks: PrimaryWork[]; workResponsibility: WorkResponsibility[]; depth: "point" | "preliminary" | "institutional"}> = {
@@ -100,7 +142,13 @@ const gold = (input: GoldInput): IntentGoldTurn => {
       workResponsibility: acceptedPlan.workResponsibility,
       depth: acceptedPlan.depth, continuity: input.continuity ?? (input.priorTurns?.length ? "resume" : "new"),
       composition: input.composition, abstain: input.composition === null,
-      firstQuestionTheme: input.firstQuestionTheme ?? null, firstQuestionSignals: input.firstQuestionSignals ?? [], semantic: input.semantic,
+      firstQuestionTheme: input.firstQuestionTheme ?? null, firstQuestionSignals: input.firstQuestionSignals ?? [],
+      semantic: {
+        canonicalAction: input.semantic.canonicalAction,
+        objects: expectedObjects(input.semantic),
+        decision: input.semantic.decision,
+        audienceCategory: input.semantic.audienceCategory,
+      },
     },
   });
 };

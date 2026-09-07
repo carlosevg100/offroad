@@ -47,28 +47,31 @@ describe("intent gold turns", () => {
     expect(new Set(intentGoldCoverage().compositions)).toEqual(new Set(namedCompositionKeys));
     for (const turn of intentGoldTurns) {
       expect(turn.expected.semantic.canonicalAction).toBeTruthy();
-      expect(turn.expected.semantic.objectKinds.length).toBeGreaterThan(0);
-      for (const materialReference of turn.expected.semantic.materialReferences) {
-        expect(turn.expected.semantic.objectKinds, `${turn.id}:${materialReference.reference}`).toContain(materialReference.kind);
+      expect(turn.expected.semantic.objects.length).toBeGreaterThan(0);
+      expect(turn.expected.semantic.objects.map(({ordinal}) => ordinal)).toEqual(turn.expected.semantic.objects.map((_, index) => index + 1));
+      expect(new Set(turn.expected.semantic.objects.map(({id}) => id)).size).toBe(turn.expected.semantic.objects.length);
+      for (const object of turn.expected.semantic.objects) {
+        expect(object.id).toBe(`object-${object.ordinal}`);
+        expect(object.allowAdditional).toBe(false);
+        expect(new Set(object.slots.map(({key}) => key)).size).toBe(object.slots.length);
       }
-      for (const materialSlot of turn.expected.semantic.materialSlots) {
-        expect(turn.expected.semantic.objectKinds, `${turn.id}:${materialSlot.slot}`).toContain(materialSlot.kind);
-      }
-      expect(turn.expected.semantic.desiredOutcomeSignals.length).toBeGreaterThan(0);
       expect(turn.expected.semantic.decision.category).toBeTruthy();
       expect(turn.expected.semantic.audienceCategory).toBeTruthy();
     }
   });
 
   it("binds material facts to objects and preserves decision-driving numbers and entities", () => {
-    expect(intentGoldTurns.find(({id}) => id === "gc01-t03")!.expected.semantic.materialReferences)
-      .toContainEqual({kind: "claim", reference: "4,7x"});
-    expect(intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.materialReferences)
-      .toEqual(expect.arrayContaining([{kind: "company", reference: "Aurora"}, {kind: "operation", reference: "recebíveis"}]));
-    expect(intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.materialSlots)
-      .toEqual(expect.arrayContaining([{kind: "operation", slot: "amount", value: "50000000"}, {kind: "operation", slot: "currency", value: "BRL"}]));
-    expect(intentGoldTurns.find(({id}) => id === "gc05-t03")!.expected.semantic.materialSlots)
-      .toEqual(expect.arrayContaining([{kind: "scenario", slot: "indexer", value: "CDI"}, {kind: "scenario", slot: "percentage", value: "12"}, {kind: "scenario", slot: "tenor_months", value: "84"}]));
+    const claim = intentGoldTurns.find(({id}) => id === "gc01-t03")!.expected.semantic.objects.find(({kind}) => kind === "claim")!;
+    expect(claim.slots).toContainEqual({key: "subject", allowedValues: ["4,7x"], cardinality: 1});
+    const structure = intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.objects;
+    expect(structure.find(({kind}) => kind === "company")!.slots).toContainEqual({key: "entity", allowedValues: ["Aurora"], cardinality: 1});
+    expect(structure.find(({kind}) => kind === "operation")!.slots).toEqual(expect.arrayContaining([
+      {key: "subject", allowedValues: ["recebíveis"], cardinality: 1},
+      {key: "amount", allowedValues: ["50000000"], cardinality: 1},
+      {key: "currency", allowedValues: ["BRL"], cardinality: 1},
+    ]));
+    expect(intentGoldTurns.find(({id}) => id === "gc05-t03")!.expected.semantic.objects.find(({kind}) => kind === "scenario")!.slots)
+      .toEqual(expect.arrayContaining([{key: "indexer", allowedValues: ["CDI"], cardinality: 1}, {key: "percentage", allowedValues: ["12"], cardinality: 1}, {key: "tenor_months", allowedValues: ["84"], cardinality: 1}]));
   });
 
   it("keeps an independent acceptance plan for document-backed structuring", () => {

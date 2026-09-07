@@ -9,8 +9,6 @@ import {
 import {z} from "zod";
 
 import {
-  audienceCategorySchema,
-  decisionCategorySchema,
   intentGoldTurns,
   intentGoldTurnSchema,
   intentGoldSuiteSchema,
@@ -21,7 +19,7 @@ import {
 export const intentRouterGateChecksSchema = z.object({
   completed: z.boolean(), composition: z.boolean(), abstain: z.boolean(), depth: z.boolean(), continuity: z.boolean(),
   primaryWorksExact: z.boolean(), responsibilitiesExact: z.boolean(), canonicalAction: z.boolean(), objectKindsExact: z.boolean(),
-  materialReferences: z.boolean(), desiredOutcome: z.boolean(), decisionPresence: z.boolean(), decisionCategory: z.boolean(),
+  materialReferences: z.boolean(), decisionPresence: z.boolean(), decisionCategory: z.boolean(),
   audienceCategory: z.boolean(), questionPresence: z.boolean(), questionTheme: z.boolean(),
 });
 export type IntentRouterGateChecks = z.infer<typeof intentRouterGateChecksSchema>;
@@ -42,115 +40,22 @@ const exactSet = <T extends string>(actual: readonly T[], expected: readonly T[]
 };
 export const fingerprintIntentMessage = (message: string): string => createHash("sha256").update(message, "utf8").digest("hex");
 
-const semanticTagPatterns = {
-  company: /\b(camil|aurora|cogna|delta|companhia|empresa|company)\b/,
-  leverage: /\b(alavancagem|leverage|4[,.]7x|4[,.]7 vezes)\b/,
-  covenant: /\b(covenant|headroom|clausula|clause)\b/,
-  refinancing: /\b(refinanc|alongamento|liability management)\b/,
-  receivables: /\b(recebiveis|receivables|tape|aging)\b/,
-  instrument: /\b(debenture|ccb|fidc|bond|loan|instrumento|instrument)\b/,
-  model: /\b(modelo|model|projecao|projection|premissa|assumption)\b/,
-  material: /\b(material|deck|pitch|memo|one-pager|apresentacao|presentation)\b/,
-  meeting: /\b(reuniao|meeting|conversa|conversation)\b/,
-  decision: /\b(decisao|decision|conselho|board|comite|committee)\b/,
-  capital: /\b(capital|divida|debt|financiamento|financing|emissao|issuance)\b/,
-  market: /\b(mercado|market|investidores|investors|fundos|funds|financiadores|lenders)\b/,
-  document: /\b(documento|document|contrato|contract|escritura|indenture|waterfall)\b/,
-  performance: /\b(receita|revenue|ebitda|caixa|cash|liquidez|liquidity|desempenho|performance)\b/,
-  indexer: /\b(cdi|ipca|selic|sofr|indexador|indexer)\b/,
-} as const;
-
-function semanticTags(value: string): string[] {
-  const text = normalizeText(value);
-  const lexical = Object.entries(semanticTagPatterns).filter(([, pattern]) => pattern.test(text)).map(([tag]) => tag);
-  const normalizedNumbers = text
-    .replace(/\b(sete|seven)\b/g, "7")
-    .replace(/\b(doze|twelve)\b/g, "12")
-    .match(/\b\d+(?:[,.]\d+)?(?:%|\s*bps|x|\s*(?:anos?|years?|meses?|months?|milhoes?|million))?\b/g)
-    ?.map((token) => `number:${token.replace(",", ".").replace(/\s+/g, " ")}`) ?? [];
-  return [...new Set([...lexical, ...normalizedNumbers])].sort();
-}
-
-type NormalizedMaterialSlot = {slot: "amount" | "currency" | "percentage" | "indexer" | "tenor_months"; value: string};
-type SemanticPolarity = "affirmed" | "negated" | "ambiguous" | "absent";
-
-/**
- * Independent semantic check over classifier prose. The provider-controlled
- * `affirmation` label is evidence to verify, never the source of truth.
- */
-export function deriveSemanticPolarity(value: string | readonly string[] | null): SemanticPolarity {
-  const prose = typeof value === "string" ? value : value?.join(" ") ?? "";
-  const text = normalizeText(prose).trim();
-  if (!text) return "absent";
-  if (/\b(?:nao sei|nao esta claro|incert[oa]|talvez|desconhecid[oa]|nao especificad[oa]|not sure|unclear|uncertain|unknown|unspecified|maybe)\b/.test(text)) return "ambiguous";
-  const negated = /(?:^|[.;,!?:]\s*|\b(?:e|and|mas|but)\s+)\s*(?:nao|nunca|not|never|sem|without)\b/.test(text)
-    || /\b(?:nao|not)\s+(?:existe|ha|is|are|e|sera|deve|should|will|para|for)\b/.test(text);
-  const contradicted = negated && /\b(?:mas|porem|contudo|however|but)\b/.test(text);
-  if (contradicted) return "ambiguous";
-  return negated ? "negated" : "affirmed";
-}
-
-function affirmationMatchesProse(output: IntentClassifierOutput["routingCore"]["desiredOutcome"] | IntentClassifierOutput["routingCore"]["decision"] | IntentClassifierOutput["routingCore"]["audience"]): boolean {
-  const polarity = deriveSemanticPolarity(output.value);
-  if (output.affirmation === "affirmed") return polarity === "affirmed";
-  if (output.affirmation === "negated") return polarity === "negated";
-  if (output.affirmation === "uncertain") return polarity === "ambiguous";
-  return polarity === "absent";
-}
-
-/** Canonical finance slots make equivalent surface forms comparable without losing economics. */
-export function normalizedMaterialSlots(value: string): NormalizedMaterialSlot[] {
-  const text = normalizeText(value)
-    .replace(/\b(sete|seven)\b/g, "7")
-    .replace(/\b(doze|twelve)\b/g, "12");
-  const slots: NormalizedMaterialSlot[] = [];
-  if (/(?:r\$|\bbrl(?=\d|\b)|\breais?\b)/.test(text)) slots.push({slot: "currency", value: "BRL"});
-  for (const match of text.matchAll(/(?:r\$|\bbrl\b)?\s*(\d+(?:[.,]\d+)?)\s*(milhoes?|milhao|mi|mm|m|million)\b/g)) {
-    const numeric = Number(match[1]!.replace(",", "."));
-    if (Number.isFinite(numeric)) slots.push({slot: "amount", value: String(numeric * 1_000_000)});
-  }
-  for (const match of text.matchAll(/\b(\d+(?:[.,]\d+)?)\s*%/g)) {
-    slots.push({slot: "percentage", value: String(Number(match[1]!.replace(",", ".")))});
-  }
-  for (const indexer of ["cdi", "ipca", "selic", "sofr"] as const) {
-    if (new RegExp(`\\b${indexer}\\b`).test(text)) slots.push({slot: "indexer", value: indexer.toUpperCase()});
-  }
-  for (const match of text.matchAll(/\b(\d+)\s*(anos?|years?|meses?|months?)\b/g)) {
-    const count = Number(match[1]);
-    slots.push({slot: "tenor_months", value: String(/^(ano|anos|year|years)$/.test(match[2]!) ? count * 12 : count)});
-  }
-  return [...new Map(slots.map((slot) => [`${slot.slot}:${slot.value}`, slot])).values()]
-    .sort((left, right) => `${left.slot}:${left.value}`.localeCompare(`${right.slot}:${right.value}`));
-}
-
-function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisionCategorySchema> {
-  if (output.routingCore.decision.affirmation !== "affirmed"
-    || deriveSemanticPolarity(output.routingCore.decision.value) !== "affirmed") return "none";
-  const decision = output.routingCore.decision.value?.trim();
-  if (!decision) return "none";
-  const text = normalizeText(decision);
-  if (/\b(enviar|compartilhar|introduzir|send|share|introduce|outreach)\b/.test(text)) return "external";
-  if (/\b(deck|pitch|memo|material|arquivo|file|paginas?|pages?)\b/.test(text)) return "material";
-  if (/\b(status|pendencias?|versoes?|workflow|projeto|project)\b/.test(text)) return "workflow";
-  if (/\b(clausula|contrato|covenant|formula|documento|clause|contract|document)\b/.test(text)) return "document";
-  if (/\b(credito|credit|headroom|alavancagem|leverage|risco|risk)\b/.test(text)) return "credit";
-  if (/\b(mercado|market|fundos?|investidores?|lenders?|spread|pricing|shortlist|mandato)\b/.test(text)) return "market";
-  if (/\b(capital|divida|debt|refinanc|financ|emissao|debenture|estrutura|alternativas?)\b/.test(text)) return "capital";
-  return "none";
-}
-
-function classifyAudience(output: IntentClassifierOutput): z.infer<typeof audienceCategorySchema> {
-  if (output.routingCore.audience.affirmation !== "affirmed"
-    || deriveSemanticPolarity(output.routingCore.audience.value) !== "affirmed") return "unspecified";
-  const text = normalizeText(output.routingCore.audience.value.join(" "));
-  if (!text || /\b(unknown|desconhecid|unspecified)\b/.test(text)) return "unspecified";
-  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text)) return "board_or_committee";
-  if (/\b(cfo|tesour|companhia|cliente|management|company)\b/.test(text)) return "company_management";
-  if (/\b(fundos?|investidores?|financiadores?|lenders?|capital provider)\b/.test(text)) return "capital_provider";
-  if (/\b(vp|md|pm|diretor|director|senior)\b/.test(text)) return "internal_senior";
-  if (/\b(mercado|market)\b/.test(text)) return "market";
-  if (/\b(usuario|solicitante|requester|self|eu|mim)\b/.test(text)) return "self";
-  return "unspecified";
+function objectInstancesMatch(gold: IntentGoldTurn, output: IntentClassifierOutput): boolean {
+  const expected = gold.expected.semantic.objects;
+  const actual = output.routingCore.object.value;
+  if (actual.length !== expected.length) return false;
+  return expected.every((expectedObject) => {
+    const actualObject = actual.find(({id, ordinal}) => id === expectedObject.id && ordinal === expectedObject.ordinal);
+    if (!actualObject || actualObject.kind !== expectedObject.kind) return false;
+    const actualKeys = actualObject.slots.map(({key}) => key);
+    const expectedKeys = expectedObject.slots.map(({key}) => key);
+    if (!expectedObject.allowAdditional && !exactSet(actualKeys, expectedKeys)) return false;
+    return expectedObject.slots.every((expectedSlot) => {
+      const values = actualObject.slots.filter(({key}) => key === expectedSlot.key).map(({value}) => normalizeText(value));
+      const allowed = expectedSlot.allowedValues.map(normalizeText);
+      return values.length === expectedSlot.cardinality && values.every((value) => allowed.includes(value));
+    });
+  });
 }
 
 function emptyChecks(): IntentRouterGateChecks {
@@ -164,35 +69,12 @@ export function scoreIntentGoldTurn(
 ): IntentRouterGateChecks {
   if (!output || !rawOutput) return emptyChecks();
   const expected = gold.expected;
-  const outcome = normalizeText(rawOutput.routingCore.desiredOutcome.value);
   const question = normalizeText(output.firstQuestion ?? "");
   const questionTheme = expected.firstQuestionTheme === null
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
-  const outcomeAffirmed = rawOutput.routingCore.desiredOutcome.affirmation === "affirmed";
-  const outcomePolarityValid = affirmationMatchesProse(rawOutput.routingCore.desiredOutcome);
-  const decisionPolarityValid = affirmationMatchesProse(rawOutput.routingCore.decision);
-  const audiencePolarityValid = affirmationMatchesProse(rawOutput.routingCore.audience);
-  const decisionPresent = rawOutput.routingCore.decision.affirmation === "affirmed"
-    && deriveSemanticPolarity(rawOutput.routingCore.decision.value) === "affirmed"
-    && Boolean(rawOutput.routingCore.decision.value?.trim());
-  const actualSlots = rawOutput.routingCore.object.value.flatMap((object) =>
-    normalizedMaterialSlots(object.reference ?? "").map((slot) => ({kind: object.kind, ...slot})));
-  const actualSlotsByObjectAndKind = new Map<string, Set<string>>();
-  for (const slot of actualSlots) {
-    const key = `${slot.kind}:${slot.slot}`;
-    actualSlotsByObjectAndKind.set(key, new Set([...(actualSlotsByObjectAndKind.get(key) ?? []), slot.value]));
-  }
-  const expectedSlotsByObjectAndKind = new Map<string, Set<string>>();
-  for (const slot of expected.semantic.materialSlots) {
-    const key = `${slot.kind}:${slot.slot}`;
-    expectedSlotsByObjectAndKind.set(key, new Set([...(expectedSlotsByObjectAndKind.get(key) ?? []), slot.value]));
-  }
-  const materialSlotCardinalityValid = [...actualSlotsByObjectAndKind.values()].every((values) => values.size <= 1)
-    && [...expectedSlotsByObjectAndKind.entries()].every(([key, expectedValues]) => {
-      const actualValues = actualSlotsByObjectAndKind.get(key) ?? new Set<string>();
-      return actualValues.size === expectedValues.size && [...expectedValues].every((value) => actualValues.has(value));
-    });
+  const objectsExact = objectInstancesMatch(gold, rawOutput);
+  const decisionPresent = rawOutput.routingCore.decisionType.value !== "none";
   return {
     completed: true,
     composition: output.composition === expected.composition,
@@ -204,16 +86,11 @@ export function scoreIntentGoldTurn(
     responsibilitiesExact: exactSet(output.routingCore.workResponsibility.value, expected.workResponsibility),
     canonicalAction: rawOutput.routingCore.action.value.length === 1
       && rawOutput.routingCore.action.value[0] === expected.semantic.canonicalAction,
-    objectKindsExact: exactSet(rawOutput.routingCore.object.value.map(({kind}) => kind), expected.semantic.objectKinds),
-    materialReferences: expected.semantic.materialReferences.every((expectedReference) => rawOutput.routingCore.object.value.some((object) =>
-      object.kind === expectedReference.kind
-      && normalizeText(object.reference ?? "").includes(normalizeText(expectedReference.reference))))
-      && materialSlotCardinalityValid,
-    desiredOutcome: outcomeAffirmed && outcomePolarityValid
-      && expected.semantic.desiredOutcomeSignals.every((alternatives) => alternatives.some((signal) => outcome.includes(normalizeText(signal)))),
-    decisionPresence: decisionPolarityValid && decisionPresent === expected.semantic.decision.present,
-    decisionCategory: decisionPolarityValid && classifyDecision(rawOutput) === expected.semantic.decision.category,
-    audienceCategory: audiencePolarityValid && classifyAudience(rawOutput) === expected.semantic.audienceCategory,
+    objectKindsExact: objectsExact,
+    materialReferences: objectsExact,
+    decisionPresence: decisionPresent === expected.semantic.decision.present,
+    decisionCategory: rawOutput.routingCore.decisionType.value === expected.semantic.decision.category,
+    audienceCategory: rawOutput.routingCore.audienceType.value === expected.semantic.audienceCategory,
     questionPresence: (output.firstQuestion !== null) === (expected.firstQuestionTheme !== null),
     questionTheme,
   };
@@ -226,10 +103,10 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
   const payload = {
     abstain: output.abstain, composition, policy,
     action: output.routingCore.action.value,
-    objects: output.routingCore.object.value.map((object) => ({kind: object.kind, semanticTags: semanticTags(object.reference ?? ""), materialSlots: normalizedMaterialSlots(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-    desiredOutcome: {affirmation: output.routingCore.desiredOutcome.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.desiredOutcome.value), semanticTags: semanticTags(output.routingCore.desiredOutcome.value)},
-    decision: {affirmation: output.routingCore.decision.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.decision.value), present: output.routingCore.decision.affirmation === "affirmed" && Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
-    audience: {affirmation: output.routingCore.audience.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.audience.value), category: classifyAudience(output)}, depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
+    objects: output.routingCore.object.value.map((object) => ({id: object.id, ordinal: object.ordinal, kind: object.kind, slots: [...object.slots].sort((a, b) => `${a.key}:${a.value}`.localeCompare(`${b.key}:${b.value}`))})).sort((a, b) => a.ordinal - b.ordinal),
+    decisionType: output.routingCore.decisionType.value,
+    audienceType: output.routingCore.audienceType.value,
+    depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
     primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
     asksQuestion: output.firstQuestion !== null,
   };

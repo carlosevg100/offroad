@@ -82,10 +82,13 @@ describe("intent envelope v1", () => {
   it("refuses prose in the classifier composition field", () => {
     const classifier = {
       routingCore: {
-        ...envelope().routingCore,
-        desiredOutcome: {...envelope().routingCore.desiredOutcome, affirmation: "affirmed"},
-        decision: {...envelope().routingCore.decision, affirmation: "affirmed"},
-        audience: {...envelope().routingCore.audience, affirmation: "affirmed"},
+        action: {value: ["prepare_meeting"], state: "inferred", confidence: 0.9},
+        object: {value: [{id: "object-1", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Camil"}]}], state: "explicit", confidence: 1},
+        decisionType: {value: "capital", state: "inferred", confidence: 0.9},
+        audienceType: {value: "internal_senior", state: "explicit", confidence: 1},
+        depth: {value: "preliminary", state: "inferred", confidence: 0.9},
+        continuity: {value: "new", state: "explicit", confidence: 1},
+        workResponsibility: {value: ["producer"], state: "inferred", confidence: 0.9},
       },
       inferableContext: {
         jurisdiction: {value: ["BR"], state: "inferred", confidence: 0.9},
