@@ -48,6 +48,12 @@ regression. This is not yet the universal live router: envelope-to-recipe select
 remaining `case01.*` runtime identity and six structurally different live intentions are the next
 gate.
 
+Recipe selection is also explicit and fail-closed. Governed refinance specialization can select
+alternatives, meeting-plan or material slices; persona and seniority are absent from the decision.
+An unimplemented economic need, a combined refinance plus capex request or an unsupported output
+returns a named blocked result with no graph. The selector is candidate code only: persistence in
+the capability-bound preflight, dispatch and live enforcement remain pending.
+
 Trust is not deferred to enterprise packaging. The canonical program is
 `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
 construction and gates. Release 7 is reserved for enterprise integration, independent pentest and
