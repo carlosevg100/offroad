@@ -521,8 +521,16 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           verifyRenderedMaterialBytes(manifest, rendered.bytes);
           const materialArtifact = await queue.recordCapitalProjectArtifact(job, {
             taskRunId: input.taskRunId, artifactType: "preview_presentation_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
-            inputFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "pptx", template: templateFingerprint}),
-            content: {manifest, rendererAudit: rendered.audit, renderInspection: inspection},
+            // Every output produced by one TaskRun is bound to that run's exact input fingerprint.
+            // The format-specific derivation stays explicit in the artifact content and therefore
+            // in the immutable artifact fingerprint; it must not impersonate a different task input.
+            inputFingerprint: input.inputFingerprint,
+            content: {
+              manifest,
+              rendererAudit: rendered.audit,
+              renderInspection: inspection,
+              derivationFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "pptx", template: templateFingerprint}),
+            },
             evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}], dependencies: input.dependencies,
           });
           materialManifests.push(manifest);
@@ -549,8 +557,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         verifyRenderedMaterialBytes(workbookManifest, workbook.bytes);
         const workbookArtifact = await queue.recordCapitalProjectArtifact(job, {
           taskRunId: input.taskRunId, artifactType: "preview_workbook_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
-          inputFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "xlsx", template: workbookTemplateFingerprint}),
-          content: {manifest: workbookManifest, rendererAudit: workbook.audit, renderInspection: workbookInspection},
+          inputFingerprint: input.inputFingerprint,
+          content: {
+            manifest: workbookManifest,
+            rendererAudit: workbook.audit,
+            renderInspection: workbookInspection,
+            derivationFingerprint: fingerprintJson({contract: sourceContract.contractFingerprint, format: "xlsx", template: workbookTemplateFingerprint}),
+          },
           evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}], dependencies: input.dependencies,
         });
         materialManifests.push(workbookManifest);
@@ -575,12 +588,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           artifactType: "preview_material_execution_status",
           schemaVersion: "material-execution-status.2026.09.07-v1",
           status: "draft",
-          inputFingerprint: fingerprintJson({contract: contract.contractFingerprint, state: materialExecutionStatus.state, code: materialExecutionStatus.code, reason}),
+          inputFingerprint: input.inputFingerprint,
           content: {
             preview: {mode: "integration_preview", role: "material_execution_status"},
             state: materialExecutionStatus.state,
             code: materialExecutionStatus.code,
             reason,
+            derivationFingerprint: fingerprintJson({contract: contract.contractFingerprint, state: materialExecutionStatus.state, code: materialExecutionStatus.code, reason}),
             requestedFormats: ["pptx", "xlsx"],
             message: {pt: materialExecutionStatus.messagePt, en: materialExecutionStatus.messageEn},
             release: {state: "internal_only", recipientIds: []},

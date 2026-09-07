@@ -59,6 +59,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
   let questionProjection: Record<string, unknown> | null = null;
   const storedMaterials: Array<{bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}> = [];
   const runsByTask = new Map<string, string>();
+  const inputFingerprintByRun = new Map<string, string>();
   const queue = {
     writeStage: async (_job: unknown, stage: string, status: string) => { stages.push({stage, status}); },
     loadCapitalProjectContext: async () => ({
@@ -72,11 +73,22 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       prior_artifacts: (input.prior ?? []).map((artifact) => ({task_id: artifact.taskId, id: artifact.id, artifact_type: artifact.artifactType, artifact_version: 1, artifact_fingerprint: artifact.artifactFingerprint, input_fingerprint: artifact.inputFingerprint, status: "draft", content: artifact.content})),
       recent_messages: [],
     }),
-    startCapitalTask: async (_job: unknown, task: {taskId: string}) => { started.push(task.taskId); const id = `run-${task.taskId}`; runsByTask.set(task.taskId, id); return id; },
+    startCapitalTask: async (_job: unknown, task: {taskId: string; inputFingerprint: string}) => {
+      started.push(task.taskId);
+      const id = `run-${task.taskId}`;
+      runsByTask.set(task.taskId, id);
+      inputFingerprintByRun.set(id, task.inputFingerprint);
+      return id;
+    },
     recordCapitalProjectArtifact: async (_job: unknown, artifact: {taskRunId: string; artifactType: string; inputFingerprint: string; content: unknown; evidenceRefs?: Array<Record<string, unknown>>}) => {
       // The database refuses an evidence reference without sourceType and sourceId.
       for (const reference of artifact.evidenceRefs ?? []) {
         if (typeof reference.sourceType !== "string" || typeof reference.sourceId !== "string") throw new Error("capital_project_artifact_evidence_invalid");
+      }
+      // Mirrors private.worker_record_capital_project_artifact: auxiliary outputs from a
+      // TaskRun may have different artifact types, but never a different task input identity.
+      if (inputFingerprintByRun.get(artifact.taskRunId) !== artifact.inputFingerprint) {
+        throw new Error("capital_task_run_not_available");
       }
       const taskId = artifact.taskRunId.replace("run-", "");
       const artifactFingerprint = createHash("sha256").update(JSON.stringify(artifact.content)).digest("hex");
