@@ -3,344 +3,264 @@ import {createHash} from "node:crypto";
 import {describe, expect, it} from "vitest";
 
 import {
-  appendGovernedDocumentLifecycle,
-  compileGovernedDocumentIdentity,
+  bindGovernedDocumentIdentityServer,
   governedDocumentVersionIdentitySchema,
-  mapSourceDocumentsRowBinding,
-  validateGovernedDocumentIdentityGraph,
+  type ArtifactResolution,
+  type AtomicSourceDocumentResolution,
   type CompileGovernedDocumentIdentityInput,
   type DocumentLifecycleInput,
-  type GovernedDocumentIdentityResolver,
+  type DocumentSourceOrigin,
+  type DocumentToolIdentity,
+  type GovernedDocumentIdentityServer,
+  type GovernedDocumentServerTrustRoot,
   type GovernedDocumentVersionIdentity,
   type SnapshotLocator,
 } from "./governed-document-identity";
 
+const ids = {
+  organization: "11111111-1111-4111-8111-111111111111",
+  project: "22222222-2222-4222-8222-222222222222",
+  company: "33333333-3333-4333-8333-333333333333",
+  conversation: "44444444-4444-4444-8444-444444444444",
+  document: "55555555-5555-4555-8555-555555555555",
+  opportunity: "66666666-6666-4666-8666-666666666666",
+  intake: "77777777-7777-4777-8777-777777777777",
+  user: "88888888-8888-4888-8888-888888888888",
+  service: "99999999-9999-4999-8999-999999999999",
+  registry: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  source: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+  key: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  attestation: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+  tool: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+  layer: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+  reason: "12345678-1234-4234-8234-123456789012",
+  coverage: "23456789-2345-4345-8345-234567890123",
+};
 const encoder = new TextEncoder();
 const hash = (value: Uint8Array | string) => createHash("sha256").update(value).digest("hex");
-const sourceBytes = encoder.encode("immutable audited financial statements");
-const layerBytes = encoder.encode("verified extracted layer");
-const profileBytes = encoder.encode("verified profile derivative");
-const sourceHash = hash(sourceBytes);
-const layerHash = hash(layerBytes);
-const profileHash = hash(profileBytes);
-const actor = {kind: "user" as const, ref: "user:11111111-1111-4111-8111-111111111111"};
-const service = {kind: "service" as const, ref: "service:22222222-2222-4222-8222-222222222222"};
-const parser = {toolId: "offroad.pdf-parser", version: "1.2.3", configurationSha256: hash("parser-config")};
-const binding = {
-  table: "public.source_documents" as const,
-  organizationId: "org-a",
-  sourceDocumentId: "document-a",
-  opportunityId: "opportunity-a",
-  intakeSessionId: "session-a",
+const stable = (value: unknown): string => {
+  if (value === undefined) return "undefined";
+  if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
+  if (value && typeof value === "object") return `{${Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)).map(([key, child]) => `${JSON.stringify(key)}:${stable(child)}`).join(",")}}`;
+  return JSON.stringify(value) ?? "undefined";
 };
-const sourceLocator: SnapshotLocator = {state: "content_addressed", locatorRef: `sha256:${sourceHash}`, objectVersionRef: null};
-const layerLocator: SnapshotLocator = {state: "content_addressed", locatorRef: `sha256:${layerHash}`, objectVersionRef: null};
-const profileLocator: SnapshotLocator = {state: "versioned_object", locatorRef: "storage:profile-a", objectVersionRef: "version:1"};
+const fingerprint = (value: unknown) => hash(encoder.encode(stable(value)));
+const sourceBytes = encoder.encode("immutable audited statements");
+const layerBytes = encoder.encode("immutable extracted layer");
+const parser: DocumentToolIdentity = {toolId: ids.tool, version: "1.2.3", configurationSha256: hash("parser-config")};
+const actor = {kind: "user" as const, id: ids.user};
+const serviceActor = {kind: "service" as const, id: ids.service};
 
-type ResolverOptions = {
-  authorized?: boolean;
-  scope?: {organizationId: string; projectId: string; documentId: string; version?: number};
-  source?: Partial<{found: boolean; immutable: boolean; locatorRef: string; objectVersionRef: string | null; bytes: Uint8Array | null}>;
-  artifacts?: Map<string, {found: boolean; immutable: boolean; locatorRef: string; objectVersionRef: string | null; bytes: Uint8Array | null}>;
+function sourceOrigin(overrides: Partial<DocumentSourceOrigin> = {}): DocumentSourceOrigin {
+  return {registryId: ids.registry, registryVersion: 1, origin: "user_upload", sourceClass: "provided_documents", sourceId: ids.source, integration: {status: "native", connectorId: null}, ...overrides};
+}
+
+function storageLocator(bucketId: string, objectPath: string): SnapshotLocator {
+  return {state: "versioned_object", locatorRef: `storage:${fingerprint({bucketId, objectPath})}`, objectVersionRef: "etag:immutable-1"};
+}
+
+function makeSource(version = 1, bytes = sourceBytes, overrides: Partial<AtomicSourceDocumentResolution> = {}): AtomicSourceDocumentResolution {
+  const bucketId = "opportunity-documents";
+  const objectPath = `${ids.organization}/${ids.document}/v${version}`;
+  const capturedAt = "2026-09-01T10:00:00.000Z";
+  const row = {
+    id: ids.document, organization_id: ids.organization, opportunity_id: ids.opportunity, intake_session_id: ids.intake,
+    document_version: version, bucket_id: bucketId, object_path: objectPath, object_version: "etag:immutable-1",
+    sha256: hash(bytes), sha256_verified_at: "2026-09-01T10:00:30.000Z",
+  };
+  const source = sourceOrigin();
+  const sourceSnapshot = storageLocator(bucketId, objectPath);
+  const base = {
+    found: true, authorized: true, organizationId: ids.organization, projectId: ids.project, companyId: ids.company,
+    conversationId: ids.conversation, documentId: ids.document, row, source, sourceSnapshot, capturedAt, actor,
+    bytes, immutable: true,
+  };
+  const merged = {...base, ...overrides} as Omit<AtomicSourceDocumentResolution, "attestation">;
+  const authorizationVersion = "workspace-authz.v1";
+  const authorizedAt = "2026-09-01T09:59:00.000Z";
+  const payload = {
+    organizationId: merged.organizationId, projectId: merged.projectId, companyId: merged.companyId, conversationId: merged.conversationId,
+    documentId: merged.documentId, row: merged.row, source: merged.source, sourceSnapshot: merged.sourceSnapshot, capturedAt: merged.capturedAt,
+    actor: merged.actor, immutable: merged.immutable, sourceBytesSha256: merged.bytes ? hash(merged.bytes) : hash("missing"), sourceByteSize: merged.bytes?.byteLength ?? 0,
+    authorizationVersion, authorizedAt,
+  };
+  return {...merged, attestation: {attestationId: ids.attestation, signingKeyId: ids.key, payloadSha256: fingerprint(payload), signature: hash(`signed:${fingerprint(payload)}`), authorizationVersion, authorizedAt, signedAt: "2026-09-01T10:01:00.000Z"}};
+}
+
+type RootOptions = {
+  sources?: Map<number, AtomicSourceDocumentResolution>;
+  currentActor?: typeof actor | typeof serviceActor;
+  registeredActors?: Set<string>;
   registeredTools?: Set<string>;
-  coverage?: Map<string, {found: boolean; organizationId: string; projectId: string; documentId: string; version: number; fingerprint: string; backlinkIdentityFingerprint: string}>;
+  sourceRegistration?: DocumentSourceOrigin | null;
+  signatureValid?: boolean;
+  artifacts?: Map<string, ArtifactResolution>;
+  records?: Map<number, GovernedDocumentVersionIdentity>;
+  now?: string;
 };
 
-function toolKey(tool = parser) {
-  return `${tool.toolId}@${tool.version}:${tool.configurationSha256}`;
-}
+function toolKey(tool: DocumentToolIdentity) { return stable(tool); }
 
-function makeResolver(options: ResolverOptions = {}): GovernedDocumentIdentityResolver {
-  const scope = options.scope ?? {organizationId: "org-a", projectId: "project-a", documentId: "document-a"};
-  const artifacts = options.artifacts ?? new Map([
-    [layerLocator.locatorRef, {found: true, immutable: true, locatorRef: layerLocator.locatorRef, objectVersionRef: null, bytes: layerBytes}],
-    [profileLocator.locatorRef, {found: true, immutable: true, locatorRef: profileLocator.locatorRef, objectVersionRef: profileLocator.objectVersionRef, bytes: profileBytes}],
-  ]);
-  const registeredTools = options.registeredTools ?? new Set([toolKey()]);
+function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
+  const sources = options.sources ?? new Map([[1, makeSource()]]);
+  const artifacts = options.artifacts ?? new Map<string, ArtifactResolution>();
+  const records = options.records ?? new Map<number, GovernedDocumentVersionIdentity>();
+  const currentActor = options.currentActor ?? actor;
+  const registeredActors = options.registeredActors ?? new Set([stable(actor), stable(serviceActor)]);
+  const registeredTools = options.registeredTools ?? new Set([toolKey(parser)]);
   return {
-    async resolveScope() {
-      return {
-        authorized: options.authorized ?? true,
-        ...scope,
-        version: scope.version ?? 1,
-        sourceBinding: binding,
-        actorRef: actor.ref,
-        attestationRef: "authz:decision-001",
-        decisionSha256: hash("signed-scope-decision"),
-        authorizationVersion: "workspace-authz.v1",
-        authorizedAt: "2026-09-01T09:59:00.000Z",
-      };
-    },
-    async resolveSnapshot(locator) {
-      return {
-        found: options.source?.found ?? true,
-        immutable: options.source?.immutable ?? true,
-        locatorRef: options.source?.locatorRef ?? locator.locatorRef,
-        objectVersionRef: options.source?.objectVersionRef ?? locator.objectVersionRef,
-        bytes: options.source?.bytes === undefined ? sourceBytes : options.source.bytes,
-      };
-    },
-    async resolveArtifact(locator) {
-      return artifacts.get(locator.locatorRef) ?? {found: false, immutable: false, locatorRef: locator.locatorRef, objectVersionRef: locator.objectVersionRef, bytes: null};
-    },
-    async resolveCoverage(claim) {
-      return options.coverage?.get(claim.ref) ?? {found: false, organizationId: "org-a", projectId: "project-a", documentId: "document-a", version: 1, fingerprint: claim.fingerprint, backlinkIdentityFingerprint: "0".repeat(64)};
-    },
-    async isToolRegistered(tool) {
-      return registeredTools.has(toolKey(tool));
-    },
+    async resolveOperationActor() { return currentActor; },
+    async isActorRegistered(candidate) { return registeredActors.has(stable(candidate)); },
+    async resolveSourceDocument(_sourceDocumentId, version) { return sources.get(version) ?? makeSource(version, sourceBytes, {found: false, bytes: null}); },
+    async verifySourceAttestation() { return options.signatureValid ?? true; },
+    async resolveSourceRegistration() { return options.sourceRegistration === undefined ? sourceOrigin() : options.sourceRegistration; },
+    async resolveArtifact(artifactId) { return artifacts.get(artifactId) ?? {found: false, immutable: false, artifactId, locator: {state: "content_addressed", locatorRef: `sha256:${hash("missing")}`, objectVersionRef: null}, bytes: null, producedBy: parser, producedAt: "2026-09-01T10:02:00.000Z"}; },
+    async resolveCoverage(claim) { return {found: false, organizationId: ids.organization, projectId: ids.project, companyId: ids.company, conversationId: ids.conversation, documentId: ids.document, version: 1, fingerprint: claim.fingerprint, backlinkIdentityFingerprint: hash("missing")}; },
+    async isToolRegistered(tool) { return registeredTools.has(toolKey(tool)); },
+    async resolvePersistedVersion(reference) { return records.get(reference.version) ?? null; },
+    now() { return options.now ?? "2026-09-01T10:05:00.000Z"; },
   };
 }
 
-function sourceRef(input: Partial<{organizationId: string; projectId: string; documentId: string; version: number; sourceBytesSha256: string}> = {}) {
-  return {organizationId: input.organizationId ?? "org-a", projectId: input.projectId ?? "project-a", documentId: input.documentId ?? "document-a", version: input.version ?? 1, sourceBytesSha256: input.sourceBytesSha256 ?? sourceHash};
-}
-
-function lifecycle(overrides: Partial<DocumentLifecycleInput> = {}): DocumentLifecycleInput {
+function compileInput(overrides: Partial<CompileGovernedDocumentIdentityInput> = {}): CompileGovernedDocumentIdentityInput {
   return {
-    recordedAt: "2026-09-01T10:04:00.000Z",
-    recordedBy: service,
-    asOf: "2026-08-31T23:59:59.000Z",
-    dataClass: "project_confidential",
-    informationClass: "audited",
-    confidentiality: "confidential",
-    toolchain: [parser],
-    extractedLayers: [{
-      id: "layer-a",
-      layerKind: "pdf",
-      locator: layerLocator,
-      claimedSha256: layerHash,
-      producedBy: parser,
-      producedAt: "2026-09-01T10:02:00.000Z",
-      parentRefs: [{kind: "source_version", version: sourceRef()}],
-      coverage: [],
-    }],
-    coverage: [],
-    derivatives: [{
-      id: "profile-a",
-      kind: "profile",
-      locator: profileLocator,
-      claimedSha256: profileHash,
-      producedBy: parser,
-      producedAt: "2026-09-01T10:03:00.000Z",
-      parentRefs: [{kind: "derivative", derivativeId: "layer-a", contentSha256: layerHash}],
-      coverage: [],
-    }],
-    supersession: {state: "current", supersededBy: null, reasonRef: null},
+    sourceDocumentId: ids.document,
+    sourceDocumentVersion: 1,
+    lifecycle: {asOf: "2026-08-31T23:59:59.000Z", dataClass: "project_confidential", informationClass: "audited", confidentiality: "confidential", extractedLayers: [], coverage: [], derivatives: []},
     ...overrides,
   };
 }
 
-function input(overrides: Partial<CompileGovernedDocumentIdentityInput> = {}): CompileGovernedDocumentIdentityInput {
+function appendInput(overrides: Partial<DocumentLifecycleInput> = {}): DocumentLifecycleInput {
   return {
-    organizationId: "org-a",
-    projectId: "project-a",
-    documentId: "document-a",
-    version: 1,
-    parentVersion: null,
-    sourceBinding: binding,
-    source: {origin: "user_upload", sourceClass: "provided_documents", sourceRef: "storage:document-a", integration: {status: "native", connectorId: null}},
-    capturedBy: actor,
-    capturedAt: "2026-09-01T10:00:00.000Z",
-    sourceSnapshot: sourceLocator,
-    claimedSourceBytesSha256: sourceHash,
-    lifecycle: lifecycle(),
-    ...overrides,
+    asOf: "2026-08-31T23:59:59.000Z", dataClass: "project_confidential", informationClass: "reviewed", confidentiality: "confidential",
+    extractedLayers: [], coverage: [], derivatives: [], supersession: {state: "current", successorVersion: null, reasonId: null}, ...overrides,
   };
 }
 
-async function compile(overrides: Partial<CompileGovernedDocumentIdentityInput> = {}, resolver = makeResolver()) {
-  return compileGovernedDocumentIdentity(input(overrides), resolver);
+async function compile(server = bindGovernedDocumentIdentityServer(makeRoot()), overrides: Partial<CompileGovernedDocumentIdentityInput> = {}) {
+  return server.compile(compileInput(overrides));
 }
 
-async function codes(records: GovernedDocumentVersionIdentity[], resolver = makeResolver()) {
-  return (await validateGovernedDocumentIdentityGraph(records, resolver)).issues.map((issue) => issue.code);
+async function makeVersionPair() {
+  const records = new Map<number, GovernedDocumentVersionIdentity>();
+  const sources = new Map([[1, makeSource()], [2, makeSource(2, encoder.encode("version two"))]]);
+  const root = makeRoot({sources, records});
+  const server = bindGovernedDocumentIdentityServer(root);
+  const v1 = await server.compile(compileInput());
+  records.set(1, v1);
+  const v2 = await server.compile(compileInput({sourceDocumentVersion: 2}));
+  records.set(2, v2);
+  return {server, records, v1, v2};
 }
 
-describe("governed document identity v2", () => {
-  it("compiles and re-verifies only through trusted scope, bytes and tool resolvers", async () => {
-    const identity = await compile();
-    expect(identity.core.sourceBytes).toEqual({sha256: sourceHash, byteSize: sourceBytes.byteLength});
-    expect(identity.lifecycleHistory[0]?.extractedLayers[0]?.contentSha256).toBe(layerHash);
-    expect(await validateGovernedDocumentIdentityGraph([identity], makeResolver())).toMatchObject({status: "valid", issues: []});
+describe("governed document identity v3", () => {
+  it("binds one server-side trust root and rejects caller-supplied authority fields", async () => {
+    const root = makeRoot();
+    const server = bindGovernedDocumentIdentityServer(root);
+    const record = await server.compile(compileInput());
+    expect(record.core.organizationId).toBe(ids.organization);
+    await expect(server.compile({...compileInput(), organizationId: "aaaaaaaa-1111-4111-8111-111111111111"} as never)).rejects.toThrow();
+    await expect(server.compile({...compileInput(), actor, attestation: makeSource().attestation} as never)).rejects.toThrow();
   });
 
-  it("fails closed when a tenant/project claim is unauthorized or relabeled", async () => {
-    await expect(compile({}, makeResolver({authorized: false}))).rejects.toThrow("scope_not_authorized");
-    await expect(compile({organizationId: "org-b"}, makeResolver())).rejects.toThrow("scope_attestation_mismatch");
-
-    const identity = await compile();
-    const relabeled = structuredClone(identity);
-    relabeled.core.organizationId = "org-b";
-    expect(await codes([relabeled])).toEqual(expect.arrayContaining(["identity_fingerprint_mismatch", "scope_attestation_mismatch", "source_binding_scope_mismatch"]));
+  it("atomically binds source_documents scope, version, storage object, verified hash, bytes and signed attestation", async () => {
+    const original = makeSource();
+    const mutations: Partial<AtomicSourceDocumentResolution>[] = [
+      {row: {...original.row, organization_id: "aaaaaaaa-1111-4111-8111-111111111111"}},
+      {row: {...original.row, document_version: 2}},
+      {sourceSnapshot: {...original.sourceSnapshot, locatorRef: "storage:wrong"}},
+      {sourceSnapshot: {state: "versioned_object", locatorRef: original.sourceSnapshot.locatorRef, objectVersionRef: "etag:moved"}},
+      {row: {...original.row, sha256: hash("forged")}},
+      {bytes: encoder.encode("different bytes")},
+    ];
+    for (const mutation of mutations) {
+      const source = makeSource(1, sourceBytes, mutation);
+      const server = bindGovernedDocumentIdentityServer(makeRoot({sources: new Map([[1, source]])}));
+      await expect(server.compile(compileInput())).rejects.toThrow();
+    }
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({signatureValid: false})).compile(compileInput())).rejects.toThrow("source_attestation_invalid");
   });
 
-  it("does not accept a serialized attestation after authorization has been revoked", async () => {
-    const identity = await compile();
-    expect(await codes([identity], makeResolver({authorized: false}))).toContain("scope_authorization_failed");
-    await expect(appendGovernedDocumentLifecycle(identity, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z"}), makeResolver({authorized: false}))).rejects.toThrow("scope_not_authorized");
+  it("fails closed when authorization is absent or later revoked", async () => {
+    const denied = makeSource(1, sourceBytes, {authorized: false});
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({sources: new Map([[1, denied]])})).compile(compileInput())).rejects.toThrow("scope_authorization_failed");
+    const record = await compile();
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({sources: new Map([[1, denied]])})).append(record, appendInput())).rejects.toThrow("scope_authorization_failed");
   });
 
-  it("resolves source locator, immutability, object version and bytes instead of trusting claims", async () => {
-    await expect(compile({}, makeResolver({source: {immutable: false}}))).rejects.toThrow("source_snapshot_not_immutable");
-    await expect(compile({}, makeResolver({source: {locatorRef: "sha256:wrong"}}))).rejects.toThrow("source_snapshot_locator_mismatch");
-    await expect(compile({}, makeResolver({source: {bytes: encoder.encode("different")}}))).rejects.toThrow("source_bytes_hash_mismatch");
-    expect(() => input({sourceSnapshot: {state: "versioned_object", locatorRef: "storage:file", objectVersionRef: null} as never})).not.toThrow();
-    await expect(compileGovernedDocumentIdentity(input({sourceSnapshot: {state: "versioned_object", locatorRef: "storage:file", objectVersionRef: null} as never}), makeResolver())).rejects.toThrow();
-
-    const versioned: SnapshotLocator = {state: "versioned_object", locatorRef: "storage:file", objectVersionRef: "etag:one"};
-    await expect(compile({sourceSnapshot: versioned}, makeResolver({source: {objectVersionRef: "etag:two"}}))).rejects.toThrow("source_snapshot_version_mismatch");
-  });
-
-  it("resolves derivative bytes and exact registered tool configuration", async () => {
-    const badArtifacts = new Map([[layerLocator.locatorRef, {found: true, immutable: true, locatorRef: layerLocator.locatorRef, objectVersionRef: null, bytes: encoder.encode("tampered")}]]);
-    await expect(compile({}, makeResolver({artifacts: badArtifacts}))).rejects.toThrow("artifact_hash_mismatch");
-    await expect(compile({}, makeResolver({registeredTools: new Set()}))).rejects.toThrow("tool_not_registered");
-    await expect(compile({lifecycle: lifecycle({toolchain: [{...parser, configurationSha256: hash("other-config")}]})})).rejects.toThrow("tool_not_registered");
-  });
-
-  it("keeps immutable identity stable while append-only enrichment changes lifecycle", async () => {
-    const first = await compile();
-    const appended = await appendGovernedDocumentLifecycle(first, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z", informationClass: "reviewed"}), makeResolver());
-    expect(appended.core.identityFingerprint).toBe(first.core.identityFingerprint);
-    expect(appended.lifecycleHistory).toHaveLength(2);
-    expect(appended.lifecycleHistory[1]?.previousLifecycleFingerprint).toBe(first.lifecycleHistory[0]?.lifecycleFingerprint);
-    expect(appended.lifecycleHistory[1]?.lifecycleFingerprint).not.toBe(first.lifecycleHistory[0]?.lifecycleFingerprint);
-    expect((await validateGovernedDocumentIdentityGraph([appended], makeResolver())).status).toBe("valid");
-  });
-
-  it("detects lifecycle mutation, revision gaps and broken append-only backlinks", async () => {
-    const first = await compile();
-    const appended = await appendGovernedDocumentLifecycle(first, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z"}), makeResolver());
-    const tampered = structuredClone(appended);
+  it("validates the complete existing lifecycle before append and the complete result before return", async () => {
+    const server = bindGovernedDocumentIdentityServer(makeRoot());
+    const record = await compile(server);
+    const tampered = structuredClone(record);
     tampered.lifecycleHistory[0]!.informationClass = "management";
-    tampered.lifecycleHistory[1]!.revision = 4;
-    tampered.lifecycleHistory[1]!.previousLifecycleFingerprint = "0".repeat(64);
-    tampered.lifecycleHistory[1]!.recordedAt = "2026-09-01T10:03:00.000Z";
-    expect(await codes([tampered])).toEqual(expect.arrayContaining(["lifecycle_fingerprint_mismatch", "lifecycle_revision_gap", "lifecycle_previous_mismatch", "lifecycle_recorded_at_not_monotonic"]));
+    await expect(server.append(tampered, appendInput())).rejects.toThrow("lifecycle_fingerprint_mismatch");
+    await expect(server.compile(compileInput({lifecycle: {...compileInput().lifecycle, asOf: "2026-09-02T00:00:00.000Z"}}))).rejects.toThrow("as_of_after_capture");
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({now: "2026-08-31T00:00:00.000Z"})).compile(compileInput())).rejects.toThrow("lifecycle_before_capture");
   });
 
-  it("enforces capture, production and lifecycle chronology", async () => {
-    const identity = await compile({lifecycle: lifecycle({
-      asOf: "2026-09-02T00:00:00.000Z",
-      recordedAt: "2026-09-01T09:00:00.000Z",
-      extractedLayers: [{...lifecycle().extractedLayers[0]!, producedAt: "2026-08-31T00:00:00.000Z"}],
-      derivatives: [],
-    })});
-    expect(await codes([identity])).toEqual(expect.arrayContaining(["as_of_after_capture", "lifecycle_before_capture", "producer_before_capture"]));
-
-    const producedLate = await compile({lifecycle: lifecycle({
-      recordedAt: "2026-09-01T10:01:00.000Z",
-      extractedLayers: [{...lifecycle().extractedLayers[0]!, producedAt: "2026-09-01T10:02:00.000Z"}],
-      derivatives: [],
-    })});
-    expect(await codes([producedLate])).toContain("producer_after_lifecycle");
+  it("enforces irreversible lifecycle state transitions", async () => {
+    const server = bindGovernedDocumentIdentityServer(makeRoot());
+    const current = await compile(server);
+    const withdrawn = await server.append(current, appendInput({supersession: {state: "withdrawn", successorVersion: null, reasonId: ids.reason}}));
+    await expect(server.append(withdrawn, appendInput())).rejects.toThrow("supersession_illegal_transition");
+    await expect(server.append(withdrawn, appendInput({supersession: {state: "rejected", successorVersion: null, reasonId: ids.reason}}))).rejects.toThrow("supersession_illegal_transition");
   });
 
-  it("requires scoped coverage with a verified backlink to the immutable identity", async () => {
-    const base = await compile();
-    const claim = {kind: "coverage_map" as const, ref: "coverage:map-a", fingerprint: hash("coverage-a")};
-    const wrongCoverage = new Map([[claim.ref, {found: true, organizationId: "org-b", projectId: "project-a", documentId: "document-a", version: 1, fingerprint: claim.fingerprint, backlinkIdentityFingerprint: base.core.identityFingerprint}]]);
-    await expect(appendGovernedDocumentLifecycle(base, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z", coverage: [claim]}), makeResolver({coverage: wrongCoverage}))).rejects.toThrow("coverage_scope_mismatch");
-
-    const wrongBacklink = new Map([[claim.ref, {found: true, organizationId: "org-a", projectId: "project-a", documentId: "document-a", version: 1, fingerprint: claim.fingerprint, backlinkIdentityFingerprint: "0".repeat(64)}]]);
-    await expect(appendGovernedDocumentLifecycle(base, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z", coverage: [claim]}), makeResolver({coverage: wrongBacklink}))).rejects.toThrow("coverage_backlink_mismatch");
-
-    const wrongFingerprint = new Map([[claim.ref, {found: true, organizationId: "org-a", projectId: "project-a", documentId: "document-a", version: 1, fingerprint: hash("other-coverage"), backlinkIdentityFingerprint: base.core.identityFingerprint}]]);
-    await expect(appendGovernedDocumentLifecycle(base, lifecycle({recordedAt: "2026-09-01T10:05:00.000Z", coverage: [claim]}), makeResolver({coverage: wrongFingerprint}))).rejects.toThrow("coverage_unverified");
+  it("requires a real, coherent and active successor before supersession", async () => {
+    const server = bindGovernedDocumentIdentityServer(makeRoot());
+    const v1 = await compile(server);
+    await expect(server.append(v1, appendInput({supersession: {state: "superseded", successorVersion: 2, reasonId: ids.reason}}))).rejects.toThrow("supersession_target_not_found");
+    const pair = await makeVersionPair();
+    const linked = await pair.server.append(pair.v1, appendInput({supersession: {state: "superseded", successorVersion: 2, reasonId: ids.reason}}));
+    expect((await pair.server.validateGraph([linked, pair.v2])).status).toBe("valid");
+    await expect(pair.server.append(linked, appendInput())).rejects.toThrow("supersession_illegal_transition");
+    pair.records.delete(2);
+    await expect(pair.server.append(linked, appendInput({supersession: {state: "superseded", successorVersion: 2, reasonId: ids.reason}}))).rejects.toThrow("supersession_target_not_found");
   });
 
-  it("detects globally inconsistent supersession and accepts one contiguous current chain", async () => {
-    const v1Bytes = sourceBytes;
-    const v2Bytes = encoder.encode("version two");
-    const v2Hash = hash(v2Bytes);
-    const v2Locator: SnapshotLocator = {state: "content_addressed", locatorRef: `sha256:${v2Hash}`, objectVersionRef: null};
-    const v1 = await compile();
-    const v2Resolver = makeResolver({scope: {organizationId: "org-a", projectId: "project-a", documentId: "document-a", version: 2}, source: {bytes: v2Bytes}});
-    const v2 = await compile({
-      version: 2,
-      parentVersion: sourceRef({version: 1, sourceBytesSha256: hash(v1Bytes)}),
-      sourceSnapshot: v2Locator,
-      claimedSourceBytesSha256: v2Hash,
-      lifecycle: lifecycle({extractedLayers: [], derivatives: []}),
-    }, v2Resolver);
-    expect(await codes([v1, v2], makeResolver())).toEqual(expect.arrayContaining(["supersession_multiple_current", "supersession_orphaned_version"]));
-
-    const linkedV1 = await appendGovernedDocumentLifecycle(v1, lifecycle({
-      recordedAt: "2026-09-01T10:06:00.000Z",
-      supersession: {state: "superseded", supersededBy: sourceRef({version: 2, sourceBytesSha256: v2Hash}), reasonRef: "decision:new-version"},
-    }), makeResolver());
-    const combinedResolver: GovernedDocumentIdentityResolver = {
-      ...makeResolver(),
-      async resolveScope(request) {
-        const base = await makeResolver().resolveScope(request);
-        return {...base, version: request.version};
-      },
-      async resolveSnapshot(locator) {
-        return locator.locatorRef === v2Locator.locatorRef
-          ? {found: true, immutable: true, locatorRef: locator.locatorRef, objectVersionRef: null, bytes: v2Bytes}
-          : {found: true, immutable: true, locatorRef: locator.locatorRef, objectVersionRef: null, bytes: sourceBytes};
-      },
-    };
-    expect((await validateGovernedDocumentIdentityGraph([linkedV1, v2], combinedResolver)).status).toBe("valid");
+  it("keeps layer and derivative IDs immutable across the full append-only history", async () => {
+    const locator: SnapshotLocator = {state: "content_addressed", locatorRef: `sha256:${hash(layerBytes)}`, objectVersionRef: null};
+    const artifacts = new Map([[ids.layer, {found: true, immutable: true, artifactId: ids.layer, locator, bytes: layerBytes, producedBy: parser, producedAt: "2026-09-01T10:02:00.000Z"} satisfies ArtifactResolution]]);
+    const root = makeRoot({artifacts});
+    const server = bindGovernedDocumentIdentityServer(root);
+    const parentRefs = [{kind: "source_document" as const}];
+    const initial = await server.compile(compileInput({lifecycle: {...compileInput().lifecycle, extractedLayers: [{artifactId: ids.layer, layerKind: "pdf", parentRefs, coverage: []}]}}));
+    await expect(server.append(initial, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "spreadsheet", parentRefs, coverage: []}]}))).rejects.toThrow("artifact_identity_mutated");
   });
 
-  it("detects derivative cycles and unknown or forged parents", async () => {
-    const identity = await compile();
-    const tampered = structuredClone(identity);
-    const current = tampered.lifecycleHistory[0]!;
-    current.derivatives[0]!.parentRefs = [{kind: "derivative", derivativeId: "missing", contentSha256: hash("missing")}];
-    expect(await codes([tampered])).toEqual(expect.arrayContaining(["derivative_parent_not_found", "lifecycle_fingerprint_mismatch"]));
+  it("derives recordedBy and registered source/connector metadata from server registries", async () => {
+    const server = bindGovernedDocumentIdentityServer(makeRoot({currentActor: serviceActor, sources: new Map([[1, makeSource(1, sourceBytes, {actor: serviceActor})]])}));
+    const record = await server.compile(compileInput());
+    expect(record.lifecycleHistory[0]?.recordedBy).toEqual(serviceActor);
+    await expect(server.compile({...compileInput(), recordedBy: actor, source: sourceOrigin()} as never)).rejects.toThrow();
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({sourceRegistration: {...sourceOrigin(), sourceId: "34567890-3456-4456-8456-345678901234"}})).compile(compileInput())).rejects.toThrow("source_registry_mismatch");
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({registeredActors: new Set()})).compile(compileInput())).rejects.toThrow("actor_not_registered");
   });
 
-  it("detects identical bytes relabeled as a new document version", async () => {
-    const v1 = await compile();
-    const v2 = await compile({
-      version: 2,
-      parentVersion: sourceRef(),
-      lifecycle: lifecycle({extractedLayers: [], derivatives: []}),
-    }, makeResolver({scope: {organizationId: "org-a", projectId: "project-a", documentId: "document-a", version: 2}}));
-    const resolver: GovernedDocumentIdentityResolver = {
-      ...makeResolver(),
-      async resolveScope(request) {
-        return {...await makeResolver().resolveScope(request), version: request.version};
-      },
-    };
-    expect(await codes([v1, v2], resolver)).toContain("hash_reused_across_versions");
+  it("governs company and conversation scope and enforces authorization chronology", async () => {
+    const record = await compile();
+    expect(record.core).toMatchObject({companyId: ids.company, conversationId: ids.conversation});
+    const lateAuth = makeSource();
+    lateAuth.attestation.authorizedAt = "2026-09-01T10:00:01.000Z";
+    await expect(bindGovernedDocumentIdentityServer(makeRoot({sources: new Map([[1, lateAuth]])})).compile(compileInput())).rejects.toThrow("authorization_after_capture");
   });
 
-  it("rejects PII-shaped user, service and integration actor references", async () => {
-    for (const bad of [
-      {kind: "user" as const, ref: "user:person@example.com"},
-      {kind: "service" as const, ref: "service:carlos-silva"},
-      {kind: "integration" as const, ref: "integration:dropbox-customer-name"},
-    ]) await expect(compileGovernedDocumentIdentity(input({capturedBy: bad}), makeResolver())).rejects.toThrow();
+  it("requires content-addressed artifact locators to encode their actual hash", async () => {
+    const badLocator: SnapshotLocator = {state: "content_addressed", locatorRef: `sha256:${hash("wrong")}`, objectVersionRef: null};
+    const artifacts = new Map([[ids.layer, {found: true, immutable: true, artifactId: ids.layer, locator: badLocator, bytes: layerBytes, producedBy: parser, producedAt: "2026-09-01T10:02:00.000Z"} satisfies ArtifactResolution]]);
+    const server = bindGovernedDocumentIdentityServer(makeRoot({artifacts}));
+    await expect(server.compile(compileInput({lifecycle: {...compileInput().lifecycle, extractedLayers: [{artifactId: ids.layer, layerKind: "pdf", parentRefs: [{kind: "source_document"}], coverage: []}]}}))).rejects.toThrow("content_addressed_locator_mismatch");
   });
 
-  it("maps both current source_documents scopes without inventing project identity", () => {
-    const mapped = mapSourceDocumentsRowBinding({
-      id: "document-a", organization_id: "org-a", opportunity_id: "opportunity-a", intake_session_id: "session-a", document_version: 1,
-      bucket_id: "opportunity-documents", object_path: "org-a/session-a/document-a", sha256: sourceHash, sha256_verified_at: "2026-09-01T10:01:00.000Z",
-    });
-    expect(mapped).toEqual(binding);
-    expect(() => mapSourceDocumentsRowBinding({
-      id: "document-a", organization_id: "org-a", opportunity_id: null, intake_session_id: null, document_version: 1,
-      bucket_id: "opportunity-documents", object_path: "org-a/document-a", sha256: null, sha256_verified_at: null,
-    })).toThrow("source_documents requires opportunity_id or intake_session_id");
-  });
-
-  it("keeps arbitrary external data rooms explicitly unsupported", async () => {
-    const identity = await compile({source: {origin: "external_data_room", sourceClass: "provided_documents", sourceRef: "dataroom:room-a", integration: {status: "verified_connector", connectorId: "unknown-room"}}});
-    expect(await codes([identity])).toContain("external_data_room_not_supported");
-  });
-
-  it("detects forged core and lifecycle fingerprints on persisted records", async () => {
-    const identity = await compile();
-    const forged = governedDocumentVersionIdentitySchema.parse({
-      ...identity,
-      core: {...identity.core, identityFingerprint: "0".repeat(64)},
-      lifecycleHistory: identity.lifecycleHistory.map((entry) => ({...entry, lifecycleFingerprint: "1".repeat(64)})),
-    });
-    expect(await codes([forged])).toEqual(expect.arrayContaining(["identity_fingerprint_mismatch", "lifecycle_fingerprint_mismatch"]));
+  it("emits only hashed opaque references in validation reports", async () => {
+    const server = bindGovernedDocumentIdentityServer(makeRoot());
+    const record = await compile(server);
+    const forged = governedDocumentVersionIdentitySchema.parse({...record, core: {...record.core, identityFingerprint: "0".repeat(64)}});
+    const report = await server.validateGraph([forged]);
+    expect(report.status).toBe("invalid");
+    expect(report.issues.every((issue) => /^sha256:[a-f0-9]{64}$/.test(issue.recordRef) && (issue.relatedRef === null || /^sha256:[a-f0-9]{64}$/.test(issue.relatedRef)))).toBe(true);
+    expect(JSON.stringify(report.issues)).not.toContain(ids.organization);
+    expect(JSON.stringify(report.issues)).not.toContain(ids.document);
   });
 });

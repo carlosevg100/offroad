@@ -2,89 +2,87 @@
 
 Status: `code_complete_candidate` | exposição: `internal_shadow` | data-base: 7 de setembro de 2026
 
-## O que esta fatia realmente cria
+## O contrato entregue
 
-Esta fatia cria um contrato puro para identificar os bytes exatos usados em um trabalho e manter
-separados dois conceitos que não podem ser confundidos:
+O contrato em `packages/document-intelligence/src/governed-document-identity.ts` separa:
 
-1. o núcleo imutável da versão: escopo autorizado, documento, versão, bytes, snapshot, origem,
-   ator de captura e atestação de autorização;
-2. o histórico append-only de processamento: classificação, ferramentas, camadas, derivados,
-   cobertura e supersessão.
+1. núcleo imutável: escopo, companhia, conversa, documento, versão, bytes, objeto de Storage,
+   origem registrada, ator de captura e atestação assinada;
+2. histórico append-only: ator de cada revisão, classificação, ferramentas, camadas, derivados,
+   cobertura e estado de supersessão.
 
-Enriquecer, reprocessar, acrescentar cobertura ou superseder uma versão cria uma nova revisão de
-lifecycle ligada à anterior. Isso não muda o fingerprint do núcleo. Alterar tenant, projeto,
-documento, versão, bytes ou snapshot muda ou invalida a identidade.
+Enriquecer ou reprocessar cria uma revisão ligada à anterior. O fingerprint do núcleo não muda.
+Camada ou derivado com o mesmo id também não pode mudar: conteúdo novo exige id novo. O estado é
+irreversível: `current` pode terminar em `superseded`, `withdrawn` ou `rejected`; um estado terminal
+nunca volta a `current` nem troca de target ou motivo.
 
-O contrato está em `packages/document-intelligence/src/governed-document-identity.ts`. Ele não
-altera upload, banco, Storage, retrieval, worker, UI ou produção.
+## Raiz de confiança server-side
 
-## Claims não são atestações
+O request handler não fornece resolver, contexto de autorização, ator, atestação, origem, conector,
+timestamp, locator ou hash. `bindGovernedDocumentIdentityServer` recebe uma raiz de confiança apenas
+na composição do processo servidor e devolve uma facade congelada. Os comandos dessa facade aceitam
+somente ids de documento/artefato e a intenção de lifecycle.
 
-O compilador não aceita `organizationId`, `projectId`, `documentId`, `version`, caminho, hash,
-ferramenta ou cobertura como verdade apenas porque chegaram no input. Uma implementação
-server-side de `GovernedDocumentIdentityResolver` é obrigatória e precisa:
+A raiz resolve e registra:
 
-- resolver a autorização do ator para o escopo e a versão, com decisão externa verificável;
-- mapear o binding real de `public.source_documents` ao projeto canônico;
-- ler os bytes por locator imutável ou object version não móvel;
-- verificar locator, object version, hash e imutabilidade da fonte e de cada derivado;
-- confirmar tool id, versão e hash de configuração no registro autorizado;
-- resolver cada coverage object, seu escopo e o backlink para a identidade.
+- o ator efetivo da operação e o registry de user, service e integration actors;
+- autorização corrente;
+- a linha de `public.source_documents`, seu escopo dual e o projeto/companhia/conversa derivados;
+- origem, source id e connector id a partir de registry server-side;
+- artefatos imutáveis e a versão/configuração exata da ferramenta produtora;
+- coverage objects com escopo e backlink;
+- predecessor e sucessor persistidos.
 
-Sem resolver, com autorização revogada, com relabeling de escopo/versão, com bytes diferentes ou
-com atestação divergente, a compilação ou a revalidação falha fechada. O objeto serializado não é
-autossuficiente para se declarar autorizado.
+As operações `compile` e `append` validam integralmente o objeto antes de retornar. `append` valida
+primeiro todo o núcleo e todo o histórico recebido, incluindo autorização corrente e targets de
+supersessão, e valida novamente o histórico completo após acrescentar a revisão.
 
-## Mapeamento explícito do estado atual
+## Resolução atômica de `source_documents`
 
-`source_documents` tem escopo dual: `opportunity_id`, `intake_session_id` ou ambos. A função
-`mapSourceDocumentsRowBinding` preserva os dois campos e nunca inventa um `projectId`. A ligação ao
-capital project continua bloqueada até um resolver autorizado consultar as relações reais e
-atestá-la. O adapter rejeita uma linha sem nenhum dos dois escopos.
+Uma única resolução confiável liga, na mesma atestação assinada:
 
-O contrato também exige bytes verificados independentemente. Portanto `sha256` declarado pelo
-browser, `sha256_verified_at` isolado ou o binding da tabela não bastam para criar a identidade.
+- `organization_id`, `opportunity_id`, `intake_session_id` e o projeto canônico;
+- `companyId` e `conversationId`, quando existentes;
+- `id`, `document_version`, `bucket_id`, `object_path` e object version não móvel;
+- `sha256`, `sha256_verified_at`, bytes lidos e tamanho;
+- locator derivado de bucket + path, ator, origem e conector registrados;
+- versão da política de autorização e timestamps de autorização/captura/assinatura.
 
-## Invariantes executáveis
+O compile falha fechado se o hash ainda não foi verificado, se faltar object version, se nenhum dos
+dois escopos existir, se locator e linha divergirem, se os bytes mudarem, se a autorização vier após
+a captura, se a assinatura anteceder a verificação ou se a assinatura não validar. Locators
+`content_addressed` precisam ser exatamente `sha256:<hash real>`.
 
-Os testes adversariais cobrem:
+## Invariantes e testes adversariais
 
-- tenant, projeto, documento ou versão relabelados e autorização posteriormente revogada;
-- locator divergente, fonte ausente, objeto móvel, object version divergente e hash falso;
-- ferramenta inexistente ou mesma ferramenta com configuração diferente;
-- derivado ausente, móvel, adulterado, sem pai, com pai falso ou em ciclo;
-- revisão de lifecycle alterada, fora de sequência ou sem backlink para a revisão anterior;
-- cronologia inválida entre captura, as-of, produção e registro;
-- cobertura em outro escopo, fingerprint divergente ou sem backlink para o núcleo;
-- mais de uma versão corrente, versão anterior órfã e supersessão não contígua;
-- conflito de hash na mesma versão e mesmos bytes relabelados como nova versão;
-- PII em referências de ator user, service ou integration;
-- tentativa de declarar um data room arbitrário como integração suportada;
-- fingerprint persistido adulterado.
+Os testes executáveis reproduzem os sete bypasses da revisão:
 
-Os relatórios contêm apenas códigos e referências opacas. Nenhum nome, e-mail, documento, trecho
-ou valor financeiro é incluído.
+1. tentativa de injetar tenant, ator ou atestação no comando;
+2. divergência entre escopo, row, versão, bucket/path, object version, hash, bytes e assinatura;
+3. append sobre histórico adulterado e construção com cronologia inválida;
+4. retorno de estado terminal, target inexistente, incoerente ou inativo;
+5. reutilização de layer/derivative id com identidade diferente;
+6. ator de revisão não registrado e origem/conector fora do registry;
+7. escopo de companhia/conversa, cronologia da autorização, locator por conteúdo e relatório opaco.
+
+Também permanecem verificados: parent imediato, fingerprints, tool+version+config, pais dos
+derivados, DAG, coverage escopada, confidencialidade, versão corrente única e bytes não relabelados.
+Os relatórios nunca expõem slugs ou ids de origem: `recordRef` e `relatedRef` são hashes opacos.
 
 ## Fronteira honesta
 
-Esta fatia ainda não prova persistência, RLS, autorização real, imutabilidade do bucket, comandos
-atômicos, backfill, concorrência, integração do worker ou operação do Vault. O resolver definido
-aqui é uma porta obrigatória; a implementação confiável dessa porta ainda não existe.
+Esta fatia é o contrato e a facade server-side. Ela ainda não instala a raiz de confiança real no
+worker nem prova a transação de persistência. Não altera upload, banco, Storage, retrieval, UI ou
+produção. A integração permanece bloqueada até uma próxima fatia implementar e provar em staging:
 
-Também não existe conector de data room. `external_data_room` continua somente representável como
-`unsupported`, sem `connectorId`. Importação manual futura não equivale a integração.
-
-Antes de sair de `internal_shadow`, a próxima fatia deve provar em staging:
-
-1. persistência tenant-scoped com RLS/FORCE RLS, grants mínimos e FKs compostas;
-2. resolver server-side que derive escopo e versão do banco, nunca do payload do worker;
-3. object versioning ou endereçamento por conteúdo com teste real de overwrite;
-4. registro governado de ferramentas/configurações e armazenamento imutável de derivados;
-5. coverage objects com backlinks transacionais e escopo composto;
-6. append atômico e idempotente, race tests, backfill explícito e non-interference;
-7. integração do worker por capability temporária e uma UI sem refs internas;
-8. gate com bytes sintéticos, advisors limpos, rollback e evidência de deploy.
+1. adapter privilegiado com transação/RLS para a resolução atômica de `source_documents`;
+2. assinatura com chave em KMS e rotação verificável;
+3. Storage versionado/imutável e leitura dos bytes da versão atestada;
+4. registries persistidos de atores, origens, conectores, ferramentas e configurações;
+5. persistência append-only idempotente, lock/compare-and-swap e race tests;
+6. FKs compostas, FORCE RLS, grants mínimos, backfill e rollback;
+7. integração do worker por facade pré-vinculada, sem dependências construídas do payload;
+8. gate de staging com overwrite, revogação, cross-tenant, concorrência e non-interference.
 
 Nenhuma capacidade de Vault, data room, upload ou retrieval muda de maturidade por causa desta
-fatia.
+fatia. Conectores externos só podem existir quando registrados como `verified_connector`.
