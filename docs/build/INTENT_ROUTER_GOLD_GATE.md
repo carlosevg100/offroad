@@ -8,13 +8,22 @@ Um classificador semântico pode retornar JSON válido e ainda assim escolher tr
 para o mesmo pedido. Isso é particularmente perigoso porque a variação parece linguagem natural,
 mas altera fontes, análises, perguntas, materiais e especialistas acionados.
 
-O gate compara o contrato exato usado pelo worker com 16 turnos canônicos dos cinco casos gold.
+O gate compara o contrato exato usado pelo worker com 17 turnos canônicos dos cinco casos gold.
 Não existe cópia simplificada do prompt ou do schema no harness: ambos vivem em
 `@offroad/agent-contracts` e são importados pelo produto e pelo avaliador.
 
+O modelo não é a autoridade final sobre o plano. Ele lê linguagem, objetos, resultado e contexto;
+uma política determinística e versionada deriva dos 20 identificadores canônicos a ordem dos
+trabalhos, profundidade mínima, continuidade e responsabilidade operacional. Regras explícitas de
+alta precisão reconhecem transições como reunião para material, alteração de premissa, pergunta de
+origem e revisão. Assim, pequenas variações de prosa não mudam silenciosamente o workflow.
+
+O cargo continua sendo contexto, não autorização. `decision_maker` só é acrescentado quando a
+pessoa declara que a decisão é dela; introdução externa continua exigindo autorização específica.
+
 ## O que é medido
 
-Todos os 16 turnos rodam uma vez para medir:
+Todos os 17 turnos rodam uma vez para medir:
 
 - composição escolhida;
 - decisão de abster;
@@ -63,7 +72,7 @@ GitHub Actions por credencial AWS OIDC de curta duração, mascaradas antes do p
 persistidas. O gateway impõe teto de chamadas e de custo. O artefato contém JSON, relatório Markdown,
 fingerprints, métricas, custos e logs sem conteúdo de cliente; não contém vídeo nem trace de browser.
 
-Com três repetições, são 28 resultados planejados. O orçamento padrão é US$ 3 e o limite configurável
+Com três repetições, são 29 resultados planejados. O orçamento padrão é US$ 3 e o limite configurável
 nunca pode exceder US$ 10. O workflow termina com falha quando qualquer gate não passa, preservando o
 relatório para diagnóstico.
 

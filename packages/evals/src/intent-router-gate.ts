@@ -28,6 +28,8 @@ export const intentRouterGateObservationSchema = z.object({
   turnId: z.string(),
   repeat: z.number().int().positive(),
   expected: intentGoldTurnSchema.shape.expected,
+  /** Provider output before deterministic policy; synthetic gate data only, useful for diagnosis. */
+  rawActual: intentClassifierOutputSchema.optional(),
   actual: intentClassifierOutputSchema.nullable(),
   error: z.string().nullable(),
   checks: intentRouterGateChecksSchema,

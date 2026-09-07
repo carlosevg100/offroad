@@ -52,7 +52,7 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   turn({
     id: "gc02-t01", caseId: "gc02",
     message: "Sou CFO da Camil. O conselho quer discutir se nossa estrutura de capital está adequada para os próximos anos. Quero chegar com uma leitura independente e alternativas.",
-    expected: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["decision_maker", "sponsor"], depth: "institutional", continuity: "new", composition: "prepare_decision", abstain: false, firstQuestionTheme: null},
+    expected: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer", "sponsor"], depth: "institutional", continuity: "new", composition: "prepare_decision", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc02-t02", caseId: "gc02",
@@ -85,7 +85,7 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   turn({
     id: "gc05-t01", caseId: "gc05",
     message: "Sou banker de corporate banking. A Camil anunciou uma expansão e quero levar ideias de como financiar isso dentro da capacidade deles. Tenho reunião com o CFO e a tesouraria.",
-    expected: {primaryWorks: ["capital_strategy", "understand", "model"], workResponsibility: ["producer", "coordinator"], depth: "preliminary", continuity: "new", composition: "prepare_meeting", abstain: false, firstQuestionTheme: null},
+    expected: {primaryWorks: ["understand", "capital_strategy", "model"], workResponsibility: ["producer", "coordinator"], depth: "preliminary", continuity: "new", composition: "prepare_meeting", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc05-t02", caseId: "gc05",
@@ -119,7 +119,13 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
     id: "gc02-t03", caseId: "gc02",
     priorTurns: ["CFO da Camil preparando discussão de conselho sobre estrutura de capital."],
     message: "Esquece o conselho por enquanto. Preciso entender se o headroom do covenant aguenta a safra.",
-    expected: {primaryWorks: ["analyze", "model"], workResponsibility: ["decision_maker"], depth: "preliminary", continuity: "new", composition: "analyze_performance_and_credit", abstain: false, firstQuestionTheme: null},
+    expected: {primaryWorks: ["analyze", "model"], workResponsibility: ["producer"], depth: "preliminary", continuity: "new", composition: "analyze_performance_and_credit", abstain: false, firstQuestionTheme: null},
+  }),
+  turn({
+    id: "gc02-t04", caseId: "gc02",
+    priorTurns: ["CFO da Camil preparando uma recomendação de estrutura de capital para o conselho."],
+    message: "A decisão de qual recomendação levar ao conselho é minha. Compare alongamento da dívida existente com uma nova emissão e me diga qual você recomenda.",
+    expected: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer", "sponsor", "decision_maker"], depth: "institutional", continuity: "resume", composition: "prepare_decision", abstain: false, firstQuestionTheme: null},
   }),
 ];
 

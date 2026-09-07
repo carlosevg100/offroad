@@ -10,7 +10,7 @@
  * without a frozen corpus never receives another company's objects.
  */
 import type {IntentEnvelope} from "@offroad/agent-contracts";
-import {canonicalizeIntentClassifierOutput, intentDepthSchema} from "@offroad/agent-contracts";
+import {buildIntentClassifierInput, canonicalizeIntentClassifierOutput, intentDepthSchema} from "@offroad/agent-contracts";
 import {preview} from "@offroad/credit-playbook";
 
 const {describePremises} = preview;
@@ -165,6 +165,14 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
   const {context} = input;
   const spentBefore = input.gateway.spent().costUsd;
   const startedAt = Date.now();
+  const classifierInput = buildIntentClassifierInput({
+    locale: context.locale,
+    latestUserMessage: context.message,
+    recentConversation: context.recentMessages.slice(-8),
+    entryJob: context.entryJob,
+    documentCount: context.documentIds.length,
+    professionalContext: context.professionalContext,
+  });
   const completion = await input.gateway.complete({
     task: "route_intent",
     system: LIVE_ROUTING_SYSTEM,
@@ -190,16 +198,29 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
     metadata: {surface: "live_preview_router"},
   });
   const previewComposition = completion.output.composition;
+  const normalizedTurn = normalizePreviewTurn(completion.output.turn);
+  const hasPremiseChange = Object.values(normalizedTurn.premiseChanges).some((value) => value !== null);
+  const hasGovernedContinuation = normalizedTurn.answers.length > 0
+    || Object.values(normalizedTurn.scopeChanges).some((value) => value !== null);
+  const compatibilityComposition = previewComposition === "deepen"
+    ? "understand_company_sector_asset"
+    : previewComposition ?? (hasPremiseChange
+      ? "build_or_review_model"
+      : normalizedTurn.material.requested
+        ? "prepare_material"
+        : hasGovernedContinuation
+          ? "understand_company_sector_asset"
+          : null);
   const classifier = canonicalizeIntentClassifierOutput({
     ...completion.output,
     // `deepen` exists only on this compatibility rail and is restored after the canonical
     // classifier boundary has decided whether the turn must fail closed.
-    composition: previewComposition === "deepen" ? null : previewComposition,
-  }, context.locale);
+    composition: compatibilityComposition,
+  }, classifierInput);
   const output: LiveRoutingOutput = {
     ...classifier,
     composition: classifier.abstain ? null : previewComposition,
-    turn: normalizePreviewTurn(completion.output.turn),
+    turn: normalizedTurn,
   };
   return {
     envelope: stampIntentEnvelope(output, context, input.now),
