@@ -1,7 +1,7 @@
 import {createModelGateway, type AdapterResponse, type GatewayCallLog, type ModelGateway, type ProviderAdapter} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 
-import {governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSchema, stampIntentEnvelope, type ShadowRoutingContext} from "./intent-shadow";
+import {activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSchema, stampIntentEnvelope, type ShadowRoutingContext} from "./intent-shadow";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
   value, state, confidence: state === "explicit" ? 1 : 0.7,
@@ -72,6 +72,9 @@ const activeBinding = {
   objectiveFingerprint: activeContext.objective.fingerprint,
   sourceManifestId: activeContext.sourceManifest.id,
   sourceManifestFingerprint: activeContext.sourceManifest.fingerprint,
+  sourceManifestDocumentIds: [...activeContext.sourceManifest.documentIds],
+  sourceManifestEvidenceObjectIds: [...activeContext.sourceManifest.evidenceObjectIds],
+  sourceManifestMembershipFingerprint: activeWorkSourceManifestMembershipFingerprint(activeContext.sourceManifest),
 };
 
 describe("shadow intent observability boundary", () => {
@@ -169,18 +172,19 @@ describe("shadow intent observability boundary", () => {
       gateway,
       context: {
         ...context,
+        message: "Continue o trabalho habitual.",
         activeWorkContext: activeContext,
         activeWorkContextBinding: activeBinding,
       },
     });
     expect(objectPayload).toMatchObject({activeWorkContext: {contextId: "work:camil", revision: 1}});
     expect(routePayload).not.toHaveProperty("activeWorkContext");
-    expect(objectValidator?.({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []})).toMatchObject({accepted: false});
+    expect(objectValidator?.({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []})).toEqual({accepted: true});
     expect(result.semanticObjects.compilation).toMatchObject({status: "incomplete", usableObjects: []});
     expect(result.output).toMatchObject({abstain: true, composition: null});
   });
 
-  it("repairs a schema-valid but semantically incomplete extraction before canonical routing", async () => {
+  it("does not repair a schema-valid honest abstention before canonical routing", async () => {
     const logs: GatewayCallLog[] = [];
     let objectAttempt = 0;
     const adapter: ProviderAdapter = {
@@ -196,17 +200,16 @@ describe("shadow intent observability boundary", () => {
     };
     const gateway = createModelGateway({adapters: {anthropic: adapter}, onCall: (call) => logs.push(call)});
 
-    const result = await shadowIntentEnvelope({gateway, context});
+    const result = await shadowIntentEnvelope({gateway, context: {...context, message: "Faça o trabalho habitual."}});
 
-    expect(result.output.abstain).toBe(false);
-    expect(result.semanticObjects.compilation.status).toBe("complete");
+    expect(result.output.abstain).toBe(true);
+    expect(result.semanticObjects.compilation.status).toBe("incomplete");
     expect(result.semanticObjects.routingAttempt).toMatchObject({
-      provider: "anthropic", model: "claude-sonnet-5", retryOrdinal: 1,
-      isSameModelRepair: true, usedProviderFallback: false, attemptCount: 2,
+      provider: "anthropic", model: "claude-sonnet-5", retryOrdinal: 0,
+      isSameModelRepair: false, usedProviderFallback: false, attemptCount: 1,
     });
     expect(logs.filter(({task}) => task === "extract_semantic_objects")).toMatchObject([
-      {outcome: "invalid_output", isSameModelRepair: false, usedProviderFallback: false},
-      {outcome: "ok", isSameModelRepair: true, usedProviderFallback: false},
+      {outcome: "ok", isSameModelRepair: false, usedProviderFallback: false},
     ]);
   });
 
@@ -256,14 +259,37 @@ describe("shadow intent observability boundary", () => {
       ...context, activeWorkContext: activeContext,
       activeWorkContextBinding: {...activeBinding, objectiveFingerprint: "c".repeat(64)},
     }})).rejects.toThrow("active_work_context_revision_mismatch");
+    const unavailableDocumentId = "40000000-0000-4000-8000-000000000001";
+    const documentManifest = {...activeContext.sourceManifest, documentIds: [unavailableDocumentId]};
     await expect(shadowIntentEnvelope({gateway, context: {
       ...context,
       activeWorkContext: {
         ...activeContext,
-        sourceManifest: {...activeContext.sourceManifest, documentIds: ["40000000-0000-4000-8000-000000000001"]},
+        sourceManifest: documentManifest,
+      },
+      activeWorkContextBinding: {
+        ...activeBinding,
+        sourceManifestDocumentIds: [unavailableDocumentId],
+        sourceManifestMembershipFingerprint: activeWorkSourceManifestMembershipFingerprint(documentManifest),
+      },
+    }})).rejects.toThrow("active_work_context_document_mismatch");
+    const smuggledEvidenceId = "tenant-b:secret-ledger";
+    await expect(shadowIntentEnvelope({gateway, context: {
+      ...context,
+      activeWorkContext: {
+        ...activeContext,
+        sourceManifest: {
+          ...activeContext.sourceManifest,
+          evidenceObjectIds: [...activeContext.sourceManifest.evidenceObjectIds, smuggledEvidenceId],
+        },
+        objects: [...activeContext.objects, {
+          id: "ctx-smuggled", ordinal: 2, kind: "claim" as const,
+          slots: [{key: "subject" as const, value: "secret ledger"}], label: "secret ledger",
+          governance: {state: "system_resolved" as const, sourceIds: [smuggledEvidenceId]},
+        }],
       },
       activeWorkContextBinding: activeBinding,
-    }})).rejects.toThrow("active_work_context_document_mismatch");
+    }})).rejects.toThrow("active_work_context_manifest_membership_mismatch");
   });
 
   it("fails closed before returning an envelope when spend telemetry is invalid", async () => {

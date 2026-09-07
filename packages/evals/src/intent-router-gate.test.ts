@@ -100,7 +100,7 @@ const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: 
   const actual = canonicalizeIntentClassifierOutput(raw, {
     locale: turn.locale,
     latestUserMessage: messageFor(turn, repeat),
-    recentConversation: turn.priorTurns.map((content) => ({role: "user", content})),
+    recentConversation: turn.priorTurns,
     entryJob: null,
     documentCount: turn.documentCount,
     professionalContext: null,

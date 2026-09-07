@@ -9,6 +9,7 @@ import {
   activeWorkContextSchema,
   semanticObjectExtractorOutputSchema,
   semanticObjectCompilationSchema,
+  validateSemanticObjectOutput,
   type ActiveWorkContext,
   type SemanticObjectExtractorInput,
   type SemanticTextSpan,
@@ -150,6 +151,27 @@ describe("semantic object extractor contract", () => {
     expect(result.status).toBe("complete");
     expect(result.coverage).toMatchObject({semanticHeadMentions: 1, semanticHeadMentionsCovered: 1});
     expect(result.coverage.issues).not.toContainEqual(expect.objectContaining({code: "merged_semantic_heads"}));
+  });
+
+  it("coalesces a provider class contained by its proper name", () => {
+    const message = "Analise o Banco ABC.";
+    const result = compileSemanticObjects(input(message), {
+      objects: [{candidateId: "candidate-1", kind: "provider", head: {key: "entity", span: span(message, "Banco ABC")}, modifiers: []}],
+      activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+    });
+    expect(result.status).toBe("complete");
+    expect(result.coverage).toMatchObject({semanticHeadMentions: 1, semanticHeadMentionsCovered: 1});
+    expect(result.coverage.issues).not.toContainEqual(expect.objectContaining({code: "merged_semantic_heads"}));
+  });
+
+  it("coalesces one named market comparison set without merging unrelated atomic heads", () => {
+    const message = "Quero o mapa atual de precedentes e condições de mercado.";
+    const result = compileSemanticObjects(input(message), {
+      objects: [{candidateId: "candidate-1", kind: "market", head: {key: "subject", span: span(message, "precedentes e condições de mercado")}, modifiers: []}],
+      activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+    });
+    expect(result.status).toBe("complete");
+    expect(result.coverage).toMatchObject({semanticHeadMentions: 1, semanticHeadMentionsCovered: 1});
   });
 
   it("does not promote a jurisdiction introduced by a preposition into a named object", () => {
@@ -303,11 +325,35 @@ describe("semantic object extractor contract", () => {
   });
 
   it("treats an empty extraction as incomplete instead of a successful no-op", () => {
-    const result = compileSemanticObjects(input("Faça o trabalho habitual."), {
-      objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
-    });
+    const objectInput = input("Faça o trabalho habitual.");
+    const output = {
+      objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    };
+    const result = compileSemanticObjects(objectInput, output);
     expect(result.status).toBe("incomplete");
     expect(result.coverage.issues).toContainEqual(expect.objectContaining({code: "no_semantic_object"}));
+    expect(validateSemanticObjectOutput(objectInput, output)).toEqual({accepted: true});
+  });
+
+  it("accepts an attributable unresolved reference as an honest abstention", () => {
+    const message = "Revise aquilo.";
+    const objectInput = input(message);
+    const output = {
+      objects: [], activeContextReferences: [],
+      unresolvedReferences: [{span: span(message, "aquilo"), reason: "no_governed_match" as const}],
+      excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    };
+    expect(validateSemanticObjectOutput(objectInput, output)).toEqual({accepted: true});
+  });
+
+  it("does not accept a routed semantic omission as an honest abstention", () => {
+    const message = "Analise a Camil e prepare um memo.";
+    const objectInput = input(message);
+    const output = {
+      objects: [{candidateId: "candidate-1", kind: "company" as const, head: {key: "entity" as const, span: span(message, "Camil")}, modifiers: []}],
+      activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    };
+    expect(validateSemanticObjectOutput(objectInput, output)).toMatchObject({accepted: false});
   });
 
   it("rejects duplicate candidates instead of quietly deduplicating them", () => {

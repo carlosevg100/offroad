@@ -152,7 +152,12 @@ describe("agent operation brief worker", () => {
         objective: {id: objectiveId, revision: 4, fingerprint: objectiveFingerprint},
         sourceManifest: {id: manifestId, fingerprint: "d".repeat(64), documentIds: ["33333333-3333-4333-8333-333333333333"]},
       },
-      binding: {objectiveId, objectiveRevision: 4, sourceManifestId: manifestId},
+      binding: {
+        objectiveId, objectiveRevision: 4, sourceManifestId: manifestId,
+        sourceManifestDocumentIds: ["33333333-3333-4333-8333-333333333333"],
+        sourceManifestEvidenceObjectIds: [projectId, objectiveId],
+        sourceManifestMembershipFingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+      },
     });
     expect(JSON.stringify(compiled)).not.toContain("Segredo histórico");
   });

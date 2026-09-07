@@ -625,16 +625,46 @@ function semanticHeadMentions(input: SemanticObjectExtractorInput): SemanticHead
     if (mention.expectedKind === null && unique.some((existing) => overlaps(existing, mention))) continue;
     unique.push(mention);
   }
-  const sorted = unique.sort((left, right) => left.start - right.start || left.end - right.end);
+  const sorted = unique.sort((left, right) => left.start - right.start || right.end - left.end);
   const coalesced: SemanticHeadMention[] = [];
   for (let index = 0; index < sorted.length; index += 1) {
     const current = sorted[index]!;
     const next = sorted[index + 1];
+    // A proper name that contains a domain class is one referent ("Banco ABC"), even when the
+    // independent named-entity pass and the domain vocabulary start at the same byte. Preserve
+    // the code-owned domain kind and the widest attributable span.
+    if (next && overlaps(current, next)
+      && current.start <= next.start && current.end >= next.end
+      && current.expectedKind === null && next.expectedKind !== null) {
+      coalesced.push({...next, start: current.start, end: current.end, text: text.slice(current.start, current.end)});
+      index += 1;
+      continue;
+    }
+    if (next && overlaps(current, next)
+      && current.expectedKind !== null && current.expectedKind === next.expectedKind) {
+      coalesced.push({
+        ...current,
+        start: Math.min(current.start, next.start),
+        end: Math.max(current.end, next.end),
+        text: text.slice(Math.min(current.start, next.start), Math.max(current.end, next.end)),
+      });
+      index += 1;
+      continue;
+    }
     // A provider class immediately followed by its proper name is one referent, not two heads:
     // "banco JP Morgan" / "fundo Prisma Capital". This coalescing is deliberately narrow so
     // independent heads such as "Camil ... memo ... operação" remain separate.
     if (current.expectedKind === "provider" && next?.expectedKind === null
       && /^\s+$/u.test(text.slice(current.end, next.start))) {
+      coalesced.push({...current, end: next.end, text: text.slice(current.start, next.end)});
+      index += 1;
+      continue;
+    }
+    // "precedentes e condições de mercado" names one market comparison set. This narrow
+    // coalescer does not join repeated alternatives, instruments or other independently
+    // selectable objects merely because they share a kind.
+    if (current.expectedKind === "market" && next?.expectedKind === "market"
+      && /^\s+(?:e|and)\s+(?:condiç(?:ão|ões)|condic(?:ao|oes)|conditions?)\s+(?:de|do|da|of)\s+$/iu.test(text.slice(current.end, next.start))) {
       coalesced.push({...current, end: next.end, text: text.slice(current.start, next.end)});
       index += 1;
       continue;
@@ -885,6 +915,17 @@ export function validateSemanticObjectOutput(
 ): {accepted: true} | {accepted: false; issues: Array<{path: string; code: string; message: string}>} {
   const compilation = compileSemanticObjects(input, output);
   if (compilation.status === "complete") return {accepted: true};
+  // An extractor may legitimately establish that the current turn has no attributable object
+  // or that its reference cannot be resolved from governed work memory. That is a successful,
+  // fail-closed abstention, not malformed provider output and therefore must not consume a repair
+  // or provider fallback. Coverage omissions, invalid spans, cardinality breaches and every
+  // structural rejection remain validation failures.
+  const honestAbstentionCodes = new Set(["unresolved_reference", "no_semantic_object"]);
+  if (compilation.status === "incomplete"
+    && compilation.coverage.issues.length > 0
+    && compilation.coverage.issues.every(({code}) => honestAbstentionCodes.has(code))) {
+    return {accepted: true};
+  }
   const issues = compilation.coverage.issues.slice(0, 12).map((issue, index) => ({
     path: `coverage.issues.${index}`,
     code: issue.code,

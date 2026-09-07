@@ -1,7 +1,8 @@
-import {namedCompositionKeys, namedCompositions, primaryWorkSchema} from "@offroad/agent-contracts";
+import {compileSemanticObjects, namedCompositionKeys, namedCompositions, primaryWorkSchema} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 
 import {intentGoldCoverage, intentGoldTurns, stabilityIntentTurnIds} from "./intent-gold";
+import {intentGoldClassifierInput, intentGoldObjectInput} from "./intent-router-gate-input";
 
 describe("intent gold turns", () => {
   it("covers every primary work, so a constant classifier cannot pass", () => {
@@ -90,5 +91,49 @@ describe("intent gold turns", () => {
       const turn = intentGoldTurns.find((candidate) => candidate.id === id)!;
       expect(new Set([turn.message, ...turn.stabilityParaphrases!]).size).toBe(3);
     }
+  });
+
+  it("preserves authored conversation roles and carries continuity only in governed work context", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc01-t02")!;
+    expect(intentGoldClassifierInput(turn, turn.message).recentConversation.map(({role}) => role)).toEqual(["user", "assistant"]);
+    const objectInput = intentGoldObjectInput(turn, turn.message);
+    expect(objectInput.recentConversation.map(({role}) => role)).toEqual(["user", "assistant"]);
+    expect(objectInput.activeWorkContext).toMatchObject({
+      organizationId: "10000000-0000-4000-8000-000000000001",
+      projectId: "20000000-0000-4000-8000-000000000001",
+      state: "active",
+      objects: [{kind: "company"}, {kind: "operation"}],
+    });
+    expect(JSON.stringify(objectInput.activeWorkContext)).not.toContain("A análise inicial da Camil foi organizada.");
+  });
+
+  it("makes a continuity oracle realizable through current-turn triggers and governed objects", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc01-t02")!;
+    const objectInput = intentGoldObjectInput(turn, turn.message);
+    const pitchStart = turn.message.indexOf("pitch");
+    const pagesStart = turn.message.indexOf("três páginas");
+    const alternativesStart = turn.message.indexOf("alternativas");
+    const span = (start: number, text: string) => ({source: "latest_user_message" as const, messageIndex: null, start, end: start + text.length, text});
+    const compilation = compileSemanticObjects(objectInput, {
+      objects: [
+        {
+          candidateId: "candidate-1", kind: "material",
+          head: {key: "subject", span: span(pitchStart, "pitch")},
+          modifiers: [{key: "page_count", span: span(pagesStart, "três páginas")}],
+        },
+        {
+          candidateId: "candidate-2", kind: "alternative",
+          head: {key: "subject", span: span(alternativesStart, "alternativas")}, modifiers: [],
+        },
+      ],
+      activeContextReferences: [
+        {contextObjectId: "context-1", trigger: span(pitchStart, "pitch")},
+        {contextObjectId: "context-2", trigger: span(pitchStart, "pitch")},
+      ],
+      unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    });
+    expect(compilation.status).toBe("complete");
+    expect(compilation.objects.map(({kind}) => kind)).toEqual(["material", "alternative", "company", "operation"]);
+    expect(compilation.objects.slice(2).every(({source}) => source.type === "active_work_context")).toBe(true);
   });
 });

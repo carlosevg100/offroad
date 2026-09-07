@@ -20,6 +20,7 @@ import {
   type SemanticObjectExtractorOutput,
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
+import {fingerprintJson} from "@offroad/case-understanding";
 
 import {governedModelRoute, safeModelTurnTelemetry, safeSuccessfulModelCall} from "./model-call-log";
 
@@ -60,8 +61,25 @@ export type ShadowRoutingContext = {
     objectiveFingerprint: string;
     sourceManifestId: string;
     sourceManifestFingerprint: string;
+    /** Control-plane allowlist, independent from the model-visible context payload. */
+    sourceManifestDocumentIds: string[];
+    sourceManifestEvidenceObjectIds: string[];
+    sourceManifestMembershipFingerprint: string;
   } | null;
 };
+
+export function activeWorkSourceManifestMembershipFingerprint(manifest: {
+  id: string;
+  documentIds: readonly string[];
+  evidenceObjectIds: readonly string[];
+}): string {
+  return fingerprintJson({
+    schemaVersion: "active-work-source-membership.v1",
+    sourceManifestId: manifest.id,
+    documentIds: [...manifest.documentIds].sort(),
+    evidenceObjectIds: [...manifest.evidenceObjectIds].sort(),
+  });
+}
 
 export function governedShadowAccessBasis(value: string | null | undefined): ShadowRoutingContext["accessBasis"] {
   if (value === "public_information" || value === "authorized_private") return value;
@@ -260,6 +278,16 @@ export function validateActiveWorkContextBinding(context: ShadowRoutingContext):
     || active.sourceManifest.id !== binding.sourceManifestId
     || active.sourceManifest.fingerprint !== binding.sourceManifestFingerprint) {
     throw new Error("active_work_context_revision_mismatch");
+  }
+  const boundMembershipFingerprint = activeWorkSourceManifestMembershipFingerprint({
+    id: binding.sourceManifestId,
+    documentIds: binding.sourceManifestDocumentIds,
+    evidenceObjectIds: binding.sourceManifestEvidenceObjectIds,
+  });
+  const activeMembershipFingerprint = activeWorkSourceManifestMembershipFingerprint(active.sourceManifest);
+  if (binding.sourceManifestMembershipFingerprint !== boundMembershipFingerprint
+    || activeMembershipFingerprint !== boundMembershipFingerprint) {
+    throw new Error("active_work_context_manifest_membership_mismatch");
   }
   const availableDocuments = new Set(context.documentIds);
   if (active.sourceManifest.documentIds.some((id) => !availableDocuments.has(id))) {

@@ -45,7 +45,7 @@ import {z} from "zod";
 import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
-import {governedShadowAccessBasis, shadowIntentEnvelope} from "./intent-shadow";
+import {activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope} from "./intent-shadow";
 import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
@@ -860,6 +860,9 @@ export function governedActiveWorkContext(
       objectiveFingerprint: objective.fingerprint,
       sourceManifestId: sourceManifest.id,
       sourceManifestFingerprint: sourceManifest.fingerprint,
+      sourceManifestDocumentIds: [...sourceManifest.documentIds],
+      sourceManifestEvidenceObjectIds: [...sourceManifest.evidenceObjectIds],
+      sourceManifestMembershipFingerprint: activeWorkSourceManifestMembershipFingerprint(sourceManifest),
     },
   };
 }

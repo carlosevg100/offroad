@@ -32,19 +32,20 @@ export function intentGoldClassifierInput(turn: IntentGoldTurn, message: string)
   return buildIntentClassifierInput({
     locale: turn.locale,
     latestUserMessage: message,
-    recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
+    recentConversation: turn.priorTurns.slice(-8),
     entryJob: null,
     documentCount: turn.documentCount,
     professionalContext: professionalContextByCase[turn.caseId] ?? null,
   });
 }
 
-/** Authored conversation is evidence input, never an authority-bearing active-work object. */
+/** Conversation roles are preserved, while continuity authority comes only from the separately
+ * authored, schema-governed active-work fixture. Historical prose is never promoted into it. */
 export function intentGoldObjectInput(turn: IntentGoldTurn, message: string): SemanticObjectExtractorInput {
   return buildSemanticObjectExtractorInput({
     locale: turn.locale,
     latestUserMessage: message,
-    recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
-    activeWorkContext: null,
+    recentConversation: turn.priorTurns.slice(-8),
+    activeWorkContext: turn.activeWorkContext,
   });
 }

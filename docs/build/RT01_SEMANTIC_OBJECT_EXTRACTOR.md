@@ -41,6 +41,13 @@ manifest or available-document mismatches before either model call. The worker c
 context only from capability-scoped project, signed visible execution brief and source manifest;
 free-form history and professional profile fields are not reimported.
 
+Conversation roles are preserved end to end in runtime and gold inputs. Gold continuity fixtures
+carry an independently authored governed context; they do not derive context objects from the
+expected oracle or from assistant summaries. The binding also carries the control-plane document
+and evidence-object allowlists plus a recomputable membership fingerprint. Runtime recomputes and
+compares both memberships, so adding an otherwise schema-valid foreign source id fails before a
+provider call even if the visible manifest id and revision fingerprints still match.
+
 ## Atomicity
 
 Every independently referable semantic head is a separate object. A company, operation, document,
@@ -63,6 +70,10 @@ The compilation is:
 
 Only `complete` compilations expose `usableObjects`. Diagnostic objects and named issues remain
 available for observability, but a consumer cannot mistake them for accepted routing input.
+An `incomplete` output containing only `no_semantic_object` and/or an attributable
+`unresolved_reference` is an honest model abstention: the gateway accepts it without spending a
+repair or fallback, while application still clears objects and abstains. Any uncovered semantic
+head, quantity, cardinality breach or structural issue remains invalid provider output.
 
 The code-owned semantic coverage detector is deliberately bounded to credit-work vocabulary and
 entities introduced through explicit grammar or resolved governed context. It has negative
@@ -70,6 +81,11 @@ authority only: it can prove that a detected head was omitted, claimed twice or 
 creates an object or infers a route. It intentionally does not treat arbitrary capitalization,
 professional titles or sentence openings as entities. Expansion of this vocabulary is measured
 against the gold and adversarial corpus before promotion.
+
+The detector coalesces only provably single referents: a provider class contained in or adjacent
+to its proper name (`Banco ABC`, `banco JP Morgan`) and the bounded market phrase “precedentes e
+condições de mercado”. It does not coalesce independent company, material, operation, instrument
+or alternative heads.
 
 One shared cardinality limit of 24 applies to classifier objects, extractor candidates and the
 accepted envelope. Text candidates plus governed references above that limit are retained in the
