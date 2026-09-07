@@ -157,6 +157,17 @@ describe("agent operation brief worker", () => {
         })],
       },
     });
+    const preflight = objectivePreflightInput?.preflightDecision as {
+      tasks: Array<{taskId: string; executorKey: string | null; reasons: Array<{code: string}>}>;
+    };
+    const receivables = preflight.tasks.find((task) => task.taskId === "R01");
+    expect(receivables?.executorKey).toBe("@offroad/receivables-analysis#underwriteReceivablesPool");
+    expect(receivables?.reasons.map((reason) => reason.code)).toEqual(expect.arrayContaining([
+      "capability_not_live",
+      "evidence_regime_not_allowed",
+      "data_class_not_allowed",
+    ]));
+    expect(receivables?.reasons.map((reason) => reason.code)).not.toContain("executor_unbound");
   });
 
   it("activates a released public DAG in the same project with zero routing model calls", async () => {

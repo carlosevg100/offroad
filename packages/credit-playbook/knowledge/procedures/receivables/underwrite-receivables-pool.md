@@ -25,6 +25,16 @@ reference_data_keys: [policy.receivables.aging, policy.concentration.materiality
 task_specs: [R01]
 required_depth_pack_ids: [analysis.receivables-underwriting]
 binding_priority: 100
+capability_availability: shadow
+capability_exposure: internal
+capability_allowed_uses: [internal_validation]
+capability_allowed_evidence_regimes: [project_private, mixed_governed]
+capability_allowed_data_classes: [project_confidential]
+capability_allowed_source_classes: [project_context, provided_documents, house_method]
+capability_allowed_provider_ids: []
+capability_allowed_tool_ids: []
+capability_provider_required: false
+capability_maximum_effect: none
 gold_cases: [gc03-assessor-recebiveis]
 ---
 
