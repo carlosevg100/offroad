@@ -60,7 +60,6 @@ const professionalContextByCase: Partial<Record<IntentGoldTurn["caseId"], {
   gc05: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["corporate_banking", "dcm"], primaryObjectives: ["originate_ideas"]},
 };
 
-const documentCountByCase: Partial<Record<IntentGoldTurn["caseId"], number>> = {gc03: 2, gc04: 2};
 const calls: GatewayCallLog[] = [];
 
 async function main(): Promise<void> {
@@ -91,7 +90,7 @@ async function main(): Promise<void> {
         latestUserMessage: message,
         recentConversation: turn.priorTurns.slice(-8).map((content) => ({role: "user", content})),
         entryJob: null,
-        documentCount: documentCountByCase[turn.caseId] ?? 0,
+        documentCount: turn.documentCount,
         professionalContext: professionalContextByCase[turn.caseId] ?? null,
       });
       const startedAt = Date.now();

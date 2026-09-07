@@ -81,7 +81,12 @@ describe("intent envelope v1", () => {
 
   it("refuses prose in the classifier composition field", () => {
     const classifier = {
-      routingCore: envelope().routingCore,
+      routingCore: {
+        ...envelope().routingCore,
+        desiredOutcome: {...envelope().routingCore.desiredOutcome, affirmation: "affirmed"},
+        decision: {...envelope().routingCore.decision, affirmation: "affirmed"},
+        audience: {...envelope().routingCore.audience, affirmation: "affirmed"},
+      },
       inferableContext: {
         jurisdiction: {value: ["BR"], state: "inferred", confidence: 0.9},
         asOfDate: {value: null, state: "unknown"},

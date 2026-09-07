@@ -167,9 +167,14 @@ export type NamedCompositionPolicy = {
   atlas: `I${string}`;
   canonicalAction: CanonicalIntentAction;
   primaryWorks: readonly [PrimaryWork, ...PrimaryWork[]];
+  primaryWorkVariants?: readonly [{
+    when: "documents_present";
+    primaryWorks: readonly [PrimaryWork, ...PrimaryWork[]];
+  }];
   depth: z.infer<typeof intentDepthSchema>;
   workResponsibilities: readonly [WorkResponsibility, ...WorkResponsibility[]];
   effect: DcmWorkEffect;
+  classifierGuidance: string;
 };
 
 /**
@@ -178,30 +183,47 @@ export type NamedCompositionPolicy = {
  * second composition table anywhere else is a policy fork and must fail review.
  */
 export const namedCompositions = {
-  find_and_organize_information: {atlas: "I01", canonicalAction: "find_and_organize", primaryWorks: ["find_and_organize"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  extract_and_reconcile_data: {atlas: "I02", canonicalAction: "extract_and_reconcile", primaryWorks: ["extract_and_reconcile"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
-  understand_company_sector_asset: {atlas: "I03", canonicalAction: "understand", primaryWorks: ["understand"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  answer_a_question: {atlas: "I04", canonicalAction: "answer", primaryWorks: ["extract_and_reconcile"], depth: "point", workResponsibilities: ["producer"], effect: "none"},
-  analyze_performance_and_credit: {atlas: "I05", canonicalAction: "analyze", primaryWorks: ["analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  build_or_review_model: {atlas: "I06", canonicalAction: "model", primaryWorks: ["model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
-  diagnose_capital_structure: {atlas: "I07", canonicalAction: "diagnose", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
-  develop_alternatives: {atlas: "I08", canonicalAction: "compare", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  design_indicative_structure: {atlas: "I09", canonicalAction: "structure", primaryWorks: ["capital_strategy", "analyze"], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none"},
-  read_contract_covenant_waterfall: {atlas: "I10", canonicalAction: "read_document", primaryWorks: ["read_documents", "analyze"], depth: "institutional", workResponsibilities: ["producer"], effect: "none"},
-  prepare_meeting: {atlas: "I11", canonicalAction: "prepare_meeting", primaryWorks: ["understand", "capital_strategy", "model"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none"},
-  prepare_material: {atlas: "I12", canonicalAction: "prepare_material", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none"},
-  review_work: {atlas: "I13", canonicalAction: "review", primaryWorks: ["analyze"], depth: "institutional", workResponsibilities: ["producer", "reviewer"], effect: "none"},
-  prepare_decision: {atlas: "I14", canonicalAction: "prepare_decision", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "sponsor"], effect: "none"},
-  evaluate_received_opportunity: {atlas: "I15", canonicalAction: "evaluate", primaryWorks: ["analyze", "read_documents"], depth: "preliminary", workResponsibilities: ["producer", "reviewer"], effect: "none"},
-  map_market_and_precedents: {atlas: "I16", canonicalAction: "map_market", primaryWorks: ["market"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  identify_capital: {atlas: "I17", canonicalAction: "identify_capital", primaryWorks: ["capital_match", "market"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none"},
-  introduce: {atlas: "I18", canonicalAction: "introduce", primaryWorks: ["capital_match"], depth: "institutional", workResponsibilities: ["coordinator"], effect: "external"},
-  monitor: {atlas: "I19", canonicalAction: "monitor", primaryWorks: ["find_and_organize", "extract_and_reconcile", "analyze"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none"},
-  manage_work: {atlas: "I20", canonicalAction: "manage_work", primaryWorks: ["find_and_organize"], depth: "point", workResponsibilities: ["coordinator"], effect: "propose_state"},
+  find_and_organize_information: {atlas: "I01", canonicalAction: "find_and_organize", primaryWorks: ["find_and_organize"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "collect or organize information without analysis"},
+  extract_and_reconcile_data: {atlas: "I02", canonicalAction: "extract_and_reconcile", primaryWorks: ["extract_and_reconcile"], depth: "institutional", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "extract, spread, reconcile or explain discrepancies in supplied data"},
+  understand_company_sector_asset: {atlas: "I03", canonicalAction: "understand", primaryWorks: ["understand"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "understand a company, sector or asset without a narrower requested outcome"},
+  answer_a_question: {atlas: "I04", canonicalAction: "answer", primaryWorks: ["extract_and_reconcile"], depth: "point", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "explain or trace a bounded fact, number or instrument question"},
+  analyze_performance_and_credit: {atlas: "I05", canonicalAction: "analyze", primaryWorks: ["analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "analyze financial performance, credit risk, covenant headroom or downside"},
+  build_or_review_model: {atlas: "I06", canonicalAction: "model", primaryWorks: ["model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "build, audit or change assumptions in a financial model"},
+  diagnose_capital_structure: {atlas: "I07", canonicalAction: "diagnose", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "diagnose debt, liquidity, maturities, repricing or capital structure"},
+  develop_alternatives: {atlas: "I08", canonicalAction: "compare", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "develop or compare capital alternatives without selecting final terms"},
+  design_indicative_structure: {atlas: "I09", canonicalAction: "structure", primaryWorks: ["capital_strategy", "analyze"], primaryWorkVariants: [{when: "documents_present", primaryWorks: ["extract_and_reconcile", "capital_strategy", "analyze"]}], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none", classifierGuidance: "design an indicative debt or receivables structure; supplied documents must be extracted and reconciled first"},
+  read_contract_covenant_waterfall: {atlas: "I10", canonicalAction: "read_document", primaryWorks: ["read_documents", "analyze"], depth: "institutional", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "read or test a contract, covenant clause, formula or payment waterfall"},
+  prepare_meeting: {atlas: "I11", canonicalAction: "prepare_meeting", primaryWorks: ["understand", "capital_strategy", "model"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none", classifierGuidance: "prepare for a client or management meeting; understanding precedes strategy and modelling, including financing meetings"},
+  prepare_material: {atlas: "I12", canonicalAction: "prepare_material", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "coordinator"], effect: "none", classifierGuidance: "produce an explicitly requested deck, memo, spreadsheet or other material"},
+  review_work: {atlas: "I13", canonicalAction: "review", primaryWorks: ["analyze"], depth: "institutional", workResponsibilities: ["producer", "reviewer"], effect: "none", classifierGuidance: "challenge, critique or quality-review existing work"},
+  prepare_decision: {atlas: "I14", canonicalAction: "prepare_decision", primaryWorks: ["capital_strategy", "analyze", "model"], depth: "institutional", workResponsibilities: ["producer", "sponsor"], effect: "none", classifierGuidance: "prepare a recommendation or decision for a board or committee"},
+  evaluate_received_opportunity: {atlas: "I15", canonicalAction: "evaluate", primaryWorks: ["analyze", "read_documents"], depth: "preliminary", workResponsibilities: ["producer", "reviewer"], effect: "none", classifierGuidance: "screen a received investment or financing opportunity"},
+  map_market_and_precedents: {atlas: "I16", canonicalAction: "map_market", primaryWorks: ["market"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "map current market terms, pricing, comparables or precedents"},
+  identify_capital: {atlas: "I17", canonicalAction: "identify_capital", primaryWorks: ["capital_match", "market"], depth: "preliminary", workResponsibilities: ["producer", "coordinator"], effect: "none", classifierGuidance: "identify or shortlist suitable capital providers without contacting them"},
+  introduce: {atlas: "I18", canonicalAction: "introduce", primaryWorks: ["capital_match"], depth: "institutional", workResponsibilities: ["coordinator"], effect: "external", classifierGuidance: "send, connect or introduce an opportunity to an external party"},
+  monitor: {atlas: "I19", canonicalAction: "monitor", primaryWorks: ["find_and_organize", "extract_and_reconcile", "analyze"], depth: "preliminary", workResponsibilities: ["producer"], effect: "none", classifierGuidance: "monitor recurring changes and alert on a defined condition"},
+  manage_work: {atlas: "I20", canonicalAction: "manage_work", primaryWorks: ["find_and_organize"], depth: "point", workResponsibilities: ["coordinator"], effect: "propose_state", classifierGuidance: "manage project status, versions, open work or comments"},
 } as const satisfies Record<NamedComposition, NamedCompositionPolicy>;
 
 export function compositionPolicy(composition: NamedComposition): NamedCompositionPolicy {
   return namedCompositions[composition];
+}
+
+export function resolveCompositionPrimaryWorks(
+  composition: NamedComposition,
+  context: {documentsPresent: boolean},
+): readonly [PrimaryWork, ...PrimaryWork[]] {
+  const policy = compositionPolicy(composition);
+  const variant = context.documentsPresent ? policy.primaryWorkVariants?.find(({when}) => when === "documents_present") : undefined;
+  return variant?.primaryWorks ?? policy.primaryWorks;
+}
+
+export function intentCompositionPolicyPrompt(): string {
+  return namedCompositionKeys.map((composition) => {
+    const policy = compositionPolicy(composition);
+    const variants = policy.primaryWorkVariants?.map(({when, primaryWorks}) => `; when ${when}: ${primaryWorks.join(" -> ")}`).join("") ?? "";
+    return `- ${composition}: ${policy.classifierGuidance}; works: ${policy.primaryWorks.join(" -> ")}${variants}; depth: ${policy.depth}`;
+  }).join("\n");
 }
 
 const sameOrderedValues = <T extends string>(actual: readonly T[], expected: readonly T[]): boolean =>
@@ -221,7 +243,10 @@ export const intentEnvelopeSchema = z.object({
   if (envelope.composition === null) return;
   const policy = compositionPolicy(envelope.composition);
   const works = envelope.primaryWorks.map(({work}) => work);
-  if (!sameOrderedValues(works, policy.primaryWorks)) {
+  const expectedWorks = resolveCompositionPrimaryWorks(envelope.composition, {
+    documentsPresent: envelope.executionContext.availableDocumentIds.value.length > 0,
+  });
+  if (!sameOrderedValues(works, expectedWorks)) {
     ctx.addIssue({code: z.ZodIssueCode.custom, path: ["primaryWorks"], message: "primary works must match the canonical composition policy"});
   }
   if (envelope.routingCore.depth.value !== policy.depth) {

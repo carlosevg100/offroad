@@ -62,6 +62,18 @@ describe("canonical composition policy", () => {
     },
   );
 
+  it("accepts only the governed document-present work-order variant", () => {
+    const value = candidate("design_indicative_structure");
+    const documentFirst = {
+      ...value,
+      executionContext: {...value.executionContext, availableDocumentIds: system(["30000000-0000-4000-8000-000000000001"])},
+      primaryWorks: ["extract_and_reconcile", "capital_strategy", "analyze"].map((work) => ({work, confidence: 0.99})),
+    };
+    expect(intentEnvelopeSchema.safeParse(documentFirst).success).toBe(true);
+    expect(intentEnvelopeSchema.safeParse({...documentFirst, primaryWorks: [...documentFirst.primaryWorks].reverse()}).success).toBe(false);
+    expect(intentEnvelopeSchema.safeParse({...documentFirst, executionContext: value.executionContext}).success).toBe(false);
+  });
+
   it("rejects an unknown composition instead of letting the catalogue drift", () => {
     expect(intentEnvelopeSchema.safeParse({...candidate("monitor"), composition: "future_composition"}).success).toBe(false);
   });

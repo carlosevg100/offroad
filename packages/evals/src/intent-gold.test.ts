@@ -51,6 +51,9 @@ describe("intent gold turns", () => {
       for (const materialReference of turn.expected.semantic.materialReferences) {
         expect(turn.expected.semantic.objectKinds, `${turn.id}:${materialReference.reference}`).toContain(materialReference.kind);
       }
+      for (const materialSlot of turn.expected.semantic.materialSlots) {
+        expect(turn.expected.semantic.objectKinds, `${turn.id}:${materialSlot.slot}`).toContain(materialSlot.kind);
+      }
       expect(turn.expected.semantic.desiredOutcomeSignals.length).toBeGreaterThan(0);
       expect(turn.expected.semantic.decision.category).toBeTruthy();
       expect(turn.expected.semantic.audienceCategory).toBeTruthy();
@@ -62,8 +65,16 @@ describe("intent gold turns", () => {
       .toContainEqual({kind: "claim", reference: "4,7x"});
     expect(intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.materialReferences)
       .toEqual(expect.arrayContaining([{kind: "company", reference: "Aurora"}, {kind: "operation", reference: "recebíveis"}]));
-    expect(intentGoldTurns.find(({id}) => id === "gc05-t03")!.expected.semantic.materialReferences)
-      .toEqual(expect.arrayContaining([{kind: "scenario", reference: "CDI de 12%"}, {kind: "scenario", reference: "sete anos"}]));
+    expect(intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.materialSlots)
+      .toEqual(expect.arrayContaining([{kind: "operation", slot: "amount", value: "50000000"}, {kind: "operation", slot: "currency", value: "BRL"}]));
+    expect(intentGoldTurns.find(({id}) => id === "gc05-t03")!.expected.semantic.materialSlots)
+      .toEqual(expect.arrayContaining([{kind: "scenario", slot: "indexer", value: "CDI"}, {kind: "scenario", slot: "percentage", value: "12"}, {kind: "scenario", slot: "tenor_months", value: "84"}]));
+  });
+
+  it("keeps an independent acceptance plan for document-backed structuring", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc03-t01")!;
+    expect(turn.documentCount).toBe(2);
+    expect(turn.expected.primaryWorks).toEqual(["extract_and_reconcile", "capital_strategy", "analyze"]);
   });
 
   it("defines exactly six stability triplets with three distinct authored messages", () => {

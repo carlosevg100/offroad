@@ -5,7 +5,10 @@ import {z} from "zod";
 import {decideLiveTurn, liveRoutingOutputSchema, normalizePreviewTurn, premisesFromTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn, type LiveRoutingOutput, type LiveTurnContext} from "./live-preview";
 import type {PreviewStepOutput} from "./integration-preview";
 
-const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({value, state, confidence: state === "explicit" ? 1 : 0.7});
+const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
+  value, state, confidence: state === "explicit" ? 1 : 0.7,
+  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
+});
 
 /** A classifier output the way the model returns it, with the preview-desk fields. */
 function classifierOutput(overrides: Omit<Partial<LiveRoutingOutput>, "turn"> & {turn?: Partial<LiveRoutingOutput["turn"]>} = {}): LiveRoutingOutput {

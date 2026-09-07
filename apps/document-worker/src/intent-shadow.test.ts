@@ -5,6 +5,7 @@ import {governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSche
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
   value, state, confidence: state === "explicit" ? 1 : 0.7,
+  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
 });
 
 function validOutput() {

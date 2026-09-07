@@ -71,7 +71,35 @@ function semanticTags(value: string): string[] {
   return [...new Set([...lexical, ...normalizedNumbers])].sort();
 }
 
+type NormalizedMaterialSlot = {slot: "amount" | "currency" | "percentage" | "indexer" | "tenor_months"; value: string};
+
+/** Canonical finance slots make equivalent surface forms comparable without losing economics. */
+export function normalizedMaterialSlots(value: string): NormalizedMaterialSlot[] {
+  const text = normalizeText(value)
+    .replace(/\b(sete|seven)\b/g, "7")
+    .replace(/\b(doze|twelve)\b/g, "12");
+  const slots: NormalizedMaterialSlot[] = [];
+  if (/(?:r\$|\bbrl(?=\d|\b)|\breais?\b)/.test(text)) slots.push({slot: "currency", value: "BRL"});
+  for (const match of text.matchAll(/(?:r\$|\bbrl\b)?\s*(\d+(?:[.,]\d+)?)\s*(milhoes?|milhao|mi|mm|m|million)\b/g)) {
+    const numeric = Number(match[1]!.replace(",", "."));
+    if (Number.isFinite(numeric)) slots.push({slot: "amount", value: String(numeric * 1_000_000)});
+  }
+  for (const match of text.matchAll(/\b(\d+(?:[.,]\d+)?)\s*%/g)) {
+    slots.push({slot: "percentage", value: String(Number(match[1]!.replace(",", ".")))});
+  }
+  for (const indexer of ["cdi", "ipca", "selic", "sofr"] as const) {
+    if (new RegExp(`\\b${indexer}\\b`).test(text)) slots.push({slot: "indexer", value: indexer.toUpperCase()});
+  }
+  for (const match of text.matchAll(/\b(\d+)\s*(anos?|years?|meses?|months?)\b/g)) {
+    const count = Number(match[1]);
+    slots.push({slot: "tenor_months", value: String(/^(ano|anos|year|years)$/.test(match[2]!) ? count * 12 : count)});
+  }
+  return [...new Map(slots.map((slot) => [`${slot.slot}:${slot.value}`, slot])).values()]
+    .sort((left, right) => `${left.slot}:${left.value}`.localeCompare(`${right.slot}:${right.value}`));
+}
+
 function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisionCategorySchema> {
+  if (output.routingCore.decision.affirmation !== "affirmed") return "none";
   const decision = output.routingCore.decision.value?.trim();
   if (!decision) return "none";
   const text = normalizeText(decision);
@@ -86,6 +114,7 @@ function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisi
 }
 
 function classifyAudience(output: IntentClassifierOutput): z.infer<typeof audienceCategorySchema> {
+  if (output.routingCore.audience.affirmation !== "affirmed") return "unspecified";
   const text = normalizeText(output.routingCore.audience.value.join(" "));
   if (!text || /\b(unknown|desconhecid|unspecified)\b/.test(text)) return "unspecified";
   if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text)) return "board_or_committee";
@@ -113,7 +142,11 @@ export function scoreIntentGoldTurn(
   const questionTheme = expected.firstQuestionTheme === null
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
-  const decisionPresent = Boolean(rawOutput.routingCore.decision.value?.trim());
+  const outcomeAffirmed = rawOutput.routingCore.desiredOutcome.affirmation === "affirmed";
+  const decisionPresent = rawOutput.routingCore.decision.affirmation === "affirmed"
+    && Boolean(rawOutput.routingCore.decision.value?.trim());
+  const actualSlots = rawOutput.routingCore.object.value.flatMap((object) =>
+    normalizedMaterialSlots(object.reference ?? "").map((slot) => ({kind: object.kind, ...slot})));
   return {
     completed: true,
     composition: output.composition === expected.composition,
@@ -128,8 +161,11 @@ export function scoreIntentGoldTurn(
     objectKindsExact: exactSet(rawOutput.routingCore.object.value.map(({kind}) => kind), expected.semantic.objectKinds),
     materialReferences: expected.semantic.materialReferences.every((expectedReference) => rawOutput.routingCore.object.value.some((object) =>
       object.kind === expectedReference.kind
-      && normalizeText(object.reference ?? "").includes(normalizeText(expectedReference.reference)))),
-    desiredOutcome: expected.semantic.desiredOutcomeSignals.every((alternatives) => alternatives.some((signal) => outcome.includes(normalizeText(signal)))),
+      && normalizeText(object.reference ?? "").includes(normalizeText(expectedReference.reference))))
+      && expected.semantic.materialSlots.every((expectedSlot) => actualSlots.some((actualSlot) =>
+        actualSlot.kind === expectedSlot.kind && actualSlot.slot === expectedSlot.slot && actualSlot.value === expectedSlot.value)),
+    desiredOutcome: outcomeAffirmed
+      && expected.semantic.desiredOutcomeSignals.every((alternatives) => alternatives.some((signal) => outcome.includes(normalizeText(signal)))),
     decisionPresence: decisionPresent === expected.semantic.decision.present,
     decisionCategory: classifyDecision(rawOutput) === expected.semantic.decision.category,
     audienceCategory: classifyAudience(rawOutput) === expected.semantic.audienceCategory,
@@ -145,10 +181,10 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
   const payload = {
     abstain: output.abstain, composition, policy,
     action: output.routingCore.action.value,
-    objects: output.routingCore.object.value.map((object) => ({kind: object.kind, semanticTags: semanticTags(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-    desiredOutcomeTags: semanticTags(output.routingCore.desiredOutcome.value),
-    decision: {present: Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
-    audience: classifyAudience(output), depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
+    objects: output.routingCore.object.value.map((object) => ({kind: object.kind, semanticTags: semanticTags(object.reference ?? ""), materialSlots: normalizedMaterialSlots(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+    desiredOutcome: {affirmation: output.routingCore.desiredOutcome.affirmation, semanticTags: semanticTags(output.routingCore.desiredOutcome.value)},
+    decision: {affirmation: output.routingCore.decision.affirmation, present: output.routingCore.decision.affirmation === "affirmed" && Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
+    audience: {affirmation: output.routingCore.audience.affirmation, category: classifyAudience(output)}, depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
     primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
     asksQuestion: output.firstQuestion !== null,
   };

@@ -2,10 +2,15 @@ import {describe, expect, it} from "vitest";
 
 import {
   canonicalizeIntentClassifierOutput,
+  INTENT_CLASSIFIER_SYSTEM,
   intentClassifierOutputSchema,
 } from "./intent-classifier";
+import {intentCompositionPolicyPrompt} from "./intent-envelope";
 
-const field = <T>(value: T) => ({value, state: "unknown" as const, confidence: null, basis: null});
+const field = <T>(value: T) => ({
+  value, state: "unknown" as const, confidence: null, basis: null,
+  affirmation: value === null ? "not_applicable" as const : value === "" || (Array.isArray(value) && value.length === 0) ? "uncertain" as const : "affirmed" as const,
+});
 
 const modelRoute = (composition: "introduce" | "prepare_meeting") => intentClassifierOutputSchema.parse({
   routingCore: {
@@ -21,6 +26,11 @@ const modelRoute = (composition: "introduce" | "prepare_meeting") => intentClass
 });
 
 describe("intent classifier boundary", () => {
+  it("renders composition and work-order instructions from the executable policy", () => {
+    expect(INTENT_CLASSIFIER_SYSTEM).toContain(intentCompositionPolicyPrompt());
+    expect(INTENT_CLASSIFIER_SYSTEM).toContain("when documents_present: extract_and_reconcile -> capital_strategy -> analyze");
+  });
+
   it("represents an honest empty abstention and converts it to a fail-closed envelope shape", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {
@@ -231,5 +241,23 @@ describe("intent classifier boundary", () => {
     });
     expect(canonical.composition).toBe("identify_capital");
     expect(canonical.routingCore.action.value).toEqual(["identify_capital"]);
+  });
+
+  it("puts extraction before strategy for document-backed structuring and keeps financing meetings understanding-first", () => {
+    const structure = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
+      locale: "pt-BR",
+      latestUserMessage: "Anexei os balanços. Estruture uma operação de recebíveis.",
+      recentConversation: [], entryJob: null, documentCount: 2, professionalContext: null,
+    });
+    expect(structure.composition).toBe("design_indicative_structure");
+    expect(structure.primaryWorks.map(({work}) => work)).toEqual(["extract_and_reconcile", "capital_strategy", "analyze"]);
+
+    const meeting = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
+      locale: "pt-BR",
+      latestUserMessage: "Prepare a reunião com o CFO sobre o financiamento da expansão.",
+      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(meeting.composition).toBe("prepare_meeting");
+    expect(meeting.primaryWorks.map(({work}) => work)).toEqual(["understand", "capital_strategy", "model"]);
   });
 });

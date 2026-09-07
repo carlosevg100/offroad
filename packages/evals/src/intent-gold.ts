@@ -1,6 +1,5 @@
 import {
   canonicalIntentActionSchema,
-  compositionPolicy,
   intentObjectKindSchema,
   namedCompositionKeys,
   namedCompositionSchema,
@@ -16,11 +15,17 @@ export const intentGoldSuiteSchema = z.enum(["journey", "horizontal", "confusion
 export type IntentGoldSuite = z.infer<typeof intentGoldSuiteSchema>;
 export const decisionCategorySchema = z.enum(["none", "capital", "credit", "material", "market", "external", "workflow", "document"]);
 export const audienceCategorySchema = z.enum(["self", "internal_senior", "company_management", "board_or_committee", "capital_provider", "market", "unspecified"]);
+export const materialSlotSchema = z.object({
+  kind: intentObjectKindSchema,
+  slot: z.enum(["amount", "currency", "percentage", "indexer", "tenor_months"]),
+  value: z.string().min(1),
+});
 
 const semanticSignatureSchema = z.object({
   canonicalAction: canonicalIntentActionSchema,
   objectKinds: z.array(intentObjectKindSchema).min(1),
   materialReferences: z.array(z.object({kind: intentObjectKindSchema, reference: z.string().min(2)})).default([]),
+  materialSlots: z.array(materialSlotSchema).default([]),
   desiredOutcomeSignals: z.array(z.array(z.string().min(2)).min(1)).min(1),
   decision: z.object({present: z.boolean(), category: decisionCategorySchema}),
   audienceCategory: audienceCategorySchema,
@@ -34,6 +39,7 @@ export const intentGoldTurnSchema = z.object({
   message: z.string().min(10),
   stabilityParaphrases: z.tuple([z.string().min(10), z.string().min(10)]).optional(),
   priorTurns: z.array(z.string()).max(6).default([]),
+  documentCount: z.number().int().nonnegative().default(0),
   expected: z.object({
     primaryWorks: z.array(primaryWorkSchema).min(1).max(3),
     workResponsibility: z.array(workResponsibilitySchema).min(1),
@@ -52,18 +58,47 @@ type GoldInput = {
   id: string; caseId: z.infer<typeof intentGoldTurnSchema>["caseId"]; suite: IntentGoldSuite;
   message: string; composition: NamedComposition | null; semantic: z.input<typeof semanticSignatureSchema>;
   priorTurns?: string[]; continuity?: z.infer<typeof intentGoldTurnSchema>["expected"]["continuity"];
+  documentCount?: number;
+  acceptedPlan?: {primaryWorks: PrimaryWork[]; workResponsibility: WorkResponsibility[]; depth: "point" | "preliminary" | "institutional"};
   firstQuestionTheme?: string | null; firstQuestionSignals?: string[][]; stabilityParaphrases?: [string, string];
 };
 
+/** Independent acceptance oracle. It deliberately does not import or derive production policy. */
+const acceptedPlanByComposition: Record<NamedComposition, {primaryWorks: PrimaryWork[]; workResponsibility: WorkResponsibility[]; depth: "point" | "preliminary" | "institutional"}> = {
+  find_and_organize_information: {primaryWorks: ["find_and_organize"], workResponsibility: ["producer"], depth: "preliminary"},
+  extract_and_reconcile_data: {primaryWorks: ["extract_and_reconcile"], workResponsibility: ["producer"], depth: "institutional"},
+  understand_company_sector_asset: {primaryWorks: ["understand"], workResponsibility: ["producer"], depth: "preliminary"},
+  answer_a_question: {primaryWorks: ["extract_and_reconcile"], workResponsibility: ["producer"], depth: "point"},
+  analyze_performance_and_credit: {primaryWorks: ["analyze", "model"], workResponsibility: ["producer"], depth: "preliminary"},
+  build_or_review_model: {primaryWorks: ["model"], workResponsibility: ["producer"], depth: "institutional"},
+  diagnose_capital_structure: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer"], depth: "institutional"},
+  develop_alternatives: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer"], depth: "preliminary"},
+  design_indicative_structure: {primaryWorks: ["capital_strategy", "analyze"], workResponsibility: ["producer", "coordinator"], depth: "institutional"},
+  read_contract_covenant_waterfall: {primaryWorks: ["read_documents", "analyze"], workResponsibility: ["producer"], depth: "institutional"},
+  prepare_meeting: {primaryWorks: ["understand", "capital_strategy", "model"], workResponsibility: ["producer", "coordinator"], depth: "preliminary"},
+  prepare_material: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer", "coordinator"], depth: "institutional"},
+  review_work: {primaryWorks: ["analyze"], workResponsibility: ["producer", "reviewer"], depth: "institutional"},
+  prepare_decision: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["producer", "sponsor"], depth: "institutional"},
+  evaluate_received_opportunity: {primaryWorks: ["analyze", "read_documents"], workResponsibility: ["producer", "reviewer"], depth: "preliminary"},
+  map_market_and_precedents: {primaryWorks: ["market"], workResponsibility: ["producer"], depth: "preliminary"},
+  identify_capital: {primaryWorks: ["capital_match", "market"], workResponsibility: ["producer", "coordinator"], depth: "preliminary"},
+  introduce: {primaryWorks: ["capital_match"], workResponsibility: ["coordinator"], depth: "institutional"},
+  monitor: {primaryWorks: ["find_and_organize", "extract_and_reconcile", "analyze"], workResponsibility: ["producer"], depth: "preliminary"},
+  manage_work: {primaryWorks: ["find_and_organize"], workResponsibility: ["coordinator"], depth: "point"},
+};
+
 const gold = (input: GoldInput): IntentGoldTurn => {
-  const policy = input.composition ? compositionPolicy(input.composition) : null;
+  const acceptedPlan = input.acceptedPlan ?? (input.composition ? acceptedPlanByComposition[input.composition] : {
+    primaryWorks: ["understand" as const], workResponsibility: ["producer" as const], depth: "point" as const,
+  });
   return intentGoldTurnSchema.parse({
     id: input.id, caseId: input.caseId, suite: input.suite, locale: "pt-BR", message: input.message,
+    documentCount: input.documentCount ?? 0,
     priorTurns: input.priorTurns ?? [], ...(input.stabilityParaphrases ? {stabilityParaphrases: input.stabilityParaphrases} : {}),
     expected: {
-      primaryWorks: policy ? [...policy.primaryWorks] : ["understand"],
-      workResponsibility: policy ? [...policy.workResponsibilities] : ["producer"],
-      depth: policy?.depth ?? "point", continuity: input.continuity ?? (input.priorTurns?.length ? "resume" : "new"),
+      primaryWorks: acceptedPlan.primaryWorks,
+      workResponsibility: acceptedPlan.workResponsibility,
+      depth: acceptedPlan.depth, continuity: input.continuity ?? (input.priorTurns?.length ? "resume" : "new"),
       composition: input.composition, abstain: input.composition === null,
       firstQuestionTheme: input.firstQuestionTheme ?? null, firstQuestionSignals: input.firstQuestionSignals ?? [], semantic: input.semantic,
     },
@@ -81,13 +116,13 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   gold({id: "gc02-t02", caseId: "gc02", suite: "journey", composition: "review_work", priorTurns: ["Análise de estrutura de capital da Camil para o conselho."], message: "Revise isso como um conselheiro cético e identifique falhas materiais.", semantic: {canonicalAction: "review", objectKinds: ["material", "decision"], materialReferences: [{kind: "decision", reference: "conselheiro"}], desiredOutcomeSignals: [["falhas", "erros", "challenge"], ["revisão", "revise"]], decision: {present: true, category: "capital"}, audienceCategory: "board_or_committee"}}),
   gold({id: "gc02-t03", caseId: "gc02", suite: "journey", composition: "analyze_performance_and_credit", priorTurns: ["Discussão de conselho sobre estrutura de capital."], continuity: "new", message: "Esquece o conselho por enquanto. Preciso entender se o headroom do covenant aguenta a safra.", stabilityParaphrases: ["Ignore a pauta do conselho agora e teste se há folga de covenant suficiente durante a safra.", "Novo foco: quero analisar se o covenant mantém headroom ao longo da safra."], semantic: {canonicalAction: "analyze", objectKinds: ["instrument", "scenario"], materialReferences: [{kind: "instrument", reference: "covenant"}, {kind: "scenario", reference: "safra"}], desiredOutcomeSignals: [["headroom", "folga"], ["safra"]], decision: {present: true, category: "credit"}, audienceCategory: self}}),
   gold({id: "gc02-t04", caseId: "gc02", suite: "journey", composition: "prepare_decision", priorTurns: ["Análise de estrutura de capital para o conselho."], message: "Compare alongamento da dívida existente com nova emissão e prepare a recomendação para o conselho.", semantic: {canonicalAction: "prepare_decision", objectKinds: ["alternative", "decision"], materialReferences: [{kind: "alternative", reference: "alongamento"}, {kind: "alternative", reference: "nova emissão"}], desiredOutcomeSignals: [["comparar", "recomendação"], ["conselho"]], decision: {present: true, category: "capital"}, audienceCategory: "board_or_committee"}}),
-  gold({id: "gc03-t01", caseId: "gc03", suite: "journey", composition: "design_indicative_structure", message: "Sou assessor da Aurora. Recebi balanços e material institucional; precisamos estruturar uma captação de R$ 50 milhões com recebíveis.", semantic: {canonicalAction: "structure", objectKinds: ["company", "operation", "document"], materialReferences: [{kind: "company", reference: "Aurora"}, {kind: "operation", reference: "recebíveis"}], desiredOutcomeSignals: [["estrutura", "captação"], ["recebíveis"]], decision: {present: true, category: "capital"}, audienceCategory: self}}),
+  gold({id: "gc03-t01", caseId: "gc03", suite: "journey", composition: "design_indicative_structure", documentCount: 2, acceptedPlan: {primaryWorks: ["extract_and_reconcile", "capital_strategy", "analyze"], workResponsibility: ["producer", "coordinator"], depth: "institutional"}, message: "Sou assessor da Aurora. Anexei os balanços e o material institucional; precisamos estruturar uma captação de R$ 50 milhões com recebíveis.", semantic: {canonicalAction: "structure", objectKinds: ["company", "operation", "document"], materialReferences: [{kind: "company", reference: "Aurora"}, {kind: "operation", reference: "recebíveis"}], materialSlots: [{kind: "operation", slot: "amount", value: "50000000"}, {kind: "operation", slot: "currency", value: "BRL"}], desiredOutcomeSignals: [["estrutura", "captação"], ["recebíveis"]], decision: {present: true, category: "capital"}, audienceCategory: self}}),
   gold({id: "gc03-t02", caseId: "gc03", suite: "journey", composition: "introduce", priorTurns: ["Estrutura indicativa da Aurora preparada."], message: "Já manda a operação para os fundos que você achar aderentes.", stabilityParaphrases: ["Pode enviar esse case aos fundos com melhor aderência.", "Faça a introdução da operação aos investidores que tiverem fit."], semantic: {canonicalAction: "introduce", objectKinds: ["operation", "provider"], materialReferences: [{kind: "provider", reference: "fundos"}], desiredOutcomeSignals: [["enviar", "introdução", "manda"], ["fundos", "investidores"]], decision: {present: true, category: "external"}, audienceCategory: "capital_provider"}, firstQuestionTheme: "autorização e estrutura do envio", firstQuestionSignals: [["autoriza", "confirma", "permissão"], ["estrutura", "termos", "operação"]]}),
   gold({id: "gc04-t01", caseId: "gc04", suite: "journey", composition: "evaluate_received_opportunity", message: "Recebemos na Prisma uma proposta de debêntures da Cogna e o release trimestral. Meu PM quer saber se vale aprofundar.", semantic: {canonicalAction: "evaluate", objectKinds: ["operation", "document", "company"], materialReferences: [{kind: "company", reference: "Cogna"}, {kind: "operation", reference: "debêntures"}], desiredOutcomeSignals: [["avaliar", "aprofundar"], ["proposta"]], decision: {present: true, category: "credit"}, audienceCategory: "internal_senior"}}),
   gold({id: "gc04-t02", caseId: "gc04", suite: "journey", composition: "answer_a_question", priorTurns: ["Screening da proposta da Cogna."], message: "Por que a alavancagem da proposta é menor que a sua?", semantic: {canonicalAction: "answer", objectKinds: ["claim", "operation"], materialReferences: [{kind: "claim", reference: "alavancagem"}], desiredOutcomeSignals: [["explicar", "diferença"], ["alavancagem"]], decision: none, audienceCategory: self}}),
   gold({id: "gc05-t01", caseId: "gc05", suite: "journey", composition: "prepare_meeting", message: "Tenho reunião com CFO e tesouraria da Camil sobre como financiar a expansão anunciada. Quero chegar com ideias fundamentadas.", semantic: {canonicalAction: "prepare_meeting", objectKinds: ["company", "operation"], materialReferences: [{kind: "company", reference: "Camil"}, {kind: "operation", reference: "expansão"}], desiredOutcomeSignals: [["reunião"], ["financiar", "ideias"]], decision: {present: true, category: "capital"}, audienceCategory: "company_management"}}),
   gold({id: "gc05-t02", caseId: "gc05", suite: "journey", composition: "prepare_material", priorTurns: ["Ideias para expansão da Camil selecionadas."], message: "Gostei da troca de indexador. Vamos preparar o material para a reunião.", semantic: {canonicalAction: "prepare_material", objectKinds: ["material", "company"], materialReferences: [{kind: "material", reference: "troca de indexador"}], desiredOutcomeSignals: [["material"], ["reunião"]], decision: {present: true, category: "material"}, audienceCategory: "company_management"}, firstQuestionTheme: "destino do material", firstQuestionSignals: [["companhia", "cliente"], ["revisão", "interno"]]}),
-  gold({id: "gc05-t03", caseId: "gc05", suite: "journey", composition: "build_or_review_model", priorTurns: ["Modelo da expansão da Camil pronto."], continuity: "refresh", message: "Ajusta o cenário para CDI de 12% e prazo de sete anos.", stabilityParaphrases: ["Atualize o modelo usando CDI de 12% e vencimento em sete anos.", "Recalcule o cenário com taxa CDI em 12% e tenor de sete anos."], semantic: {canonicalAction: "model", objectKinds: ["model", "scenario"], materialReferences: [{kind: "scenario", reference: "CDI de 12%"}, {kind: "scenario", reference: "sete anos"}], desiredOutcomeSignals: [["ajustar", "recalcular", "atualizar"], ["cenário"]], decision: {present: true, category: "capital"}, audienceCategory: self}}),
+  gold({id: "gc05-t03", caseId: "gc05", suite: "journey", composition: "build_or_review_model", priorTurns: ["Modelo da expansão da Camil pronto."], continuity: "refresh", message: "Ajusta o cenário para CDI de 12% e prazo de sete anos.", stabilityParaphrases: ["Atualize o modelo usando CDI de 12% e vencimento em sete anos.", "Recalcule o cenário com taxa CDI em 12% e tenor de sete anos."], semantic: {canonicalAction: "model", objectKinds: ["model", "scenario"], materialReferences: [], materialSlots: [{kind: "scenario", slot: "indexer", value: "CDI"}, {kind: "scenario", slot: "percentage", value: "12"}, {kind: "scenario", slot: "tenor_months", value: "84"}], desiredOutcomeSignals: [["ajustar", "recalcular", "atualizar"], ["cenário"]], decision: {present: true, category: "capital"}, audienceCategory: self}}),
   gold({id: "gc05-t04", caseId: "gc05", suite: "journey", composition: null, message: "Oi, dá uma olhada nisso aí para mim.", semantic: {canonicalAction: "understand", objectKinds: ["document"], materialReferences: [], desiredOutcomeSignals: [["entender", "esclarecer"], ["resultado", "objetivo"]], decision: none, audienceCategory: "unspecified"}, firstQuestionTheme: "objeto e resultado", firstQuestionSignals: [["isso", "material", "documento", "assunto"], ["resultado", "objetivo", "espera"]]}),
   gold({id: "gc01-t04", caseId: "gc01", suite: "journey", composition: "find_and_organize_information", message: "Levante fatos relevantes, apresentações e notícias da Camil desde o último resultado. Só organize; ainda não faça análise.", semantic: {canonicalAction: "find_and_organize", objectKinds: ["company", "document"], materialReferences: [{kind: "company", reference: "Camil"}], desiredOutcomeSignals: [["organizar", "inventário"], ["fatos relevantes", "notícias"]], decision: none, audienceCategory: self}}),
   gold({id: "gc05-t05", caseId: "gc05", suite: "journey", composition: "map_market_and_precedents", priorTurns: ["Alternativas para a expansão da Camil."], message: "Como saíram as debêntures de alimentos nos últimos meses? Quero prazo, indexador e spread.", semantic: {canonicalAction: "map_market", objectKinds: ["market", "instrument"], materialReferences: [{kind: "instrument", reference: "debêntures"}, {kind: "market", reference: "alimentos"}], desiredOutcomeSignals: [["prazo", "indexador", "spread"], ["mercado", "emissões"]], decision: {present: true, category: "market"}, audienceCategory: self}}),

@@ -5,8 +5,10 @@ import {
   intentDepthSchema,
   intentObjectKindSchema,
   compositionPolicy,
+  intentCompositionPolicyPrompt,
   namedCompositionSchema,
   primaryWorkSchema,
+  resolveCompositionPrimaryWorks,
   workResponsibilitySchema,
   type NamedComposition,
 } from "./intent-envelope";
@@ -46,6 +48,12 @@ const inferredClassifierField = <T extends z.ZodTypeAny>(value: T) => z.object({
   basis: z.string().max(200).nullish(),
 });
 
+export const intentAffirmationSchema = z.enum(["affirmed", "negated", "uncertain", "not_applicable"]);
+const assertedClassifierField = <T extends z.ZodTypeAny>(value: T) => inferredClassifierField(value).extend({
+  /** Semantic polarity is explicit so negated or contradictory prose never passes by keyword. */
+  affirmation: intentAffirmationSchema,
+});
+
 export const intentClassifierOutputSchema = z.object({
   routingCore: z.object({
     // Empty lists are representable at the model boundary so an honest abstention is valid JSON.
@@ -53,9 +61,9 @@ export const intentClassifierOutputSchema = z.object({
     // persisted contract remains strict and never accepts an empty routing core.
     action: inferredClassifierField(z.array(z.string().min(1).max(400)).max(16)),
     object: inferredClassifierField(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).max(24)),
-    desiredOutcome: inferredClassifierField(z.string().max(1_200)),
-    decision: inferredClassifierField(z.string().max(1_200).nullable()),
-    audience: inferredClassifierField(z.array(z.string().min(1).max(200)).max(12)),
+    desiredOutcome: assertedClassifierField(z.string().max(1_200)),
+    decision: assertedClassifierField(z.string().max(1_200).nullable()),
+    audience: assertedClassifierField(z.array(z.string().min(1).max(200)).max(12)),
     depth: inferredClassifierField(intentDepthSchema),
     continuity: inferredClassifierField(intentContinuitySchema),
     workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).max(8)),
@@ -220,6 +228,9 @@ export function canonicalizeIntentClassifierOutput(
 
   if (!mustAbstain) {
     const policy = compositionPolicy(composition);
+    const primaryWorks = resolveCompositionPrimaryWorks(composition, {
+      documentsPresent: input.documentCount > 0,
+    });
     return intentClassifierOutputSchema.parse({
       ...output,
       routingCore: {
@@ -229,15 +240,16 @@ export function canonicalizeIntentClassifierOutput(
         desiredOutcome: output.routingCore.desiredOutcome.value.trim().length > 0 ? output.routingCore.desiredOutcome : {
           value: locale === "pt-BR" ? "Concluir o trabalho solicitado." : "Complete the requested work.",
           state: "unknown",
+          affirmation: "uncertain",
           confidence: null,
           basis: null,
         },
-        audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
+        audience: output.routingCore.audience.value.length > 0 ? output.routingCore.audience : {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", affirmation: "uncertain", confidence: null, basis: null},
         depth: policyField(policy.depth, composition),
         continuity: policyContinuity(composition, output, input),
         workResponsibility: policyField([...policy.workResponsibilities], composition),
       },
-      primaryWorks: policy.primaryWorks.map((work) => ({work, confidence: 0.99})),
+      primaryWorks: primaryWorks.map((work) => ({work, confidence: 0.99})),
       composition,
       firstQuestion: policyQuestion(composition, output, input),
       abstain: false,
@@ -260,10 +272,12 @@ export function canonicalizeIntentClassifierOutput(
       desiredOutcome: {
         value: locale === "pt-BR" ? "Entender o resultado esperado antes de iniciar." : "Understand the expected result before starting.",
         state: "unknown",
+        affirmation: "affirmed",
         confidence: null,
         basis: null,
       },
-      audience: {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
+      decision: {...output.routingCore.decision, value: null, state: "not_applicable", affirmation: "not_applicable", confidence: null, basis: null},
+      audience: {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", affirmation: "uncertain", confidence: null, basis: null},
       depth: {value: "point", state: "unknown", confidence: null, basis: null},
       continuity: {value: "new", state: "unknown", confidence: null, basis: null},
       workResponsibility: {value: ["producer"], state: "unknown", confidence: null, basis: null},
@@ -287,39 +301,15 @@ a state and a confidence: "explicit" when the person said it, "inferred" when it
 they said, "ambiguous" when two readings remain, "unknown" when nothing supports a value. Never
 guess authority, evidence regime, permissions or documents: they are not yours to fill.
 
-Primary works (choose one to three, the work that must start first goes first): find_and_organize,
-extract_and_reconcile, understand, analyze, model, capital_strategy, read_documents, market,
-capital_match. Do not add a generic work when the turn names a bounded one. A point question about
-a number starts with extract_and_reconcile. An explicit assumption change starts with model. A
-market terms question starts with market. A received opportunity triage starts with analyze. A
-structure request with attached material starts with extract_and_reconcile before strategy.
-For a vague assignment to prepare for a meeting, start with understand, then capital_strategy.
-For a board or committee decision, include capital_strategy, analyze and model. For a received
-opportunity with documents, include analyze and read_documents. For a financing meeting, include
-capital_strategy, understand and model. For covenant headroom, include analyze and model.
+For desiredOutcome, decision and audience, set affirmation explicitly: affirmed when the field is
+asserted, negated when the person rejects it, uncertain when the meaning conflicts or is unclear,
+and not_applicable only when the field truly does not apply. Never encode a negation as affirmed.
 
-Composition is either null or exactly one of these identifiers. Never describe a sequence in this
-field:
-find_and_organize_information, extract_and_reconcile_data, understand_company_sector_asset,
-answer_a_question, analyze_performance_and_credit, build_or_review_model,
-diagnose_capital_structure, develop_alternatives, design_indicative_structure,
-read_contract_covenant_waterfall, prepare_meeting, prepare_material, review_work,
-prepare_decision, evaluate_received_opportunity, map_market_and_precedents, identify_capital,
-introduce, monitor, manage_work.
+Choose the composition that names the requested outcome, not an intermediate step. The complete
+composition and ordered-work policy below is generated from the same executable policy used by
+canonicalization, envelope validation, runtime stamping and fingerprints:
+${intentCompositionPolicyPrompt()}
 
-Choose the composition that names the requested outcome, not an intermediate step. In particular:
-- preparing for a client or management conversation is prepare_meeting;
-- producing an explicitly requested deck, memo or model output is prepare_material;
-- preparing a decision for a board or committee is prepare_decision;
-- explaining or tracing a bounded number is answer_a_question;
-- changing an existing model assumption is build_or_review_model;
-- challenging existing work is review_work;
-- screening a received investment proposal is evaluate_received_opportunity;
-- designing a receivables or other debt structure is design_indicative_structure;
-- asking to send or connect externally is introduce, even if authorization is still missing;
-- collecting without analysis is find_and_organize_information;
-- asking for market terms or precedents is map_market_and_precedents;
-- analysing covenant headroom or credit performance is analyze_performance_and_credit.
 The requested outcome wins over an intermediate task: a board discussion remains prepare_decision
 even though diagnosis is required; an explicit request to produce the selected material remains
 prepare_material even when the file will be used in a meeting. A follow-up such as "revise isso"
