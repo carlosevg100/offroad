@@ -19,6 +19,8 @@
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/work-plan": "workspace:*",
     "decimal.js": "10.6.0",
+    "file-type": "22.0.1",
+    "jszip": "3.10.1",
     "zod": "4.4.3"
   },
   "devDependencies": {
