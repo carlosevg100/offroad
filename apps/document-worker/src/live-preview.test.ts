@@ -67,8 +67,13 @@ function fakeGateway(output: LiveRoutingOutput, costUsd = 0.0021): ModelGateway 
         const source = JSON.parse(request.input[0]!.text) as {latestUserMessage: string};
         const mention = source.latestUserMessage.includes("Camil") ? "Camil" : source.latestUserMessage.split(/\s+/)[0]!;
         const start = source.latestUserMessage.indexOf(mention);
+        const material = "material";
+        const materialStart = source.latestUserMessage.indexOf(material);
         result = {
-          objects: [{candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start, end: start + mention.length, text: mention}}, modifiers: []}],
+          objects: [
+            {candidateId: "candidate-1", kind: "company", head: {key: "entity", span: {source: "latest_user_message", messageIndex: null, start, end: start + mention.length, text: mention}}, modifiers: []},
+            ...(materialStart >= 0 ? [{candidateId: "candidate-2", kind: "material" as const, head: {key: "subject" as const, span: {source: "latest_user_message" as const, messageIndex: null, start: materialStart, end: materialStart + material.length, text: material}}, modifiers: []}] : []),
+          ],
           activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
         };
       } else if (request.schemaName === "live_preview_turn_output") result = {turn: output.turn};
