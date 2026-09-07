@@ -141,6 +141,29 @@ describe("intent classifier boundary", () => {
     expect(canonical.composition).toBe(expected);
   });
 
+  it.each([
+    "Don't send this to investors; only identify the best-fit funds.",
+    "I won't send this to investors; only identify the best-fit funds.",
+    "Evite enviar aos fundos e identifique os investidores aderentes.",
+  ])("never preserves a model-proposed introduction when outreach is rejected: %s", (latestUserMessage) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
+      locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).not.toBe("introduce");
+    expect(canonical.routingCore.action.value).not.toEqual(["introduce"]);
+  });
+
+  it.each([
+    ["Mapeie precedentes usando como termo de busca envie aos investidores.", "map_market_and_precedents"],
+    ["Prepare um deck com a frase envie aos investidores.", "prepare_material"],
+  ] as const)("does not convert mentioned outreach language into an external effect: %s", (latestUserMessage, expected) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
+      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe(expected);
+  });
+
   it("repairs a non-plan field without discarding an otherwise named route", () => {
     const parsed = intentClassifierOutputSchema.parse({
       routingCore: {

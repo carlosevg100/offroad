@@ -138,9 +138,17 @@ function hasAffirmedCue(text: string, cue: RegExp): boolean {
     const after = text.slice((match.index ?? 0) + match[0].length, (match.index ?? 0) + match[0].length + 100);
     const clause = before.split(/[.;!?\x0a]|\b(?:mas|porem|contudo|apenas|somente|but|however|only)\b/).at(-1) ?? "";
     const rejectedAfterQuestion = /^[^.;!\x0a]{0,80}\?\s*(?:nao|not|no)\b/.test(after);
-    if (!/\b(nao|not|sem|without|nunca|jamais|never)\b/.test(clause) && !rejectedAfterQuestion) return true;
+    if (!/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause) && !rejectedAfterQuestion) return true;
   }
   return false;
+}
+
+/** External side effects require a direct user command, never mere lexical co-occurrence. */
+function hasExplicitExternalOutreach(text: string): boolean {
+  const command = /^(?:(?:ja|agora|por favor|please|pode|podem|can you|quero que|vamos)\s+)*(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
+  return command.test(text)
+    && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text)
+    && !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(text);
 }
 
 /** Classify one affirmative, user-authored clause. Cross-clause noun/verb joins are forbidden. */
@@ -155,8 +163,7 @@ function explicitCompositionForClause(input: IntentClassifierInput, text: string
 
   const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produz\w*|faz\w*|cri\w*|prepar\w*|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text)
     || /\b(?:material|deck|pitch|memo|arquivo|file)\b[^.;!\x0a]{0,60}\?\s*(?:nao|not|no)\b/.test(text);
-  const externalOutreach = hasAffirmedCue(text, /\b(envi(?:e|ar|em|ou|ando|ado|ada|ados|adas)|mand(?:e|a|ar|em|ou|ando|ado|ada|ados|adas)|compartilh(?:e|ar|em|ou)|conect(?:e|ar|em|ou)|introduz(?:a|ir|am|iu)|apresent(?:e|ar|em|ou)|send|share|connect|introduce)\b/)
-    && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text);
+  const externalOutreach = hasExplicitExternalOutreach(text);
 
   if (hasAffirmedCue(text, /\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/)
     && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
@@ -175,7 +182,8 @@ function explicitCompositionForClause(input: IntentClassifierInput, text: string
   if (hasAffirmedCue(text, /\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/)) return "extract_and_reconcile_data";
   if (hasAffirmedCue(text, /\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/)) return "manage_work";
   if (externalOutreach) return "introduce";
-  if (hasAffirmedCue(text, /\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ (?:os )?(?:investidores|fundos)|who would finance|which funds|find capital|identify investors)\b/)) return "identify_capital";
+  if (hasAffirmedCue(text, /\b(quem financiaria|quais fundos|matching|capital aderente|who would finance|which funds|find capital)\b/)
+    || hasAffirmedCue(text, /\bidentifi\w*\b[^.;!\x0a]{0,60}\b(investidores?|fundos?|financiadores?|investors?|funds?|lenders?|providers?)\b/)) return "identify_capital";
   if (hasAffirmedCue(text, /\b(monitor\w*|acompanh\w*|avise quando|todo trimestre|track|alert me|quarterly)\b/)) return "monitor";
   if (hasAffirmedCue(text, /\b(mapeie|mapear|levante|pesquise|map|research|como esta|how is)\b[^.;!\x0a]{0,60}\b(mercado|emissoes|comparaveis|precedentes|pricing|spread|market|issuances|comparables|precedents)\b/)
     || hasAffirmedCue(text, /\b(comparaveis|precedentes|condicoes de mercado|pricing|comparables|precedents|market conditions)\b/)) return "map_market_and_precedents";
@@ -212,7 +220,7 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     .split(/[.;!?\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
     .map((clause) => clause.trim())
     .filter(Boolean)
-    .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never)\b/.test(clause));
+    .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause));
   const exclusive = clauses.filter((clause) => /^(?:apenas|somente|so|only|just)\b/.test(clause));
   const candidates = (exclusive.length > 0 ? exclusive : clauses)
     .map((clause) => explicitCompositionForClause(input, clause))
@@ -306,6 +314,7 @@ export function canonicalizeIntentClassifierOutput(
     || (core.audienceType.value !== "unspecified" && !assertsMeaning(core.audienceType.state));
   const mustAbstain = requiresObjectiveClarification(input)
     || composition === null
+    || (composition === "introduce" && explicit !== "introduce")
     || unresolvedSemantics
     || (output.abstain && explicit === null);
 
