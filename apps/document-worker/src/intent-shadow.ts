@@ -53,6 +53,14 @@ export type ShadowRoutingContext = {
   professionalContext: {useForms: string[]; professionalRoles: string[]; practiceAreas: string[]; primaryObjectives: string[]} | null;
   /** Governed work memory. Assistant prose and profile inference may never populate this object. */
   activeWorkContext?: ActiveWorkContext | null;
+  /** Independent control-plane binding used to reject a structurally valid but stale context. */
+  activeWorkContextBinding?: {
+    objectiveId: string;
+    objectiveRevision: number;
+    objectiveFingerprint: string;
+    sourceManifestId: string;
+    sourceManifestFingerprint: string;
+  } | null;
 };
 
 export function governedShadowAccessBasis(value: string | null | undefined): ShadowRoutingContext["accessBasis"] {
@@ -107,10 +115,10 @@ export function stampIntentEnvelope(output: ShadowRoutingOutput, context: Shadow
     schemaVersion: "intent-envelope.v1",
     routingCore: {
       action: asSystemOrInferred(clampField(core.action, (items) => clampList(items.map((item) => clampText(item, 60)).filter(Boolean), 8))),
-      object: asSystemOrInferred(clampField(core.object, (items) => clampList(items.map((item) => ({
+      object: asSystemOrInferred(clampField(core.object, (items) => items.map((item) => ({
         kind: item.kind,
         ...(item.slots.length ? {reference: clampText(item.slots.map(({key, value}) => `${key}:${value}`).join("; "), 200)} : {}),
-      })), 12))),
+      })))),
       desiredOutcome: asSystemOrInferred({value: output.composition ? compositionPolicy(output.composition).classifierGuidance : "clarify request", state: "inferred", confidence: 0.99, basis: "deterministic composition renderer"}),
       decision: asSystemOrInferred({...core.decisionType, value: decisionLabel[core.decisionType.value]}),
       audience: asSystemOrInferred({...core.audienceType, value: [audienceLabel[core.audienceType.value]]}),
@@ -166,6 +174,7 @@ export async function shadowIntentEnvelope(input: {
   latencyMs: number;
 }> {
   const {context} = input;
+  const activeWorkContext = validateActiveWorkContextBinding(context);
   const spentBefore = input.gateway.spent();
   const startedAt = Date.now();
   const userConversation = context.recentMessages
@@ -183,7 +192,7 @@ export async function shadowIntentEnvelope(input: {
     locale: context.locale,
     latestUserMessage: context.message,
     recentConversation: userConversation,
-    activeWorkContext: context.activeWorkContext ?? null,
+    activeWorkContext,
   });
   const [intentCompletion, objectCompletion] = await Promise.all([
     input.gateway.complete({
@@ -230,4 +239,31 @@ export async function shadowIntentEnvelope(input: {
     modelRoute: governedModelRoute,
     ...telemetry,
   };
+}
+
+/**
+ * The active-work registry is accepted only when its tenant, project and source manifest agree
+ * with this capability-scoped turn. A caller cannot smuggle an object from another project by
+ * presenting a structurally valid context object.
+ */
+export function validateActiveWorkContextBinding(context: ShadowRoutingContext): ActiveWorkContext | null {
+  if (!context.activeWorkContext) return null;
+  const active = context.activeWorkContext;
+  if (active.organizationId !== context.organizationId || active.projectId !== context.projectId) {
+    throw new Error("active_work_context_scope_mismatch");
+  }
+  const binding = context.activeWorkContextBinding;
+  if (!binding
+    || active.objective.id !== binding.objectiveId
+    || active.objective.revision !== binding.objectiveRevision
+    || active.objective.fingerprint !== binding.objectiveFingerprint
+    || active.sourceManifest.id !== binding.sourceManifestId
+    || active.sourceManifest.fingerprint !== binding.sourceManifestFingerprint) {
+    throw new Error("active_work_context_revision_mismatch");
+  }
+  const availableDocuments = new Set(context.documentIds);
+  if (active.sourceManifest.documentIds.some((id) => !availableDocuments.has(id))) {
+    throw new Error("active_work_context_document_mismatch");
+  }
+  return active;
 }

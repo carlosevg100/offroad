@@ -47,6 +47,33 @@ const context: ShadowRoutingContext = {
   entryJob: "origination_thesis", accessBasis: "public_information", authorityGrants: ["read"], documentIds: [], professionalContext: null,
 };
 
+const activeContext = {
+  schemaVersion: "active-work-context.v2" as const,
+  contextId: "work:camil",
+  organizationId: context.organizationId,
+  projectId: context.projectId!,
+  revision: 1,
+  state: "active" as const,
+  objective: {id: "objective:camil:1", revision: 1, fingerprint: "a".repeat(64), label: "Analisar Camil"},
+  sourceManifest: {
+    id: "manifest:camil:1", fingerprint: "b".repeat(64), documentIds: [],
+    evidenceObjectIds: [context.projectId!, "objective:camil:1"],
+  },
+  objects: [{
+    id: "ctx-company", ordinal: 1, kind: "company" as const,
+    slots: [{key: "entity" as const, value: "Camil"}], label: "Camil",
+    governance: {state: "system_resolved" as const, sourceIds: [context.projectId!]},
+  }],
+};
+
+const activeBinding = {
+  objectiveId: activeContext.objective.id,
+  objectiveRevision: activeContext.objective.revision,
+  objectiveFingerprint: activeContext.objective.fingerprint,
+  sourceManifestId: activeContext.sourceManifest.id,
+  sourceManifestFingerprint: activeContext.sourceManifest.fingerprint,
+};
+
 describe("shadow intent observability boundary", () => {
   it("does not infer evidence or authority from a project id or documents", () => {
     const output = validOutput();
@@ -75,6 +102,19 @@ describe("shadow intent observability boundary", () => {
     }, {...context, authorityGrants: []});
     expect(introduced.effect).toBe("external");
     expect(introduced.executionContext.authority.value).toEqual([]);
+  });
+
+  it("persists all 24 accepted objects without a narrower stamp-time slice", () => {
+    const output = validOutput();
+    const objects = Array.from({length: 24}, (_, index) => ({
+      id: `object-${index + 1}`, ordinal: index + 1, kind: "claim" as const,
+      slots: [{key: "subject" as const, value: `claim ${index + 1}`}],
+    }));
+    const stamped = stampIntentEnvelope({
+      ...output,
+      routingCore: {...output.routingCore, object: field(objects)},
+    }, context);
+    expect(stamped.routingCore.object.value).toHaveLength(24);
   });
 
   it("replaces the provider-controlled model identifier with the governed route", async () => {
@@ -129,14 +169,8 @@ describe("shadow intent observability boundary", () => {
       gateway,
       context: {
         ...context,
-        activeWorkContext: {
-          schemaVersion: "active-work-context.v1", contextId: "work:camil", revision: 1, state: "active",
-          objective: "Analisar Camil",
-          objects: [{
-            id: "ctx-company", ordinal: 1, kind: "company", slots: [{key: "entity", value: "Camil"}], label: "Camil",
-            governance: {state: "system_resolved", sourceIds: ["source:camil"]},
-          }],
-        },
+        activeWorkContext: activeContext,
+        activeWorkContextBinding: activeBinding,
       },
     });
     expect(objectPayload).toMatchObject({activeWorkContext: {contextId: "work:camil", revision: 1}});
@@ -209,6 +243,27 @@ describe("shadow intent observability boundary", () => {
       {outcome: "invalid_output", provider: "anthropic", isSameModelRepair: true, usedProviderFallback: false},
       {outcome: "ok", provider: "openai", isSameModelRepair: false, usedProviderFallback: true},
     ]);
+  });
+
+  it("rejects a governed context whose tenant, objective or manifest binding is stale", async () => {
+    const gateway = {complete: async () => { throw new Error("must fail before provider"); }, spent: () => ({costUsd: 0, calls: 0, unknownCostCalls: 0, budgetExposureUsd: 0})} as unknown as ModelGateway;
+    await expect(shadowIntentEnvelope({gateway, context: {
+      ...context,
+      activeWorkContext: {...activeContext, organizationId: "20000000-0000-4000-8000-000000000099"},
+      activeWorkContextBinding: activeBinding,
+    }})).rejects.toThrow("active_work_context_scope_mismatch");
+    await expect(shadowIntentEnvelope({gateway, context: {
+      ...context, activeWorkContext: activeContext,
+      activeWorkContextBinding: {...activeBinding, objectiveFingerprint: "c".repeat(64)},
+    }})).rejects.toThrow("active_work_context_revision_mismatch");
+    await expect(shadowIntentEnvelope({gateway, context: {
+      ...context,
+      activeWorkContext: {
+        ...activeContext,
+        sourceManifest: {...activeContext.sourceManifest, documentIds: ["40000000-0000-4000-8000-000000000001"]},
+      },
+      activeWorkContextBinding: activeBinding,
+    }})).rejects.toThrow("active_work_context_document_mismatch");
   });
 
   it("fails closed before returning an envelope when spend telemetry is invalid", async () => {

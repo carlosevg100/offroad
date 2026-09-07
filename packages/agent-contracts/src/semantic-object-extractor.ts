@@ -2,6 +2,7 @@ import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
 import {
+  intentObjectCardinalityLimit,
   intentObjectKindSchema,
   intentObjectSlotKeySchema,
   type IntentObjectSlotKey,
@@ -16,7 +17,41 @@ const canonicalObjectSlotSchema = z.object({
   value: nonEmpty.max(200),
 }).strict();
 
-const canonicalObjectSlotsSchema = z.array(canonicalObjectSlotSchema).max(12).superRefine((slots, ctx) => {
+const SLOT_COMPATIBILITY: Record<z.infer<typeof intentObjectKindSchema>, ReadonlySet<IntentObjectSlotKey>> = {
+  organization: new Set(["entity", "subject"]),
+  user: new Set(["entity", "subject"]),
+  company: new Set(["entity", "subject"]),
+  project: new Set(["entity", "subject"]),
+  operation: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
+  instrument: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
+  document: new Set(["entity", "subject", "count"]),
+  claim: new Set(["subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "count", "cadence"]),
+  model: new Set(["entity", "subject"]),
+  asset_or_pool: new Set(["entity", "subject", "amount", "currency", "count"]),
+  scenario: new Set(["subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "cadence"]),
+  alternative: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
+  material: new Set(["entity", "subject", "page_count", "count"]),
+  market: new Set(["entity", "subject", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "cadence"]),
+  provider: new Set(["entity", "subject", "count"]),
+  mandate: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
+  process: new Set(["entity", "subject", "count", "cadence"]),
+  decision: new Set(["entity", "subject"]),
+};
+
+function validateSlotsForKind(
+  kind: z.infer<typeof intentObjectKindSchema>,
+  slots: readonly z.infer<typeof canonicalObjectSlotSchema>[],
+  ctx: z.RefinementCtx,
+  path: PropertyKey[] = [],
+): void {
+  for (const [index, slot] of slots.entries()) {
+    if (!SLOT_COMPATIBILITY[kind].has(slot.key)) {
+      ctx.addIssue({code: "custom", path: [...path, index, "key"], message: `${slot.key} is not valid for ${kind}`});
+    }
+  }
+}
+
+const canonicalObjectSlotsSchema = z.array(canonicalObjectSlotSchema).min(1).max(12).superRefine((slots, ctx) => {
   const keys = new Set<string>();
   for (const [index, slot] of slots.entries()) {
     if (keys.has(slot.key)) {
@@ -24,8 +59,28 @@ const canonicalObjectSlotsSchema = z.array(canonicalObjectSlotSchema).max(12).su
     }
     keys.add(slot.key);
   }
-  if (keys.has("entity") && keys.has("subject")) {
-    ctx.addIssue({code: "custom", message: "an object has either an entity head or a subject head, never both"});
+  const headCount = Number(keys.has("entity")) + Number(keys.has("subject"));
+  if (headCount !== 1) ctx.addIssue({code: "custom", message: "an object has exactly one entity or subject head"});
+});
+
+const governedObjectiveRevisionSchema = z.object({
+  id: stableId,
+  revision: z.number().int().positive(),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  label: nonEmpty.max(2_000),
+}).strict();
+
+const governedSourceManifestSchema = z.object({
+  id: stableId,
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  documentIds: z.array(z.uuid()).max(500),
+  evidenceObjectIds: z.array(stableId).max(500),
+}).strict().superRefine((manifest, ctx) => {
+  if (new Set(manifest.documentIds).size !== manifest.documentIds.length) {
+    ctx.addIssue({code: "custom", path: ["documentIds"], message: "source-manifest document ids are unique"});
+  }
+  if (new Set(manifest.evidenceObjectIds).size !== manifest.evidenceObjectIds.length) {
+    ctx.addIssue({code: "custom", path: ["evidenceObjectIds"], message: "source-manifest evidence object ids are unique"});
   }
 });
 
@@ -44,16 +99,31 @@ export const activeWorkContextObjectSchema = z.object({
     state: z.enum(["user_confirmed", "system_resolved"]),
     sourceIds: z.array(stableId).min(1).max(50),
   }).strict(),
-}).strict();
+}).strict().superRefine((object, ctx) => validateSlotsForKind(object.kind, object.slots, ctx, ["slots"]));
 
 export const activeWorkContextSchema = z.object({
-  schemaVersion: z.literal("active-work-context.v1"),
+  schemaVersion: z.literal("active-work-context.v2"),
   contextId: stableId,
+  organizationId: z.uuid(),
+  projectId: z.uuid(),
   revision: z.number().int().positive(),
   state: z.enum(["active", "paused"]),
-  objective: nonEmpty.max(600),
+  objective: governedObjectiveRevisionSchema,
+  sourceManifest: governedSourceManifestSchema,
   objects: z.array(activeWorkContextObjectSchema).max(500),
 }).strict().superRefine((context, ctx) => {
+  if (context.revision !== context.objective.revision) {
+    ctx.addIssue({code: "custom", path: ["revision"], message: "context revision is the bound objective revision"});
+  }
+  if (!context.sourceManifest.evidenceObjectIds.includes(context.projectId)
+    || !context.sourceManifest.evidenceObjectIds.includes(context.objective.id)) {
+    ctx.addIssue({code: "custom", path: ["sourceManifest", "evidenceObjectIds"], message: "source manifest binds the project and objective revision"});
+  }
+  const allowedSources = new Set([
+    context.sourceManifest.id,
+    ...context.sourceManifest.documentIds,
+    ...context.sourceManifest.evidenceObjectIds,
+  ]);
   const ids = new Set<string>();
   const ordinals = new Set<number>();
   for (const [index, object] of context.objects.entries()) {
@@ -61,6 +131,11 @@ export const activeWorkContextSchema = z.object({
     if (ordinals.has(object.ordinal)) ctx.addIssue({code: "custom", path: ["objects", index, "ordinal"], message: "context object ordinals are unique"});
     ids.add(object.id);
     ordinals.add(object.ordinal);
+    for (const [sourceIndex, sourceId] of object.governance.sourceIds.entries()) {
+      if (!allowedSources.has(sourceId)) {
+        ctx.addIssue({code: "custom", path: ["objects", index, "governance", "sourceIds", sourceIndex], message: "context object source belongs to the governed source manifest"});
+      }
+    }
   }
 });
 export type ActiveWorkContext = z.infer<typeof activeWorkContextSchema>;
@@ -144,15 +219,22 @@ const excludedSpanSchema = z.object({
   reason: z.enum(["deadline_or_date", "quoted_example", "negated_request", "non_object_metadata"]),
 }).strict();
 
+const excludedSemanticHeadSpanSchema = z.object({
+  span: semanticTextSpanSchema,
+  reason: z.enum(["quoted_example", "negated_request", "non_object_metadata"]),
+}).strict();
+
 /**
  * Model-written extractor output. It carries raw, attributable spans only. Canonical values,
  * final ids, ordering, context imports, completeness and fingerprints are code-owned.
  */
 export const semanticObjectExtractorOutputSchema = z.object({
-  objects: z.array(semanticObjectCandidateSchema).max(24),
-  activeContextReferences: z.array(activeContextReferenceSchema).max(24),
+  objects: z.array(semanticObjectCandidateSchema).max(intentObjectCardinalityLimit),
+  activeContextReferences: z.array(activeContextReferenceSchema).max(intentObjectCardinalityLimit),
   unresolvedReferences: z.array(unresolvedReferenceSchema).max(12),
   excludedQuantitativeSpans: z.array(excludedSpanSchema).max(24),
+  /** Explicitly accounts for a detected non-numeric head that is not an active object. */
+  excludedSemanticHeadSpans: z.array(excludedSemanticHeadSpanSchema).max(24).default([]),
 }).strict().superRefine((output, ctx) => {
   const candidateIds = new Set<string>();
   for (const [index, object] of output.objects.entries()) {
@@ -180,7 +262,7 @@ export const normalizedSemanticObjectSchema = z.object({
     z.object({type: z.literal("text"), spans: z.array(semanticTextSpanSchema).min(1).max(12)}).strict(),
     z.object({type: z.literal("active_work_context"), contextId: stableId, contextRevision: z.number().int().positive(), contextObjectId: stableId, trigger: semanticTextSpanSchema}).strict(),
   ]),
-}).strict();
+}).strict().superRefine((object, ctx) => validateSlotsForKind(object.kind, object.slots, ctx, ["slots"]));
 export type NormalizedSemanticObject = z.infer<typeof normalizedSemanticObjectSchema>;
 
 const coverageIssueSchema = z.object({
@@ -190,6 +272,11 @@ const coverageIssueSchema = z.object({
     "invalid_slot_for_kind", "normalization_failed", "duplicate_atomic_object",
     "no_semantic_object",
     "invalid_exclusion_reason",
+    "historical_text_is_not_governed_context",
+    "uncovered_semantic_head",
+    "merged_semantic_heads",
+    "semantic_head_multiply_claimed",
+    "object_cardinality_exceeded",
   ]),
   severity: z.enum(["error", "warning"]),
   detail: nonEmpty.max(600),
@@ -198,12 +285,16 @@ const coverageIssueSchema = z.object({
 export const semanticObjectCompilationSchema = z.object({
   schemaVersion: z.literal("semantic-object-compilation.v1"),
   status: z.enum(["complete", "incomplete", "rejected"]),
-  objects: z.array(normalizedSemanticObjectSchema).max(48),
-  usableObjects: z.array(normalizedSemanticObjectSchema).max(48),
+  // Diagnostic objects preserve the complete bounded provider response even when the combined
+  // text + context cardinality exceeds the accepted per-turn limit. usableObjects stays empty.
+  objects: z.array(normalizedSemanticObjectSchema).max(intentObjectCardinalityLimit * 2),
+  usableObjects: z.array(normalizedSemanticObjectSchema).max(intentObjectCardinalityLimit),
   coverage: z.object({
     sourceSpansChecked: z.number().int().nonnegative(),
     quantitativeMentions: z.number().int().nonnegative(),
     quantitativeMentionsCovered: z.number().int().nonnegative(),
+    semanticHeadMentions: z.number().int().nonnegative(),
+    semanticHeadMentionsCovered: z.number().int().nonnegative(),
     activeContextReferencesChecked: z.number().int().nonnegative(),
     issues: z.array(coverageIssueSchema).max(200),
   }).strict(),
@@ -221,6 +312,9 @@ export const semanticObjectCompilationSchema = z.object({
   const errorCount = compilation.coverage.issues.filter(({severity}) => severity === "error").length;
   if (compilation.coverage.quantitativeMentionsCovered > compilation.coverage.quantitativeMentions) {
     ctx.addIssue({code: "custom", path: ["coverage", "quantitativeMentionsCovered"], message: "covered quantitative mentions cannot exceed detected mentions"});
+  }
+  if (compilation.coverage.semanticHeadMentionsCovered > compilation.coverage.semanticHeadMentions) {
+    ctx.addIssue({code: "custom", path: ["coverage", "semanticHeadMentionsCovered"], message: "covered semantic heads cannot exceed detected heads"});
   }
   if (compilation.status === "complete") {
     if (compilation.objects.length === 0 || errorCount > 0
@@ -283,16 +377,22 @@ Atomic reference rule:
   produce separate document objects. A plural document class is one object; attach count only when the
   number is explicit. Quantitative modifiers remain on the one head they modify.
 - Do not split one head into separate objects merely because it has multiple modifiers.
+- The accepted turn cardinality is ${intentObjectCardinalityLimit} text objects plus governed references
+  combined. If the turn contains more, return every attributable candidate so code can mark the turn
+  incomplete; never silently truncate, merge or choose a preferred subset.
 
 Attribution and order:
 - Every new object has one exact head span and zero or more exact modifier spans from user-authored text.
   Never cite assistant text. Use UTF-16 offsets matching JavaScript String.slice.
-- Extract the latest user message first. Use earlier user messages only to resolve a necessary referent,
-  scanning recentConversation newest first. Do not re-emit all historical objects.
+- New object candidates and context-reference triggers must cite the latest user message. Earlier
+  conversation is interpretation-only: it can help detect that a reference is unresolved, but it can
+  never promote historical prose into an object or provide an evidence span.
 - activeWorkContext is control-plane-governed memory. When the turn refers to one of those objects, return
   its id in activeContextReferences with the textual trigger. Do not copy or rewrite that context object.
   Context references are appended after text objects by code.
 - If a pronoun or ellipsis has no unique governed referent, declare it in unresolvedReferences.
+- A non-numeric head detected in the turn must be represented by one atomic object, declared unresolved,
+  or placed in excludedSemanticHeadSpans with an exact, supported reason. Never omit it silently.
 
 Head and modifier rules:
 - entity is only a proper name or identifier-specific entity; generic classes and qualitative subjects use subject.
@@ -305,27 +405,6 @@ Normalization contract (performed by code, included here so spans carry sufficie
 ${SEMANTIC_OBJECT_NORMALIZATION_CONTRACT}
 
 Return the requested JSON only.`;
-
-const SLOT_COMPATIBILITY: Record<z.infer<typeof intentObjectKindSchema>, ReadonlySet<IntentObjectSlotKey>> = {
-  organization: new Set(["entity", "subject"]),
-  user: new Set(["entity", "subject"]),
-  company: new Set(["entity", "subject"]),
-  project: new Set(["entity", "subject"]),
-  operation: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
-  instrument: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
-  document: new Set(["entity", "subject", "count"]),
-  claim: new Set(["subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "count", "cadence"]),
-  model: new Set(["entity", "subject"]),
-  asset_or_pool: new Set(["entity", "subject", "amount", "currency", "count"]),
-  scenario: new Set(["subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "cadence"]),
-  alternative: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
-  material: new Set(["entity", "subject", "page_count", "count"]),
-  market: new Set(["entity", "subject", "percentage", "basis_points", "ratio", "indexer", "tenor_months", "cadence"]),
-  provider: new Set(["entity", "subject", "count"]),
-  mandate: new Set(["entity", "subject", "amount", "currency", "percentage", "basis_points", "ratio", "indexer", "tenor_months"]),
-  process: new Set(["entity", "subject", "count", "cadence"]),
-  decision: new Set(["entity", "subject"]),
-};
 
 const WORD_NUMBERS: Record<string, number> = {
   zero: 0, um: 1, uma: 1, one: 1, dois: 2, duas: 2, two: 2, tres: 3, three: 3,
@@ -462,6 +541,109 @@ function exclusionIsSupported(input: SemanticObjectExtractorInput, excluded: z.i
 
 type QuantityMention = {source: SemanticTextSpan["source"]; messageIndex: number | null; start: number; end: number; text: string};
 
+type SemanticHeadMention = {
+  source: "latest_user_message";
+  messageIndex: null;
+  start: number;
+  end: number;
+  text: string;
+  expectedKind: z.infer<typeof intentObjectKindSchema> | null;
+};
+
+/**
+ * Independent, code-owned coverage vocabulary for the domain heads that materially change a
+ * credit-work route. It is deliberately not used to create objects or infer their meaning. Its
+ * only authority is negative: a detected head that the model omitted or merged blocks use.
+ */
+const SEMANTIC_HEAD_PATTERNS: readonly {
+  kind: z.infer<typeof intentObjectKindSchema>;
+  pattern: RegExp;
+}[] = [
+  {kind: "operation", pattern: /\b(?:operaç(?:ão|ões)|operac(?:ao|oes)|transaç(?:ão|ões)|transac(?:ao|oes)|captaç(?:ão|ões)|captac(?:ao|oes)|financiamento|refinanciamento|aquisiç(?:ão|ões)|aquisic(?:ao|oes)|expans(?:ão|ões)|expans(?:ao|oes))\b/giu},
+  {kind: "material", pattern: /\b(?:memo|memorando|deck|apresentaç(?:ão|ões)|apresentac(?:ao|oes)|pitch|teaser|cim|term[ -]?sheet|planilha|spreadsheet|relat(?:ó|o)rio|report|one[ -]?pager|material|materiais)\b/giu},
+  {kind: "instrument", pattern: /\b(?:debênture|debentures?|ccb|cri|cra|fidc|bond|bonds|loan|facility|empréstimo|emprestimo|nota comercial|commercial paper|project finance|acquisition finance)\b/giu},
+  {kind: "document", pattern: /\b(?:documento|documentos|arquivo|arquivos|balanço|balanco|balancete|contrato|escritura|waiver)\b/giu},
+  {kind: "model", pattern: /\b(?:modelo financeiro|financial model|projeç(?:ão|ões)|projec(?:ao|oes)|forecast|sensibilidade|sensitivity)\b/giu},
+  {kind: "asset_or_pool", pattern: /\b(?:recebíveis|recebiveis|carteira|pool|garantia|garantias|colateral|collateral|ativo|ativos)\b/giu},
+  {kind: "scenario", pattern: /\b(?:cenário|cenarios?|cenario|scenario|downside|upside|stress case|caso de estresse)\b/giu},
+  {kind: "alternative", pattern: /\b(?:alternativa|alternativas|opç(?:ão|ões)|opc(?:ao|oes))\b/giu},
+  {kind: "market", pattern: /\b(?:mercado|market|setor|sector|comparáveis|comparaveis|comparables|precedentes|precedents)\b/giu},
+  {kind: "provider", pattern: /\b(?:investidor|investidores|financiador|financiadores|lender|lenders|fundo|fundos|banco|bancos|provider|providers)\b/giu},
+  {kind: "mandate", pattern: /\b(?:mandato|mandate|política de investimento|politica de investimento|investment policy)\b/giu},
+  {kind: "decision", pattern: /\b(?:decisão|decisao|decision|aprovação|aprovacao|approval)\b/giu},
+];
+
+const INTRODUCED_ENTITY_PATTERN = /\b(?:a|o|as|os|da|do|das|dos|na|no|nas|nos|com\s+a|com\s+o|sobre\s+a|sobre\s+o|empresa|companhia|banco|gestora|fundo|at|from|for|with|company|bank|fund)\s+([\p{Lu}][\p{L}\p{N}&.-]*(?:\s+(?:(?:d[aeo]s?|e|and|of)\s+)?[\p{Lu}][\p{L}\p{N}&.-]*){0,4})\b/gu;
+const ENTITY_HEAD_STOP = new Set([
+  "vp", "md", "cfo", "ceo", "dcm", "ib", "ri", "board",
+  // Jurisdictions are classifier context, not named semantic objects merely because Portuguese
+  // places them after a preposition.
+  "brasil", "brazil", "eua", "usa", "us", "estados unidos", "united states", "latam", "america latina", "europa", "europe",
+]);
+
+function governedEntityMentions(input: SemanticObjectExtractorInput): SemanticHeadMention[] {
+  const text = input.latestUserMessage;
+  const matches: SemanticHeadMention[] = [];
+  for (const match of text.matchAll(INTRODUCED_ENTITY_PATTERN)) {
+    const entity = match[1]!;
+    if (ENTITY_HEAD_STOP.has(normalizeSearchText(entity))) continue;
+    const start = match.index! + match[0].lastIndexOf(entity);
+    matches.push({source: "latest_user_message", messageIndex: null, start, end: start + entity.length, text: entity, expectedKind: null});
+  }
+  for (const object of input.activeWorkContext?.objects ?? []) {
+    const entity = object.slots.find(({key}) => key === "entity")?.value;
+    if (!entity) continue;
+    let start = text.toLocaleLowerCase(input.locale).indexOf(entity.toLocaleLowerCase(input.locale));
+    while (start >= 0) {
+      matches.push({source: "latest_user_message", messageIndex: null, start, end: start + entity.length, text: text.slice(start, start + entity.length), expectedKind: object.kind});
+      start = text.toLocaleLowerCase(input.locale).indexOf(entity.toLocaleLowerCase(input.locale), start + entity.length);
+    }
+  }
+  return matches;
+}
+
+function semanticHeadMentions(input: SemanticObjectExtractorInput): SemanticHeadMention[] {
+  const text = input.latestUserMessage;
+  const mentions: SemanticHeadMention[] = SEMANTIC_HEAD_PATTERNS.flatMap(({kind, pattern}) =>
+    [...text.matchAll(new RegExp(pattern.source, pattern.flags))].map((match) => ({
+      source: "latest_user_message" as const,
+      messageIndex: null,
+      start: match.index!, end: match.index! + match[0].length, text: match[0], expectedKind: kind,
+    })),
+  );
+  mentions.push(...governedEntityMentions(input));
+  const ordered = mentions.sort((left, right) => left.start - right.start || right.end - left.end);
+  const unique: SemanticHeadMention[] = [];
+  for (const mention of ordered) {
+    const duplicate = unique.find((existing) => existing.start === mention.start && existing.end === mention.end);
+    if (duplicate) {
+      if (duplicate.expectedKind === null && mention.expectedKind !== null) duplicate.expectedKind = mention.expectedKind;
+      continue;
+    }
+    // A capitalized proper-name heuristic must not create a second head over a more specific
+    // domain phrase (for example, "Project Finance").
+    if (mention.expectedKind === null && unique.some((existing) => overlaps(existing, mention))) continue;
+    unique.push(mention);
+  }
+  const sorted = unique.sort((left, right) => left.start - right.start || left.end - right.end);
+  const coalesced: SemanticHeadMention[] = [];
+  for (let index = 0; index < sorted.length; index += 1) {
+    const current = sorted[index]!;
+    const next = sorted[index + 1];
+    // A provider class immediately followed by its proper name is one referent, not two heads:
+    // "banco JP Morgan" / "fundo Prisma Capital". This coalescing is deliberately narrow so
+    // independent heads such as "Camil ... memo ... operação" remain separate.
+    if (current.expectedKind === "provider" && next?.expectedKind === null
+      && /^\s+$/u.test(text.slice(current.end, next.start))) {
+      coalesced.push({...current, end: next.end, text: text.slice(current.start, next.end)});
+      index += 1;
+      continue;
+    }
+    coalesced.push(current);
+  }
+  return coalesced;
+}
+
 const QUANTITY_PATTERN = /(?:\b(?:R\$|US\$|U\$|BRL|USD|EUR)\s*\d[\d.,]*(?:\s*(?:mil|milh(?:ao|oes)|million|billion|mn|bn|k))?|\b\d[\d.,]*\s*(?:%|bps?\b|basis points?\b|x\b|vezes\b|anos?\b|years?\b|mes(?:es)?\b|months?\b|paginas?\b|pages?\b)|\b(?:um|uma|dois|duas|tres|three|quatro|four|cinco|five|seis|six|sete|seven|oito|eight|nove|nine|dez|ten|onze|eleven|doze|twelve)\s+(?:anos?|years?|mes(?:es)?|months?|paginas?|pages?|planilhas?|spreadsheets?|fundos?|funds?)\b)/giu;
 
 function quantityMentions(input: SemanticObjectExtractorInput, usedRecentMessageIndexes: ReadonlySet<number>): QuantityMention[] {
@@ -501,7 +683,7 @@ function addIssue(issues: z.infer<typeof coverageIssueSchema>[], code: z.infer<t
  */
 export function compileSemanticObjects(
   rawInput: SemanticObjectExtractorInput,
-  rawOutput: SemanticObjectExtractorOutput,
+  rawOutput: z.input<typeof semanticObjectExtractorOutputSchema>,
 ): SemanticObjectCompilation {
   const input = semanticObjectExtractorInputSchema.parse(rawInput);
   const output = semanticObjectExtractorOutputSchema.parse(rawOutput);
@@ -510,6 +692,7 @@ export function compileSemanticObjects(
   let activeContextReferencesChecked = 0;
   const normalized: Array<Omit<NormalizedSemanticObject, "id" | "ordinal">> = [];
   const modifierSpans: SemanticTextSpan[] = [];
+  const acceptedHeads: Array<{span: SemanticTextSpan; kind: z.infer<typeof intentObjectKindSchema>}> = [];
   const usedRecentMessageIndexes = new Set<number>();
 
   for (const candidate of [...output.objects].sort((left, right) => compareTextCandidates(input, left, right))) {
@@ -524,6 +707,9 @@ export function compileSemanticObjects(
         candidateValid = false;
       } else if (validity === "invalid") {
         addIssue(issues, "invalid_source_span", `${candidate.candidateId} has a span that does not reproduce its source: ${span.text}`);
+        candidateValid = false;
+      } else if (span.source !== "latest_user_message") {
+        addIssue(issues, "historical_text_is_not_governed_context", `${candidate.candidateId} attempts to promote historical user text: ${span.text}`);
         candidateValid = false;
       }
     }
@@ -544,11 +730,14 @@ export function compileSemanticObjects(
       slots.push({key: slot.key, value});
       if (slot.key !== "entity" && slot.key !== "subject") modifierSpans.push(slot.span);
     }
-    if (candidateValid) normalized.push({
-      kind: candidate.kind,
-      slots: slots.sort((left, right) => intentObjectSlotKeySchema.options.indexOf(left.key) - intentObjectSlotKeySchema.options.indexOf(right.key)),
-      source: {type: "text", spans},
-    });
+    if (candidateValid) {
+      acceptedHeads.push({span: candidate.head.span, kind: candidate.kind});
+      normalized.push({
+        kind: candidate.kind,
+        slots: slots.sort((left, right) => intentObjectSlotKeySchema.options.indexOf(left.key) - intentObjectSlotKeySchema.options.indexOf(right.key)),
+        source: {type: "text", spans},
+      });
+    }
   }
 
   const context = input.activeWorkContext;
@@ -562,6 +751,7 @@ export function compileSemanticObjects(
     const validity = validateSpan(input, reference.trigger);
     if (validity === "assistant") addIssue(issues, "assistant_text_is_not_evidence", `context trigger cites assistant message ${reference.trigger.messageIndex}`);
     else if (validity === "invalid") addIssue(issues, "invalid_source_span", `context trigger does not reproduce its source: ${reference.trigger.text}`);
+    else if (reference.trigger.source !== "latest_user_message") addIssue(issues, "historical_text_is_not_governed_context", `context trigger must be in the current turn: ${reference.trigger.text}`);
     if (!context) {
       addIssue(issues, "unknown_context_object", `no active work context contains ${reference.contextObjectId}`);
       continue;
@@ -575,7 +765,7 @@ export function compileSemanticObjects(
       addIssue(issues, "unknown_context_object", `${reference.contextObjectId} is not in governed context ${context.contextId}`);
       continue;
     }
-    if (validity !== "valid") continue;
+    if (validity !== "valid" || reference.trigger.source !== "latest_user_message") continue;
     normalized.push({
       kind: object.kind,
       slots: [...object.slots].sort((left, right) => intentObjectSlotKeySchema.options.indexOf(left.key) - intentObjectSlotKeySchema.options.indexOf(right.key)),
@@ -588,6 +778,7 @@ export function compileSemanticObjects(
     const validity = validateSpan(input, unresolved.span);
     if (validity === "assistant") addIssue(issues, "assistant_text_is_not_evidence", `unresolved reference cites assistant message ${unresolved.span.messageIndex}`);
     else if (validity === "invalid") addIssue(issues, "invalid_source_span", `unresolved reference span does not reproduce its source: ${unresolved.span.text}`);
+    else if (unresolved.span.source !== "latest_user_message") addIssue(issues, "historical_text_is_not_governed_context", `unresolved reference must be attributable to the current turn: ${unresolved.span.text}`);
     addIssue(issues, "unresolved_reference", `${unresolved.reason}: ${unresolved.span.text}`);
   }
 
@@ -595,12 +786,24 @@ export function compileSemanticObjects(
     const {span} = entry;
     sourceSpansChecked += 1;
     const validity = validateSpan(input, span);
-    if (validity === "valid" && exclusionIsSupported(input, entry)) return true;
+    if (validity === "valid" && span.source === "latest_user_message" && exclusionIsSupported(input, entry)) return true;
     if (validity === "valid") {
-      addIssue(issues, "invalid_exclusion_reason", `${entry.reason} is not supported by its source context: ${span.text}`);
+      addIssue(issues, span.source === "latest_user_message" ? "invalid_exclusion_reason" : "historical_text_is_not_governed_context", `${entry.reason} is not supported by its source context: ${span.text}`);
       return false;
     }
     addIssue(issues, validity === "assistant" ? "assistant_text_is_not_evidence" : "invalid_source_span", `excluded span is not valid user evidence: ${span.text}`);
+    return false;
+  });
+
+  const semanticExclusions = output.excludedSemanticHeadSpans.filter((entry) => {
+    sourceSpansChecked += 1;
+    const validity = validateSpan(input, entry.span);
+    if (validity === "valid" && entry.span.source === "latest_user_message" && exclusionIsSupported(input, entry)) return true;
+    if (validity === "valid") {
+      addIssue(issues, entry.span.source === "latest_user_message" ? "invalid_exclusion_reason" : "historical_text_is_not_governed_context", `${entry.reason} is not supported by its source context: ${entry.span.text}`);
+      return false;
+    }
+    addIssue(issues, validity === "assistant" ? "assistant_text_is_not_evidence" : "invalid_source_span", `excluded semantic head is not valid user evidence: ${entry.span.text}`);
     return false;
   });
 
@@ -613,11 +816,34 @@ export function compileSemanticObjects(
     else addIssue(issues, "uncovered_quantitative_mention", `${quantity.text} at ${quantity.source}:${quantity.messageIndex ?? "latest"}:${quantity.start}`);
   }
 
+  const heads = semanticHeadMentions(input);
+  let semanticHeadMentionsCovered = 0;
+  for (const head of heads) {
+    const claimingHeads = acceptedHeads.filter(({span}) => overlaps(head, span));
+    const explicitlyAccounted = output.unresolvedReferences.some(({span}) => span.source === "latest_user_message" && overlaps(head, span))
+      || semanticExclusions.some(({span}) => overlaps(head, span));
+    if (claimingHeads.length === 1 || explicitlyAccounted) semanticHeadMentionsCovered += 1;
+    if (claimingHeads.length === 0 && !explicitlyAccounted) {
+      addIssue(issues, "uncovered_semantic_head", `${head.expectedKind ?? "named_entity"}:${head.text} at latest:${head.start}`);
+    } else if (claimingHeads.length > 1) {
+      addIssue(issues, "semantic_head_multiply_claimed", `${head.text} is claimed by ${claimingHeads.length} object heads`);
+    }
+  }
+  for (const {span: candidateHead} of acceptedHeads) {
+    const claimed = heads.filter((head) => overlaps(head, candidateHead));
+    if (claimed.length > 1) {
+      addIssue(issues, "merged_semantic_heads", `${candidateHead.text} merges independently detected heads: ${claimed.map(({text}) => text).join(" | ")}`);
+    }
+  }
+
   const seenAtomicObjects = new Set<string>();
   for (const object of normalized) {
     const identity = fingerprintJson({kind: object.kind, slots: object.slots, source: object.source});
     if (seenAtomicObjects.has(identity)) addIssue(issues, "duplicate_atomic_object", `${object.kind} is duplicated with the same source and slots`);
     seenAtomicObjects.add(identity);
+  }
+  if (normalized.length > intentObjectCardinalityLimit) {
+    addIssue(issues, "object_cardinality_exceeded", `${normalized.length} objects exceed the per-turn limit of ${intentObjectCardinalityLimit}`);
   }
   if (normalized.length === 0) addIssue(issues, "no_semantic_object", "the extraction did not establish any attributable semantic object");
 
@@ -625,7 +851,9 @@ export function compileSemanticObjects(
     ...object, id: `object-${index + 1}`, ordinal: index + 1,
   }));
   const hasStructuralError = issues.some(({code, severity}) => severity === "error"
-    && code !== "unresolved_reference" && code !== "uncovered_quantitative_mention" && code !== "no_semantic_object");
+    && code !== "unresolved_reference" && code !== "uncovered_quantitative_mention"
+    && code !== "uncovered_semantic_head" && code !== "object_cardinality_exceeded"
+    && code !== "no_semantic_object");
   const status = hasStructuralError ? "rejected" as const : issues.some(({severity}) => severity === "error") ? "incomplete" as const : "complete" as const;
   const body = {
     schemaVersion: "semantic-object-compilation.v1" as const,
@@ -636,6 +864,8 @@ export function compileSemanticObjects(
       sourceSpansChecked,
       quantitativeMentions: quantities.length,
       quantitativeMentionsCovered,
+      semanticHeadMentions: heads.length,
+      semanticHeadMentionsCovered,
       activeContextReferencesChecked,
       issues,
     },
@@ -702,9 +932,19 @@ export function applySemanticObjectCompilation(
       ...intent.routingCore,
       object: {
         value: compilation.usableObjects.map(({id, ordinal, kind, slots}) => ({id, ordinal, kind, slots})),
-        state: "inferred",
-        confidence: 1,
-        basis: `verified semantic object compilation:${compilation.fingerprint.slice(0, 16)}`,
+        ...(compilation.usableObjects.every(({source}) => source.type === "text")
+          ? {
+              state: "explicit" as const,
+              confidence: null,
+              basis: `attributable current-turn semantic object compilation:${compilation.fingerprint.slice(0, 16)}`,
+            }
+          : {
+              state: "inferred" as const,
+              // A verified span proves attribution, not that a pronoun-to-context match is certain.
+              // Preserve the router's calibrated uncertainty and cap it below certainty.
+              confidence: Math.min(intent.routingCore.object.confidence ?? 0.5, 0.95),
+              basis: `governed context reference semantic object compilation:${compilation.fingerprint.slice(0, 16)}`,
+            }),
       },
     },
   });

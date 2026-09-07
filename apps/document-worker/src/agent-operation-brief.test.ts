@@ -8,7 +8,7 @@ import {
 import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
-import {processAgentOperationBriefJob} from "./agent-operation-brief";
+import {governedActiveWorkContext, processAgentOperationBriefJob} from "./agent-operation-brief";
 import {liveRoutingOutputSchema} from "./live-preview";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 
@@ -118,6 +118,45 @@ function r01DraftMissingAdvanceRate() {
 }
 
 describe("agent operation brief worker", () => {
+  it("builds active work memory only from the bound project, objective revision and source manifest", () => {
+    const objectiveFingerprint = "c".repeat(64);
+    const projectId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    const objectiveId = "11111111-1111-4111-8111-111111111111";
+    const manifestId = "22222222-2222-4222-8222-222222222222";
+    const workstream = {
+      label: "Analisar", purpose: "Entender o caso", sources: [], analyses: ["crédito"],
+      output: "análise", dependencies: [],
+    };
+    const compiled = governedActiveWorkContext(job.organization_id, {
+      session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+      message: "Continue.", message_metadata: {}, brief: {}, snapshot_fingerprint: "d".repeat(64),
+      projection_updated_at: "2026-09-07T02:00:00.000Z", manifest_id: manifestId,
+      project: {id: projectId, name: "Projeto Camil", entryJob: "capital_planning", accessBasis: "authorized_private", phase: "analyze", status: "active"},
+      latest_execution_brief: {
+        id: objectiveId, version: 4, fingerprint: objectiveFingerprint,
+        visibleSnapshot: {
+          schemaVersion: "execution-brief.v1", fingerprint: objectiveFingerprint, locale: "pt-BR",
+          objective: "Preparar decisão de capital", currentContext: [], proposedDeliverable: "Memo",
+          workstreams: [workstream, {...workstream, label: "Estruturar"}, {...workstream, label: "Revisar"}],
+          assumptions: [], checkpoints: [], executionMode: "start_after_display",
+        },
+      },
+      company_profile: {}, professional_context: null, institution_capabilities: null, organization_methodology: null,
+      related_project_memory: [], documents: [{id: "33333333-3333-4333-8333-333333333333", name: "Balanço.xlsx", kind: "financial", status: "ready"}],
+      tasks: [], artifacts: [],
+      recent_messages: [{id: "44444444-4444-4444-8444-444444444444", role: "assistant", content: "Segredo histórico que não é evidência", created_at: "2026-09-07T01:00:00.000Z"}],
+    });
+    expect(compiled).toMatchObject({
+      context: {
+        organizationId: job.organization_id, projectId, revision: 4,
+        objective: {id: objectiveId, revision: 4, fingerprint: objectiveFingerprint},
+        sourceManifest: {id: manifestId, fingerprint: "d".repeat(64), documentIds: ["33333333-3333-4333-8333-333333333333"]},
+      },
+      binding: {objectiveId, objectiveRevision: 4, sourceManifestId: manifestId},
+    });
+    expect(JSON.stringify(compiled)).not.toContain("Segredo histórico");
+  });
+
   it("applies a bound R01 answer without a model and records the resulting draft revision", async () => {
     let storedPatch: Record<string, unknown> | undefined;
     let response: Record<string, unknown> | undefined;

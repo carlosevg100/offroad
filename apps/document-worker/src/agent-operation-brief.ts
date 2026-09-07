@@ -1,6 +1,7 @@
 import {randomUUID} from "node:crypto";
 
 import {
+  activeWorkContextSchema,
   agentOperationBriefResponseSchema,
   collaborativeAdvisoryPolicy,
   createAgentChangeProposal,
@@ -8,6 +9,7 @@ import {
   routeWorkspaceRequest,
   workspaceJourneyBlueprint,
   type AgentOperationBriefResponse,
+  type ActiveWorkContext,
   type IntentEnvelope,
   type WorkspaceExecutionRoute,
   type WorkspaceJobActivation,
@@ -34,6 +36,7 @@ import {
   expandObjectivePlanWithTaskTargets,
   localizedOffroadTaskLabel,
   taskExecutionCapabilitySchema,
+  visibleExecutionBriefSchema,
   type ObjectiveExecutionContext,
   type ObjectiveOutputTerminal,
 } from "@offroad/work-plan";
@@ -347,6 +350,7 @@ export async function processAgentOperationBriefJob(
     // In the live preview the classifier is the router itself, so the shadow does not run twice.
     if (dependencies.shadowRouting !== false && !(job.integration_preview === true && job.integration_preview_mode === "live")) {
       try {
+        const activeWorkContext = governedActiveWorkContext(job.organization_id, context);
         const shadow = await shadowIntentEnvelope({
           gateway,
           context: {
@@ -367,9 +371,8 @@ export async function processAgentOperationBriefJob(
                   primaryObjectives: context.professional_context.primaryObjectives,
                 }
               : null,
-            // The current project projection does not yet expose a governed ActiveWorkContext.
-            // Pass absence explicitly; never synthesize it from chat history or the gold oracle.
-            activeWorkContext: null,
+            activeWorkContext: activeWorkContext?.context ?? null,
+            activeWorkContextBinding: activeWorkContext?.binding ?? null,
           },
         });
         const objectiveRouting = objectiveRoutingObservation(context, shadow.envelope, {
@@ -796,6 +799,70 @@ export async function processAgentOperationBriefJob(
 }
 
 type AgentContext = z.infer<typeof contextSchema>;
+
+/**
+ * Builds continuity exclusively from capability-scoped durable records. Recent conversation,
+ * assistant prose and professional profile data are intentionally absent from this compiler.
+ */
+export function governedActiveWorkContext(
+  organizationId: string,
+  context: AgentContext,
+): {context: ActiveWorkContext; binding: NonNullable<Parameters<typeof shadowIntentEnvelope>[0]["context"]["activeWorkContextBinding"]>} | null {
+  if (!context.project || !context.latest_execution_brief || !context.manifest_id) return null;
+  const visible = visibleExecutionBriefSchema.parse(context.latest_execution_brief.visibleSnapshot);
+  if (visible.fingerprint !== context.latest_execution_brief.fingerprint) {
+    throw new Error("active_work_context_objective_fingerprint_mismatch");
+  }
+  const objective = {
+    id: context.latest_execution_brief.id,
+    revision: context.latest_execution_brief.version,
+    fingerprint: context.latest_execution_brief.fingerprint,
+    label: visible.objective,
+  };
+  const sourceManifest = {
+    id: context.manifest_id,
+    fingerprint: context.snapshot_fingerprint,
+    documentIds: context.documents.map(({id}) => id),
+    evidenceObjectIds: [context.project.id, objective.id],
+  };
+  const objects: Array<z.input<typeof activeWorkContextSchema>["objects"][number]> = [{
+    id: `project:${context.project.id}`,
+    ordinal: 1,
+    kind: "project",
+    slots: [{key: "entity", value: context.project.name}],
+    label: context.project.name,
+    governance: {state: "system_resolved", sourceIds: [context.project.id]},
+  }];
+  if (visible.objective.length <= 200) objects.push({
+    id: `objective:${objective.id}`,
+    ordinal: 2,
+    kind: "decision",
+    slots: [{key: "subject", value: visible.objective}],
+    label: visible.objective,
+    governance: {state: "system_resolved", sourceIds: [objective.id]},
+  });
+  const governed = activeWorkContextSchema.parse({
+    schemaVersion: "active-work-context.v2",
+    contextId: `project:${context.project.id}:objective:${objective.id}`,
+    organizationId,
+    projectId: context.project.id,
+    revision: objective.revision,
+    state: context.project.status === "active" ? "active" : "paused",
+    objective,
+    sourceManifest,
+    objects,
+  });
+  return {
+    context: governed,
+    binding: {
+      objectiveId: objective.id,
+      objectiveRevision: objective.revision,
+      objectiveFingerprint: objective.fingerprint,
+      sourceManifestId: sourceManifest.id,
+      sourceManifestFingerprint: sourceManifest.fingerprint,
+    },
+  };
+}
 
 /**
  * Measures the semantic envelope against the compatibility classifier without allowing either

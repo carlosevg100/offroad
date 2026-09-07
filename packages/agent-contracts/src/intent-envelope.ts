@@ -77,6 +77,13 @@ export const intentObjectKindSchema = z.enum([
   "decision",
 ]);
 
+/**
+ * One routing turn can carry at most this many independently referable objects. The classifier,
+ * semantic compiler and persisted envelope all consume this constant so no layer can silently
+ * drop objects to satisfy a narrower downstream schema.
+ */
+export const intentObjectCardinalityLimit = 24;
+
 export const evidenceRegimeSchema = z.enum(["unresolved", "public", "private_authorized", "hybrid", "received"]);
 export type EvidenceRegime = z.infer<typeof evidenceRegimeSchema>;
 export const authorityGrantSchema = z.enum(["read", "modify", "approve_internal", "share", "introduce"]);
@@ -120,7 +127,7 @@ export const routingCoreSchema = z.object({
   object: inferable(z.array(z.object({
     kind: intentObjectKindSchema,
     reference: z.string().max(200).optional(),
-  })).min(1).max(12)),
+  })).min(1).max(intentObjectCardinalityLimit)),
   desiredOutcome: inferable(z.string().min(1).max(300)),
   decision: inferable(z.string().max(300).nullable()),
   audience: inferable(z.array(z.string().min(1).max(80)).min(1).max(6)),

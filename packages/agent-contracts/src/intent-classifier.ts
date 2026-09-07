@@ -6,6 +6,7 @@ import {
   intentAudienceTypeSchema,
   intentDecisionTypeSchema,
   intentDepthSchema,
+  intentObjectCardinalityLimit,
   intentObjectKindSchema,
   intentObjectSlotKeySchema,
   compositionPolicy,
@@ -65,10 +66,10 @@ const classifierObjectSlotsSchema = z.array(z.object({
 
 const classifierObjectInstancesSchema = z.array(z.object({
   id: z.string().regex(/^object-[1-9]\d*$/),
-  ordinal: z.number().int().min(1).max(24),
+  ordinal: z.number().int().min(1).max(intentObjectCardinalityLimit),
   kind: intentObjectKindSchema,
   slots: classifierObjectSlotsSchema,
-}).strict()).max(24).superRefine((objects, ctx) => {
+}).strict()).max(intentObjectCardinalityLimit).superRefine((objects, ctx) => {
   const ids = new Set<string>();
   const ordinals = new Set<number>();
   for (const [index, object] of objects.entries()) {

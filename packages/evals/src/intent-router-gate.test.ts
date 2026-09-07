@@ -50,8 +50,8 @@ const observation = (turn: typeof intentGoldTurns[number], repeat: number, outpu
   rawActualFingerprint: output ? fingerprintJson(output) : null,
   routingFingerprint: output ? intentRoutingFingerprint(output) : null, provider: output ? "anthropic" : null,
   model: output ? "governed-test-model" : null,
-  rawObjectActual: output ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []} : null,
-  rawObjectActualFingerprint: output ? fingerprintJson({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []}) : null,
+  rawObjectActual: output ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []} : null,
+  rawObjectActualFingerprint: output ? fingerprintJson({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []}) : null,
   objectCompilation: output ? compilationFor(outputFor(turn), turn.expected.abstain) : null,
   objectProvider: output ? "anthropic" : null, objectModel: output ? "governed-object-model" : null,
   objectAttemptCount: output ? 1 : 0, objectCostUsd: output ? 0.005 : 0, objectLatencyMs: output ? 80 : 0,
@@ -61,6 +61,9 @@ const observation = (turn: typeof intentGoldTurns[number], repeat: number, outpu
 function compilationFor(output: IntentClassifierOutput, abstain = false) {
   const objects = output.routingCore.object.value.map((object) => ({
     ...object,
+    slots: object.slots.some(({key}) => key === "entity" || key === "subject")
+      ? object.slots
+      : [{key: "subject" as const, value: `synthetic ${object.kind}`}],
     source: {type: "text" as const, spans: [{source: "latest_user_message" as const, messageIndex: null, start: 0, end: 1, text: "x"}]},
   }));
   const body = {
@@ -69,7 +72,9 @@ function compilationFor(output: IntentClassifierOutput, abstain = false) {
     objects,
     usableObjects: abstain ? [] : objects,
     coverage: {
-      sourceSpansChecked: objects.length, quantitativeMentions: 0, quantitativeMentionsCovered: 0, activeContextReferencesChecked: 0,
+      sourceSpansChecked: objects.length, quantitativeMentions: 0, quantitativeMentionsCovered: 0,
+      semanticHeadMentions: objects.length, semanticHeadMentionsCovered: objects.length,
+      activeContextReferencesChecked: 0,
       issues: abstain ? [{code: "unresolved_reference" as const, severity: "error" as const, detail: "synthetic unresolved reference"}] : [],
     },
   };

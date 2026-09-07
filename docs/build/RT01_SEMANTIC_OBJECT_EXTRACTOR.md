@@ -1,4 +1,4 @@
-# RT-01 - Semantic Object Extractor v1
+# RT-01 - Semantic Object Extractor and governed work context
 
 ## Why this boundary exists
 
@@ -17,20 +17,29 @@ coverage, final ids and the fingerprint.
 
 1. The intent classifier selects the composition and routing axes.
 2. The semantic object extractor receives the latest user message, at most eight recent messages
-   and an optional control-plane-governed active-work context.
+   for interpretation, and an optional control-plane-governed active-work context.
 3. The extractor emits atomic candidates, context references, unresolved references and explicit
    exclusions. It never emits canonical converted numbers.
-4. `compileSemanticObjects` verifies every UTF-16 span against user-authored text, imports only
-   active governed objects, normalizes supported slots and checks quantitative coverage.
+4. `compileSemanticObjects` verifies every UTF-16 span, accepts new objects only from the current
+   user turn, imports continuity only through active governed references, normalizes supported
+   slots and checks quantitative plus independent semantic-head coverage.
 5. `applySemanticObjectCompilation` replaces only the classifier's object field. Incomplete or
    rejected coverage clears asserted object meaning and forces abstention downstream.
 
 ## Ordering and continuity
 
-New objects in the latest message come first. Objects needed from recent user messages follow,
-with the newest message first. Governed active-work objects are appended last in their stable
-context order. Assistant prose is never accepted as a source. Pronouns and ellipses without one
-governed referent remain named unresolved references; they do not silently inherit a guess.
+New objects can only be established by the latest message and come first. Recent conversation can
+help the model interpret a turn, but neither prior user prose nor assistant prose is admissible
+evidence for a new object. Continuity is imported exclusively through an `active-work-context.v2`
+reference triggered by words in the current turn; governed objects are appended in stable context
+order. Pronouns and ellipses without one governed referent remain named unresolved references.
+
+The context is not conversational memory. The control plane binds it to an organization, project,
+objective id and revision fingerprint, and source-manifest id and fingerprint. The manifest lists
+the admissible document and evidence-object ids. Runtime rejects tenant, project, objective,
+manifest or available-document mismatches before either model call. The worker constructs this
+context only from capability-scoped project, signed visible execution brief and source manifest;
+free-form history and professional profile fields are not reimported.
 
 ## Atomicity
 
@@ -39,6 +48,10 @@ asset pool and amount-bearing scenario cannot be collapsed into one record. Each
 is separate. A plural document class remains one document object unless individual documents are
 named; an explicit collection size is a `count` slot. Multiple modifiers that describe one head
 stay on that one object.
+
+Every accepted object has exactly one `entity` or `subject` head. A code-owned compatibility table
+rejects modifiers that do not belong to the object's kind. These constraints apply equally to
+provider candidates, normalized objects and governed active-context objects.
 
 ## Fail-closed coverage
 
@@ -51,10 +64,24 @@ The compilation is:
 Only `complete` compilations expose `usableObjects`. Diagnostic objects and named issues remain
 available for observability, but a consumer cannot mistake them for accepted routing input.
 
-## Integration still required
+The code-owned semantic coverage detector is deliberately bounded to credit-work vocabulary and
+entities introduced through explicit grammar or resolved governed context. It has negative
+authority only: it can prove that a detected head was omitted, claimed twice or merged, but never
+creates an object or infers a route. It intentionally does not treat arbitrary capitalization,
+professional titles or sentence openings as entities. Expansion of this vocabulary is measured
+against the gold and adversarial corpus before promotion.
 
-The contract and pure orchestration seam are implemented in `@offroad/agent-contracts`. The
-model-gateway is intentionally unchanged in this slice. A following integration change must make
-the second bounded call, preserve both provider-call records, pass the compilation through the
-existing RT-01 evidence report and rerun the full real-model gate. The existing independent gold
-oracle stays unchanged.
+One shared cardinality limit of 24 applies to classifier objects, extractor candidates and the
+accepted envelope. Text candidates plus governed references above that limit are retained in the
+bounded diagnostic compilation, marked `object_cardinality_exceeded`, and never silently sliced.
+Explicit current-turn objects receive no fabricated confidence. Governed-reference application
+preserves the router's calibrated confidence and caps it below certainty; a verified span proves
+attribution, not semantic certainty.
+
+## Runtime and gate status
+
+Shadow routing now sends the same governed input to the intent classifier and semantic extractor
+in parallel, compiles and applies semantic objects before production canonicalization, and stores
+raw and compiled evidence separately. The independent oracle remains unchanged. A real-model gate
+must still prove provider conformance and observe the bounded vocabulary on the full gold and
+adversarial corpus before this boundary can be promoted from shadow operation.
