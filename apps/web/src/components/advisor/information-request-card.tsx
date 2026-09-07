@@ -1,6 +1,6 @@
 "use client";
 
-import {ArrowRight, Bot, CircleHelp, LoaderCircle} from "lucide-react";
+import {ArrowRight, Bot, CircleHelp, LoaderCircle, Paperclip} from "lucide-react";
 import {useState, type FormEvent} from "react";
 
 export type AdvisorInformationRequest = {
@@ -19,6 +19,8 @@ export type InformationRequestCopy = {
   why: string;
   impact: string;
   evidence: string;
+  attachEvidence: string;
+  attachEvidenceHelp: string;
   other: string;
   placeholder: string;
   submit: string;
@@ -38,6 +40,7 @@ export function InformationRequestCard(props: {
   remaining: number;
   request: AdvisorInformationRequest;
   onAnswer: (input: {source: AnswerSource; content: string}) => Promise<{ok: true} | {ok: false; error: string}>;
+  onAttachEvidence?: () => void;
 }) {
   const [custom, setCustom] = useState(false);
   const [value, setValue] = useState("");
@@ -84,13 +87,19 @@ export function InformationRequestCard(props: {
       <p><strong>{props.copy.impact}</strong>{props.request.decisionImpact}</p>
     </div>
 
-    {choiceMode && !custom ? <div className="information-request-card__choices">
+    {props.request.answerKind === "document" ? <div className="information-request-card__document-answer">
+      {props.request.acceptableEvidence.length ? <small><strong>{props.copy.evidence}</strong>{props.request.acceptableEvidence.join(" · ")}</small> : null}
+      <button disabled={Boolean(pending) || props.disabled || !props.onAttachEvidence} onClick={props.onAttachEvidence} type="button">
+        <Paperclip aria-hidden="true" size={14} />
+        <span>{props.copy.attachEvidence}</span>
+      </button>
+      <p>{props.copy.attachEvidenceHelp}</p>
+    </div> : choiceMode && !custom ? <div className="information-request-card__choices">
       {choices.map((choice) => <button disabled={Boolean(pending) || props.disabled} key={choice} onClick={() => void answer("choice", choice)} type="button">
         <span>{choice}</span>{pending === "choice" ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : <ArrowRight aria-hidden="true" size={13} />}
       </button>)}
       <button className="is-other" disabled={Boolean(pending) || props.disabled} onClick={() => setCustom(true)} type="button">{props.copy.other}</button>
     </div> : <form className="information-request-card__answer" onSubmit={submit}>
-      {props.request.answerKind === "document" && props.request.acceptableEvidence.length ? <small><strong>{props.copy.evidence}</strong>{props.request.acceptableEvidence.join(" · ")}</small> : null}
       <div>
         <input
           disabled={Boolean(pending) || props.disabled}
