@@ -1,5 +1,5 @@
 import {createHash} from "node:crypto";
-import {readFile, readdir, stat, writeFile} from "node:fs/promises";
+import {readFile, readdir, writeFile} from "node:fs/promises";
 import {join} from "node:path";
 
 import {runTool, withTempDirectory} from "./tools";
@@ -138,12 +138,11 @@ export function createMaterialRenderInspector(options: {
       const pages: MaterialRenderInspection["pages"] = [];
       for (const name of names) {
         const path = join(directory, name);
-        const size = (await stat(path)).size;
-        totalPageBytes += size;
-        if (size === 0 || size > MAX_PAGE_BYTES || totalPageBytes > MAX_TOTAL_PAGE_BYTES) {
+        const bytes = new Uint8Array(await readFile(path));
+        totalPageBytes += bytes.byteLength;
+        if (bytes.byteLength === 0 || bytes.byteLength > MAX_PAGE_BYTES || totalPageBytes > MAX_TOTAL_PAGE_BYTES) {
           throw new Error("rendered page images exceeded the material inspection limits");
         }
-        const bytes = new Uint8Array(await readFile(path));
         const dimensions = pngDimensions(bytes);
         pages.push({
           pageNumber: pageNumber(name),
