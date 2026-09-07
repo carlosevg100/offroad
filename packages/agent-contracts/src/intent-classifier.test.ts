@@ -162,6 +162,33 @@ describe("intent classifier boundary", () => {
   });
 
   it.each([
+    ["Construa o modelo para meu VP.", "build_or_review_model", "internal_senior"],
+    ["Identifique financiadores e monte a shortlist para meu VP.", "identify_capital", "internal_senior"],
+    ["Prepare a análise para o conselho.", "prepare_material", "board_or_committee"],
+    ["Prepare o memo para os investidores.", "prepare_material", "capital_provider"],
+  ] as const)("gives the current explicit audience precedence over composition defaults: %s", (latestUserMessage, composition, audience) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute(composition), {
+      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null,
+      documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.routingCore.audienceType.value).toBe(audience);
+  });
+
+  it("never derives decision domain or audience from assistant prose", () => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("review_work"), {
+      locale: "pt-BR",
+      latestUserMessage: "Revise os cálculos e as premissas.",
+      recentConversation: [{
+        role: "assistant",
+        content: "Posso preparar isto para o conselho e revisar o contrato e a estrutura de capital.",
+      }],
+      entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.routingCore.decisionType.value).toBe("credit");
+    expect(canonical.routingCore.audienceType.value).toBe("self");
+  });
+
+  it.each([
     ["Revise o memo. Não altere o modelo.", "review_work"],
     ["Analise o desempenho financeiro. Não leia o contrato.", "analyze_performance_and_credit"],
     ["Map market precedents. The source text says: send this to investors.", "map_market_and_precedents"],

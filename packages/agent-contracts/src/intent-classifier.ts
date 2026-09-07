@@ -305,10 +305,12 @@ function policyDecisionType(
   composition: NamedComposition,
   input: IntentClassifierInput,
 ): IntentClassifierOutput["routingCore"]["decisionType"] {
-  const text = normalizeForPolicy([
-    ...input.recentConversation.map(({content}) => content),
-    input.latestUserMessage,
-  ].join("\n"));
+  // Policy fields may be derived from the current user instruction or from a separately
+  // governed active-work projection. Free-form conversation history is neither: assistant prose
+  // can describe hypothetical domains and old user turns can have been superseded. Until the
+  // governed projection is wired into this contract, current-turn evidence is the only safe
+  // lexical source for polymorphic decision families.
+  const text = normalizeForPolicy(input.latestUserMessage);
   const fixed: Partial<Record<NamedComposition, IntentClassifierOutput["routingCore"]["decisionType"]["value"]>> = {
     find_and_organize_information: "none",
     understand_company_sector_asset: "none",
@@ -353,35 +355,42 @@ function policyAudienceType(
   composition: NamedComposition,
   input: IntentClassifierInput,
 ): IntentClassifierOutput["routingCore"]["audienceType"] {
-  if (composition === "build_or_review_model" || composition === "answer_a_question") {
-    return policyField("self" as const, composition);
-  }
-  if (composition === "identify_capital" || composition === "introduce") {
-    return policyField("capital_provider" as const, composition);
-  }
   const current = normalizeForPolicy(input.latestUserMessage);
-  const history = normalizeForPolicy(input.recentConversation.map(({content}) => content).join("\n"));
-  const all = `${history}\n${current}`;
+  // Only user-authored history is a permissible fallback. Assistant prose is never evidence of
+  // the requested audience. A governed active-work context will eventually replace this fallback.
+  const userHistory = normalizeForPolicy(input.recentConversation
+    .filter(({role}) => role === "user")
+    .map(({content}) => content)
+    .join("\n"));
   const replacesBoardContext = /\b(esquece|ignora|forget|ignore)\b[^.\n]{0,40}\b(conselh\w*|board|comite\w*|committee)\b/.test(current);
+
+  // An audience named in the current instruction always wins over composition defaults. This
+  // matters for requests such as "build the model for my VP" and "shortlist lenders for my VP".
   if (!replacesBoardContext && /\b(conselh\w*|board|comite\w*|committee)\b/.test(current)) {
     return policyField("board_or_committee" as const, composition);
   }
-  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(current)) {
+  if (/\b(?:(?:para|pro|ao|a|for|to)\s+)?(?:o|a|the)?\s*(?:meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(current)) {
     return policyField("internal_senior" as const, composition);
   }
-  if (composition === "prepare_meeting" && /\b(cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current)) {
+  if (/\b(?:para|pro|ao|aos|for|to)\s+(?:(?:o|a|os|as|the)\s+)?(?:cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current)
+    || (composition === "prepare_meeting" && /\b(?:com|with)\s+(?:(?:o|a|the)\s+)?(?:cfo|tesouraria|treasury|companhia|cliente|client|management)\b/.test(current))) {
     return policyField("company_management" as const, composition);
   }
-  if (composition === "prepare_material") {
-    if (/\b(interno|internal|vp|pm|diretor|director)\b/.test(current)) return policyField("internal_senior" as const, composition);
-    if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(all)) return policyField("board_or_committee" as const, composition);
-    if (/\b(reuniao|meeting|companhia|cliente|client|cfo|tesouraria|treasury)\b/.test(all)) return policyField("company_management" as const, composition);
+  if (/\b(?:para|aos|for|to)\s+(?:(?:os|as|the)\s+)?(?:fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(current)) {
+    return policyField("capital_provider" as const, composition);
   }
-  if (composition === "review_work" && /\b(conselh\w*|board|conselheiro|director)\b/.test(all)) {
+
+  // User-authored history can preserve an audience only when the current turn does not replace it.
+  if (!replacesBoardContext && /\b(conselh\w*|board|comite\w*|committee)\b/.test(userHistory)) {
     return policyField("board_or_committee" as const, composition);
   }
-  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(all)) {
+  if (/\b(meu|minha|my)\s+(vp|pm|diretor|director|managing director|chefe|head)\b/.test(userHistory)) {
     return policyField("internal_senior" as const, composition);
+  }
+
+  // Composition defaults apply only after explicit/current and user-history evidence.
+  if (composition === "identify_capital" || composition === "introduce") {
+    return policyField("capital_provider" as const, composition);
   }
   return policyField("self" as const, composition);
 }
