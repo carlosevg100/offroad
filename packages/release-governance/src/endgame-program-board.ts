@@ -29,6 +29,7 @@ export const programEvidenceSchema = z.object({
   ref: z.string().min(1),
   environment: z.enum(["repository", "ci", "staging", "production", "external"]),
   capturedAt: dateTimeSchema,
+  validThrough: dateTimeSchema.nullable().optional(),
   description: z.string().min(1),
   immutableFingerprint: z.string().regex(/^[a-f0-9]{7,64}$/).nullable(),
 });
@@ -134,11 +135,12 @@ export function evaluateEndgameProgramBoard(
   board: EndgameProgramBoard,
   capabilityLedger: CapabilityLedger,
   trustControlCatalogue: TrustControlCatalogue,
+  now = new Date(),
 ): ProgramBoardDecision {
   const parsed = endgameProgramBoardSchema.parse(board);
   const blockers: ProgramBoardIssue[] = [];
   const warnings: ProgramBoardIssue[] = [];
-  const evidenceIds = new Set<string>();
+  const evidenceById = new Map<string, ProgramEvidence>();
   const taskById = new Map<string, ProgramTask>();
   const capabilityById = new Map(capabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
   const trustControlIds = new Set(trustControlCatalogue.controls.map((control) => control.controlId));
@@ -150,8 +152,11 @@ export function evaluateEndgameProgramBoard(
   }
 
   for (const evidence of parsed.evidenceIndex) {
-    if (evidenceIds.has(evidence.evidenceId)) blockers.push({code: "duplicate_evidence_id", taskId: null});
-    evidenceIds.add(evidence.evidenceId);
+    if (evidenceById.has(evidence.evidenceId)) blockers.push({code: "duplicate_evidence_id", taskId: null});
+    evidenceById.set(evidence.evidenceId, evidence);
+    if (evidence.kind === "external_assessment" && (!evidence.immutableFingerprint || !evidence.validThrough)) {
+      blockers.push({code: "external_assessment_requires_fingerprint_and_validity", taskId: null});
+    }
   }
   for (const task of parsed.tasks) {
     taskCounts[task.state] += 1;
@@ -160,11 +165,11 @@ export function evaluateEndgameProgramBoard(
   }
 
   for (const finding of parsed.reconciliationFindings) {
-    validateEvidenceRefs(finding.evidenceRefs, evidenceIds, blockers, null, "finding_evidence_missing");
+    validateEvidenceRefs(finding.evidenceRefs, evidenceById, now, blockers, null, "finding_evidence_missing");
   }
 
   for (const task of parsed.tasks) {
-    validateEvidenceRefs(task.evidenceRefs, evidenceIds, blockers, task.taskId, "task_evidence_missing");
+    validateEvidenceRefs(task.evidenceRefs, evidenceById, now, blockers, task.taskId, "task_evidence_missing");
     for (const controlId of task.securityControlIds) {
       if (!trustControlIds.has(controlId)) blockers.push({code: `unknown_security_control:${controlId}`, taskId: task.taskId});
     }
@@ -179,18 +184,18 @@ export function evaluateEndgameProgramBoard(
     if (task.acceptance.some((criterion) => !criterion.criterionId.startsWith(`${task.taskId}.AC`))) blockers.push({code: "acceptance_identity_mismatch", taskId: task.taskId});
     if (new Set(task.acceptance.map((criterion) => criterion.criterionId)).size !== task.acceptance.length) blockers.push({code: "duplicate_acceptance_criterion", taskId: task.taskId});
     for (const criterion of task.acceptance) {
-      validateEvidenceRefs(criterion.evidenceRefs, evidenceIds, blockers, task.taskId, "acceptance_evidence_missing");
+      validateEvidenceRefs(criterion.evidenceRefs, evidenceById, now, blockers, task.taskId, "acceptance_evidence_missing");
       if (criterion.status === "passed" && criterion.evidenceRefs.length === 0) blockers.push({code: "passed_acceptance_requires_evidence", taskId: task.taskId});
       if (criterion.status === "pending" && criterion.evidenceRefs.length > 0) warnings.push({code: "pending_acceptance_has_unclaimed_evidence", taskId: task.taskId});
     }
     for (const blocker of task.blockers) {
-      validateEvidenceRefs(blocker.evidenceRefs, evidenceIds, blockers, task.taskId, "blocker_evidence_missing");
+      validateEvidenceRefs(blocker.evidenceRefs, evidenceById, now, blockers, task.taskId, "blocker_evidence_missing");
       if (blocker.status === "resolved" && blocker.evidenceRefs.length === 0) blockers.push({code: "resolved_blocker_requires_evidence", taskId: task.taskId});
     }
 
     if (task.capabilityTransition) {
       const transition = task.capabilityTransition;
-      validateEvidenceRefs(transition.evidenceRefs, evidenceIds, blockers, task.taskId, "transition_evidence_missing");
+      validateEvidenceRefs(transition.evidenceRefs, evidenceById, now, blockers, task.taskId, "transition_evidence_missing");
       if (maturityRank[transition.to] <= maturityRank[transition.from]) blockers.push({code: "capability_transition_must_advance", taskId: task.taskId});
       const capability = capabilityById.get(transition.capabilityId);
       if (!capability) {
@@ -235,8 +240,12 @@ export function evaluateEndgameProgramBoard(
   };
 }
 
-function validateEvidenceRefs(refs: string[], evidenceIds: Set<string>, issues: ProgramBoardIssue[], taskId: string | null, code: string) {
-  for (const ref of refs) if (!evidenceIds.has(ref)) issues.push({code: `${code}:${ref}`, taskId});
+function validateEvidenceRefs(refs: string[], evidenceById: Map<string, ProgramEvidence>, now: Date, issues: ProgramBoardIssue[], taskId: string | null, code: string) {
+  for (const ref of refs) {
+    const evidence = evidenceById.get(ref);
+    if (!evidence) issues.push({code: `${code}:${ref}`, taskId});
+    else if (evidence.validThrough && new Date(evidence.validThrough).getTime() < now.getTime()) issues.push({code: `${code.replace("_missing", "_expired")}:${ref}`, taskId});
+  }
 }
 
 function detectTaskCycles(tasks: ProgramTask[], issues: ProgramBoardIssue[]) {

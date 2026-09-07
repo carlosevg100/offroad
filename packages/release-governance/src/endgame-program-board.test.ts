@@ -83,6 +83,32 @@ describe("endgame program board", () => {
     expect(decision.blockers).toContainEqual({code: "unknown_security_control:TRUST-FAKE-99", taskId: "SEC-01"});
   });
 
+  it("refuses expired evidence and incomplete external assessments", () => {
+    const invalid: EndgameProgramBoard = {
+      ...currentEndgameProgramBoard,
+      evidenceIndex: currentEndgameProgramBoard.evidenceIndex.map((evidence) => evidence.evidenceId === "EV-INTENT-GATE"
+        ? {...evidence, validThrough: "2026-09-06T00:00:00.000-03:00"}
+        : evidence).concat({
+          evidenceId: "EV-EXTERNAL-INCOMPLETE",
+          kind: "external_assessment",
+          ref: "independent-assessment-register",
+          environment: "external",
+          capturedAt: "2026-09-07T00:00:00.000-03:00",
+          description: "Synthetic incomplete assessment for negative testing",
+          immutableFingerprint: null,
+          validThrough: null,
+        }),
+    };
+    const decision = evaluateEndgameProgramBoard(invalid, currentCapabilityLedger, masterTrustControlCatalogue, new Date("2026-09-07T12:00:00.000-03:00"));
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "acceptance_evidence_expired:EV-INTENT-GATE", taskId: "RT-01"},
+      {code: "task_evidence_expired:EV-INTENT-GATE", taskId: "RT-01"},
+      {code: "external_assessment_requires_fingerprint_and_validity", taskId: null},
+    ]));
+  });
+
   it("keeps the generated Markdown byte-identical to the canonical board", () => {
     const decision = evaluateEndgameProgramBoard(currentEndgameProgramBoard, currentCapabilityLedger, masterTrustControlCatalogue);
     const path = fileURLToPath(new URL("../../../docs/build/ENDGAME_PROGRAM_BOARD.md", import.meta.url));
