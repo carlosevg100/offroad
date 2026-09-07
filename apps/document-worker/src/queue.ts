@@ -250,7 +250,7 @@ export type QueueClient = {
   }>;
   /** Projects the workflow's highest-value open questions into the project without requiring an
    * agent-plan row. Answered and waived questions remain closed across later runs. */
-  syncProjectInformationRequests?(job: CapitalProjectAnalysisJob, projection: unknown): Promise<{
+  syncProjectInformationRequests?(job: CapitalProjectAnalysisJob | FullCaseAnalysisJob, projection: unknown): Promise<{
     openCount: number;
     preservedClosedCount: number;
     supersededCount: number;
