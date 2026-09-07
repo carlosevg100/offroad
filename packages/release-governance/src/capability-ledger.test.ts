@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(37);
+    expect(decision.entryCount).toBe(39);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -39,6 +39,42 @@ describe("capability ledger", () => {
       qualityMaturity: "tested",
       allowedUses: ["internal_validation"],
     });
+  });
+
+  it("records security inventory and quarantine as bounded internal capabilities", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("trust.security-current-state-inventory")).toMatchObject({
+      availability: "live",
+      exposure: "internal",
+      qualityMaturity: "tested",
+      allowedUses: ["internal_validation"],
+    });
+    expect(byId.get("documents.governed-quarantine-shadow")).toMatchObject({
+      availability: "shadow",
+      exposure: "internal",
+      qualityMaturity: "implemented",
+      allowedUses: ["internal_validation"],
+    });
+    expect(byId.get("documents.governed-quarantine-shadow")?.limitations).toEqual(expect.arrayContaining([
+      expect.stringMatching(/append-only/),
+      expect.stringMatching(/Scanner engine/),
+      expect.stringMatching(/staging adversarial/),
+    ]));
+  });
+
+  it("records the governed Office foundation as implemented but not promoted", () => {
+    const capability = currentCapabilityLedger.entries.find((entry) => entry.capabilityId === "artifacts.governed-office-foundation");
+    expect(capability).toMatchObject({
+      availability: "live",
+      exposure: "allowlisted",
+      qualityMaturity: "implemented",
+      allowedUses: ["internal_validation"],
+    });
+    expect(capability?.allowedUses).not.toEqual(expect.arrayContaining(["customer_work", "external_material", "external_action"]));
+    expect(capability?.limitations).toEqual(expect.arrayContaining([
+      expect.stringMatching(/no deploy receipt/),
+      expect.stringMatching(/not mean promoted/),
+    ]));
   });
 
   it("keeps the governed R01 refresh internal until the specialist is promoted", () => {
