@@ -29,7 +29,7 @@ export type IntentRouterGateChecks = z.infer<typeof intentRouterGateChecksSchema
 export const intentRouterGateObservationSchema = z.object({
   turnId: z.string(), suite: intentGoldSuiteSchema, repeat: z.number().int().min(1).max(3),
   messageFingerprint: z.string().regex(/^[a-f0-9]{64}$/), expected: intentGoldTurnSchema.shape.expected,
-  rawActual: intentClassifierOutputSchema.optional(), actual: intentClassifierOutputSchema.nullable(), error: z.string().nullable(),
+  rawActual: intentClassifierOutputSchema.nullable(), actual: intentClassifierOutputSchema.nullable(), error: z.string().nullable(),
   checks: intentRouterGateChecksSchema, routingFingerprint: z.string().nullable(), provider: z.string().nullable(), model: z.string().nullable(),
   costUsd: z.number().nonnegative(), latencyMs: z.number().nonnegative(),
 });
@@ -57,17 +57,24 @@ const semanticTagPatterns = {
   market: /\b(mercado|market|investidores|investors|fundos|funds|financiadores|lenders)\b/,
   document: /\b(documento|document|contrato|contract|escritura|indenture|waterfall)\b/,
   performance: /\b(receita|revenue|ebitda|caixa|cash|liquidez|liquidity|desempenho|performance)\b/,
+  indexer: /\b(cdi|ipca|selic|sofr|indexador|indexer)\b/,
 } as const;
 
 function semanticTags(value: string): string[] {
   const text = normalizeText(value);
-  return Object.entries(semanticTagPatterns).filter(([, pattern]) => pattern.test(text)).map(([tag]) => tag).sort();
+  const lexical = Object.entries(semanticTagPatterns).filter(([, pattern]) => pattern.test(text)).map(([tag]) => tag);
+  const normalizedNumbers = text
+    .replace(/\b(sete|seven)\b/g, "7")
+    .replace(/\b(doze|twelve)\b/g, "12")
+    .match(/\b\d+(?:[,.]\d+)?(?:%|\s*bps|x|\s*(?:anos?|years?|meses?|months?|milhoes?|million))?\b/g)
+    ?.map((token) => `number:${token.replace(",", ".").replace(/\s+/g, " ")}`) ?? [];
+  return [...new Set([...lexical, ...normalizedNumbers])].sort();
 }
 
 function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisionCategorySchema> {
   const decision = output.routingCore.decision.value?.trim();
   if (!decision) return "none";
-  const text = normalizeText(`${decision} ${output.routingCore.desiredOutcome.value}`);
+  const text = normalizeText(decision);
   if (/\b(enviar|compartilhar|introduzir|send|share|introduce|outreach)\b/.test(text)) return "external";
   if (/\b(deck|pitch|memo|material|arquivo|file|paginas?|pages?)\b/.test(text)) return "material";
   if (/\b(status|pendencias?|versoes?|workflow|projeto|project)\b/.test(text)) return "workflow";
@@ -94,16 +101,19 @@ function emptyChecks(): IntentRouterGateChecks {
   return Object.fromEntries(Object.keys(intentRouterGateChecksSchema.shape).map((key) => [key, false])) as IntentRouterGateChecks;
 }
 
-export function scoreIntentGoldTurn(gold: IntentGoldTurn, output: IntentClassifierOutput | null): IntentRouterGateChecks {
-  if (!output) return emptyChecks();
+export function scoreIntentGoldTurn(
+  gold: IntentGoldTurn,
+  output: IntentClassifierOutput | null,
+  rawOutput: IntentClassifierOutput | null = output,
+): IntentRouterGateChecks {
+  if (!output || !rawOutput) return emptyChecks();
   const expected = gold.expected;
-  const refs = normalizeText(output.routingCore.object.value.map((object) => object.reference ?? "").join(" "));
-  const outcome = normalizeText(output.routingCore.desiredOutcome.value);
+  const outcome = normalizeText(rawOutput.routingCore.desiredOutcome.value);
   const question = normalizeText(output.firstQuestion ?? "");
   const questionTheme = expected.firstQuestionTheme === null
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
-  const decisionPresent = Boolean(output.routingCore.decision.value?.trim());
+  const decisionPresent = Boolean(rawOutput.routingCore.decision.value?.trim());
   return {
     completed: true,
     composition: output.composition === expected.composition,
@@ -113,14 +123,16 @@ export function scoreIntentGoldTurn(gold: IntentGoldTurn, output: IntentClassifi
     primaryWorksExact: exactSet(output.primaryWorks.map(({work}) => work), expected.primaryWorks)
       && output.primaryWorks[0]?.work === expected.primaryWorks[0],
     responsibilitiesExact: exactSet(output.routingCore.workResponsibility.value, expected.workResponsibility),
-    canonicalAction: output.routingCore.action.value.length === 1
-      && output.routingCore.action.value[0] === expected.semantic.canonicalAction,
-    objectKindsExact: exactSet(output.routingCore.object.value.map(({kind}) => kind), expected.semantic.objectKinds),
-    materialReferences: expected.semantic.materialReferences.every((reference) => refs.includes(normalizeText(reference))),
+    canonicalAction: rawOutput.routingCore.action.value.length === 1
+      && rawOutput.routingCore.action.value[0] === expected.semantic.canonicalAction,
+    objectKindsExact: exactSet(rawOutput.routingCore.object.value.map(({kind}) => kind), expected.semantic.objectKinds),
+    materialReferences: expected.semantic.materialReferences.every((expectedReference) => rawOutput.routingCore.object.value.some((object) =>
+      object.kind === expectedReference.kind
+      && normalizeText(object.reference ?? "").includes(normalizeText(expectedReference.reference)))),
     desiredOutcome: expected.semantic.desiredOutcomeSignals.every((alternatives) => alternatives.some((signal) => outcome.includes(normalizeText(signal)))),
     decisionPresence: decisionPresent === expected.semantic.decision.present,
-    decisionCategory: classifyDecision(output) === expected.semantic.decision.category,
-    audienceCategory: classifyAudience(output) === expected.semantic.audienceCategory,
+    decisionCategory: classifyDecision(rawOutput) === expected.semantic.decision.category,
+    audienceCategory: classifyAudience(rawOutput) === expected.semantic.audienceCategory,
     questionPresence: (output.firstQuestion !== null) === (expected.firstQuestionTheme !== null),
     questionTheme,
   };
@@ -148,6 +160,7 @@ export type IntentRouterSuiteGate = {suite: IntentGoldSuite; passed: boolean; ob
 export type IntentRouterGateSummary = {
   schemaVersion: "intent-router-gate.v2"; passed: boolean; observations: number; uniqueTurns: number; manifestPassed: boolean;
   missingManifestEntries: string[]; extraManifestEntries: string[]; duplicateManifestEntries: string[]; messageFingerprintMismatches: string[];
+  expectedMismatches: string[]; invalidObservationEntries: string[]; recordedCheckMismatches: string[]; routingFingerprintMismatches: string[];
   metrics: IntentRouterGateMetric[]; suiteGates: IntentRouterSuiteGate[]; stableTurns: number; repeatedTurns: number;
   stabilityRate: number; requiredStabilityRate: 1; unstableTurnIds: string[]; totalCostUsd: number; totalLatencyMs: number;
 };
@@ -159,41 +172,64 @@ export function expectedIntentRouterManifest(turns: readonly IntentGoldTurn[] = 
   });
 }
 
+const manifestKey = (entry: {turnId: string; suite: IntentGoldSuite; repeat: number; messageFingerprint: string}): string =>
+  `${entry.turnId}:${entry.suite}:${entry.repeat}:${entry.messageFingerprint}`;
+
 export function summarizeIntentRouterGate(observations: IntentRouterGateObservation[], turns: readonly IntentGoldTurn[] = intentGoldTurns): IntentRouterGateSummary {
   const expectedManifest = expectedIntentRouterManifest(turns);
-  const expectedByKey = new Map(expectedManifest.map((entry) => [`${entry.turnId}:${entry.repeat}`, entry]));
+  const expectedByKey = new Map(expectedManifest.map((entry) => [manifestKey(entry), entry]));
   const actualByKey = new Map<string, IntentRouterGateObservation[]>();
   for (const observation of observations) {
-    const key = `${observation.turnId}:${observation.repeat}`;
+    const key = manifestKey(observation);
     actualByKey.set(key, [...(actualByKey.get(key) ?? []), observation]);
   }
   const missingManifestEntries = [...expectedByKey.keys()].filter((key) => !actualByKey.has(key));
   const extraManifestEntries = [...actualByKey.keys()].filter((key) => !expectedByKey.has(key));
   const duplicateManifestEntries = [...actualByKey.entries()].filter(([, values]) => values.length !== 1).map(([key]) => key);
-  const messageFingerprintMismatches = [...expectedByKey.entries()].filter(([key, expected]) => {
-    const actual = actualByKey.get(key); return actual?.length === 1 && actual[0]!.messageFingerprint !== expected.messageFingerprint;
-  }).map(([key]) => key);
+  const expectedByTurnRepeat = new Map(expectedManifest.map((entry) => [`${entry.turnId}:${entry.repeat}`, entry]));
+  const messageFingerprintMismatches = observations.filter((observation) => {
+    const expected = expectedByTurnRepeat.get(`${observation.turnId}:${observation.repeat}`);
+    return Boolean(expected && (expected.messageFingerprint !== observation.messageFingerprint || expected.suite !== observation.suite));
+  }).map((observation) => `${observation.turnId}:${observation.repeat}`);
+  const turnById = new Map(turns.map((turn) => [turn.id, turn]));
+  const evaluated = observations.map((observation) => {
+    const turn = turnById.get(observation.turnId);
+    const checks = turn ? scoreIntentGoldTurn(turn, observation.actual, observation.rawActual) : emptyChecks();
+    const routingFingerprint = observation.actual ? intentRoutingFingerprint(observation.actual) : null;
+    return {observation, turn, checks, routingFingerprint};
+  });
+  const expectedMismatches = evaluated.filter(({observation, turn}) => !turn || JSON.stringify(observation.expected) !== JSON.stringify(turn.expected))
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const invalidObservationEntries = evaluated.filter(({observation}) => !observation.rawActual || !observation.actual
+    || observation.error !== null || !observation.provider || !observation.model).map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const recordedCheckMismatches = evaluated.filter(({observation, checks}) =>
+    Object.keys(intentRouterGateChecksSchema.shape).some((name) => observation.checks[name as keyof IntentRouterGateChecks] !== checks[name as keyof IntentRouterGateChecks]))
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const routingFingerprintMismatches = evaluated.filter(({observation, routingFingerprint}) =>
+    routingFingerprint === null || observation.routingFingerprint !== routingFingerprint).map(({observation}) => `${observation.turnId}:${observation.repeat}`);
   const manifestPassed = observations.length === 52 && turns.length === 40 && expectedManifest.length === 52
     && missingManifestEntries.length === 0 && extraManifestEntries.length === 0
-    && duplicateManifestEntries.length === 0 && messageFingerprintMismatches.length === 0;
+    && duplicateManifestEntries.length === 0 && messageFingerprintMismatches.length === 0
+    && expectedMismatches.length === 0 && invalidObservationEntries.length === 0
+    && recordedCheckMismatches.length === 0 && routingFingerprintMismatches.length === 0;
 
-  const firstRuns = observations.filter((observation) => observation.repeat === 1);
+  const firstRuns = evaluated.filter(({observation}) => observation.repeat === 1);
   const checkNames = Object.keys(intentRouterGateChecksSchema.shape) as Array<keyof IntentRouterGateChecks>;
   const metrics = checkNames.map((name): IntentRouterGateMetric => {
-    const passed = firstRuns.filter((observation) => observation.checks[name]).length;
+    const passed = firstRuns.filter(({checks}) => checks[name]).length;
     const total = firstRuns.length; const rate = total === 0 ? 0 : passed / total;
     return {name, passed, total, rate, requiredRate: 1, gatePassed: total === 40 && passed === total};
   });
   const suiteGates = intentGoldSuiteSchema.options.map((suite): IntentRouterSuiteGate => {
-    const values = firstRuns.filter((observation) => observation.suite === suite);
-    const failedTurnIds = values.filter((observation) => Object.values(observation.checks).some((passed) => !passed)).map(({turnId}) => turnId);
+    const values = firstRuns.filter(({observation}) => observation.suite === suite);
+    const failedTurnIds = values.filter(({checks}) => Object.values(checks).some((passed) => !passed)).map(({observation}) => observation.turnId);
     const expectedCount = turns.filter((turn) => turn.suite === suite).length;
     return {suite, passed: values.length === expectedCount && failedTurnIds.length === 0, observations: values.length, failedTurnIds};
   });
   const stabilityIds = turns.filter((turn) => turn.stabilityParaphrases).map((turn) => turn.id);
   const unstableTurnIds = stabilityIds.filter((turnId) => {
-    const values = observations.filter((observation) => observation.turnId === turnId).sort((a, b) => a.repeat - b.repeat);
-    return values.length !== 3 || new Set(values.map(({messageFingerprint}) => messageFingerprint).filter(Boolean)).size !== 3
+    const values = evaluated.filter(({observation}) => observation.turnId === turnId).sort((a, b) => a.observation.repeat - b.observation.repeat);
+    return values.length !== 3 || new Set(values.map(({observation}) => observation.messageFingerprint).filter(Boolean)).size !== 3
       || values.some(({routingFingerprint}) => routingFingerprint === null)
       || new Set(values.map(({routingFingerprint}) => routingFingerprint)).size !== 1
       || values.some(({checks}) => Object.values(checks).some((passed) => !passed));
@@ -205,6 +241,7 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
     passed: manifestPassed && metrics.every(({gatePassed}) => gatePassed) && suiteGates.every(({passed}) => passed) && stabilityRate === 1,
     observations: observations.length, uniqueTurns: firstRuns.length, manifestPassed,
     missingManifestEntries, extraManifestEntries, duplicateManifestEntries, messageFingerprintMismatches,
+    expectedMismatches, invalidObservationEntries, recordedCheckMismatches, routingFingerprintMismatches,
     metrics, suiteGates, stableTurns, repeatedTurns: stabilityIds.length, stabilityRate, requiredStabilityRate: 1,
     unstableTurnIds, totalCostUsd: observations.reduce((sum, observation) => sum + observation.costUsd, 0),
     totalLatencyMs: observations.reduce((sum, observation) => sum + observation.latencyMs, 0),

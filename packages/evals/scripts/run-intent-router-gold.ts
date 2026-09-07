@@ -96,7 +96,7 @@ async function main(): Promise<void> {
       });
       const startedAt = Date.now();
       let actual: IntentClassifierOutput | null = null;
-      let rawActual: IntentClassifierOutput | undefined;
+      let rawActual: IntentClassifierOutput | null = null;
       let error: string | null = null;
       let provider: string | null = null;
       let model: string | null = null;
@@ -132,7 +132,7 @@ async function main(): Promise<void> {
         rawActual,
         actual,
         error,
-        checks: scoreIntentGoldTurn(turn, actual),
+        checks: scoreIntentGoldTurn(turn, actual, rawActual),
         routingFingerprint: actual ? intentRoutingFingerprint(actual) : null,
         provider,
         model,

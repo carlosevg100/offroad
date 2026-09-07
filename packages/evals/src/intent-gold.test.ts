@@ -48,10 +48,22 @@ describe("intent gold turns", () => {
     for (const turn of intentGoldTurns) {
       expect(turn.expected.semantic.canonicalAction).toBeTruthy();
       expect(turn.expected.semantic.objectKinds.length).toBeGreaterThan(0);
+      for (const materialReference of turn.expected.semantic.materialReferences) {
+        expect(turn.expected.semantic.objectKinds, `${turn.id}:${materialReference.reference}`).toContain(materialReference.kind);
+      }
       expect(turn.expected.semantic.desiredOutcomeSignals.length).toBeGreaterThan(0);
       expect(turn.expected.semantic.decision.category).toBeTruthy();
       expect(turn.expected.semantic.audienceCategory).toBeTruthy();
     }
+  });
+
+  it("binds material facts to objects and preserves decision-driving numbers and entities", () => {
+    expect(intentGoldTurns.find(({id}) => id === "gc01-t03")!.expected.semantic.materialReferences)
+      .toContainEqual({kind: "claim", reference: "4,7x"});
+    expect(intentGoldTurns.find(({id}) => id === "gc03-t01")!.expected.semantic.materialReferences)
+      .toEqual(expect.arrayContaining([{kind: "company", reference: "Aurora"}, {kind: "operation", reference: "recebíveis"}]));
+    expect(intentGoldTurns.find(({id}) => id === "gc05-t03")!.expected.semantic.materialReferences)
+      .toEqual(expect.arrayContaining([{kind: "scenario", reference: "CDI de 12%"}, {kind: "scenario", reference: "sete anos"}]));
   });
 
   it("defines exactly six stability triplets with three distinct authored messages", () => {

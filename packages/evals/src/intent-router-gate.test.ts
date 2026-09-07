@@ -1,4 +1,4 @@
-import type {IntentClassifierOutput} from "@offroad/agent-contracts";
+import {canonicalizeIntentClassifierOutput, type IntentClassifierOutput} from "@offroad/agent-contracts";
 import {describe, expect, it} from "vitest";
 
 import {intentGoldTurns} from "./intent-gold";
@@ -17,7 +17,7 @@ const audienceText = {self: "solicitante", internal_senior: "VP", company_manage
 const outputFor = (turn = intentGoldTurns[0]!, overrides: Partial<IntentClassifierOutput> = {}): IntentClassifierOutput => ({
   routingCore: {
     action: {value: [turn.expected.semantic.canonicalAction], state: "inferred", confidence: 0.99},
-    object: {value: turn.expected.semantic.objectKinds.map((kind, index) => ({kind, ...(index === 0 && turn.expected.semantic.materialReferences.length > 0 ? {reference: turn.expected.semantic.materialReferences.join(" ")} : {})})), state: "explicit"},
+    object: {value: turn.expected.semantic.objectKinds.map((kind) => ({kind, reference: turn.expected.semantic.materialReferences.filter((entry) => entry.kind === kind).map((entry) => entry.reference).join(" ") || null})), state: "explicit"},
     desiredOutcome: {value: turn.expected.semantic.desiredOutcomeSignals.map((signals) => signals[0]).join(" "), state: "explicit"},
     decision: {value: decisionText[turn.expected.semantic.decision.category], state: turn.expected.semantic.decision.present ? "explicit" : "unknown"},
     audience: {value: [audienceText[turn.expected.semantic.audienceCategory]], state: "explicit"},
@@ -44,7 +44,7 @@ function messageFor(turn: typeof intentGoldTurns[number], repeat: number): strin
 
 const observation = (turn: typeof intentGoldTurns[number], repeat: number, output: IntentClassifierOutput | null): IntentRouterGateObservation => ({
   turnId: turn.id, suite: turn.suite, repeat, messageFingerprint: fingerprintIntentMessage(messageFor(turn, repeat)), expected: turn.expected,
-  actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output),
+  rawActual: output, actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output, output),
   routingFingerprint: output ? intentRoutingFingerprint(output) : null, provider: output ? "anthropic" : null,
   model: output ? "governed-test-model" : null, costUsd: output ? 0.01 : 0, latencyMs: output ? 100 : 0,
 });
@@ -54,18 +54,77 @@ const completeObservations = (): IntentRouterGateObservation[] => intentGoldTurn
   return repeats.map((repeat) => observation(turn, repeat, outputFor(turn)));
 });
 
+const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: number): IntentRouterGateObservation => {
+  const raw = outputFor(turn);
+  const actual = canonicalizeIntentClassifierOutput(raw, {
+    locale: turn.locale,
+    latestUserMessage: messageFor(turn, repeat),
+    recentConversation: turn.priorTurns.map((content) => ({role: "user", content})),
+    entryJob: null,
+    documentCount: 0,
+    professionalContext: null,
+  });
+  return {
+    ...observation(turn, repeat, actual),
+    rawActual: raw,
+    checks: scoreIntentGoldTurn(turn, actual, raw),
+    routingFingerprint: intentRoutingFingerprint(actual),
+  };
+};
+
 describe("intent router promotion gate", () => {
+  it("passes every one of the 52 real messages through raw output and production canonicalization", () => {
+    const observations = intentGoldTurns.flatMap((turn) => (turn.stabilityParaphrases ? [1, 2, 3] : [1])
+      .map((repeat) => canonicalizedObservation(turn, repeat)));
+    const failures = observations.filter(({checks}) => Object.values(checks).some((passed) => !passed))
+      .map(({turnId, repeat, actual, checks}) => ({turnId, repeat, composition: actual?.composition, checks}));
+    expect(failures).toEqual([]);
+    expect(summarizeIntentRouterGate(observations).passed).toBe(true);
+  });
+
   it("scores the explicit semantic answer key rather than only checking field presence", () => {
     const turn = intentGoldTurns[0]!;
-    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn)))).toEqual(expect.arrayContaining([true]));
-    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn))).every(Boolean)).toBe(true);
-    expect(scoreIntentGoldTurn(turn, outputFor(turn, {
+    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn)))).toEqual(expect.arrayContaining([true]));
+    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn))).every(Boolean)).toBe(true);
+    const wrongObject = outputFor(turn, {
       routingCore: {...outputFor(turn).routingCore, object: {value: [{kind: "market"}], state: "explicit"}},
-    })).objectKindsExact).toBe(false);
-    expect(scoreIntentGoldTurn(turn, outputFor(turn, {
+    });
+    expect(scoreIntentGoldTurn(turn, wrongObject, wrongObject).objectKindsExact).toBe(false);
+    const wrongOutcome = outputFor(turn, {
       routingCore: {...outputFor(turn).routingCore, desiredOutcome: {value: "texto genérico", state: "explicit"}},
-    })).desiredOutcome).toBe(false);
-    expect(scoreIntentGoldTurn(turn, null).completed).toBe(false);
+    });
+    expect(scoreIntentGoldTurn(turn, wrongOutcome, wrongOutcome).desiredOutcome).toBe(false);
+    expect(scoreIntentGoldTurn(turn, null, null).completed).toBe(false);
+  });
+
+  it("scores raw semantics instead of accepting fields repaired by canonical policy", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
+    const raw = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, action: {value: ["review"], state: "inferred"}}});
+    const actual = canonicalizeIntentClassifierOutput(raw, {
+      locale: "pt-BR", latestUserMessage: turn.message, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(actual.routingCore.action.value).toEqual(["prepare_meeting"]);
+    expect(scoreIntentGoldTurn(turn, actual, raw).canonicalAction).toBe(false);
+
+    const noDecision = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, decision: {value: null, state: "unknown"}}});
+    const decisionChecks = scoreIntentGoldTurn(turn, actual, noDecision);
+    expect(decisionChecks.decisionPresence).toBe(false);
+    expect(decisionChecks.decisionCategory).toBe(false);
+  });
+
+  it("binds each material reference to its object and requires numeric assumptions", () => {
+    const capitalTurn = intentGoldTurns.find(({id}) => id === "hx04")!;
+    const swapped = outputFor(capitalTurn);
+    swapped.routingCore.object.value = swapped.routingCore.object.value.map((object) => object.kind === "alternative"
+      ? {...object, reference: "R$ 80 milhões"}
+      : {...object, reference: "capex"});
+    expect(scoreIntentGoldTurn(capitalTurn, swapped, swapped).materialReferences).toBe(false);
+
+    const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
+    expect(modelTurn.expected.semantic.materialReferences).toContainEqual({kind: "scenario", reference: "CDI de 12%"});
+    const missingRate = outputFor(modelTurn);
+    missingRate.routingCore.object.value = missingRate.routingCore.object.value.map((object) => ({...object, reference: "CDI sete anos"}));
+    expect(scoreIntentGoldTurn(modelTurn, missingRate, missingRate).materialReferences).toBe(false);
   });
 
   it("changes the stability fingerprint for every semantic or plan-driving axis", () => {
@@ -79,6 +138,11 @@ describe("intent router promotion gate", () => {
       {...base, routingCore: {...base.routingCore, depth: {...base.routingCore.depth, value: "institutional"}}},
     ];
     for (const changed of mutations) expect(intentRoutingFingerprint(changed)).not.toBe(baseFingerprint);
+    const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
+    const cdi = outputFor(modelTurn);
+    const cdiPlusSpread = outputFor(modelTurn);
+    cdiPlusSpread.routingCore.object.value = cdiPlusSpread.routingCore.object.value.map((object) => ({...object, reference: "CDI + 15% sete anos"}));
+    expect(intentRoutingFingerprint(cdiPlusSpread)).not.toBe(intentRoutingFingerprint(cdi));
   });
 
   it("requires the exact immutable 40-turn and 52-observation manifest", () => {
@@ -87,7 +151,7 @@ describe("intent router promotion gate", () => {
     const valid = completeObservations();
     expect(summarizeIntentRouterGate(valid).manifestPassed).toBe(true);
     expect(summarizeIntentRouterGate(valid.slice(1)).manifestPassed).toBe(false);
-    expect(summarizeIntentRouterGate([...valid, valid[0]!]).duplicateManifestEntries).toContain(`${valid[0]!.turnId}:1`);
+    expect(summarizeIntentRouterGate([...valid, valid[0]!]).duplicateManifestEntries.some((entry) => entry.startsWith(`${valid[0]!.turnId}:`))).toBe(true);
     const forged = valid.map((entry, index) => index === 0 ? {...entry, messageFingerprint: fingerprintIntentMessage("same bytes")} : entry);
     expect(summarizeIntentRouterGate(forged).messageFingerprintMismatches).toContain(`${valid[0]!.turnId}:1`);
   });
@@ -110,5 +174,37 @@ describe("intent router promotion gate", () => {
     expect(summary.suiteGates.every(({passed}) => passed)).toBe(true);
     expect(summary.metrics.every(({gatePassed}) => gatePassed)).toBe(true);
     expect(summary.stabilityRate).toBe(1);
+  });
+
+  it("recomputes evidence and rejects provider failure, forged checks and forged fingerprints", () => {
+    const valid = completeObservations();
+    const providerFailure = valid.map((entry, index) => index === 0 ? {
+      ...entry, rawActual: null, actual: null, error: "provider failed", provider: null, model: null,
+      checks: Object.fromEntries(Object.keys(entry.checks).map((key) => [key, true])) as typeof entry.checks,
+      routingFingerprint: "constant",
+    } : entry);
+    expect(summarizeIntentRouterGate(providerFailure).passed).toBe(false);
+    expect(summarizeIntentRouterGate(providerFailure).invalidObservationEntries).toContain("gc01-t01:1");
+
+    const forgedChecks = valid.map((entry, index) => index === 1 ? {
+      ...entry,
+      rawActual: {...entry.rawActual!, routingCore: {...entry.rawActual!.routingCore, action: {value: ["review"], state: "explicit" as const}}},
+      checks: Object.fromEntries(Object.keys(entry.checks).map((key) => [key, true])) as typeof entry.checks,
+    } : entry);
+    const forgedChecksSummary = summarizeIntentRouterGate(forgedChecks);
+    expect(forgedChecksSummary.passed).toBe(false);
+    expect(forgedChecksSummary.recordedCheckMismatches).toContain(`${valid[1]!.turnId}:${valid[1]!.repeat}`);
+
+    const falseRecordedCheck = valid.map((entry, index) => index === 2 ? {
+      ...entry, checks: {...entry.checks, completed: false},
+    } : entry);
+    const falseRecordedSummary = summarizeIntentRouterGate(falseRecordedCheck);
+    expect(falseRecordedSummary.passed).toBe(false);
+    expect(falseRecordedSummary.recordedCheckMismatches).toContain(`${valid[2]!.turnId}:${valid[2]!.repeat}`);
+
+    const forgedFingerprints = valid.map((entry) => ({...entry, routingFingerprint: "constant"}));
+    const forgedSummary = summarizeIntentRouterGate(forgedFingerprints);
+    expect(forgedSummary.passed).toBe(false);
+    expect(forgedSummary.routingFingerprintMismatches).toHaveLength(52);
   });
 });

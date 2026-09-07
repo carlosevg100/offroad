@@ -98,13 +98,13 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
   const specifiedMaterial = /\b(\d+|tres|three)\s*(paginas?|pages?)\b/.test(text)
     || /\b(deck|memo|one[- ]?pager|planilha|spreadsheet)\b/.test(text);
 
-  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produzir|fazer|criar|prepare|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text);
-  const negatedMonitor = /\b(nao|not|sem|without)\s+(?:quero\s+|want\s+to\s+)?(?:monitorar|acompanhar|monitor|track)\b/.test(text);
+  const negatedMaterial = /\b(sem|nao|not|without)\s+(?:produz\w*|faz\w*|cri\w*|prepar\w*|create)?\s*(?:o\s+|um\s+)?(?:material|deck|pitch|memo|arquivo|file)\b/.test(text);
+  const negatedMonitor = /\b(nao|not|sem|without)\s+(?:(?:quero\s+|want\s+to\s+)?(?:monitor\w*|acompanh\w*|track)|(?:cri\w*|create)\s+(?:um\s+)?(?:monitor\w*|acompanhamento))\b/.test(text);
   const negatedOutreach = /\b(nao|not|sem|without)\s+(?:envie|enviar|contate|contatar|conecte|conectar|introduza|introduzir|send|contact|connect|introduce)\b/.test(text);
-  const externalOutreach = !negatedOutreach && /\b(envia|enviar|manda|mandar|apresenta|apresentar|conecta|conectar|introduz|introduzir|send|share|connect|introduce)\b/.test(text)
+  const externalOutreach = !negatedOutreach && /\b(envi\w*|mand\w*|apresent\w*|conect\w*|introdu\w*|send|share|connect|introduce)\b/.test(text)
     && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text);
 
-  if (/\b(ajusta|ajustar|altera|alterar|atualiza|atualizar|recalcula|recalcular|change|update|recalculate)\b/.test(text)
+  if (/\b(ajust\w*|alter\w*|atualiz\w*|recalcul\w*|change|update|recalculate)\b/.test(text)
     && /\b(cenario|scenario|premissa|assumption|cdi|taxa|rate|prazo|term|spread|modelo|model)\b/.test(text)) return "build_or_review_model";
   if (/\b(construa|construir|monte|montar|revise|revisar|build|review|audit)\b/.test(text)
     && /\b(modelo|model|forecast|projecao|projection)\b/.test(text)) return "build_or_review_model";
@@ -112,17 +112,19 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     || (/\b(por que|why)\b/.test(text) && /\b(alavancagem|leverage|numero|number|indicador|metric)\b/.test(text))) return "answer_a_question";
   if (/\b(diferenca|difference|como funciona|how does|explique|explain|o que e|what is)\b/.test(text)
     && /\b(debenture|fidc|ccb|bond|loan|instrumento|instrument)\b/.test(text)) return "answer_a_question";
+  if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
+  if (/\b(covenant|headroom|folga)\b/.test(text) && /\b(teste|testar|analise|analisar|teste?\b|holds?)\b/.test(text)
+    && !/\b(clausula|clause|formula|waterfall)\b/.test(text)) return "analyze_performance_and_credit";
   if (/\b(leia|ler|analise|analisar|teste|testar|read|analy[sz]e|test)\b/.test(text)
     && /\b(contrato|contract|clausula|clause|covenant|waterfall|escritura|indenture)\b/.test(text)) return "read_contract_covenant_waterfall";
-  if (/\b(covenant|headroom)\b/.test(text) && /\b(aguenta|suporta|holds?|cobertura|coverage)\b/.test(text)) return "analyze_performance_and_credit";
   if (/\b(so organiza|apenas organiza|organize only|no analysis|sem analise)\b/.test(text)) return "find_and_organize_information";
   if (/\b(extraia|extrair|concilie|conciliar|reconcilie|reconciliar|extract|reconcile|spreading)\b/.test(text)) return "extract_and_reconcile_data";
   if (/\b(o que falta|onde paramos|organize o projeto|incorpore os comentarios|what is missing|where did we stop|organize the project|incorporate the comments)\b/.test(text)) return "manage_work";
   if (externalOutreach) return "introduce";
-  if (/\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ investidores|who would finance|which funds|find capital|identify investors)\b/.test(text)) return "identify_capital";
-  if (!negatedMonitor && /\b(monitore|monitorar|acompanhe|acompanhar|avise quando|todo trimestre|monitor|track|alert me|quarterly)\b/.test(text)) return "monitor";
+  if (/\b(quem financiaria|quais fundos|matching|capital aderente|identifi\w+ (?:os )?(?:investidores|fundos)|who would finance|which funds|find capital|identify investors)\b/.test(text)) return "identify_capital";
+  if (!negatedMonitor && /\b(monitor\w*|acompanh\w*|avise quando|todo trimestre|track|alert me|quarterly)\b/.test(text)) return "monitor";
   if (/\b(comparaveis|precedentes|condicoes de mercado|como esta o mercado|pricing|spread|comparables|precedents|market conditions)\b/.test(text)) return "map_market_and_precedents";
-  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|decision)\b/.test(text)) return "prepare_decision";
+  if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text) && /\b(decis\w*|discut\w*|avali\w*|alternativ\w*|recomend\w*|prepar\w*|decision)\b/.test(text)) return "prepare_decision";
   if (/\b(revise|revisar|review|critique|criticar|cetico|skeptical|controle de qualidade|quality control)\b/.test(text)) return "review_work";
   if (material && !negatedMaterial && (specifiedMaterial || materialTransition)) return "prepare_material";
   if (material && meeting) return "prepare_meeting";
