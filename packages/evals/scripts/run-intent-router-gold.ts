@@ -1,9 +1,10 @@
 /**
  * Runs the production Intent Classifier contract on the canonical synthetic turns.
  *
- * All canonical turns run once for accuracy. Six plan-changing turns run three times by default
- * to prove that the same prompt preserves the same workflow identity. The report is evidence
- * for promotion; this script never promotes or changes the production router.
+ * All canonical turns run once for accuracy. Six plan-changing turns additionally run through two
+ * authored paraphrases to prove that the same meaning preserves workflow identity. The report is
+ * promotion evidence only when all 52 manifest entries pass; this script never promotes or changes
+ * the production router.
  */
 import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
