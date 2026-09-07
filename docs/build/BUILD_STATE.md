@@ -2,6 +2,20 @@
 
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
+- O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->
+  aplicação -> canonicalizador`; input, compilation e output autodeclarados já não podem produzir
+  verde. O manifesto e a integridade da execução são estados distintos e ambos bloqueiam promoção.
+- Métricas raw, coverage do extrator e resultado final/policy são reportados separadamente.
+  Abstenção não ganha crédito por coverage incompleto. `inferableContext` agora participa do
+  fingerprint, inclusive jurisdição, data-base, moeda, restrições e inputs disponíveis.
+- O ledger de chamadas é reconciliado por operação com task, schema, prompt, input, provider,
+  model, tentativa, output, latência e custo; duplicata, órfã, cassette ou divergência reprova. O
+  record é ligado ao SHA/run do GitHub e recebe fingerprint integral, sem alegar attestation externa.
+- Execução paga foi limitada em código e workflow a `main` pós-merge no environment
+  `intent-router-gold-main`. **Bloqueio externo:** branch policy do Environment e trust policy IAM
+  ainda precisam ser verificadas/configuradas fora do repositório. Até lá, não há nova evidência
+  válida nem promoção; a feature continua desativada.
+
 - Uma única policy tipada governa as vinte composições e é consumida por schema, classificador,
   carimbo do runtime e fingerprint. O envelope rejeita divergência em works, profundidade,
   responsabilidades ou efeito. O prompt é renderizado dessa mesma policy. A condição

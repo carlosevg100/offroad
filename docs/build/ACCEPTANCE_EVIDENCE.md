@@ -54,11 +54,19 @@ CTRL-01/CTRL-02 e não promove capacidade de produto.
 | Integração determinística | 52 inputs raw-to-canonicalizer | todos os textos autorais exercitam a precedência e os reparos reais; abstenção, continuidade, cardinalidade e associação exata de slots têm regressão |
 | Evidência antifraude | summary v2 + reproduções do revisor | checks, fingerprints e expected são recalculados; null, provider error, associação objeto-referência trocada, CDI/`CDI + 15%` e hashes constantes reprovam |
 | Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
+| Recomposição antifraude v3 | inputs canônicos + raw route/extractor | compiler, apply e canonicalizer são reexecutados pelo summary; compilation/output forjado reprova |
+| Métricas honestas | raw / coverage / final-policy | correções da policy ficam quantificadas e não são apresentadas como acerto bruto do modelo; abstenção não depende de falha do extrator |
+| Estabilidade completa | fingerprint v3 | inclui `inferableContext`; mudança BR→US deixa de parecer estável |
+| Linhagem de chamadas | call evidence verifier | exige bijeção por task/schema/prompt/input/provider/model/attempt/output/custo; duplicata, órfã e cassette reprovam |
+| Proveniência do artefato | GitHub context + evidence fingerprint | commit/run/workflow/ref vinculados ao record; alteração posterior é detectada; não há alegação de attestation externa |
+| Fronteira paga | guard do runner + workflow | somente `main` no Environment dedicado; teste negativo recusa execução local, feature branch e workflow divergente |
 
-Status: **code-complete candidate, não executado com modelo real**. A integração determinística e
+Status: **candidate endurecido, não executado com modelo real após o gate v3**. A integração determinística e
 as reproduções do revisor estão verdes. A run `34096964058` foi invalidada como
 evidência de promoção porque usava 17 turnos, 29 observações, replay dos mesmos bytes e score menos
-profundo. Ela é apenas baseline histórica. Esta evidência não promove o roteador para uso amplo,
+profundo. Ela é apenas baseline histórica. A branch policy do GitHub Environment e o subject da
+trust policy IAM são configuração externa ainda não atestada; sem isso o gate pago não é evidência
+aceitável. Esta evidência não promove o roteador para uso amplo,
 não autoriza executor e não comprova pesquisa, análise financeira, modelagem, materiais ou matching.
 
 ## Dispatch do preview pelo slice compilado, candidate, 06/09/2026

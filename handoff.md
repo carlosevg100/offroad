@@ -3569,6 +3569,16 @@ externo.
 
 # Engineering update: RT-01 canonical intent contract, 7 September 2026
 
+Integrity follow-up: the original candidate summary trusted its recorded compilation/final output
+and could be forged green. Gate v3 now reconstructs both canonical inputs and the complete raw
+classifier/raw extractor -> compiler -> apply -> canonicalizer chain. It reports raw-model,
+extractor coverage and final-policy metrics separately, includes inferable context in stability,
+and reconciles every provider call to task/schema/prompt/input/provider/model/attempt/output/cost.
+The paid workflow is main-only behind `intent-router-gold-main`; the GitHub Environment branch
+policy and IAM OIDC subject restriction remain external blockers that must be verified before a new
+run counts. The artifact is run-bound and tamper-evident, not externally attested. No capability is
+promoted by this follow-up.
+
 RT-01 now has one typed policy for all twenty named compositions, consumed by validation,
 canonicalization, runtime stamping and semantic fingerprinting. Authority and evidence remain
 control-plane fields, unresolved access fails closed, and horizontal work no longer requires an

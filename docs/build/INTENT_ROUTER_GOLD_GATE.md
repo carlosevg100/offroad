@@ -49,7 +49,10 @@ prazo em meses, número de páginas, contagem e cadência.
 O classificador não pode usar prosa livre de resultado, decisão ou audiência como campo de
 roteamento; esses textos são renderizados deterministicamente depois, para a interface.
 
-O score confere a resposta bruta antes dos reparos do canonicalizador. A correspondência entre gold
+O relatório separa três camadas: métricas da resposta bruta do modelo, cobertura do extrator e
+métricas da saída final depois de compilação e policy. A promoção usa a saída final recomposta e
+expõe quantas observações foram alteradas pela policy; não chama correção determinística de acerto
+do modelo bruto. A correspondência entre gold
 e resposta é bijetiva: quantidade de objetos, identidade, ordem, tipo, conjunto de slots,
 cardinalidade e valores permitidos precisam coincidir. Um segundo objeto, um slot extra, slots de um
 mesmo cenário repartidos entre objetos ou valores conflitantes reprovam. Assim, `CDI 12% e CDI 15%`,
@@ -80,11 +83,15 @@ suíte errada ou com bytes reaproveitados. Nos seis trios, o fingerprint semânt
 idêntico e todos os checks precisam passar. O fingerprint preserva entidades, números, indexadores
 e sua associação ao tipo de objeto, de modo que `CDI` e `CDI + 15%` não sejam equivalentes.
 
-O resumo não confia nos checks ou hashes gravados pelo runner. Ele recompõe o manifesto usando
-turno, suíte, repetição e SHA-256 da mensagem; recalcula cada check sobre `rawActual` e `actual`; e
-recalcula o fingerprint. Resposta bruta ou canonicalizada ausente, erro do provedor, identidade do
-provedor/modelo ausente, expected divergente, check gravado divergente ou fingerprint forjado
-reprovam nominalmente o gate.
+O resumo não confia nos checks, compilações, saídas finais ou hashes gravados pelo runner. Ele
+reconstrói os inputs canônicos e a cadeia inteira `raw route + raw extractor -> compile -> apply ->
+canonicalize`; só então recalcula checks e fingerprints. A estabilidade inclui todo
+`inferableContext` que pode alterar execução. Resposta bruta ausente, erro do provedor, input,
+compilação, saída final, expected, check ou fingerprint forjado reprova nominalmente o gate.
+
+Cobertura semântica e abstenção são eixos separados. Um pedido que deve abster não recebe crédito
+porque o extrator falhou, e uma extração completa não invalida uma abstenção correta. O relatório
+mostra complete/incomplete/rejected separadamente para pedidos roteados e abstidos.
 
 ## Regra de promoção
 
@@ -95,10 +102,22 @@ cliente ou ação externa.
 
 ## Execução e segurança
 
-O workflow manual usa somente prompts sintéticos, o prompt e schema exatos do runtime e credenciais
-AWS OIDC de curta duração. As chaves são mascaradas, o gateway impõe teto de chamadas e custo e o
-artefato é compacto. A quantidade de repetições não é configurável: o runner falha se o manifesto
-não tiver exatamente 52 observações.
+O workflow manual usa somente prompts sintéticos e pode executar chamadas pagas apenas no commit
+de `main`, no repositório canônico, pelo arquivo de workflow canônico e pelo GitHub Environment
+`intent-router-gold-main`. O runner repete esses checks antes de ler credenciais. Cada chamada deve
+se ligar bijetivamente a task, schema, prompt, input, provider, model, tentativa, output e custo;
+chamada órfã, duplicada ou de cassette reprova. O artefato inclui provenance do run e fingerprint
+de todo o record, mas ainda não possui attestation criptográfica externa.
+
+Configuração externa obrigatória antes da próxima corrida: restringir o GitHub Environment à branch
+`main` e a trust policy do IAM ao subject
+`repo:carlosevg100/offroad:environment:intent-router-gold-main`. O repositório não consegue provar
+sozinho essas duas políticas. Sem proxy efêmero, as chaves dos provedores ainda existem em memória
+no runner confiável durante a chamada; portanto nenhum gate em branch candidata é permitido.
+
+O gateway impõe teto de tentativas e custo. O manifesto distingue 52 observações, 104 operações de
+modelo esperadas e preflights; tentativas de reparo/fallback são contadas à parte. A quantidade de
+repetições não é configurável.
 
 Cada divergência real deve resultar em uma decisão explícita: corrigir um gabarito comprovadamente
 errado, melhorar o contrato subespecificado, separar composições que colidem ou manter a família
