@@ -12,3 +12,4 @@ export * from "./contract-facts";
 export * from "./underwrite";
 export * from "./method-readiness";
 export * from "./method-assembly";
+export * from "./method-supplement-draft";
