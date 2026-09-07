@@ -37,7 +37,9 @@ adversariais próprios; não basta o parser conseguir abri-lo.
 
 A ordem é fixa: integridade e limites mínimos de bytes, scanner, inspector de container e autorização
 do parser. `file-type`, `JSZip.loadAsync` e qualquer descompressão só executam depois de um veredito
-limpo do scanner. Em ZIP/OOXML, os limites do diretório central são verificados antes da
+limpo do scanner. O scanner recebe uma cópia descartável, nunca o snapshot canônico; hash e tamanho
+do snapshot são revalidados após o retorno antes que os mesmos bytes sigam para o inspector e para a
+autorização do parser. Em ZIP/OOXML, os limites do diretório central são verificados antes da
 descompressão; quando qualquer um desses limites falha ou é excedido, nenhuma entrada é aberta.
 Somente quando todos passam os membros são descomprimidos por stream sob limites reais de membro e
 total. O primeiro limite real atingido aborta o restante do archive.
@@ -107,6 +109,8 @@ Os testes cobrem:
 9. caminho saudável com receipt limpo e exceção do detector convertida em receipt rejeitado;
 10. integração do worker provando que um tipo forjado não chega a parser/classificação/retrieval e
     que uma mutação do payload durante o scan não altera nome, MIME ou roteamento autorizados.
+11. scanner que tenta apagar conteúdo ativo antes de retornar `clean`, sem conseguir alterar o
+    snapshot canônico inspecionado.
 
 ## Fronteira honesta e bloqueios
 

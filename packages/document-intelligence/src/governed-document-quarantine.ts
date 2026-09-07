@@ -210,12 +210,13 @@ export async function quarantineDocument(input: {
   const quarantinedAt = checkedTimestamp(now());
   const scanningAt = checkedTimestamp(now());
   const immutableBytes = Uint8Array.from(input.bytes);
+  const observedByteSize = immutableBytes.byteLength;
   const observedSha256 = sha256(immutableBytes);
   const reasons = new Set<QuarantineReason>();
 
-  if (immutableBytes.byteLength === 0) reasons.add("empty_file");
-  if (immutableBytes.byteLength > policy.maxFileBytes) reasons.add("file_size_exceeded");
-  if (immutableBytes.byteLength !== binding.expectedByteSize) reasons.add("size_mismatch");
+  if (observedByteSize === 0) reasons.add("empty_file");
+  if (observedByteSize > policy.maxFileBytes) reasons.add("file_size_exceeded");
+  if (observedByteSize !== binding.expectedByteSize) reasons.add("size_mismatch");
   if (observedSha256 !== binding.expectedSha256) reasons.add("hash_mismatch");
 
   let scannerResult: DocumentQuarantineReceipt["scanner"] = {
@@ -228,7 +229,10 @@ export async function quarantineDocument(input: {
 
   if (reasons.size === 0 && input.scanner) {
     try {
-      const result = await input.scanner.scan(immutableBytes);
+      // The scanner is an external boundary and must never receive the canonical byte snapshot.
+      // A buggy or compromised adapter may mutate its input after declaring it clean; give it a
+      // disposable copy and revalidate the untouched snapshot before container inspection.
+      const result = await input.scanner.scan(Uint8Array.from(immutableBytes));
       scannerResult = {
         scannerId: input.scanner.scannerId,
         engineVersion: input.scanner.engineVersion,
@@ -243,6 +247,9 @@ export async function quarantineDocument(input: {
   } else if (reasons.size === 0) {
     reasons.add("scanner_unavailable");
   }
+
+  if (immutableBytes.byteLength !== observedByteSize || observedByteSize !== binding.expectedByteSize) reasons.add("size_mismatch");
+  if (sha256(immutableBytes) !== observedSha256 || observedSha256 !== binding.expectedSha256) reasons.add("hash_mismatch");
 
   // Container detection can invoke complex archive code. It is deliberately sequenced after a
   // clean malware verdict; before that point the gate does only byte count and SHA-256.
@@ -276,7 +283,7 @@ export async function quarantineDocument(input: {
     expectedSha256: binding.expectedSha256,
     observedSha256,
     expectedByteSize: binding.expectedByteSize,
-    observedByteSize: immutableBytes.byteLength,
+    observedByteSize,
     originalName: binding.originalName,
     declaredMediaType: binding.declaredMediaType,
     detected,

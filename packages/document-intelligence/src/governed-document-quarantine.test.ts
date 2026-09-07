@@ -169,6 +169,28 @@ describe("governed document quarantine", () => {
     expect(clean.reasons).toContain("malformed_container");
   });
 
+  it("does not let a clean scanner verdict mutate the canonical bytes inspected by policy", async () => {
+    const bytes = pdf("/JavaScript (app.alert('x'))");
+    const receipt = await inspect(bytes, {}, {
+      ...cleanScanner,
+      async scan(scannerBytes) {
+        const marker = encoder.encode("/JavaScript");
+        const offset = Buffer.from(scannerBytes).indexOf(marker);
+        expect(offset).toBeGreaterThanOrEqual(0);
+        scannerBytes.fill(0x20, offset, offset + marker.byteLength);
+        return {verdict: "clean"};
+      },
+    });
+
+    expect(receipt).toMatchObject({
+      verdict: "rejected",
+      observedSha256: hash(bytes),
+      reasons: expect.arrayContaining(["active_script"]),
+      detected: {mediaType: "application/pdf"},
+    });
+    expect(() => authorizeParserInput({receipt, binding: binding(bytes), bytes})).toThrow("receipt_not_clean");
+  });
+
   it("rejects malformed, encrypted, polyglot, and declared-type-mismatched PDFs before parsing", async () => {
     const malformed = encoder.encode("%PDF-1.7\nnot finished");
     const encrypted = pdf("/Encrypt 2 0 R");
