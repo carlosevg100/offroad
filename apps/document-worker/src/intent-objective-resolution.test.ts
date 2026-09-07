@@ -66,11 +66,23 @@ describe("semantic intent to objective resolution", () => {
   });
 
   it.each([
-    ["find_and_organize_information", "information_organization_objective_not_implemented", ["find_and_organize"]],
-    ["map_market_and_precedents", "market_mapping_objective_not_implemented", ["market"]],
-    ["monitor", "monitoring_objective_not_implemented", ["find_and_organize"]],
-    ["new_model_composition", "unknown_named_composition", ["model"]],
-  ] as const)("names the coverage gap for %s instead of inventing a generic plan", (composition, reasonCode, works) => {
+    ["find_and_organize_information", "information_organization", ["find_and_organize"]],
+    ["map_market_and_precedents", "market_mapping", ["market"]],
+    ["monitor", "monitoring", ["find_and_organize"]],
+    ["manage_work", "workspace_management", ["find_and_organize"]],
+  ] as const)("resolves %s to its own objective instead of a generic plan", (composition, objectiveKind, works) => {
+    expect(resolveIntentObjective(envelope({composition, works: [...works]}))).toMatchObject({
+      status: "resolved",
+      objectiveKind,
+      reasonCode: "named_composition",
+      requiredContext: [],
+    });
+  });
+
+  it("names an unknown future composition as a coverage gap instead of inventing a generic plan", () => {
+    const composition = "new_model_composition";
+    const reasonCode = "unknown_named_composition";
+    const works = ["model"] as const;
     expect(resolveIntentObjective(envelope({composition, works: [...works]}))).toMatchObject({
       status: "coverage_gap",
       objectiveKind: "ambiguous",

@@ -197,4 +197,64 @@ describe("objective-to-plan compiler", () => {
     expect(expanded.structuralIdentity).not.toBe(base.structuralIdentity);
     expect(() => expandObjectivePlanWithTaskTargets(base, ["Z99"])).toThrow(/unknown TaskSpec/);
   });
+
+  it("keeps collection-only work out of the analysis rail", () => {
+    const local = compileObjectiveToPlan({
+      message: "Organize estes documentos na pasta, sem análise.",
+      hasAttachments: true,
+    });
+    expect(local).toMatchObject({
+      objectiveKind: "information_organization",
+      outputTerminal: "source_index",
+      targetTaskIds: ["D02"],
+      mode: "create_project",
+    });
+    expect(local.analysisPlan.join(" ")).toMatch(/sem converter coleta em conclusão/i);
+
+    const publicCollection = compileObjectiveToPlan({
+      message: "Levante e organize todas as notícias e apresentações da companhia, sem análise.",
+      hasAttachments: false,
+    });
+    expect(publicCollection).toMatchObject({
+      objectiveKind: "information_organization",
+      mode: "coverage_gap",
+      reasonCode: "public_collection_executor_not_promoted",
+      requiredContext: ["public_source_collection_executor"],
+    });
+  });
+
+  it("compiles market mapping to the comparable-transaction rail", () => {
+    const plan = compileObjectiveToPlan({
+      message: "Mapeie as emissões recentes de debêntures de alimentos, com prazo, indexador e spread.",
+      hasAttachments: false,
+    });
+    expect(plan).toMatchObject({
+      objectiveKind: "market_mapping",
+      outputTerminal: "market_map",
+      targetTaskIds: ["K04"],
+      mode: "create_project",
+    });
+    expect(plan.taskGraph.tasks.map((task) => task.id)).toContain("K04");
+  });
+
+  it("names monitoring and workspace execution gaps without substituting generic analysis", () => {
+    expect(compileObjectiveToPlan({
+      message: "Monitore toda semana mudanças nos covenants e me avise se houver risco.",
+      hasAttachments: false,
+    })).toMatchObject({
+      objectiveKind: "monitoring",
+      outputTerminal: "monitoring_setup",
+      mode: "coverage_gap",
+      reasonCode: "monitoring_executor_not_promoted",
+    });
+    expect(compileObjectiveToPlan({
+      message: "Mova o projeto Camil para a pasta DCM e ajuste o acesso do time.",
+      hasAttachments: false,
+    })).toMatchObject({
+      objectiveKind: "workspace_management",
+      outputTerminal: "workspace_change_preview",
+      mode: "coverage_gap",
+      reasonCode: "workspace_action_executor_not_promoted",
+    });
+  });
 });

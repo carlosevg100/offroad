@@ -17,6 +17,7 @@ describe("capability ledger", () => {
     expect(byId.get("workflow.case01-compiler")).toMatchObject({availability: "live", exposure: "allowlisted", qualityMaturity: "tested"});
     expect(byId.get("workflow.universal-compiler")).toMatchObject({availability: "specified", exposure: "none", qualityMaturity: "specified"});
     expect(byId.get("workflow.objective-plan-core")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested"});
+    expect(byId.get("workflow.objective-plan-core")?.exactScope).toMatch(/Fourteen normalized objective classes/);
     expect(byId.get("workflow.preflight-capability-gate")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested"});
     expect(byId.get("workflow.objective-preflight-shadow")).toMatchObject({availability: "shadow", exposure: "internal", qualityMaturity: "implemented"});
     expect(byId.get("workflow.specialist-method-binding-shadow")).toMatchObject({availability: "shadow", exposure: "internal", qualityMaturity: "implemented"});

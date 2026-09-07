@@ -17,6 +17,10 @@ export const workspaceObjectiveKindSchema = z.enum([
   "company_analysis",
   "capital_strategy",
   "material_preparation",
+  "information_organization",
+  "market_mapping",
+  "monitoring",
+  "workspace_management",
   "ambiguous",
 ]);
 export type WorkspaceObjectiveKind = z.infer<typeof workspaceObjectiveKindSchema>;
@@ -40,6 +44,10 @@ export const objectiveOutputTerminalSchema = z.enum([
   "operation_review",
   "capital_alternative_map",
   "reviewable_material",
+  "source_index",
+  "market_map",
+  "monitoring_setup",
+  "workspace_change_preview",
   "corrigible_scope",
 ]);
 export type ObjectiveOutputTerminal = z.infer<typeof objectiveOutputTerminalSchema>;
@@ -92,6 +100,10 @@ const objectivePatterns = {
   companyAnalysis: /\b(analis(?:ar|e)|entender|estudar|diagn[oó]stico|diagnostic|leitura)\b.{0,140}\b(companhia|empresa|company|balan[cç]o|d[ií]vida|endividamento|estrutura\s+de\s+capital)\b/i,
   capitalStrategy: /\b(refinanc(?:e|iar|iamento|ing)?|refi\b|liability|along(?:ar|amento)|repricing|capital\s+de\s+giro|working\s+capital|liquidez|expans[aã]o|capex|aquisi[cç][aã]o|m\s*&\s*a|estrutura\s+de\s+capital|capital\s+structure|capta[cç][aã]o|levantar\s+capital|financiar|d[ií]vida|endividamento)\b/i,
   factualQuestion: /(?:\?|\b(como|qual|quais|quanto|quando|onde|por\s+que|explique|mostre|what|which|how|why|where)\b)/i,
+  informationOrganization: /\b(levant(?:ar|e)|colet(?:ar|e)|organiz(?:ar|e)|inventari(?:ar|e)|index(?:ar|e)|catalog(?:ar|ue)|find\s+and\s+organize)\b.{0,160}\b(informa[cç][oõ]es|documentos?|arquivos?|fontes?|fatos\s+relevantes|apresenta[cç][oõ]es|not[ií]cias|data\s*room|pasta)\b|\b(s[oó]\s+organiz(?:ar|e)|sem\s+an[aá]lise)\b/i,
+  marketMapping: /\b(mercado|transa[cç][oõ]es|emiss[oõ]es|deb[eê]ntures|precedentes?|compar[aá]veis|comps|benchmark)\b.{0,160}\b(prazo|indexador|spread|termos?|pricing|pre[cç]o|volume|últimos?\s+meses|recentes?)\b|\b(mapa|levantamento|pesquisa)\s+de\s+(mercado|transa[cç][oõ]es|precedentes?|compar[aá]veis)\b/i,
+  monitoring: /\b(monitore|monitorar|acompanhe|acompanhar|vigie|watch|alert(?:ar|e)|avise|notifique)\b|\b(todo\s+dia|toda\s+semana|mensalmente|recorrente)\b.{0,100}\b(atualiza[cç][aã]o|mudan[cç]a|not[ií]cia|covenant|vencimento|mercado)\b/i,
+  workspaceManagement: /\b(renome(?:ar|ie)|mov(?:a|e|er)|arquivar|desarquivar|compartilhar|permiss[aã]o|acesso)\b.{0,120}\b(projeto|pasta|arquivo|workspace|ambiente|usu[aá]rio|membro)\b|\b(organizar|criar)\b.{0,80}\b(projeto|workspace|ambiente)\b/i,
 } as const;
 
 const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRecipe> = {
@@ -155,6 +167,30 @@ const recipes: Record<Exclude<WorkspaceObjectiveKind, "ambiguous">, ObjectiveRec
     analysisPlan: ["Congelar o snapshot aprovado", "Aplicar audiência, idioma e template", "Verificar consistência entre narrativa, números e termos", "Renderizar e inspecionar o arquivo"],
     proposedDeliverable: "Material nativo, editável, versionado e pronto para revisão",
   },
+  information_organization: {
+    objectiveKind: "information_organization", entryJob: null, outputTerminal: "source_index", targetTaskIds: [],
+    sourcePlan: ["project_context", "provided_documents", "public_company", "public_market"],
+    analysisPlan: ["Delimitar assunto, período e universo de fontes", "Coletar e deduplicar sem converter coleta em conclusão", "Classificar, versionar e registrar cobertura", "Entregar índice com origem e lacunas"],
+    proposedDeliverable: "Índice organizado e versionado de fontes, sem análise não solicitada",
+  },
+  market_mapping: {
+    objectiveKind: "market_mapping", entryJob: null, outputTerminal: "market_map", targetTaskIds: ["K04"],
+    sourcePlan: ["project_context", "public_market", "house_method"],
+    analysisPlan: ["Fixar mercado, período e dimensões comparáveis", "Pesquisar transações e termos observáveis", "Normalizar prazo, indexador, spread, volume e contexto", "Separar dado observado, inferência e ausência"],
+    proposedDeliverable: "Mapa de mercado e precedentes comparáveis, citado e delimitado",
+  },
+  monitoring: {
+    objectiveKind: "monitoring", entryJob: null, outputTerminal: "monitoring_setup", targetTaskIds: [],
+    sourcePlan: ["project_context", "provided_documents", "public_company", "public_market"],
+    analysisPlan: ["Definir objeto, baseline, fontes e frequência", "Definir eventos materiais e tolerâncias", "Comparar cada atualização contra o último snapshot aprovado", "Explicar mudança, impacto e próxima ação"],
+    proposedDeliverable: "Especificação de monitoramento com baseline, gatilhos e política de alerta",
+  },
+  workspace_management: {
+    objectiveKind: "workspace_management", entryJob: null, outputTerminal: "workspace_change_preview", targetTaskIds: [],
+    sourcePlan: ["project_context"],
+    analysisPlan: ["Resolver o objeto e o estado atual do workspace", "Validar autorização e impacto da mudança", "Mostrar a alteração proposta antes de aplicá-la"],
+    proposedDeliverable: "Prévia segura e reversível da alteração no workspace",
+  },
 };
 
 /**
@@ -175,6 +211,27 @@ export function compileObjectivePlan(input: ObjectivePlanContextInput): Objectiv
 
   const recipe = recipes[kind];
   if (kind === "factual_question") return finalize({...recipe, mode: "conversation", requiredContext: [], reasonCode: "bounded_answer_only"});
+
+  if (kind === "information_organization") {
+    if (!input.hasAttachments) {
+      return finalize({...recipe, mode: "coverage_gap", requiredContext: ["public_source_collection_executor"], reasonCode: "public_collection_executor_not_promoted"});
+    }
+    const withDocumentClassification = {...recipe, targetTaskIds: ["D02"]};
+    return finalize({
+      ...withDocumentClassification,
+      mode: input.existingProject ? "continue_project" : "create_project",
+      requiredContext: [],
+      reasonCode: input.existingProject ? "document_index_continues_existing_project" : "document_index_compiled",
+    });
+  }
+
+  if (kind === "monitoring") {
+    return finalize({...recipe, mode: "coverage_gap", requiredContext: ["monitoring_baseline", "monitoring_executor"], reasonCode: "monitoring_executor_not_promoted"});
+  }
+
+  if (kind === "workspace_management") {
+    return finalize({...recipe, mode: "coverage_gap", requiredContext: ["authorized_workspace_action"], reasonCode: "workspace_action_executor_not_promoted"});
+  }
 
   if (kind === "capital_matching") {
     const missing = [
@@ -248,12 +305,16 @@ export function expandObjectivePlanWithTaskTargets(
 
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
   if (!message) return "ambiguous";
+  if (objectivePatterns.monitoring.test(message)) return "monitoring";
+  if (objectivePatterns.workspaceManagement.test(message)) return "workspace_management";
   if (objectivePatterns.capitalMatching.test(message)) return "capital_matching";
   if (objectivePatterns.material.test(message)) return "material_preparation";
   if (objectivePatterns.operationReview.test(message)) return "operation_review";
   if (objectivePatterns.riskMatrix.test(message)) return "risk_matrix";
   if (objectivePatterns.boardDecision.test(message)) return "board_decision";
   if (objectivePatterns.meeting.test(message)) return "meeting_preparation";
+  if (objectivePatterns.informationOrganization.test(message)) return "information_organization";
+  if (objectivePatterns.marketMapping.test(message)) return "market_mapping";
   if (hasAttachments && objectivePatterns.documents.test(message)) return "documents_to_case";
   if (objectivePatterns.companyAnalysis.test(message)) return "company_analysis";
   if (objectivePatterns.capitalStrategy.test(message)) return "capital_strategy";
