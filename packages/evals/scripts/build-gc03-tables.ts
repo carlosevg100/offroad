@@ -6,7 +6,8 @@
  */
 import {buildDebtServiceSchedule, calculateDscr, calculateLeverage, checkIdentity} from "@offroad/financial-core";
 import {analyzeReceivables} from "@offroad/receivables-analysis";
-import {buildSyntheticReceivablesCase, fakeco, fakecoReceivables} from "@offroad/testing-fixtures";
+import {fakeco, fakecoReceivables} from "@offroad/testing-fixtures";
+import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic-receivables-case";
 import Decimal from "decimal.js";
 
 const d = (value: Decimal.Value) => new Decimal(value);

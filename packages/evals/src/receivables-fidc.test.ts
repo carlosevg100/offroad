@@ -3,7 +3,7 @@ import {
   analyzeReceivables,
   receivablesParametricScenarios,
 } from "@offroad/receivables-analysis";
-import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures";
+import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic-receivables-case";
 import {describe, expect, it} from "vitest";
 
 describe("receivables vertical on the governed case factory", () => {

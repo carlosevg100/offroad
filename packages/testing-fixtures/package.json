@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./synthetic-receivables-case": {
+      "types": "./src/synthetic-receivables-case.ts",
+      "default": "./src/synthetic-receivables-case.ts"
     }
   },
   "scripts": {

@@ -10,7 +10,7 @@ import {
   type FactoryScenario,
 } from "@offroad/case-factory";
 import {supportedSemanticAudit} from "@offroad/case-understanding";
-import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures";
+import {buildSyntheticReceivablesCase} from "@offroad/testing-fixtures/synthetic-receivables-case";
 import {describe, expect, it} from "vitest";
 
 const stages = ["extraction", "reconciliation", "metrics", "gaps", "structure", "red_flags", "claims", "materials", "language_conduct", "matching", "outcome"];
