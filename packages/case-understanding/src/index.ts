@@ -21,3 +21,4 @@ export * from "./claim-registry";
 export * from "./red-flag-truth";
 export * from "./product-workflow";
 export * from "./decision-artifact";
+export * from "./rendered-material";

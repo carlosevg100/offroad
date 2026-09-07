@@ -1,3 +1,5 @@
+import {createHash} from "node:crypto";
+
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {describe, expect, it, vi} from "vitest";
 import {claimedJobSchema, createQueueClient, type AgentOperationBriefJob, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
@@ -657,5 +659,69 @@ describe("advisor specialized completion", () => {
       p_content: "O trabalho está pronto para revisão.",
       p_result: {capital_project_id: capitalJob.payload.capital_project_id},
     });
+  });
+});
+
+describe("governed capital-project material storage", () => {
+  const capitalJob: CapitalProjectAnalysisJob = {
+    ...job,
+    kind: "capital_project_analysis",
+    payload: {
+      analysis_scope: "integration_preview",
+      locale: "pt-BR",
+      capital_project_id: "50000000-0000-4000-8000-000000000001",
+      capital_project_plan_id: "60000000-0000-4000-8000-000000000001",
+      capital_project_brief_id: "70000000-0000-4000-8000-000000000001",
+      capital_task_ids: ["A02"],
+      capital_artifact_required: false,
+      trigger_event: {},
+      model_budget: {max_cost_usd: 1, max_calls: 1},
+      preview: {mode: "integration_preview", composition: "prepare_material", caseId: "gc01-analista-ib-camil", workflow: {id: "case01.prepare_material", version: "2026.09.05-v1", fingerprint: "a".repeat(64)}, premises: {}},
+    },
+  };
+
+  it("uploads only to the granted path, re-downloads the bytes and closes the grant", async () => {
+    const bytes = new TextEncoder().encode("exact workbook bytes");
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    const objectPath = `${capitalJob.organization_id}/${capitalJob.payload.capital_project_id}/materials/${sha256}.xlsx`;
+    const rpc = vi.fn(async (name: string) => {
+      if (name === "worker_authorize_capital_project_material_upload_v1") return {data: {grant_id: "80000000-0000-4000-8000-000000000001", object_path: objectPath, state: "authorized", storage_etag: null, replayed: false}, error: null};
+      if (name === "worker_complete_capital_project_material_upload_v1") return {data: {object_path: objectPath, storage_etag: "storage-object-v1", replayed: false}, error: null};
+      throw new Error(`unexpected RPC ${name}`);
+    });
+    const upload = vi.fn(async () => ({data: {id: "storage-object-v1", path: objectPath, fullPath: `case-artifacts/${objectPath}`}, error: null}));
+    const download = vi.fn(async () => ({data: new Blob([bytes]), error: null}));
+    const from = vi.fn(() => ({upload, download}));
+    const queue = createQueueClient({rpc, storage: {from}} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.storeCapitalProjectMaterial!(capitalJob, {
+      bytes,
+      contentSha256: sha256,
+      format: "xlsx",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    })).resolves.toEqual({objectPath, storageEtag: "storage-object-v1", replayed: false});
+
+    expect(from).toHaveBeenCalledWith("case-artifacts");
+    expect(upload).toHaveBeenCalledWith(objectPath, bytes, {
+      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      upsert: false,
+    });
+    expect(download).toHaveBeenCalledWith(objectPath);
+    expect(rpc.mock.calls.map(([name]) => name)).toEqual([
+      "worker_authorize_capital_project_material_upload_v1",
+      "worker_complete_capital_project_material_upload_v1",
+    ]);
+  });
+
+  it("refuses a caller-supplied hash that does not describe the bytes", async () => {
+    const rpc = vi.fn();
+    const queue = createQueueClient({rpc, storage: {from: vi.fn()}} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+    await expect(queue.storeCapitalProjectMaterial!(capitalJob, {
+      bytes: new TextEncoder().encode("different"),
+      contentSha256: "a".repeat(64),
+      format: "xlsx",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    })).rejects.toThrow(/do not match contentSha256/);
+    expect(rpc).not.toHaveBeenCalled();
   });
 });
