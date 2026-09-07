@@ -36,7 +36,7 @@ md.push("### Cenários de capex derivados (R$ mil por ano safra)", "", "| Cenár
 const capexLow = Object.fromEntries(projectionPeriods.slice(1).map((period) => [period, lowCapex]));
 const base = projectCamil({rollover: false}).years;
 const low = projectCamil({rollover: false, capexByPeriod: capexLow}).years;
-const lowRoll = projectCamil({rollover: true, capexByPeriod: capexLow}).years;
+const lowRoll = projectCamil({rollover: true, rolloverAnnualRate: "0.1541", capexByPeriod: capexLow}).years;
 md.push("", "### Funding need por ano safra (déficit de caixa sem rolagem, financial-core)", "", "| Ano safra | CFADS base | Déficit base | CFADS cenário baixo | Déficit cenário baixo | Déficit acumulado (baixo) | Com rolagem: caixa final (baixo) | Folga sobre o piso |", "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |");
 let peak: {period: string; deficit: Decimal} | null = null;
 base.forEach((year, index) => {

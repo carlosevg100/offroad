@@ -3477,3 +3477,19 @@ resposta de origem. A imagem exige a capacidade aditiva nominal antes de acessar
 versão compatível com a imagem anterior durante o rollout. Esta fatia melhora continuidade, mas o
 executor R01 permanece interno e em sombra; ela não homologa recebíveis nem libera recomendação
 externa.
+
+## 45. Caso 02: gabarito econômico auditado, 07/09/2026
+
+Antes de produzir a planilha e o material de conselho do G2, a base sintética foi recalculada e
+revisada como um analista de crédito revisaria um modelo. A revisão encontrou sete falsos sinais de
+precisão: DSCR confundido com cobertura de liquidez, bases de dívida misturadas, IPCA capitalizado
+sem pagamento no vencimento, caixa não operacional incluído, amortização com caixa que não reduzia
+o caixa, alternativas comparadas sem custo de saída completo e rolagem sem os juros futuros da
+dívida refinanciada. Todos foram corrigidos no núcleo, nos fixtures e no gabarito.
+
+O resultado útil não é uma recomendação nova, mas uma fronteira mais rigorosa. O sistema agora
+mostra a pressão de caixa e a dependência de rolagem com métricas separadas; não chama a alavancagem
+econômica de covenant; não presume pré-pagamento a par; e não ranqueia estruturas sem termos
+comparáveis. O G2 continua `specified`. Próximo gate: construir planilha e board paper editáveis
+sobre o mesmo snapshot assinado, revisar visualmente e só depois decompor os dois produtos em
+objetos, procedimentos e blocos de artifact compiler.

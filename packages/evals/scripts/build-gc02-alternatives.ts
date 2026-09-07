@@ -9,7 +9,7 @@
  *   pnpm --filter @offroad/evals gc02:alternatives
  */
 import {executors} from "@offroad/credit-playbook";
-import {marketAssumptions} from "@offroad/testing-fixtures";
+import {marketAssumptions, projectCamil} from "@offroad/testing-fixtures";
 import Decimal from "decimal.js";
 
 const d = (value: Decimal.Value) => new Decimal(value);
@@ -42,6 +42,7 @@ const premium = (id: string) => {
   return entry.cheapest_full_exit ? {value: d(entry.cheapest_full_exit.total_payable).minus(entry.base.payable ?? 0).toFixed(), mechanism: entry.cheapest_full_exit.mechanism, permittedOnDate: true, anchor: {document: "exit-costs-gc02.json", note: `route ${entry.cheapest_full_exit.mechanism}`}} : null;
 };
 const cdiPlus125 = d(marketAssumptions.cdiAnnualPercent).plus(1.25).div(100).toFixed(4);
+const managementProjection = projectCamil({rollover: false}).years;
 const newDebt = (amount: string) => ({amount, annualRate: cdiPlus125, termMonths: 84, graceMonths: 24, format: "sac" as const, upfrontFeeRate: "0.005", disbursementDate: exitDate, origin: "custo de referência do pedido simulado do pack (CDI + 1,25%) e taxa de estruturação sintética de 0,50%", termsSource: "indicative_unverified" as const, anchor: {document: "03_Pedido_Simulado_CRA_2026.docx", page: 1}});
 
 const result = executors.compareRefinancingBeforeAfter({
@@ -60,8 +61,8 @@ const result = executors.compareRefinancingBeforeAfter({
       {period: "2030/31", amount: "994544", endsAt: "2031-05-31", anchor: itr(40, "nota 15, cronograma")}, {period: "after 2031", amount: "809198", endsAt: null, anchor: itr(40, "nota 15, cronograma")},
       {period: "debenture costs", amount: "-63224", endsAt: null, kind: "adjustment", anchor: itr(40, "nota 15, cronograma")},
     ],
-    costOfExistingDebt: {weightedAverageRate: "0.1246", basis: "juros do serviço base do caso 02 sobre a dívida bruta (706.751 / 5.670.186); custo contábil, não all-in", anchor: itr(40, "nota 15")},
-    cfadsByPeriod: null,
+    costOfExistingDebt: {weightedAverageRate: "0.1249", basis: "juros caixa aproximados do primeiro ano do caso 02 sobre a dívida bruta contábil (708.153 / 5.670.186); proxy anual, não custo contábil efetivo nem all-in", anchor: itr(40, "nota 15; proxy de juros combina termos públicos e premissas gerenciais sintéticas")},
+    cfadsByPeriod: Object.fromEntries(managementProjection.map((year) => [year.period, {value: year.cfads, anchor: {document: "01_Orcamento_2026_2027.xlsx", note: year.period === "2026/27" ? "CFADS derivado do orçamento sintético" : "CFADS derivado das premissas sintéticas de anos seguintes"}}])),
   },
   covenants: [{instrument: "13ª emissão", limit: "4.00", direction: "maximum", measurement: {frequency: "annual", nextDate: "2027-02-28"}, tiers: [{limit: "3.50", applicability: "applicable", condition: "degrau vigente até a prova da quitação ordinária dos CRA de referência"}, {limit: "4.00", applicability: "conditional", condition: "4,00x condicionado à prova da quitação ordinária dos CRA de referência; até a prova, 3,50x é o degrau vigente"}], state: "insufficient_evidence", comparability: "conditional", anchor: {document: "escritura_13a_emissao.pdf", clause: "7.24.3(VIII)", page: 54}}],
   alternatives: [
@@ -75,9 +76,9 @@ const result = executors.compareRefinancingBeforeAfter({
       {seriesId: "deb-11-1", instalments: [{period: "2028/29", principal: {value: "150000", basis: "contractual_nominal", anchor: {document: "escritura_11a_emissao.pdf", clause: "3.5.1", note: "150.000 debêntures a R$ 1.000 de valor nominal, em milhares de reais; amortizações posteriores não verificadas na base"}}, maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}}], exitPremium: premium("deb-11-1")},
       {seriesId: "deb-11-2", instalments: [{period: "2028/29", principal: {value: "500000", basis: "contractual_nominal", anchor: {document: "escritura_11a_emissao.pdf", clause: "3.5.1", note: "500.000 debêntures a R$ 1.000 de valor nominal, em milhares de reais; amortizações posteriores não verificadas na base"}}, maturityAnchor: {document: "escritura_11a_emissao.pdf", clause: "4.1"}}], exitPremium: premium("deb-11-2")},
     ]},
-    {id: "cash-paydown", label: "Abater 300.000 das linhas bancárias de 2026/27 com caixa, ao par", newDebt: null, retired: [{seriesId: "loan-brl", instalments: [{period: "2026/27", principal: {value: "300000", basis: "contractual_nominal", anchor: itr(40, "nota 15, linhas bancárias pré-pagáveis ao par; hipótese de abatimento parcial")}, maturityAnchor: itr(40, "nota 15")}], exitPremium: {value: "0", mechanism: "prepayment_at_par", permittedOnDate: true, anchor: itr(40, "nota 15, linhas bancárias pré-pagáveis ao par")}}]},
+    {id: "cash-paydown", label: "Abater 300.000 das linhas bancárias de 2026/27 com caixa", newDebt: null, retired: [{seriesId: "loan-brl", instalments: [{period: "2026/27", principal: {value: "300000", basis: "contractual_nominal", anchor: itr(40, "nota 15; valor é uma hipótese de cenário, não termo de pré-pagamento")}, maturityAnchor: itr(40, "nota 15")}], exitPremium: null}], uncoveredTerms: ["loan_prepayment_terms"]},
   ],
-  ranking: {discriminator: "peak_amount", rationale: "o conselho pediu se a estrutura aguenta os próximos anos; o pico de amortização em valor é o que a rolagem integral precisa vencer, e o custo all-in é a segunda leitura"},
+  ranking: null,
   wallThreshold: {share: "0.20", policyKey: "policy.structure.maturity_wall", policyVersion: "2026.09.05-v8"},
 });
 
@@ -85,7 +86,7 @@ const md: string[] = [];
 md.push(`### Custo de saída das séries DI e da 11ª (executor \`estimate-exit-cost-by-series\` v4, em ${exitDate})`, "", "| Série | Base | Estado da base | Rotas | Mais barata unilateral |", "| --- | ---: | --- | --- | ---: |");
 for (const entry of exit.exit_costs) md.push(`| ${entry.label} | ${fmt(entry.base.payable)} | ${entry.base.state}${entry.base.reason ? `: ${entry.base.reason}` : ""} | ${entry.routes.map((route) => `${route.mechanism} (${route.state})`).join("; ")} | ${entry.cheapest_full_exit ? `${entry.cheapest_full_exit.mechanism} ${fmt(entry.cheapest_full_exit.total_payable)}` : "n/a"} |`);
 if (exit.uncovered_terms.length > 0) md.push("", `Termos não cobertos: ${exit.uncovered_terms.map((term) => `${term.id} (${term.reason})`).join("; ")}.`);
-md.push("", "### Antes e depois por alternativa (executor `compare-refinancing-before-after` v3)", "", `Antes: dívida bruta ${fmt(result.before.gross_debt)}, caixa ${fmt(result.before.deductible_cash)}, dívida líquida contratual ${fmt(result.before.contractual_net_debt)}, alavancagem ${result.before.leverage ? `${d(result.before.leverage.value).toFixed(2)}x (${result.before.leverage.ebitda_basis})` : "n/a"}, pico ${result.before.peak?.period} com ${fmt(result.before.peak?.amount)} (${pct(result.before.peak?.share_of_gross)} da dívida bruta). Estado ${result.state}. Não medido: ${result.unsupported.join("; ")}.`, "");
+md.push("", "### Antes e depois por alternativa (executor `compare-refinancing-before-after` v7)", "", `Antes: dívida bruta ${fmt(result.before.gross_debt)}, caixa ${fmt(result.before.deductible_cash)}, dívida líquida contratual ${fmt(result.before.contractual_net_debt)}, alavancagem ${result.before.leverage ? `${d(result.before.leverage.value).toFixed(2)}x (${result.before.leverage.ebitda_basis})` : "n/a"}, pico ${result.before.peak?.period} com ${fmt(result.before.peak?.amount)} (${pct(result.before.peak?.share_of_gross)} da dívida bruta). Estado ${result.state}. Não medido: ${result.unsupported.join("; ")}.`, "");
 md.push("| Alternativa | Estado | Custo de saída | Dívida bruta depois | Caixa depois | Dívida líquida contratual | Alavancagem | Pico depois | Participação do pico | Custo all-in da nova dívida |", "| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |");
 for (const alternative of result.alternatives) {
   if (alternative.state === "blocked" || !alternative.after) { md.push(`| ${alternative.label} | blocked: ${alternative.block_reasons.join("; ")} | | | | | | | | |`); continue; }

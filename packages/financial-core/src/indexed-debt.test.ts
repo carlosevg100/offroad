@@ -64,6 +64,40 @@ describe("indexed debt schedule", () => {
     });
   });
 
+  it("repays the full inflation-updated principal at a bullet maturity", () => {
+    const schedule = buildIndexedDebtSchedule({
+      instrumentId: "ipca-bullet",
+      openingPrincipal: "100",
+      indexer: "IPCA",
+      indexationTreatment: "capitalized_principal",
+      couponTreatment: "cash_paid",
+      couponBase: "indexed_principal",
+      periods: [
+        {period: "2027", indexationRate: "0.05", couponRate: "0.10"},
+        {period: "2028", indexationRate: "0.04", couponRate: "0.10", repayAll: true},
+      ],
+    });
+    expect(schedule.rows[1]).toMatchObject({
+      openingPrincipal: "105",
+      indexationCapitalized: "4.2",
+      scheduledPrincipal: "109.2",
+      cashDebtService: "120.12",
+      closingPrincipal: "0",
+    });
+  });
+
+  it("rejects an ambiguous full repayment combined with another principal instruction", () => {
+    expect(() => buildIndexedDebtSchedule({
+      instrumentId: "ambiguous-bullet",
+      openingPrincipal: "100",
+      indexer: "IPCA",
+      indexationTreatment: "capitalized_principal",
+      couponTreatment: "cash_paid",
+      couponBase: "indexed_principal",
+      periods: [{period: "2027", indexationRate: "0.05", couponRate: "0.10", scheduledPrincipal: "100", repayAll: true}],
+    })).toThrow("repayAll cannot be combined");
+  });
+
   it("rejects ambiguous non-zero indexation", () => {
     expect(() => buildIndexedDebtSchedule({
       instrumentId: "ambiguous",

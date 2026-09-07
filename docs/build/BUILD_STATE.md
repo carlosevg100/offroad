@@ -2650,3 +2650,20 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   fatia ainda precisa concluir a CI integral e estabilizar a imagem nova no ECS antes de contar
   como live. O número de versão permanece compatível com a imagem anterior durante o rollout; a
   imagem nova exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila.
+
+## Verdade econômica do Caso 02 revisada, specified, 07/09/2026
+
+- A primeira revisão independente do gabarito CFO/Camil recalculou a projeção e corrigiu sete
+  defeitos conceituais: métricas de cobertura misturadas, diferença de 1 entre custo de transação
+  do balanço e do cronograma, principal IPCA não liquidado no bullet, caixa não operacional
+  incluído na liquidez, pré-pagamento a par presumido, alternativas ranqueadas sem custo de saída e
+  rolagem que mantinha o principal sem cobrar juros futuros sobre a dívida refinanciada.
+- O núcleo agora trata separadamente DSCR, cobertura de juros, cobertura de liquidez e usos de
+  caixa. Principal corrigido por IPCA é pago integralmente no bullet; caixa e dívida caem juntos
+  quando há amortização com caixa; dívida contábil e principal-base do cronograma têm bases
+  nomeadas distintas.
+- O gabarito não declara headroom de covenant sem definição contratual de EBITDA, caixa dedutível e
+  degrau aplicável. As quatro alternativas que retiram dívida existente permanecem bloqueadas até
+  principal nominal, juros acumulados, encargos e condições de pré-pagamento estarem resolvidos.
+- Estado permanece `specified`: a referência econômica está corrigida e testada, mas o reference
+  model, o board paper, o binding aos objetos governados e o E2E longitudinal G2 ainda não existem.
