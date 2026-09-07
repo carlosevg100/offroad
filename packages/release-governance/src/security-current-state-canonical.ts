@@ -32,6 +32,20 @@ export type CanonicalSecurityGapRelationship = {
   controlIds: string[];
 };
 
+/**
+ * Identity of the complete reviewed inventory snapshot. Unlike the narrower evidence and
+ * relationship catalogues below, this fingerprint covers every parsed field that can reach the
+ * human-readable inventory: semantic topology, assurance states, owners, narratives and baseline
+ * dates. A runtime caller may present a snapshot, but cannot redefine this trust root.
+ */
+const inventorySnapshotContract = {
+  inventoryFingerprint: "952bd4d11e01f617778bcca6e47b7bc3a739869b062bd030d5b6f258bd9a522d",
+  generatedAt: "2026-09-07T09:43:00.000-03:00",
+  evidenceCutoff: "2026-09-07T09:43:00.000-03:00",
+  reviewDueAt: "2026-09-14T09:43:00.000-03:00",
+  maximumReviewWindowMs: 7 * 24 * 60 * 60 * 1000,
+} as const;
+
 const evidenceManifest = [
   {
     "evidenceId": "SEV-AGENTS-SCOPE",
@@ -2232,3 +2246,6 @@ export function createCanonicalSecurityGapRelationships(): Record<string, Canoni
   return structuredClone(gapRelationships);
 }
 
+export function createCanonicalSecurityInventorySnapshotContract() {
+  return structuredClone(inventorySnapshotContract);
+}

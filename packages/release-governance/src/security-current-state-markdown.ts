@@ -1,9 +1,16 @@
-import type {SecurityCurrentStateInventory, SecurityInventoryDecision, SecurityOwner} from "./security-current-state";
+import {
+  assertTrustedSecurityInventoryRenderDecision,
+  type SecurityCurrentStateInventory,
+  type SecurityInventoryDecision,
+  type SecurityOwner,
+} from "./security-current-state";
+import {findForbiddenAssuranceClaims} from "./security-assurance-language.ts";
 
 export function renderSecurityCurrentStateInventory(
-  inventory: SecurityCurrentStateInventory,
-  decision: SecurityInventoryDecision,
+  candidateInventory: SecurityCurrentStateInventory,
+  candidateDecision: SecurityInventoryDecision,
 ): string {
+  const {inventory, decision} = assertTrustedSecurityInventoryRenderDecision(candidateInventory, candidateDecision);
   const claimAssessmentById = new Map(decision.claimAssessments.map((claim) => [claim.claimId, claim]));
   const entityAssessmentById = new Map(decision.entityAssessments.map((entity) => [entity.entityId, entity]));
   const gapAssessmentById = new Map(decision.gapAssessments.map((gap) => [gap.gapId, gap]));
@@ -153,7 +160,12 @@ export function renderSecurityCurrentStateInventory(
     "A existência desta vista não fecha as lacunas listadas. Evidência live, contratos, owners nominais e operação ao longo do tempo precisam ser coletados em tarefas posteriores.",
     "",
   ];
-  return lines.join("\n");
+  const output = lines.join("\n");
+  const forbiddenClaims = findForbiddenAssuranceClaims(output);
+  if (forbiddenClaims.length > 0) {
+    throw new Error(`security inventory contains forbidden assurance language: ${forbiddenClaims.map((finding) => finding.code).join(",")}`);
+  }
+  return output;
 }
 
 type GovernedView = {

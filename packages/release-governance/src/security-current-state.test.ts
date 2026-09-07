@@ -7,6 +7,7 @@ import {
   currentSecurityInventory,
   evaluateSecurityCurrentStateInventory,
   evaluateSecurityCurrentStateInventoryTrusted,
+  findForbiddenAssuranceClaims,
   masterTrustControlCatalogue,
   renderSecurityCurrentStateInventory,
   type SecurityCurrentStateInventory,
@@ -161,7 +162,8 @@ describe("security current-state inventory", () => {
     const clean = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(attacked.entityAssessments).toEqual(clean.entityAssessments);
     expect(attacked.inventoryFingerprint).toBe(clean.inventoryFingerprint);
-    expect(renderSecurityCurrentStateInventory(inventory, attacked)).toBe(renderSecurityCurrentStateInventory(currentSecurityInventory, clean));
+    expect(() => renderSecurityCurrentStateInventory(inventory, attacked)).toThrow(/unchanged trusted decision/);
+    expect(renderSecurityCurrentStateInventory(currentSecurityInventory, baseline)).toContain("## Resultado do validador");
   });
 
   it("rejects coordinated entity and gap relationship edits from both sides", () => {
@@ -185,6 +187,169 @@ describe("security current-state inventory", () => {
     entity.controlIds = ["TRUST-AI-01"];
     const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
     expect(decision.blockers).toContainEqual({code: "canonical_entity_relationship_mismatch", subjectRef: entity.systemId});
+  });
+
+  it.each([
+    ["vendor assurance states", (inventory: SecurityCurrentStateInventory) => {
+      const vendor = inventory.vendors.find((item) => item.vendorId === "VEN-ANTHROPIC")!;
+      vendor.activationState = "live_verified";
+      vendor.contractState = "verified_current";
+      vendor.retentionState = "verified_current";
+      vendor.trainingUseState = "prohibited_verified";
+      vendor.regionState = "verified_current";
+    }],
+    ["data-flow topology and classification", (inventory: SecurityCurrentStateInventory) => {
+      const flow = inventory.dataFlows.find((item) => item.flowId === "FLOW-WORKER-ANTHROPIC")!;
+      flow.destinationRef = "STORE-POSTGRES";
+      flow.direction = "internal";
+      flow.dataClassIds = ["public"];
+      flow.authorizationBoundary = "No external transfer.";
+    }],
+    ["store recovery and tenancy assurance", (inventory: SecurityCurrentStateInventory) => {
+      const store = inventory.dataStores.find((item) => item.storeId === "STORE-POSTGRES")!;
+      store.backupState = "tested";
+      store.retentionState = "defined";
+      store.tenancyBoundary = "Fully verified tenant isolation.";
+    }],
+    ["identity authority and named ownership", (inventory: SecurityCurrentStateInventory) => {
+      const identity = inventory.identities.find((item) => item.identityId === "ID-PRIVILEGED-HUMANS")!;
+      identity.privilege = "public";
+      identity.lifecycleState = "defined";
+      identity.authentication = "Phishing-resistant MFA verified.";
+      identity.owner = {ownerRole: "Named CISO", backupOwnerRole: "Named deputy", assignment: "named"};
+    }],
+    ["gap narrative and ownership", (inventory: SecurityCurrentStateInventory) => {
+      const gap = inventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
+      gap.title = "All agent security controls operating";
+      gap.nextAction = "No further action required.";
+      gap.owner = {ownerRole: "Certified security team", backupOwnerRole: "External auditor", assignment: "named"};
+    }],
+    ["evidence assurance narrative", (inventory: SecurityCurrentStateInventory) => {
+      inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-RLS-TEST")!.description =
+        "SOC 2 Type II certified; pentest passed; continuous production tenant isolation verified.";
+    }],
+    ["baseline freshness horizon", (inventory: SecurityCurrentStateInventory) => {
+      inventory.generatedAt = "2098-01-01T00:00:00.000Z";
+      inventory.baseline.evidenceCutoff = "2098-01-01T00:00:00.000Z";
+      inventory.baseline.reviewDueAt = "2099-01-01T00:00:00.000Z";
+    }],
+  ] satisfies Array<[string, (inventory: SecurityCurrentStateInventory) => void]>) (
+    "rejects caller-authored %s from the complete canonical snapshot",
+    async (_label, mutate) => {
+      const inventory = copyInventory();
+      mutate(inventory);
+      const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.currentStateTruthVerified).toBe(false);
+      expect(decision.blockers).toContainEqual({
+        code: "canonical_inventory_snapshot_mismatch",
+        subjectRef: inventory.inventoryVersion,
+      });
+    },
+  );
+
+  it.each([
+    "SOC 2 is certified",
+    "SOC 2—certified",
+    "Pentest: passed",
+    "Production is verified",
+    "SOC 2 is certi\u200bfied",
+  ])("fails closed before rendering invalid payload narrative: %s", async (claim) => {
+    const trusted = await evaluateSecurityCurrentStateInventoryTrusted(currentSecurityInventory, masterTrustControlCatalogue);
+    const inventory = copyInventory();
+    inventory.limitations = [claim];
+    const invalid = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+
+    expect(invalid.currentStateTruthVerified).toBe(false);
+    expect(() => renderSecurityCurrentStateInventory(inventory, invalid)).toThrow(/unchanged trusted decision/);
+    expect(() => renderSecurityCurrentStateInventory(inventory, trusted)).toThrow(/unchanged trusted decision/);
+  });
+
+  it.each([
+    ["SOC 2 is certified", "certification_claim"],
+    ["SOC 2—certified", "certification_claim"],
+    ["SOC 2 is now certified", "certification_claim"],
+    ["ISO 27001 is fully compliant", "certification_claim"],
+    ["Pentest: passed", "pentest_claim"],
+    ["Pentest has successfully passed", "pentest_claim"],
+    ["Production is verified", "live_assurance_claim"],
+    ["Production is independently verified", "live_assurance_claim"],
+    ["SOC 2 is certi\u200bfied", "certification_claim"],
+  ] as const)("normalizes and detects forbidden assurance language: %s", (claim, code) => {
+    expect(findForbiddenAssuranceClaims(claim)).toEqual(expect.arrayContaining([
+      expect.objectContaining({code}),
+    ]));
+  });
+
+  it.each([
+    "SOC 2 is not certified",
+    "ISO 27001 is not compliant",
+    "Pentest has not passed",
+    "Production is not verified",
+    "Telemetry activation is not live-verified",
+    "SOC 2 não é certificado",
+    "ISO 27001 não está em conformidade",
+    "Pentest não foi aprovado",
+    "Produção não está verificada",
+  ])("permits an explicit negative assurance statement: %s", (claim) => {
+    expect(findForbiddenAssuranceClaims(claim)).toEqual([]);
+  });
+
+  it("rejects a reconstructed decision and freezes the trusted render snapshot against late getters", async () => {
+    const trusted = await evaluateSecurityCurrentStateInventoryTrusted(currentSecurityInventory, masterTrustControlCatalogue);
+    const reconstructed = structuredClone(trusted);
+    expect(() => renderSecurityCurrentStateInventory(currentSecurityInventory, reconstructed)).toThrow(/unchanged trusted decision/);
+
+    expect(Object.isFrozen(trusted)).toBe(true);
+    expect(Object.isFrozen(trusted.counts)).toBe(true);
+    const trustedCounts = trusted.counts;
+    let countsRead = 0;
+    let assuranceRead = 0;
+    expect(() => Object.defineProperty(trusted, "counts", {
+      configurable: true,
+      enumerable: true,
+      get: () => {
+        countsRead += 1;
+        return countsRead === 1 ? trustedCounts : {...trustedCounts, openGaps: 0};
+      },
+    })).toThrow();
+    expect(() => Object.defineProperty(trusted, "assuranceReady", {
+      configurable: true,
+      enumerable: true,
+      get: () => {
+        assuranceRead += 1;
+        return assuranceRead > 1;
+      },
+    })).toThrow();
+
+    const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, trusted);
+    expect(rendered).toContain("| Lacunas abertas | 18 |");
+    expect(rendered).toContain("| Assurance ready | não |");
+    expect(countsRead).toBe(0);
+    expect(assuranceRead).toBe(0);
+  });
+
+  it("derives the evidence cutoff and enforces the bounded review window", () => {
+    const inventory = copyInventory();
+    inventory.baseline.evidenceCutoff = "2026-09-07T09:42:59.000-03:00";
+    inventory.baseline.reviewDueAt = "2026-09-15T09:43:00.000-03:00";
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "evidence_cutoff_not_derived_from_manifest", subjectRef: inventory.baseline.commit},
+      {code: "baseline_review_window_exceeds_policy", subjectRef: inventory.inventoryVersion},
+    ]));
+  });
+
+  it("rejects future snapshot dates against the evaluator's internal clock", () => {
+    const inventory = copyInventory();
+    inventory.generatedAt = "2098-01-01T00:00:00.000Z";
+    inventory.baseline.evidenceCutoff = "2098-01-01T00:00:00.000Z";
+    inventory.baseline.reviewDueAt = "2098-01-08T00:00:00.000Z";
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "snapshot_generated_in_future", subjectRef: inventory.inventoryVersion},
+      {code: "evidence_cutoff_in_future", subjectRef: inventory.baseline.commit},
+    ]));
   });
 
   it("inventories npm, Actions, Supabase local images and Playwright browser supply paths", () => {

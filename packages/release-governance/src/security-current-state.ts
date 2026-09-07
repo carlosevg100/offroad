@@ -10,6 +10,7 @@ import {
   createCanonicalSecurityEntityRelationships,
   createCanonicalSecurityEvidenceManifest,
   createCanonicalSecurityGapRelationships,
+  createCanonicalSecurityInventorySnapshotContract,
 } from "./security-current-state-canonical.ts";
 
 const dateTimeSchema = z.string().datetime({offset: true});
@@ -325,6 +326,7 @@ export function createCanonicalSecurityCoverageCatalogue(): SecurityInventoryCla
 const canonicalSecurityEvidenceManifest = createCanonicalSecurityEvidenceManifest();
 const canonicalSecurityEntityRelationships = createCanonicalSecurityEntityRelationships();
 const canonicalSecurityGapRelationships = createCanonicalSecurityGapRelationships();
+const canonicalSecurityInventorySnapshotContract = createCanonicalSecurityInventorySnapshotContract();
 
 export const securityCurrentStateInventorySchema = z.object({
   inventoryVersion: z.string().min(1),
@@ -416,6 +418,12 @@ export type SecurityInventoryDecision = {
   }>;
 };
 
+const trustedRenderDecisionReceipts = new WeakMap<SecurityInventoryDecision, {
+  sourceInventory: SecurityCurrentStateInventory;
+  inventorySnapshot: SecurityCurrentStateInventory;
+  decisionSnapshot: SecurityInventoryDecision;
+}>();
+
 const secretPatterns: Array<{name: string; pattern: RegExp}> = [
   {name: "private_key", pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/},
   {name: "openai_style_key", pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/},
@@ -483,6 +491,8 @@ function evaluateDeclaredInventory(
   const vendorById = indexed(parsed.vendors, (item) => item.vendorId, "duplicate_vendor_id", blockers);
   const gapById = indexed(parsed.gaps, (item) => item.gapId, "duplicate_gap_id", blockers);
   const claimById = indexed(parsed.coverageClaims, (item) => item.claimId, "duplicate_claim_id", blockers);
+  const inventoryFingerprint = createInventoryFingerprint(parsed);
+  validateCanonicalInventorySnapshot(parsed, inventoryFingerprint, now, blockers);
   if (stableJson(parsed.coverageClaims) !== stableJson(canonicalSecurityCoverageCatalogue)) {
     blockers.push({code: "canonical_coverage_catalogue_mismatch", subjectRef: null});
   }
@@ -664,7 +674,7 @@ function evaluateDeclaredInventory(
       openGaps: Object.keys(canonicalSecurityGapRelationships).length,
       coverageClaims: parsed.coverageClaims.length,
     },
-    inventoryFingerprint: createHash("sha256").update(stableJson(parsed)).digest("hex"),
+    inventoryFingerprint,
     repositoryResolution: {
       declaredRepository: parsed.baseline.repository,
       trustedRemote: null,
@@ -753,7 +763,7 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
 
   const expectedEvidenceCount = parsed.evidenceIndex.length;
   if (resolutions.length !== expectedEvidenceCount) blockers.push({code: "evidence_resolution_incomplete", subjectRef: null});
-  return {
+  const decision: SecurityInventoryDecision = {
     ...declared,
     structurallyValid: blockers.length === 0,
     evidenceVerification: "repository_and_local_bytes",
@@ -765,6 +775,43 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
     gapAssessments: deriveGapAssessments(parsed),
     evidenceResolutions: resolutions.sort((a, b) => a.evidenceId.localeCompare(b.evidenceId)),
   };
+  if (decision.structurallyValid && decision.currentStateTruthVerified && decision.blockers.length === 0) {
+    const inventorySnapshot = deepFreeze(structuredClone(parsed));
+    const decisionSnapshot = deepFreeze(decision);
+    trustedRenderDecisionReceipts.set(decisionSnapshot, {
+      sourceInventory: inventory,
+      inventorySnapshot,
+      decisionSnapshot,
+    });
+    return decisionSnapshot;
+  }
+  return decision;
+}
+
+/**
+ * Rendering is an assurance boundary, not a second evaluator. Only the unchanged decision object
+ * issued by the trusted resolver for the exact canonical snapshot may authorize human-readable
+ * output. Declaration-only decisions, reconstructed objects and post-evaluation mutation all fail
+ * closed before any caller-controlled narrative is assembled.
+ */
+export function assertTrustedSecurityInventoryRenderDecision(
+  inventory: SecurityCurrentStateInventory,
+  decision: SecurityInventoryDecision,
+): {inventory: SecurityCurrentStateInventory; decision: SecurityInventoryDecision} {
+  const receipt = trustedRenderDecisionReceipts.get(decision);
+  if (!receipt || receipt.sourceInventory !== inventory) {
+    throw new Error("security inventory rendering requires an unchanged trusted decision for the canonical snapshot");
+  }
+  // Never parse or otherwise read the caller object again. The evaluator already established the
+  // canonical fingerprint, resolved the evidence and captured parser-owned values. Both snapshots
+  // are deeply frozen before the decision leaves the trusted boundary.
+  return {inventory: receipt.inventorySnapshot, decision: receipt.decisionSnapshot};
+}
+
+function deepFreeze<T>(value: T): T {
+  if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
+  for (const child of Object.values(value as Record<string, unknown>)) deepFreeze(child);
+  return Object.freeze(value);
 }
 
 async function resolveTrustedRepository(
@@ -927,6 +974,53 @@ function validateCanonicalEvidenceManifest(
   }
   for (const evidenceId of actualById.keys()) {
     if (!expectedById.has(evidenceId)) blockers.push({code: "unexpected_evidence", subjectRef: evidenceId});
+  }
+}
+
+function createInventoryFingerprint(inventory: SecurityCurrentStateInventory): string {
+  return createHash("sha256").update(stableJson(inventory)).digest("hex");
+}
+
+function validateCanonicalInventorySnapshot(
+  inventory: SecurityCurrentStateInventory,
+  inventoryFingerprint: string,
+  now: Date,
+  blockers: SecurityInventoryIssue[],
+) {
+  const contract = canonicalSecurityInventorySnapshotContract;
+  if (inventoryFingerprint !== contract.inventoryFingerprint) {
+    blockers.push({code: "canonical_inventory_snapshot_mismatch", subjectRef: inventory.inventoryVersion});
+  }
+  if (inventory.generatedAt !== contract.generatedAt) {
+    blockers.push({code: "canonical_generated_at_mismatch", subjectRef: inventory.inventoryVersion});
+  }
+  if (inventory.baseline.evidenceCutoff !== contract.evidenceCutoff) {
+    blockers.push({code: "canonical_evidence_cutoff_mismatch", subjectRef: inventory.baseline.commit});
+  }
+  if (inventory.baseline.reviewDueAt !== contract.reviewDueAt) {
+    blockers.push({code: "canonical_review_due_at_mismatch", subjectRef: inventory.baseline.commit});
+  }
+
+  const generatedAt = checkedDate(inventory.generatedAt, "generated_at", inventory.inventoryVersion, blockers);
+  const evidenceCutoff = checkedDate(inventory.baseline.evidenceCutoff, "baseline_evidence_cutoff", inventory.baseline.commit, blockers);
+  const reviewDueAt = checkedDate(inventory.baseline.reviewDueAt, "baseline_review_due_at", inventory.baseline.commit, blockers);
+  const trustedNow = now.getTime();
+  if (generatedAt !== null && Number.isFinite(trustedNow) && generatedAt > trustedNow) {
+    blockers.push({code: "snapshot_generated_in_future", subjectRef: inventory.inventoryVersion});
+  }
+  if (evidenceCutoff !== null && Number.isFinite(trustedNow) && evidenceCutoff > trustedNow) {
+    blockers.push({code: "evidence_cutoff_in_future", subjectRef: inventory.baseline.commit});
+  }
+  if (generatedAt !== null && evidenceCutoff !== null && evidenceCutoff > generatedAt) {
+    blockers.push({code: "evidence_cutoff_after_generation", subjectRef: inventory.inventoryVersion});
+  }
+  if (generatedAt !== null && reviewDueAt !== null
+    && (reviewDueAt <= generatedAt || reviewDueAt - generatedAt > contract.maximumReviewWindowMs)) {
+    blockers.push({code: "baseline_review_window_exceeds_policy", subjectRef: inventory.inventoryVersion});
+  }
+  const latestEvidenceCapture = Math.max(...inventory.evidenceIndex.map((evidence) => new Date(evidence.capturedAt).getTime()));
+  if (evidenceCutoff !== null && Number.isFinite(latestEvidenceCapture) && evidenceCutoff !== latestEvidenceCapture) {
+    blockers.push({code: "evidence_cutoff_not_derived_from_manifest", subjectRef: inventory.baseline.commit});
   }
 }
 
