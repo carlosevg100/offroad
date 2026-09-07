@@ -212,9 +212,9 @@ declare
   assembly_row private.receivables_method_input_assemblies;
   inserted_row private.receivables_specialist_shadow_runs;
   existing_row private.receivables_specialist_shadow_runs;
-  input_fingerprint text;
-  output_fingerprint text;
-  result_fingerprint text;
+  v_input_fingerprint text;
+  v_output_fingerprint text;
+  v_result_fingerprint text;
 begin
   if job_row.kind <> 'case_analysis' then
     raise exception 'case_analysis_capability_required' using errcode = '42501';
@@ -256,9 +256,9 @@ begin
     raise exception 'receivables_method_input_assembly_not_found' using errcode = 'P0002';
   end if;
 
-  input_fingerprint := p_result #>> '{artifact,inputFingerprint}';
-  output_fingerprint := p_result #>> '{artifact,outputFingerprint}';
-  result_fingerprint := encode(
+  v_input_fingerprint := p_result #>> '{artifact,inputFingerprint}';
+  v_output_fingerprint := p_result #>> '{artifact,outputFingerprint}';
+  v_result_fingerprint := encode(
     extensions.digest(convert_to(p_result::text, 'UTF8'), 'sha256'), 'hex'
   );
   select run.* into existing_row
@@ -266,9 +266,9 @@ begin
   where run.organization_id = job_row.organization_id
     and run.processing_job_id = job_row.id
     and run.task_id = 'R01'
-    and run.input_fingerprint = input_fingerprint;
+    and run.input_fingerprint = v_input_fingerprint;
   if found then
-    if existing_row.result_fingerprint <> result_fingerprint then
+    if existing_row.result_fingerprint <> v_result_fingerprint then
       raise exception 'receivables_specialist_shadow_run_immutable_conflict' using errcode = '23505';
     end if;
     return jsonb_build_object(
@@ -287,8 +287,8 @@ begin
   ) values (
     job_row.organization_id, session_row.capital_project_id, job_row.intake_session_id,
     job_row.processing_run_id, job_row.id, assembly_row.id, 'R01',
-    p_result ->> 'executorKey', p_result ->> 'executorVersion', input_fingerprint,
-    output_fingerprint, result_fingerprint, p_result -> 'artifact', p_result -> 'qualityResults'
+    p_result ->> 'executorKey', p_result ->> 'executorVersion', v_input_fingerprint,
+    v_output_fingerprint, v_result_fingerprint, p_result -> 'artifact', p_result -> 'qualityResults'
   ) returning * into inserted_row;
 
   return jsonb_build_object(
