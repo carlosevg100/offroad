@@ -6,7 +6,7 @@ import {
   type ReceivablesRawDetectionReport,
 } from "@offroad/receivables-analysis";
 
-import {executeReceivablesSpecialistShadow} from "./specialist-method-runtime";
+import {executeReceivablesSpecialistShadow, specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
 
 const datasetHash = "c".repeat(64);
 const sourceFileHash = "d".repeat(64);
@@ -78,6 +78,16 @@ const assembly = {
 };
 
 describe("specialist method shadow runtime", () => {
+  it("publishes the exact bundled export identity to the candidate dispatcher", () => {
+    expect(specialistCandidateExecutorRuntimeManifest).toEqual([{
+      taskId: "R01",
+      executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
+      executorVersion: "2026.09.06-v1",
+      procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+      resultContract: "method.underwrite-receivables-pool.v1",
+    }]);
+  });
+
   it("executes the exact bound method and returns a traced draft with passing quality checks", () => {
     const result = executeReceivablesSpecialistShadow({
       taskId: "R01",

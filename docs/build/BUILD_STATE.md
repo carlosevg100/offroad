@@ -2695,3 +2695,18 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   principal nominal, juros acumulados, encargos e condições de pré-pagamento estarem resolvidos.
 - Estado permanece `specified`: a referência econômica está corrigida e testada, mas o reference
   model, o board paper, o binding aos objetos governados e o E2E longitudinal G2 ainda não existem.
+# Universal dispatcher candidate persistido, shadow, 07/09/2026
+
+- O preflight objetivo-específico agora compila também um candidato universal all-or-nothing.
+  Cada tarefa selecionada precisa coincidir simultaneamente com o grafo do objetivo, a decisão de
+  prontidão, o método/version, a capability, o executor realmente empacotado e o contrato de
+  resultado. Duplicidade, ausência ou divergência esvazia todo o slice e deixa razões nomeadas.
+- O candidato é persistido atomicamente com plano, especialização, method binding e seleção de
+  receita pela RPC `worker_record_objective_plan_preflight_v5`. A tabela tem RLS forçada,
+  imutabilidade, replay por fingerprint e vínculos ao tenant, projeto, mensagem e job.
+- Esta entrega **não executa** o candidato: `mode=internal_shadow`, `willExecute=false` e
+  `externalEffectAllowed=false` são invariantes no TypeScript e no banco. O rail fixo de produção
+  não foi alterado. Com o inventário atual, os candidatos reais continuam bloqueados: só R01 possui
+  executor geral empacotado e sua capability ainda é shadow.
+- Vitest e typecheck focados estão verdes. O Docker local está indisponível; migration, RLS e SQL
+  adversarial permanecem pendentes do gate Supabase da CI antes de qualquer promoção para tested.

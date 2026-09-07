@@ -324,6 +324,7 @@ export type QueueClient = {
     specialization: unknown;
     methodBinding: unknown;
     workflowSelection: unknown;
+    dispatchCandidate: unknown;
   }): Promise<{
     id: string;
     status: "ready" | "partial" | "blocked";
@@ -345,6 +346,10 @@ export type QueueClient = {
     workflowSelectionStatus?: "selected" | "blocked";
     workflowSelectionReason?: string;
     workflowSelectionReplayed?: boolean;
+    dispatchCandidateId?: string;
+    dispatchCandidateFingerprint?: string;
+    dispatchCandidateStatus?: "candidate" | "blocked";
+    dispatchCandidateReplayed?: boolean;
   }>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
@@ -1001,7 +1006,7 @@ export function createQueueClient(
     },
 
     async recordObjectivePlanPreflight(job, input) {
-      const data = await call("worker_record_objective_plan_preflight_v4", {
+      const data = await call("worker_record_objective_plan_preflight_v5", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_objective_plan: input.objectivePlan,
@@ -1009,6 +1014,7 @@ export function createQueueClient(
         p_specialization: input.specialization,
         p_method_binding: input.methodBinding,
         p_workflow_selection: input.workflowSelection,
+        p_dispatch_candidate: input.dispatchCandidate,
       });
       const parsed = z.object({
         id: z.uuid(),
@@ -1031,6 +1037,10 @@ export function createQueueClient(
         workflow_selection_status: z.enum(["selected", "blocked"]),
         workflow_selection_reason: z.string().min(1),
         workflow_selection_replayed: z.boolean(),
+        dispatch_candidate_id: z.uuid(),
+        dispatch_candidate_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        dispatch_candidate_status: z.enum(["candidate", "blocked"]),
+        dispatch_candidate_replayed: z.boolean(),
       }).parse(data);
       return {
         id: parsed.id,
@@ -1053,6 +1063,10 @@ export function createQueueClient(
         workflowSelectionStatus: parsed.workflow_selection_status,
         workflowSelectionReason: parsed.workflow_selection_reason,
         workflowSelectionReplayed: parsed.workflow_selection_replayed,
+        dispatchCandidateId: parsed.dispatch_candidate_id,
+        dispatchCandidateFingerprint: parsed.dispatch_candidate_fingerprint,
+        dispatchCandidateStatus: parsed.dispatch_candidate_status,
+        dispatchCandidateReplayed: parsed.dispatch_candidate_replayed,
       };
     },
 

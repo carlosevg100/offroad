@@ -1438,3 +1438,18 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Custo da rolagem | `truth.test.ts` e `projection.ts` | cenário de rolagem exige taxa explícita; cada principal refinanciado permanece no saldo e seus juros entram no serviço a partir do período seguinte | 2026-09-07 |
 | Alternativas fail-closed | `build-gc02-alternatives.ts` | quatro transações de retirada bloqueadas sem principal nominal, juros acumulados, encargos e condições de pré-pagamento; nenhum ranking é emitido | 2026-09-07 |
 | Limite | gabarito v0.3 | trajetória econômica não é chamada de covenant; efeitos tributários, hedge, apropriação dos custos, sazonalidade e termos contratuais continuam lacunas explícitas | 2026-09-07 |
+# Universal dispatch candidate persistido, implemented shadow, 07/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Contrato all-or-nothing | `compileUniversalDispatchCandidate` | recipe selected só produz slice quando toda TaskSpec tem prontidão executável e identidades exatas de método, capability, executor e result contract |
+| Ausência de efeito | schema TypeScript + constraints SQL | `internal_shadow`, `willExecute=false` e `externalEffectAllowed=false`; nenhum executor é invocado |
+| Adversariais | `dispatch-candidate.test.ts` | bloqueia readiness não pronta, capability divergente, executor duplicado, tarefa fora do objetivo e workflow não selecionado |
+| Persistência | migration `20260907112546_universal_dispatch_candidate_shadow.sql` | RPC v5 grava a cadeia e o candidato no mesmo capability token, com replay e fingerprints dos registries |
+| Segurança prevista | `objective_plan_preflight.sql` | falsificação de readiness/candidacy, escrita direta, anon e cross-tenant são recusados pelo contrato |
+| Gate focado | dcm-specialization + document-worker | 31 testes da especialização e 231 do worker verdes; typecheck verde |
+| Limite | inspeção de runtime | rail de produção intacto; R01 segue shadow; nenhum workflow universal foi promovido ou executado |
+| Pendência | Supabase local | Docker indisponível nesta worktree; migration/RLS/SQL precisam passar na CI antes de qualidade tested |
+
+Status: **implemented em shadow**. O corte aproxima RT-05/RT-06/RT-07 ao transformar a prontidão
+persistida em uma decisão de dispatch verificável, mas deliberadamente ainda não é um dispatcher.

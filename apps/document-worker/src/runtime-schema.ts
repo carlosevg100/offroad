@@ -8,6 +8,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "integration-preview-workflow-continuity.v1",
   "receivables-information-request-bindings.v1",
   "receivables-complete-draft-refresh.v1",
+  "universal-dispatch-candidate-shadow.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

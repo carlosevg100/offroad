@@ -167,6 +167,20 @@ declare
     'activatedEconomicPacks',jsonb_build_array('objective.refinance-liability-management'),
     'fingerprint',repeat('4',64)
   );
+  dispatch_candidate jsonb := jsonb_build_object(
+    'schemaVersion','universal-dispatch-candidate.v1','mode','internal_shadow',
+    'status','blocked','objectiveStructuralIdentity',repeat('a',64),
+    'readinessFingerprint',repeat('b',64),'specializationFingerprint',repeat('c',64),
+    'methodBindingFingerprint',repeat('1',64),'workflowSelectionFingerprint',repeat('4',64),
+    'capabilityManifestHash',repeat('5',64),'executorRegistryHash',repeat('6',64),
+    'recipeId','refinance-liability-management','recipeVersion','2026.09.07-v1',
+    'sliceFingerprint',repeat('3',64),'tasks',jsonb_build_array(),
+    'parallelBatches',jsonb_build_array(),
+    'reasons',jsonb_build_array(jsonb_build_object(
+      'code','preflight_task_blocked','taskId','C05','detail','task_procedure_unbound'
+    )),
+    'willExecute',false,'externalEffectAllowed',false,'fingerprint',repeat('7',64)
+  );
   first_result jsonb;
   replay_result jsonb;
   specialization_result jsonb;
@@ -175,6 +189,9 @@ declare
   method_replay jsonb;
   workflow_result jsonb;
   workflow_replay jsonb;
+  dispatch_result jsonb;
+  dispatch_replay jsonb;
+  forged_dispatch_candidate jsonb;
   accepted boolean;
 begin
   first_result := public.worker_record_objective_plan_preflight_v1(
@@ -250,6 +267,60 @@ begin
     or not (workflow_replay ->> 'workflow_selection_replayed')::boolean then
     raise exception 'identical workflow recipe selection did not replay: %', workflow_replay;
   end if;
+
+  dispatch_result := public.worker_record_objective_plan_preflight_v5(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding, workflow_selection, dispatch_candidate
+  );
+  if dispatch_result ->> 'dispatch_candidate_fingerprint' <> repeat('7',64)
+    or dispatch_result ->> 'dispatch_candidate_status' <> 'blocked'
+    or (dispatch_result ->> 'dispatch_candidate_replayed')::boolean then
+    raise exception 'dispatch candidate was not recorded correctly: %', dispatch_result;
+  end if;
+  dispatch_replay := public.worker_record_objective_plan_preflight_v5(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding, workflow_selection, dispatch_candidate
+  );
+  if dispatch_replay ->> 'dispatch_candidate_id' <> dispatch_result ->> 'dispatch_candidate_id'
+    or not (dispatch_replay ->> 'dispatch_candidate_replayed')::boolean then
+    raise exception 'identical dispatch candidate did not replay: %', dispatch_replay;
+  end if;
+
+  begin
+    perform public.worker_record_objective_plan_preflight_v5(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight, specialization, method_binding, workflow_selection,
+      jsonb_set(dispatch_candidate, '{readinessFingerprint}', to_jsonb(repeat('8',64)))
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'dispatch candidate detached from persisted readiness was accepted'; end if;
+
+  forged_dispatch_candidate := jsonb_set(
+    jsonb_set(
+      jsonb_set(
+        jsonb_set(dispatch_candidate, '{status}', '"candidate"'::jsonb),
+        '{tasks}', jsonb_build_array(jsonb_build_object(
+          'taskId','C05','executorKey','forged#executor','executorVersion','v1',
+          'procedure',jsonb_build_object('id','forged','version','v1'),
+          'resultContract','forged.v1'
+        ))
+      ),
+      '{parallelBatches}', '[["C05"]]'::jsonb
+    ),
+    '{reasons}', '[]'::jsonb
+  );
+  begin
+    perform public.worker_record_objective_plan_preflight_v5(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight, specialization, method_binding, workflow_selection,
+      forged_dispatch_candidate
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'blocked readiness was allowed to produce a dispatchable candidate'; end if;
 
   begin
     perform public.worker_record_objective_plan_preflight_v1(
@@ -346,6 +417,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_workflow_selections) <> 0 then
     raise exception 'worker principal gained direct visibility into tenant workflow selections';
+  end if;
+  if (select count(*) from public.capital_project_objective_dispatch_candidates) <> 0 then
+    raise exception 'worker principal gained direct visibility into tenant dispatch candidates';
   end if;
 end;
 $$;
@@ -468,6 +542,9 @@ begin
   if (select count(*) from public.capital_project_objective_workflow_selections) <> 1 then
     raise exception 'project owner could not read the objective workflow selection';
   end if;
+  if (select count(*) from public.capital_project_objective_dispatch_candidates) <> 1 then
+    raise exception 'project owner could not read the objective dispatch candidate';
+  end if;
   begin
     insert into public.capital_project_objective_preflights (
       organization_id, capital_project_id, source_message_id, processing_job_id,
@@ -535,6 +612,29 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'authenticated client inserted an objective workflow selection directly'; end if;
+  begin
+    insert into public.capital_project_objective_dispatch_candidates (
+      organization_id, capital_project_id, objective_preflight_id,
+      objective_method_binding_id, objective_workflow_selection_id,
+      source_message_id, processing_job_id, schema_version, mode, candidate_status,
+      candidate_fingerprint, readiness_fingerprint, capability_manifest_hash,
+      executor_registry_hash, parallel_batches, reasons, dispatch_candidate, created_by
+    ) select
+      preflight.organization_id, preflight.capital_project_id, preflight.id, binding.id,
+      selection.id, preflight.source_message_id, preflight.processing_job_id,
+      'universal-dispatch-candidate.v1', 'internal_shadow', 'blocked', repeat('8',64),
+      preflight.readiness_fingerprint, repeat('9',64), repeat('a',64), '[]'::jsonb,
+      '[{"code":"workflow_not_selected","taskId":null,"detail":null}]'::jsonb,
+      '{}'::jsonb, preflight.created_by
+    from public.capital_project_objective_preflights preflight
+    join public.capital_project_objective_method_bindings binding
+      on binding.objective_preflight_id = preflight.id
+    join public.capital_project_objective_workflow_selections selection
+      on selection.objective_preflight_id = preflight.id limit 1;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'authenticated client inserted a dispatch candidate directly'; end if;
 end;
 $$;
 
@@ -552,6 +652,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_workflow_selections) <> 0 then
     raise exception 'tenant B read tenant A objective workflow selection';
+  end if;
+  if (select count(*) from public.capital_project_objective_dispatch_candidates) <> 0 then
+    raise exception 'tenant B read tenant A dispatch candidate';
   end if;
 end;
 $$;
@@ -577,7 +680,12 @@ begin
     or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'insert')
     or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'update')
     or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'delete')
-    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v4(uuid,text,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute') then
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v4(uuid,text,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
+    or has_table_privilege('anon', 'public.capital_project_objective_dispatch_candidates', 'select')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_dispatch_candidates', 'insert')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_dispatch_candidates', 'update')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_dispatch_candidates', 'delete')
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v5(uuid,text,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute') then
     raise exception 'objective preflight grants are wider than the design';
   end if;
 end;

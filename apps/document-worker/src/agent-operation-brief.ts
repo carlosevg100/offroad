@@ -17,6 +17,7 @@ import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gatew
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   bindObjectiveMethods,
+  compileUniversalDispatchCandidate,
   compileObjectiveSpecialization,
   selectWorkflowRecipeForObjective,
   workflowRecipeSelectionSchema,
@@ -49,6 +50,7 @@ import {buildReceivablesMethodFieldRequestProjection} from "./receivables-inform
 
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewActivation, type PreviewStepOutput} from "./integration-preview";
+import {specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
 
 const specialistMethods = specialistMethodRuntimeManifest.map((method) => ({
   ...method,
@@ -669,6 +671,10 @@ export async function processAgentOperationBriefJob(
       boundTaskIds: string[];
       specialistTaskIds: string[];
       methodBindingReplayed: boolean;
+      dispatchCandidateId?: string;
+      dispatchCandidateFingerprint?: string;
+      dispatchCandidateStatus?: "candidate" | "blocked";
+      dispatchCandidateReplayed?: boolean;
     } | null = null;
     if (response.activation && queue.recordObjectivePlanPreflight) {
       try {
@@ -679,6 +685,7 @@ export async function processAgentOperationBriefJob(
           specialization: shadow.specialization,
           methodBinding: shadow.methodBinding,
           workflowSelection: shadow.workflowSelection,
+          dispatchCandidate: shadow.dispatchCandidate,
         });
         log("objective_plan.preflight_recorded", {
           job: job.job_id,
@@ -698,6 +705,9 @@ export async function processAgentOperationBriefJob(
           workflowSelectionReason: shadow.workflowSelection.reason,
           workflowRecipeId: shadow.workflowSelection.recipeId,
           workflowOutcome: shadow.workflowSelection.outcome,
+          dispatchCandidateStatus: objectivePreflight.dispatchCandidateStatus,
+          dispatchCandidateFingerprint: objectivePreflight.dispatchCandidateFingerprint,
+          dispatchCandidateTaskCount: shadow.dispatchCandidate.tasks.length,
           mode: "shadow",
         });
       } catch (preflightError) {
@@ -729,6 +739,8 @@ export async function processAgentOperationBriefJob(
       objectiveMethodBindingStatus: objectivePreflight?.methodBindingStatus,
       objectiveSpecialistTaskIds: objectivePreflight?.specialistTaskIds,
       objectiveBoundTaskIds: objectivePreflight?.boundTaskIds,
+      objectiveDispatchCandidateFingerprint: objectivePreflight?.dispatchCandidateFingerprint,
+      objectiveDispatchCandidateStatus: objectivePreflight?.dispatchCandidateStatus,
     }, completion.usage as unknown as Record<string, number>);
     await queue.complete(job, {
       assistantMessageId,
@@ -868,7 +880,19 @@ function compileObjectivePreflight(
     specialization,
     outputTerminal: workflowTerminal ?? objectivePlan.outputTerminal,
   });
-  return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding, workflowSelection};
+  const dispatchCandidate = compileUniversalDispatchCandidate({
+    objectiveStructuralIdentity: objectivePlan.structuralIdentity,
+    graph: methodBinding.graph,
+    readiness: preflightDecision,
+    methodBinding: methodBinding.binding,
+    workflowSelection,
+    capabilities: specialistCapabilities,
+    executors: specialistCandidateExecutorRuntimeManifest.map((executor) => ({
+      ...executor,
+      procedure: {...executor.procedure},
+    })),
+  });
+  return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding, workflowSelection, dispatchCandidate};
 }
 
 /**
@@ -932,6 +956,7 @@ async function recordPreviewWorkflowSelection(
     specialization: compiled.specialization,
     methodBinding: compiled.methodBinding,
     workflowSelection: compiled.workflowSelection,
+    dispatchCandidate: compiled.dispatchCandidate,
   });
   if (compiled.workflowSelection.status !== "selected"
     || recorded.workflowSelectionStatus !== "selected"
