@@ -70,7 +70,7 @@ describe("agent operation brief worker", () => {
 
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
     let activation: unknown;
-    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown} | undefined;
+    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown; workflowSelection: unknown} | undefined;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
@@ -92,7 +92,7 @@ describe("agent operation brief worker", () => {
         activation = value;
         return {};
       },
-      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown}) => {
+      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown; methodBinding: unknown; workflowSelection: unknown}) => {
         objectivePreflightInput = input;
         return {
           id: "99999999-9999-4999-8999-999999999999",
@@ -155,6 +155,12 @@ describe("agent operation brief worker", () => {
           taskId: "R01",
           procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
         })],
+      },
+      workflowSelection: {
+        schemaVersion: "workflow-recipe-selection.v1",
+        status: "blocked",
+        reason: "economic_situation_not_implemented",
+        taskIds: [],
       },
     });
     const preflight = objectivePreflightInput?.preflightDecision as {

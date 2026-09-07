@@ -13,7 +13,7 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
-import {bindObjectiveMethods, compileObjectiveSpecialization} from "@offroad/dcm-specialization";
+import {bindObjectiveMethods, compileObjectiveSpecialization, selectWorkflowRecipeForObjective} from "@offroad/dcm-specialization";
 import {
   specialistMethodRuntimeManifest,
   specialistMethodRuntimeManifestHash,
@@ -553,6 +553,7 @@ export async function processAgentOperationBriefJob(
           preflightDecision: shadow.preflightDecision,
           specialization: shadow.specialization,
           methodBinding: shadow.methodBinding,
+          workflowSelection: shadow.workflowSelection,
         });
         log("objective_plan.preflight_recorded", {
           job: job.job_id,
@@ -568,6 +569,10 @@ export async function processAgentOperationBriefJob(
           methodBindingStatus: objectivePreflight.methodBindingStatus,
           specialistTaskIds: objectivePreflight.specialistTaskIds,
           boundTaskIds: objectivePreflight.boundTaskIds,
+          workflowSelectionStatus: shadow.workflowSelection.status,
+          workflowSelectionReason: shadow.workflowSelection.reason,
+          workflowRecipeId: shadow.workflowSelection.recipeId,
+          workflowOutcome: shadow.workflowSelection.outcome,
           mode: "shadow",
         });
       } catch (preflightError) {
@@ -705,7 +710,11 @@ function compileObjectivePreflight(context: AgentContext) {
       disabledToolIds: [],
     },
   });
-  return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding};
+  const workflowSelection = selectWorkflowRecipeForObjective({
+    specialization,
+    outputTerminal: objectivePlan.outputTerminal,
+  });
+  return {objectivePlan, preflightDecision, specialization, methodBinding: methodBinding.binding, workflowSelection};
 }
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {

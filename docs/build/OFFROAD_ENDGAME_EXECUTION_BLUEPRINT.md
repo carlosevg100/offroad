@@ -2385,9 +2385,9 @@ Executar Release 0 nesta ordem, mantendo somente correções P0/P1 em paralelo:
 6. decompor referências em objetos, procedures e artifact blocks;
 7. executar BP-058, BP-060, BP-061 e BP-062 para criar a Trust Foundation e a baseline verificável;
 8. converter BP-010 a BP-019 em tickets implementáveis, testáveis e vinculados a controles;
-9. concluir a substituição do compiler fixo do Caso 01 por trás de flag; a primeira receita canônica
-   e sua seleção econômica fail-closed já existem, mas persistência da seleção, identidade sem
-   `case01.*`, dispatch e exposição live ainda não estão provados;
+9. concluir a substituição do compiler fixo do Caso 01 por trás de flag; a primeira receita canônica,
+   sua seleção econômica fail-closed e a persistência shadow já existem como candidates, mas
+   identidade sem `case01.*`, dispatch e exposição live ainda não estão provados;
 10. provar Release 1 com seis intenções estruturalmente diferentes e variantes trust-adversarial;
 11. avançar os demais releases por vertical slice, security gate e acceptance evidence.
 

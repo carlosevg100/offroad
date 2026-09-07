@@ -142,12 +142,24 @@ declare
     'status','bound',
     'fingerprint',repeat('1',64)
   );
+  workflow_selection jsonb := jsonb_build_object(
+    'schemaVersion','workflow-recipe-selection.v1',
+    'status','selected','reason','selected',
+    'recipeId','refinance-liability-management','recipeVersion','2026.09.07-v1',
+    'recipeFingerprint',repeat('2',64),'sliceFingerprint',repeat('3',64),
+    'outcome','alternatives','taskIds',jsonb_build_array('C05','S10'),
+    'parallelBatches',jsonb_build_array(jsonb_build_array('C05'),jsonb_build_array('S10')),
+    'activatedEconomicPacks',jsonb_build_array('objective.refinance-liability-management'),
+    'fingerprint',repeat('4',64)
+  );
   first_result jsonb;
   replay_result jsonb;
   specialization_result jsonb;
   specialization_replay jsonb;
   method_result jsonb;
   method_replay jsonb;
+  workflow_result jsonb;
+  workflow_replay jsonb;
   accepted boolean;
 begin
   first_result := public.worker_record_objective_plan_preflight_v1(
@@ -204,6 +216,26 @@ begin
     raise exception 'identical method binding did not replay: %', method_replay;
   end if;
 
+  workflow_result := public.worker_record_objective_plan_preflight_v4(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding, workflow_selection
+  );
+  if workflow_result ->> 'id' <> first_result ->> 'id'
+    or workflow_result ->> 'workflow_selection_fingerprint' <> repeat('4',64)
+    or workflow_result ->> 'workflow_selection_status' <> 'selected'
+    or workflow_result ->> 'workflow_selection_reason' <> 'selected'
+    or (workflow_result ->> 'workflow_selection_replayed')::boolean then
+    raise exception 'workflow recipe selection was not recorded correctly: %', workflow_result;
+  end if;
+  workflow_replay := public.worker_record_objective_plan_preflight_v4(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization, method_binding, workflow_selection
+  );
+  if workflow_replay ->> 'workflow_selection_id' <> workflow_result ->> 'workflow_selection_id'
+    or not (workflow_replay ->> 'workflow_selection_replayed')::boolean then
+    raise exception 'identical workflow recipe selection did not replay: %', workflow_replay;
+  end if;
+
   begin
     perform public.worker_record_objective_plan_preflight_v1(
       '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
@@ -258,6 +290,28 @@ begin
   if accepted then raise exception 'method binding divergent from objective targets was accepted'; end if;
 
   begin
+    perform public.worker_record_objective_plan_preflight_v4(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight, specialization, method_binding,
+      jsonb_set(workflow_selection, '{activatedEconomicPacks}', '[]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'workflow selection diverging from specialization packs was accepted'; end if;
+
+  begin
+    perform public.worker_record_objective_plan_preflight_v4(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight, specialization, method_binding,
+      jsonb_set(workflow_selection, '{parallelBatches}', '[["C05"]]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'workflow selection with an incomplete graph partition was accepted'; end if;
+
+  begin
     perform public.worker_record_objective_plan_preflight_v1(
       '80000000-0000-4000-8000-000000000711', repeat('x',64), objective_plan, blocked_preflight
     );
@@ -274,6 +328,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_method_bindings) <> 0 then
     raise exception 'worker principal gained direct visibility into tenant method bindings';
+  end if;
+  if (select count(*) from public.capital_project_objective_workflow_selections) <> 0 then
+    raise exception 'worker principal gained direct visibility into tenant workflow selections';
   end if;
 end;
 $$;
@@ -293,6 +350,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_method_bindings) <> 1 then
     raise exception 'project owner could not read the objective method binding';
+  end if;
+  if (select count(*) from public.capital_project_objective_workflow_selections) <> 1 then
+    raise exception 'project owner could not read the objective workflow selection';
   end if;
   begin
     insert into public.capital_project_objective_preflights (
@@ -344,6 +404,23 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'authenticated client inserted an objective method binding directly'; end if;
+  begin
+    insert into public.capital_project_objective_workflow_selections (
+      organization_id, capital_project_id, objective_preflight_id, objective_specialization_id,
+      source_message_id, processing_job_id, schema_version, selection_fingerprint,
+      selection_status, selection_reason, parallel_batches, workflow_selection, created_by
+    ) select
+      preflight.organization_id, preflight.capital_project_id, preflight.id, specialization.id,
+      preflight.source_message_id, preflight.processing_job_id, 'workflow-recipe-selection.v1',
+      repeat('5',64), 'blocked', 'economic_situation_not_implemented', '[]'::jsonb,
+      '{}'::jsonb, preflight.created_by
+    from public.capital_project_objective_preflights preflight
+    join public.capital_project_objective_specializations specialization
+      on specialization.objective_preflight_id = preflight.id limit 1;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'authenticated client inserted an objective workflow selection directly'; end if;
 end;
 $$;
 
@@ -358,6 +435,9 @@ begin
   end if;
   if (select count(*) from public.capital_project_objective_method_bindings) <> 0 then
     raise exception 'tenant B read tenant A objective method binding';
+  end if;
+  if (select count(*) from public.capital_project_objective_workflow_selections) <> 0 then
+    raise exception 'tenant B read tenant A objective workflow selection';
   end if;
 end;
 $$;
@@ -378,7 +458,12 @@ begin
     or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'insert')
     or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'update')
     or has_table_privilege('authenticated', 'public.capital_project_objective_method_bindings', 'delete')
-    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v3(uuid,text,jsonb,jsonb,jsonb,jsonb)', 'execute') then
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v3(uuid,text,jsonb,jsonb,jsonb,jsonb)', 'execute')
+    or has_table_privilege('anon', 'public.capital_project_objective_workflow_selections', 'select')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'insert')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'update')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_workflow_selections', 'delete')
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v4(uuid,text,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute') then
     raise exception 'objective preflight grants are wider than the design';
   end if;
 end;

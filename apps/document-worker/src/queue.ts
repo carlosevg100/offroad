@@ -272,6 +272,7 @@ export type QueueClient = {
     preflightDecision: unknown;
     specialization: unknown;
     methodBinding: unknown;
+    workflowSelection: unknown;
   }): Promise<{
     id: string;
     status: "ready" | "partial" | "blocked";
@@ -288,6 +289,11 @@ export type QueueClient = {
     boundTaskIds: string[];
     specialistTaskIds: string[];
     methodBindingReplayed: boolean;
+    workflowSelectionId?: string;
+    workflowSelectionFingerprint?: string;
+    workflowSelectionStatus?: "selected" | "blocked";
+    workflowSelectionReason?: string;
+    workflowSelectionReplayed?: boolean;
   }>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
@@ -802,13 +808,14 @@ export function createQueueClient(
     },
 
     async recordObjectivePlanPreflight(job, input) {
-      const data = await call("worker_record_objective_plan_preflight_v3", {
+      const data = await call("worker_record_objective_plan_preflight_v4", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_objective_plan: input.objectivePlan,
         p_preflight_decision: input.preflightDecision,
         p_specialization: input.specialization,
         p_method_binding: input.methodBinding,
+        p_workflow_selection: input.workflowSelection,
       });
       const parsed = z.object({
         id: z.uuid(),
@@ -826,6 +833,11 @@ export function createQueueClient(
         bound_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)),
         specialist_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)),
         method_binding_replayed: z.boolean(),
+        workflow_selection_id: z.uuid(),
+        workflow_selection_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        workflow_selection_status: z.enum(["selected", "blocked"]),
+        workflow_selection_reason: z.string().min(1),
+        workflow_selection_replayed: z.boolean(),
       }).parse(data);
       return {
         id: parsed.id,
@@ -843,6 +855,11 @@ export function createQueueClient(
         boundTaskIds: parsed.bound_task_ids,
         specialistTaskIds: parsed.specialist_task_ids,
         methodBindingReplayed: parsed.method_binding_replayed,
+        workflowSelectionId: parsed.workflow_selection_id,
+        workflowSelectionFingerprint: parsed.workflow_selection_fingerprint,
+        workflowSelectionStatus: parsed.workflow_selection_status,
+        workflowSelectionReason: parsed.workflow_selection_reason,
+        workflowSelectionReplayed: parsed.workflow_selection_replayed,
       };
     },
 
