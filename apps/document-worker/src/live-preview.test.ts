@@ -253,7 +253,7 @@ describe("live_intelligence_preview router", () => {
   });
 
   it("recognises a premise change once the analysis exists, converting a CDI spread into a rate", async () => {
-    const output = classifierOutput({composition: null, turn: {companies: [], premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: 150, newDebtTermMonths: 84, newDebtGraceMonths: 24}}});
+    const output = classifierOutput({composition: "build_or_review_model", turn: {companies: [], premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: 150, newDebtTermMonths: 84, newDebtGraceMonths: 24}}});
     expect(premisesFromTurn(output.turn)).toEqual({newDebtAnnualRate: "0.1475", newDebtTermMonths: 84, newDebtGraceMonths: 24});
     const decision = await decide(output, {priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_debt_ledger", "preview_alternatives"], message: "Considere CDI + 1,50%, 7 anos com 2 de carência."});
     expect(decision.kind).toBe("activate");
@@ -375,6 +375,47 @@ describe("live_intelligence_preview router", () => {
     expect(decision.composition).not.toBe("change_premise");
   });
 
+  it("keeps canonical self audience when a negated prior board context appears in the message", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: []},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil",
+      artifactTypes: ["preview_alternatives"],
+      message: "Esquece o conselho por enquanto. Preciso entender se o headroom do covenant aguenta a safra da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen", record: {audience: "self"}});
+  });
+
+  it("does not let a supplemental year turn canonical analysis into a number answer", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: [], numberQuestion: {mentioned: "2026", objects: ["covenants"]}},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
+      message: "Atualize a análise de 2026 da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen"});
+  });
+
+  it("does not let an unsupported supplemental rate turn canonical analysis into a premise change", async () => {
+    const output = classifierOutput({
+      composition: "analyze_performance_and_credit",
+      routingCore: {...classifierOutput().routingCore, audienceType: field("self"), decisionType: field("credit")},
+      turn: {companies: [], premiseChanges: {newDebtAnnualRate: 0.12, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}},
+    });
+    const decision = await decide(output, {
+      priorCaseId: "gc01-analista-ib-camil", artifactTypes: ["preview_alternatives"],
+      message: "Atualize a análise de 2026 da Camil.",
+    });
+    expect(decision).toMatchObject({kind: "activate", composition: "deepen"});
+    expect(decision.activation?.brief.premises).toEqual({});
+  });
+
   it("names a known role as the audience when the classifier lists the requester's own description first", async () => {
     const output = classifierOutput({routingCore: {...classifierOutput().routingCore, audienceType: field("internal_senior")}});
     const decision = await decide(output);
@@ -436,11 +477,11 @@ describe("live_intelligence_preview router", () => {
     expect(() => z.toJSONSchema(liveRoutingOutputSchema)).not.toThrow();
   });
 
-  it("routes a decision body written in the message to prepare_decision even when the classifier names another composition", async () => {
+  it("keeps the canonical composition and audience when message keywords suggest another decision body", async () => {
     const output = classifierOutput({composition: "develop_alternatives", routingCore: {...classifierOutput().routingCore, audienceType: field("company_management")}});
     const decision = await decide(output, {message: "Sou CFO da Camil e preciso levar ao conselho a decisão de refinanciar as debêntures."});
-    expect(decision.composition).toBe("prepare_decision");
-    expect(decision.record.audience).toBe("board");
+    expect(decision.composition).toBe("prepare_meeting");
+    expect(decision.record.audience).toBe("cfo");
   });
 
   it("rejects an overlong canonical object slot at the model boundary", () => {

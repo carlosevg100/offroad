@@ -399,6 +399,63 @@ function pagesInText(message: string): number | null {
   return value && value >= 1 && value <= 60 ? value : null;
 }
 
+function numericValuesInText(message: string): number[] {
+  return [...unquoted(message).matchAll(/\b\d+(?:[.,]\d+)?\b/g)]
+    .map((match) => Number(match[0].replace(",", ".")))
+    .filter(Number.isFinite);
+}
+
+function hasNumericValue(message: string, expected: number): boolean {
+  const tolerance = Math.max(0.000_001, Math.abs(expected) * 0.000_001);
+  return numericValuesInText(message).some((value) => Math.abs(value - expected) <= tolerance);
+}
+
+/**
+ * Keeps only premise values attributable to the current user message. Unit conversions are
+ * explicit and bounded: decimal rate ↔ percentage, years ↔ months and percentage spread ↔ bps.
+ * A supplemental extraction may locate these values; it may never invent one or carry it from a
+ * prior turn.
+ */
+function attributablePremiseTurn(turn: PreviewTurn, message: string): PreviewTurn {
+  const changes = turn.premiseChanges;
+  const annualRate = changes.newDebtAnnualRate;
+  const spreadBps = changes.cdiSpreadBps;
+  const termMonths = changes.newDebtTermMonths;
+  const graceMonths = changes.newDebtGraceMonths;
+  const normalized = normalizeText(unquoted(message));
+  const raw = unquoted(message).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const rateContext = /\b(?:taxa|juros|interest|rate|cdi|a\.?a\.?)\b/.test(raw) && /%/.test(raw);
+  const spreadContext = /\b(?:cdi|spread|bps|pontos?[- ]base|basis points?)\b/.test(raw);
+  const supportsMonths = (months: number, kind: "term" | "grace") => {
+    if (hasNumericValue(message, months) && new RegExp(`\\b${months}\\s*(?:mes|meses|months?)\\b`, "i").test(normalized)) return true;
+    if (months % 12 !== 0) return false;
+    const years = months / 12;
+    if (!hasNumericValue(message, years)) return false;
+    return kind === "grace"
+      ? new RegExp(`\\b${years}\\b[^.!?]{0,24}\\b(?:carencia|grace)\\b|\\b(?:carencia|grace)\\b[^.!?]{0,24}\\b${years}\\b`, "i").test(normalized)
+      : new RegExp(`\\b${years}\\s*(?:ano|anos|year|years)\\b`, "i").test(normalized);
+  };
+  return {
+    ...turn,
+    premiseChanges: {
+      newDebtAnnualRate: annualRate !== null && rateContext && (hasNumericValue(message, annualRate) || hasNumericValue(message, annualRate * 100)) ? annualRate : null,
+      cdiSpreadBps: spreadBps !== null && spreadContext && (hasNumericValue(message, spreadBps) || hasNumericValue(message, spreadBps / 100)) ? spreadBps : null,
+      newDebtTermMonths: termMonths !== null && supportsMonths(termMonths, "term") ? termMonths : null,
+      newDebtGraceMonths: graceMonths !== null && supportsMonths(graceMonths, "grace") ? graceMonths : null,
+    },
+  };
+}
+
+function explicitNumberQuestion(message: string, mentioned: string): boolean {
+  const plain = unquoted(message);
+  const values = numericValuesInText(plain);
+  const mentionedValues = numericValuesInText(mentioned);
+  if (values.length === 0 || mentionedValues.length === 0
+    || !mentionedValues.every((expected) => values.some((value) => Math.abs(value - expected) <= 0.000_001))) return false;
+  return /\?/.test(plain)
+    || /\b(?:de onde|qual (?:e|é) a origem|como (?:cheg|calcul)|por que|porque|explique|mostre)\b/i.test(normalizeText(plain));
+}
+
 /**
  * Decides the turn from the understanding. Deterministic: the model spoke once, in
  * `understandLiveTurn`; everything here is derivation the person can audit in the reply.
@@ -424,15 +481,13 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const resolution = fromClassifier.kind === "resolved" ? fromClassifier : fromText.kind === "resolved" ? fromText : fromClassifier;
   const priorCorpus = input.priorCaseId ? preview.corpusByCaseId(input.priorCaseId) : null;
   const corpusRecord = (corpus: preview.PreviewCorpus | null) => corpus ? {caseId: corpus.caseId, sourcePackId: corpus.sourcePackId, company: corpus.company.legalName} : null;
-  // Audience and depth are canonical routing axes. The supplemental extraction cannot replace
-  // them. A decision body literally written in the message may narrow the canonical audience to
-  // board/committee because that derivation is deterministic and inspectable.
-  const decisionBodyInText = /\b(conselho|board|comit[eê]|committee)\b/i.test(input.message) ? (/\bcomit[eê]|committee\b/i.test(input.message) ? "committee" : "board") : null;
+  // Audience and depth are canonical routing axes. Neither the supplemental extraction nor a
+  // keyword shortcut may replace them: quoted, historical or negated mentions of a board are not
+  // the audience of the current request.
   // Among the audiences the classifier lists, a known role wins over free text ("banker (self)"),
   // so the headline names the reader of the work, not the person writing the request.
   const classifiedAudience = canonicalAudience[core.audienceType.value];
-  const audience = decisionBodyInText
-    ?? (classifiedAudience && knownAudiences.has(classifiedAudience) ? classifiedAudience : null)
+  const audience = (classifiedAudience && knownAudiences.has(classifiedAudience) ? classifiedAudience : null)
     ?? classifiedAudience
     ?? "vp";
   const depth = core.depth.value;
@@ -447,8 +502,12 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
   const materialExplicit = hasAnalysis
     && materialWords.test(unquoted(input.message))
     && (output.composition === "prepare_material" || imperativeMaterial.test(unquoted(input.message)) || pagesInText(unquoted(input.message)) !== null);
-  const statesNumbers = /\d/.test(unquoted(input.message));
-  const turnPremises = statesNumbers ? premisesFromTurn(output.turn) : premisesFromTurn({...output.turn, premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}});
+  const premiseCompatible = output.composition === "build_or_review_model"
+    || (output.composition === "answer_a_question" && input.answeredQuestion !== undefined);
+  const governedPremiseTurn = premiseCompatible
+    ? attributablePremiseTurn(output.turn, input.message)
+    : {...output.turn, premiseChanges: {newDebtAnnualRate: null, cdiSpreadBps: null, newDebtTermMonths: null, newDebtGraceMonths: null}};
+  const turnPremises = premisesFromTurn(governedPremiseTurn);
   const base = (composition: Composition | null, corpus: preview.PreviewCorpus | null, abstained: boolean, abstainReason: string | null) => ({
     composition,
     corpus: corpusRecord(corpus),
@@ -521,8 +580,11 @@ export function decideLiveTurn(input: LiveDecisionInput): LiveDecision {
     ...(input.registryVersion ? {registryVersion: input.registryVersion} : {}),
   };
 
-  // A question about a number is answered from the signed objects, never by the model.
-  if (output.turn.numberQuestion && hasAnalysis) {
+  // A question about a number is answered from signed objects only when the canonical route says
+  // answer and the referenced number plus question language are present in the current message.
+  const numberQuestion = output.turn.numberQuestion;
+  if (output.composition === "answer_a_question" && numberQuestion?.mentioned && hasAnalysis
+    && explicitNumberQuestion(input.message, numberQuestion.mentioned)) {
     return {
       kind: "answer", composition: null, activation: null,
       reply: `${headline(input, null, corpusRecord(corpus), audience, depth)}\n${answerFromObjects(turnInput)}`,
