@@ -74,6 +74,66 @@ describe("case input loading", () => {
       "worker_load_prior_case_report",
     ]);
   });
+
+  it("stores a governed receivables method input through the exact case capability", async () => {
+    const assembly = {schemaVersion: "2026.09.07-v1", source: {datasetHash: "a".repeat(64)}};
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_record_receivables_method_input_assembly_v1");
+      expect(args).toEqual({
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_assembly: assembly,
+      });
+      return {data: {
+        id: "50000000-0000-4000-8000-000000000001",
+        source_dataset_hash: "a".repeat(64),
+        assembly_fingerprint: "b".repeat(64),
+        replayed: false,
+      }, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordReceivablesMethodInputAssembly!(
+      job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, assembly,
+    )).resolves.toEqual({
+      id: "50000000-0000-4000-8000-000000000001",
+      sourceDatasetHash: "a".repeat(64),
+      assemblyFingerprint: "b".repeat(64),
+      replayed: false,
+    });
+  });
+
+  it("stores a private specialist shadow result bound to its input assembly", async () => {
+    const result = {mode: "internal_shadow", taskId: "R01"};
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_record_receivables_specialist_shadow_run_v1");
+      expect(args).toEqual({
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_input_assembly_id: "50000000-0000-4000-8000-000000000001",
+        p_result: result,
+      });
+      return {data: {
+        id: "60000000-0000-4000-8000-000000000001",
+        input_fingerprint: "a".repeat(64),
+        output_fingerprint: "b".repeat(64),
+        result_fingerprint: "c".repeat(64),
+        replayed: false,
+      }, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.recordReceivablesSpecialistShadowRun!(
+      job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>,
+      {inputAssemblyId: "50000000-0000-4000-8000-000000000001", result},
+    )).resolves.toEqual({
+      id: "60000000-0000-4000-8000-000000000001",
+      inputFingerprint: "a".repeat(64),
+      outputFingerprint: "b".repeat(64),
+      resultFingerprint: "c".repeat(64),
+      replayed: false,
+    });
+  });
 });
 
 describe("operating-control persistence", () => {
