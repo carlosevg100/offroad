@@ -75,16 +75,18 @@ function storageLocator(bucketId: string, objectPath: string): SnapshotLocator {
   return {state: "versioned_object", locatorRef: `storage:${fingerprint({bucketId, objectPath})}`, objectVersionRef: "etag:immutable-1"};
 }
 
-function makeSource(version = 1, bytes = sourceBytes, overrides: Partial<AtomicSourceDocumentResolution> = {}): AtomicSourceDocumentResolution {
+type SourceOverrides = Partial<AtomicSourceDocumentResolution> & {sourceAuthorizedAt?: string; sourceSignedAt?: string};
+function makeSource(version = 1, bytes = sourceBytes, overrides: SourceOverrides = {}): AtomicSourceDocumentResolution {
+  const {sourceAuthorizedAt = "2026-09-01T09:59:00.000Z", sourceSignedAt, ...resolutionOverrides} = overrides;
   const bucketId = "opportunity-documents";
   const objectPath = `${ids.organization}/${ids.document}/v${version}`;
   const capturedAt = "2026-09-01T10:00:00.000Z";
   const row = {id: ids.document, organization_id: ids.organization, opportunity_id: ids.opportunity, intake_session_id: ids.intake, document_version: version, bucket_id: bucketId, object_path: objectPath, object_version: "etag:immutable-1", sha256: hash(bytes), sha256_verified_at: "2026-09-01T10:00:30.000Z"};
   const base = {found: true, authorized: true, identityRecordId: version === 1 ? ids.recordV1 : ids.recordV2, organizationId: ids.organization, projectId: ids.project, companyId: ids.company, conversationId: ids.conversation, documentId: ids.document, row, source: sourceOrigin(), classification: {dataClass: "project_confidential" as const, informationClass: "company_document" as const, confidentiality: "confidential" as const}, sourceSnapshot: storageLocator(bucketId, objectPath), capturedAt, actor, bytes, immutable: true};
-  const merged = {...base, ...overrides} as Omit<AtomicSourceDocumentResolution, "attestation">;
-  const authorization = {authorizationVersion: "workspace-authz.v1", authorizedAt: "2026-09-01T09:59:00.000Z"};
+  const merged = {...base, ...resolutionOverrides} as Omit<AtomicSourceDocumentResolution, "attestation">;
+  const authorization = {authorizationVersion: "workspace-authz.v1", authorizedAt: sourceAuthorizedAt};
   const body = {identityRecordId: merged.identityRecordId, organizationId: merged.organizationId, projectId: merged.projectId, companyId: merged.companyId, conversationId: merged.conversationId, documentId: merged.documentId, row: merged.row, source: merged.source, classification: merged.classification, sourceSnapshot: merged.sourceSnapshot, capturedAt: merged.capturedAt, actor: merged.actor, immutable: merged.immutable, sourceBytesSha256: merged.bytes ? hash(merged.bytes) : hash("missing"), sourceByteSize: merged.bytes?.byteLength ?? 0, ...authorization};
-  return {...merged, attestation: {...signBody(body, ids.sourceAttestation), ...authorization} as SourceAttestation};
+  return {...merged, attestation: {...signBody(body, ids.sourceAttestation, sourceSignedAt), ...authorization} as SourceAttestation};
 }
 
 function sourceReference(record: GovernedDocumentVersionIdentity) {
@@ -109,7 +111,7 @@ function receiptBody(receipt: Omit<ClassificationTransitionReceipt, "attestation
 function makeClassificationReceipt(record: GovernedDocumentVersionIdentity, to: ClassificationTransitionReceipt["to"], authorizations: ClassificationTransitionReceipt["authorizations"], overrides: Partial<Omit<ClassificationTransitionReceipt, "attestation" | "from" | "to" | "authorizations">> & {attestationId?: string; signedAt?: string} = {}): ClassificationTransitionReceipt {
   const previous = record.lifecycleHistory.at(-1)!;
   const {attestationId = ids.classificationAttestation, signedAt, ...fields} = overrides;
-  const base = {receiptId: ids.classificationReceipt, identityRecordId: record.core.identityRecordId, organizationId: record.core.organizationId, projectId: record.core.projectId, companyId: record.core.companyId, conversationId: record.core.conversationId, documentId: record.core.documentId, documentVersion: record.core.version, from: {dataClass: previous.dataClass, informationClass: previous.informationClass, confidentiality: previous.confidentiality}, to, purpose: "classification_transition" as const, operationId: ids.classificationOperation, priorLifecycleFingerprint: previous.lifecycleFingerprint, targetRevision: previous.revision + 1, authorizations, authorizedActor: actor, authorizedAt: "2026-09-01T10:04:00.000Z", ...fields};
+  const base = {receiptId: ids.classificationReceipt, identityRecordId: record.core.identityRecordId, organizationId: record.core.organizationId, projectId: record.core.projectId, companyId: record.core.companyId, conversationId: record.core.conversationId, documentId: record.core.documentId, documentVersion: record.core.version, from: {dataClass: previous.dataClass, informationClass: previous.informationClass, confidentiality: previous.confidentiality}, to, purpose: "classification_transition" as const, operationId: ids.classificationOperation, priorLifecycleFingerprint: previous.lifecycleFingerprint, targetRevision: previous.revision + 1, authorizations, authorizedActor: actor, authorizedAt: "2026-09-01T10:05:00.000Z", ...fields};
   return {...base, attestation: signBody(receiptBody(base), attestationId, signedAt)};
 }
 
@@ -378,6 +380,71 @@ describe("governed document identity v3", () => {
     )).rejects.toThrow("classification_attestation_time_invalid");
 
     await expect(harness({journalSignedAt: "2026-09-01T10:04:59.999Z"}).server.compile(compileInput())).rejects.toThrow("lifecycle_attestation_time_invalid");
+  });
+
+  it("binds source signing to authorization, capture and hash verification under the trusted clock", async () => {
+    const signedBeforeCaptureBase = makeSource();
+    const signedBeforeCapture = makeSource(1, sourceBytes, {
+      row: {...signedBeforeCaptureBase.row, sha256_verified_at: "2026-09-01T09:59:30.000Z"},
+      sourceSignedAt: "2026-09-01T09:59:59.999Z",
+    });
+    await expect(harness({sources: new Map([[1, signedBeforeCapture]])}).server.compile(compileInput())).rejects.toThrow("source_attestation_time_invalid");
+
+    const signedBeforeHash = makeSource(1, sourceBytes, {sourceSignedAt: "2026-09-01T10:00:29.999Z"});
+    await expect(harness({sources: new Map([[1, signedBeforeHash]])}).server.compile(compileInput())).rejects.toThrow("source_attestation_time_invalid");
+
+    const signedTooFarInFuture = makeSource(1, sourceBytes, {
+      sourceSignedAt: new Date(Date.parse("2026-09-01T10:05:00.000Z") + governedDocumentAttestationMaxFutureSkewMs + 1).toISOString(),
+    });
+    await expect(harness({sources: new Map([[1, signedTooFarInFuture]])}).server.compile(compileInput())).rejects.toThrow("source_attestation_time_invalid");
+
+    const futureVerificationBase = makeSource();
+    const futureVerification = makeSource(1, sourceBytes, {
+      row: {...futureVerificationBase.row, sha256_verified_at: "2026-09-01T10:05:00.001Z"},
+      sourceSignedAt: "2026-09-01T10:05:01.000Z",
+    });
+    await expect(harness({sources: new Map([[1, futureVerification]])}).server.compile(compileInput())).rejects.toThrow("source_hash_verification_time_invalid");
+  });
+
+  it("binds classification authorization and signing to the prior committed revision and trusted clock", async () => {
+    const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const grants = ["change_data_class", "change_confidentiality", "declassify"] as const;
+
+    const authorizedBeforePriorRevision = makeClassificationReceipt(record, publicClassification, [...grants], {
+      authorizedAt: "2026-09-01T10:04:59.999Z",
+      signedAt: "2026-09-01T10:05:00.000Z",
+    });
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[authorizedBeforePriorRevision.receiptId, authorizedBeforePriorRevision]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: authorizedBeforePriorRevision.receiptId}),
+    )).rejects.toThrow("classification_authorization_time_invalid");
+
+    const signedBeforePriorRevision = makeClassificationReceipt(record, publicClassification, [...grants], {
+      authorizedAt: "2026-09-01T10:05:00.000Z",
+      signedAt: "2026-09-01T10:04:59.999Z",
+    });
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[signedBeforePriorRevision.receiptId, signedBeforePriorRevision]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: signedBeforePriorRevision.receiptId}),
+    )).rejects.toThrow("classification_attestation_time_invalid");
+
+    const authorizedAfterCurrentRevision = makeClassificationReceipt(record, publicClassification, [...grants], {
+      authorizedAt: "2026-09-01T10:05:00.001Z",
+      signedAt: "2026-09-01T10:05:00.001Z",
+    });
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[authorizedAfterCurrentRevision.receiptId, authorizedAfterCurrentRevision]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: authorizedAfterCurrentRevision.receiptId}),
+    )).rejects.toThrow("classification_authorization_time_invalid");
+
+    const signedTooFarInFuture = makeClassificationReceipt(record, publicClassification, [...grants], {
+      signedAt: new Date(Date.parse("2026-09-01T10:05:00.000Z") + governedDocumentAttestationMaxFutureSkewMs + 1).toISOString(),
+    });
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[signedTooFarInFuture.receiptId, signedTooFarInFuture]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: signedTooFarInFuture.receiptId}),
+    )).rejects.toThrow("classification_attestation_time_invalid");
   });
 
   it("publishes a machine-verifiable boundary that forbids effects before transactional commit", () => {

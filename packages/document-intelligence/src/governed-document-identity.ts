@@ -241,10 +241,10 @@ export const documentIdentityIssueCodeSchema = z.enum([
   "source_attestation_invalid", "source_binding_mismatch", "source_registry_mismatch", "parent_version_not_found", "parent_hash_mismatch", "parent_scope_mismatch", "parent_document_mismatch",
   "parent_version_not_prior", "parent_version_not_immediate", "version_lineage_cycle", "source_snapshot_not_immutable", "source_snapshot_locator_mismatch", "source_snapshot_version_mismatch",
   "source_snapshot_hash_mismatch", "source_hash_not_verified", "content_addressed_locator_mismatch", "origin_source_class_mismatch", "source_integration_state_mismatch", "data_confidentiality_mismatch",
-  "actor_not_registered", "authorization_after_capture", "attestation_before_verification", "as_of_after_capture", "lifecycle_before_capture", "lifecycle_recorded_at_not_monotonic",
+  "actor_not_registered", "authorization_after_capture", "attestation_before_verification", "source_hash_verification_time_invalid", "source_attestation_time_invalid", "as_of_after_capture", "lifecycle_before_capture", "lifecycle_recorded_at_not_monotonic",
   "lifecycle_revision_gap", "lifecycle_previous_mismatch", "lifecycle_fingerprint_mismatch", "lifecycle_attestation_invalid", "artifact_identity_mutated", "artifact_attestation_invalid", "artifact_scope_mismatch", "duplicate_derivative_identity", "derivative_parent_not_found",
   "classification_receipt_unresolved", "classification_receipt_invalid", "classification_transition_unauthorized", "source_classification_mismatch", "artifact_semantic_identity_mismatch",
-  "artifact_attestation_time_invalid", "classification_attestation_time_invalid", "lifecycle_attestation_time_invalid",
+  "artifact_attestation_time_invalid", "classification_authorization_time_invalid", "classification_attestation_time_invalid", "lifecycle_attestation_time_invalid",
   "derivative_parent_hash_mismatch", "derivative_lineage_cycle", "artifact_unresolved", "artifact_not_immutable", "artifact_locator_mismatch", "artifact_hash_mismatch", "layer_source_hash_mismatch",
   "tool_identity_not_registered", "producer_before_capture", "producer_after_lifecycle", "producer_before_parent", "coverage_scope_mismatch", "coverage_fingerprint_mismatch", "coverage_backlink_mismatch",
   "coverage_reference_unresolved", "supersession_state_mismatch", "supersession_illegal_transition", "supersession_target_not_found", "supersession_scope_mismatch", "supersession_hash_mismatch",
@@ -399,7 +399,8 @@ async function resolveAtomicSource(sourceDocumentId: string, version: number, ac
   if (resolved.sourceSnapshot.state !== "versioned_object" || resolved.sourceSnapshot.objectVersionRef !== binding.objectVersionRef) throw new GovernedDocumentIdentityError("source_snapshot_version_mismatch");
   if (resolved.sourceSnapshot.locatorRef !== storageLocator(binding.bucketId, binding.objectPath)) throw new GovernedDocumentIdentityError("source_snapshot_locator_mismatch");
   if (Date.parse(resolved.attestation.authorizedAt) > Date.parse(resolved.capturedAt)) throw new GovernedDocumentIdentityError("authorization_after_capture");
-  if (Date.parse(resolved.attestation.signedAt) < Date.parse(binding.sha256VerifiedAt)) throw new GovernedDocumentIdentityError("attestation_before_verification");
+  if (!timestampNotAfterTrustedNow(binding.sha256VerifiedAt, root.now())) throw new GovernedDocumentIdentityError("source_hash_verification_time_invalid");
+  if (!attestationTimeValid(resolved.attestation.signedAt, latestTimestamp(resolved.attestation.authorizedAt, resolved.capturedAt, binding.sha256VerifiedAt), root.now())) throw new GovernedDocumentIdentityError("source_attestation_time_invalid");
   const registration = await root.resolveSourceRegistration(resolved.source.registryId, resolved.source.registryVersion);
   if (!registration || stableJson(registration) !== stableJson(resolved.source)) throw new GovernedDocumentIdentityError("source_registry_mismatch");
   validateSourceOrThrow(resolved.source);
@@ -457,14 +458,17 @@ async function resolveCoverageRefs(claims: readonly DocumentCoverageClaim[], cor
 async function resolveClassificationTransition(core: DocumentIdentityCore, previous: DocumentClassification, receiptId: string | null, actor: DocumentActorReference, recordedAt: string, targetRevision: number, priorLifecycleFingerprint: string | null, priorHistory: readonly DocumentLifecycleRevision[], root: GovernedDocumentServerTrustRoot) {
   if (receiptId === null) return {classification: previous, receipt: null};
   if (priorLifecycleFingerprint === null) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  const previousRecordedAt = priorHistory.at(-1)?.recordedAt;
+  if (!previousRecordedAt) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
   const raw = await root.resolveClassificationReceipt(receiptId);
   if (!raw) throw new GovernedDocumentIdentityError("classification_receipt_unresolved");
   const receipt = classificationTransitionReceiptSchema.parse(raw);
   if (receipt.receiptId !== receiptId || !sameClassificationReceiptScope(receipt, core) || stableJson(receipt.authorizedActor) !== stableJson(actor)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
-  if (stableJson(receipt.from) !== stableJson(previous) || receipt.priorLifecycleFingerprint !== priorLifecycleFingerprint || receipt.targetRevision !== targetRevision || Date.parse(receipt.authorizedAt) > Date.parse(recordedAt)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  if (stableJson(receipt.from) !== stableJson(previous) || receipt.priorLifecycleFingerprint !== priorLifecycleFingerprint || receipt.targetRevision !== targetRevision) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  if (!classificationAuthorizationTimeValid(receipt.authorizedAt, previousRecordedAt, recordedAt, root.now())) throw new GovernedDocumentIdentityError("classification_authorization_time_invalid");
   if (priorHistory.some((revision) => revision.classificationReceipt?.receiptId === receipt.receiptId || revision.classificationReceipt?.operationId === receipt.operationId || revision.classificationReceipt?.attestation.attestationId === receipt.attestation.attestationId)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
   enforceClassificationAuthorization(receipt);
-  if (!attestationTimeValid(receipt.attestation.signedAt, receipt.authorizedAt, root.now())) throw new GovernedDocumentIdentityError("classification_attestation_time_invalid");
+  if (!attestationTimeValid(receipt.attestation.signedAt, latestTimestamp(receipt.authorizedAt, previousRecordedAt), root.now())) throw new GovernedDocumentIdentityError("classification_attestation_time_invalid");
   if (receipt.attestation.payloadSha256 !== fingerprint(classificationReceiptPayload(receipt)) || !await root.verifyClassificationReceipt(receipt)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
   return {classification: receipt.to, receipt};
 }
@@ -535,7 +539,8 @@ async function validateCore(record: GovernedDocumentVersionIdentity, root: Gover
   if (sourceHash !== binding.verifiedSha256) add("source_hash_not_verified", record, "core.sourceBinding.verifiedSha256");
   if (record.core.sourceSnapshot.state !== "versioned_object" || record.core.sourceSnapshot.objectVersionRef !== binding.objectVersionRef) add("source_snapshot_version_mismatch", record, "core.sourceSnapshot.objectVersionRef");
   if (record.core.sourceSnapshot.locatorRef !== storageLocator(binding.bucketId, binding.objectPath)) add("source_snapshot_locator_mismatch", record, "core.sourceSnapshot.locatorRef");
-  if (Date.parse(record.core.sourceAttestation.signedAt) < Date.parse(binding.sha256VerifiedAt)) add("attestation_before_verification", record, "core.sourceAttestation.signedAt");
+  if (!timestampNotAfterTrustedNow(record.core.sourceBinding.sha256VerifiedAt, root.now())) add("source_hash_verification_time_invalid", record, "core.sourceBinding.sha256VerifiedAt");
+  if (!attestationTimeValid(record.core.sourceAttestation.signedAt, latestTimestamp(record.core.sourceAttestation.authorizedAt, record.core.capturedAt, record.core.sourceBinding.sha256VerifiedAt), root.now())) add("source_attestation_time_invalid", record, "core.sourceAttestation.signedAt");
   const registration = await root.resolveSourceRegistration(record.core.source.registryId, record.core.source.registryVersion);
   if (!registration || stableJson(registration) !== stableJson(record.core.source) || stableJson(resolved.source) !== stableJson(record.core.source)) add("source_registry_mismatch", record, "core.source");
   if (record.core.sourceAttestation.payloadSha256 !== fingerprint(sourceAttestationPayload(resolved, sourceHash)) || stableJson(record.core.sourceAttestation) !== stableJson(resolved.attestation) || !await root.verifySourceAttestation(resolved)) add("source_attestation_invalid", record, "core.sourceAttestation");
@@ -691,12 +696,13 @@ async function validateClassificationTransition(record: GovernedDocumentVersionI
     if (stableJson(from) !== stableJson(to)) add("classification_transition_unauthorized", record, "lifecycleHistory.classificationReceipt");
     return;
   }
-  if (!previous || !sameClassificationReceiptScope(receipt, record.core) || stableJson(receipt.from) !== stableJson(from) || stableJson(receipt.to) !== stableJson(to) || stableJson(receipt.authorizedActor) !== stableJson(lifecycle.recordedBy) || receipt.priorLifecycleFingerprint !== previous.lifecycleFingerprint || receipt.targetRevision !== lifecycle.revision || Date.parse(receipt.authorizedAt) > Date.parse(lifecycle.recordedAt)) {
+  if (!previous || !sameClassificationReceiptScope(receipt, record.core) || stableJson(receipt.from) !== stableJson(from) || stableJson(receipt.to) !== stableJson(to) || stableJson(receipt.authorizedActor) !== stableJson(lifecycle.recordedBy) || receipt.priorLifecycleFingerprint !== previous.lifecycleFingerprint || receipt.targetRevision !== lifecycle.revision) {
     add("classification_receipt_invalid", record, "lifecycleHistory.classificationReceipt");
     return;
   }
+  if (!classificationAuthorizationTimeValid(receipt.authorizedAt, previous.recordedAt, lifecycle.recordedAt, root.now())) add("classification_authorization_time_invalid", record, "lifecycleHistory.classificationReceipt.authorizedAt");
   try { enforceClassificationAuthorization(receipt); } catch { add("classification_transition_unauthorized", record, "lifecycleHistory.classificationReceipt"); }
-  if (!attestationTimeValid(receipt.attestation.signedAt, receipt.authorizedAt, root.now())) add("classification_attestation_time_invalid", record, "lifecycleHistory.classificationReceipt.attestation.signedAt");
+  if (!attestationTimeValid(receipt.attestation.signedAt, latestTimestamp(receipt.authorizedAt, previous.recordedAt), root.now())) add("classification_attestation_time_invalid", record, "lifecycleHistory.classificationReceipt.attestation.signedAt");
   if (receipt.attestation.payloadSha256 !== fingerprint(classificationReceiptPayload(receipt)) || !await root.verifyClassificationReceipt(receipt)) add("classification_receipt_invalid", record, "lifecycleHistory.classificationReceipt.attestation");
 }
 
@@ -841,6 +847,25 @@ function attestationTimeValid(signedAt: string, notBefore: string, trustedNow: s
   const upperBound = Date.parse(trustedNow) + governedDocumentAttestationMaxFutureSkewMs;
   return Number.isFinite(signed) && Number.isFinite(lowerBound) && Number.isFinite(upperBound)
     && signed >= lowerBound && signed <= upperBound;
+}
+
+function timestampNotAfterTrustedNow(value: string, trustedNow: string) {
+  const timestamp = Date.parse(value);
+  const upperBound = Date.parse(trustedNow);
+  return Number.isFinite(timestamp) && Number.isFinite(upperBound) && timestamp <= upperBound;
+}
+
+function latestTimestamp(...values: string[]) {
+  return new Date(Math.max(...values.map((value) => Date.parse(value)))).toISOString();
+}
+
+function classificationAuthorizationTimeValid(authorizedAt: string, previousRecordedAt: string, recordedAt: string, trustedNow: string) {
+  const authorized = Date.parse(authorizedAt);
+  const lowerBound = Date.parse(previousRecordedAt);
+  const lifecycleBound = Date.parse(recordedAt);
+  const trustedBound = Date.parse(trustedNow) + governedDocumentAttestationMaxFutureSkewMs;
+  return [authorized, lowerBound, lifecycleBound, trustedBound].every(Number.isFinite)
+    && authorized >= lowerBound && authorized <= lifecycleBound && authorized <= trustedBound;
 }
 
 function canonicalize<T>(input: T): T {
