@@ -19,5 +19,6 @@ export * from "./receivables-phase-three";
 export * from "./gold-baseline";
 export * from "./longitudinal-journeys";
 export * from "./gc02-reference-snapshot";
+export * from "./gc02-decision-artifact";
 export * from "./intent-gold";
 export * from "./intent-router-gate";

@@ -1,0 +1,673 @@
+{
+  "schemaVersion": "2026.09.07-v1",
+  "caseId": "gc02-cfo-camil-conselho",
+  "snapshotFingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+  "asOf": "2026-05-31",
+  "status": "reference",
+  "release": {
+    "state": "internal_only",
+    "recipientIds": []
+  },
+  "sources": [
+    {
+      "id": "SRC-01",
+      "title": "ITR 1T26",
+      "classification": "public",
+      "asOf": "2026-05-31",
+      "locator": "01_ITR_1T26_31mai2026.pdf · nota 15, pp. 39-40; nota 3, p. 20"
+    },
+    {
+      "id": "SRC-02",
+      "title": "Release 1T26",
+      "classification": "public",
+      "asOf": "2026-05-31",
+      "locator": "ri_release_1t26.pdf · p. 12"
+    },
+    {
+      "id": "SRC-03",
+      "title": "Relatórios e escrituras",
+      "classification": "public",
+      "asOf": "2026-09-04",
+      "locator": "af_11a/13a/14a/15a e escrituras · âncoras por série no ledger"
+    },
+    {
+      "id": "SRC-04",
+      "title": "Orçamento sintético",
+      "classification": "synthetic",
+      "asOf": "2026-09-04",
+      "locator": "01_Orcamento_2026_2027.xlsx · abas Orçamento e Premissas"
+    },
+    {
+      "id": "SRC-05",
+      "title": "Plano de capex sintético",
+      "classification": "synthetic",
+      "asOf": "2026-09-04",
+      "locator": "02_Plano_Capex.xlsx · aba Capex"
+    },
+    {
+      "id": "SRC-06",
+      "title": "Política de caixa sintética",
+      "classification": "synthetic",
+      "asOf": "2026-09-04",
+      "locator": "03_Politica_Caixa_Minimo.docx · corpo do documento"
+    },
+    {
+      "id": "SRC-07",
+      "title": "Cronograma contratual sintético",
+      "classification": "synthetic",
+      "asOf": "2026-09-04",
+      "locator": "04_Cronograma_Contratual_Amortizacoes.xlsx · aba Cronograma"
+    },
+    {
+      "id": "SRC-08",
+      "title": "Curvas de mercado congeladas",
+      "classification": "market",
+      "asOf": "2026-09-04",
+      "locator": "anbima_ettj_2026-09-04.csv; BCB SGS · ETTJ e séries 12/432"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "ASM-REV-GROWTH",
+      "label": "Crescimento nominal de receita após orçamento",
+      "value": 0.02,
+      "unit": "decimal a.a. (1 = 100%)",
+      "basis": "2,0% nominal após o orçamento; premissa gerencial sintética; substituir por plano por categoria, volume, preço e mix",
+      "sourceIds": [
+        "SRC-04"
+      ],
+      "editable": true,
+      "material": true
+    },
+    {
+      "id": "ASM-EBITDA-MARGIN",
+      "label": "Margem EBITDA base",
+      "value": 0.08201835,
+      "unit": "decimal (1 = 100%)",
+      "basis": "8.20%; orçamento sintético; não substitui build por produto e geografia",
+      "sourceIds": [
+        "SRC-04"
+      ],
+      "editable": true,
+      "material": true
+    },
+    {
+      "id": "ASM-REFI-SHARE",
+      "label": "Parcela do principal refinanciada",
+      "value": 1,
+      "unit": "decimal (1 = 100%)",
+      "basis": "100% do principal; cenário de execução, não linha comprometida nem oferta",
+      "sourceIds": [],
+      "editable": true,
+      "material": true
+    },
+    {
+      "id": "ASM-ROLLOVER-RATE",
+      "label": "Custo anual da rolagem",
+      "value": 0.1541,
+      "unit": "decimal a.a. (1 = 100%)",
+      "basis": "15.41% a.a.; CDI spot mais 1,50%; a curva DI futura e o spread executável permanecem lacunas",
+      "sourceIds": [
+        "SRC-08"
+      ],
+      "editable": true,
+      "material": true
+    },
+    {
+      "id": "ASM-IPCA-CURVE",
+      "label": "Curva de IPCA aplicada ao principal indexado",
+      "value": "0.06052,0.057576,0.056539,0.056419,0.056755,0.057323",
+      "unit": "decimais a.a. por período (1 = 100%)",
+      "basis": "inflação implícita ANBIMA; ETTJ 04/09/2026; atualização capitaliza no principal das séries tratadas como bullet",
+      "sourceIds": [
+        "SRC-08"
+      ],
+      "editable": true,
+      "material": true
+    }
+  ],
+  "gaps": [
+    {
+      "id": "GAP-01",
+      "label": "Covenant prospectivo",
+      "materiality": "blocker",
+      "impact": "não calcular headroom nem afirmar cumprimento",
+      "requestedInput": "EBITDA contratual, ajustes, caixa dedutível e degrau aplicável por data"
+    },
+    {
+      "id": "GAP-02",
+      "label": "Custo de saída",
+      "materiality": "blocker",
+      "impact": "não ranquear estruturas que retiram dívida",
+      "requestedInput": "principal nominal, juros acumulados, encargos e termos de pré-pagamento"
+    },
+    {
+      "id": "GAP-03",
+      "label": "Curva de juros",
+      "materiality": "high",
+      "impact": "juros prospectivos permanecem cenário, não preço",
+      "requestedInput": "curva DI futura observável e hedge por instrumento"
+    },
+    {
+      "id": "GAP-04",
+      "label": "Modelo integrado",
+      "materiality": "high",
+      "impact": "modelo atual é de caixa e dívida, não projeção integrada",
+      "requestedInput": "histórico por linha, balanço, fluxo de caixa e projeções por produto/geografia"
+    },
+    {
+      "id": "GAP-05",
+      "label": "Tributos",
+      "materiality": "high",
+      "impact": "comparação após impostos permanece aberta",
+      "requestedInput": "regime, efeitos da reforma e tratamento das alternativas"
+    },
+    {
+      "id": "GAP-06",
+      "label": "Liquidez intraperíodo",
+      "materiality": "high",
+      "impact": "a análise anual pode esconder picos de caixa",
+      "requestedInput": "sazonalidade mensal e disponibilidade D0"
+    }
+  ],
+  "claims": [
+    {
+      "id": "CLM-GROSS-DEBT",
+      "label": "Dívida bruta contábil",
+      "value": 5670186,
+      "unit": "R$ mil",
+      "evidenceState": "calculated",
+      "object": {
+        "id": "OBJ-DEBT-LEDGER",
+        "type": "debt_ledger",
+        "fingerprint": "7e2755dfa19fae96d17eeb6ea0a2cd0ba6db69f3a4c4033367376a09615d783e",
+        "path": "gross_debt"
+      },
+      "sourceIds": [
+        "SRC-01"
+      ],
+      "assumptionIds": [],
+      "gapIds": []
+    },
+    {
+      "id": "CLM-CONTRACTUAL-PRINCIPAL",
+      "label": "Principal contratual bruto",
+      "value": 5742510,
+      "unit": "R$ mil",
+      "evidenceState": "calculated",
+      "object": {
+        "id": "OBJ-DEBT-LEDGER",
+        "type": "debt_ledger",
+        "fingerprint": "7e2755dfa19fae96d17eeb6ea0a2cd0ba6db69f3a4c4033367376a09615d783e",
+        "path": "contractual_gross_principal"
+      },
+      "sourceIds": [
+        "SRC-01",
+        "SRC-03"
+      ],
+      "assumptionIds": [],
+      "gapIds": []
+    },
+    {
+      "id": "CLM-CASH",
+      "label": "Caixa e equivalentes contábeis",
+      "value": 1430714,
+      "unit": "R$ mil",
+      "evidenceState": "observed_public",
+      "object": {
+        "id": "OBJ-GC02-SNAPSHOT",
+        "type": "gc02_reference_snapshot",
+        "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+        "path": "economicIdentity.accountingCashAndEquivalents"
+      },
+      "sourceIds": [
+        "SRC-01"
+      ],
+      "assumptionIds": [],
+      "gapIds": []
+    },
+    {
+      "id": "CLM-REPORTED-LEVERAGE",
+      "label": "Alavancagem pro forma reportada pela companhia",
+      "value": 4.72,
+      "unit": "x",
+      "evidenceState": "observed_public",
+      "object": {
+        "id": "OBJ-GC02-SNAPSHOT",
+        "type": "gc02_reference_snapshot",
+        "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+        "path": "economicIdentity.companyReportedProFormaLeverage"
+      },
+      "sourceIds": [
+        "SRC-02"
+      ],
+      "assumptionIds": [],
+      "gapIds": [
+        "GAP-01"
+      ]
+    },
+    {
+      "id": "CLM-PEAK-MATURITY",
+      "label": "Maior vencimento contratual (2026/27)",
+      "value": 1234476,
+      "unit": "R$ mil",
+      "evidenceState": "calculated",
+      "object": {
+        "id": "OBJ-MATURITY-WALL",
+        "type": "maturity_wall",
+        "fingerprint": "1f55c8a4cb7e515b40637c01c80d9ebacf3e56d0e70264370b20236ee1149664",
+        "path": "debt.grossContractualSchedule[0].amount"
+      },
+      "sourceIds": [
+        "SRC-01",
+        "SRC-07"
+      ],
+      "assumptionIds": [],
+      "gapIds": []
+    },
+    {
+      "id": "CLM-2030-LIQUIDITY",
+      "label": "Cobertura de liquidez em 2030/31",
+      "value": 0.85085745,
+      "unit": "x",
+      "evidenceState": "mixed",
+      "object": {
+        "id": "OBJ-GC02-SNAPSHOT",
+        "type": "gc02_reference_snapshot",
+        "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+        "path": "projections.rollover[4].liquidityCoverage"
+      },
+      "sourceIds": [
+        "SRC-01",
+        "SRC-04",
+        "SRC-05",
+        "SRC-06",
+        "SRC-07",
+        "SRC-08"
+      ],
+      "assumptionIds": [
+        "ASM-REV-GROWTH",
+        "ASM-EBITDA-MARGIN",
+        "ASM-REFI-SHARE",
+        "ASM-ROLLOVER-RATE",
+        "ASM-IPCA-CURVE"
+      ],
+      "gapIds": [
+        "GAP-03",
+        "GAP-04",
+        "GAP-05",
+        "GAP-06"
+      ]
+    },
+    {
+      "id": "CLM-2030-CLOSING-CASH",
+      "label": "Caixa final em 2030/31",
+      "value": -308694.56804881,
+      "unit": "R$ mil",
+      "evidenceState": "mixed",
+      "object": {
+        "id": "OBJ-GC02-SNAPSHOT",
+        "type": "gc02_reference_snapshot",
+        "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+        "path": "projections.rollover[4].closingCash"
+      },
+      "sourceIds": [
+        "SRC-01",
+        "SRC-04",
+        "SRC-05",
+        "SRC-06",
+        "SRC-07",
+        "SRC-08"
+      ],
+      "assumptionIds": [
+        "ASM-REV-GROWTH",
+        "ASM-EBITDA-MARGIN",
+        "ASM-REFI-SHARE",
+        "ASM-ROLLOVER-RATE",
+        "ASM-IPCA-CURVE"
+      ],
+      "gapIds": [
+        "GAP-03",
+        "GAP-04",
+        "GAP-05",
+        "GAP-06"
+      ]
+    },
+    {
+      "id": "CLM-2030-LEVERAGE",
+      "label": "Dívida líquida / EBITDA em 2030/31",
+      "value": 6.50146036,
+      "unit": "x",
+      "evidenceState": "mixed",
+      "object": {
+        "id": "OBJ-GC02-SNAPSHOT",
+        "type": "gc02_reference_snapshot",
+        "fingerprint": "f154d6dd4e7a11ca63f7f4f15c9d23d413425e33109273f2678d107cbdbd9343",
+        "path": "projections.rollover[4].leverage"
+      },
+      "sourceIds": [
+        "SRC-01",
+        "SRC-04",
+        "SRC-05",
+        "SRC-07",
+        "SRC-08"
+      ],
+      "assumptionIds": [
+        "ASM-REV-GROWTH",
+        "ASM-EBITDA-MARGIN",
+        "ASM-REFI-SHARE",
+        "ASM-ROLLOVER-RATE",
+        "ASM-IPCA-CURVE"
+      ],
+      "gapIds": [
+        "GAP-03",
+        "GAP-04"
+      ]
+    },
+    {
+      "id": "CLM-COVENANT-HEADROOM",
+      "label": "Headroom prospectivo de covenant",
+      "value": null,
+      "unit": "x",
+      "evidenceState": "not_computable",
+      "object": {
+        "id": "OBJ-COVENANT",
+        "type": "covenant_reconciliation",
+        "fingerprint": "b3a1c0c76f8d69bc6305eed8d9014aba4ec27e30d9e8e577b4456fbcaec9af05",
+        "path": "prospective_headroom"
+      },
+      "sourceIds": [
+        "SRC-03"
+      ],
+      "assumptionIds": [],
+      "gapIds": [
+        "GAP-01"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "surface": "conversation",
+      "artifactId": "GC02_CHAT_READOUT_v1",
+      "artifactKind": "chat_readout",
+      "artifactFingerprint": "c2a5446f2296762e4c77f99461014e91e3389f3e10ff6c0a5d3383fe10b64eee",
+      "blocks": [
+        {
+          "id": "CHAT-CURRENT",
+          "kind": "headline",
+          "title": "Onde a companhia está hoje",
+          "claimIds": [
+            "CLM-GROSS-DEBT",
+            "CLM-CONTRACTUAL-PRINCIPAL",
+            "CLM-CASH",
+            "CLM-REPORTED-LEVERAGE",
+            "CLM-PEAK-MATURITY"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "id": "CHAT-FORWARD",
+          "kind": "decision",
+          "title": "O que o cenário prospectivo altera",
+          "claimIds": [
+            "CLM-2030-LIQUIDITY",
+            "CLM-2030-CLOSING-CASH",
+            "CLM-2030-LEVERAGE"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [
+            "ASM-REV-GROWTH",
+            "ASM-EBITDA-MARGIN",
+            "ASM-REFI-SHARE",
+            "ASM-ROLLOVER-RATE",
+            "ASM-IPCA-CURVE"
+          ],
+          "gapIds": [
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        },
+        {
+          "id": "CHAT-BOUNDARY",
+          "kind": "gap",
+          "title": "O que ainda não pode ser concluído",
+          "claimIds": [
+            "CLM-COVENANT-HEADROOM"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": [
+            "GAP-01",
+            "GAP-02",
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        }
+      ]
+    },
+    {
+      "surface": "workbook",
+      "artifactId": "GC02_Camil_Modelo_Conselho_v1.xlsx",
+      "artifactKind": "xlsx",
+      "artifactFingerprint": "3a8f1458c31287be9314f90aad71ad7b11f917529764e2b5a89cfecc3589c2e2",
+      "blocks": [
+        {
+          "id": "MODEL-SUMMARY",
+          "kind": "metric",
+          "title": "Resumo executivo",
+          "claimIds": [
+            "CLM-GROSS-DEBT",
+            "CLM-CONTRACTUAL-PRINCIPAL",
+            "CLM-CASH",
+            "CLM-REPORTED-LEVERAGE",
+            "CLM-PEAK-MATURITY",
+            "CLM-2030-LIQUIDITY",
+            "CLM-2030-CLOSING-CASH",
+            "CLM-2030-LEVERAGE"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "id": "MODEL-DEBT",
+          "kind": "table",
+          "title": "Dívida e vencimentos",
+          "claimIds": [
+            "CLM-GROSS-DEBT",
+            "CLM-CONTRACTUAL-PRINCIPAL",
+            "CLM-PEAK-MATURITY"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "id": "MODEL-FORWARD",
+          "kind": "chart",
+          "title": "Liquidez e alavancagem prospectivas",
+          "claimIds": [
+            "CLM-2030-LIQUIDITY",
+            "CLM-2030-CLOSING-CASH",
+            "CLM-2030-LEVERAGE"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [
+            "ASM-REV-GROWTH",
+            "ASM-EBITDA-MARGIN",
+            "ASM-REFI-SHARE",
+            "ASM-ROLLOVER-RATE",
+            "ASM-IPCA-CURVE"
+          ],
+          "gapIds": [
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        },
+        {
+          "id": "MODEL-GAPS",
+          "kind": "gap",
+          "title": "Checks e lacunas",
+          "claimIds": [
+            "CLM-COVENANT-HEADROOM"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": [
+            "GAP-01",
+            "GAP-02",
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        },
+        {
+          "id": "MODEL-SOURCES",
+          "kind": "source_register",
+          "title": "Fontes",
+          "claimIds": [],
+          "sourceIds": [
+            "SRC-01",
+            "SRC-02",
+            "SRC-03",
+            "SRC-04",
+            "SRC-05",
+            "SRC-06",
+            "SRC-07",
+            "SRC-08"
+          ],
+          "assumptionIds": [],
+          "gapIds": []
+        }
+      ]
+    },
+    {
+      "surface": "presentation",
+      "artifactId": "GC02_Camil_Estrutura_Capital_Conselho_v1.pptx",
+      "artifactKind": "pptx",
+      "artifactFingerprint": "186672617853d5c5e244ececa88499966fbd17da76571fe3dfb358c130b9fc7e",
+      "blocks": [
+        {
+          "id": "DECK-STRUCTURE",
+          "kind": "metric",
+          "title": "Estrutura de capital atual",
+          "claimIds": [
+            "CLM-GROSS-DEBT",
+            "CLM-CONTRACTUAL-PRINCIPAL",
+            "CLM-CASH",
+            "CLM-REPORTED-LEVERAGE",
+            "CLM-PEAK-MATURITY"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "id": "DECK-MATURITY",
+          "kind": "chart",
+          "title": "Vencimentos contratuais",
+          "claimIds": [
+            "CLM-PEAK-MATURITY"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": []
+        },
+        {
+          "id": "DECK-FORWARD",
+          "kind": "chart",
+          "title": "Liquidez e alavancagem",
+          "claimIds": [
+            "CLM-2030-LIQUIDITY",
+            "CLM-2030-CLOSING-CASH",
+            "CLM-2030-LEVERAGE"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [
+            "ASM-REV-GROWTH",
+            "ASM-EBITDA-MARGIN",
+            "ASM-REFI-SHARE",
+            "ASM-ROLLOVER-RATE",
+            "ASM-IPCA-CURVE"
+          ],
+          "gapIds": [
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        },
+        {
+          "id": "DECK-GAPS",
+          "kind": "gap",
+          "title": "Informação necessária antes de decidir",
+          "claimIds": [
+            "CLM-COVENANT-HEADROOM"
+          ],
+          "sourceIds": [],
+          "assumptionIds": [],
+          "gapIds": [
+            "GAP-01",
+            "GAP-02",
+            "GAP-03",
+            "GAP-04",
+            "GAP-05",
+            "GAP-06"
+          ]
+        }
+      ]
+    }
+  ],
+  "identityRequirements": [
+    {
+      "claimId": "CLM-GROSS-DEBT",
+      "surfaces": [
+        "conversation",
+        "workbook",
+        "presentation"
+      ]
+    },
+    {
+      "claimId": "CLM-PEAK-MATURITY",
+      "surfaces": [
+        "conversation",
+        "workbook",
+        "presentation"
+      ]
+    },
+    {
+      "claimId": "CLM-2030-LIQUIDITY",
+      "surfaces": [
+        "conversation",
+        "workbook",
+        "presentation"
+      ]
+    },
+    {
+      "claimId": "CLM-2030-CLOSING-CASH",
+      "surfaces": [
+        "conversation",
+        "workbook",
+        "presentation"
+      ]
+    },
+    {
+      "claimId": "CLM-2030-LEVERAGE",
+      "surfaces": [
+        "conversation",
+        "workbook",
+        "presentation"
+      ]
+    }
+  ],
+  "contractFingerprint": "3f1a705f1298a74454fc9a9ce55156aa5face89f10c6a16e265b63c316d9ae87"
+}

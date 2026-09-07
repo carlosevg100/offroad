@@ -9,6 +9,9 @@ model and a board presentation.
 
 - `gc02-reference-snapshot.json`: canonical machine-readable state. Its fingerprint changes when
   facts, assumptions, calculations, evidence states, coverage gaps or options change.
+- `gc02-decision-artifact-contract.json`: cross-surface identity contract. It binds the claims
+  displayed in the conversation, workbook and presentation to signed object paths and records
+  source, premise and gap lineage plus the immutable Office file hashes.
 - `GC02_Camil_Modelo_Conselho_v1.xlsx`: formula-driven model with one scenario selector, editable
   assumptions, debt service by instrument, liquidity and leverage projections, alternatives,
   sources and terminal checks.
