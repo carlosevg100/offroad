@@ -127,6 +127,7 @@ const contextCandidatePayloadSchema = z.object({
   const scopedProject = item.kind === "project_memory" || item.kind === "conversation_memory" || item.kind === "document";
   if (scopedProject && item.projectId === null) context.addIssue({code: "custom", path: ["projectId"], message: `${item.kind} requires projectId`});
   if (item.kind === "organization_memory" && item.projectId !== null) context.addIssue({code: "custom", path: ["projectId"], message: "organization_memory must be organization-scoped"});
+  if (item.kind === "organization_memory" && item.companyId !== null) context.addIssue({code: "custom", path: ["companyId"], message: "organization_memory cannot carry company scope"});
   if (item.kind === "company_memory" && item.companyId === null) context.addIssue({code: "custom", path: ["companyId"], message: "company_memory requires companyId"});
   if (item.kind === "conversation_memory" && item.conversationId === null) context.addIssue({code: "custom", path: ["conversationId"], message: "conversation_memory requires conversationId"});
   if (item.kind === "document" && item.documentId === null) context.addIssue({code: "custom", path: ["documentId"], message: "document requires documentId"});
@@ -447,7 +448,7 @@ function validateScope(item: ContextCandidate, control: SystemContextControl, bl
   if (item.kind === "conversation_memory" && item.conversationId !== control.conversationId) blockers.push({code: "cross_conversation_candidate", itemIds: []});
   if (!control.authorizedContextItemIds.includes(item.id)) blockers.push({code: "unauthorized_context_candidate", itemIds: []});
   if (item.kind === "document" && (item.documentId === null || !control.authorizedDocumentIds.includes(item.documentId))) blockers.push({code: "unauthorized_document_candidate", itemIds: []});
-  if (item.kind === "company_memory" && (item.companyId === null || !control.authorizedCompanyIds.includes(item.companyId))) blockers.push({code: "unauthorized_company_candidate", itemIds: []});
+  if (item.companyId !== null && !control.authorizedCompanyIds.includes(item.companyId)) blockers.push({code: "unauthorized_company_candidate", itemIds: []});
 }
 
 function validateLineage(items: ContextCandidate[], blockers: Array<z.infer<typeof contextBlockerSchema>>): void {

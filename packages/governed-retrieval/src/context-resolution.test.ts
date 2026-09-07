@@ -146,6 +146,13 @@ describe("authorized context resolution", () => {
     expect(JSON.stringify(result)).not.toContain("not-on-the-authorized-list");
   });
 
+  it("does not permit project memory to bypass the authorized company scope", () => {
+    const disguisedCompanyContext = candidate("ctx-project-v1", {companyId: "company-b"});
+    const result = resolveAuthorizedContext({systemControl: control(), intent: intent(), candidates: [disguisedCompanyContext], now: NOW});
+    expect(result).toMatchObject({status: "blocked", blockers: [{code: "unauthorized_company_candidate", itemIds: []}]});
+    expect(JSON.stringify(result)).not.toContain("company-b");
+  });
+
   it("never accepts authority or permissions added by memory and detects control-plane alteration", () => {
     const withAuthority = {...candidate("ctx-project-v1"), authority: "external_action"};
     const memoryResult = resolveAuthorizedContext({systemControl: control(), intent: intent(), candidates: [withAuthority], now: NOW});
