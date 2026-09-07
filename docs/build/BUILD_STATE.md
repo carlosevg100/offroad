@@ -4,6 +4,20 @@ Atualizado em: 2026-09-06
 Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Seleção fail-closed da receita econômica, candidate, 06/09/2026
+
+- A especialização do objetivo agora pode selecionar a receita de refinance e liability management
+  sem usar cargo, senioridade ou persona como regra de execução.
+- O resultado pedido contrai a receita para alternativas, plano de reunião ou material. Quatro
+  paráfrases com CFO, VP, alongamento e repricing preservam a mesma identidade econômica.
+- Necessidades sem receita implementada, combinações como refinance mais capex e outputs ainda não
+  suportados retornam bloqueio nomeado com grafo vazio. Não há fallback para um DAG genérico.
+- A seleção carrega fingerprints separados da receita, do slice compilado e da decisão de seleção,
+  além dos packs econômicos que a justificam.
+
+Status: **candidate selector**. A decisão ainda não é persistida nem autoriza execução live; o
+próximo incremento a liga ao preflight shadow capability-bound antes de qualquer enforcement.
+
 ## Receita canônica de refinance e liability management, candidate, 06/09/2026
 
 - Extraída a cadeia fixa de dez etapas do Caso 01 para uma receita reutilizável de refinance e

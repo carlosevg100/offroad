@@ -1,5 +1,20 @@
 # Acceptance Evidence
 
+## Seleção fail-closed da receita econômica, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Seleção por economia | `selectWorkflowRecipeForObjective` | pack de refinance mais terminal seleciona receita e outcome; cargo e senioridade não entram no contrato |
+| Contração por entrega | `workflow-selection.test.ts` | meeting brief compila 9 tarefas, alternativas 8 e board material 10 |
+| Invariância | quatro paráfrases com papéis e termos diferentes | mesma receita, mesmo slice e mesma decisão para a mesma economia e entrega |
+| Generalização recusada | testes de capex, refinance mais capex e risk matrix | retorna bloqueio nomeado e grafo vazio em vez de reutilizar receita incompleta |
+| Integridade | schema + fingerprints | campos de seleção só existem no estado selected; receita, slice e decisão possuem identidades distintas |
+| Gate focado | test + typecheck de `@offroad/dcm-specialization`; typecheck do worker | 3 arquivos/24 testes verdes; pacote e worker compilam |
+| Limite provado | inspeção de consumidores | decisão ainda não é persistida, não altera o roteador live e não autoriza executor |
+
+Status: **candidate selector**. O aceite prova seleção determinística e abstenção, não dispatch ou
+disponibilidade externa.
+
 ## Receita canônica de refinance e liability management, candidate, 06/09/2026
 
 | Evidência | Verificação | Resultado |
