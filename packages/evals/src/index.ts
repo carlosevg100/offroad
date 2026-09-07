@@ -5,7 +5,7 @@
  * evaluated through an `ExtractionSnapshot`; metrics follow §14.2 and the
  * Markdown report is the artifact CI and reviewers read.
  */
-export const evalsVersion = "2026.09.06-longitudinal-journeys-v1";
+export const evalsVersion = "2026.09.07-intent-router-gold-v1";
 
 export * from "./gold";
 export * from "./snapshot";
@@ -18,3 +18,5 @@ export * from "./accreditation";
 export * from "./receivables-phase-three";
 export * from "./gold-baseline";
 export * from "./longitudinal-journeys";
+export * from "./intent-gold";
+export * from "./intent-router-gate";

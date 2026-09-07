@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(34);
+    expect(decision.entryCount).toBe(35);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -42,6 +42,16 @@ describe("capability ledger", () => {
   it("keeps the governed R01 refresh internal until the specialist is promoted", () => {
     const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
     expect(byId.get("continuity.r01-governed-refresh")).toMatchObject({
+      availability: "live",
+      exposure: "internal",
+      qualityMaturity: "implemented",
+      allowedUses: ["internal_validation"],
+    });
+  });
+
+  it("records the router gate as implemented, not tested, until a real-model run passes", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("gold.intent-router-stability-gate")).toMatchObject({
       availability: "live",
       exposure: "internal",
       qualityMaturity: "implemented",

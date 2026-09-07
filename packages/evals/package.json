@@ -26,6 +26,7 @@
     "gc04:tables": "tsx scripts/build-gc04-tables.ts",
     "gc05:tables": "tsx scripts/build-gc05-tables.ts",
     "gold:rede-horizonte": "tsx scripts/build-gold-rede-horizonte.ts",
+    "intent-router:gold": "tsx scripts/run-intent-router-gold.ts",
     "lint": "tsc -p tsconfig.json --noEmit",
     "measure": "tsx scripts/measure-extraction.ts",
     "measure:classification": "tsx scripts/measure-classification.ts",
