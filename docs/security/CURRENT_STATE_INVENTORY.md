@@ -4,9 +4,9 @@ Versão: `2026.09.07-sec01-v1`
 
 Baseline: `carlosevg100/offroad@b2e389757995859cf6a0b250e051d83ba0b53163`, evidência até 2026-09-07T09:43:00.000-03:00, revisão até 2026-09-14T09:43:00.000-03:00
 
-Fingerprint: `952bd4d11e01f617778bcca6e47b7bc3a739869b062bd030d5b6f258bd9a522d`
+Fingerprint: `8853438ae3f8db7b71e5d56a3dc92dfb8265b38f138f079a352b820157a91e36`
 
-Status: baseline do repositório com verificação de evidência `repository_and_local_bytes`. Não é certificação, exame independente, pentest ou prova de operação contínua.
+Status: baseline do repositório com verificação de evidência `repository_and_local_bytes`. Claims externos e milestones aparecem exclusivamente na seção governada abaixo.
 
 ## Como ler
 
@@ -21,7 +21,7 @@ Repository-observed current state for the Offroad application, delivery path, wo
 - The deployed worker configuration omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false.
 - Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.
 - The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.
-- This inventory is not evidence of SOC 2 examination, ISO certification, penetration testing or regulatory compliance.
+- External-assurance and regulatory claims are represented only by the governed assurance section; this inventory is not their evidence.
 
 ## Resumo
 
@@ -38,6 +38,19 @@ Repository-observed current state for the Offroad application, delivery path, wo
 | Inventário estruturalmente válido | sim |
 | Repositório, bytes e coverage resolvidos pelo gate confiável | sim |
 | Assurance ready | não |
+
+## Assurance externa e milestones
+
+Claims externos são derivados de objetos tipados. O renderer só pode emitir um estado atestado após validar evidência assinada, vigente, não revogada e com o mesmo escopo contra uma trust root governada. O registro atual não contém trust root nem attestation externa.
+
+- SOC 2 Type II: não certificado.
+- ISO/IEC 27001: não certificado.
+- Teste de penetração independente: não auditado nem atestado de forma independente.
+- Auditoria independente de produção: não auditado nem atestado de forma independente.
+
+- SOC 2: plano de remediação — concluído com evidência referenciada.
+- ISO/IEC 27001: avaliação de lacunas — planejado.
+- Pentest: contratação externa — planejado.
 
 ## Claims canônicos de coverage
 

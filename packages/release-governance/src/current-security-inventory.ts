@@ -8,9 +8,36 @@ import {
   securityCurrentStateInventorySchema,
 } from "./security-current-state.ts";
 import {createCanonicalSecurityEvidenceManifest} from "./security-current-state-canonical.ts";
+import {
+  securityAssuranceMilestoneSchema,
+  securityAssuranceStatementSchema,
+  type SecurityAssuranceScope,
+} from "./security-assurance-statements.ts";
 
 const baselineCommit = "b2e389757995859cf6a0b250e051d83ba0b53163";
 const capturedAt = "2026-09-07T09:43:00.000-03:00";
+
+const currentAssuranceScope: SecurityAssuranceScope = {
+  scopeId: "offroad-platform-current-inventory",
+  scopeFingerprint: "aa2835d63829161b0eb2876d8b00132005a858e0359f65bf87e50bd6d384e935",
+  environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING"],
+  systemRefs: ["SYS-WEB", "SYS-SUPABASE", "SYS-WORKER", "SYS-GITHUB"],
+};
+
+/** Current external-assurance truth. No attestation evidence or trusted assessor root exists. */
+export const currentSecurityAssuranceStatements = Object.freeze([
+  securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-SOC2-TYPE2", claim: "soc2_type2_examined", status: "not_certified", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
+  securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-ISO27001", claim: "iso27001_certified", status: "not_certified", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
+  securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-PENTEST", claim: "penetration_test_passed", status: "not_independently_audited", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
+  securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-PRODUCTION-AUDIT", claim: "production_independently_audited", status: "not_independently_audited", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
+]);
+
+/** Program milestones are not assurance claims and cannot be rendered as certification. */
+export const currentSecurityAssuranceMilestones = Object.freeze([
+  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-REMEDIATION-PLAN", framework: "soc2", kind: "remediation_plan", status: "completed", scope: currentAssuranceScope, evidenceRef: "SEV-SECURITY-PLAN"}),
+  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
+  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-PENTEST", framework: "penetration_test", kind: "external_engagement", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
+]);
 
 const owner = (ownerRole: string, backupOwnerRole: string): SecurityOwner => ({
   ownerRole,
@@ -666,7 +693,7 @@ const currentSecurityInventoryDeclaration = {
     "The deployed worker configuration omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false.",
     "Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.",
     "The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.",
-    "This inventory is not evidence of SOC 2 examination, ISO certification, penetration testing or regulatory compliance.",
+    "External-assurance and regulatory claims are represented only by the governed assurance section; this inventory is not their evidence.",
   ],
   evidenceIndex,
   environments,

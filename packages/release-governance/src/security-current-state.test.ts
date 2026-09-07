@@ -266,75 +266,16 @@ describe("security current-state inventory", () => {
   });
 
   it.each([
-    ["SOC 2 is certified", "certification_claim"],
-    ["SOC 2—certified", "certification_claim"],
-    ["SOC 2 is now certified", "certification_claim"],
-    ["SOC 2 has successfully been certified", "certification_claim"],
-    ["SOC 2 has now been certified", "certification_claim"],
-    ["ISO 27001 is fully compliant", "certification_claim"],
-    ["ISO/IEC 27001 is certified", "certification_claim"],
-    ["Pentest: passed", "pentest_claim"],
-    ["Pentest has successfully passed", "pentest_claim"],
-    ["Production is verified", "live_assurance_claim"],
-    ["Production is independently verified", "live_assurance_claim"],
-    ["Production controls have been independently validated", "live_assurance_claim"],
-    ["Penetration testing has passed", "pentest_claim"],
-    ["SOC 2 certification is complete", "certification_claim"],
-    ["Production has been independently audited", "live_assurance_claim"],
-    ["SOC 2 has not been certified, and ISO 27001 has been certified", "certification_claim"],
-    ["We have not been certified under SOC 2, ISO 27001 has been certified", "certification_claim"],
-    ["We have not been certified under SOC 2 / penetration testing has passed", "pentest_claim"],
-    ["SOC 2 has not been certified — Production has been independently audited", "live_assurance_claim"],
-    ["While SOC 2 still needs to be certified, penetration testing has passed", "pentest_claim"],
-    ["Não fomos certificados pela SOC 2, a ISO 27001 foi certificada", "certification_claim"],
-    ["Não fomos certificados pela SOC 2 / o teste de invasão foi aprovado", "pentest_claim"],
-    ["Não fomos certificados pela SOC 2 — a produção foi auditada", "live_assurance_claim"],
-    ["Enquanto a SOC 2 ainda precisa ser certificada, o teste de penetração foi aprovado", "pentest_claim"],
-    ["SOC 2 is not certified\u2014ISO 27001 is certified", "certification_claim"],
-    ["SOC 2 não é certificado\u2014produção foi auditada", "live_assurance_claim"],
-    ["Possuímos certificação ISO 27001 vigente", "certification_claim"],
-    ["O relatório SOC 2 Type II foi emitido", "certification_claim"],
-    ["A auditoria SOC 2 foi concluída", "certification_claim"],
-    ["Production audit passed", "live_assurance_claim"],
-    ["SOC 2-certified", "certification_claim"],
-    ["SOC 2 is certi\u200bfied", "certification_claim"],
-  ] as const)("normalizes and detects forbidden assurance language: %s", (claim, code) => {
-    expect(findForbiddenAssuranceClaims(claim)).toEqual(expect.arrayContaining([
-      expect.objectContaining({code}),
-    ]));
-  });
-
-  it.each([
-    ["SOC 2 is not certified\u2014ISO 27001 is certified", "certification_claim", "iso 27001 is certified"],
-    ["SOC 2 não é certificado\u2014produção foi auditada", "live_assurance_claim", "produção foi auditada"],
-  ] as const)("keeps compact-dash polarity local: %s", (claim, code, match) => {
-    expect(findForbiddenAssuranceClaims(claim)).toEqual([{code, match}]);
-  });
-
-  it.each([
+    "SOC 2 is certified",
     "SOC 2 is not certified",
-    "We have not been certified under SOC 2",
-    "We have never been certified under SOC 2",
-    "SOC 2 has yet to be certified",
-    "SOC 2 still needs to be certified",
-    "ISO 27001 is not compliant",
-    "Pentest has not passed",
-    "Production is not verified",
-    "Telemetry activation is not live-verified",
-    "SOC 2 não é certificado",
-    "SOC 2 ainda precisa ser certificado",
-    "Não fomos certificados pela SOC 2",
-    "ISO 27001 não está em conformidade",
-    "Não estamos em conformidade com ISO 27001",
-    "Pentest não foi aprovado",
-    "Produção não está verificada",
-    "SOC 2 will be certified next quarter",
-    "A SOC 2 será certificada no próximo trimestre",
-    "SOC 2 cannot be considered certified",
     "ISO 27001 gap assessment is complete",
     "Pentest remediation plan completed",
-  ])("permits language that does not assert current assurance: %s", (claim) => {
-    expect(findForbiddenAssuranceClaims(claim)).toEqual([]);
+    "A SOC 2 será certificada no próximo trimestre",
+    "SOC 2 has not been certified — Production has been independently audited",
+  ])("treats arbitrary assurance prose as noncanonical regardless of apparent polarity: %s", (claim) => {
+    expect(findForbiddenAssuranceClaims(claim)).toEqual(expect.arrayContaining([
+      expect.objectContaining({code: "noncanonical_assurance_language"}),
+    ]));
   });
 
   it("rejects a reconstructed decision and freezes the trusted render snapshot against late getters", async () => {

@@ -39,7 +39,7 @@ export type CanonicalSecurityGapRelationship = {
  * dates. A runtime caller may present a snapshot, but cannot redefine this trust root.
  */
 const inventorySnapshotContract = {
-  inventoryFingerprint: "952bd4d11e01f617778bcca6e47b7bc3a739869b062bd030d5b6f258bd9a522d",
+  inventoryFingerprint: "8853438ae3f8db7b71e5d56a3dc92dfb8265b38f138f079a352b820157a91e36",
   generatedAt: "2026-09-07T09:43:00.000-03:00",
   evidenceCutoff: "2026-09-07T09:43:00.000-03:00",
   reviewDueAt: "2026-09-14T09:43:00.000-03:00",

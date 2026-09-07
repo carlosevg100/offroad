@@ -3,8 +3,17 @@ import {
   type SecurityCurrentStateInventory,
   type SecurityInventoryDecision,
   type SecurityOwner,
-} from "./security-current-state";
-import {findForbiddenAssuranceClaims} from "./security-assurance-language.ts";
+} from "./security-current-state.ts";
+import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.ts";
+import {
+  evaluateSecurityAssuranceStatementAgainstTrustedRoots,
+  renderSecurityAssuranceMilestone,
+  renderSecurityAssuranceStatement,
+} from "./security-assurance-statements.ts";
+import {
+  currentSecurityAssuranceMilestones,
+  currentSecurityAssuranceStatements,
+} from "./current-security-inventory.ts";
 
 export function renderSecurityCurrentStateInventory(
   candidateInventory: SecurityCurrentStateInventory,
@@ -17,6 +26,17 @@ export function renderSecurityCurrentStateInventory(
   const entityAssessment = (entityId: string) => entityAssessmentById.get(entityId);
   const entityStatus = (entityId: string) => entityAssessmentById.get(entityId)?.status ?? "coverage_contract_invalid";
   const entityGapRefs = (entityId: string) => entityAssessment(entityId)?.gapRefs ?? [];
+  const assuranceTexts = currentSecurityAssuranceStatements.map((statement) => {
+    const assuranceDecision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
+      statement,
+      evidence: [],
+      trustedRoots: [],
+      evaluatedAt: new Date(inventory.generatedAt),
+    });
+    return renderSecurityAssuranceStatement(statement, assuranceDecision, "pt-BR");
+  });
+  const milestoneTexts = currentSecurityAssuranceMilestones.map((milestone) =>
+    renderSecurityAssuranceMilestone(milestone, "pt-BR"));
   const lines: string[] = [
     "# Inventário atual de segurança da Offroad",
     "",
@@ -26,7 +46,7 @@ export function renderSecurityCurrentStateInventory(
     "",
     `Fingerprint: \`${decision.inventoryFingerprint}\``,
     "",
-    `Status: baseline do repositório com verificação de evidência \`${decision.evidenceVerification}\`. Não é certificação, exame independente, pentest ou prova de operação contínua.`,
+    `Status: baseline do repositório com verificação de evidência \`${decision.evidenceVerification}\`. Claims externos e milestones aparecem exclusivamente na seção governada abaixo.`,
     "",
     "## Como ler",
     "",
@@ -51,6 +71,14 @@ export function renderSecurityCurrentStateInventory(
     `| Inventário estruturalmente válido | ${decision.structurallyValid ? "sim" : "não"} |`,
     `| Repositório, bytes e coverage resolvidos pelo gate confiável | ${decision.currentStateTruthVerified ? "sim" : "não"} |`,
     `| Assurance ready | ${decision.assuranceReady ? "sim" : "não"} |`,
+    "",
+    "## Assurance externa e milestones",
+    "",
+    "Claims externos são derivados de objetos tipados. O renderer só pode emitir um estado atestado após validar evidência assinada, vigente, não revogada e com o mesmo escopo contra uma trust root governada. O registro atual não contém trust root nem attestation externa.",
+    "",
+    ...assuranceTexts.map((statement) => `- ${statement}`),
+    "",
+    ...milestoneTexts.map((milestone) => `- ${milestone}`),
     "",
     "## Claims canônicos de coverage",
     "",
@@ -161,9 +189,9 @@ export function renderSecurityCurrentStateInventory(
     "",
   ];
   const output = lines.join("\n");
-  const forbiddenClaims = findForbiddenAssuranceClaims(output);
+  const forbiddenClaims = findNonCanonicalAssuranceLanguage(output, [...assuranceTexts, ...milestoneTexts]);
   if (forbiddenClaims.length > 0) {
-    throw new Error(`security inventory contains forbidden assurance language: ${forbiddenClaims.map((finding) => finding.code).join(",")}`);
+    throw new Error(`security inventory contains noncanonical assurance language: ${forbiddenClaims.map((finding) => finding.match).join(",")}`);
   }
   return output;
 }
