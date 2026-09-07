@@ -1,6 +1,8 @@
-import {canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, semanticObjectCompilationSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
+import {INTENT_CLASSIFIER_SYSTEM, SEMANTIC_OBJECT_EXTRACTOR_SYSTEM, canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, semanticObjectCompilationSchema, semanticObjectExtractorOutputSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
 import {fingerprintJson} from "@offroad/case-understanding";
+import type {GatewayCallLog} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
+import {z} from "zod";
 
 import {intentGoldTurns} from "./intent-gold";
 import {
@@ -11,6 +13,9 @@ import {
   summarizeIntentRouterGate,
   type IntentRouterGateObservation,
 } from "./intent-router-gate";
+import {intentGoldClassifierInput, intentGoldMessage, intentGoldObjectInput} from "./intent-router-gate-input";
+import {evidenceFingerprint, fingerprintIntentRouterEvidenceRecord, verifyIntentRouterCallEvidence, verifyIntentRouterEvidenceRecord} from "./intent-router-call-evidence";
+import {assertTrustedPaidGateEnvironment} from "./intent-router-gate-trust";
 
 const outputFor = (turn = intentGoldTurns[0]!, overrides: Partial<IntentClassifierOutput> = {}): IntentClassifierOutput => ({
   routingCore: {
@@ -46,14 +51,18 @@ function messageFor(turn: typeof intentGoldTurns[number], repeat: number): strin
 
 const observation = (turn: typeof intentGoldTurns[number], repeat: number, output: IntentClassifierOutput | null): IntentRouterGateObservation => ({
   turnId: turn.id, suite: turn.suite, repeat, messageFingerprint: fingerprintIntentMessage(messageFor(turn, repeat)), expected: turn.expected,
+  classifierInputFingerprint: fingerprintJson(intentGoldClassifierInput(turn, intentGoldMessage(turn, repeat))),
+  objectInputFingerprint: fingerprintJson(intentGoldObjectInput(turn, intentGoldMessage(turn, repeat))),
   rawActual: output, actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output, output),
   rawActualFingerprint: output ? fingerprintJson(output) : null,
+  actualFingerprint: output ? fingerprintJson(output) : null,
   routingFingerprint: output ? intentRoutingFingerprint(output) : null, provider: output ? "anthropic" : null,
   model: output ? "governed-test-model" : null,
   rawObjectActual: output ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []} : null,
   rawObjectActualFingerprint: output ? fingerprintJson({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []}) : null,
   objectCompilation: output ? compilationFor(outputFor(turn), turn.expected.abstain) : null,
   objectProvider: output ? "anthropic" : null, objectModel: output ? "governed-object-model" : null,
+  routeAttemptCount: output ? 1 : 0, routeCostUsd: output ? 0.01 : 0, routeLatencyMs: output ? 20 : 0,
   objectAttemptCount: output ? 1 : 0, objectCostUsd: output ? 0.005 : 0, objectLatencyMs: output ? 80 : 0,
   costUsd: output ? 0.015 : 0, latencyMs: output ? 100 : 0,
 });
@@ -106,13 +115,71 @@ const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: 
 };
 
 describe("intent router promotion gate", () => {
-  it("passes every one of the 52 real messages through raw output and production canonicalization", () => {
+  it("refuses paid execution outside the trusted post-merge main workflow", () => {
+    const trusted = {
+      githubActions: "true", repository: "carlosevg100/offroad", ref: "refs/heads/main",
+      sha: "a".repeat(40), workflowRef: "carlosevg100/offroad/.github/workflows/intent-router-gold.yml@refs/heads/main",
+      eventName: "workflow_dispatch",
+    };
+    expect(() => assertTrustedPaidGateEnvironment(trusted)).not.toThrow();
+    expect(() => assertTrustedPaidGateEnvironment({...trusted, ref: "refs/heads/feature/forge"})).toThrow("paid_gate_requires_main_ref");
+    expect(() => assertTrustedPaidGateEnvironment({...trusted, workflowRef: "carlosevg100/offroad/.github/workflows/evil.yml@refs/heads/main"})).toThrow("paid_gate_requires_main_workflow");
+    expect(() => assertTrustedPaidGateEnvironment({...trusted, githubActions: "false"})).toThrow("paid_gate_requires_github_actions");
+  });
+
+  it("detects any mutation of the persisted evidence record", () => {
+    const unsigned = {schemaVersion: "intent-router-gate.v3", observations: 52, provenance: {gitSha: "a".repeat(40)}};
+    const record = {...unsigned, evidenceFingerprint: fingerprintIntentRouterEvidenceRecord(unsigned)};
+    expect(verifyIntentRouterEvidenceRecord(record)).toBe(true);
+    expect(verifyIntentRouterEvidenceRecord({...record, observations: 51})).toBe(false);
+  });
+
+  it("requires bijective task, schema, prompt, input, output, provider, model, attempt and cost lineage", () => {
+    const turn = intentGoldTurns[0]!;
+    const run = observation(turn, 1, outputFor(turn));
+    const message = intentGoldMessage(turn, 1);
+    const call = (surface: "intent_router_gold" | "intent_object_gold"): GatewayCallLog => {
+      const route = surface === "intent_router_gold";
+      const input = [{type: "text" as const, text: JSON.stringify(route ? intentGoldClassifierInput(turn, message) : intentGoldObjectInput(turn, message))}];
+      const system = route ? INTENT_CLASSIFIER_SYSTEM : SEMANTIC_OBJECT_EXTRACTOR_SYSTEM;
+      const schemaName = route ? "shadow_routing_output" : "semantic_object_extractor_output";
+      const schema = route ? intentClassifierOutputSchema : semanticObjectExtractorOutputSchema;
+      return {
+        invocationId: surface, task: route ? "route_intent" : "extract_semantic_objects", provider: "anthropic",
+        model: route ? "governed-test-model" : "governed-object-model", effort: "medium", outcome: "ok",
+        promptFingerprint: evidenceFingerprint({system, schemaName, schema: z.toJSONSchema(schema)}),
+        inputFingerprint: evidenceFingerprint(input), outputFingerprint: route ? run.rawActualFingerprint! : run.rawObjectActualFingerprint!,
+        usage: {inputTokens: 1, outputTokens: 1, cachedInputTokens: 0}, costUsd: route ? 0.01 : 0.005,
+        costStatus: "measured", latencyMs: route ? 20 : 80, stopReason: "end", usedFallback: false,
+        retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false, fromCassette: false, schemaName,
+        metadata: {surface, caseId: turn.caseId, turnId: turn.id, repeat: "1"},
+      };
+    };
+    const calls = [call("intent_router_gold"), call("intent_object_gold")];
+    const spent = {costUsd: 0.015, calls: 2, unknownCostCalls: 0, budgetExposureUsd: 0.015};
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls, providerPreflight: [], gatewaySpent: spent}).passed).toBe(true);
+    const forged = calls.map((entry, index) => index === 0 ? {...entry, task: "extract_semantic_objects" as const, costUsd: 0.001} : entry);
+    const verdict = verifyIntentRouterCallEvidence({observations: [run], calls: forged, providerPreflight: [], gatewaySpent: spent});
+    expect(verdict.passed).toBe(false);
+    expect(verdict.issues).toEqual(expect.arrayContaining([expect.stringContaining("task_mismatch"), expect.stringContaining("cost_mismatch"), "gateway_measured_cost_mismatch"]));
+    const duplicate = [...calls, {...calls[0]!, invocationId: calls[1]!.invocationId}];
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls: duplicate, providerPreflight: [], gatewaySpent: {...spent, calls: 3, costUsd: 0.025}}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("duplicate_invocation"), expect.stringContaining("terminal_success_count")]));
+  });
+
+  it("exercises every one of the 52 authored messages without treating an oracle-built output as provider evidence", () => {
     const observations = intentGoldTurns.flatMap((turn) => (turn.stabilityParaphrases ? [1, 2, 3] : [1])
       .map((repeat) => canonicalizedObservation(turn, repeat)));
     const failures = observations.filter(({checks}) => Object.values(checks).some((passed) => !passed))
       .map(({turnId, repeat, actual, checks}) => ({turnId, repeat, composition: actual?.composition, checks}));
-    expect(failures).toEqual([]);
-    expect(summarizeIntentRouterGate(observations).passed).toBe(true);
+    expect(observations).toHaveLength(52);
+    // This helper deliberately derives its objects from the answer key instead of attributable
+    // extractor spans. The hardened gate must reject that old shortcut even if most field scores
+    // look green.
+    const summary = summarizeIntentRouterGate(observations);
+    expect(summary.passed).toBe(false);
+    expect(summary.chainRecompositionMismatches).toHaveLength(52);
+    expect(failures.length).toBeGreaterThan(0);
   });
 
   it("scores the explicit semantic answer key rather than only checking field presence", () => {
@@ -247,6 +314,7 @@ describe("intent router promotion gate", () => {
       {...base, routingCore: {...base.routingCore, action: {...base.routingCore.action, state: "not_applicable"}}},
       {...base, routingCore: {...base.routingCore, object: {...base.routingCore.object, state: "unknown"}}},
       {...base, routingCore: {...base.routingCore, workResponsibility: {...base.routingCore.workResponsibility, state: "explicit"}}},
+      {...base, inferableContext: {...base.inferableContext, jurisdiction: {value: ["US"], state: "inferred", confidence: 0.9}}},
     ];
     for (const changed of mutations) expect(intentRoutingFingerprint(changed)).not.toBe(baseFingerprint);
     const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
@@ -296,14 +364,14 @@ describe("intent router promotion gate", () => {
     expect(summary.stabilityRate).toBe(summary.qualifiedStabilityRate);
   });
 
-  it("passes only when every suite and every semantic check is green", () => {
+  it("does not pass from answer-key-shaped observations without an authentic extractor chain", () => {
     const summary = summarizeIntentRouterGate(completeObservations());
-    expect(summary.passed).toBe(true);
+    expect(summary.passed).toBe(false);
+    expect(summary.manifestPassed).toBe(true);
+    expect(summary.integrityPassed).toBe(false);
     expect(summary.uniqueTurns).toBe(40);
     expect(summary.observations).toBe(52);
-    expect(summary.suiteGates.every(({passed}) => passed)).toBe(true);
-    expect(summary.metrics.every(({gatePassed}) => gatePassed)).toBe(true);
-    expect(summary.stabilityRate).toBe(1);
+    expect(summary.chainRecompositionMismatches).toHaveLength(52);
   });
 
   it("recomputes the complete manifest and rejects conflicting single-valued material slots", () => {
@@ -358,19 +426,22 @@ describe("intent router promotion gate", () => {
       .toContain(`${valid[3]!.turnId}:${valid[3]!.repeat}`);
   });
 
-  it("requires complete object coverage for routed work and diagnostic incompleteness for honest abstention", () => {
+  it("reports object coverage independently from the requested abstention outcome", () => {
     const valid = completeObservations();
     const routed = intentGoldTurns.find(({expected}) => !expected.abstain)!;
     const abstention = intentGoldTurns.find(({expected}) => expected.abstain)!;
     const wrongRoutedCoverage = valid.map((entry) => entry.turnId === routed.id && entry.repeat === 1
       ? {...entry, objectCompilation: compilationFor(outputFor(routed), true)}
       : entry);
-    expect(summarizeIntentRouterGate(wrongRoutedCoverage).invalidObservationEntries).toContain(`${routed.id}:1`);
+    expect(summarizeIntentRouterGate(wrongRoutedCoverage).chainRecompositionMismatches).toContain(`${routed.id}:1`);
 
     const falseCompleteAbstention = valid.map((entry) => entry.turnId === abstention.id && entry.repeat === 1
       ? {...entry, objectCompilation: compilationFor(outputFor(abstention), false)}
       : entry);
-    expect(summarizeIntentRouterGate(falseCompleteAbstention).invalidObservationEntries).toContain(`${abstention.id}:1`);
+    const abstentionSummary = summarizeIntentRouterGate(falseCompleteAbstention);
+    expect(abstentionSummary.chainRecompositionMismatches).toContain(`${abstention.id}:1`);
+    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(abstention), false)).completed).toBe(true);
+    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(abstention), true)).completed).toBe(true);
   });
 
   it("rejects forged plan order and duplicate responsibilities across the complete manifest", () => {

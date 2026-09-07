@@ -1,6 +1,9 @@
 import {createHash} from "node:crypto";
 
 import {
+  applySemanticObjectCompilation,
+  canonicalizeIntentClassifierOutput,
+  compileSemanticObjects,
   compositionPolicy,
   intentClassifierOutputSchema,
   semanticObjectCompilationSchema,
@@ -19,6 +22,7 @@ import {
   type IntentGoldSuite,
   type IntentGoldTurn,
 } from "./intent-gold";
+import {intentGoldClassifierInput, intentGoldMessage, intentGoldObjectInput} from "./intent-router-gate-input";
 
 export const intentRouterGateChecksSchema = z.object({
   completed: z.boolean(), composition: z.boolean(), abstain: z.boolean(), depth: z.boolean(), continuity: z.boolean(),
@@ -34,7 +38,10 @@ export const intentRouterGateObservationSchema = z.object({
   rawActual: intentClassifierOutputSchema.nullable(), actual: intentClassifierOutputSchema.nullable(), error: z.string().nullable(),
   rawObjectActual: semanticObjectExtractorOutputSchema.nullable(), objectCompilation: semanticObjectCompilationSchema.nullable(),
   rawActualFingerprint: z.string().regex(/^[a-f0-9]{64}$/).nullable(), rawObjectActualFingerprint: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
+  classifierInputFingerprint: z.string().regex(/^[a-f0-9]{64}$/), objectInputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  actualFingerprint: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
   checks: intentRouterGateChecksSchema, routingFingerprint: z.string().nullable(), provider: z.string().nullable(), model: z.string().nullable(),
+  routeAttemptCount: z.number().int().nonnegative(), routeCostUsd: z.number().nonnegative(), routeLatencyMs: z.number().nonnegative(),
   objectProvider: z.string().nullable(), objectModel: z.string().nullable(), objectAttemptCount: z.number().int().nonnegative(),
   objectCostUsd: z.number().nonnegative(), objectLatencyMs: z.number().nonnegative(),
   costUsd: z.number().nonnegative(), latencyMs: z.number().nonnegative(),
@@ -109,10 +116,9 @@ export function scoreIntentGoldTurn(
     ? semanticOutput.routingCore.audienceType.state === "unknown" || semanticOutput.routingCore.audienceType.state === "not_applicable"
     : assertsMeaning(semanticOutput.routingCore.audienceType.state);
   return {
-    completed: hasGovernedClassifierConfidence(rawOutput)
-      && (objectCompilation === undefined || (objectCompilation !== null && (expected.abstain
-        ? objectCompilation.status !== "complete" && objectCompilation.coverage.issues.length > 0
-        : objectCompilation.status === "complete"))),
+    // Classifier completeness and semantic-object coverage are independent measurements. An
+    // abstention must never be rewarded merely because extraction failed.
+    completed: hasGovernedClassifierConfidence(rawOutput),
     composition: output.composition === expected.composition,
     abstain: output.abstain === expected.abstain,
     depth: output.routingCore.depth.value === expected.depth && supportsPlanField(output.routingCore.depth.state, expected.abstain),
@@ -147,6 +153,10 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
     continuity: {value: output.routingCore.continuity.value, state: output.routingCore.continuity.state},
     primaryWorks: output.primaryWorks.map(({work}) => work),
     responsibilities: {value: output.routingCore.workResponsibility.value, state: output.routingCore.workResponsibility.state},
+    inferableContext: Object.fromEntries(Object.entries(output.inferableContext).map(([name, field]) => [name, {
+      state: field.state,
+      value: Array.isArray(field.value) ? [...field.value].sort() : field.value,
+    }])),
     asksQuestion: output.firstQuestion !== null,
   };
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
@@ -155,13 +165,16 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
 export type IntentRouterGateMetric = {name: keyof IntentRouterGateChecks; passed: number; total: number; rate: number; requiredRate: 1; gatePassed: boolean};
 export type IntentRouterSuiteGate = {suite: IntentGoldSuite; passed: boolean; observations: number; failedTurnIds: string[]};
 export type IntentRouterGateSummary = {
-  schemaVersion: "intent-router-gate.v2"; passed: boolean; observations: number; uniqueTurns: number; manifestPassed: boolean;
+  schemaVersion: "intent-router-gate.v3"; passed: boolean; observations: number; uniqueTurns: number; manifestPassed: boolean; integrityPassed: boolean;
   missingManifestEntries: string[]; extraManifestEntries: string[]; duplicateManifestEntries: string[]; messageFingerprintMismatches: string[];
   expectedMismatches: string[]; invalidObservationEntries: string[]; recordedCheckMismatches: string[]; routingFingerprintMismatches: string[];
   metrics: IntentRouterGateMetric[]; suiteGates: IntentRouterSuiteGate[]; stableTurns: number; repeatedTurns: number;
   stabilityRate: number; requiredStabilityRate: 1; unstableTurnIds: string[]; totalCostUsd: number; totalLatencyMs: number;
   fingerprintInvariantTurns: number; fingerprintInvarianceRate: number; fingerprintVariantTurnIds: string[];
   qualifiedStableTurns: number; qualifiedStabilityRate: number; qualifiedUnstableTurnIds: string[];
+  inputFingerprintMismatches: string[]; chainRecompositionMismatches: string[]; actualFingerprintMismatches: string[];
+  rawMetrics: IntentRouterGateMetric[]; policyOverrideObservations: number;
+  objectCoverage: {complete: number; incomplete: number; rejected: number; routedComplete: number; routedTotal: number; abstentionComplete: number; abstentionIncomplete: number; abstentionRejected: number; abstentionTotal: number};
 };
 
 export function expectedIntentRouterManifest(turns: readonly IntentGoldTurn[] = intentGoldTurns): Array<{turnId: string; suite: IntentGoldSuite; repeat: 1 | 2 | 3; messageFingerprint: string}> {
@@ -193,21 +206,53 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
   const turnById = new Map(turns.map((turn) => [turn.id, turn]));
   const evaluated = observations.map((observation) => {
     const turn = turnById.get(observation.turnId);
-    const checks = turn ? scoreIntentGoldTurn(turn, observation.actual, observation.rawActual, observation.objectCompilation) : emptyChecks();
-    const routingFingerprint = observation.actual ? intentRoutingFingerprint(observation.actual) : null;
-    return {observation, turn, checks, routingFingerprint};
+    let message: string | null = null;
+    let classifierInputFingerprint: string | null = null;
+    let objectInputFingerprint: string | null = null;
+    let recomposedCompilation: SemanticObjectCompilation | null = null;
+    let recomposedActual: IntentClassifierOutput | null = null;
+    let chainError: string | null = null;
+    if (turn && observation.rawActual && observation.rawObjectActual) {
+      try {
+        message = intentGoldMessage(turn, observation.repeat);
+        const classifierInput = intentGoldClassifierInput(turn, message);
+        const objectInput = intentGoldObjectInput(turn, message);
+        classifierInputFingerprint = fingerprintJson(classifierInput);
+        objectInputFingerprint = fingerprintJson(objectInput);
+        recomposedCompilation = compileSemanticObjects(objectInput, observation.rawObjectActual);
+        recomposedActual = canonicalizeIntentClassifierOutput(
+          applySemanticObjectCompilation(observation.rawActual, recomposedCompilation),
+          classifierInput,
+        );
+      } catch (cause) {
+        chainError = cause instanceof Error ? cause.message : String(cause);
+      }
+    }
+    const checks = turn ? scoreIntentGoldTurn(turn, recomposedActual, observation.rawActual, recomposedCompilation) : emptyChecks();
+    const rawChecks = turn ? scoreIntentGoldTurn(turn, observation.rawActual, observation.rawActual) : emptyChecks();
+    const routingFingerprint = recomposedActual ? intentRoutingFingerprint(recomposedActual) : null;
+    return {observation, turn, message, classifierInputFingerprint, objectInputFingerprint, recomposedCompilation, recomposedActual, chainError, checks, rawChecks, routingFingerprint};
   });
   const expectedMismatches = evaluated.filter(({observation, turn}) => !turn || JSON.stringify(observation.expected) !== JSON.stringify(turn.expected))
     .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
-  const invalidObservationEntries = evaluated.filter(({observation, turn}) => !observation.rawActual || !observation.actual
+  const inputFingerprintMismatches = evaluated.filter(({observation, classifierInputFingerprint, objectInputFingerprint}) =>
+    observation.classifierInputFingerprint !== classifierInputFingerprint || observation.objectInputFingerprint !== objectInputFingerprint)
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const chainRecompositionMismatches = evaluated.filter(({observation, recomposedCompilation, recomposedActual, chainError}) =>
+    chainError !== null || !recomposedCompilation || !recomposedActual
+      || fingerprintJson(observation.objectCompilation) !== fingerprintJson(recomposedCompilation)
+      || fingerprintJson(observation.actual) !== fingerprintJson(recomposedActual))
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const actualFingerprintMismatches = evaluated.filter(({observation, recomposedActual}) =>
+    !recomposedActual || observation.actualFingerprint !== fingerprintJson(recomposedActual))
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const invalidObservationEntries = evaluated.filter(({observation, recomposedCompilation, recomposedActual}) => !observation.rawActual || !observation.actual
     || !observation.rawObjectActual || !observation.objectCompilation
+    || !recomposedCompilation || !recomposedActual
     || observation.rawActualFingerprint !== fingerprintJson(observation.rawActual)
     || observation.rawObjectActualFingerprint !== fingerprintJson(observation.rawObjectActual)
-    || (turn?.expected.abstain
-      ? observation.objectCompilation?.status === "complete" || observation.objectCompilation?.coverage.issues.length === 0
-      : observation.objectCompilation?.status !== "complete")
     || observation.error !== null || !observation.provider || !observation.model
-    || !observation.objectProvider || !observation.objectModel || observation.objectAttemptCount < 1)
+    || !observation.objectProvider || !observation.objectModel || observation.routeAttemptCount < 1 || observation.objectAttemptCount < 1)
     .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
   const recordedCheckMismatches = evaluated.filter(({observation, checks}) =>
     Object.keys(intentRouterGateChecksSchema.shape).some((name) => observation.checks[name as keyof IntentRouterGateChecks] !== checks[name as keyof IntentRouterGateChecks]))
@@ -217,13 +262,21 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
   const manifestPassed = observations.length === 52 && turns.length === 40 && expectedManifest.length === 52
     && missingManifestEntries.length === 0 && extraManifestEntries.length === 0
     && duplicateManifestEntries.length === 0 && messageFingerprintMismatches.length === 0
-    && expectedMismatches.length === 0 && invalidObservationEntries.length === 0
-    && recordedCheckMismatches.length === 0 && routingFingerprintMismatches.length === 0;
+    && expectedMismatches.length === 0;
+  const integrityPassed = invalidObservationEntries.length === 0
+    && inputFingerprintMismatches.length === 0 && chainRecompositionMismatches.length === 0
+    && actualFingerprintMismatches.length === 0 && recordedCheckMismatches.length === 0
+    && routingFingerprintMismatches.length === 0;
 
   const firstRuns = evaluated.filter(({observation}) => observation.repeat === 1);
   const checkNames = Object.keys(intentRouterGateChecksSchema.shape) as Array<keyof IntentRouterGateChecks>;
   const metrics = checkNames.map((name): IntentRouterGateMetric => {
     const passed = firstRuns.filter(({checks}) => checks[name]).length;
+    const total = firstRuns.length; const rate = total === 0 ? 0 : passed / total;
+    return {name, passed, total, rate, requiredRate: 1, gatePassed: total === 40 && passed === total};
+  });
+  const rawMetrics = checkNames.map((name): IntentRouterGateMetric => {
+    const passed = firstRuns.filter(({rawChecks}) => rawChecks[name]).length;
     const total = firstRuns.length; const rate = total === 0 ? 0 : passed / total;
     return {name, passed, total, rate, requiredRate: 1, gatePassed: total === 40 && passed === total};
   });
@@ -256,15 +309,30 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
   const stabilityRate = qualifiedStabilityRate;
   const unstableTurnIds = qualifiedUnstableTurnIds;
   return {
-    schemaVersion: "intent-router-gate.v2",
-    passed: manifestPassed && metrics.every(({gatePassed}) => gatePassed) && suiteGates.every(({passed}) => passed) && stabilityRate === 1,
-    observations: observations.length, uniqueTurns: firstRuns.length, manifestPassed,
+    schemaVersion: "intent-router-gate.v3",
+    passed: manifestPassed && integrityPassed && metrics.every(({gatePassed}) => gatePassed) && suiteGates.every(({passed}) => passed) && stabilityRate === 1,
+    observations: observations.length, uniqueTurns: firstRuns.length, manifestPassed, integrityPassed,
     missingManifestEntries, extraManifestEntries, duplicateManifestEntries, messageFingerprintMismatches,
     expectedMismatches, invalidObservationEntries, recordedCheckMismatches, routingFingerprintMismatches,
+    inputFingerprintMismatches, chainRecompositionMismatches, actualFingerprintMismatches,
     metrics, suiteGates, stableTurns, repeatedTurns: stabilityIds.length, stabilityRate, requiredStabilityRate: 1,
     unstableTurnIds, totalCostUsd: observations.reduce((sum, observation) => sum + observation.costUsd, 0),
     totalLatencyMs: observations.reduce((sum, observation) => sum + observation.latencyMs, 0),
     fingerprintInvariantTurns, fingerprintInvarianceRate, fingerprintVariantTurnIds,
     qualifiedStableTurns, qualifiedStabilityRate, qualifiedUnstableTurnIds,
+    rawMetrics,
+    policyOverrideObservations: evaluated.filter(({observation, recomposedActual}) => observation.rawActual && recomposedActual
+      && fingerprintJson(observation.rawActual) !== fingerprintJson(recomposedActual)).length,
+    objectCoverage: {
+      complete: evaluated.filter(({recomposedCompilation}) => recomposedCompilation?.status === "complete").length,
+      incomplete: evaluated.filter(({recomposedCompilation}) => recomposedCompilation?.status === "incomplete").length,
+      rejected: evaluated.filter(({recomposedCompilation}) => recomposedCompilation?.status === "rejected").length,
+      routedComplete: evaluated.filter(({turn, recomposedCompilation}) => !turn?.expected.abstain && recomposedCompilation?.status === "complete").length,
+      routedTotal: evaluated.filter(({turn}) => !turn?.expected.abstain).length,
+      abstentionComplete: evaluated.filter(({turn, recomposedCompilation}) => turn?.expected.abstain && recomposedCompilation?.status === "complete").length,
+      abstentionIncomplete: evaluated.filter(({turn, recomposedCompilation}) => turn?.expected.abstain && recomposedCompilation?.status === "incomplete").length,
+      abstentionRejected: evaluated.filter(({turn, recomposedCompilation}) => turn?.expected.abstain && recomposedCompilation?.status === "rejected").length,
+      abstentionTotal: evaluated.filter(({turn}) => turn?.expected.abstain).length,
+    },
   };
 }

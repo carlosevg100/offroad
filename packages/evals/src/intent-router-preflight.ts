@@ -49,7 +49,7 @@ export async function preflightIntentRouterProviders<TSchema extends z.ZodType>(
         ...request,
         model: ref,
         allowFallback: false,
-        metadata: {...request.metadata, surface: "intent_router_provider_preflight", provider: ref.provider},
+        metadata: {...request.metadata, surface: "intent_router_provider_preflight", provider: ref.provider, configuredModel: ref.model},
       });
       const after = gateway.spent();
       results.push({
