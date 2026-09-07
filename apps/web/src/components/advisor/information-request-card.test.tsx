@@ -66,4 +66,18 @@ describe("InformationRequestCard", () => {
     expect(html).toContain("templates/receivables-r01");
     expect(html).not.toContain('placeholder="Escreva aqui"');
   });
+
+  it("accepts institutional number notation instead of constraining the field to browser numbers", () => {
+    const html = renderToStaticMarkup(<InformationRequestCard copy={copy} onAnswer={vi.fn()} remaining={0} request={{
+      id: "70000000-0000-4000-8000-000000000395",
+      question: "Qual advance rate devemos testar?",
+      whyItMatters: "Altera o borrowing base.",
+      decisionImpact: "Recalcula a estrutura.",
+      answerKind: "number",
+      choices: [], acceptableEvidence: [], updatedAt: "2026-09-07T03:00:00.000Z",
+    }} />);
+    expect(html).toContain('inputMode="decimal"');
+    expect(html).toContain('type="text"');
+    expect(html).not.toContain('type="number"');
+  });
 });
