@@ -1360,3 +1360,12 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Continuidade do workflow | `20260907044322_integration_preview_workflow_continuity_anchor.sql`, `20260907044325_integration_preview_workflow_continuity_grant_parity.sql`, teste SQL e `agent-operation-brief.test.ts` | resposta governada, ajuste do plano e alteração de premissa continuam usando a última seleção econômica imutável do mesmo projeto mesmo depois de o pedido inicial sair da janela curta; capability forjada e projeto distinto não têm acesso; wrapper e implementação têm grant parity; o novo turno recompila e volta a passar pelo gate exato | 2026-09-07 |
 | Advisors | Supabase staging | nenhum novo finding de segurança; dois INFO preexistentes em tabelas `private`; findings de performance preexistentes seguem fora desta fatia | 2026-09-07 |
 | Rollout fail-closed | catálogo de migrations e `to_regprocedure` em produção | merge da branch respondeu sucesso, mas não promoveu DDL; deploy do worker cancelado antes do rollout, 15 migrations aplicadas em ordem e carimbos do Git reconciliados com produção | 2026-09-07 |
+
+## Respostas governadas para o método R01, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Binding da pergunta | `receivables-information-requests.ts` | lacuna R01 gera pergunta com field path, tipo, unidade, faixa, opções e hash do dataset; binding faz parte do fingerprint | 2026-09-07 |
+| Aplicação determinística | `receivables-information-response.test.ts` e `agent-operation-brief.test.ts` | resposta numérica, escolha e texto tipado viram patch validado e revisão acumulada sem chamada de modelo; valor inválido é recusado | 2026-09-07 |
+| Persistência e isolamento | `20260907050148_receivables_information_request_bindings.sql` e `receivables_information_request_bindings.sql` | pergunta, resposta, patch e draft permanecem capability-bound, por organização/projeto/dataset; replay é idempotente e escrita direta é negada | 2026-09-07 |
+| Limite | código e testes | bridge atualiza inputs do R01; não homologa o método, não fecha lacunas não respondidas e não autoriza recomendação, estrutura ou contato externo | 2026-09-07 |

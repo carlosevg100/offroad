@@ -3448,3 +3448,10 @@ explícita encontrou as RPCs ausentes e cancelou o deploy automático do worker.
 pendentes foram então aplicadas em ordem; o repositório foi renomeado para os carimbos efetivos de
 produção `20260907044208` a `20260907044325`, sem mudança de SQL. Rollouts futuros precisam conferir
 o catálogo e uma RPC crítica depois do merge, não confiar apenas no status nominal do comando.
+
+O elo seguinte liga respostas governadas às lacunas do método R01. A pergunta passa a declarar o
+campo exato, tipo, unidade, limites, opções e dataset; somente uma resposta vinculada pode gerar um
+patch. O worker valida e normaliza sem modelo, persiste uma nova revisão acumulada e preserva a
+linhagem até o usuário e a pergunta. Isso substitui a dependência de texto recente por estado de
+projeto, mas não promove a análise de recebíveis a expert nem autoriza output externo. A migration
+de staging é `20260907050148_receivables_information_request_bindings.sql`.

@@ -2597,3 +2597,16 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   `20260907044325`; o conteúdo SQL não mudou.
 - O próximo deploy só pode prosseguir depois de catálogo remoto, grants, advisors e smoke de RPC
   confirmarem paridade. Sucesso do comando de merge, isoladamente, não é evidência de promoção.
+
+## Resposta governada alimenta o método R01, candidate, 07/09/2026
+
+- Cada pergunta material de recebíveis pode carregar um binding tipado para um campo do método
+  R01, incluindo dataset de origem, tipo, unidade, faixa e opções permitidas. Texto livre sem esse
+  binding continua sendo conversa e não altera input financeiro.
+- Quando o usuário responde pelo controle governado, o worker interpreta e valida o valor sem
+  chamada de modelo, grava um patch imutável e uma nova revisão do draft, e mantém a linhagem até
+  pergunta, resposta, usuário e hash do dataset. Percentuais são normalizados para a escala interna.
+- O próximo executor recebe a revisão acumulada em vez de reconstruir respostas da janela do chat.
+  Resposta inválida, fora da faixa, ligada a outro projeto ou a outro dataset falha fechada.
+- A capacidade permanece `candidate/internal`: testes unitários e staging cobrem o bridge; banco,
+  CI integral, E2E e promoção ainda são gates obrigatórios.
