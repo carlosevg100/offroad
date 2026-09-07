@@ -204,6 +204,20 @@ function assemblyConflicts(
     }
   }
   const resolvedFindingIds = new Set(assembly.findingResolutions.map((item) => item.findingId));
+  const detectedFindingIds = new Set(detection.defects.map((item) => item.id));
+  for (const resolution of assembly.findingResolutions) {
+    if (!detectedFindingIds.has(resolution.findingId)) {
+      gaps.push(gap(
+        `finding_resolution_without_detection:${resolution.findingId}`,
+        "title_legal_controls",
+        "conflict",
+        `Há um tratamento para o achado “${resolution.findingId}”, mas esse achado não pertence à detecção desta carteira.`,
+        `A disposition exists for finding “${resolution.findingId}”, but that finding does not belong to this pool detection.`,
+        "Confirme se a resolução pertence a outra versão da carteira e remova ou vincule o achado correto.",
+        "Confirm whether the resolution belongs to another pool version and remove it or link the correct finding.",
+      ));
+    }
+  }
   for (const finding of detection.defects) {
     if (!resolvedFindingIds.has(finding.id)) {
       gaps.push(gap(
