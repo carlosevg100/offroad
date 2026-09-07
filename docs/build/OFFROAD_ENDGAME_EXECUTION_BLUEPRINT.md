@@ -157,6 +157,14 @@ instrumento e a jurisdição passam a formar uma composição versionada com req
 cálculos, disconfirmers, quality gates, maturity e lacunas não reconhecidas explícitas. Isso avança
 Release 1; não autoriza o dispatcher universal nem promove qualquer pack a `tested` ou `production`.
 
+Checkpoint adicional em 07/09/2026: o Intent Envelope semântico ganhou uma ponte determinística e
+fail-closed para o catálogo pequeno de objetivos. Cada envelope observado passa a registrar o
+objetivo semântico, a identidade do plano de compatibilidade e se ambos concordam, sem que essa
+observação governe a execução. Composições que o catálogo ainda não representa — organização de
+informação, mapeamento de mercado, monitoramento e gestão do trabalho — viram coverage gaps
+nomeados; não são comprimidas em um plano genérico. A promoção só poderá ocorrer depois de corpus
+gold, métricas por classe e suite adversarial.
+
 ## 3. Peers e inspirações: princípios, não colagem
 
 Os peers convergem em uma categoria: um sistema persistente de trabalho profissional, com contexto,

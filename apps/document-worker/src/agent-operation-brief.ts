@@ -8,6 +8,7 @@ import {
   routeWorkspaceRequest,
   workspaceJourneyBlueprint,
   type AgentOperationBriefResponse,
+  type IntentEnvelope,
   type WorkspaceExecutionRoute,
   type WorkspaceJobActivation,
   type WorkspaceRequestRoute,
@@ -40,6 +41,7 @@ import {institutionCapabilitiesSchema, organizationMethodologySchema, profession
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
+import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
 import {applyGovernedReceivablesInformationResponse} from "./receivables-information-response";
@@ -360,9 +362,18 @@ export async function processAgentOperationBriefJob(
               : null,
           },
         });
+        const objectiveRouting = objectiveRoutingObservation(context, shadow.envelope, {
+          abstain: shadow.output.abstain,
+          abstainReason: shadow.output.abstainReason,
+        });
         await queue.recordIntentEnvelope(job, {
           envelope: shadow.envelope,
-          classifier: {abstain: shadow.output.abstain, abstainReason: shadow.output.abstainReason, firstQuestion: shadow.output.firstQuestion},
+          classifier: {
+            abstain: shadow.output.abstain,
+            abstainReason: shadow.output.abstainReason,
+            firstQuestion: shadow.output.firstQuestion,
+            objectiveRouting,
+          },
           model: shadow.model,
           costUsd: shadow.costUsd,
         });
@@ -424,9 +435,20 @@ export async function processAgentOperationBriefJob(
         let failure: string | null = null;
         try {
           const understanding = await understandLiveTurn({gateway, context: liveContext});
+          const objectiveRouting = objectiveRoutingObservation(context, understanding.envelope, {
+            abstain: understanding.output.abstain,
+            abstainReason: understanding.output.abstainReason,
+          });
           await queue.recordIntentEnvelope(job, {
             envelope: understanding.envelope,
-            classifier: {abstain: understanding.output.abstain, abstainReason: understanding.output.abstainReason, firstQuestion: understanding.output.firstQuestion, surface: "live_preview_router", turn: understanding.output.turn},
+            classifier: {
+              abstain: understanding.output.abstain,
+              abstainReason: understanding.output.abstainReason,
+              firstQuestion: understanding.output.firstQuestion,
+              surface: "live_preview_router",
+              turn: understanding.output.turn,
+              objectiveRouting,
+            },
             model: understanding.model,
             costUsd: understanding.costUsd,
           }).catch((error) => log("live_preview.envelope_not_recorded", {job: job.job_id, message: error instanceof Error ? error.message.slice(0, 200) : "unknown"}));
@@ -736,6 +758,28 @@ export async function processAgentOperationBriefJob(
 }
 
 type AgentContext = z.infer<typeof contextSchema>;
+
+/**
+ * Measures the semantic envelope against the compatibility classifier without allowing either
+ * observation to authorize work. This makes disagreement and catalogue gaps queryable before
+ * the semantic route is promoted to the universal compiler.
+ */
+function objectiveRoutingObservation(
+  context: AgentContext,
+  envelope: IntentEnvelope,
+  classifier: {abstain?: boolean; abstainReason?: string | null},
+) {
+  const entryJob = context.project ? capitalProjectJobSchema.safeParse(context.project.entryJob) : null;
+  return observeIntentObjectiveRoute(envelope, {
+    message: context.message,
+    hasAttachments: context.documents.length > 0,
+    ...(entryJob?.success ? {existingProject: {
+      entryJob: entryJob.data,
+      hasSignedAnalyticalSnapshot: false,
+      hasCurrentMandates: false,
+    }} : {}),
+  }, classifier);
+}
 
 /**
  * Compiles the user's objective independently of the six fixed entry rails, then evaluates it

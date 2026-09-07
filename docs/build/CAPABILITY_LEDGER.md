@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v10
+Versão: 2026.09.07-v11
 
-Baseline inspecionada: commit `744bbfcaf76c`
+Baseline inspecionada: commit `cb5f674af932`
 
 Status: primeira classificação executável do produto atual
 
@@ -33,6 +33,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Intake de formatos conhecidos | live | universal | implemented | data room arbitrário e corpus hostil não provados |
 | Entendimento de data room arbitrário | specified | none | specified | sem E2E representativo |
 | Intent Envelope semântico | shadow | internal | implemented | não decide a rota universal de produção |
+| Resolução semântica de objetivo | shadow | internal | implemented | traduz composição em objetivo e mede divergência; não governa execução |
 | Router semântico | live | allowlisted | tested | cinco composições do preview |
 | Biblioteca de 80 TaskSpecs | specified | none | specified | allowlist não equivale a executor |
 | Compiler do Caso 01 | live | allowlisted | tested | cadeia case-bound |
