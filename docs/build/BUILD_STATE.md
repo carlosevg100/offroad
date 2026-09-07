@@ -4,6 +4,24 @@ Atualizado em: 2026-09-06
 Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Seleção de workflow persistida no preflight, candidate, 06/09/2026
+
+- O preflight real agora compila a seleção de receita depois do plano, dos packs econômicos e do
+  binding de métodos. A decisão selected ou blocked é registrada e logada; continua em shadow e
+  não autoriza dispatch.
+- A RPC v4 grava plano, readiness, especialização, binding e seleção pelo mesmo capability token.
+  O registro é imutável, idempotente por fingerprint e ligado a organização, projeto, mensagem,
+  job, preflight e especialização.
+- A validação no banco exige paridade exata entre packs econômicos da especialização e da seleção,
+  partição completa e sem duplicidade entre task IDs e batches, campos de receita apenas quando o
+  estado é selected e bloqueio com grafo vazio.
+- A tabela possui RLS forçada, leitura somente pelo membro com acesso ao projeto, nenhuma escrita
+  direta pelo cliente e auditoria em cada insert. O teste SQL cobre replay, capability forjado,
+  cross-tenant, privilégios e composições inconsistentes.
+
+Status: **candidate persistence**. Worker e packages estão verdes; migration, RLS e SQL aguardam o
+gate de banco da CI. Dispatch e enforcement live permanecem fora desta entrega.
+
 ## Seleção fail-closed da receita econômica, candidate, 06/09/2026
 
 - A especialização do objetivo agora pode selecionar a receita de refinance e liability management

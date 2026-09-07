@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## Seleção de workflow persistida no preflight, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Consumo real | `compileObjectivePreflight` | seleção recebe a especialização final e o terminal do objetivo; selected e blocked são enviados ao repositório shadow |
+| Fronteira de escrita | RPC `worker_record_objective_plan_preflight_v4` | capability token exato governa a gravação conjunta de plano, especialização, binding e seleção |
+| Persistência | migration `20260907024500_objective_workflow_selection_shadow.sql` | registro imutável e idempotente ligado a tenant, projeto, mensagem, job, preflight e especialização |
+| Composição no banco | validações da RPC v4 | packs econômicos fecham com a especialização; task IDs e batches formam partição sem repetição; selected exige receita completa e blocked exige grafo vazio |
+| Isolamento | RLS forçada + `objective_plan_preflight.sql` | owner lê, outro tenant não lê, cliente não escreve, anon não chama e capability forjado é recusado |
+| Observabilidade | log `objective_plan.preflight_recorded` | status, reason, recipe e outcome aparecem sem conteúdo de cliente |
+| Gate do worker | Vitest + typecheck | 31 arquivos/184 testes verdes; tipos verdes |
+| Gate da especialização | Vitest | 3 arquivos/24 testes verdes |
+| Pendência de banco | CI local Supabase | migration, RLS e SQL ainda não executados nesta branch; exposição segue shadow |
+
+Status: **candidate persistence**. Esta evidência não promove dispatch, executor ou uso externo.
+
 ## Seleção fail-closed da receita econômica, candidate, 06/09/2026
 
 | Evidência | Verificação | Resultado |

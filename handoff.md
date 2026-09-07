@@ -51,8 +51,14 @@ gate.
 Recipe selection is also explicit and fail-closed. Governed refinance specialization can select
 alternatives, meeting-plan or material slices; persona and seniority are absent from the decision.
 An unimplemented economic need, a combined refinance plus capex request or an unsupported output
-returns a named blocked result with no graph. The selector is candidate code only: persistence in
-the capability-bound preflight, dispatch and live enforcement remain pending.
+returns a named blocked result with no graph. The selector remains candidate code and does not by
+itself authorize dispatch or live enforcement.
+
+The selector is now wired into the objective preflight and the v4 repository command persists its
+selected or blocked result beside the plan, specialization and method binding. The new row is
+immutable, capability-bound, tenant-scoped, replayable by fingerprint and validates economic-pack
+parity plus a complete task-to-batch partition. It remains shadow-only. Worker tests are green;
+database, RLS and SQL evidence remain candidate until CI runs the local Supabase gate.
 
 Trust is not deferred to enterprise packaging. The canonical program is
 `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
