@@ -139,6 +139,26 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
                 </div>
               </dl>
 
+              <section className={`case-receivables__method-readiness case-receivables__method-readiness--${receivables.methodReadiness.state}`}>
+                <header>
+                  <div>
+                    <span className="section-kicker">{t("receivablesMethodKicker")}</span>
+                    <h4>{t("receivablesMethodTitle")}</h4>
+                  </div>
+                  <span>{receivables.methodReadiness.state === "ready" ? t("receivablesMethodReady") : t("receivablesMethodBlocked")}</span>
+                </header>
+                <p>{receivables.methodReadiness.state === "ready"
+                  ? t("receivablesMethodReadyBody")
+                  : t("receivablesMethodBlockedBody", {count: receivables.methodReadiness.gaps.length})}</p>
+                {receivables.methodReadiness.state === "blocked" ? (
+                  <ol>
+                    {receivables.methodReadiness.nextQuestions.slice(0, 5).map((question) => (
+                      <li key={question.id}>{question.text[lang]}</li>
+                    ))}
+                  </ol>
+                ) : null}
+              </section>
+
               <div className="case-receivables__columns">
                 <section>
                   <h4>{t("receivablesFindings")}</h4>

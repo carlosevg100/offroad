@@ -39,6 +39,32 @@ export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
     classification: {categoryIds: readonly string[]; cellIds: readonly string[]};
     defects: readonly {id: string; description: string; measured?: {value: string; unit: string}}[];
     questions: readonly {id: string; text: string}[];
+    methodReadiness: {
+      version: "2026.09.07-v1";
+      state: "ready" | "blocked";
+      primaryReason: "ready" | "conflicting" | "needs_evidence" | "needs_policy" | "needs_structure";
+      methodExecutionAllowed: boolean;
+      sourceDatasetHash: string;
+      dimensions: readonly {
+        id: "source_universe" | "portfolio_lineage" | "cedent_and_servicing" | "title_legal_controls" | "performance_history" | "cash_reconciliation" | "accounting_reconciliation" | "eligibility_policy" | "facility_and_waterfall";
+        state: "satisfied" | "missing" | "conflicting";
+        gapCodes: readonly string[];
+      }[];
+      gaps: readonly {
+        code: string;
+        dimensionId: string;
+        class: "evidence" | "policy" | "structure" | "conflict";
+        message: {pt: string; en: string};
+        question: {pt: string; en: string};
+        evidenceIds: readonly string[];
+      }[];
+      nextQuestions: readonly {
+        id: string;
+        dimensionId: string;
+        text: {pt: string; en: string};
+        evidenceIds: readonly string[];
+      }[];
+    };
     pipeline: null | {
       version: string;
       quality: {status: "complete_for_phase_three_evaluation" | "incomplete"; blockers: readonly string[]; warnings: readonly string[]};

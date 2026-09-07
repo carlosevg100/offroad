@@ -10,3 +10,4 @@ export * from "./phase-two-b";
 export * from "./raw-detection";
 export * from "./contract-facts";
 export * from "./underwrite";
+export * from "./method-readiness";
