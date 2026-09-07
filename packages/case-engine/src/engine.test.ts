@@ -424,6 +424,13 @@ describe("the governed case engine", () => {
     });
     expect(pending.state.financialModel?.workbooks.pt.byteSize).toBeGreaterThan(4_000);
     expect(pending.state.financialModel?.workbooks.en.sha256).toMatch(/^[a-f0-9]{64}$/);
+    expect(pending.state.financialModel?.renderAudits.pt).toMatchObject({
+      formulaCoveragePassed: true,
+      styleCoveragePassed: true,
+      visualInspection: "not_run",
+      releaseEligible: false,
+    });
+    expect(pending.state.financialModel?.renderAudits.pt.contentSha256).toBe(pending.state.financialModel?.workbooks.pt.sha256);
     expect(pending.state.dataRoom.releasable).toBe(false);
     expect(pending.state.materialTruth.procedureCoverage).toHaveLength(32);
     expect(pending.state.materialTruth.releaseDecision).toBe("internal_only");

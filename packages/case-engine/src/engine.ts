@@ -115,7 +115,13 @@ import {
   type PricingPolicy,
   type PricingTruthSet,
 } from "@offroad/market-reference";
-import {buildFinancialModel, financialModelVersion, toXlsxBuffer} from "@offroad/financial-model";
+import {
+  buildFinancialModel,
+  financialModelVersion,
+  governedWorkbookRendererVersion,
+  toGovernedXlsxBuffer,
+  type GovernedWorkbookAudit,
+} from "@offroad/financial-model";
 import {reconcileCase, type FactCandidate, type ReconciledFact, type ReconciliationReport} from "@offroad/reconciliation";
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
@@ -198,6 +204,7 @@ export type FinancialModelArtifact = FinancialModelArtifactEvidence & {
   sheetNames: {pt: string[]; en: string[]};
   deskAssumptions: string[];
   supportIds: string[];
+  renderAudits: {pt: GovernedWorkbookAudit; en: GovernedWorkbookAudit};
 };
 
 export type CaseEngineInput = {
@@ -1752,7 +1759,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         sourceIds,
       };
     }),
-    task("financial_model", ["material_inputs"], financialModelSubtaskSchema, ["financial_model"], ({outputs}) => {
+    task("financial_model", ["material_inputs"], financialModelSubtaskSchema, ["financial_model"], async ({outputs}) => {
       const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
       if (!materialInputs.canCompileFinancialModel || !structure.structureDecision.selectedAlternativeId || !structure.structureAlternatives.proposalFingerprint) {
         return {
@@ -1796,8 +1803,21 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       } as const;
       const modelPt = buildFinancialModel({...modelInput, lang: "pt"});
       const modelEn = buildFinancialModel({...modelInput, lang: "en"});
-      const bytesPt = toXlsxBuffer(modelPt, "pt");
-      const bytesEn = toXlsxBuffer(modelEn, "en");
+      const companyName = reconciliation.facts.find((fact) => fact.key.fieldPath === "company.legal_name")?.value;
+      const commonMetadata = {
+        title: companyName ? `Modelo financeiro indicativo | ${companyName}` : "Modelo financeiro indicativo",
+        ...(companyName ? {companyName} : {}),
+        asOfDate: input.referenceDate,
+        currency: "conforme fatos conciliados",
+        scale: "unidades-base",
+        classification: "confidential" as const,
+      };
+      const [renderedPt, renderedEn] = await Promise.all([
+        toGovernedXlsxBuffer(modelPt, "pt", commonMetadata),
+        toGovernedXlsxBuffer(modelEn, "en", {...commonMetadata, title: companyName ? `Indicative financial model | ${companyName}` : "Indicative financial model"}),
+      ]);
+      const bytesPt = renderedPt.bytes;
+      const bytesEn = renderedEn.bytes;
       if (bytesPt.byteLength < 4_000 || bytesEn.byteLength < 4_000 || bytesPt[0] !== 0x50 || bytesPt[1] !== 0x4b || bytesEn[0] !== 0x50 || bytesEn[1] !== 0x4b) {
         throw Object.assign(new Error("compiled financial model is not a valid XLSX payload"), {code: "financial_model_binary_invalid"});
       }
@@ -1831,6 +1851,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
           pt: {sha256: sha256Bytes(bytesPt), byteSize: bytesPt.byteLength},
           en: {sha256: sha256Bytes(bytesEn), byteSize: bytesEn.byteLength},
         },
+        renderAudits: {pt: renderedPt.audit, en: renderedEn.audit},
       };
       const fingerprint = fingerprintJson(payload);
       const financialModel: FinancialModelArtifact = {...payload, fingerprint};
@@ -1992,7 +2013,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
     caseId: input.caseId,
     input: graphInput,
     tasks,
-    versions: {caseEngine: caseEngineVersion, ...(input.runtimeVersions ?? {})},
+    versions: {caseEngine: caseEngineVersion, governedWorkbookRenderer: governedWorkbookRendererVersion, ...(input.runtimeVersions ?? {})},
   });
   return {
     output: result.outputs.assemble as MaterialsOutput,
