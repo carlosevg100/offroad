@@ -66,6 +66,41 @@ revoke all on function private.worker_can_access_capital_project_material(text, 
 grant execute on function private.worker_can_access_capital_project_material(text, boolean)
   to authenticated;
 
+create or replace function private.can_read_completed_capital_project_material(
+  p_organization_id uuid,
+  p_capital_project_id uuid,
+  p_object_path text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select (select auth.uid()) is not null
+    and exists (
+      select 1
+      from private.capital_project_material_upload_grants grant_row
+      join public.capital_projects project
+        on project.organization_id = grant_row.organization_id
+        and project.id = grant_row.capital_project_id
+      join public.organization_memberships membership
+        on membership.organization_id = grant_row.organization_id
+        and membership.user_id = (select auth.uid())
+        and membership.status = 'active'
+      where grant_row.organization_id = p_organization_id
+        and grant_row.capital_project_id = p_capital_project_id
+        and grant_row.object_path = p_object_path
+        and grant_row.state = 'stored'
+        and project.status <> 'archived'
+    );
+$$;
+
+revoke all on function private.can_read_completed_capital_project_material(uuid, uuid, text)
+  from public, anon, authenticated;
+grant execute on function private.can_read_completed_capital_project_material(uuid, uuid, text)
+  to authenticated;
+
 drop policy if exists case_artifacts_objects_select on storage.objects;
 create policy case_artifacts_objects_select
 on storage.objects for select to authenticated
@@ -77,9 +112,10 @@ using (
       private.storage_opportunity_id(name),
       'document.read'
     ))
-    or (select private.can_access_capital_project(
+    or (select private.can_read_completed_capital_project_material(
       private.storage_organization_id(name),
-      private.storage_opportunity_id(name)
+      private.storage_opportunity_id(name),
+      name
     ))
     or (select private.worker_can_access_capital_project_material(name, false))
   )
