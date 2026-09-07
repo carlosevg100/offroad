@@ -47,7 +47,7 @@ const entries: CapabilityLedgerEntry[] = [
 
 export const currentCapabilityLedger: CapabilityLedger = {
   ledgerVersion: "2026.09.07-v14",
-  baselineCommit: "b760167",
+  baselineCommit: "8557d22",
   generatedAt: verifiedAt,
   entries,
 };

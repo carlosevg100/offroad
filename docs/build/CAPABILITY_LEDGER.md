@@ -2,7 +2,7 @@
 
 Versão: 2026.09.07-v14
 
-Baseline inspecionada: commit `b760167`
+Baseline inspecionada: commit `8557d22`
 
 Status: primeira classificação executável do produto atual
 
