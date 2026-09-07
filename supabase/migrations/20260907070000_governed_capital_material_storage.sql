@@ -107,11 +107,18 @@ on storage.objects for select to authenticated
 using (
   bucket_id = 'case-artifacts'
   and (
-    (select private.can_access_document_scope(
-      private.storage_organization_id(name),
-      private.storage_opportunity_id(name),
-      'document.read'
-    ))
+    -- `materials/` is a publication boundary, not an ordinary project document folder.
+    -- The pre-existing document capability is intentionally broad enough to read project
+    -- documents, so exclude this namespace before consulting it; otherwise a project member
+    -- can observe the bytes between upload and independent hash verification.
+    (
+      split_part(name, '/', 3) <> 'materials'
+      and (select private.can_access_document_scope(
+        private.storage_organization_id(name),
+        private.storage_opportunity_id(name),
+        'document.read'
+      ))
+    )
     or (select private.can_read_completed_capital_project_material(
       private.storage_organization_id(name),
       private.storage_opportunity_id(name),
@@ -127,11 +134,16 @@ on storage.objects for insert to authenticated
 with check (
   bucket_id = 'case-artifacts'
   and (
-    (select private.can_access_document_scope(
-      private.storage_organization_id(name),
-      private.storage_opportunity_id(name),
-      'document.write'
-    ))
+    -- Generated materials enter this namespace only through an exact, single-use worker
+    -- capability. A normal project-document write grant must not bypass that boundary.
+    (
+      split_part(name, '/', 3) <> 'materials'
+      and (select private.can_access_document_scope(
+        private.storage_organization_id(name),
+        private.storage_opportunity_id(name),
+        'document.write'
+      ))
+    )
     or (select private.worker_can_access_capital_project_material(name, true))
   )
 );
