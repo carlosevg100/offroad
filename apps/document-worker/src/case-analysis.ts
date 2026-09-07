@@ -70,9 +70,11 @@ import {
 import type {FactCandidate} from "@offroad/reconciliation";
 import {
   analyzeReceivablesPhaseOne,
+  applyReceivablesSupplementPatch,
   assessReceivablesPoolMethodReadiness,
   buildReceivablesRawUniverse,
   detectReceivablesRawEvidence,
+  newReceivablesSupplementDraft,
   receivablesCaseSchema,
   receivablesPoolInputAssemblySchema,
   receivablesSupplementDraftSchema,
@@ -80,6 +82,8 @@ import {
   type ReceivablesProviderMetricSet,
   type ReceivablesEvidenceDocument,
   type ReceivablesFiscalArchiveEvidence,
+  type ReceivablesSupplementDraft,
+  type ReceivablesSupplementPatch,
 } from "@offroad/receivables-analysis";
 import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
 import Decimal from "decimal.js";
@@ -108,6 +112,7 @@ import {
   buildReceivablesMethodFieldRequestProjection,
 } from "./receivables-information-requests";
 import {resolveReceivablesMethodInput, type ReceivablesMethodInputResolution} from "./receivables-method-input-resolution";
+import {buildReceivablesDocumentSupplementPatch} from "./receivables-document-supplement";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -1051,12 +1056,33 @@ export async function processCaseAnalysisJob(
     const publicReport = publicCaseRunReport(result.report);
     const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
+    if (receivables?.documentSupplement?.patch) {
+      if (!dependencies.queue.applyReceivablesMethodSupplementPatch) {
+        throw new Error("receivables_document_supplement_persistence_unavailable");
+      }
+      const persistedDraft = await dependencies.queue.applyReceivablesMethodSupplementPatch(job, {
+        patch: receivables.documentSupplement.patch,
+        nextDraft: receivables.documentSupplement.nextDraft,
+      });
+      await dependencies.queue.writeStage(job, "receivables_document_supplement", "succeeded", {
+        taskId: "R01",
+        sourceDatasetHash: receivables.documentSupplement.patch.sourceDatasetHash,
+        draftFingerprint: persistedDraft.draftFingerprint,
+        revision: persistedDraft.revision,
+        extractedSections: receivables.documentSupplement.extractedSections,
+        omittedSections: receivables.documentSupplement.omittedSections,
+        replayed: persistedDraft.replayed,
+      });
+    }
     if (receivablesVertical && dependencies.queue.syncReceivablesInformationRequests) {
       const evidenceProjection = buildReceivablesMethodEvidenceRequestProjection({
         projectId: raw.session.capital_project_id,
         processingRunId: job.processing_run_id,
         locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
         readiness: receivablesVertical.methodReadiness,
+        ...(receivables?.inputResolution.missingSections
+          ? {missingDraftSections: receivables.inputResolution.missingSections}
+          : {}),
       });
       await dependencies.queue.syncReceivablesInformationRequests(job, evidenceProjection);
       const evidenceOpen = evidenceProjection.requests.length > 0;
@@ -1704,6 +1730,12 @@ function buildReceivablesVertical(
   inputAssemblyId: string | null;
   inputAssembly: ReceivablesPoolInputAssembly | null;
   inputResolution: ReceivablesMethodInputResolution;
+  documentSupplement: null | {
+    patch: ReceivablesSupplementPatch | null;
+    nextDraft: ReceivablesSupplementDraft;
+    extractedSections: readonly string[];
+    omittedSections: readonly string[];
+  };
 } | null {
   if (raw.receivables_evidence.length === 0) return null;
 
@@ -1732,10 +1764,25 @@ function buildReceivablesVertical(
     fiscalArchives,
   });
   const storedAssembly = raw.receivables_method_input_assembly;
+  const storedDraft = raw.receivables_method_supplement_draft?.draft;
+  const baseDraft = storedDraft?.sourceDatasetHash === built.phaseOne.datasetHash
+    ? storedDraft
+    : newReceivablesSupplementDraft(built.phaseOne.datasetHash);
+  const extractedDocumentSupplement = buildReceivablesDocumentSupplementPatch({
+    phaseOne: built.phaseOne,
+    documents,
+  });
+  const nextDraft = extractedDocumentSupplement.patch
+    ? applyReceivablesSupplementPatch({draft: baseDraft, patch: extractedDocumentSupplement.patch})
+    : baseDraft;
+  const documentSupplement = {
+    ...extractedDocumentSupplement,
+    nextDraft,
+  };
   const inputResolution = resolveReceivablesMethodInput({
     phaseOne: built.phaseOne,
     storedAssembly: storedAssembly?.assembly,
-    supplementDraft: raw.receivables_method_supplement_draft?.draft,
+    supplementDraft: nextDraft,
   });
   const methodAssembly = inputResolution.assembly;
   const readinessAssessment = assessReceivablesPoolMethodReadiness({
@@ -1829,6 +1876,7 @@ function buildReceivablesVertical(
       inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
       inputAssembly: methodAssembly,
       inputResolution,
+      documentSupplement,
     };
   }
 
@@ -1877,6 +1925,7 @@ function buildReceivablesVertical(
     inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
     inputAssembly: methodAssembly,
     inputResolution,
+    documentSupplement,
     publicReport: {
       ...common,
       status: "analyzed",

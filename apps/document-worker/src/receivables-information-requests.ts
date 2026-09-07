@@ -129,11 +129,26 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
   processingRunId: string;
   locale: "pt-BR" | "en-US";
   readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  missingDraftSections?: readonly string[];
   idFactory?: () => string;
 }) {
   const english = input.locale === "en-US";
   const idFactory = input.idFactory ?? randomUUID;
-  const evidenceGaps = input.readiness.gaps.filter((gap) => gap.class !== "policy" && gap.class !== "structure");
+  const missing = new Set(input.missingDraftSections ?? []);
+  const draftDimensionRequirements: Partial<Record<ReceivablesMethodReadinessDimensionId, readonly string[]>> = {
+    portfolio_lineage: ["titles"],
+    cedent_and_servicing: ["cedent", "evidence.cedentAndServicing"],
+    title_legal_controls: ["titles", "evidence.titleLegalControls"],
+    performance_history: ["titles", "evidence.performanceHistory"],
+    cash_reconciliation: ["cashReceipts", "evidence.cashReconciliation"],
+    accounting_reconciliation: ["accounting", "evidence.accountingReconciliation"],
+  };
+  const evidenceGaps = input.readiness.gaps.filter((gap) => {
+    if (gap.class === "policy" || gap.class === "structure") return false;
+    if (input.missingDraftSections === undefined || gap.class === "conflict") return true;
+    const requirements = draftDimensionRequirements[gap.dimensionId];
+    return requirements === undefined || requirements.some((section) => missing.has(section));
+  });
   return {
     schemaVersion: "project-information-request-projection.v1",
     projectId: input.projectId,
