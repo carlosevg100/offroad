@@ -9,7 +9,7 @@ import {
 import type {Classifier, DocumentProfile} from "@offroad/document-classification";
 import {buildCaseChunks} from "@offroad/governed-retrieval";
 import {ModelGatewayError, type GatewayCallLog} from "@offroad/model-gateway";
-import {GateError, runGate, type ScanVerdict, type Scanner} from "./scan";
+import {GateError, runGovernedGate, type Scanner} from "./scan";
 import type {DocumentJob, QueueClient} from "./queue";
 import {prepareWorkerIntakeRequests} from "./intake-requests";
 import {buildScopeSuggestionInputs, deterministicJobEventId} from "./intake-governance";
@@ -114,50 +114,56 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     // ---- E0 gate ---------------------------------------------------------------------
     const bytes = await stage("download", () => deps.download(payload.download_url!));
 
-    const verdict: ScanVerdict = await stage("gate", () =>
-      runGate(
-        bytes,
-        {
-          ...(payload.sha256 ? {sha256: payload.sha256} : {}),
-          ...(payload.byte_size !== undefined ? {byteSize: payload.byte_size} : {}),
-        },
-        deps.scanner,
-        deps.now,
-      ),
-    );
+    if (!payload.sha256 || payload.byte_size === undefined) {
+      throw new GateError("the job is missing the immutable upload hash or byte size", "invalid_binding", false);
+    }
+    const governed = await stage("gate", () => runGovernedGate({
+      bytes,
+      binding: {
+        organizationId: job.organization_id,
+        sourceDocumentId: payload.source_document_id,
+        documentVersion: payload.document_version,
+        expectedSha256: payload.sha256!,
+        expectedByteSize: payload.byte_size!,
+        originalName: payload.original_name,
+        declaredMediaType: payload.mime_type ?? null,
+        operationId: job.job_id,
+      },
+      scanner: deps.scanner,
+      ...(deps.now ? {now: deps.now} : {}),
+    }));
+    const {receipt} = governed;
+    await queue.recordDocument(job, {scanResult: receipt});
 
-    if (verdict.verdict !== "clean") {
-      // Recorded on the document (it becomes `rejected`) and reported as a permanent failure:
-      // retrying an infected file would only scan it again.
-      await queue.recordDocument(job, {scanResult: verdict});
+    if (receipt.verdict !== "clean" || !governed.parserBytes) {
+      const reason = receipt.reasons[0] ?? "scanner_unavailable";
       await queue.fail(
         job,
-        describeJobFailure(new Error(`file rejected by the scanner: ${verdict.signature}`), {
-          code: "infected",
+        describeJobFailure(new Error(`file rejected by the governed quarantine: ${reason}`), {
+          code: reason,
           stage: "scan",
-          reason: "infected",
-          signature: verdict.signature,
-          document: payload.original_name,
-          retryable: false,
+          reason,
+          quarantine_receipt_id: receipt.receiptId,
+          quarantine_reasons: receipt.reasons,
+          retryable: receipt.retryable,
           ...(deps.spend ? {spend: deps.spend()} : {}),
           ...(deps.lineage ? {model_lineage: deps.lineage()} : {}),
         }),
-        {retryable: false},
+        {retryable: receipt.retryable},
       );
-      log("document.rejected_by_gate", {job: job.job_id, verdict: verdict.verdict, signature: verdict.signature});
+      log("document.rejected_by_gate", {job: job.job_id, verdict: receipt.verdict, reasons: receipt.reasons});
       return {status: "failed", stages};
     }
-
-    await queue.recordDocument(job, {scanResult: verdict});
+    const parserBytes = governed.parserBytes;
 
     // Fiscal XML archives are evidence, not generic documents. They deliberately bypass the
     // Office/PDF parser and are stored as a bounded sample. A random ZIP is not accepted as an
     // empty sample: that would make an unread archive look like evidence of no cancellations.
     if (payload.original_name.toLowerCase().endsWith(".zip")) {
       const archive = await stage("parse_nfe_archive", () => parseNfeArchive({
-        bytes,
+        bytes: parserBytes,
         archiveId: payload.source_document_id,
-        fileHash: verdict.sha256,
+        fileHash: receipt.observedSha256,
       }));
       if (archive.invoices.length === 0 && archive.cancellations.length === 0) {
         throw new ParserError("the ZIP contains no supported NF-e invoice or cancellation event", "unsupported_format");
@@ -166,7 +172,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
         contentKind: "nfe_archive",
         schemaVersion: encoded.schemaVersion,
-        sourceSha256: verdict.sha256,
+        sourceSha256: receipt.observedSha256,
         contentSha256: encoded.contentSha256,
         payloadSha256: encoded.payloadSha256,
         uncompressedBytes: encoded.uncompressedBytes,
@@ -189,7 +195,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const parsed = await stage("parse", () =>
       parseDocument(
         {
-          bytes,
+          bytes: parserBytes,
           documentId: payload.source_document_id,
           documentVersion: payload.document_version,
           fileName: payload.original_name,
@@ -208,13 +214,13 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const receivablesEvidence = encodeReceivablesEvidence(documentEvidence({
       documentId: payload.source_document_id,
       fileName: payload.original_name,
-      fileHash: verdict.sha256,
+      fileHash: receipt.observedSha256,
       parsed,
     }));
     await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
       contentKind: "document_layer",
       schemaVersion: receivablesEvidence.schemaVersion,
-      sourceSha256: verdict.sha256,
+      sourceSha256: receipt.observedSha256,
       contentSha256: receivablesEvidence.contentSha256,
       payloadSha256: receivablesEvidence.payloadSha256,
       uncompressedBytes: receivablesEvidence.uncompressedBytes,

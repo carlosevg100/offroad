@@ -154,11 +154,17 @@ describe("the gate runs before anything reads the file", () => {
     const outcome = await processDocumentJob(job(), deps);
 
     expect(outcome.status).toBe("failed");
-    expect(calls.failed[0]?.error.reason).toBe("infected");
+    expect(calls.failed[0]?.error.reason).toBe("malware_detected");
     // retrying a scan of the same bytes can only reach the same verdict
     expect(calls.failed[0]?.options?.retryable).toBe(false);
     // the verdict reaches the document, so the sender sees why it was rejected
-    expect(calls.documents[0]).toMatchObject({scanResult: {verdict: "infected", signature: "Eicar-Test-Signature"}});
+    expect(calls.documents[0]).toMatchObject({
+      scanResult: {
+        verdict: "rejected",
+        reasons: ["malware_detected"],
+        scanner: {verdict: "infected", malwareSignature: "Eicar-Test-Signature"},
+      },
+    });
     // and nothing was parsed or stored
     expect(calls.uploaded).toEqual([]);
   });
@@ -189,6 +195,27 @@ describe("the gate runs before anything reads the file", () => {
     const outcome = await processDocumentJob(job(), deps);
     expect(outcome.status).toBe("failed");
     expect(calls.uploaded).toEqual([]);
+    expect(calls.retrievalChunks).toEqual([]);
+  });
+
+  it("records a type mismatch receipt and invokes no parser, classifier, extraction, or retrieval", async () => {
+    const classify = vi.fn(fakes().deps.classify);
+    const extract = vi.fn(async () => ({candidates: [], absentFields: [], malformed: 0, chunks: {total: 0, failed: 0}}));
+    const {deps, calls} = fakes({classify, extract});
+
+    const outcome = await processDocumentJob(job({original_name: "forged.pdf", mime_type: "application/pdf"}), deps);
+
+    expect(outcome.status).toBe("failed");
+    expect(calls.documents[0]).toMatchObject({
+      scanResult: {
+        verdict: "rejected",
+        reasons: expect.arrayContaining(["declared_type_mismatch", "extension_type_mismatch"]),
+      },
+    });
+    expect(classify).not.toHaveBeenCalled();
+    expect(extract).not.toHaveBeenCalled();
+    expect(calls.uploaded).toEqual([]);
+    expect(calls.receivablesEvidence).toEqual([]);
     expect(calls.retrievalChunks).toEqual([]);
   });
 });
@@ -304,7 +331,7 @@ describe("failures are classified by whether retrying could ever help", () => {
 
     expect(outcome.status).toBe("failed");
     expect(calls.failed[0]?.options?.retryable).toBe(false);
-    expect(calls.failed[0]?.error.reason).toBe("unreadable_document");
+    expect(calls.failed[0]?.error.reason).toBe("empty_file");
   });
 
   it("retries a transient network failure", async () => {

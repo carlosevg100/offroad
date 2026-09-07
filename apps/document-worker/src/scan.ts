@@ -1,6 +1,14 @@
 import {createHash} from "node:crypto";
 import {connect} from "node:net";
 
+import {
+  authorizeParserInput,
+  quarantineDocument,
+  type DocumentQuarantinePolicy,
+  type DocumentQuarantineReceipt,
+  type QuarantineDocumentBinding,
+} from "@offroad/document-intelligence";
+
 /**
  * The gate (stage E0). Nothing reaches a parser before this passes.
  *
@@ -30,7 +38,7 @@ export type ScanVerdict = {
 
 export class GateError extends Error {
   readonly retryable: boolean;
-  readonly code: "hash_mismatch" | "size_mismatch" | "infected" | "scanner_unavailable";
+  readonly code: "hash_mismatch" | "size_mismatch" | "infected" | "scanner_unavailable" | "invalid_binding";
   constructor(message: string, code: GateError["code"], retryable: boolean) {
     super(message);
     this.name = "GateError";
@@ -62,8 +70,51 @@ export function verifyIntegrity(bytes: Uint8Array, expected: {sha256?: string; b
 
 export type Scanner = {
   name: string;
+  engineVersion?: string | null;
+  signatureSetVersion?: string | null;
   scan(bytes: Uint8Array): Promise<{clean: boolean; signature?: string}>;
 };
+
+/**
+ * The governed gate used by the worker pipeline. It returns parser bytes only when the
+ * immutable receipt is clean and still binds the exact tenant, document version, operation,
+ * policy and bytes. A rejected receipt is data to persist, never permission to continue.
+ */
+export async function runGovernedGate(input: {
+  bytes: Uint8Array;
+  binding: QuarantineDocumentBinding;
+  scanner: Scanner | null;
+  policy?: DocumentQuarantinePolicy;
+  now?: () => string;
+}): Promise<{receipt: DocumentQuarantineReceipt; parserBytes: Uint8Array | null}> {
+  const receipt = await quarantineDocument({
+    bytes: input.bytes,
+    binding: input.binding,
+    scanner: input.scanner ? {
+      scannerId: input.scanner.name,
+      engineVersion: input.scanner.engineVersion ?? null,
+      signatureSetVersion: input.scanner.signatureSetVersion ?? null,
+      scan: async (bytes) => {
+        const result = await input.scanner!.scan(bytes);
+        return result.clean
+          ? {verdict: "clean" as const}
+          : {verdict: "infected" as const, ...(result.signature ? {signature: result.signature} : {})};
+      },
+    } : null,
+    ...(input.policy ? {policy: input.policy} : {}),
+    ...(input.now ? {now: input.now} : {}),
+  });
+  if (receipt.verdict !== "clean") return {receipt, parserBytes: null};
+  return {
+    receipt,
+    parserBytes: authorizeParserInput({
+      receipt,
+      binding: input.binding,
+      bytes: input.bytes,
+      ...(input.policy ? {policy: input.policy} : {}),
+    }),
+  };
+}
 
 /**
  * clamd's INSTREAM: `zINSTREAM\0`, then length-prefixed chunks, then a zero length to close.
