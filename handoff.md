@@ -3566,11 +3566,13 @@ in both the answer key and fingerprint. The summary independently rebuilds manif
 checks and routing fingerprints and fails on null/provider-error observations or forged expected,
 checks and constant hashes. This deterministic integration is green but is not a real-model run.
 
-The second review removed two remaining circularities. Desired outcome, decision and audience now
-carry structured affirmation state, so negated or contradictory prose cannot pass by keyword and
-changes the routing fingerprint. The classifier prompt is rendered from the executable policy;
+The final review also stopped treating classifier-owned affirmation labels as truth. Desired
+outcome, decision and audience polarity is independently derived from the prose and checked against
+the label, so falsely affirmed negation or ambiguity fails closed and changes the routing
+fingerprint. The classifier prompt is rendered from the executable policy;
 document-backed structuring selects a policy-owned extract/reconcile-first variant, validated
 against control-plane documents. Gold plans are an independent acceptance oracle, and material
-amount, currency, percentage, indexer and tenor use normalized slots. Case 03 therefore requires
+amount, currency, percentage, indexer and tenor use normalized, single-valued slots; extra or
+conflicting values fail per object and slot kind. Case 03 therefore requires
 BRL 50 million and starts with reconciliation, while financing-meeting work remains
 understand-first. These are local candidate controls, not a real-provider promotion result.

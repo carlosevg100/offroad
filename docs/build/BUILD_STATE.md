@@ -16,9 +16,11 @@
 - O score exige, na resposta bruta anterior ao reparo canônico, significado correto para ação,
   objetos, referências ligadas ao objeto, resultado, decisão e audiência. Números e entidades
   materiais entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`. Outcome,
-  decisão e audiência têm polaridade estruturada, portanto uma negação não passa por keyword.
+  decisão e audiência têm polaridade derivada também da prosa: um rótulo `affirmed` incompatível
+  com “não preparar”, “não existe decisão” ou “não é para VP” reprova e muda o fingerprint.
 - O oracle gold é independente da policy de produção. Slots normalizados preservam montante,
-  moeda, percentual, indexador e prazo; o Caso 03 exige BRL 50 milhões e começa pela conciliação
+  moeda, percentual, indexador e prazo, com cardinalidade singular por objeto; valores extras ou
+  conflitantes reprovam. O Caso 03 exige BRL 50 milhões e começa pela conciliação
   dos dois anexos, enquanto reunião de financiamento começa por entendimento.
 - Os 52 textos passam por um teste local raw-to-canonicalizer. O summary recompõe checks,
   fingerprint e manifesto, e rejeita resposta nula, erro de provedor, expected, checks ou hashes
