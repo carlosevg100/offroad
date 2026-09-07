@@ -9,8 +9,11 @@ import {
 import {
   buildRepairGuidance,
   defaultTaskPolicies,
+  estimateCostReservationUsd,
   estimateCostUsd,
+  estimateInputTokens,
   listPrices,
+  type ContentPart,
   type GatewayCallLog,
   type ModelRef,
 } from "@offroad/model-gateway";
@@ -32,6 +35,8 @@ export type IntentRouterCallEvidence = {
   providerAttempts: number;
   measuredCostUsd: number;
   recomputedMeasuredCostUsd: number;
+  recomputedBudgetExposureUsd: number;
+  unknownCostReservationUsd: number;
   pricingTableFingerprint: string;
   unknownCostAttempts: number;
   cassetteAttempts: number;
@@ -78,6 +83,7 @@ export function verifyIntentRouterCallEvidence(input: {
 
   let linkedObservationOperations = 0;
   const claimedInvocationIds = new Set<string>();
+  const unknownReservations = new Map<string, number>();
   for (const observation of input.observations) {
     const turn = turnById.get(observation.turnId);
     if (!turn) {
@@ -110,6 +116,7 @@ export function verifyIntentRouterCallEvidence(input: {
       const allowedRefs = configuredRefs(contract.task);
       validateAttemptTopology(calls, allowedRefs[0]!, allowedRefs[1], operation, issues);
       calls.forEach((call, index) => {
+        recordUnknownReservation(call, inputs[surface], unknownReservations, issues);
         if (call.task !== contract.task) issues.push(`task_mismatch:${operation}:${index}`);
         if (call.schemaName !== contract.schemaName) issues.push(`schema_mismatch:${operation}:${index}`);
         if (call.inputFingerprint !== expectedInputFingerprint) issues.push(`input_mismatch:${operation}:${index}`);
@@ -173,7 +180,7 @@ export function verifyIntentRouterCallEvidence(input: {
     if (!row.passed) issues.push(`preflight_not_passed:${row.task}:${row.provider}:${row.configuredModel}`);
     const preflightTurn = intentGoldTurns[0]!;
     const route = contract.task === "route_intent";
-    const preflightInput = [{type: "text", text: JSON.stringify(route
+    const preflightInput = [{type: "text" as const, text: JSON.stringify(route
       ? intentGoldClassifierInput(preflightTurn, preflightTurn.message)
       : intentGoldObjectInput(preflightTurn, preflightTurn.message))}];
     const expectedPromptFingerprint = evidenceFingerprint({
@@ -184,6 +191,7 @@ export function verifyIntentRouterCallEvidence(input: {
       && call.task === row.task && call.schemaName === row.schemaName && call.metadata?.provider === row.provider
       && call.metadata?.configuredModel === row.configuredModel);
     for (const call of matching) claimedInvocationIds.add(call.invocationId);
+    for (const call of matching) recordUnknownReservation(call, preflightInput, unknownReservations, issues);
     if (matching.length === 0) issues.push(`missing_preflight_calls:${row.task}:${row.provider}`);
     if (matching.filter(({outcome}) => outcome === "ok").length !== (row.passed ? 1 : 0)) {
       issues.push(`preflight_outcome_mismatch:${row.task}:${row.provider}`);
@@ -209,8 +217,18 @@ export function verifyIntentRouterCallEvidence(input: {
     if (matching.filter(({costStatus}) => costStatus !== "not_called").length !== row.attemptCount) {
       issues.push(`preflight_attempt_count_mismatch:${row.task}:${row.provider}`);
     }
-    if (!close(sum(matching.map(({costUsd}) => costUsd)), row.measuredCostUsd)) {
+    if (!close(sum(matching.map(recomputedCallCost)), row.measuredCostUsd)) {
       issues.push(`preflight_cost_mismatch:${row.task}:${row.provider}`);
+    }
+    const expectedPreflightExposureUsd = sum(matching.map((call) =>
+      recomputedCallCost(call) + (unknownReservations.get(call.invocationId) ?? 0)));
+    if (!Number.isFinite(expectedPreflightExposureUsd)
+      || !close(expectedPreflightExposureUsd, row.conservativeExposureUsd)) {
+      issues.push(`preflight_exposure_mismatch:${row.task}:${row.provider}`);
+    }
+    const expectedMinimumLatencyMs = sum(matching.map(({latencyMs}) => latencyMs));
+    if (!Number.isFinite(row.latencyMs) || row.latencyMs < expectedMinimumLatencyMs) {
+      issues.push(`preflight_latency_mismatch:${row.task}:${row.provider}`);
     }
     linkedPreflightOperations += 1;
   }
@@ -229,11 +247,16 @@ export function verifyIntentRouterCallEvidence(input: {
   const recomputedMeasuredCostUsd = sum(input.calls.map(recomputedCallCost));
   const unknownCostAttempts = input.calls.filter(({costStatus}) => costStatus === "unknown").length;
   const cassetteAttempts = input.calls.filter(({costStatus}) => costStatus === "cassette").length;
+  const unknownCostReservationUsd = sum([...unknownReservations.values()]);
+  const recomputedBudgetExposureUsd = recomputedMeasuredCostUsd + unknownCostReservationUsd;
   if (providerAttempts !== input.gatewaySpent.calls) issues.push("gateway_call_count_mismatch");
   if (!Number.isFinite(recomputedMeasuredCostUsd)) issues.push("unpriced_measured_call");
   if (!close(recomputedMeasuredCostUsd, input.gatewaySpent.costUsd)) issues.push("gateway_measured_cost_mismatch");
   if (unknownCostAttempts !== input.gatewaySpent.unknownCostCalls) issues.push("gateway_unknown_cost_mismatch");
-  if (input.gatewaySpent.budgetExposureUsd + 1e-9 < recomputedMeasuredCostUsd) issues.push("gateway_exposure_below_measured_cost");
+  if (!Number.isFinite(recomputedBudgetExposureUsd)
+    || !close(input.gatewaySpent.budgetExposureUsd, recomputedBudgetExposureUsd)) {
+    issues.push("gateway_conservative_exposure_mismatch");
+  }
 
   return {
     passed: issues.length === 0,
@@ -245,6 +268,8 @@ export function verifyIntentRouterCallEvidence(input: {
     providerAttempts,
     measuredCostUsd,
     recomputedMeasuredCostUsd,
+    recomputedBudgetExposureUsd,
+    unknownCostReservationUsd,
     pricingTableFingerprint: evidenceFingerprint(listPrices),
     unknownCostAttempts,
     cassetteAttempts,
@@ -321,22 +346,64 @@ function validateAttemptTopology(
   operation: string,
   issues: string[],
 ): void {
+  if (calls.length === 0) return;
+  if (calls.length > 3) issues.push(`attempt_limit_exceeded:${operation}:${calls.length}`);
   calls.forEach((call, index) => {
     if (!call.configuredModel) issues.push(`configured_model_missing:${operation}:${index}`);
-    const callRef = {provider: call.provider, model: configuredModel(call), effort: call.effort};
-    if (index === 0) {
-      if (!sameRef(callRef, primary) || call.retryOrdinal !== 0 || call.isSameModelRepair
-        || call.usedProviderFallback || call.usedFallback) {
-        issues.push(`initial_attempt_topology_mismatch:${operation}:${index}`);
-      }
-      return;
-    }
-    if (call.isSameModelRepair) return;
-    if (!fallback || !sameRef(callRef, fallback) || call.retryOrdinal !== 0 || !call.usedProviderFallback
-      || !call.usedFallback || calls[index - 1]?.outcome === "ok") {
-      issues.push(`fallback_topology_mismatch:${operation}:${index}`);
-    }
   });
+
+  const initial = calls[0]!;
+  const initialRef = {provider: initial.provider, model: configuredModel(initial), effort: initial.effort};
+  if (!sameRef(initialRef, primary) || initial.retryOrdinal !== 0 || initial.isSameModelRepair
+    || initial.usedProviderFallback || initial.usedFallback) {
+    issues.push(`initial_attempt_topology_mismatch:${operation}:0`);
+  }
+
+  let cursor = 1;
+  const possibleRepair = calls[cursor];
+  if (possibleRepair?.isSameModelRepair) {
+    if (initial.outcome !== "invalid_output") {
+      issues.push(`repair_not_immediately_after_invalid_primary:${operation}:${cursor}`);
+    }
+    cursor += 1;
+  }
+
+  const possibleFallback = calls[cursor];
+  if (possibleFallback) {
+    const fallbackRef = {
+      provider: possibleFallback.provider,
+      model: configuredModel(possibleFallback),
+      effort: possibleFallback.effort,
+    };
+    if (possibleFallback.isSameModelRepair || !fallback || !sameRef(fallbackRef, fallback)
+      || possibleFallback.retryOrdinal !== 0 || !possibleFallback.usedProviderFallback
+      || !possibleFallback.usedFallback || calls[cursor - 1]?.outcome === "ok") {
+      issues.push(`fallback_topology_mismatch:${operation}:${cursor}`);
+    }
+    cursor += 1;
+  }
+
+  if (cursor < calls.length) issues.push(`unexpected_attempt_sequence:${operation}:${cursor}`);
+}
+
+function recordUnknownReservation(
+  call: GatewayCallLog,
+  input: readonly ContentPart[],
+  reservations: Map<string, number>,
+  issues: string[],
+): void {
+  if (call.costStatus !== "unknown") return;
+  const policy = defaultTaskPolicies[call.task];
+  const model = configuredModel(call);
+  if (!policy || !listPrices[model]) {
+    issues.push(`unknown_cost_reservation_unpriced:${call.invocationId}`);
+    reservations.set(call.invocationId, Number.NaN);
+    return;
+  }
+  const inputTokens = input.reduce((total, part) =>
+    total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
+  reservations.set(call.invocationId,
+    estimateCostReservationUsd(model, inputTokens, policy.maxOutputTokens));
 }
 
 function recomputedCallCost(call: GatewayCallLog): number {

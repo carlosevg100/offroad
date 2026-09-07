@@ -19,12 +19,32 @@ export const listPrices: Record<string, ModelPrice> = {
   "claude-sonnet-4-6": {input: 3, output: 15, cachedInput: 0.3, source: "anthropic model table", recordedOn: "2026-08-18"},
 };
 
+/**
+ * Budget reservations deliberately include a 10% margin for regional pricing differences. Keep
+ * this calculation shared by the gateway and evidence verifiers so an unknown-cost provider call
+ * cannot later be represented as free by altering only an aggregate report field.
+ */
+export const COST_RESERVATION_SAFETY_FACTOR = 1.1;
+
 export function estimateCostUsd(model: string, usage: Usage, prices: Record<string, ModelPrice> = listPrices): number {
   const price = prices[model];
   if (!price) return 0;
   const uncached = Math.max(0, usage.inputTokens - usage.cachedInputTokens);
   const cost = (uncached * price.input + usage.cachedInputTokens * price.cachedInput + usage.outputTokens * price.output) / 1_000_000;
   return Math.round(cost * 1_000_000) / 1_000_000;
+}
+
+export function estimateCostReservationUsd(
+  model: string,
+  inputTokens: number,
+  maxOutputTokens: number,
+  prices: Record<string, ModelPrice> = listPrices,
+): number {
+  return estimateCostUsd(model, {
+    inputTokens,
+    cachedInputTokens: 0,
+    outputTokens: maxOutputTokens,
+  }, prices) * COST_RESERVATION_SAFETY_FACTOR;
 }
 
 /** Rough pre-call estimate (≈4 chars per token) used only to refuse calls that would obviously blow the budget. */

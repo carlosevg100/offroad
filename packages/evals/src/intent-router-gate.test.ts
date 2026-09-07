@@ -1,6 +1,14 @@
 import {INTENT_CLASSIFIER_SYSTEM, SEMANTIC_OBJECT_EXTRACTOR_SYSTEM, canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, semanticObjectCompilationSchema, semanticObjectExtractorOutputSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
 import {fingerprintJson} from "@offroad/case-understanding";
-import {buildRepairGuidance, estimateCostUsd, type GatewayCallLog, type ModelRef} from "@offroad/model-gateway";
+import {
+  buildRepairGuidance,
+  defaultTaskPolicies,
+  estimateCostReservationUsd,
+  estimateCostUsd,
+  estimateInputTokens,
+  type GatewayCallLog,
+  type ModelRef,
+} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 import {z} from "zod";
 
@@ -275,6 +283,73 @@ describe("intent router promotion gate", () => {
     const switchedRepair = {...repairedRoute, provider: "openai" as const, configuredModel: "gpt-5.6-terra", model: "gpt-5.6-terra"};
     expect(verifyIntentRouterCallEvidence({observations: [repairedRun], calls: [rejectedRoute, switchedRepair, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: repairedSpend}).issues)
       .toEqual(expect.arrayContaining([expect.stringContaining("repair_model_mismatch")]));
+
+    const primaryError: GatewayCallLog = {
+      ...observationCalls[0]!, invocationId: "route-primary-error", outcome: "error", costStatus: "unknown", costUsd: 0,
+      usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0}, outputFingerprint: "d".repeat(64), latencyMs: 20,
+    };
+    const fallbackSuccess: GatewayCallLog = {
+      ...call("intent_router_gold", fallback), invocationId: "route-fallback-success", usedFallback: true,
+      usedProviderFallback: true, latencyMs: 20,
+    };
+    const fallbackRun = {
+      ...run, provider: fallback.provider, model: fallback.model, routeAttemptCount: 2,
+      routeCostUsd: fallbackSuccess.costUsd, routeLatencyMs: 40,
+      costUsd: fallbackSuccess.costUsd + observationCalls[1]!.costUsd,
+    };
+    const fallbackCalls = [primaryError, fallbackSuccess, observationCalls[1]!, ...preflightCalls];
+    const fallbackMeasured = fallbackCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const routeInputTokens = contract("route_intent").input.reduce((sum, part) => sum + estimateInputTokens(part.text), 0);
+    const primaryReservation = estimateCostReservationUsd(
+      primary.model,
+      routeInputTokens,
+      defaultTaskPolicies.route_intent.maxOutputTokens,
+    );
+    const forgedUnknownExposure = verifyIntentRouterCallEvidence({
+      observations: [fallbackRun], calls: fallbackCalls, providerPreflight,
+      gatewaySpent: {costUsd: fallbackMeasured, calls: fallbackCalls.length, unknownCostCalls: 1, budgetExposureUsd: fallbackMeasured},
+    });
+    expect(forgedUnknownExposure.issues).toContain("gateway_conservative_exposure_mismatch");
+    expect(verifyIntentRouterCallEvidence({
+      observations: [fallbackRun], calls: fallbackCalls, providerPreflight,
+      gatewaySpent: {
+        costUsd: fallbackMeasured, calls: fallbackCalls.length, unknownCostCalls: 1,
+        budgetExposureUsd: fallbackMeasured + primaryReservation,
+      },
+    }).passed).toBe(true);
+
+    const fallbackError: GatewayCallLog = {
+      ...fallbackSuccess, invocationId: "route-fallback-error", outcome: "error", costStatus: "unknown", costUsd: 0,
+      usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0}, outputFingerprint: "e".repeat(64),
+    };
+    const impossibleSecondFallback: GatewayCallLog = {...fallbackSuccess, invocationId: "route-second-fallback"};
+    const impossibleRun = {...fallbackRun, routeAttemptCount: 3, routeLatencyMs: 60};
+    const impossibleCalls = [primaryError, fallbackError, impossibleSecondFallback, observationCalls[1]!, ...preflightCalls];
+    const impossibleMeasured = impossibleCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const fallbackReservation = estimateCostReservationUsd(
+      fallback.model,
+      routeInputTokens,
+      defaultTaskPolicies.route_intent.maxOutputTokens,
+    );
+    const impossibleVerdict = verifyIntentRouterCallEvidence({
+      observations: [impossibleRun], calls: impossibleCalls, providerPreflight,
+      gatewaySpent: {
+        costUsd: impossibleMeasured, calls: impossibleCalls.length, unknownCostCalls: 2,
+        budgetExposureUsd: impossibleMeasured + primaryReservation + fallbackReservation,
+      },
+    });
+    expect(impossibleVerdict.passed).toBe(false);
+    expect(impossibleVerdict.issues).toEqual(expect.arrayContaining([expect.stringContaining("unexpected_attempt_sequence")]));
+
+    const forgedPreflightRows = providerPreflight.map((row) => ({...row, conservativeExposureUsd: 0, latencyMs: 0}));
+    const forgedPreflight = verifyIntentRouterCallEvidence({
+      observations: [run], calls, providerPreflight: forgedPreflightRows, gatewaySpent: spent,
+    });
+    expect(forgedPreflight.passed).toBe(false);
+    expect(forgedPreflight.issues).toEqual(expect.arrayContaining([
+      expect.stringContaining("preflight_exposure_mismatch"),
+      expect.stringContaining("preflight_latency_mismatch"),
+    ]));
   });
 
   it("exercises every one of the 52 authored messages without treating an oracle-built output as provider evidence", () => {

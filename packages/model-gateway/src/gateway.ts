@@ -2,7 +2,7 @@ import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
-import {estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
+import {estimateCostReservationUsd, estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
 import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
@@ -50,11 +50,6 @@ export type ModelGateway = {
   complete<TSchema extends z.ZodType>(request: GatewayRequest<TSchema>): Promise<GatewayResult<z.infer<TSchema>>>;
   spent(): {costUsd: number; calls: number; unknownCostCalls: number; budgetExposureUsd: number};
 };
-
-// OpenAI documents a 10% uplift for regional processing. Reserving that margin before a call
-// keeps the budget valid regardless of whether a deployment uses global or regional routing;
-// the ledger still records the provider-reported token estimate without inventing a surcharge.
-const PREFLIGHT_PRICE_SAFETY_FACTOR = 1.1;
 
 export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   const policies = config.policies ?? defaultTaskPolicies;
@@ -180,11 +175,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       // Refuse before the provider call, not after it. The old check only looked at already
       // spent dollars, so a single large request could cross the ceiling and be billed in full.
       const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-      const reservationUsd = estimateCostUsd(ref.model, {
-        inputTokens,
-        cachedInputTokens: 0,
-        outputTokens: adapterRequest.maxOutputTokens,
-      }, prices) * PREFLIGHT_PRICE_SAFETY_FACTOR;
+      const reservationUsd = estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
       if (config.budget?.maxCostUsd !== undefined && budgetExposureUsd + reservationUsd > config.budget.maxCostUsd) {
         throw new ModelGatewayError(
           `cost budget would be exceeded (${budgetExposureUsd.toFixed(4)} + ${reservationUsd.toFixed(4)} > ${config.budget.maxCostUsd})`,
