@@ -5,7 +5,7 @@
 Atualizado em: 2026-09-07T08:37:45.000-03:00
 Baseline: `main@b76016734e860358d8b9d2f076d47c527346b0d3`
 Capability Ledger: `2026.09.07-v13@cb5f674`
-Fingerprint do board: `2f564c121e2772dae7dbd7fc6d09b6976361ad5d67ef1e703a4473219fba7124`
+Fingerprint do board: `d7c4ba0c5468ef3eb69e2269f701d9ea2d38c1ecd3a7aa3da5ce3192c35e31f4`
 
 ## Leitura executiva
 
@@ -179,7 +179,7 @@ Critérios de aceite:
 - MAT-01.AC02 — Bytes baixados coincidem com manifest · **pending**
 - MAT-01.AC03 — Visual review receipt mantém external release bloqueado · **pending**
 
-Transição planejada: `artifacts.template-faithful-suite` · specified → implemented (planned).
+Transição planejada: `artifacts.governed-office-foundation` · unsupported → implemented (planned).
 
 ### SEC-01 — Current-state e inventários
 

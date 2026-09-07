@@ -125,6 +125,10 @@ export type ProgramBoardDecision = {
 
 const maturityRank = Object.fromEntries(capabilityMaturitySchema.options.map((value, index) => [value, index])) as Record<z.infer<typeof capabilityMaturitySchema>, number>;
 const terminalStates = new Set<ProgramTaskState>(["gate_passed", "promoted"]);
+const exclusiveCapabilityTransitionOwners = new Map<string, string>([
+  ["artifacts.governed-office-foundation", "MAT-01"],
+  ["artifacts.template-faithful-suite", "MAT-05"],
+]);
 
 /**
  * Evaluates program truth, not delivery optimism. A board may be valid while work remains blocked;
@@ -195,6 +199,10 @@ export function evaluateEndgameProgramBoard(
 
     if (task.capabilityTransition) {
       const transition = task.capabilityTransition;
+      const exclusiveOwner = exclusiveCapabilityTransitionOwners.get(transition.capabilityId);
+      if (exclusiveOwner && exclusiveOwner !== task.taskId) {
+        blockers.push({code: `capability_transition_owned_by:${exclusiveOwner}`, taskId: task.taskId});
+      }
       validateEvidenceRefs(transition.evidenceRefs, evidenceById, now, blockers, task.taskId, "transition_evidence_missing");
       if (maturityRank[transition.to] <= maturityRank[transition.from]) blockers.push({code: "capability_transition_must_advance", taskId: task.taskId});
       const capability = capabilityById.get(transition.capabilityId);

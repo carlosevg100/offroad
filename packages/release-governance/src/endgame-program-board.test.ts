@@ -109,6 +109,23 @@ describe("endgame program board", () => {
     ]));
   });
 
+  it("prevents a narrow presentation foundation from promoting the template-faithful suite", () => {
+    const overclaimed = boardWithTask("MAT-01", (task) => ({
+      ...task,
+      capabilityTransition: {
+        capabilityId: "artifacts.template-faithful-suite",
+        from: "specified",
+        to: "implemented",
+        status: "planned",
+        evidenceRefs: [],
+      },
+    }));
+    const decision = evaluateEndgameProgramBoard(overclaimed, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "capability_transition_owned_by:MAT-05", taskId: "MAT-01"});
+  });
+
   it("keeps the generated Markdown byte-identical to the canonical board", () => {
     const decision = evaluateEndgameProgramBoard(currentEndgameProgramBoard, currentCapabilityLedger, masterTrustControlCatalogue);
     const path = fileURLToPath(new URL("../../../docs/build/ENDGAME_PROGRAM_BOARD.md", import.meta.url));

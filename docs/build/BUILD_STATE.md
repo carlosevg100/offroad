@@ -15,6 +15,9 @@
 - O primeiro baseline foi fixado em `main@b760167`. A reconciliação registra quatro findings high:
   ledger ainda verificado contra `cb5f674`; PR 523 fora da main após falha de E2E; nenhuma capability
   autorizada para customer reliance; e blocos centrais do endgame ainda não promovidos.
+- MAT-01 governa somente `artifacts.governed-office-foundation`. O evaluator reserva
+  `artifacts.template-faithful-suite` a MAT-05, depois de XLSX/PPTX/DOCX, template fidelity e review;
+  um material isolado não pode promover a suíte ampla.
 - Nenhuma capability foi promovida por esta entrega. O board permanece em candidate até a CI deste
   PR e a reconciliação seguinte serem registradas como evidência.
 
