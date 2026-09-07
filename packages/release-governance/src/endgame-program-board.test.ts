@@ -125,6 +125,20 @@ describe("endgame program board", () => {
     expect(decision.blockers).toContainEqual({code: "unknown_security_control:TRUST-FAKE-99", taskId: "SEC-01"});
   });
 
+  it("refuses dangling or duplicate capability references", () => {
+    const invalid = boardWithTask("CTRL-01", (task) => ({
+      ...task,
+      capabilityRefs: ["workspace.project-memory", "workspace.project-memory", "workflow.not-real"],
+    }));
+    const decision = evaluateEndgameProgramBoard(invalid, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "duplicate_capability_ref", taskId: "CTRL-01"},
+      {code: "unknown_capability_ref:workflow.not-real", taskId: "CTRL-01"},
+    ]));
+  });
+
   it("refuses expired evidence and incomplete external assessments", () => {
     const invalid: EndgameProgramBoard = {
       ...currentEndgameProgramBoard,

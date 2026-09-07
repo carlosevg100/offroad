@@ -79,6 +79,7 @@ export const programTaskSchema = z.object({
   subtasks: z.array(programSubtaskSchema).min(1),
   acceptance: z.array(programAcceptanceSchema).min(1),
   evidenceRefs: z.array(evidenceRefSchema),
+  capabilityRefs: z.array(z.string().regex(/^[a-z][a-z0-9.-]+$/)),
   blockers: z.array(programBlockerSchema),
   securityControlIds: z.array(z.string().regex(/^TRUST-[A-Z0-9-]+$/)),
   blueprintRefs: z.array(z.string().min(1)).min(1),
@@ -187,6 +188,10 @@ export function evaluateEndgameProgramBoard(
 
   for (const task of parsed.tasks) {
     validateEvidenceRefs(task.evidenceRefs, evidenceById, now, blockers, task.taskId, "task_evidence_missing");
+    if (new Set(task.capabilityRefs).size !== task.capabilityRefs.length) blockers.push({code: "duplicate_capability_ref", taskId: task.taskId});
+    for (const capabilityId of task.capabilityRefs) {
+      if (!capabilityById.has(capabilityId)) blockers.push({code: `unknown_capability_ref:${capabilityId}`, taskId: task.taskId});
+    }
     for (const controlId of task.securityControlIds) {
       if (!trustControlIds.has(controlId)) blockers.push({code: `unknown_security_control:${controlId}`, taskId: task.taskId});
     }
