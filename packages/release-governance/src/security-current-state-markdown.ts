@@ -5,6 +5,11 @@ export function renderSecurityCurrentStateInventory(
   decision: SecurityInventoryDecision,
 ): string {
   const claimAssessmentById = new Map(decision.claimAssessments.map((claim) => [claim.claimId, claim]));
+  const entityAssessmentById = new Map(decision.entityAssessments.map((entity) => [entity.entityId, entity]));
+  const gapAssessmentById = new Map(decision.gapAssessments.map((gap) => [gap.gapId, gap]));
+  const entityAssessment = (entityId: string) => entityAssessmentById.get(entityId);
+  const entityStatus = (entityId: string) => entityAssessmentById.get(entityId)?.status ?? "coverage_contract_invalid";
+  const entityGapRefs = (entityId: string) => entityAssessment(entityId)?.gapRefs ?? [];
   const lines: string[] = [
     "# Inventário atual de segurança da Offroad",
     "",
@@ -61,7 +66,7 @@ export function renderSecurityCurrentStateInventory(
     "| --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.environments.map((item) => row([
       item.environmentId, item.title, item.classification ?? "sem classificação", item.customerDataPolicy,
-      item.region ?? "unknown", item.status, ownerLabel(item.owner), refs(item.gapRefs),
+      item.region ?? "unknown", entityStatus(item.environmentId), ownerLabel(item.owner), refs(entityGapRefs(item.environmentId)),
     ])),
     "",
     "## Classes de dados",
@@ -70,7 +75,7 @@ export function renderSecurityCurrentStateInventory(
     "| --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.dataClasses.map((item) => row([
       item.dataClassId, item.handlingRule, refs(item.declaredHandlingEnvironmentRefs), item.externalUseRequiresApproval ? "sim" : "não",
-      item.status, ownerLabel(item.owner), refs(item.gapRefs),
+      entityStatus(item.dataClassId), ownerLabel(item.owner), refs(entityGapRefs(item.dataClassId)),
     ])),
     "",
     "## Sistemas",
@@ -78,7 +83,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Sistema | Tipo | Ambientes | Dados | Vendors | Estado | Owner | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.systems.map((item) => row([
-      item.systemId, item.title, item.kind, refs(item.environmentRefs), refs(item.dataClassIds), refs(item.vendorRefs), item.status, ownerLabel(item.owner), refs(item.gapRefs),
+      item.systemId, item.title, item.kind, refs(item.environmentRefs), refs(item.dataClassIds), refs(item.vendorRefs), entityStatus(item.systemId), ownerLabel(item.owner), refs(entityGapRefs(item.systemId)),
     ])),
     "",
     "## Data stores",
@@ -86,7 +91,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Store | Sistema | Dados | Retenção | Backup | Estado | Boundary | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.dataStores.map((item) => row([
-      item.storeId, item.title, item.systemRef, refs(item.dataClassIds), item.retentionState, item.backupState, item.status, item.tenancyBoundary, refs(item.gapRefs),
+      item.storeId, item.title, item.systemRef, refs(item.dataClassIds), item.retentionState, item.backupState, entityStatus(item.storeId), item.tenancyBoundary, refs(entityGapRefs(item.storeId)),
     ])),
     "",
     "## Fluxos de dados",
@@ -94,7 +99,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Fluxo | Origem | Destino | Dados | Direção | Boundary de autorização | Estado | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.dataFlows.map((item) => row([
-      item.flowId, item.title, item.sourceRef, item.destinationRef, refs(item.dataClassIds), item.direction, item.authorizationBoundary, item.status, refs(item.gapRefs),
+      item.flowId, item.title, item.sourceRef, item.destinationRef, refs(item.dataClassIds), item.direction, item.authorizationBoundary, entityStatus(item.flowId), refs(entityGapRefs(item.flowId)),
     ])),
     "",
     "## Identidades e service roles",
@@ -102,7 +107,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Identidade | Tipo | Sistema | Privilégio | Autenticação | Ciclo | Estado | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.identities.map((item) => row([
-      item.identityId, item.title, item.kind, item.systemRef, item.privilege, item.authentication, item.lifecycleState, item.status, refs(item.gapRefs),
+      item.identityId, item.title, item.kind, item.systemRef, item.privilege, item.authentication, item.lifecycleState, entityStatus(item.identityId), refs(entityGapRefs(item.identityId)),
     ])),
     "",
     "## Vendors e subprocessadores",
@@ -110,15 +115,15 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Vendor | Papel | Ativação observada | Contrato | Retenção | Training use | Região | Estado | Lacunas |",
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ...inventory.vendors.map((item) => row([
-      item.vendorId, item.title, item.role, item.activationState, item.contractState, item.retentionState, item.trainingUseState, item.regionState, item.status, refs(item.gapRefs),
+      item.vendorId, item.title, item.role, item.activationState, item.contractState, item.retentionState, item.trainingUseState, item.regionState, entityStatus(item.vendorId), refs(entityGapRefs(item.vendorId)),
     ])),
     "",
     "## Lacunas abertas",
     "",
     "| ID | Severidade | Lacuna | Owner | Controles | Próxima ação |",
     "| --- | --- | --- | --- | --- | --- |",
-    ...inventory.gaps.filter((item) => item.status === "open").map((item) => row([
-      `<a id="${item.gapId.toLowerCase()}"></a>\`${item.gapId}\``, item.severity, item.title, ownerLabel(item.owner), refs(item.controlIds), item.nextAction,
+    ...inventory.gaps.filter((item) => gapAssessmentById.get(item.gapId)?.status === "open").map((item) => row([
+      `<a id="${item.gapId.toLowerCase()}"></a>\`${item.gapId}\``, gapAssessmentById.get(item.gapId)?.severity ?? "invalid", item.title, ownerLabel(item.owner), refs(gapAssessmentById.get(item.gapId)?.controlIds ?? []), item.nextAction,
     ])),
     "",
     "## Governança e rastreabilidade por objeto",
@@ -126,7 +131,7 @@ export function renderSecurityCurrentStateInventory(
     "| ID | Owner | Backup | Evidências | Controles |",
     "| --- | --- | --- | --- | --- |",
     ...governedEntries(inventory).map(([id, item]) => row([
-      id, item.owner.ownerRole ?? "ausente", item.owner.backupOwnerRole ?? "ausente", refs(item.evidenceRefs), refs(item.controlIds),
+      id, item.owner.ownerRole ?? "ausente", item.owner.backupOwnerRole ?? "ausente", refs(entityAssessment(id)?.evidenceRefs ?? []), refs(entityAssessment(id)?.controlIds ?? []),
     ])),
     "",
     "## Evidências da baseline",
@@ -136,7 +141,7 @@ export function renderSecurityCurrentStateInventory(
     ...inventory.evidenceIndex.map((item) => row([
       item.evidenceId, item.kind, immutableEvidenceRef(inventory, item), item.capturedAt,
       item.freshness === "immutable" ? `immutable @ ${item.immutableFingerprint}` : `válida até ${item.validThrough ?? "ausente"}`,
-      `${item.description}${item.contentFingerprint ? ` Hash: ${item.contentFingerprint}.` : ""}${item.collector ? ` Collector: ${item.collector.name}@${item.collector.version} (${item.collector.principalClass}).` : ""}`,
+      `${item.description} Hash: ${item.contentFingerprint}. Authority: ${item.authorityRef}.${item.collector ? ` Collector: ${item.collector.name}@${item.collector.version} (${item.collector.principalClass}).` : ""}`,
     ])),
     "",
     "## Resultado do validador",

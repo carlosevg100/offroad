@@ -6,6 +6,11 @@ import {promisify} from "node:util";
 import {fileURLToPath} from "node:url";
 import {z} from "zod";
 import type {TrustControlCatalogue} from "./control-register";
+import {
+  createCanonicalSecurityEntityRelationships,
+  createCanonicalSecurityEvidenceManifest,
+  createCanonicalSecurityGapRelationships,
+} from "./security-current-state-canonical.ts";
 
 const dateTimeSchema = z.string().datetime({offset: true});
 const inventoryIdSchema = z.string().regex(/^[A-Z]{2,5}-[A-Z0-9-]+$/);
@@ -55,7 +60,8 @@ export const securityInventoryEvidenceSchema = z.object({
   freshness: z.enum(["immutable", "time_bound"]),
   validThrough: dateTimeSchema.nullable(),
   immutableFingerprint: z.string().regex(/^[a-f0-9]{7,64}$/).nullable(),
-  contentFingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/).nullable(),
+  contentFingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+  authorityRef: z.enum(["AUTH-TRUSTED-GIT-BASELINE", "AUTH-OPERATOR-OBSERVATION-ONLY"]),
   collector: z.object({
     name: z.string().min(1),
     version: z.string().min(1),
@@ -66,7 +72,6 @@ export const securityInventoryEvidenceSchema = z.object({
 export type SecurityInventoryEvidence = z.infer<typeof securityInventoryEvidenceSchema>;
 
 const governedEntitySchema = z.object({
-  status: securityInventoryStateSchema,
   owner: securityOwnerSchema,
   evidenceRefs: z.array(evidenceIdSchema).min(1),
   gapRefs: z.array(gapIdSchema),
@@ -167,7 +172,6 @@ export const securityInventoryGapSchema = z.object({
   gapId: gapIdSchema,
   title: z.string().min(1),
   severity: z.enum(["critical", "high", "medium", "low"]),
-  status: z.enum(["open", "resolved"]),
   owner: securityOwnerSchema,
   targetRefs: z.array(z.union([inventoryIdSchema, securityDataClassSchema])).min(1),
   evidenceRefs: z.array(evidenceIdSchema).min(1),
@@ -318,6 +322,10 @@ export function createCanonicalSecurityCoverageCatalogue(): SecurityInventoryCla
   return structuredClone(canonicalSecurityCoverageCatalogue);
 }
 
+const canonicalSecurityEvidenceManifest = createCanonicalSecurityEvidenceManifest();
+const canonicalSecurityEntityRelationships = createCanonicalSecurityEntityRelationships();
+const canonicalSecurityGapRelationships = createCanonicalSecurityGapRelationships();
+
 export const securityCurrentStateInventorySchema = z.object({
   inventoryVersion: z.string().min(1),
   generatedAt: dateTimeSchema,
@@ -383,6 +391,21 @@ export type SecurityInventoryDecision = {
     status: "coverage_contract_invalid" | "evidence_unresolved" | "blocked_by_open_gaps" | "covered_without_open_gap";
     evidenceRefs: string[];
     openGapRefs: string[];
+  }>;
+  entityAssessments: Array<{
+    entityId: string;
+    status: SecurityInventoryState | "coverage_contract_invalid";
+    evidenceRefs: string[];
+    gapRefs: string[];
+    controlIds: string[];
+  }>;
+  gapAssessments: Array<{
+    gapId: string;
+    status: "open" | "coverage_contract_invalid";
+    severity: SecurityInventoryGap["severity"];
+    targetRefs: string[];
+    evidenceRefs: string[];
+    controlIds: string[];
   }>;
   evidenceResolutions: Array<{
     evidenceId: string;
@@ -463,6 +486,8 @@ function evaluateDeclaredInventory(
   if (stableJson(parsed.coverageClaims) !== stableJson(canonicalSecurityCoverageCatalogue)) {
     blockers.push({code: "canonical_coverage_catalogue_mismatch", subjectRef: null});
   }
+  validateCanonicalEvidenceManifest(parsed.evidenceIndex, blockers);
+  validateCanonicalRelationshipCatalogues(parsed, blockers);
   if (!gapById.has(parsed.scopeRelationship.gapRef)) {
     blockers.push({code: `scope_relationship_gap_missing:${parsed.scopeRelationship.gapRef}`, subjectRef: null});
   }
@@ -514,9 +539,6 @@ function evaluateDeclaredInventory(
     }
     if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && evidence.freshness !== "time_bound") {
       blockers.push({code: "external_evidence_must_be_time_bound", subjectRef: evidence.evidenceId});
-    }
-    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && !evidence.contentFingerprint) {
-      blockers.push({code: "external_evidence_requires_content_fingerprint", subjectRef: evidence.evidenceId});
     }
     if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && !evidence.collector) {
       blockers.push({code: "external_evidence_requires_collector", subjectRef: evidence.evidenceId});
@@ -579,7 +601,6 @@ function evaluateDeclaredInventory(
     validateRefs(gap.gapId, gap.targetRefs, new Set(allEntityIds.keys()), "unknown_gap_target", blockers);
     validateEvidenceRefs(gap.gapId, gap.evidenceRefs, evidenceById, blockers, true);
     validateControlRefs(gap.gapId, gap.controlIds, knownControlIds, blockers);
-    if (gap.status === "resolved") warnings.push({code: "resolved_gap_should_move_to_evidence_history", subjectRef: gap.gapId});
   }
 
   for (const [entityId, entity] of entityEntries(parsed)) {
@@ -617,7 +638,6 @@ function evaluateDeclaredInventory(
         continue;
       }
       if (gap.severity !== requiredGap.severity) blockers.push({code: "canonical_gap_severity_mismatch", subjectRef: requiredGap.gapRef});
-      if (gap.status !== requiredGap.requiredStatus) blockers.push({code: "canonical_gap_status_mismatch", subjectRef: requiredGap.gapRef});
     }
   }
   for (const gap of parsed.gaps) {
@@ -641,7 +661,7 @@ function evaluateDeclaredInventory(
       dataFlows: parsed.dataFlows.length,
       identities: parsed.identities.length,
       vendors: parsed.vendors.length,
-      openGaps: parsed.gaps.filter((gap) => gap.status === "open").length,
+      openGaps: Object.keys(canonicalSecurityGapRelationships).length,
       coverageClaims: parsed.coverageClaims.length,
     },
     inventoryFingerprint: createHash("sha256").update(stableJson(parsed)).digest("hex"),
@@ -652,6 +672,8 @@ function evaluateDeclaredInventory(
       commitContainedInMain: false,
     },
     claimAssessments: deriveClaimAssessments(parsed, new Set()),
+    entityAssessments: deriveEntityAssessments(parsed, new Set()),
+    gapAssessments: deriveGapAssessments(parsed),
     evidenceResolutions: [],
   };
 }
@@ -663,6 +685,7 @@ const externalKinds = new Set<SecurityInventoryEvidence["kind"]>(["external_snap
 const trustedRepositoryRemote = "github.com/carlosevg100/offroad";
 const trustedExternalEvidenceAuthorities = {
   "SEV-AWS-DEPLOY-ROLE-SNAPSHOT": {
+    authorityRef: "AUTH-OPERATOR-OBSERVATION-ONLY",
     kind: "operator_observation",
     ref: "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-07.json",
     capturedAt: "2026-09-07T09:20:00.000-03:00",
@@ -705,7 +728,7 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
         const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
         const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
         const fingerprint = sha256(bytes);
-        if (evidence.contentFingerprint && evidence.contentFingerprint !== fingerprint) {
+        if (evidence.contentFingerprint !== fingerprint) {
           blockers.push({code: "repository_evidence_content_mismatch", subjectRef: evidence.evidenceId});
         }
         if (blockers.length === blockersBeforeResolution) {
@@ -738,6 +761,8 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
     blockers: stableIssues(blockers),
     repositoryResolution,
     claimAssessments: deriveClaimAssessments(parsed, new Set(resolutions.map((item) => item.evidenceId))),
+    entityAssessments: deriveEntityAssessments(parsed, new Set(resolutions.map((item) => item.evidenceId))),
+    gapAssessments: deriveGapAssessments(parsed),
     evidenceResolutions: resolutions.sort((a, b) => a.evidenceId.localeCompare(b.evidenceId)),
   };
 }
@@ -824,6 +849,7 @@ function validateExternalEvidenceAuthority(
     return;
   }
   const declaredAuthorityMetadata = {
+    authorityRef: evidence.authorityRef,
     kind: evidence.kind,
     ref: evidence.ref,
     capturedAt: evidence.capturedAt,
@@ -832,6 +858,7 @@ function validateExternalEvidenceAuthority(
     contentFingerprint: evidence.contentFingerprint,
   };
   const expectedAuthorityMetadata = {
+    authorityRef: authority.authorityRef,
     kind: authority.kind,
     ref: authority.ref,
     capturedAt: authority.capturedAt,
@@ -870,6 +897,121 @@ function validateExternalEvidenceAuthority(
   }
 }
 
+function validateCanonicalEvidenceManifest(
+  evidenceIndex: SecurityInventoryEvidence[],
+  blockers: SecurityInventoryIssue[],
+) {
+  const actualById = new Map(evidenceIndex.map((evidence) => [evidence.evidenceId, evidence]));
+  const expectedById = new Map(canonicalSecurityEvidenceManifest.map((evidence) => [evidence.evidenceId, evidence]));
+  for (const expected of canonicalSecurityEvidenceManifest) {
+    const actual = actualById.get(expected.evidenceId);
+    if (!actual) {
+      blockers.push({code: "canonical_evidence_missing", subjectRef: expected.evidenceId});
+      continue;
+    }
+    const projection = {
+      evidenceId: actual.evidenceId,
+      kind: actual.kind,
+      ref: actual.ref,
+      capturedAt: actual.capturedAt,
+      freshness: actual.freshness,
+      validThrough: actual.validThrough,
+      immutableFingerprint: actual.immutableFingerprint,
+      contentFingerprint: actual.contentFingerprint,
+      authorityRef: actual.authorityRef,
+      collector: actual.collector,
+    };
+    if (stableJson(projection) !== stableJson(expected)) {
+      blockers.push({code: "canonical_evidence_manifest_mismatch", subjectRef: expected.evidenceId});
+    }
+  }
+  for (const evidenceId of actualById.keys()) {
+    if (!expectedById.has(evidenceId)) blockers.push({code: "unexpected_evidence", subjectRef: evidenceId});
+  }
+}
+
+function entityRelationshipProjection(entity: GovernedInventoryEntity) {
+  return {evidenceRefs: entity.evidenceRefs, gapRefs: entity.gapRefs, controlIds: entity.controlIds};
+}
+
+function gapRelationshipProjection(gap: SecurityInventoryGap) {
+  return {severity: gap.severity, targetRefs: gap.targetRefs, evidenceRefs: gap.evidenceRefs, controlIds: gap.controlIds};
+}
+
+function validateCanonicalRelationshipCatalogues(
+  inventory: SecurityCurrentStateInventory,
+  blockers: SecurityInventoryIssue[],
+) {
+  const actualEntities = new Map(entityEntries(inventory));
+  for (const [entityId, expected] of Object.entries(canonicalSecurityEntityRelationships)) {
+    const actual = actualEntities.get(entityId);
+    if (!actual) blockers.push({code: "canonical_entity_missing", subjectRef: entityId});
+    else if (stableJson(entityRelationshipProjection(actual)) !== stableJson(expected)) {
+      blockers.push({code: "canonical_entity_relationship_mismatch", subjectRef: entityId});
+    }
+  }
+  for (const entityId of actualEntities.keys()) {
+    if (!canonicalSecurityEntityRelationships[entityId]) blockers.push({code: "unexpected_governed_entity", subjectRef: entityId});
+  }
+
+  const actualGaps = new Map(inventory.gaps.map((gap) => [gap.gapId, gap]));
+  for (const [gapId, expected] of Object.entries(canonicalSecurityGapRelationships)) {
+    const actual = actualGaps.get(gapId);
+    if (!actual) blockers.push({code: "canonical_gap_missing", subjectRef: gapId});
+    else if (stableJson(gapRelationshipProjection(actual)) !== stableJson(expected)) {
+      blockers.push({code: "canonical_gap_relationship_mismatch", subjectRef: gapId});
+    }
+  }
+  for (const gapId of actualGaps.keys()) {
+    if (!canonicalSecurityGapRelationships[gapId]) blockers.push({code: "unexpected_gap", subjectRef: gapId});
+  }
+}
+
+function entityRelationshipIsCanonical(entityId: string, entity: GovernedInventoryEntity | undefined): boolean {
+  const expected = canonicalSecurityEntityRelationships[entityId];
+  return Boolean(expected && entity && stableJson(entityRelationshipProjection(entity)) === stableJson(expected));
+}
+
+function gapRelationshipIsCanonical(gapId: string, gap: SecurityInventoryGap | undefined): boolean {
+  const expected = canonicalSecurityGapRelationships[gapId];
+  return Boolean(expected && gap && stableJson(gapRelationshipProjection(gap)) === stableJson(expected));
+}
+
+function deriveEntityAssessments(
+  inventory: SecurityCurrentStateInventory,
+  resolvedEvidenceIds: Set<string>,
+): SecurityInventoryDecision["entityAssessments"] {
+  const actual = new Map(entityEntries(inventory));
+  return Object.entries(canonicalSecurityEntityRelationships).map(([entityId, relationship]) => {
+    const contractValid = entityRelationshipIsCanonical(entityId, actual.get(entityId));
+    const evidenceResolved = relationship.evidenceRefs.every((evidenceRef) => resolvedEvidenceIds.has(evidenceRef));
+    return {
+      entityId,
+      status: !contractValid ? "coverage_contract_invalid" as const
+        : !evidenceResolved ? "unknown" as const
+        : relationship.gapRefs.length > 0 ? "partial" as const
+          : "verified" as const,
+      evidenceRefs: [...relationship.evidenceRefs],
+      gapRefs: [...relationship.gapRefs],
+      controlIds: [...relationship.controlIds],
+    };
+  });
+}
+
+function deriveGapAssessments(
+  inventory: SecurityCurrentStateInventory,
+): SecurityInventoryDecision["gapAssessments"] {
+  const actual = new Map(inventory.gaps.map((gap) => [gap.gapId, gap]));
+  return Object.entries(canonicalSecurityGapRelationships).map(([gapId, relationship]) => ({
+    gapId,
+    status: gapRelationshipIsCanonical(gapId, actual.get(gapId)) ? "open" as const : "coverage_contract_invalid" as const,
+    severity: relationship.severity,
+    targetRefs: [...relationship.targetRefs],
+    evidenceRefs: [...relationship.evidenceRefs],
+    controlIds: [...relationship.controlIds],
+  }));
+}
+
 function deriveClaimAssessments(
   inventory: SecurityCurrentStateInventory,
   resolvedEvidenceIds: Set<string>,
@@ -878,15 +1020,13 @@ function deriveClaimAssessments(
   return canonicalSecurityCoverageCatalogue.map((claim) => {
     const declaredClaim = inventory.coverageClaims.find((candidate) => candidate.claimId === claim.claimId);
     const evidenceRefs = claim.evidenceRequirements.map((requirement) => requirement.evidenceRef);
-    const openGapRefs = claim.requiredGaps
-      .filter((requiredGap) => gapById.get(requiredGap.gapRef)?.status === "open")
-      .map((requiredGap) => requiredGap.gapRef);
+    const openGapRefs = claim.requiredGaps.map((requiredGap) => requiredGap.gapRef);
     const evidenceResolved = evidenceRefs.every((evidenceRef) => resolvedEvidenceIds.has(evidenceRef));
     const coverageContractValid = declaredClaim !== undefined
       && stableJson(declaredClaim) === stableJson(claim)
       && claim.requiredGaps.every((requiredGap) => {
         const actual = gapById.get(requiredGap.gapRef);
-        return actual?.severity === requiredGap.severity && actual.status === requiredGap.requiredStatus;
+        return actual?.severity === requiredGap.severity && gapRelationshipIsCanonical(requiredGap.gapRef, actual);
       });
     return {
       claimId: claim.claimId,
@@ -923,8 +1063,6 @@ function validateGovernedEntity(
   validateEvidenceRefs(subjectRef, entity.evidenceRefs, evidenceById, blockers);
   validateControlRefs(subjectRef, entity.controlIds, knownControlIds, blockers);
   validateRefs(subjectRef, entity.gapRefs, gapById, "unknown_gap_ref", blockers);
-  if (entity.status !== "verified" && entity.gapRefs.length === 0) blockers.push({code: "non_verified_entity_requires_gap", subjectRef});
-  if (entity.status === "verified" && entity.gapRefs.length > 0) blockers.push({code: "verified_entity_has_gap", subjectRef});
 }
 
 function validateOwner(subjectRef: string, owner: SecurityOwner, issues: SecurityInventoryIssue[]) {

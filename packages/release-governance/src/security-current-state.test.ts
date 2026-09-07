@@ -68,13 +68,12 @@ describe("security current-state inventory", () => {
 
   it("makes the evaluation OIDC, secret retrieval and provider boundaries explicit", () => {
     const identity = currentSecurityInventory.identities.find((item) => item.identityId === "ID-GITHUB-EVALS-OIDC");
-    expect(identity).toMatchObject({systemRef: "SYS-GITHUB", privilege: "workload_scoped", status: "partial"});
+    expect(identity).toMatchObject({systemRef: "SYS-GITHUB", privilege: "workload_scoped"});
     const expectedFlows = ["FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY"];
     expect(currentSecurityInventory.dataFlows.filter((item) => expectedFlows.includes(item.flowId)).map((item) => item.flowId).sort()).toEqual(expectedFlows.sort());
     for (const flowId of expectedFlows) {
       const flow = currentSecurityInventory.dataFlows.find((item) => item.flowId === flowId)!;
       expect(flow.environmentRefs).toContain("ENV-CI");
-      expect(flow.status).not.toBe("verified");
       expect(flow.gapRefs).toContain("SG-PROVIDER-ASSURANCE");
     }
     expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-GITHUB-EVAL-SECRETS")!.gapRefs).toContain("SG-PRIVILEGED-ACCESS");
@@ -92,7 +91,7 @@ describe("security current-state inventory", () => {
 
   it("models the Codex review as a privileged agentic boundary", () => {
     expect(currentSecurityInventory.systems.find((item) => item.systemId === "SYS-CODEX-CI")?.purpose).toContain("danger-full-access");
-    expect(currentSecurityInventory.identities.find((item) => item.identityId === "ID-CODEX-CI")).toMatchObject({privilege: "privileged", status: "partial"});
+    expect(currentSecurityInventory.identities.find((item) => item.identityId === "ID-CODEX-CI")).toMatchObject({privilege: "privileged"});
     const gap = currentSecurityInventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
     for (const phrase of ["prompt-injection", "network egress", "commands/tools", "logs/artifacts"]) expect(gap.nextAction).toContain(phrase);
     const sourceFlow = currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-CODEX-SOURCE");
@@ -136,16 +135,56 @@ describe("security current-state inventory", () => {
     expect(decision.claimAssessments.some((claim) => claim.status === "coverage_contract_invalid")).toBe(true);
   });
 
-  it("fails closed if a canonical gap is marked resolved or reclassified", () => {
+  it("ignores caller-authored status and fails closed if a canonical gap is reclassified", () => {
     const inventory = copyInventory();
     const gap = inventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
-    gap.status = "resolved";
+    (gap as typeof gap & {status: string}).status = "resolved";
     gap.severity = "low";
     const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
     expect(decision.blockers).toEqual(expect.arrayContaining([
-      {code: "canonical_gap_status_mismatch", subjectRef: gap.gapId},
       {code: "canonical_gap_severity_mismatch", subjectRef: gap.gapId},
+      {code: "canonical_gap_relationship_mismatch", subjectRef: gap.gapId},
     ]));
+    expect(decision.gapAssessments.find((item) => item.gapId === gap.gapId)?.status).toBe("coverage_contract_invalid");
+  });
+
+  it("derives entity status and strips caller-authored status before rendering", async () => {
+    expect(currentSecurityInventory.systems.every((item) => !("status" in item))).toBe(true);
+    expect(currentSecurityInventory.gaps.every((item) => !("status" in item))).toBe(true);
+    const baseline = await evaluateSecurityCurrentStateInventoryTrusted(currentSecurityInventory, masterTrustControlCatalogue);
+    expect(baseline.entityAssessments.find((item) => item.entityId === "SYS-CODEX-CI")?.status).toBe("partial");
+    expect(baseline.gapAssessments.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")?.status).toBe("open");
+
+    const inventory = copyInventory();
+    (inventory.systems[0] as typeof inventory.systems[number] & {status: string}).status = "verified";
+    const attacked = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    const clean = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
+    expect(attacked.entityAssessments).toEqual(clean.entityAssessments);
+    expect(attacked.inventoryFingerprint).toBe(clean.inventoryFingerprint);
+    expect(renderSecurityCurrentStateInventory(inventory, attacked)).toBe(renderSecurityCurrentStateInventory(currentSecurityInventory, clean));
+  });
+
+  it("rejects coordinated entity and gap relationship edits from both sides", () => {
+    const inventory = copyInventory();
+    const entity = inventory.systems.find((item) => item.systemId === "SYS-CODEX-CI")!;
+    const gap = inventory.gaps.find((item) => item.gapId === "SG-CODEX-CI-AGENT-BOUNDARY")!;
+    entity.gapRefs = [];
+    gap.targetRefs = gap.targetRefs.filter((targetRef) => targetRef !== entity.systemId);
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "canonical_entity_relationship_mismatch", subjectRef: entity.systemId},
+      {code: "canonical_gap_relationship_mismatch", subjectRef: gap.gapId},
+    ]));
+    expect(decision.entityAssessments.find((item) => item.entityId === entity.systemId)?.status).toBe("coverage_contract_invalid");
+  });
+
+  it("rejects caller edits to canonical entity evidence and control relationships", () => {
+    const inventory = copyInventory();
+    const entity = inventory.systems.find((item) => item.systemId === "SYS-CODEX-CI")!;
+    entity.evidenceRefs = ["SEV-AGENTS-SCOPE"];
+    entity.controlIds = ["TRUST-AI-01"];
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.blockers).toContainEqual({code: "canonical_entity_relationship_mismatch", subjectRef: entity.systemId});
   });
 
   it("inventories npm, Actions, Supabase local images and Playwright browser supply paths", () => {
@@ -287,6 +326,7 @@ describe("security current-state inventory", () => {
     const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "canonical_evidence_manifest_mismatch", subjectRef: "SEV-WEB-UPLOAD"},
       {code: "evidence_bytes_unresolvable", subjectRef: "SEV-WEB-UPLOAD"},
       {code: "evidence_resolution_incomplete", subjectRef: null},
     ]));
@@ -304,6 +344,7 @@ describe("security current-state inventory", () => {
     ["collector", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.collector = {name: "invented", version: "9", principalClass: "self-declared"}; }],
     ["capturedAt", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.capturedAt = "2026-09-07T09:21:00.000-03:00"; }],
     ["validThrough", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.validThrough = "2026-09-13T09:20:00.000-03:00"; }],
+    ["authorityRef", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.authorityRef = "AUTH-TRUSTED-GIT-BASELINE"; }],
   ])("rejects forged external evidence %s metadata even when referenced bytes still resolve", async (_field, forge) => {
     const inventory = copyInventory();
     forge(inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!);
@@ -331,6 +372,26 @@ describe("security current-state inventory", () => {
     inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-WEB-UPLOAD")!.contentFingerprint = `sha256:${"f".repeat(64)}`;
     const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
-    expect(decision.blockers).toContainEqual({code: "repository_evidence_content_mismatch", subjectRef: "SEV-WEB-UPLOAD"});
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "canonical_evidence_manifest_mismatch", subjectRef: "SEV-WEB-UPLOAD"},
+      {code: "repository_evidence_content_mismatch", subjectRef: "SEV-WEB-UPLOAD"},
+    ]));
+  });
+
+  it("rejects substitution of a canonical evidence reference even when the substituted bytes and hash are real", async () => {
+    const inventory = copyInventory();
+    const evidence = inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-WEB-UPLOAD")!;
+    const substitutedBytes = execFileSync("git", ["show", `${inventory.baseline.commit}:AGENTS.md`]);
+    evidence.ref = "AGENTS.md";
+    evidence.contentFingerprint = `sha256:${createHash("sha256").update(substitutedBytes).digest("hex")}`;
+    const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
+    expect(decision.currentStateTruthVerified).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "canonical_evidence_manifest_mismatch", subjectRef: "SEV-WEB-UPLOAD"});
+  });
+
+  it("makes every evidence content fingerprint mandatory", () => {
+    const inventory = copyInventory();
+    (inventory.evidenceIndex[0] as unknown as {contentFingerprint: null}).contentFingerprint = null;
+    expect(() => evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue)).toThrow();
   });
 });
