@@ -3464,3 +3464,11 @@ de cliente, não aceita `anon` e tem teste que mantém SQL e TypeScript alinhado
 aplicada em staging e produção e usa no repositório o carimbo efetivo de produção
 `20260907051611_worker_runtime_schema_contract.sql`; CI e estabilização do serviço ainda são a
 prova operacional restante.
+
+O próximo elo fecha o ciclo da pergunta governada sem transformar qualquer mensagem em gatilho.
+Enquanto o draft R01 estiver incompleto ou em conflito, o sistema apenas preserva o valor e avança
+as lacunas materiais. Quando uma resposta vinculada fecha o último input, o worker inicia um único
+refresh do case rail, atribuído ao usuário e deduplicado pelo fingerprint da revisão imutável. O
+run lê o estado acumulado do projeto, não o histórico recente do chat. A imagem exige o contrato de
+schema v2 antes de acessar a fila. Esta fatia melhora continuidade, mas o executor R01 permanece
+interno e em sombra; ela não homologa recebíveis nem libera recomendação externa.

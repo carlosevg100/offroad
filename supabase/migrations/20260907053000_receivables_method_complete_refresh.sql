@@ -8,6 +8,7 @@ create table private.receivables_method_refreshes (
   intake_session_id uuid not null,
   supplement_draft_id uuid not null,
   draft_fingerprint text not null check (draft_fingerprint ~ '^[0-9a-f]{64}$'),
+  compiled_supplement_fingerprint text not null check (compiled_supplement_fingerprint ~ '^[0-9a-f]{64}$'),
   caused_by_agent_job_id uuid not null,
   processing_run_id uuid not null,
   case_job_id uuid not null,
@@ -32,7 +33,8 @@ revoke all privileges on private.receivables_method_refreshes from public, anon,
 create or replace function private.worker_enqueue_receivables_method_refresh_v1(
   p_job_id uuid,
   p_capability_token text,
-  p_draft_fingerprint text
+  p_draft_fingerprint text,
+  p_compiled_supplement_fingerprint text
 )
 returns jsonb
 language plpgsql
@@ -50,7 +52,8 @@ declare
   refresh_job_id uuid;
 begin
   if job_row.kind <> 'agent_operation_brief'
-    or coalesce(p_draft_fingerprint,'') !~ '^[0-9a-f]{64}$' then
+    or coalesce(p_draft_fingerprint,'') !~ '^[0-9a-f]{64}$'
+    or coalesce(p_compiled_supplement_fingerprint,'') !~ '^[0-9a-f]{64}$' then
     raise exception 'receivables_method_refresh_capability_invalid' using errcode = '42501';
   end if;
   select session.* into session_row
@@ -87,8 +90,14 @@ begin
     and refresh.intake_session_id = job_row.intake_session_id
     and refresh.draft_fingerprint = p_draft_fingerprint;
   if found then
+    if existing.compiled_supplement_fingerprint <> p_compiled_supplement_fingerprint then
+      raise exception 'receivables_method_refresh_compilation_conflict' using errcode = '23505';
+    end if;
     return jsonb_build_object(
-      'processing_run_id',existing.processing_run_id,'job_id',existing.case_job_id,'replayed',true
+      'processing_run_id', existing.processing_run_id,
+      'job_id', existing.case_job_id,
+      'compiled_supplement_fingerprint', existing.compiled_supplement_fingerprint,
+      'replayed', true
     );
   end if;
 
@@ -129,13 +138,18 @@ begin
 
   insert into private.receivables_method_refreshes (
     organization_id, capital_project_id, intake_session_id, supplement_draft_id,
-    draft_fingerprint, caused_by_agent_job_id, processing_run_id, case_job_id
+    draft_fingerprint, compiled_supplement_fingerprint, caused_by_agent_job_id,
+    processing_run_id, case_job_id
   ) values (
     job_row.organization_id, session_row.capital_project_id, job_row.intake_session_id,
-    draft_row.id, p_draft_fingerprint, job_row.id, refresh_run_id, refresh_job_id
+    draft_row.id, p_draft_fingerprint, p_compiled_supplement_fingerprint,
+    job_row.id, refresh_run_id, refresh_job_id
   );
   return jsonb_build_object(
-    'processing_run_id',refresh_run_id,'job_id',refresh_job_id,'replayed',false
+    'processing_run_id', refresh_run_id,
+    'job_id', refresh_job_id,
+    'compiled_supplement_fingerprint', p_compiled_supplement_fingerprint,
+    'replayed', false
   );
 exception when invalid_text_representation then
   raise exception 'receivables_method_refresh_contract_invalid' using errcode = '22023';
@@ -143,7 +157,8 @@ end;
 $$;
 
 create or replace function public.worker_enqueue_receivables_method_refresh_v1(
-  p_job_id uuid, p_capability_token text, p_draft_fingerprint text
+  p_job_id uuid, p_capability_token text, p_draft_fingerprint text,
+  p_compiled_supplement_fingerprint text
 )
 returns jsonb
 language sql
@@ -151,14 +166,14 @@ security invoker
 set search_path = ''
 as $$
   select private.worker_enqueue_receivables_method_refresh_v1(
-    p_job_id, p_capability_token, p_draft_fingerprint
+    p_job_id, p_capability_token, p_draft_fingerprint, p_compiled_supplement_fingerprint
   );
 $$;
 
-revoke all on function private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text) from public, anon;
-revoke all on function public.worker_enqueue_receivables_method_refresh_v1(uuid,text,text) from public, anon;
-grant execute on function private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text) to authenticated;
-grant execute on function public.worker_enqueue_receivables_method_refresh_v1(uuid,text,text) to authenticated;
+revoke all on function private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text) from public, anon;
+revoke all on function public.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text) from public, anon;
+grant execute on function private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text) to authenticated;
+grant execute on function public.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text) to authenticated;
 
 comment on table private.receivables_method_refreshes is
   'Idempotent link from one complete immutable R01 draft to the bounded case run it triggered.';

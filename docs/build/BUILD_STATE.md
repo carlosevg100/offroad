@@ -2626,3 +2626,18 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   `20260907051254`; o contrato de boot foi aplicado a staging e produção, com carimbo canônico de
   produção `20260907051611`. O worker ainda precisa passar CI e estabilizar no ECS antes de este
   controle contar como operacional.
+
+## Refresh governado quando o input R01 fica completo, implemented, 07/09/2026
+
+- Uma resposta tipada continua alterando apenas o campo ao qual a pergunta foi vinculada. Enquanto
+  o draft estiver incompleto ou em conflito, nenhuma nova análise é iniciada e as próximas lacunas
+  materiais permanecem visíveis.
+- Quando a resposta fecha o último input obrigatório, o worker cria uma única reanálise limitada do
+  caso, atribuída ao usuário que respondeu. A combinação projeto, sessão e fingerprint do draft
+  torna retries idempotentes e impede cobrança ou execução duplicada.
+- O run novo lê a revisão imutável acumulada pelo projeto; não tenta reconstruir premissas pela
+  janela recente do chat. O R01 continua em sombra e não autoriza recomendação ou material externo.
+- O teste de orquestração prova os dois ramos: input incompleto não enfileira; resposta que fecha
+  exatamente `structure.advanceRate` compila o draft e inicia o refresh sem chamada de modelo.
+- A migration e o contrato de boot v2 ainda precisam ser promovidos nos dois bancos, passar pela CI
+  integral e estabilizar no ECS antes de esta fatia contar como live.

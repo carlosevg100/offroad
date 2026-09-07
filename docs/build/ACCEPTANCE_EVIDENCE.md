@@ -1379,3 +1379,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | Paridade código-SQL | `runtime-schema.test.ts` | contrato exato passa; endpoint ausente e versão antiga falham; constante da imagem precisa existir na migration mais recente | 2026-09-07 |
 | Advisors depois da DDL | Security Advisor em staging e produção | nenhum finding novo; permanecem somente dois INFO preexistentes em tabelas `private` deliberadamente sem policy | 2026-09-07 |
 | Escopo atual | rollout ECS pendente | migration está presente nos dois bancos; controle só será marcado operacional depois de CI integral e task nova estável | 2026-09-07 |
+
+## Refresh após completar o input R01, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Decisão de refresh | `agent-operation-brief.test.ts` | draft incompleto não enfileira; a última resposta material compila o draft completo, inicia um run e mantém zero chamadas de modelo | 2026-09-07 |
+| Comando capability-bound | `queue.test.ts` e `receivables_method_complete_refresh.sql` | job, token e fingerprint exato são exigidos; o retorno contém run, job e indicador de replay | 2026-09-07 |
+| Idempotência e autoria | `receivables_information_request_bindings.sql` | duas chamadas com o mesmo draft retornam o mesmo run; `created_by` é o usuário da resposta governada | 2026-09-07 |
+| Compatibilidade de rollout | `worker_runtime_schema_contract.sql` e `runtime-schema.test.ts` | a imagem que chama o refresh exige o contrato v2 com `receivables-complete-draft-refresh.v1` antes de tocar a fila | 2026-09-07 |
+| Limite | código e testes | refresh executa o case rail atual e o especialista R01 permanece interno e em sombra; nenhuma alegação de expertise ou output externo é liberada | 2026-09-07 |

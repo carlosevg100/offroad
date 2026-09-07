@@ -16,6 +16,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: [
           "integration-preview-workflow-continuity.v1",
           "receivables-information-request-bindings.v1",
+          "receivables-complete-draft-refresh.v1",
         ],
       },
       error: null,

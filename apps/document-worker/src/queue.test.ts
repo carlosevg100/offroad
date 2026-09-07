@@ -207,18 +207,24 @@ describe("case input loading", () => {
         p_job_id: agentJob.job_id,
         p_capability_token: agentJob.capability_token,
         p_draft_fingerprint: "d".repeat(64),
+        p_compiled_supplement_fingerprint: "e".repeat(64),
       });
       return {data: {
         processing_run_id: "50000000-0000-4000-8000-000000000001",
         job_id: "60000000-0000-4000-8000-000000000001",
+        compiled_supplement_fingerprint: "e".repeat(64),
         replayed: false,
       }, error: null};
     });
     const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
 
-    await expect(queue.enqueueReceivablesMethodRefresh!(agentJob, {draftFingerprint: "d".repeat(64)})).resolves.toEqual({
+    await expect(queue.enqueueReceivablesMethodRefresh!(agentJob, {
+      draftFingerprint: "d".repeat(64),
+      compiledSupplementFingerprint: "e".repeat(64),
+    })).resolves.toEqual({
       processingRunId: "50000000-0000-4000-8000-000000000001",
       jobId: "60000000-0000-4000-8000-000000000001",
+      compiledSupplementFingerprint: "e".repeat(64),
       replayed: false,
     });
   });

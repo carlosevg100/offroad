@@ -1,6 +1,6 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v9
+Versão: 2026.09.07-v10
 
 Baseline inspecionada: commit `744bbfcaf76c`
 
@@ -47,6 +47,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Matching com mandatos sintéticos | mocked | internal | implemented | sem base live suficiente |
 | Rede live de mandatos e lenders | absent | none | unsupported | aquisição, consentimento e freshness inexistentes |
 | Atualização incremental do Caso 01 | live | allowlisted | tested | provada somente dentro do preview |
+| Fechamento governado e refresh R01 | live | internal | implemented | executa o case rail atual; o especialista R01 continua em sombra e sem uso externo |
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
 | Compatibilidade banco-worker no boot | live | internal | implemented | requer bump conjunto do contrato em toda mudança dependente de schema e estabilização do primeiro rollout protegido |

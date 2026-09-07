@@ -13,6 +13,7 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {fingerprintJson} from "@offroad/case-understanding";
 import {
   bindObjectiveMethods,
   compileObjectiveSpecialization,
@@ -284,7 +285,10 @@ export async function processAgentOperationBriefJob(
         nextQuestionCount = projected.openCount;
       }
       const refresh = applied.status.state === "complete"
-        ? await queue.enqueueReceivablesMethodRefresh?.(job, {draftFingerprint: stored.draftFingerprint})
+        ? await queue.enqueueReceivablesMethodRefresh?.(job, {
+            draftFingerprint: stored.draftFingerprint,
+            compiledSupplementFingerprint: fingerprintJson(applied.status.supplement),
+          })
         : undefined;
       if (applied.status.state === "complete" && !refresh) {
         throw new Error("receivables_method_refresh_unavailable");
@@ -313,6 +317,7 @@ export async function processAgentOperationBriefJob(
         conflictCount: applied.status.openConflictIds.length,
         nextQuestionCount,
         refreshProcessingRunId: refresh?.processingRunId ?? null,
+        refreshInputFingerprint: refresh?.compiledSupplementFingerprint ?? null,
         refreshReplayed: refresh?.replayed ?? null,
         replayed: stored.replayed,
         modelCalls: 0,
@@ -323,6 +328,7 @@ export async function processAgentOperationBriefJob(
         draftRevision: stored.revision,
         draftState: applied.status.state,
         refreshProcessingRunId: refresh?.processingRunId ?? null,
+        refreshInputFingerprint: refresh?.compiledSupplementFingerprint ?? null,
         spend: gateway.spent(),
       });
       return {status: "succeeded"};

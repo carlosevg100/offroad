@@ -217,7 +217,7 @@ declare
   replay_result jsonb;
 begin
   first_result := public.worker_enqueue_receivables_method_refresh_v1(
-    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64)
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('f',64)
   );
   if (first_result ->> 'replayed')::boolean
     or not exists (
@@ -225,16 +225,31 @@ begin
       where job.id = (first_result ->> 'job_id')::uuid and job.kind = 'case_analysis'
     )
     or (select created_by from public.processing_runs where id = (first_result ->> 'processing_run_id')::uuid)
-      <> '10000000-0000-4000-8000-000000000741'::uuid then
+      <> '10000000-0000-4000-8000-000000000741'::uuid
+    or first_result ->> 'compiled_supplement_fingerprint' <> repeat('f',64) then
     raise exception 'complete draft did not create an attributed case refresh: %', first_result;
   end if;
   replay_result := public.worker_enqueue_receivables_method_refresh_v1(
-    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64)
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('f',64)
   );
   if not (replay_result ->> 'replayed')::boolean
     or replay_result ->> 'processing_run_id' <> first_result ->> 'processing_run_id' then
     raise exception 'complete draft refresh was not idempotent: %', replay_result;
   end if;
+end;
+$$;
+
+do $$
+declare accepted boolean := false;
+begin
+  begin
+    perform public.worker_enqueue_receivables_method_refresh_v1(
+      '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('0',64)
+    );
+    accepted := true;
+  exception when unique_violation then accepted := false;
+  end;
+  if accepted then raise exception 'same draft replayed with a different compiled supplement'; end if;
 end;
 $$;
 

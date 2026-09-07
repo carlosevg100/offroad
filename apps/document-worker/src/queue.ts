@@ -201,9 +201,11 @@ export type QueueClient = {
    * retries by draft fingerprint, so a replay cannot create duplicate paid analysis runs. */
   enqueueReceivablesMethodRefresh?(job: AgentOperationBriefJob, input: {
     draftFingerprint: string;
+    compiledSupplementFingerprint: string;
   }): Promise<{
     processingRunId: string;
     jobId: string;
+    compiledSupplementFingerprint: string;
     replayed: boolean;
   }>;
   recordReceivablesSpecialistShadowRun?(job: FullCaseAnalysisJob, input: {
@@ -583,15 +585,18 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_draft_fingerprint: input.draftFingerprint,
+        p_compiled_supplement_fingerprint: input.compiledSupplementFingerprint,
       });
       const parsed = z.object({
         processing_run_id: z.uuid(),
         job_id: z.uuid(),
+        compiled_supplement_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
         replayed: z.boolean(),
       }).parse(data);
       return {
         processingRunId: parsed.processing_run_id,
         jobId: parsed.job_id,
+        compiledSupplementFingerprint: parsed.compiled_supplement_fingerprint,
         replayed: parsed.replayed,
       };
     },
