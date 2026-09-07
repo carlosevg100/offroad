@@ -315,3 +315,5 @@ export function assessDepthPackPromotion(rawPack: DepthPackManifest, rawEvidence
     blockers,
   };
 }
+
+export * from "./method-binding";

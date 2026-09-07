@@ -16,6 +16,7 @@
     "@offroad/agent-contracts": "workspace:*",
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/financial-core": "workspace:*",
+    "@offroad/work-plan": "workspace:*",
     "zod": "4.4.3"
   },
   "devDependencies": {

@@ -32,6 +32,7 @@ const englishLabels: Record<(typeof offroadTaskRegistry)[number]["id"], string> 
   C09: "Identify risks and mitigants",
   C10: "Calculate debt capacity",
   C11: "Compile structuring thesis",
+  R01: "Reconcile and underwrite receivables pool",
   S01: "Compare request and economic need",
   S02: "Generate instrument universe",
   S03: "Apply legal, jurisdictional and economic filters",

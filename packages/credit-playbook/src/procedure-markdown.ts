@@ -34,6 +34,10 @@ const frontmatterSchema = z.object({
   legal_review_required: z.coerce.boolean().default(false),
   /** TaskSpecs of the work plan this method executes. The binding lives here, next to the method. */
   task_specs: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).default([]),
+  /** Every listed specialization pack must be active before this method may bind to a task. */
+  required_depth_pack_ids: z.array(z.string().regex(/^[a-z0-9_.-]{3,120}$/)).max(30).default([]),
+  /** Explicit precedence only; equal-priority candidates remain a visible conflict. */
+  binding_priority: z.coerce.number().int().min(0).max(1_000).default(0),
   calculation_ids: z.array(z.string().regex(/^[a-z][a-z0-9_.-]*$/)).default([]),
   gold_cases: z.array(z.string().min(1)).default([]),
   dependencies: z.array(z.string().regex(/^[a-z][a-z0-9-]{2,79}$/)).default([]),
