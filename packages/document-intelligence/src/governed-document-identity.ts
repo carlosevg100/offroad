@@ -7,6 +7,14 @@ import {z} from "zod";
 import {layerKindSchema} from "./schemas";
 
 export const governedDocumentIdentityVersion = "governed-document-identity.v3";
+export const governedDocumentIdentityRuntimeBoundary = Object.freeze({
+  persistence: "external_transaction_required",
+  concurrency: "adapter_compare_and_swap_required",
+  effectsAuthorization: "forbidden_before_committed_revision",
+} as const);
+
+/** Attestation clocks may lead the trusted application clock by at most five minutes. */
+export const governedDocumentAttestationMaxFutureSkewMs = 5 * 60 * 1_000;
 
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
 const uuidSchema = z.uuid();
@@ -84,6 +92,63 @@ export type ArtifactAttestation = z.infer<typeof artifactAttestationSchema>;
 export const lifecycleJournalAttestationSchema = cryptographicAttestationSchema;
 export type LifecycleJournalAttestation = z.infer<typeof lifecycleJournalAttestationSchema>;
 
+const confidentialitySchema = z.enum(["public", "internal", "confidential", "restricted"]);
+export const documentClassificationSchema = z.object({
+  dataClass: taskDataClassSchema, informationClass: informationClassSchema, confidentiality: confidentialitySchema,
+}).strict();
+export type DocumentClassification = z.infer<typeof documentClassificationSchema>;
+const classificationAuthorizationSchema = z.enum(["change_data_class", "change_confidentiality", "declassify", "change_information_class", "upgrade_information_class"]);
+export const classificationTransitionReceiptSchema = z.object({
+  receiptId: uuidSchema, identityRecordId: uuidSchema, organizationId: uuidSchema, projectId: uuidSchema,
+  companyId: uuidSchema.nullable(), conversationId: uuidSchema.nullable(), documentId: uuidSchema,
+  documentVersion: z.number().int().positive(), from: documentClassificationSchema, to: documentClassificationSchema,
+  purpose: z.literal("classification_transition"), operationId: uuidSchema,
+  priorLifecycleFingerprint: sha256Schema, targetRevision: z.number().int().positive(),
+  authorizations: z.array(classificationAuthorizationSchema).min(1).max(5), authorizedActor: documentActorReferenceSchema,
+  authorizedAt: z.iso.datetime({offset: true}), attestation: cryptographicAttestationSchema,
+}).strict();
+export type ClassificationTransitionReceipt = z.infer<typeof classificationTransitionReceiptSchema>;
+
+const derivativeKindSchema = z.enum(["normalized_layer", "retrieval_chunk_set", "extraction_candidate_set", "profile", "evidence_fragment", "artifact", "other"]);
+const canonicalLayerMediaTypes = {
+  pdf: z.literal("application/pdf"),
+  spreadsheet: z.enum([
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-excel",
+    "application/vnd.ms-excel.sheet.binary.macroenabled.12",
+    "application/vnd.oasis.opendocument.spreadsheet",
+    "application/x-dbf",
+  ]),
+  docx: z.enum([
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword",
+    "application/rtf",
+    "text/rtf",
+    "application/vnd.oasis.opendocument.text",
+    "application/vnd.wordperfect",
+  ]),
+  pptx: z.enum([
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.oasis.opendocument.presentation",
+  ]),
+  csv: z.enum(["text/csv", "text/plain"]),
+  image: z.string().regex(/^image\/[a-z0-9][a-z0-9.+-]*$/),
+} as const;
+export const extractedLayerSemanticIdentitySchema = z.discriminatedUnion("layerKind", [
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("pdf"), mediaType: canonicalLayerMediaTypes.pdf}).strict(),
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("spreadsheet"), mediaType: canonicalLayerMediaTypes.spreadsheet}).strict(),
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("docx"), mediaType: canonicalLayerMediaTypes.docx}).strict(),
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("pptx"), mediaType: canonicalLayerMediaTypes.pptx}).strict(),
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("csv"), mediaType: canonicalLayerMediaTypes.csv}).strict(),
+  z.object({role: z.literal("extracted_layer"), layerKind: z.literal("image"), mediaType: canonicalLayerMediaTypes.image}).strict(),
+]);
+export const artifactSemanticIdentitySchema = z.union([
+  extractedLayerSemanticIdentitySchema,
+  z.object({role: z.literal("derivative"), derivativeKind: derivativeKindSchema, mediaType: z.string().regex(/^[a-z0-9][a-z0-9.+-]*\/[a-z0-9][a-z0-9.+-]*$/)}).strict(),
+]);
+export type ArtifactSemanticIdentity = z.infer<typeof artifactSemanticIdentitySchema>;
+
 const persistedSourceBindingSchema = z.object({
   table: z.literal("public.source_documents"), sourceDocumentId: uuidSchema, organizationId: uuidSchema, opportunityId: uuidSchema.nullable(), intakeSessionId: uuidSchema.nullable(),
   documentVersion: z.number().int().positive(), bucketId: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,99}$/), objectPath: sourcePathSchema,
@@ -93,20 +158,22 @@ const persistedSourceBindingSchema = z.object({
 const documentIdentityCoreSchema = z.object({
   schemaVersion: z.literal(governedDocumentIdentityVersion), identityRecordId: uuidSchema, organizationId: uuidSchema, projectId: uuidSchema, companyId: uuidSchema.nullable(), conversationId: uuidSchema.nullable(),
   documentId: uuidSchema, version: z.number().int().positive(), parentVersion: documentVersionReferenceSchema.nullable(), sourceBinding: persistedSourceBindingSchema,
-  source: documentSourceOriginSchema, capturedBy: documentActorReferenceSchema, capturedAt: z.iso.datetime({offset: true}),
+  source: documentSourceOriginSchema, sourceClassification: documentClassificationSchema, capturedBy: documentActorReferenceSchema, capturedAt: z.iso.datetime({offset: true}),
   sourceBytes: z.object({sha256: sha256Schema, byteSize: z.number().int().nonnegative()}).strict(), sourceSnapshot: snapshotLocatorSchema,
   sourceAttestation: sourceAttestationSchema, identityFingerprint: sha256Schema,
 }).strict();
 export type DocumentIdentityCore = z.infer<typeof documentIdentityCoreSchema>;
 
 const extractedLayerIdentitySchema = z.object({
-  layerId: uuidSchema, layerKind: layerKindSchema, contentSha256: sha256Schema, sourceBytesSha256: sha256Schema, locator: snapshotLocatorSchema,
+  layerId: uuidSchema, layerKind: layerKindSchema, mediaType: z.string().min(3).max(200), contentSha256: sha256Schema, sourceBytesSha256: sha256Schema, locator: snapshotLocatorSchema,
   producedBy: documentToolIdentitySchema, producerExecutionId: uuidSchema, producedAt: z.iso.datetime({offset: true}), parentRefs: z.array(derivativeParentReferenceSchema).min(1).max(20), coverageRefs: z.array(documentCoverageReferenceSchema).max(100), artifactAttestation: artifactAttestationSchema,
-}).strict();
+}).strict().superRefine((layer, context) => {
+  const semantic = extractedLayerSemanticIdentitySchema.safeParse({role: "extracted_layer", layerKind: layer.layerKind, mediaType: layer.mediaType});
+  if (!semantic.success) context.addIssue({code: "custom", path: ["mediaType"], message: "media type is incompatible with extracted layer kind"});
+});
 export type ExtractedLayerIdentity = z.infer<typeof extractedLayerIdentitySchema>;
 const derivativeIdentitySchema = z.object({
-  derivativeId: uuidSchema, kind: z.enum(["normalized_layer", "retrieval_chunk_set", "extraction_candidate_set", "profile", "evidence_fragment", "artifact", "other"]),
-  contentSha256: sha256Schema, locator: snapshotLocatorSchema, producedBy: documentToolIdentitySchema, producerExecutionId: uuidSchema, producedAt: z.iso.datetime({offset: true}),
+  derivativeId: uuidSchema, kind: derivativeKindSchema, mediaType: z.string().min(3).max(200), contentSha256: sha256Schema, locator: snapshotLocatorSchema, producedBy: documentToolIdentitySchema, producerExecutionId: uuidSchema, producedAt: z.iso.datetime({offset: true}),
   parentRefs: z.array(derivativeParentReferenceSchema).min(1).max(100), coverageRefs: z.array(documentCoverageReferenceSchema).max(100), artifactAttestation: artifactAttestationSchema,
 }).strict();
 export type DerivativeIdentity = z.infer<typeof derivativeIdentitySchema>;
@@ -114,7 +181,8 @@ export type DerivativeIdentity = z.infer<typeof derivativeIdentitySchema>;
 const supersessionSchema = z.object({state: z.enum(["current", "superseded", "withdrawn", "rejected"]), supersededBy: documentVersionReferenceSchema.nullable(), reasonId: uuidSchema.nullable()}).strict();
 const documentLifecycleRevisionSchema = z.object({
   revision: z.number().int().positive(), previousLifecycleFingerprint: sha256Schema.nullable(), recordedAt: z.iso.datetime({offset: true}), recordedBy: documentActorReferenceSchema,
-  asOf: z.iso.datetime({offset: true}), dataClass: taskDataClassSchema, informationClass: informationClassSchema, confidentiality: z.enum(["public", "internal", "confidential", "restricted"]),
+  asOf: z.iso.datetime({offset: true}), dataClass: taskDataClassSchema, informationClass: informationClassSchema, confidentiality: confidentialitySchema,
+  classificationReceipt: classificationTransitionReceiptSchema.nullable(),
   toolchain: z.array(documentToolIdentitySchema).max(30), extractedLayers: z.array(extractedLayerIdentitySchema).max(30), coverageRefs: z.array(documentCoverageReferenceSchema).max(500),
   derivatives: z.array(derivativeIdentitySchema).max(500), supersession: supersessionSchema, lifecycleFingerprint: sha256Schema, journalAttestation: lifecycleJournalAttestationSchema,
 }).strict();
@@ -123,28 +191,26 @@ export const governedDocumentVersionIdentitySchema = z.object({core: documentIde
 export type GovernedDocumentVersionIdentity = z.infer<typeof governedDocumentVersionIdentitySchema>;
 
 const artifactClaimSchema = z.object({artifactId: uuidSchema}).strict();
-const extractedLayerClaimSchema = artifactClaimSchema.extend({layerKind: layerKindSchema}).strict();
-const derivativeClaimSchema = artifactClaimSchema.extend({kind: z.enum(["normalized_layer", "retrieval_chunk_set", "extraction_candidate_set", "profile", "evidence_fragment", "artifact", "other"])}).strict();
 export const documentLifecycleInputSchema = z.object({
-  asOf: z.iso.datetime({offset: true}), dataClass: taskDataClassSchema, informationClass: informationClassSchema, confidentiality: z.enum(["public", "internal", "confidential", "restricted"]),
-  extractedLayers: z.array(extractedLayerClaimSchema).max(30), coverage: z.array(documentCoverageClaimSchema).max(500), derivatives: z.array(derivativeClaimSchema).max(500),
+  asOf: z.iso.datetime({offset: true}), classificationReceiptId: uuidSchema.nullable(),
+  extractedLayers: z.array(artifactClaimSchema).max(30), coverage: z.array(documentCoverageClaimSchema).max(500), derivatives: z.array(artifactClaimSchema).max(500),
   supersession: z.object({state: z.enum(["current", "superseded", "withdrawn", "rejected"]), successorVersion: z.number().int().positive().nullable(), reasonId: uuidSchema.nullable()}).strict(),
 }).strict();
 export type DocumentLifecycleInput = z.input<typeof documentLifecycleInputSchema>;
 export const compileGovernedDocumentIdentityInputSchema = z.object({
-  sourceDocumentId: uuidSchema, sourceDocumentVersion: z.number().int().positive(), lifecycle: documentLifecycleInputSchema.omit({supersession: true}),
+  sourceDocumentId: uuidSchema, sourceDocumentVersion: z.number().int().positive(), lifecycle: documentLifecycleInputSchema.omit({supersession: true, classificationReceiptId: true}),
 }).strict();
 export type CompileGovernedDocumentIdentityInput = z.input<typeof compileGovernedDocumentIdentityInputSchema>;
 
 export type AtomicSourceDocumentResolution = {
   found: boolean; authorized: boolean; identityRecordId: string; organizationId: string; projectId: string; companyId: string | null; conversationId: string | null; documentId: string;
-  row: SourceDocumentsRow; source: DocumentSourceOrigin; sourceSnapshot: SnapshotLocator; capturedAt: string; actor: DocumentActorReference;
+  row: SourceDocumentsRow; source: DocumentSourceOrigin; classification: DocumentClassification; sourceSnapshot: SnapshotLocator; capturedAt: string; actor: DocumentActorReference;
   bytes: Uint8Array | null; immutable: boolean; attestation: SourceAttestation;
 };
 export type ArtifactResolution = {
   found: boolean; immutable: boolean; artifactId: string; organizationId: string; projectId: string; companyId: string | null; conversationId: string | null;
   documentId: string; documentVersion: number; sourceBytesSha256: string; identityFingerprint: string; locator: SnapshotLocator; bytes: Uint8Array | null;
-  producedBy: DocumentToolIdentity; producerExecutionId: string; producedAt: string; parentRefs: DerivativeParentReference[];
+  semanticIdentity: ArtifactSemanticIdentity; producedBy: DocumentToolIdentity; producerExecutionId: string; producedAt: string; parentRefs: DerivativeParentReference[];
   coverage: DocumentCoverageClaim[]; attestation: ArtifactAttestation;
 };
 export type CoverageResolution = {found: boolean; organizationId: string; projectId: string; companyId: string | null; conversationId: string | null; documentId: string; version: number; fingerprint: string; backlinkIdentityFingerprint: string};
@@ -165,6 +231,8 @@ export interface GovernedDocumentServerTrustRoot {
   authorizeIdentityOperation(actor: DocumentActorReference, identityRecordId: string, operation: "append_lifecycle"): Promise<boolean>;
   attestLifecycleJournal(payload: unknown): Promise<LifecycleJournalAttestation>;
   verifyLifecycleJournalAttestation(payload: unknown, attestation: LifecycleJournalAttestation): Promise<boolean>;
+  resolveClassificationReceipt(receiptId: string): Promise<ClassificationTransitionReceipt | null>;
+  verifyClassificationReceipt(receipt: ClassificationTransitionReceipt): Promise<boolean>;
   now(): string;
 }
 
@@ -175,6 +243,8 @@ export const documentIdentityIssueCodeSchema = z.enum([
   "source_snapshot_hash_mismatch", "source_hash_not_verified", "content_addressed_locator_mismatch", "origin_source_class_mismatch", "source_integration_state_mismatch", "data_confidentiality_mismatch",
   "actor_not_registered", "authorization_after_capture", "attestation_before_verification", "as_of_after_capture", "lifecycle_before_capture", "lifecycle_recorded_at_not_monotonic",
   "lifecycle_revision_gap", "lifecycle_previous_mismatch", "lifecycle_fingerprint_mismatch", "lifecycle_attestation_invalid", "artifact_identity_mutated", "artifact_attestation_invalid", "artifact_scope_mismatch", "duplicate_derivative_identity", "derivative_parent_not_found",
+  "classification_receipt_unresolved", "classification_receipt_invalid", "classification_transition_unauthorized", "source_classification_mismatch", "artifact_semantic_identity_mismatch",
+  "artifact_attestation_time_invalid", "classification_attestation_time_invalid", "lifecycle_attestation_time_invalid",
   "derivative_parent_hash_mismatch", "derivative_lineage_cycle", "artifact_unresolved", "artifact_not_immutable", "artifact_locator_mismatch", "artifact_hash_mismatch", "layer_source_hash_mismatch",
   "tool_identity_not_registered", "producer_before_capture", "producer_after_lifecycle", "producer_before_parent", "coverage_scope_mismatch", "coverage_fingerprint_mismatch", "coverage_backlink_mismatch",
   "coverage_reference_unresolved", "supersession_state_mismatch", "supersession_illegal_transition", "supersession_target_not_found", "supersession_scope_mismatch", "supersession_hash_mismatch",
@@ -213,6 +283,7 @@ function captureTrustRoot(root: GovernedDocumentServerTrustRoot): GovernedDocume
     isToolRegistered: root.isToolRegistered.bind(root), resolvePersistedVersion: root.resolvePersistedVersion.bind(root),
     loadCanonicalIdentity: root.loadCanonicalIdentity.bind(root), authorizeIdentityOperation: root.authorizeIdentityOperation.bind(root),
     attestLifecycleJournal: root.attestLifecycleJournal.bind(root), verifyLifecycleJournalAttestation: root.verifyLifecycleJournalAttestation.bind(root),
+    resolveClassificationReceipt: root.resolveClassificationReceipt.bind(root), verifyClassificationReceipt: root.verifyClassificationReceipt.bind(root),
     now: root.now.bind(root),
   });
 }
@@ -235,12 +306,12 @@ async function compileIdentity(rawInput: CompileGovernedDocumentIdentityInput, r
   const coreBody = canonicalize({
     schemaVersion: governedDocumentIdentityVersion, identityRecordId: resolved.identityRecordId, organizationId: resolved.organizationId, projectId: resolved.projectId,
     companyId: resolved.companyId, conversationId: resolved.conversationId, documentId: resolved.documentId, version: resolved.row.document_version,
-    parentVersion, sourceBinding: strictBinding(resolved.row), source: resolved.source, capturedBy: resolved.actor, capturedAt: resolved.capturedAt,
+    parentVersion, sourceBinding: strictBinding(resolved.row), source: resolved.source, sourceClassification: resolved.classification, capturedBy: resolved.actor, capturedAt: resolved.capturedAt,
     sourceBytes: {sha256: sourceHash, byteSize: resolved.bytes!.byteLength}, sourceSnapshot: resolved.sourceSnapshot, sourceAttestation: resolved.attestation,
   });
   const core = documentIdentityCoreSchema.parse({...coreBody, identityFingerprint: fingerprint(coreBody)});
-  const lifecycleInput = documentLifecycleInputSchema.parse({...input.lifecycle, supersession: {state: "current", successorVersion: null, reasonId: null}});
-  const lifecycle = await compileLifecycle(core, lifecycleInput, 1, null, actor, root);
+  const lifecycleInput = documentLifecycleInputSchema.parse({...input.lifecycle, classificationReceiptId: null, supersession: {state: "current", successorVersion: null, reasonId: null}});
+  const lifecycle = await compileLifecycle(core, lifecycleInput, core.sourceClassification, 1, null, actor, root);
   const record = governedDocumentVersionIdentitySchema.parse({core, lifecycleHistory: [lifecycle]});
   await assertRecordValid(record, root, true);
   return record;
@@ -259,14 +330,16 @@ async function appendLifecycle(rawIdentityRecordId: string, rawInput: DocumentLi
   const input = documentLifecycleInputSchema.parse(rawInput);
   const previous = latest(record);
   enforceTransition(previous.supersession, input.supersession);
-  const lifecycle = await compileLifecycle(record.core, input, previous.revision + 1, previous.lifecycleFingerprint, actor, root);
+  const previousClassification = lifecycleClassification(previous);
+  const lifecycle = await compileLifecycle(record.core, input, previousClassification, previous.revision + 1, previous.lifecycleFingerprint, actor, root, record.lifecycleHistory);
   const appended = governedDocumentVersionIdentitySchema.parse({...record, lifecycleHistory: [...record.lifecycleHistory, lifecycle]});
   await assertRecordValid(appended, root, true);
   return appended;
 }
 
-async function compileLifecycle(core: DocumentIdentityCore, input: DocumentLifecycleInput, revision: number, previousFingerprint: string | null, actor: DocumentActorReference, root: GovernedDocumentServerTrustRoot) {
+async function compileLifecycle(core: DocumentIdentityCore, input: DocumentLifecycleInput, previousClassification: DocumentClassification, revision: number, previousFingerprint: string | null, actor: DocumentActorReference, root: GovernedDocumentServerTrustRoot, priorHistory: readonly DocumentLifecycleRevision[] = []) {
   const recordedAt = z.iso.datetime({offset: true}).parse(root.now());
+  const {classification, receipt: classificationReceipt} = await resolveClassificationTransition(core, previousClassification, input.classificationReceiptId, actor, recordedAt, revision, previousFingerprint, priorHistory, root);
   const coverageRefs = await resolveCoverageRefs(input.coverage, core, root);
   const extractedLayers: ExtractedLayerIdentity[] = [];
   const derivatives: DerivativeIdentity[] = [];
@@ -274,8 +347,9 @@ async function compileLifecycle(core: DocumentIdentityCore, input: DocumentLifec
   for (const claim of input.extractedLayers) {
     const artifact = await resolveArtifact(claim.artifactId, core, root);
     tools.set(toolKey(artifact.producedBy), artifact.producedBy);
+    if (artifact.semanticIdentity.role !== "extracted_layer") throw new GovernedDocumentIdentityError("artifact_semantic_identity_mismatch");
     extractedLayers.push({
-      layerId: artifact.artifactId, layerKind: claim.layerKind, contentSha256: sha256Bytes(artifact.bytes!), sourceBytesSha256: core.sourceBytes.sha256,
+      layerId: artifact.artifactId, layerKind: artifact.semanticIdentity.layerKind, mediaType: artifact.semanticIdentity.mediaType, contentSha256: sha256Bytes(artifact.bytes!), sourceBytesSha256: core.sourceBytes.sha256,
       locator: artifact.locator, producedBy: artifact.producedBy, producerExecutionId: artifact.producerExecutionId, producedAt: artifact.producedAt,
       parentRefs: artifact.parentRefs, coverageRefs: await resolveCoverageRefs(artifact.coverage, core, root), artifactAttestation: artifact.attestation,
     });
@@ -283,28 +357,30 @@ async function compileLifecycle(core: DocumentIdentityCore, input: DocumentLifec
   for (const claim of input.derivatives) {
     const artifact = await resolveArtifact(claim.artifactId, core, root);
     tools.set(toolKey(artifact.producedBy), artifact.producedBy);
+    if (artifact.semanticIdentity.role !== "derivative") throw new GovernedDocumentIdentityError("artifact_semantic_identity_mismatch");
     derivatives.push({
-      derivativeId: artifact.artifactId, kind: claim.kind, contentSha256: sha256Bytes(artifact.bytes!), locator: artifact.locator,
+      derivativeId: artifact.artifactId, kind: artifact.semanticIdentity.derivativeKind, mediaType: artifact.semanticIdentity.mediaType, contentSha256: sha256Bytes(artifact.bytes!), locator: artifact.locator,
       producedBy: artifact.producedBy, producerExecutionId: artifact.producerExecutionId, producedAt: artifact.producedAt,
       parentRefs: artifact.parentRefs, coverageRefs: await resolveCoverageRefs(artifact.coverage, core, root), artifactAttestation: artifact.attestation,
     });
   }
   const supersession = await resolveSupersession(core, input.supersession, root);
   const body = canonicalize({
-    revision, previousLifecycleFingerprint: previousFingerprint, recordedAt, recordedBy: actor, asOf: input.asOf, dataClass: input.dataClass,
-    informationClass: input.informationClass, confidentiality: input.confidentiality, toolchain: [...tools.values()], extractedLayers,
+    revision, previousLifecycleFingerprint: previousFingerprint, recordedAt, recordedBy: actor, asOf: input.asOf, ...classification, classificationReceipt,
+    toolchain: [...tools.values()], extractedLayers,
     coverageRefs, derivatives, supersession,
   });
   const lifecycleFingerprint = fingerprint({identityFingerprint: core.identityFingerprint, ...body});
   const journalBody = canonicalize({identityRecordId: core.identityRecordId, identityFingerprint: core.identityFingerprint, lifecycleFingerprint, ...body});
   const journalAttestation = lifecycleJournalAttestationSchema.parse(await root.attestLifecycleJournal(journalBody));
+  if (!attestationTimeValid(journalAttestation.signedAt, recordedAt, root.now())) throw new GovernedDocumentIdentityError("lifecycle_attestation_time_invalid");
   if (journalAttestation.payloadSha256 !== fingerprint(signedPayload(journalBody, journalAttestation)) || !await root.verifyLifecycleJournalAttestation(journalBody, journalAttestation)) throw new GovernedDocumentIdentityError("lifecycle_attestation_invalid");
   return documentLifecycleRevisionSchema.parse({...body, lifecycleFingerprint, journalAttestation});
 }
 
 const atomicSourceResolutionSchema = z.object({
   found: z.literal(true), authorized: z.boolean(), identityRecordId: uuidSchema, organizationId: uuidSchema, projectId: uuidSchema, companyId: uuidSchema.nullable(), conversationId: uuidSchema.nullable(), documentId: uuidSchema,
-  row: sourceDocumentsRowSchema, source: documentSourceOriginSchema, sourceSnapshot: snapshotLocatorSchema, capturedAt: z.iso.datetime({offset: true}), actor: documentActorReferenceSchema,
+  row: sourceDocumentsRowSchema, source: documentSourceOriginSchema, classification: documentClassificationSchema, sourceSnapshot: snapshotLocatorSchema, capturedAt: z.iso.datetime({offset: true}), actor: documentActorReferenceSchema,
   bytes: z.instanceof(Uint8Array), immutable: z.boolean(), attestation: sourceAttestationSchema,
 }).strict();
 
@@ -335,7 +411,7 @@ function sourceAttestationPayload(resolved: AtomicSourceDocumentResolution, sour
   const body = canonicalize({
     identityRecordId: resolved.identityRecordId,
     organizationId: resolved.organizationId, projectId: resolved.projectId, companyId: resolved.companyId, conversationId: resolved.conversationId,
-    documentId: resolved.documentId, row: resolved.row, source: resolved.source, sourceSnapshot: resolved.sourceSnapshot, capturedAt: resolved.capturedAt,
+    documentId: resolved.documentId, row: resolved.row, source: resolved.source, classification: resolved.classification, sourceSnapshot: resolved.sourceSnapshot, capturedAt: resolved.capturedAt,
     actor: resolved.actor, immutable: resolved.immutable, sourceBytesSha256: sourceHash, sourceByteSize: resolved.bytes?.byteLength ?? 0,
     authorizationVersion: resolved.attestation.authorizationVersion, authorizedAt: resolved.attestation.authorizedAt,
   });
@@ -345,7 +421,7 @@ function sourceAttestationPayload(resolved: AtomicSourceDocumentResolution, sour
 const artifactResolutionSchema = z.object({
   found: z.literal(true), immutable: z.boolean(), artifactId: uuidSchema, organizationId: uuidSchema, projectId: uuidSchema, companyId: uuidSchema.nullable(), conversationId: uuidSchema.nullable(),
   documentId: uuidSchema, documentVersion: z.number().int().positive(), sourceBytesSha256: sha256Schema, identityFingerprint: sha256Schema,
-  locator: snapshotLocatorSchema, bytes: z.instanceof(Uint8Array), producedBy: documentToolIdentitySchema, producerExecutionId: uuidSchema,
+  locator: snapshotLocatorSchema, bytes: z.instanceof(Uint8Array), semanticIdentity: artifactSemanticIdentitySchema, producedBy: documentToolIdentitySchema, producerExecutionId: uuidSchema,
   producedAt: z.iso.datetime({offset: true}), parentRefs: z.array(derivativeParentReferenceSchema).min(1).max(100), coverage: z.array(documentCoverageClaimSchema).max(100), attestation: artifactAttestationSchema,
 }).strict();
 
@@ -359,6 +435,7 @@ async function resolveArtifact(artifactId: string, core: DocumentIdentityCore, r
   const artifactHash = sha256Bytes(parsed.bytes);
   if (artifact.locator.state === "content_addressed" && artifact.locator.locatorRef !== `sha256:${sha256Bytes(artifact.bytes)}`) throw new GovernedDocumentIdentityError("content_addressed_locator_mismatch");
   if (!await root.isToolRegistered(parsed.producedBy)) throw new GovernedDocumentIdentityError("tool_identity_not_registered");
+  if (!attestationTimeValid(parsed.attestation.signedAt, parsed.producedAt, root.now())) throw new GovernedDocumentIdentityError("artifact_attestation_time_invalid");
   const payload = artifactAttestationPayload(parsed, artifactHash);
   if (parsed.attestation.payloadSha256 !== fingerprint(payload) || !await root.verifyArtifactAttestation(parsed)) throw new GovernedDocumentIdentityError("artifact_attestation_invalid");
   return parsed;
@@ -375,6 +452,21 @@ async function resolveCoverageRefs(claims: readonly DocumentCoverageClaim[], cor
     output.push({...claim, organizationId: core.organizationId, projectId: core.projectId, companyId: core.companyId, conversationId: core.conversationId, documentId: core.documentId, version: core.version, backlinkIdentityFingerprint: core.identityFingerprint});
   }
   return output;
+}
+
+async function resolveClassificationTransition(core: DocumentIdentityCore, previous: DocumentClassification, receiptId: string | null, actor: DocumentActorReference, recordedAt: string, targetRevision: number, priorLifecycleFingerprint: string | null, priorHistory: readonly DocumentLifecycleRevision[], root: GovernedDocumentServerTrustRoot) {
+  if (receiptId === null) return {classification: previous, receipt: null};
+  if (priorLifecycleFingerprint === null) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  const raw = await root.resolveClassificationReceipt(receiptId);
+  if (!raw) throw new GovernedDocumentIdentityError("classification_receipt_unresolved");
+  const receipt = classificationTransitionReceiptSchema.parse(raw);
+  if (receipt.receiptId !== receiptId || !sameClassificationReceiptScope(receipt, core) || stableJson(receipt.authorizedActor) !== stableJson(actor)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  if (stableJson(receipt.from) !== stableJson(previous) || receipt.priorLifecycleFingerprint !== priorLifecycleFingerprint || receipt.targetRevision !== targetRevision || Date.parse(receipt.authorizedAt) > Date.parse(recordedAt)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  if (priorHistory.some((revision) => revision.classificationReceipt?.receiptId === receipt.receiptId || revision.classificationReceipt?.operationId === receipt.operationId || revision.classificationReceipt?.attestation.attestationId === receipt.attestation.attestationId)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  enforceClassificationAuthorization(receipt);
+  if (!attestationTimeValid(receipt.attestation.signedAt, receipt.authorizedAt, root.now())) throw new GovernedDocumentIdentityError("classification_attestation_time_invalid");
+  if (receipt.attestation.payloadSha256 !== fingerprint(classificationReceiptPayload(receipt)) || !await root.verifyClassificationReceipt(receipt)) throw new GovernedDocumentIdentityError("classification_receipt_invalid");
+  return {classification: receipt.to, receipt};
 }
 
 async function resolveSupersession(core: DocumentIdentityCore, input: DocumentLifecycleInput["supersession"], root: GovernedDocumentServerTrustRoot) {
@@ -437,6 +529,7 @@ async function validateCore(record: GovernedDocumentVersionIdentity, root: Gover
   let binding: DocumentIdentityCore["sourceBinding"];
   try { binding = strictBinding(resolved.row); } catch { add("source_hash_not_verified", record, "core.sourceBinding"); return; }
   if (stableJson(binding) !== stableJson(record.core.sourceBinding) || !sameScopeResolution(record.core, resolved) || stableJson(resolved.actor) !== stableJson(record.core.capturedBy)) add("source_binding_mismatch", record, "core.sourceBinding");
+  if (stableJson(resolved.classification) !== stableJson(record.core.sourceClassification)) add("source_classification_mismatch", record, "core.sourceClassification");
   if (!resolved.immutable) add("source_snapshot_not_immutable", record, "core.sourceSnapshot");
   if (stableJson(resolved.sourceSnapshot) !== stableJson(record.core.sourceSnapshot)) add("source_snapshot_locator_mismatch", record, "core.sourceSnapshot");
   if (sourceHash !== binding.verifiedSha256) add("source_hash_not_verified", record, "core.sourceBinding.verifiedSha256");
@@ -452,29 +545,45 @@ async function validateCore(record: GovernedDocumentVersionIdentity, root: Gover
 async function validateLifecycle(record: GovernedDocumentVersionIdentity, root: GovernedDocumentServerTrustRoot, add: AddIssue) {
   let previous: DocumentLifecycleRevision | null = null;
   const immutableArtifacts = new Map<string, string>();
+  const immutableContentSemantics = new Map<string, string>();
+  const usedClassificationReceiptIds = new Set<string>();
+  const usedClassificationOperationIds = new Set<string>();
+  const usedClassificationAttestationIds = new Set<string>();
   for (const lifecycle of record.lifecycleHistory) {
     if (lifecycle.revision !== (previous?.revision ?? 0) + 1) add("lifecycle_revision_gap", record, "lifecycleHistory.revision");
     if (lifecycle.previousLifecycleFingerprint !== (previous?.lifecycleFingerprint ?? null)) add("lifecycle_previous_mismatch", record, "lifecycleHistory.previousLifecycleFingerprint");
     const {lifecycleFingerprint: _fingerprint, journalAttestation, ...body} = lifecycle;
     if (fingerprint({identityFingerprint: record.core.identityFingerprint, ...canonicalize(body)}) !== lifecycle.lifecycleFingerprint) add("lifecycle_fingerprint_mismatch", record, "lifecycleHistory.lifecycleFingerprint");
     const journalBody = canonicalize({identityRecordId: record.core.identityRecordId, identityFingerprint: record.core.identityFingerprint, lifecycleFingerprint: lifecycle.lifecycleFingerprint, ...body});
+    if (!attestationTimeValid(journalAttestation.signedAt, lifecycle.recordedAt, root.now())) add("lifecycle_attestation_time_invalid", record, "lifecycleHistory.journalAttestation.signedAt");
     if (journalAttestation.payloadSha256 !== fingerprint(signedPayload(journalBody, journalAttestation)) || !await root.verifyLifecycleJournalAttestation(journalBody, journalAttestation)) add("lifecycle_attestation_invalid", record, "lifecycleHistory.journalAttestation");
     if (!await root.isActorRegistered(lifecycle.recordedBy)) add("actor_not_registered", record, "lifecycleHistory.recordedBy");
     if (Date.parse(lifecycle.asOf) > Date.parse(record.core.capturedAt)) add("as_of_after_capture", record, "lifecycleHistory.asOf");
     if (Date.parse(lifecycle.recordedAt) < Date.parse(record.core.capturedAt)) add("lifecycle_before_capture", record, "lifecycleHistory.recordedAt");
     if (previous && Date.parse(lifecycle.recordedAt) < Date.parse(previous.recordedAt)) add("lifecycle_recorded_at_not_monotonic", record, "lifecycleHistory.recordedAt");
     if (previous && !isAllowedTransition(previous.supersession, lifecycle.supersession)) add("supersession_illegal_transition", record, "lifecycleHistory.supersession.state");
+    await validateClassificationTransition(record, previous, lifecycle, root, add);
+    if (lifecycle.classificationReceipt) {
+      if (usedClassificationReceiptIds.has(lifecycle.classificationReceipt.receiptId) || usedClassificationOperationIds.has(lifecycle.classificationReceipt.operationId) || usedClassificationAttestationIds.has(lifecycle.classificationReceipt.attestation.attestationId)) add("classification_receipt_invalid", record, "lifecycleHistory.classificationReceipt");
+      usedClassificationReceiptIds.add(lifecycle.classificationReceipt.receiptId);
+      usedClassificationOperationIds.add(lifecycle.classificationReceipt.operationId);
+      usedClassificationAttestationIds.add(lifecycle.classificationReceipt.attestation.attestationId);
+    }
     const registeredTools = new Set(lifecycle.toolchain.map(toolKey));
     for (const tool of lifecycle.toolchain) if (!await root.isToolRegistered(tool)) add("tool_identity_not_registered", record, "lifecycleHistory.toolchain", toolKey(tool));
     const nodes = [
-      ...lifecycle.extractedLayers.map((node) => ({id: node.layerId, stable: stableJson(node), hash: node.contentSha256, parents: node.parentRefs, locator: node.locator, producedBy: node.producedBy, producerExecutionId: node.producerExecutionId, producedAt: node.producedAt, coverage: node.coverageRefs, attestation: node.artifactAttestation})),
-      ...lifecycle.derivatives.map((node) => ({id: node.derivativeId, stable: stableJson(node), hash: node.contentSha256, parents: node.parentRefs, locator: node.locator, producedBy: node.producedBy, producerExecutionId: node.producerExecutionId, producedAt: node.producedAt, coverage: node.coverageRefs, attestation: node.artifactAttestation})),
+      ...lifecycle.extractedLayers.map((node) => ({id: node.layerId, semanticIdentity: extractedLayerSemanticIdentitySchema.parse({role: "extracted_layer", layerKind: node.layerKind, mediaType: node.mediaType}), stable: stableJson(node), hash: node.contentSha256, parents: node.parentRefs, locator: node.locator, producedBy: node.producedBy, producerExecutionId: node.producerExecutionId, producedAt: node.producedAt, coverage: node.coverageRefs, attestation: node.artifactAttestation})),
+      ...lifecycle.derivatives.map((node) => ({id: node.derivativeId, semanticIdentity: {role: "derivative" as const, derivativeKind: node.kind, mediaType: node.mediaType}, stable: stableJson(node), hash: node.contentSha256, parents: node.parentRefs, locator: node.locator, producedBy: node.producedBy, producerExecutionId: node.producerExecutionId, producedAt: node.producedAt, coverage: node.coverageRefs, attestation: node.artifactAttestation})),
     ];
     const byId = new Map<string, typeof nodes>();
     for (const node of nodes) {
       const seen = immutableArtifacts.get(node.id);
       if (seen !== undefined && seen !== node.stable) add("artifact_identity_mutated", record, "lifecycleHistory.artifacts", node.id);
       else immutableArtifacts.set(node.id, node.stable);
+      const priorSemanticIdentity = immutableContentSemantics.get(node.hash);
+      const semanticIdentity = stableJson(node.semanticIdentity);
+      if (priorSemanticIdentity !== undefined && priorSemanticIdentity !== semanticIdentity) add("artifact_semantic_identity_mismatch", record, "lifecycleHistory.artifacts.semanticIdentity", node.id);
+      else immutableContentSemantics.set(node.hash, semanticIdentity);
       byId.set(node.id, [...(byId.get(node.id) ?? []), node]);
       if (!registeredTools.has(toolKey(node.producedBy)) || !await root.isToolRegistered(node.producedBy)) add("tool_identity_not_registered", record, "lifecycleHistory.artifacts.producedBy", toolKey(node.producedBy));
       if (Date.parse(node.producedAt) < Date.parse(record.core.capturedAt)) add("producer_before_capture", record, "lifecycleHistory.artifacts.producedAt");
@@ -509,7 +618,7 @@ async function validatePersistedSupersessionTarget(record: GovernedDocumentVersi
   if (!["current", "superseded"].includes(latest(parsed).supersession.state)) add("supersession_target_inactive", record, "lifecycleHistory.supersession.supersededBy");
 }
 
-async function validateArtifact(node: {id: string; hash: string; locator: SnapshotLocator; producedBy: DocumentToolIdentity; producerExecutionId: string; producedAt: string; parents: DerivativeParentReference[]; coverage: DocumentCoverageReference[]; attestation: ArtifactAttestation}, record: GovernedDocumentVersionIdentity, root: GovernedDocumentServerTrustRoot, add: AddIssue) {
+async function validateArtifact(node: {id: string; semanticIdentity: ArtifactSemanticIdentity; hash: string; locator: SnapshotLocator; producedBy: DocumentToolIdentity; producerExecutionId: string; producedAt: string; parents: DerivativeParentReference[]; coverage: DocumentCoverageReference[]; attestation: ArtifactAttestation}, record: GovernedDocumentVersionIdentity, root: GovernedDocumentServerTrustRoot, add: AddIssue) {
   let resolved: z.infer<typeof artifactResolutionSchema>;
   try {
     const raw = await root.resolveArtifact(node.id);
@@ -520,10 +629,12 @@ async function validateArtifact(node: {id: string; hash: string; locator: Snapsh
   if (stableJson(resolved.locator) !== stableJson(node.locator)) add("artifact_locator_mismatch", record, "lifecycleHistory.artifacts.locator");
   if (sha256Bytes(resolved.bytes) !== node.hash) add("artifact_hash_mismatch", record, "lifecycleHistory.artifacts.contentSha256");
   if (!sameArtifactScope(resolved, record.core)) add("artifact_scope_mismatch", record, "lifecycleHistory.artifacts.scope");
+  if (stableJson(resolved.semanticIdentity) !== stableJson(node.semanticIdentity)) add("artifact_semantic_identity_mismatch", record, "lifecycleHistory.artifacts.semanticIdentity");
   if (stableJson(resolved.producedBy) !== stableJson(node.producedBy) || resolved.producerExecutionId !== node.producerExecutionId || resolved.producedAt !== node.producedAt || stableJson(resolved.parentRefs) !== stableJson(node.parents)) add("artifact_identity_mutated", record, "lifecycleHistory.artifacts.provenance");
   const claimsFromNode = node.coverage.map(({kind, id, fingerprint}) => ({kind, id, fingerprint}));
   if (stableJson(resolved.coverage) !== stableJson(claimsFromNode) || stableJson(resolved.attestation) !== stableJson(node.attestation)) add("artifact_identity_mutated", record, "lifecycleHistory.artifacts.attestation");
   const artifactHash = sha256Bytes(resolved.bytes);
+  if (!attestationTimeValid(node.attestation.signedAt, node.producedAt, root.now())) add("artifact_attestation_time_invalid", record, "lifecycleHistory.artifacts.attestation.signedAt");
   if (node.attestation.payloadSha256 !== fingerprint(artifactAttestationPayload(resolved, artifactHash)) || !await root.verifyArtifactAttestation(resolved)) add("artifact_attestation_invalid", record, "lifecycleHistory.artifacts.attestation");
   if (node.locator.state === "content_addressed" && node.locator.locatorRef !== `sha256:${node.hash}`) add("content_addressed_locator_mismatch", record, "lifecycleHistory.artifacts.locatorRef");
 }
@@ -570,6 +681,23 @@ function validateSourceOrThrow(source: DocumentSourceOrigin) {
 function validateConfidentiality(record: GovernedDocumentVersionIdentity, lifecycle: DocumentLifecycleRevision, add: AddIssue) {
   const valid = lifecycle.dataClass === "public" ? lifecycle.confidentiality === "public" : lifecycle.dataClass === "restricted_personal" ? lifecycle.confidentiality === "restricted" : lifecycle.confidentiality !== "public";
   if (!valid) add("data_confidentiality_mismatch", record, "lifecycleHistory.confidentiality");
+}
+
+async function validateClassificationTransition(record: GovernedDocumentVersionIdentity, previous: DocumentLifecycleRevision | null, lifecycle: DocumentLifecycleRevision, root: GovernedDocumentServerTrustRoot, add: AddIssue) {
+  const from = previous ? lifecycleClassification(previous) : record.core.sourceClassification;
+  const to = lifecycleClassification(lifecycle);
+  const receipt = lifecycle.classificationReceipt;
+  if (receipt === null) {
+    if (stableJson(from) !== stableJson(to)) add("classification_transition_unauthorized", record, "lifecycleHistory.classificationReceipt");
+    return;
+  }
+  if (!previous || !sameClassificationReceiptScope(receipt, record.core) || stableJson(receipt.from) !== stableJson(from) || stableJson(receipt.to) !== stableJson(to) || stableJson(receipt.authorizedActor) !== stableJson(lifecycle.recordedBy) || receipt.priorLifecycleFingerprint !== previous.lifecycleFingerprint || receipt.targetRevision !== lifecycle.revision || Date.parse(receipt.authorizedAt) > Date.parse(lifecycle.recordedAt)) {
+    add("classification_receipt_invalid", record, "lifecycleHistory.classificationReceipt");
+    return;
+  }
+  try { enforceClassificationAuthorization(receipt); } catch { add("classification_transition_unauthorized", record, "lifecycleHistory.classificationReceipt"); }
+  if (!attestationTimeValid(receipt.attestation.signedAt, receipt.authorizedAt, root.now())) add("classification_attestation_time_invalid", record, "lifecycleHistory.classificationReceipt.attestation.signedAt");
+  if (receipt.attestation.payloadSha256 !== fingerprint(classificationReceiptPayload(receipt)) || !await root.verifyClassificationReceipt(receipt)) add("classification_receipt_invalid", record, "lifecycleHistory.classificationReceipt.attestation");
 }
 
 function validateSupersessionShape(record: GovernedDocumentVersionIdentity, lifecycle: DocumentLifecycleRevision, add: AddIssue) {
@@ -665,12 +793,29 @@ function strictBinding(row: SourceDocumentsRow): DocumentIdentityCore["sourceBin
 
 function storageLocator(bucketId: string, objectPath: string) { return `storage:${fingerprint({bucketId, objectPath})}`; }
 function signedPayload(body: unknown, attestation: Pick<ArtifactAttestation, "attestationId" | "signingKeyId" | "signatureAlgorithm" | "signatureVersion" | "signedAt">) { return canonicalize({body, attestationId: attestation.attestationId, signingKeyId: attestation.signingKeyId, signatureAlgorithm: attestation.signatureAlgorithm, signatureVersion: attestation.signatureVersion, signedAt: attestation.signedAt}); }
+function lifecycleClassification(lifecycle: Pick<DocumentLifecycleRevision, "dataClass" | "informationClass" | "confidentiality">): DocumentClassification { return {dataClass: lifecycle.dataClass, informationClass: lifecycle.informationClass, confidentiality: lifecycle.confidentiality}; }
+function sameClassificationReceiptScope(receipt: ClassificationTransitionReceipt, core: DocumentIdentityCore) { return receipt.identityRecordId === core.identityRecordId && sameScope({organizationId: receipt.organizationId, projectId: receipt.projectId, companyId: receipt.companyId, conversationId: receipt.conversationId, documentId: receipt.documentId, version: receipt.documentVersion}, core); }
+function classificationReceiptPayload(receipt: ClassificationTransitionReceipt) {
+  const {attestation, ...body} = receipt;
+  return signedPayload(canonicalize(body), attestation);
+}
+function enforceClassificationAuthorization(receipt: ClassificationTransitionReceipt) {
+  const grants = new Set(receipt.authorizations);
+  const dataRank: Record<DocumentClassification["dataClass"], number> = {public: 0, project_confidential: 1, restricted_personal: 2};
+  const confidentialityRank: Record<DocumentClassification["confidentiality"], number> = {public: 0, internal: 1, confidential: 2, restricted: 3};
+  const informationRank: Record<DocumentClassification["informationClass"], number> = {audited: 1, reviewed: 2, accounting: 3, bank_statement: 4, management: 5, projection: 6, company_document: 7, calculated: 8};
+  if (receipt.from.dataClass !== receipt.to.dataClass && !grants.has("change_data_class")) throw new GovernedDocumentIdentityError("classification_transition_unauthorized");
+  if (receipt.from.confidentiality !== receipt.to.confidentiality && !grants.has("change_confidentiality")) throw new GovernedDocumentIdentityError("classification_transition_unauthorized");
+  if ((dataRank[receipt.to.dataClass] < dataRank[receipt.from.dataClass] || confidentialityRank[receipt.to.confidentiality] < confidentialityRank[receipt.from.confidentiality]) && !grants.has("declassify")) throw new GovernedDocumentIdentityError("classification_transition_unauthorized");
+  if (receipt.from.informationClass !== receipt.to.informationClass && !grants.has("change_information_class")) throw new GovernedDocumentIdentityError("classification_transition_unauthorized");
+  if (informationRank[receipt.to.informationClass] < informationRank[receipt.from.informationClass] && !grants.has("upgrade_information_class")) throw new GovernedDocumentIdentityError("classification_transition_unauthorized");
+}
 function artifactAttestationPayload(artifact: ArtifactResolution, contentSha256: string) {
   const body = canonicalize({
     artifactId: artifact.artifactId, organizationId: artifact.organizationId, projectId: artifact.projectId, companyId: artifact.companyId,
     conversationId: artifact.conversationId, documentId: artifact.documentId, documentVersion: artifact.documentVersion,
     sourceBytesSha256: artifact.sourceBytesSha256, identityFingerprint: artifact.identityFingerprint, immutable: artifact.immutable,
-    locator: artifact.locator, contentSha256, byteSize: artifact.bytes?.byteLength ?? 0, producedBy: artifact.producedBy,
+    locator: artifact.locator, contentSha256, byteSize: artifact.bytes?.byteLength ?? 0, semanticIdentity: artifact.semanticIdentity, producedBy: artifact.producedBy,
     producerExecutionId: artifact.producerExecutionId, producedAt: artifact.producedAt, parentRefs: artifact.parentRefs, coverage: artifact.coverage,
   });
   return signedPayload(body, artifact.attestation);
@@ -690,6 +835,13 @@ function toolKey(tool: DocumentToolIdentity) { return stableJson(tool); }
 function diagnosticRef(value: string) { return `sha256:${fingerprint(value)}`; }
 function sha256Bytes(value: Uint8Array) { return createHash("sha256").update(value).digest("hex"); }
 function fingerprint(value: unknown) { return sha256Bytes(new TextEncoder().encode(stableJson(value))); }
+function attestationTimeValid(signedAt: string, notBefore: string, trustedNow: string) {
+  const signed = Date.parse(signedAt);
+  const lowerBound = Date.parse(notBefore);
+  const upperBound = Date.parse(trustedNow) + governedDocumentAttestationMaxFutureSkewMs;
+  return Number.isFinite(signed) && Number.isFinite(lowerBound) && Number.isFinite(upperBound)
+    && signed >= lowerBound && signed <= upperBound;
+}
 
 function canonicalize<T>(input: T): T {
   if (!input || typeof input !== "object" || Array.isArray(input)) return input;

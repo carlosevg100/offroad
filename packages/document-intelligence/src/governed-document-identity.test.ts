@@ -4,10 +4,14 @@ import {describe, expect, it} from "vitest";
 
 import {
   bindGovernedDocumentIdentityServer,
+  extractedLayerSemanticIdentitySchema,
+  governedDocumentAttestationMaxFutureSkewMs,
+  governedDocumentIdentityRuntimeBoundary,
   governedDocumentVersionIdentitySchema,
   type ArtifactAttestation,
   type ArtifactResolution,
   type AtomicSourceDocumentResolution,
+  type ClassificationTransitionReceipt,
   type CompileGovernedDocumentIdentityInput,
   type DocumentLifecycleInput,
   type DocumentSourceOrigin,
@@ -31,6 +35,10 @@ const ids = {
   execution: "23456789-2345-4345-8345-234567890123", artifactAttestation: "34567890-3456-4456-8456-345678901234",
   journalAttestation: "45678901-4567-4567-8567-456789012345", recordV1: "56789012-5678-4678-8678-567890123456",
   recordV2: "67890123-6789-4789-8789-678901234567",
+  classificationReceipt: "78901234-7890-4890-8890-789012345678", classificationAttestation: "89012345-8901-4901-8901-890123456789",
+  classificationReceipt2: "78901234-7890-4890-8890-789012345679", classificationAttestation2: "89012345-8901-4901-8901-890123456780",
+  classificationOperation: "01234567-89ab-4cde-8fab-0123456789ab", classificationOperation2: "01234567-89ab-4cde-8fab-0123456789ac",
+  derivative: "90123456-9012-4012-8012-901234567890",
 };
 const signingSecret = "unit-test-server-secret";
 const encoder = new TextEncoder();
@@ -49,8 +57,8 @@ const actor = {kind: "user" as const, id: ids.user};
 const serviceActor = {kind: "service" as const, id: ids.service};
 
 type GenericAttestation = ArtifactAttestation | LifecycleJournalAttestation;
-function signBody(body: unknown, attestationId: string): GenericAttestation {
-  const metadata = {attestationId, signingKeyId: ids.key, signatureAlgorithm: "ed25519" as const, signatureVersion: 1, signedAt: "2026-09-01T10:01:00.000Z"};
+function signBody(body: unknown, attestationId: string, signedAt = "2026-09-01T10:05:00.000Z"): GenericAttestation {
+  const metadata = {attestationId, signingKeyId: ids.key, signatureAlgorithm: "ed25519" as const, signatureVersion: 1, signedAt};
   const payloadSha256 = fingerprint({body, ...metadata});
   return {...metadata, payloadSha256, signature: createHmac("sha256", signingSecret).update(payloadSha256).digest("base64url")};
 }
@@ -72,10 +80,10 @@ function makeSource(version = 1, bytes = sourceBytes, overrides: Partial<AtomicS
   const objectPath = `${ids.organization}/${ids.document}/v${version}`;
   const capturedAt = "2026-09-01T10:00:00.000Z";
   const row = {id: ids.document, organization_id: ids.organization, opportunity_id: ids.opportunity, intake_session_id: ids.intake, document_version: version, bucket_id: bucketId, object_path: objectPath, object_version: "etag:immutable-1", sha256: hash(bytes), sha256_verified_at: "2026-09-01T10:00:30.000Z"};
-  const base = {found: true, authorized: true, identityRecordId: version === 1 ? ids.recordV1 : ids.recordV2, organizationId: ids.organization, projectId: ids.project, companyId: ids.company, conversationId: ids.conversation, documentId: ids.document, row, source: sourceOrigin(), sourceSnapshot: storageLocator(bucketId, objectPath), capturedAt, actor, bytes, immutable: true};
+  const base = {found: true, authorized: true, identityRecordId: version === 1 ? ids.recordV1 : ids.recordV2, organizationId: ids.organization, projectId: ids.project, companyId: ids.company, conversationId: ids.conversation, documentId: ids.document, row, source: sourceOrigin(), classification: {dataClass: "project_confidential" as const, informationClass: "company_document" as const, confidentiality: "confidential" as const}, sourceSnapshot: storageLocator(bucketId, objectPath), capturedAt, actor, bytes, immutable: true};
   const merged = {...base, ...overrides} as Omit<AtomicSourceDocumentResolution, "attestation">;
   const authorization = {authorizationVersion: "workspace-authz.v1", authorizedAt: "2026-09-01T09:59:00.000Z"};
-  const body = {identityRecordId: merged.identityRecordId, organizationId: merged.organizationId, projectId: merged.projectId, companyId: merged.companyId, conversationId: merged.conversationId, documentId: merged.documentId, row: merged.row, source: merged.source, sourceSnapshot: merged.sourceSnapshot, capturedAt: merged.capturedAt, actor: merged.actor, immutable: merged.immutable, sourceBytesSha256: merged.bytes ? hash(merged.bytes) : hash("missing"), sourceByteSize: merged.bytes?.byteLength ?? 0, ...authorization};
+  const body = {identityRecordId: merged.identityRecordId, organizationId: merged.organizationId, projectId: merged.projectId, companyId: merged.companyId, conversationId: merged.conversationId, documentId: merged.documentId, row: merged.row, source: merged.source, classification: merged.classification, sourceSnapshot: merged.sourceSnapshot, capturedAt: merged.capturedAt, actor: merged.actor, immutable: merged.immutable, sourceBytesSha256: merged.bytes ? hash(merged.bytes) : hash("missing"), sourceByteSize: merged.bytes?.byteLength ?? 0, ...authorization};
   return {...merged, attestation: {...signBody(body, ids.sourceAttestation), ...authorization} as SourceAttestation};
 }
 
@@ -84,19 +92,31 @@ function sourceReference(record: GovernedDocumentVersionIdentity) {
   return {kind: "source_version" as const, version: {organizationId: core.organizationId, projectId: core.projectId, companyId: core.companyId, conversationId: core.conversationId, documentId: core.documentId, version: core.version, sourceBytesSha256: core.sourceBytes.sha256, identityFingerprint: core.identityFingerprint}};
 }
 function artifactBody(artifact: Omit<ArtifactResolution, "attestation">, contentSha256: string) {
-  return {artifactId: artifact.artifactId, organizationId: artifact.organizationId, projectId: artifact.projectId, companyId: artifact.companyId, conversationId: artifact.conversationId, documentId: artifact.documentId, documentVersion: artifact.documentVersion, sourceBytesSha256: artifact.sourceBytesSha256, identityFingerprint: artifact.identityFingerprint, immutable: artifact.immutable, locator: artifact.locator, contentSha256, byteSize: artifact.bytes?.byteLength ?? 0, producedBy: artifact.producedBy, producerExecutionId: artifact.producerExecutionId, producedAt: artifact.producedAt, parentRefs: artifact.parentRefs, coverage: artifact.coverage};
+  return {artifactId: artifact.artifactId, organizationId: artifact.organizationId, projectId: artifact.projectId, companyId: artifact.companyId, conversationId: artifact.conversationId, documentId: artifact.documentId, documentVersion: artifact.documentVersion, sourceBytesSha256: artifact.sourceBytesSha256, identityFingerprint: artifact.identityFingerprint, immutable: artifact.immutable, locator: artifact.locator, contentSha256, byteSize: artifact.bytes?.byteLength ?? 0, semanticIdentity: artifact.semanticIdentity, producedBy: artifact.producedBy, producerExecutionId: artifact.producerExecutionId, producedAt: artifact.producedAt, parentRefs: artifact.parentRefs, coverage: artifact.coverage};
 }
 function makeArtifact(record: GovernedDocumentVersionIdentity, overrides: Partial<ArtifactResolution> = {}): ArtifactResolution {
   const core = record.core;
-  const base = {found: true, immutable: true, artifactId: ids.layer, organizationId: core.organizationId, projectId: core.projectId, companyId: core.companyId, conversationId: core.conversationId, documentId: core.documentId, documentVersion: core.version, sourceBytesSha256: core.sourceBytes.sha256, identityFingerprint: core.identityFingerprint, locator: {state: "content_addressed" as const, locatorRef: `sha256:${hash(layerBytes)}`, objectVersionRef: null}, bytes: layerBytes, producedBy: parser, producerExecutionId: ids.execution, producedAt: "2026-09-01T10:02:00.000Z", parentRefs: [sourceReference(record)], coverage: []};
+  const base = {found: true, immutable: true, artifactId: ids.layer, organizationId: core.organizationId, projectId: core.projectId, companyId: core.companyId, conversationId: core.conversationId, documentId: core.documentId, documentVersion: core.version, sourceBytesSha256: core.sourceBytes.sha256, identityFingerprint: core.identityFingerprint, locator: {state: "content_addressed" as const, locatorRef: `sha256:${hash(layerBytes)}`, objectVersionRef: null}, bytes: layerBytes, semanticIdentity: {role: "extracted_layer" as const, layerKind: "pdf" as const, mediaType: "application/pdf"}, producedBy: parser, producerExecutionId: ids.execution, producedAt: "2026-09-01T10:02:00.000Z", parentRefs: [sourceReference(record)], coverage: []};
   const merged = {...base, ...overrides} as Omit<ArtifactResolution, "attestation">;
   return {...merged, attestation: signBody(artifactBody(merged, merged.bytes ? hash(merged.bytes) : hash("missing")), ids.artifactAttestation)};
+}
+function resignArtifact(artifact: ArtifactResolution, signedAt: string): ArtifactResolution {
+  const {attestation: _attestation, ...body} = artifact;
+  return {...body, attestation: signBody(artifactBody(body, body.bytes ? hash(body.bytes) : hash("missing")), ids.artifactAttestation, signedAt)};
+}
+
+function receiptBody(receipt: Omit<ClassificationTransitionReceipt, "attestation">) { return receipt; }
+function makeClassificationReceipt(record: GovernedDocumentVersionIdentity, to: ClassificationTransitionReceipt["to"], authorizations: ClassificationTransitionReceipt["authorizations"], overrides: Partial<Omit<ClassificationTransitionReceipt, "attestation" | "from" | "to" | "authorizations">> & {attestationId?: string; signedAt?: string} = {}): ClassificationTransitionReceipt {
+  const previous = record.lifecycleHistory.at(-1)!;
+  const {attestationId = ids.classificationAttestation, signedAt, ...fields} = overrides;
+  const base = {receiptId: ids.classificationReceipt, identityRecordId: record.core.identityRecordId, organizationId: record.core.organizationId, projectId: record.core.projectId, companyId: record.core.companyId, conversationId: record.core.conversationId, documentId: record.core.documentId, documentVersion: record.core.version, from: {dataClass: previous.dataClass, informationClass: previous.informationClass, confidentiality: previous.confidentiality}, to, purpose: "classification_transition" as const, operationId: ids.classificationOperation, priorLifecycleFingerprint: previous.lifecycleFingerprint, targetRevision: previous.revision + 1, authorizations, authorizedActor: actor, authorizedAt: "2026-09-01T10:04:00.000Z", ...fields};
+  return {...base, attestation: signBody(receiptBody(base), attestationId, signedAt)};
 }
 
 type RootOptions = {
   sources?: Map<number, AtomicSourceDocumentResolution>; currentActor?: typeof actor | typeof serviceActor; registeredActors?: Set<string>;
   registeredTools?: Set<string>; sourceRegistration?: DocumentSourceOrigin | null; artifacts?: Map<string, ArtifactResolution>;
-  records?: Map<number, GovernedDocumentVersionIdentity>; canonical?: Map<string, GovernedDocumentVersionIdentity>; authorizedAppend?: boolean; now?: string;
+  records?: Map<number, GovernedDocumentVersionIdentity>; canonical?: Map<string, GovernedDocumentVersionIdentity>; receipts?: Map<string, ClassificationTransitionReceipt>; authorizedAppend?: boolean; now?: string; journalSignedAt?: string;
 };
 function toolKey(tool: DocumentToolIdentity) { return stable(tool); }
 function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
@@ -104,13 +124,14 @@ function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
   const artifacts = options.artifacts ?? new Map<string, ArtifactResolution>();
   const records = options.records ?? new Map<number, GovernedDocumentVersionIdentity>();
   const canonical = options.canonical ?? new Map<string, GovernedDocumentVersionIdentity>();
+  const receipts = options.receipts ?? new Map<string, ClassificationTransitionReceipt>();
   const currentActor = options.currentActor ?? actor;
   const registeredActors = options.registeredActors ?? new Set([stable(actor), stable(serviceActor)]);
   const registeredTools = options.registeredTools ?? new Set([toolKey(parser)]);
   return {
     async resolveOperationActor() { return currentActor; }, async isActorRegistered(candidate) { return registeredActors.has(stable(candidate)); },
     async resolveSourceDocument(_id, version) { return sources.get(version) ?? makeSource(version, sourceBytes, {found: false, bytes: null}); },
-    async verifySourceAttestation(resolution) { const {authorizationVersion: _v, authorizedAt: _a, ...generic} = resolution.attestation; const body = {identityRecordId: resolution.identityRecordId, organizationId: resolution.organizationId, projectId: resolution.projectId, companyId: resolution.companyId, conversationId: resolution.conversationId, documentId: resolution.documentId, row: resolution.row, source: resolution.source, sourceSnapshot: resolution.sourceSnapshot, capturedAt: resolution.capturedAt, actor: resolution.actor, immutable: resolution.immutable, sourceBytesSha256: resolution.bytes ? hash(resolution.bytes) : hash("missing"), sourceByteSize: resolution.bytes?.byteLength ?? 0, authorizationVersion: resolution.attestation.authorizationVersion, authorizedAt: resolution.attestation.authorizedAt}; return signatureValid(body, generic); },
+    async verifySourceAttestation(resolution) { const {authorizationVersion: _v, authorizedAt: _a, ...generic} = resolution.attestation; const body = {identityRecordId: resolution.identityRecordId, organizationId: resolution.organizationId, projectId: resolution.projectId, companyId: resolution.companyId, conversationId: resolution.conversationId, documentId: resolution.documentId, row: resolution.row, source: resolution.source, classification: resolution.classification, sourceSnapshot: resolution.sourceSnapshot, capturedAt: resolution.capturedAt, actor: resolution.actor, immutable: resolution.immutable, sourceBytesSha256: resolution.bytes ? hash(resolution.bytes) : hash("missing"), sourceByteSize: resolution.bytes?.byteLength ?? 0, authorizationVersion: resolution.attestation.authorizationVersion, authorizedAt: resolution.attestation.authorizedAt}; return signatureValid(body, generic); },
     async resolveSourceRegistration() { return options.sourceRegistration === undefined ? sourceOrigin() : options.sourceRegistration; },
     async resolveArtifact(artifactId) { return artifacts.get(artifactId) ?? makeArtifact([...canonical.values()][0]!, {found: false, artifactId, bytes: null}); },
     async verifyArtifactAttestation(resolution) { return signatureValid(artifactBody(resolution, resolution.bytes ? hash(resolution.bytes) : hash("missing")), resolution.attestation); },
@@ -118,16 +139,18 @@ function makeRoot(options: RootOptions = {}): GovernedDocumentServerTrustRoot {
     async isToolRegistered(tool) { return registeredTools.has(toolKey(tool)); }, async resolvePersistedVersion(reference) { return records.get(reference.version) ?? null; },
     async loadCanonicalIdentity(identityRecordId) { return canonical.get(identityRecordId) ?? null; },
     async authorizeIdentityOperation() { return options.authorizedAppend ?? true; },
-    async attestLifecycleJournal(body) { return signBody(body, ids.journalAttestation); }, async verifyLifecycleJournalAttestation(body, attestation) { return signatureValid(body, attestation); },
+    async attestLifecycleJournal(body) { return signBody(body, ids.journalAttestation, options.journalSignedAt); }, async verifyLifecycleJournalAttestation(body, attestation) { return signatureValid(body, attestation); },
+    async resolveClassificationReceipt(receiptId) { return receipts.get(receiptId) ?? null; },
+    async verifyClassificationReceipt(receipt) { const {attestation, ...body} = receipt; return signatureValid(receiptBody(body), attestation); },
     now() { return options.now ?? "2026-09-01T10:05:00.000Z"; },
   };
 }
 
 function compileInput(overrides: Partial<CompileGovernedDocumentIdentityInput> = {}): CompileGovernedDocumentIdentityInput {
-  return {sourceDocumentId: ids.document, sourceDocumentVersion: 1, lifecycle: {asOf: "2026-08-31T23:59:59.000Z", dataClass: "project_confidential", informationClass: "audited", confidentiality: "confidential", extractedLayers: [], coverage: [], derivatives: []}, ...overrides};
+  return {sourceDocumentId: ids.document, sourceDocumentVersion: 1, lifecycle: {asOf: "2026-08-31T23:59:59.000Z", extractedLayers: [], coverage: [], derivatives: []}, ...overrides};
 }
 function appendInput(overrides: Partial<DocumentLifecycleInput> = {}): DocumentLifecycleInput {
-  return {asOf: "2026-08-31T23:59:59.000Z", dataClass: "project_confidential", informationClass: "reviewed", confidentiality: "confidential", extractedLayers: [], coverage: [], derivatives: [], supersession: {state: "current", successorVersion: null, reasonId: null}, ...overrides};
+  return {asOf: "2026-08-31T23:59:59.000Z", classificationReceiptId: null, extractedLayers: [], coverage: [], derivatives: [], supersession: {state: "current", successorVersion: null, reasonId: null}, ...overrides};
 }
 function harness(options: RootOptions = {}) {
   const records = options.records ?? new Map<number, GovernedDocumentVersionIdentity>();
@@ -174,9 +197,93 @@ describe("governed document identity v3", () => {
     await expect(h.server.append(ids.recordV2, appendInput())).rejects.toThrow("source_resolution_failed");
   });
 
+  it("cannot relabel a private uploaded source as public or audited through a command", async () => {
+    const h = harness();
+    const record = await h.server.compile(compileInput()); h.store(record);
+    expect(record.core.sourceClassification).toEqual({dataClass: "project_confidential", informationClass: "company_document", confidentiality: "confidential"});
+    expect(record.lifecycleHistory[0]).toMatchObject(record.core.sourceClassification);
+    await expect(h.server.compile({...compileInput(), lifecycle: {...compileInput().lifecycle, dataClass: "public", informationClass: "audited", confidentiality: "public"}} as never)).rejects.toThrow();
+    await expect(h.server.append(record.core.identityRecordId, {...appendInput(), dataClass: "public", informationClass: "audited", confidentiality: "public"} as never)).rejects.toThrow();
+  });
+
+  it("requires a signed, scoped receipt for declassification and information-class upgrades", async () => {
+    const base = harness(); const record = await base.server.compile(compileInput()); base.store(record);
+    const audited = {...record.core.sourceClassification, informationClass: "audited" as const};
+    const insufficientUpgrade = makeClassificationReceipt(record, audited, ["change_information_class"]);
+    await expect(harness({canonical: base.canonical, records: base.records, receipts: new Map([[insufficientUpgrade.receiptId, insufficientUpgrade]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: insufficientUpgrade.receiptId}))).rejects.toThrow("classification_transition_unauthorized");
+    const authorizedUpgrade = makeClassificationReceipt(record, audited, ["change_information_class", "upgrade_information_class"]);
+    const upgraded = await harness({canonical: base.canonical, records: base.records, receipts: new Map([[authorizedUpgrade.receiptId, authorizedUpgrade]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: authorizedUpgrade.receiptId}));
+    expect(upgraded.lifecycleHistory.at(-1)).toMatchObject({...audited, classificationReceipt: authorizedUpgrade});
+
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const insufficientDeclassification = makeClassificationReceipt(record, publicClassification, ["change_data_class", "change_confidentiality"]);
+    await expect(harness({canonical: base.canonical, records: base.records, receipts: new Map([[insufficientDeclassification.receiptId, insufficientDeclassification]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: insufficientDeclassification.receiptId}))).rejects.toThrow("classification_transition_unauthorized");
+    const authorizedDeclassification = makeClassificationReceipt(record, publicClassification, ["change_data_class", "change_confidentiality", "declassify"]);
+    const declassified = await harness({canonical: base.canonical, records: base.records, receipts: new Map([[authorizedDeclassification.receiptId, authorizedDeclassification]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: authorizedDeclassification.receiptId}));
+    expect(declassified.lifecycleHistory.at(-1)).toMatchObject({...publicClassification, classificationReceipt: authorizedDeclassification});
+  });
+
+  it("binds classification receipts to their exact purpose, prior revision and target revision", async () => {
+    const base = harness(); const record = await base.server.compile(compileInput()); base.store(record);
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const grants: ClassificationTransitionReceipt["authorizations"] = ["change_data_class", "change_confidentiality", "declassify"];
+
+    const wrongPrior = makeClassificationReceipt(record, publicClassification, grants, {priorLifecycleFingerprint: "0".repeat(64)});
+    await expect(harness({canonical: base.canonical, records: base.records, receipts: new Map([[wrongPrior.receiptId, wrongPrior]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: wrongPrior.receiptId}))).rejects.toThrow("classification_receipt_invalid");
+
+    const wrongRevision = makeClassificationReceipt(record, publicClassification, grants, {targetRevision: 99});
+    await expect(harness({canonical: base.canonical, records: base.records, receipts: new Map([[wrongRevision.receiptId, wrongRevision]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: wrongRevision.receiptId}))).rejects.toThrow("classification_receipt_invalid");
+
+    const valid = makeClassificationReceipt(record, publicClassification, grants);
+    const {attestation: _attestation, ...validBody} = valid;
+    const crossPurposeBody = {...validBody, purpose: "artifact_binding"};
+    const crossPurpose = {...crossPurposeBody, attestation: signBody(crossPurposeBody, ids.classificationAttestation)} as unknown as ClassificationTransitionReceipt;
+    await expect(harness({canonical: base.canonical, records: base.records, receipts: new Map([[valid.receiptId, crossPurpose]])}).server.append(record.core.identityRecordId, appendInput({classificationReceiptId: valid.receiptId}))).rejects.toThrow();
+  });
+
+  it("rejects an old signed declassification receipt after A to B to A", async () => {
+    const receipts = new Map<string, ClassificationTransitionReceipt>();
+    const h = harness({receipts});
+    const original = await h.server.compile(compileInput()); h.store(original);
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const declassify = makeClassificationReceipt(original, publicClassification, ["change_data_class", "change_confidentiality", "declassify"]);
+    receipts.set(declassify.receiptId, declassify);
+    const publicRecord = await h.server.append(original.core.identityRecordId, appendInput({classificationReceiptId: declassify.receiptId})); h.store(publicRecord);
+
+    const reclassify = makeClassificationReceipt(publicRecord, original.core.sourceClassification, ["change_data_class", "change_confidentiality"], {
+      receiptId: ids.classificationReceipt2, attestationId: ids.classificationAttestation2, operationId: ids.classificationOperation2,
+    });
+    receipts.set(reclassify.receiptId, reclassify);
+    const privateAgain = await h.server.append(original.core.identityRecordId, appendInput({classificationReceiptId: reclassify.receiptId})); h.store(privateAgain);
+    expect(privateAgain.lifecycleHistory.at(-1)).toMatchObject(original.core.sourceClassification);
+
+    await expect(h.server.append(original.core.identityRecordId, appendInput({classificationReceiptId: declassify.receiptId}))).rejects.toThrow("classification_receipt_invalid");
+  });
+
+  it("consumes receipt, operation and attestation ids only once", async () => {
+    const duplicateFields = ["receiptId", "operationId", "attestationId"] as const;
+    for (const duplicateField of duplicateFields) {
+      const receipts = new Map<string, ClassificationTransitionReceipt>();
+      const h = harness({receipts});
+      const original = await h.server.compile(compileInput()); h.store(original);
+      const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+      const first = makeClassificationReceipt(original, publicClassification, ["change_data_class", "change_confidentiality", "declassify"]);
+      receipts.set(first.receiptId, first);
+      const publicRecord = await h.server.append(original.core.identityRecordId, appendInput({classificationReceiptId: first.receiptId})); h.store(publicRecord);
+      const identityOverrides = {
+        receiptId: duplicateField === "receiptId" ? first.receiptId : ids.classificationReceipt2,
+        operationId: duplicateField === "operationId" ? first.operationId : ids.classificationOperation2,
+        attestationId: duplicateField === "attestationId" ? first.attestation.attestationId : ids.classificationAttestation2,
+      };
+      const second = makeClassificationReceipt(publicRecord, original.core.sourceClassification, ["change_data_class", "change_confidentiality"], identityOverrides);
+      receipts.set(second.receiptId, second);
+      await expect(h.server.append(original.core.identityRecordId, appendInput({classificationReceiptId: second.receiptId}))).rejects.toThrow("classification_receipt_invalid");
+    }
+  });
+
   it("rejects canonical history tampering even after the attacker recalculates its ordinary hash", async () => {
     const h = harness(); const record = await h.server.compile(compileInput());
-    const forged = structuredClone(record); const revision = forged.lifecycleHistory[0]!; revision.informationClass = "management";
+    const forged = structuredClone(record); const revision = forged.lifecycleHistory[0]!; revision.asOf = "2026-08-30T23:59:59.000Z";
     const {lifecycleFingerprint: _old, journalAttestation: _attestation, ...body} = revision;
     revision.lifecycleFingerprint = fingerprint({identityFingerprint: forged.core.identityFingerprint, ...body});
     h.store(forged);
@@ -187,30 +294,98 @@ describe("governed document identity v3", () => {
     const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
     const artifact = makeArtifact(record); const artifacts = new Map([[ids.layer, artifact]]);
     const ah = harness({canonical: h.canonical, records: h.records, artifacts});
-    const appended = await ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "pdf"}]}));
-    expect(appended.lifecycleHistory[1]?.extractedLayers[0]).toMatchObject({parentRefs: artifact.parentRefs, producerExecutionId: ids.execution});
+    const appended = await ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]}));
+    expect(appended.lifecycleHistory[1]?.extractedLayers[0]).toMatchObject({layerKind: "pdf", mediaType: "application/pdf", parentRefs: artifact.parentRefs, producerExecutionId: ids.execution});
     await expect(ah.server.append(record.core.identityRecordId, {...appendInput(), extractedLayers: [{artifactId: ids.layer, layerKind: "pdf", parentRefs: []}]} as never)).rejects.toThrow();
     const wrongScopeParent = sourceReference(record);
     wrongScopeParent.version.organizationId = ids.company;
     for (const mutation of [{projectId: ids.company}, {sourceBytesSha256: hash("other")}, {parentRefs: []}, {parentRefs: [wrongScopeParent]}]) {
       const bad = makeArtifact(record, mutation as Partial<ArtifactResolution>);
-      await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, bad]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "pdf"}]}))).rejects.toThrow();
+      await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, bad]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]}))).rejects.toThrow();
     }
   });
 
   it("rejects artifact signatures and content-addressed locators inconsistent with resolved bytes", async () => {
     const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
     const artifact = makeArtifact(record); artifact.attestation.signature = "B".repeat(43);
-    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, artifact]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "pdf"}]}))).rejects.toThrow("artifact_attestation_invalid");
+    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, artifact]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]}))).rejects.toThrow("artifact_attestation_invalid");
     const wrong = makeArtifact(record, {locator: {state: "content_addressed", locatorRef: `sha256:${hash("wrong")}`, objectVersionRef: null}});
-    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, wrong]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "pdf"}]}))).rejects.toThrow("content_addressed_locator_mismatch");
+    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, wrong]])}).server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]}))).rejects.toThrow("content_addressed_locator_mismatch");
   });
 
   it("keeps artifact ids immutable throughout the append-only history", async () => {
     const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
-    const artifact = makeArtifact(record); const ah = harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, artifact]])});
-    const first = await ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "pdf"}]})); ah.store(first);
-    await expect(ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer, layerKind: "spreadsheet"}]}))).rejects.toThrow("artifact_identity_mutated");
+    const artifact = makeArtifact(record); const artifacts = new Map([[ids.layer, artifact]]); const ah = harness({canonical: h.canonical, records: h.records, artifacts});
+    const first = await ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]})); ah.store(first);
+    artifacts.set(ids.layer, makeArtifact(record, {semanticIdentity: {role: "extracted_layer", layerKind: "spreadsheet", mediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}}));
+    await expect(ah.server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}]}))).rejects.toThrow();
+    expect((await ah.server.validateGraph([first])).issues.map((issue) => issue.code)).toContain("artifact_semantic_identity_mismatch");
+  });
+
+  it("cannot bind the same artifact bytes under different semantic types", async () => {
+    const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
+    const layer = makeArtifact(record);
+    const derivative = makeArtifact(record, {artifactId: ids.derivative, semanticIdentity: {role: "derivative", derivativeKind: "retrieval_chunk_set", mediaType: "application/json"}});
+    const server = harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, layer], [ids.derivative, derivative]])}).server;
+    await expect(server.append(record.core.identityRecordId, appendInput({extractedLayers: [{artifactId: ids.layer}], derivatives: [{artifactId: ids.derivative}]}))).rejects.toThrow("artifact_semantic_identity_mismatch");
+    await expect(server.append(record.core.identityRecordId, appendInput({derivatives: [{artifactId: ids.layer}]}))).rejects.toThrow("artifact_semantic_identity_mismatch");
+  });
+
+  it("binds every extracted layer kind to its canonical MIME family", async () => {
+    const canonical = {
+      pdf: "application/pdf",
+      spreadsheet: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      csv: "text/csv",
+      image: "image/png",
+    } as const;
+    for (const [layerKind, mediaType] of Object.entries(canonical)) {
+      expect(extractedLayerSemanticIdentitySchema.safeParse({role: "extracted_layer", layerKind, mediaType}).success).toBe(true);
+      for (const [otherKind, otherMediaType] of Object.entries(canonical)) {
+        if (otherKind === layerKind) continue;
+        expect(extractedLayerSemanticIdentitySchema.safeParse({role: "extracted_layer", layerKind, mediaType: otherMediaType}).success).toBe(false);
+      }
+    }
+
+    const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
+    const incoherent = makeArtifact(record, {semanticIdentity: {role: "extracted_layer", layerKind: "spreadsheet", mediaType: "application/pdf"} as never});
+    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, incoherent]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({extractedLayers: [{artifactId: ids.layer}]}),
+    )).rejects.toThrow();
+  });
+
+  it("fails closed when artifact, classification or journal attestations violate trusted chronology", async () => {
+    const h = harness(); const record = await h.server.compile(compileInput()); h.store(record);
+    const tooEarlyArtifact = resignArtifact(makeArtifact(record), "2026-09-01T10:01:59.999Z");
+    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, tooEarlyArtifact]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({extractedLayers: [{artifactId: ids.layer}]}),
+    )).rejects.toThrow("artifact_attestation_time_invalid");
+
+    const futureArtifact = resignArtifact(makeArtifact(record), new Date(Date.parse("2026-09-01T10:05:00.000Z") + governedDocumentAttestationMaxFutureSkewMs + 1).toISOString());
+    await expect(harness({canonical: h.canonical, records: h.records, artifacts: new Map([[ids.layer, futureArtifact]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({extractedLayers: [{artifactId: ids.layer}]}),
+    )).rejects.toThrow("artifact_attestation_time_invalid");
+
+    const publicClassification = {dataClass: "public" as const, informationClass: "company_document" as const, confidentiality: "public" as const};
+    const earlyReceipt = makeClassificationReceipt(record, publicClassification, ["change_data_class", "change_confidentiality", "declassify"], {signedAt: "2026-09-01T10:03:59.999Z"});
+    await expect(harness({canonical: h.canonical, records: h.records, receipts: new Map([[earlyReceipt.receiptId, earlyReceipt]])}).server.append(
+      record.core.identityRecordId,
+      appendInput({classificationReceiptId: earlyReceipt.receiptId}),
+    )).rejects.toThrow("classification_attestation_time_invalid");
+
+    await expect(harness({journalSignedAt: "2026-09-01T10:04:59.999Z"}).server.compile(compileInput())).rejects.toThrow("lifecycle_attestation_time_invalid");
+  });
+
+  it("publishes a machine-verifiable boundary that forbids effects before transactional commit", () => {
+    expect(governedDocumentIdentityRuntimeBoundary).toEqual({
+      persistence: "external_transaction_required",
+      concurrency: "adapter_compare_and_swap_required",
+      effectsAuthorization: "forbidden_before_committed_revision",
+    });
   });
 
   it("enforces irreversible states and a real coherent successor", async () => {
@@ -228,7 +403,7 @@ describe("governed document identity v3", () => {
     const h = harness({currentActor: serviceActor, sources: new Map([[1, source]])});
     const record = await h.server.compile(compileInput());
     expect(record.lifecycleHistory[0]?.recordedBy).toEqual(serviceActor);
-    expect(record.core.sourceAttestation).toMatchObject({signatureAlgorithm: "ed25519", signatureVersion: 1, signingKeyId: ids.key, signedAt: "2026-09-01T10:01:00.000Z"});
+    expect(record.core.sourceAttestation).toMatchObject({signatureAlgorithm: "ed25519", signatureVersion: 1, signingKeyId: ids.key, signedAt: "2026-09-01T10:05:00.000Z"});
     expect(record.lifecycleHistory[0]?.journalAttestation).toMatchObject({attestationId: ids.journalAttestation, signatureAlgorithm: "ed25519"});
     await expect(h.server.compile({...compileInput(), recordedBy: actor, source: sourceOrigin()} as never)).rejects.toThrow();
     await expect(harness({sourceRegistration: {...sourceOrigin(), sourceId: ids.reason}}).server.compile(compileInput())).rejects.toThrow("source_registry_mismatch");

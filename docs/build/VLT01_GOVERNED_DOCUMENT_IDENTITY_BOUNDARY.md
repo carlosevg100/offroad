@@ -40,6 +40,23 @@ para a operação e o escopo e revalida toda a cadeia antes e depois de acrescen
 revisão recebe uma atestação de journal assinada; por isso, recalcular apenas os fingerprints comuns
 de um histórico adulterado não o torna válido.
 
+Uma mudança de classificação exige recibo de propósito explícito, assinado para a impressão digital da
+revisão anterior, a revisão-alvo e um `operationId`. `receiptId`, `operationId` e `attestationId` são de
+uso único no histórico; portanto, uma autorização antiga não pode ser reutilizada depois de uma nova
+reclassificação.
+
+Camadas extraídas usam uma identidade semântica discriminada. `layerKind` não é um rótulo independente:
+cada valor admite somente a família MIME canônica correspondente (PDF, planilha, Word, apresentação,
+CSV/texto ou imagem). Formatos legados permitidos são os mesmos que a esteira de parsers reconhece e
+converte. Uma assinatura válida sobre uma combinação contraditória continua sendo inválida para o
+contrato.
+
+Atestações obedecem a uma cronologia fail-closed: artefato não pode ser assinado antes de `producedAt`,
+recibo de classificação não pode ser assinado antes de `authorizedAt`, e journal não pode ser assinado
+antes de `recordedAt`. Essas três atestações não podem avançar mais de cinco minutos em relação ao
+relógio confiável server-side. Essa tolerância cobre apenas clock skew positivo; ela nunca relaxa a ordem
+causal.
+
 ## Resolução atômica de `source_documents`
 
 Uma única resolução confiável liga, na mesma atestação assinada:
@@ -95,6 +112,19 @@ produção. A integração permanece bloqueada até uma próxima fatia implement
 6. FKs compostas, FORCE RLS, grants mínimos, backfill e rollback;
 7. integração do worker por facade pré-vinculada, sem dependências construídas do payload;
 8. gate de staging com overwrite, revogação, cross-tenant, concorrência e non-interference.
+
+### Bloqueio explícito de concorrência
+
+`append` nesta biblioteca compila uma proposta de nova revisão; não a persiste nem consome um recibo.
+Por isso, duas chamadas concorrentes sobre a mesma revisão podem produzir a mesma proposta. O contrato
+exporta essa limitação de forma legível por máquina em `governedDocumentIdentityRuntimeBoundary`:
+persistência transacional externa, compare-and-swap obrigatório e proibição de autorizar qualquer efeito
+antes da revisão estar committed.
+
+A integração de runtime permanece bloqueada até o adapter, em uma única transação, bloquear a identidade,
+comparar a impressão digital anterior e a revisão-alvo, consumir `receiptId`, `operationId` e
+`attestationId` sob constraints únicas, gravar exatamente uma revisão e fazer a operação concorrente
+perdedora falhar. A facade pura não simula essa atomicidade.
 
 Nenhuma capacidade de Vault, data room, upload ou retrieval muda de maturidade por causa desta
 fatia. Conectores externos só podem existir quando registrados como `verified_connector`.
