@@ -208,6 +208,7 @@ export const externalAttestationSchema = z.object({
   scopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   immutableRef: z.string().min(1),
 });
+/** @deprecated Metadata alone has no authority. Use the governed signed-assurance boundary. */
 export type ExternalAttestation = z.infer<typeof externalAttestationSchema>;
 
 export const assuranceClaimDecisionSchema = z.object({
@@ -234,6 +235,9 @@ export function evaluateAssuranceClaim(input: {
   const attestations = z.array(externalAttestationSchema).parse(input.attestations ?? []);
   const evaluatedAt = input.evaluatedAt ?? new Date();
   const blockers: string[] = [];
+  if (formalExternalClaims.has(claim)) {
+    blockers.push("formal_external_claim_requires_governed_signed_statement");
+  }
   const controlsById = new Map<string, TrustControlRecord>();
   for (const control of controls) {
     if (controlsById.has(control.controlId)) blockers.push(`claim_duplicate_control:${control.controlId}`);
@@ -264,14 +268,11 @@ export function evaluateAssuranceClaim(input: {
     }
   }
 
-  const attestationKind = formalClaimAttestation[claim];
-  if (attestationKind) {
-    const currentAttestation = attestations.find((entry) => entry.kind === attestationKind
-      && entry.scopeFingerprint === scopeFingerprint
-      && new Date(entry.issuedAt).getTime() <= evaluatedAt.getTime()
-      && new Date(entry.validThrough).getTime() >= evaluatedAt.getTime());
-    if (!currentAttestation) blockers.push(`current_external_attestation_required:${attestationKind}`);
-  }
+  // Keep parsing the legacy field to reject malformed callers, but never treat caller-supplied
+  // metadata as attestation authority. Formal external claims use security-assurance-statements.ts,
+  // where bytes, signature, trust root, scope, validity and revocation are all verified.
+  void attestations;
+  void scopeFingerprint;
 
   const payload = {allowed: blockers.length === 0, claim, blockers: [...new Set(blockers)].sort()};
   return assuranceClaimDecisionSchema.parse({...payload, decisionFingerprint: fingerprintJson(payload)});
@@ -296,10 +297,7 @@ const claimMinimumState: Record<AssuranceClaim, z.infer<typeof auditableControlS
   iso27001_certified: "evidenced",
 };
 
-const formalClaimAttestation: Partial<Record<AssuranceClaim, ExternalAttestation["kind"]>> = {
-  soc2_type2_examined: "soc2_type2",
-  iso27001_certified: "iso27001_certificate",
-};
+const formalExternalClaims = new Set<AssuranceClaim>(["soc2_type2_examined", "iso27001_certified"]);
 
 const claimsRequiringCurrentEvidence = new Set<AssuranceClaim>([
   "operating",

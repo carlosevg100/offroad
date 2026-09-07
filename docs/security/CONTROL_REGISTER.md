@@ -2,7 +2,8 @@
 
 Versão: 2026.09.06-v1
 
-Status: catálogo executável criado; população de estado e evidência ainda não concluída
+Status: catálogo executável e baseline de inventário do repositório criados; estado live e
+evidência de operação ainda não concluídos
 
 Escopo: aplicação, APIs, dados, documentos, provedores de IA, delivery pipeline e operação da Offroad
 
@@ -33,7 +34,8 @@ operando. Nenhum item abaixo autoriza alegação de certificação, exame, pente
 | Frameworks mínimos representados | SOC 2 TSC, ISO/IEC 27001:2022, NIST CSF 2.0 e LGPD |
 | Assurance dos mappings | `internal_working_map`; nenhuma validação externa alegada |
 | Objetivos ainda sem referência de implementação | 9, expostos como warning |
-| Estado operacional e evidência corrente | ainda não populados |
+| Inventário inicial | `CURRENT_STATE_INVENTORY.md`; fonte tipada e validação fail-closed |
+| Estado operacional e evidência corrente | parcialmente observados no repositório; live e período de operação ainda não comprovados |
 | Critical/high aberto | não pode ser concluído até inventário e triagem live |
 
 ## Objetivos mestres
@@ -93,6 +95,12 @@ O catálogo só se torna baseline verificável quando cada atividade recebe:
 - findings, prazos e responsáveis;
 - relação com ativo, fluxo de dados, fornecedor e risco;
 - validação externa dos mappings antes de uso formal em auditoria.
+
+O inventário atual é gerado de
+`packages/release-governance/src/current-security-inventory.ts` e validado por
+`security-current-state.ts`. Ele impede referência ausente, owner ausente, evidência vencida,
+ambiente sem classificação, IDs duplicados e material semelhante a segredo. Seu escopo é o estado
+observável no repositório; `unknown` e `partial` são mantidos até a coleta live ou contratual.
 
 Até esse preenchimento, o sistema pode dizer que possui um programa e um catálogo desenhados. Não
 pode dizer que todos os controles estão implementados, operando ou audit-ready.

@@ -3508,3 +3508,43 @@ autoriza `customer_work`, `external_material` ou `external_action`. O próximo m
 os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
 evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
 amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
+
+## 46. SEC-01: inventário atual de segurança, 07/09/2026
+
+O primeiro inventário de segurança agora possui fonte tipada em
+`packages/release-governance/src/current-security-inventory.ts` e vista gerada em
+`docs/security/CURRENT_STATE_INVENTORY.md`. A baseline está presa ao commit `b2e38975` e cobre as
+fronteiras observáveis no repositório: seis ambientes, oito sistemas, sete classes de dados, oito
+stores, vinte e cinco fluxos, onze identidades e service roles, dezessete vendors e subprocessadores,
+oito claims canônicos, evidências, owners funcionais e dezoito gaps obrigatórios. npm, GitHub
+Actions, imagens locais do Supabase, downloads do
+Playwright e o executor Codex em CI agora aparecem como fronteiras próprias.
+
+O validador síncrono é declaration-only e nunca atesta o estado atual. O gate assíncrono confiável
+confirma o remote autorizado, resolve o commit real contido em `origin/main`, lê cada arquivo
+diretamente desse objeto Git e vincula cada observação local a bytes, SHA-256, collector, origem,
+ambiente e autoridade allowlisted. O catálogo fora do payload fixa claims, critérios, evidências,
+gaps, severidades e status esperados; o status de cada claim é derivado. Path, hash, metadado,
+claim ou gap forjado, removido ou reclassificado falha fechado. A vista Markdown é gerada apenas
+por esse gate e testada por paridade.
+
+Esta entrega não prova configuração live, contratos, owners nominais, retenção, regiões, restore ou
+operação ao longo do tempo: dezoito lacunas continuam abertas. A observação anterior sobre a role de
+deploy não estabelece ausência de permissões: primeiro é preciso obter policy e receipt de
+`simulate-principal-policy`, depois decidir se algum grant mínimo é necessário. O Codex review
+também está explicitamente modelado como executor agentic privilegiado: `danger-full-access`, acesso
+ao workspace, comandos, credencial e rede existem no runner. O fluxo do executor para source,
+review, logs e artifacts e o fluxo para OpenAI incluem explicitamente `credential_secret`, enquanto isolamento de secrets,
+allowlists, contenção de prompt injection, egress, logs e artefatos ainda não estão provados. A
+baseline não autoriza alegação de SOC 2, ISO, pentest ou compliance. Próximo passo: SEC-008, coleta
+read-only e datada das configurações live, seguida da verificação contratual e dos boundaries
+agentic e de supply chain.
+
+Correção de arquitetura no mesmo PR: assurance externo deixou de depender de interpretação de
+prose por regex. `security-assurance-statements.ts` representa claim, status, escopo, evidência,
+emissão, validade e trust root. O gate verifica assinatura Ed25519, bytes/hash, escopo, emissor,
+janela e revogação antes de permitir `attested`; na ausência ou falha, o renderer rebaixa para
+`not_certified` ou `not_independently_audited`. Gap assessments e planos são milestones separados e
+não viram certificação. O scanner restante é lint conservador para texto adulterado, não NLP. A
+trust store atual está vazia, portanto a implementação evita falsa alegação mas não prova assurance
+externo.

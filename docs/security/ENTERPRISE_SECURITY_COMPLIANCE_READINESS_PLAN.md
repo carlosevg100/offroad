@@ -424,7 +424,21 @@ Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem tria
 - [ ] SEC-004 corrigir achados reais e documentar falsos positivos com aprovação;
 - [ ] SEC-005 fazer novo high/critical bloquear PR;
 - [ ] SEC-006 ativar secret scanning push protection e validar histórico;
-- [ ] SEC-007 inventariar ambientes, ativos, dados, identidades e fornecedores;
+- [x] SEC-007 criar baseline inicial de ambientes, ativos, dados, identidades e fornecedores a
+  partir do repositório; `CURRENT_STATE_INVENTORY.md` e sua fonte tipada registram 6 ambientes,
+  8 sistemas, 7 classes de dados, 8 stores, 25 fluxos, 11 identidades, 17 vendors, 8 claims
+  canônicos e 18 gaps obrigatórios. O gate confiável confirma o remote autorizado, resolve o commit
+  real contido em `origin/main`, resolve cada referência nesse objeto Git e vincula observações
+  locais a bytes, SHA-256 e metadados de origem e autoridade governados. O status dos claims é
+  derivado; remover ou reclassificar coverage/gaps falha fechado. A completude live continua aberta
+  em SEC-008 e não é inferida desta baseline. Claims externos de SOC 2, ISO, pentest e auditoria
+  agora usam objetos, escopo, evidência assinada, validade, revogação e um registro interno
+  fingerprintado de trust roots Ed25519; roots e relógio fornecidos pelo caller não entram na
+  decisão. Sem esses elementos o renderer emite somente estado não certificado/não atestado.
+  Milestones também são tipados em catálogo fingerprintado; conclusão exige receipt que vincula o
+  registro canônico completo à evidência e aos bytes resolvidos, e nunca promove um claim
+  automaticamente. A fronteira está documentada em
+  `ASSURANCE_CLAIM_TRUST_BOUNDARY.md`;
 - [ ] SEC-008 coletar configuração live read-only de AWS, Supabase, Vercel, GitHub, Sentry e PostHog;
 - [ ] SEC-009 fechar DPA/ZDR/retention/region de OpenAI, Anthropic, Perplexity e Firecrawl;
 - [ ] SEC-010 ativar enforcement fail-closed de provider policy primeiro em staging;
@@ -698,6 +712,10 @@ O primeiro sprint de segurança deve produzir capacidade, não documentação va
 8. definir e testar RPO/RTO preliminares;
 9. preparar escopo técnico do pentest;
 10. converter os resultados em backlog com owner, esforço e dependência.
+
+Estado em 07/09/2026: o item 1 possui agora o catálogo e a baseline de inventário do repositório.
+Owners nominais, configuração live, contratos, retenção, regiões e operação ao longo do tempo
+continuam abertos e aparecem como gaps, não como controles concluídos.
 
 ## 16. Fontes normativas e técnicas
 
