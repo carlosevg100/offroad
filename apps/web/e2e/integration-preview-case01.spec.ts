@@ -256,7 +256,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await send(page, "Altere a taxa da nova dívida para 15,50% a.a.");
     const acknowledged = await waitForAssistant(page, /Premissa registrada \(taxa da nova dívida 15[.,]50% a\.a\.\)/);
     record("premissa alterada", acknowledged);
-    const updated = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
+    const updated = await waitForAssistant(page, /7 de 9 etapas foram reaproveitadas sem recálculo/);
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
     const decisionArtifact = page.getByTestId("preview-decision-artifact");

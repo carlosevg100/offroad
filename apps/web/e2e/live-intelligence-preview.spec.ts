@@ -216,7 +216,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     await send(page, prompt);
     const reply = await waitForAssistant(page, /live_intelligence_preview\] composição=change_premise/);
     record("premissa", prompt, reply);
-    const update = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
+    const update = await waitForAssistant(page, /7 de 9 etapas foram reaproveitadas sem recálculo/);
     transcript.push(`\n**Offroad (atualização incremental):** ${update}\n`);
     await page.screenshot({path: join(outputDirectory, "05-premise-change.png"), fullPage: true});
   });
@@ -235,7 +235,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     record("resposta à pergunta", prompt, reply);
     expect(reply).toContain("Respostas aplicadas");
     expect(parseHeadline(reply)["audiência"]).toBe("board");
-    const update = await waitForAssistant(page, /etapas replicaram sem recálculo|Primeira devolutiva do Caso 01/, 300_000);
+    const update = await waitForAssistant(page, /etapas foram reaproveitadas sem recálculo|Primeira devolutiva do Caso 01/, 300_000);
     transcript.push(`\n**Offroad (plano recompilado):** ${update}\n`);
   });
   test("the material is a real file, regenerated from the objects after the premise change", async () => {
