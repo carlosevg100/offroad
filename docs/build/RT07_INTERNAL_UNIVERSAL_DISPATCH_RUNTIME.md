@@ -39,7 +39,10 @@ live capability only to prove the runtime contract in CI.
   executor invocation and immediately after its awaited return. Fixture authorization is bounded by
   the resolution window and is also revalidated after the await. If either authority expired, the
   raw result is discarded before schema validation, receipt creation, output publication or cache;
-  a completed in-memory graph is not replayed after resolution expiry.
+  a completed in-memory graph is revalidated before replay. The runtime wraps its injected clock as
+  a strict monotonic trusted clock: missing/non-finite time or clock rewind fails closed, including
+  after an awaited executor and on replay. A future-dated resolution therefore cannot become valid
+  through a rewound clock.
 - Authorization or identity failures throw a named refusal before any task runs. Runtime failures
   produce explicit failed receipts; later graph batches are marked skipped.
 - Returned outputs are internal values only. There is no artifact publishing, database write,
@@ -68,7 +71,9 @@ live capability only to prove the runtime contract in CI.
 17. fixture authorization that predates or outlives the resolution;
 18. expiry between preparation and executor invocation; and
 19. refusal to replay a completed graph after context expiry.
-20. discarded executor output and retryability when authorization expires across the await boundary.
+20. discarded executor output and retryability when authorization expires across the await boundary;
+21. discarded output on post-executor trusted-clock rewind; and
+22. refusal to return a cached replay after trusted-clock rewind.
 
 The existing R01 test suite also exercises the newly explicit strict result schema at the method
 boundary.

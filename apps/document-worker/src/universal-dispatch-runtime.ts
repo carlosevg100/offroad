@@ -177,7 +177,16 @@ export function createInternalUniversalDispatchRuntime(options: {
   now?: () => Date;
 }) {
   const registry = [...options.registry];
-  const now = options.now ?? (() => new Date());
+  const sourceNow = options.now ?? (() => new Date());
+  let lastTrustedNowMs = Number.NEGATIVE_INFINITY;
+  const now = (): Date => {
+    const value = sourceNow();
+    const valueMs = value instanceof Date ? value.getTime() : Number.NaN;
+    if (!Number.isFinite(valueMs)) throw new InternalDispatchRefusal("dispatch_clock_invalid");
+    if (valueMs < lastTrustedNowMs) throw new InternalDispatchRefusal("dispatch_clock_rewind");
+    lastTrustedNowMs = valueMs;
+    return new Date(valueMs);
+  };
   const graphRuns = new Map<string, Promise<StoredGraphRun>>();
 
   return {
@@ -193,6 +202,7 @@ export function createInternalUniversalDispatchRuntime(options: {
       const existing = graphRuns.get(prepared.graphExecutionFingerprint);
       if (existing) {
         const replay = await existing;
+        revalidatePreparedContext(prepared, now());
         return {...replay, replayed: true};
       }
       const run = executePreparedGraph(prepared, now, input.signal);
@@ -255,8 +265,9 @@ function prepareExecution(input: {
   if (computeUniversalDispatchCandidateFingerprint(candidate) !== candidate.fingerprint) {
     throw new InternalDispatchRefusal("dispatch_candidate_fingerprint_mismatch");
   }
-  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionTrust, input.now());
-  const authorization = verifyAuthorization(candidate, contextResolution, input.authorization, input.authorizationKeys, input.now());
+  const preparedAt = input.now();
+  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionTrust, preparedAt);
+  const authorization = verifyAuthorization(candidate, contextResolution, input.authorization, input.authorizationKeys, preparedAt);
   if (!Number.isInteger(input.timeoutMs) || input.timeoutMs < 1 || input.timeoutMs > 60_000) {
     throw new InternalDispatchRefusal("dispatch_timeout_invalid");
   }
@@ -375,8 +386,9 @@ async function executePreparedGraph(
   now: () => Date,
   parentSignal?: AbortSignal,
 ): Promise<StoredGraphRun> {
-  revalidatePreparedContext(prepared, now());
-  const startedAt = now().toISOString();
+  const graphStartedAt = now();
+  revalidatePreparedContext(prepared, graphStartedAt);
+  const startedAt = graphStartedAt.toISOString();
   const receipts = new Map<string, InternalDispatchTaskReceipt>();
   const outputs: Record<string, unknown> = {};
   let halted = false;
@@ -405,6 +417,7 @@ async function executePreparedGraph(
   for (const candidateTask of prepared.candidate.tasks) {
     if (receipts.has(candidateTask.taskId)) continue;
     const task = prepared.tasksById.get(candidateTask.taskId)!;
+    const skippedAt = now().toISOString();
     receipts.set(candidateTask.taskId, taskReceipt({
       candidateFingerprint: prepared.candidate.fingerprint,
       contextResolutionFingerprint: prepared.contextResolutionFingerprint,
@@ -412,8 +425,8 @@ async function executePreparedGraph(
       status: "skipped",
       resultFingerprint: null,
       error: {code: "graph_halted", detail: "a prior batch failed"},
-      startedAt: now().toISOString(),
-      completedAt: now().toISOString(),
+      startedAt: skippedAt,
+      completedAt: skippedAt,
     }));
   }
   const graphCompletedAt = now();
@@ -450,10 +463,11 @@ async function executePreparedTask(
   authorization?: InternalDispatchAuthorization,
   authorizationKeys?: Readonly<Record<string, string>>,
 ): Promise<{receipt: InternalDispatchTaskReceipt; output?: unknown}> {
-  const startedAt = now().toISOString();
+  const taskStartedAt = now();
+  const startedAt = taskStartedAt.toISOString();
   if (contextResolution && contextResolutionTrust) {
     try {
-      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, now());
+      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, taskStartedAt);
     } catch {
       throw new InternalDispatchRefusal("dispatch_context_resolution_expired_before_executor");
     }

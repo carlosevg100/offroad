@@ -37,7 +37,10 @@ No context is a normal result (`empty`), not an error and not a reason to emit a
 All three use canonical SHA-256 fingerprints. System control and resolution also carry HMAC-SHA256
 issuer signatures in this internal slice. Verification requires a valid explicit `now` and exactly
 one trust entry matching `issuerId + keyId + algorithm`; the key's rotation window and revocation
-state are enforced, rather than trusting a bare secret selected only by key ID. The resolver returns inclusion and exclusion reasons,
+state are enforced, rather than trusting a bare secret selected only by key ID. Resolution time has
+zero implicit clock skew in this shadow slice: `resolvedAt` cannot be later than the trusted clock,
+`validUntil` must be later than `resolvedAt`, and a missing, non-finite or rewound clock fails closed.
+The resolver returns inclusion and exclusion reasons,
 structured gaps, blockers, exact selected snapshot identities, control revision/issuer, its own
 issuer and `validUntil = min(control expiry, selected heads' validity/freshness/future revocation)`.
 
@@ -67,7 +70,12 @@ independently updated second head is a conflict, not an arbitrary tie-break. Onl
 evaluated. A stale, revoked or irrelevant head never causes an ancestor to be resurrected; an
 unusable ancestor does not prevent a valid successor. Lineage cannot change organization, project,
 company, conversation, document, kind, data class, locator scheme, temporal policy, jurisdictions or
-selectors. A newer explicit successor is selected and the prior snapshot is recorded as
+selectors. `snapshotVersion` and the explicit parent link define immutable lineage progression.
+Candidate `controlRevision` records the source authorization snapshot as provenance; it is not a
+lineage dimension and does not confer current authority. A newer signed control can re-authorize a
+complete rev7→rev8 chain only by freezing every supplied candidate as an exact `(itemId,
+snapshotFingerprint)` pair. The parent remains mandatory, a candidate cannot cite a future control
+revision, and omission of the parent fails closed. A newer explicit successor is selected and the prior snapshot is recorded as
 `superseded`. Stale, revoked,
 wrong-jurisdiction, wrong-as-of and permission-denied context becomes a typed gap only when it was
 otherwise material. Each gap distinguishes `ask_if_material`, `refresh_source` and
@@ -86,8 +94,9 @@ fingerprints, graph idempotency identity and receipts. A changed resolution ther
 under an older authorization. Vigência and issuer signature are revalidated during preparation,
 again before graph work, immediately before executor invocation, and after the awaited executor
 returns. Resolution and fixture authorization must both still be valid before output validation,
-receipt construction or caching; stale output is discarded. An expired resolution cannot return an
-in-memory replay.
+receipt construction or caching; stale output is discarded. The runtime's trusted clock is monotonic
+within its lifetime. It revalidates cached replay at read time, so an expired or future-dated
+resolution, a clock rewind or an invalid clock cannot return an in-memory replay.
 
 This is a safe control-plane connection only. The bundled R01 fixture still receives its separately
 typed input; selected payload bytes are not loaded or injected by the resolver. No production route
@@ -113,11 +122,14 @@ imports or invokes this runtime.
 - exact control-snapshot substitution and incomplete lineage;
 - stale/revoked/irrelevant heads without ancestor resurrection;
 - validity-window minimization and object-ref deduplication; and
+- rev7→rev8 authorization continuity with complete lineage, plus refusal when the parent is omitted;
+- future-dated resolutions and missing/non-finite verification clocks; and
 - typed payload-locator allowlisting.
 
 `apps/document-worker/src/universal-dispatch-runtime.test.ts` additionally proves exact context hash,
 authorization, idempotency and receipt binding around the deterministic internal fixture, including
 authorization-window containment, pre-executor TOCTOU closure and refusal to replay after expiry.
+It also rejects clock rewind after an awaited executor and before cached replay.
 
 ## Deliberate limitations and next gate
 

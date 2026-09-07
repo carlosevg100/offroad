@@ -374,8 +374,8 @@ describe("authorized context resolution", () => {
     expect(value.objectRefs).toEqual([{kind: "company", id: "company-a"}]);
   });
 
-  it("binds candidates to the exact signed control revision and capture horizon", () => {
-    const wrongRevision = resolve({systemControl: control(), intent: intent(), candidates: [candidate("ctx-project-v1", {controlRevision: 6})], now: NOW});
+  it("rejects a candidate sourced from a future control revision or capture horizon", () => {
+    const wrongRevision = resolve({systemControl: control(), intent: intent(), candidates: [candidate("ctx-project-v1", {controlRevision: 8})], now: NOW});
     const createdAfterSnapshot = resolve({
       systemControl: control(), intent: intent(),
       candidates: [candidate("ctx-project-v1", {capturedAt: "2026-09-07T14:30:00.000Z", validFrom: "2026-09-07T14:30:00.000Z"})], now: NOW,
@@ -433,6 +433,55 @@ describe("authorized context resolution", () => {
     expect(result).toMatchObject({status: "resolved", included: [{itemId: current.id}], excluded: [{itemId: stalePrior.id, reason: "superseded"}], gaps: []});
   });
 
+  it("allows a complete rev7 to rev8 lineage under an exact rev8 control snapshot", () => {
+    const prior = candidate("ctx-project-v1", {
+      controlRevision: 7,
+      snapshotVersion: 1,
+      capturedAt: "2026-09-07T14:00:00.000Z",
+      validFrom: "2026-09-07T14:00:00.000Z",
+    });
+    const successor = candidate("ctx-project-v2", {
+      controlRevision: 8,
+      snapshotVersion: 2,
+      supersedesId: prior.id,
+      capturedAt: "2026-09-07T14:30:00.000Z",
+      validFrom: "2026-09-07T14:30:00.000Z",
+      contentHash: sha("c"),
+    });
+    const result = resolve({
+      systemControl: control({revision: 8, issuedAt: "2026-09-07T14:30:00.000Z"}),
+      intent: intent(),
+      candidates: [prior, successor],
+      now: NOW,
+    });
+    expect(result).toMatchObject({
+      status: "resolved",
+      controlRevision: 8,
+      included: [{itemId: successor.id, snapshotVersion: 2}],
+      excluded: [{itemId: prior.id, reason: "superseded"}],
+      blockers: [],
+    });
+  });
+
+  it("does not accept a rev8 successor when its rev7 parent is omitted", () => {
+    const orphan = candidate("ctx-project-v2", {
+      controlRevision: 8,
+      snapshotVersion: 2,
+      supersedesId: "ctx-project-v1",
+      capturedAt: "2026-09-07T14:30:00.000Z",
+      validFrom: "2026-09-07T14:30:00.000Z",
+    });
+    const result = resolve({
+      systemControl: control({revision: 8, issuedAt: "2026-09-07T14:30:00.000Z"}),
+      intent: intent(),
+      candidates: [orphan],
+      now: NOW,
+    });
+    expect(result).toMatchObject({status: "blocked", included: []});
+    expect(result.blockers.map(({code}) => code)).toContain("lineage_parent_missing");
+    expect(result.blockers.map(({code}) => code)).not.toContain("control_snapshot_mismatch");
+  });
+
   it("fails closed when immutable lineage dimensions or selectors change", () => {
     const prior = candidate("ctx-project-v1");
     const widened = candidate("ctx-project-v2", {
@@ -470,6 +519,18 @@ describe("authorized context resolution", () => {
     expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, revokedAt: "2026-09-07T14:59:59.000Z"}], NOW)).toThrow("context_resolution_signature_invalid");
     expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, validUntil: "2026-09-07T14:59:59.000Z"}], NOW)).toThrow("context_resolution_signature_invalid");
     expect(() => verifyAuthorizedContextResolution(result, RESOLUTION_TRUST, new Date(Number.NaN))).toThrow("context_resolution_now_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, RESOLUTION_TRUST, undefined as never)).toThrow("context_resolution_now_invalid");
+  });
+
+  it("rejects a future-dated resolution and therefore prevents trusted-clock rewind", () => {
+    const future = resolve({
+      systemControl: control(),
+      intent: intent(),
+      candidates: [],
+      now: new Date("2026-09-07T15:00:01.000Z"),
+    });
+    expect(future.validUntil > future.resolvedAt).toBe(true);
+    expect(() => verify(future, NOW)).toThrow("context_resolution_future_dated");
   });
 
   it("never reflects foreign lineage identities through derived blockers", () => {

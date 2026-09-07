@@ -301,7 +301,11 @@ const contextResolutionPayloadSchema = z.object({
 export const authorizedContextResolutionSchema = contextResolutionPayloadSchema.extend({
   fingerprint: sha256Schema,
   signature: sha256Schema,
-}).strict();
+}).strict().superRefine((resolution, context) => {
+  if (Date.parse(resolution.validUntil) <= Date.parse(resolution.resolvedAt)) {
+    context.addIssue({code: "custom", path: ["validUntil"], message: "context resolution validity must increase"});
+  }
+});
 export type AuthorizedContextResolution = z.infer<typeof authorizedContextResolutionSchema>;
 
 const systemContextControlIssuanceSchema = systemContextControlBaseSchema.omit({candidateSetFingerprint: true});
@@ -388,11 +392,11 @@ export function resolveAuthorizedContext(input: {
     blockers.push({code: "control_candidate_set_mismatch", itemIds: []});
   }
   if (blockers.length > 0) {
-    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: baseControl.expiresAt, resolutionIssuer: input.resolutionIssuer});
+    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: boundedBlockedValidity(input.now, baseControl.expiresAt), resolutionIssuer: input.resolutionIssuer});
   }
   validateLineage(parsed, blockers);
   if (blockers.length > 0) {
-    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: baseControl.expiresAt, resolutionIssuer: input.resolutionIssuer});
+    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: boundedBlockedValidity(input.now, baseControl.expiresAt), resolutionIssuer: input.resolutionIssuer});
   }
 
   const included: Array<z.infer<typeof includedContextSchema>> = [];
@@ -457,6 +461,7 @@ export function verifyAuthorizedContextResolution(raw: unknown, trust: readonly 
   if (!trustedIssuer || !safeSignatureEqual(resolution.signature, sign({fingerprint: resolution.fingerprint, issuer: resolution.issuer}, trustedIssuer.secret))) {
     throw new Error("context_resolution_signature_invalid");
   }
+  if (Date.parse(resolution.resolvedAt) > now.getTime()) throw new Error("context_resolution_future_dated");
   if (Date.parse(resolution.validUntil) <= now.getTime()) throw new Error("context_resolution_expired");
   return resolution;
 }
@@ -542,7 +547,11 @@ function validateScope(item: ContextCandidate, control: SystemContextControl, bl
   else if (snapshotGrant.snapshotFingerprint !== item.fingerprint) blockers.push({code: "control_snapshot_mismatch", itemIds: []});
   if (item.kind === "document" && (item.documentId === null || !control.authorizedDocumentIds.includes(item.documentId))) blockers.push({code: "unauthorized_document_candidate", itemIds: []});
   if (item.companyId !== null && !control.authorizedCompanyIds.includes(item.companyId)) blockers.push({code: "unauthorized_company_candidate", itemIds: []});
-  if (item.controlRevision !== control.revision || Date.parse(item.capturedAt) > Date.parse(control.issuedAt)) {
+  // This is the source authorization revision, not the candidate's lineage revision. The current
+  // signed control remains authoritative through its exact item-id + fingerprint allowlist and may
+  // deliberately re-authorize an older parent alongside a successor. A source cannot, however,
+  // claim provenance from a control revision that has not happened yet.
+  if (item.controlRevision > control.revision || Date.parse(item.capturedAt) > Date.parse(control.issuedAt)) {
     blockers.push({code: "control_snapshot_mismatch", itemIds: []});
   }
 }
@@ -576,7 +585,6 @@ function sameImmutableLineageScope(left: ContextCandidate, right: ContextCandida
   return left.logicalKey === right.logicalKey
     && left.kind === right.kind
     && left.organizationId === right.organizationId
-    && left.controlRevision === right.controlRevision
     && left.projectId === right.projectId
     && left.companyId === right.companyId
     && left.conversationId === right.conversationId
@@ -586,6 +594,12 @@ function sameImmutableLineageScope(left: ContextCandidate, right: ContextCandida
     && left.temporalPolicy === right.temporalPolicy
     && stableJson(left.jurisdictions) === stableJson(right.jurisdictions)
     && stableJson(left.selectors) === stableJson(right.selectors);
+}
+
+function boundedBlockedValidity(now: Date, controlExpiry: string): string {
+  return Date.parse(controlExpiry) > now.getTime()
+    ? controlExpiry
+    : new Date(now.getTime() + 1).toISOString();
 }
 
 function permissionFor(kind: ContextKind): ContextPermission {

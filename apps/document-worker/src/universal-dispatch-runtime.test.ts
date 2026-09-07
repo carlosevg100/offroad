@@ -310,7 +310,7 @@ describe("internal universal dispatch runtime", () => {
       issuedAt: "2026-09-07T11:59:59.000Z",
       expiresAt: "2026-09-07T12:30:00.000Z",
       contextResolutionTrust,
-    })).toThrow("dispatch_authorization_exceeds_context_resolution");
+    })).toThrow("dispatch_context_resolution_invalid");
     expect(() => issueInternalFixtureAuthorization({
       candidate: value,
       contextResolution: resolution,
@@ -389,10 +389,62 @@ describe("internal universal dispatch runtime", () => {
     expect(invoke).toHaveBeenCalledTimes(1);
 
     // The post-await refusal evicts the graph promise; no stale output/receipt was cached.
-    clock = new Date("2026-09-07T12:00:00.000Z");
     expireDuringExecution = false;
-    await expect(internal.execute(request)).resolves.toMatchObject({replayed: false, receipt: {status: "succeeded"}});
+    const renewedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
+      issuedAt: "2026-09-07T12:05:00.000Z", expiresAt: "2026-09-07T12:10:00.000Z", contextResolutionTrust,
+    });
+    await expect(internal.execute({...request, authorization: renewedAuthorization})).resolves.toMatchObject({replayed: false, receipt: {status: "succeeded"}});
     expect(invoke).toHaveBeenCalledTimes(2);
+  });
+
+  it("discards post-executor output when the trusted clock rewinds", async () => {
+    const value = candidate();
+    const resolution = contextResolution(value);
+    let clock = new Date("2026-09-07T12:01:00.000Z");
+    let rewindDuringExecution = true;
+    const invoke = vi.fn(async (rawInput: unknown, executionContext: {signal: AbortSignal}) => {
+      const output = await executor.execute(rawInput, executionContext);
+      if (rewindDuringExecution) clock = new Date("2026-09-07T12:00:30.000Z");
+      return output;
+    });
+    const signedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:30:00.000Z", contextResolutionTrust,
+    });
+    const internal = createInternalUniversalDispatchRuntime({
+      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: () => clock,
+    });
+    const request = {candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000};
+    await expect(internal.execute(request)).rejects.toMatchObject({code: "dispatch_clock_rewind"});
+    expect(invoke).toHaveBeenCalledTimes(1);
+
+    // A fresh runtime with a non-rewinding trusted clock can execute, proving no output escaped
+    // the failed runtime through a receipt or reusable cache entry.
+    clock = new Date("2026-09-07T12:02:00.000Z");
+    rewindDuringExecution = false;
+    const fresh = createInternalUniversalDispatchRuntime({
+      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: () => clock,
+    });
+    await expect(fresh.execute(request)).resolves.toMatchObject({replayed: false, receipt: {status: "succeeded"}});
+    expect(invoke).toHaveBeenCalledTimes(2);
+  });
+
+  it("revalidates a cached replay against a future-dated resolution", async () => {
+    const value = candidate();
+    let clock = new Date("2026-09-07T12:00:00.000Z");
+    const resolution = contextResolution(value);
+    const signedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:30:00.000Z", contextResolutionTrust,
+    });
+    const internal = createInternalUniversalDispatchRuntime({
+      registry: bundledInternalDispatchExecutorRegistry, authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: () => clock,
+    });
+    const request = {candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000};
+    await expect(internal.execute(request)).resolves.toMatchObject({replayed: false});
+    clock = new Date("2026-09-07T11:59:59.000Z");
+    await expect(internal.execute(request)).rejects.toMatchObject({code: "dispatch_clock_rewind"});
   });
 
   it("refuses a blocked candidate before consulting authorization or invoking an executor", async () => {
