@@ -107,7 +107,10 @@ const schema = z.object({
   CLAMD_HOST: z.string().default("127.0.0.1"),
   CLAMD_PORT: z.coerce.number().int().default(3310),
   CLAMD_TIMEOUT_MS: z.coerce.number().int().default(120_000),
-  /** Refusing to run without a virus scanner is the default; only a human may relax it. */
+  /**
+   * Keeps clamd boot coupled to the container. Setting false is diagnostic policy only: the
+   * governed quarantine still rejects every document because no clean scanner receipt exists.
+   */
   REQUIRE_VIRUS_SCAN: z
     .string()
     .default("true")
