@@ -52,6 +52,18 @@ const verifiedIssuerSchema = z.object({
   algorithm: z.literal("hmac-sha256"),
 }).strict();
 
+export const contextIssuerTrustSchema = verifiedIssuerSchema.extend({
+  secret: z.string().min(16),
+  validFrom: isoInstantSchema,
+  validUntil: isoInstantSchema.nullable(),
+  revokedAt: isoInstantSchema.nullable(),
+}).strict().superRefine((trust, context) => {
+  if (trust.validUntil !== null && Date.parse(trust.validUntil) <= Date.parse(trust.validFrom)) {
+    context.addIssue({code: "custom", path: ["validUntil"], message: "issuer trust validity must increase"});
+  }
+});
+export type ContextIssuerTrust = z.infer<typeof contextIssuerTrustSchema>;
+
 const systemContextControlBaseSchema = z.object({
   schemaVersion: z.literal("system-context-control.v2"),
   source: z.literal("system"),
@@ -169,6 +181,8 @@ const contextCandidatePayloadSchema = z.object({
     if (!companyRefs.some((ref) => ref.id === item.companyId) || companyRefs.some((ref) => ref.id !== item.companyId)) {
       context.addIssue({code: "custom", path: ["selectors", "objectRefs"], message: "company-scoped context requires exactly coherent company selectors"});
     }
+  } else if (item.selectors.objectRefs.some((ref) => ref.kind === "company")) {
+    context.addIssue({code: "custom", path: ["selectors", "objectRefs"], message: "non-company-scoped context cannot carry company selectors"});
   }
   if (item.kind === "document" && item.payloadLocator.scheme !== "document_snapshot") {
     context.addIssue({code: "custom", path: ["payloadLocator", "scheme"], message: "document context requires document_snapshot locator"});
@@ -319,18 +333,19 @@ export function createContextCandidate(input: z.input<typeof contextCandidatePay
  */
 export function resolveAuthorizedContext(input: {
   systemControl: unknown;
-  systemControlKeys: Readonly<Record<string, string>>;
+  systemControlTrust: readonly ContextIssuerTrust[];
   intent: unknown;
   candidates: readonly unknown[];
   now: Date;
   resolutionIssuer: z.input<typeof verifiedIssuerSchema> & {secret: string};
 }): AuthorizedContextResolution {
+  assertValidDate(input.now);
   const controlResult = systemContextControlSchema.safeParse(input.systemControl);
   const intentResult = contextResolutionIntentSchema.safeParse(input.intent);
   const baseControl = controlResult.success ? normalizeSystemControl(controlResult.data) : null;
   const baseIntent = intentResult.success ? normalizeIntent(intentResult.data) : null;
   const blockers: Array<z.infer<typeof contextBlockerSchema>> = [];
-  if (!controlResult.success || !baseControl || !verifySystemControl(baseControl, input.systemControlKeys)) {
+  if (!controlResult.success || !baseControl || !verifySystemControl(baseControl, input.systemControlTrust, input.now)) {
     blockers.push({code: "system_control_invalid", itemIds: []});
   } else if (Date.parse(baseControl.issuedAt) > input.now.getTime() || Date.parse(baseControl.expiresAt) <= input.now.getTime()) {
     blockers.push({code: "system_control_expired", itemIds: []});
@@ -371,6 +386,9 @@ export function resolveAuthorizedContext(input: {
   const actualCandidateSet = normalizeSnapshotGrants(parsed.map(({id, fingerprint: snapshotFingerprint}) => ({itemId: id, snapshotFingerprint})));
   if (fingerprint(actualCandidateSet) !== baseControl.candidateSetFingerprint) {
     blockers.push({code: "control_candidate_set_mismatch", itemIds: []});
+  }
+  if (blockers.length > 0) {
+    return finalizeResolution({status: "blocked", control: baseControl, intent: baseIntent, included: [], excluded: [], gaps: [], blockers, resolvedAt: input.now.toISOString(), validUntil: baseControl.expiresAt, resolutionIssuer: input.resolutionIssuer});
   }
   validateLineage(parsed, blockers);
   if (blockers.length > 0) {
@@ -430,15 +448,16 @@ export function resolveAuthorizedContext(input: {
   });
 }
 
-export function verifyAuthorizedContextResolution(raw: unknown, keys: Readonly<Record<string, string>>, now?: Date): AuthorizedContextResolution {
+export function verifyAuthorizedContextResolution(raw: unknown, trust: readonly ContextIssuerTrust[], now: Date): AuthorizedContextResolution {
+  assertValidDate(now);
   const resolution = authorizedContextResolutionSchema.parse(raw);
   const payload = stripSignatureAndFingerprint(resolution);
   if (fingerprint(payload) !== resolution.fingerprint) throw new Error("context_resolution_fingerprint_mismatch");
-  const secret = keys[resolution.issuer.keyId];
-  if (!secret || !safeSignatureEqual(resolution.signature, sign({fingerprint: resolution.fingerprint, issuer: resolution.issuer}, secret))) {
+  const trustedIssuer = findActiveIssuerTrust(resolution.issuer, trust, resolution.resolvedAt, now);
+  if (!trustedIssuer || !safeSignatureEqual(resolution.signature, sign({fingerprint: resolution.fingerprint, issuer: resolution.issuer}, trustedIssuer.secret))) {
     throw new Error("context_resolution_signature_invalid");
   }
-  if (now && Date.parse(resolution.validUntil) <= now.getTime()) throw new Error("context_resolution_expired");
+  if (Date.parse(resolution.validUntil) <= now.getTime()) throw new Error("context_resolution_expired");
   return resolution;
 }
 
@@ -703,12 +722,34 @@ function stripSignatureAndFingerprint(value: AuthorizedContextResolution): unkno
   return payload;
 }
 
-function verifySystemControl(control: SystemContextControl, keys: Readonly<Record<string, string>>): boolean {
-  const secret = keys[control.issuer.keyId];
-  if (!secret) return false;
+function verifySystemControl(control: SystemContextControl, trust: readonly ContextIssuerTrust[], now: Date): boolean {
+  const trustedIssuer = findActiveIssuerTrust(control.issuer, trust, control.issuedAt, now);
+  if (!trustedIssuer) return false;
   const {fingerprint: fingerprintValue, signature, ...payload} = control;
   return fingerprint(payload) === fingerprintValue
-    && safeSignatureEqual(signature, sign({fingerprint: fingerprintValue, issuer: control.issuer}, secret));
+    && safeSignatureEqual(signature, sign({fingerprint: fingerprintValue, issuer: control.issuer}, trustedIssuer.secret));
+}
+
+function findActiveIssuerTrust(
+  issuer: z.infer<typeof verifiedIssuerSchema>,
+  values: readonly ContextIssuerTrust[],
+  issuedAt: string,
+  now: Date,
+): ContextIssuerTrust | null {
+  const matches = values.map((value) => contextIssuerTrustSchema.parse(value)).filter((value) =>
+    value.issuerId === issuer.issuerId && value.keyId === issuer.keyId && value.algorithm === issuer.algorithm);
+  if (matches.length !== 1) return null;
+  const trust = matches[0]!;
+  const issuedMs = Date.parse(issuedAt);
+  const nowMs = now.getTime();
+  if (issuedMs < Date.parse(trust.validFrom)) return null;
+  if (trust.validUntil !== null && (issuedMs >= Date.parse(trust.validUntil) || nowMs >= Date.parse(trust.validUntil))) return null;
+  if (trust.revokedAt !== null && nowMs >= Date.parse(trust.revokedAt)) return null;
+  return trust;
+}
+
+function assertValidDate(value: Date): void {
+  if (!(value instanceof Date) || !Number.isFinite(value.getTime())) throw new TypeError("context_resolution_now_invalid");
 }
 
 function sign(value: unknown, secret: string): string {

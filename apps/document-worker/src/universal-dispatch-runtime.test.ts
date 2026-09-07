@@ -37,7 +37,14 @@ const now = () => new Date("2026-09-07T12:00:00.000Z");
 const authorizationKey = "test-only-hmac-key-never-used-outside-ci";
 const controlKey = "test-only-control-key-never-used-outside-ci";
 const resolutionKey = "test-only-resolution-key-never-used-outside-ci";
-const contextResolutionKeys = {"resolution-key": resolutionKey};
+const contextResolutionTrust = [{
+  issuerId: "ci-context-resolver", keyId: "resolution-key", algorithm: "hmac-sha256" as const, secret: resolutionKey,
+  validFrom: "2026-01-01T00:00:00.000Z", validUntil: "2027-01-01T00:00:00.000Z", revokedAt: null,
+}];
+const systemControlTrust = [{
+  issuerId: "ci-control-plane", keyId: "control-key", algorithm: "hmac-sha256" as const, secret: controlKey,
+  validFrom: "2026-01-01T00:00:00.000Z", validUntil: "2027-01-01T00:00:00.000Z", revokedAt: null,
+}];
 const executor = bundledInternalDispatchExecutorRegistry[0]!;
 const source = offroadTaskRegistry.find((task) => task.id === "R01")!;
 const graph: CompiledTaskGraph = {
@@ -134,7 +141,7 @@ function authorization(value: UniversalDispatchCandidate) {
     secret: authorizationKey,
     issuedAt: "2026-09-07T12:00:00.000Z",
     expiresAt: "2026-09-07T12:30:00.000Z",
-    contextResolutionKeys,
+    contextResolutionTrust,
   });
 }
 
@@ -176,7 +183,7 @@ function contextResolution(value: UniversalDispatchCandidate, overrides: {
   });
   return resolveAuthorizedContext({
     systemControl,
-    systemControlKeys: {"control-key": controlKey},
+    systemControlTrust,
     intent: resolutionIntent,
     candidates,
     now: now(),
@@ -219,7 +226,7 @@ function runtime(registry: readonly InternalBundledExecutor[] = bundledInternalD
   const internal = createInternalUniversalDispatchRuntime({
     registry,
     authorizationKeys: {"ci-key": authorizationKey},
-    contextResolutionKeys,
+    contextResolutionTrust,
     now,
   });
   return {
@@ -302,7 +309,7 @@ describe("internal universal dispatch runtime", () => {
       secret: authorizationKey,
       issuedAt: "2026-09-07T11:59:59.000Z",
       expiresAt: "2026-09-07T12:30:00.000Z",
-      contextResolutionKeys,
+      contextResolutionTrust,
     })).toThrow("dispatch_authorization_exceeds_context_resolution");
     expect(() => issueInternalFixtureAuthorization({
       candidate: value,
@@ -311,7 +318,7 @@ describe("internal universal dispatch runtime", () => {
       secret: authorizationKey,
       issuedAt: "2026-09-07T12:00:00.000Z",
       expiresAt: "2026-09-07T13:00:00.001Z",
-      contextResolutionKeys,
+      contextResolutionTrust,
     })).toThrow("dispatch_authorization_exceeds_context_resolution");
   });
 
@@ -326,7 +333,7 @@ describe("internal universal dispatch runtime", () => {
       secret: authorizationKey,
       issuedAt: "2026-09-07T12:00:00.000Z",
       expiresAt: "2026-09-07T12:09:00.000Z",
-      contextResolutionKeys,
+      contextResolutionTrust,
     });
     const invoke = vi.fn(executor.execute);
     const clock = vi.fn()
@@ -334,7 +341,7 @@ describe("internal universal dispatch runtime", () => {
       .mockReturnValueOnce(new Date("2026-09-07T12:00:00.000Z"))
       .mockReturnValue(new Date("2026-09-07T12:10:00.000Z"));
     const internal = createInternalUniversalDispatchRuntime({
-      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionKeys, now: clock,
+      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: clock,
     });
     await expect(internal.execute({
       candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000,
@@ -349,15 +356,43 @@ describe("internal universal dispatch runtime", () => {
     const resolution = contextResolution(value, {candidates: [expiringCandidate], permissions: ["read_project_context"]});
     const signedAuthorization = issueInternalFixtureAuthorization({
       candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
-      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:09:00.000Z", contextResolutionKeys,
+      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:09:00.000Z", contextResolutionTrust,
     });
     const internal = createInternalUniversalDispatchRuntime({
-      registry: bundledInternalDispatchExecutorRegistry, authorizationKeys: {"ci-key": authorizationKey}, contextResolutionKeys, now: () => clock,
+      registry: bundledInternalDispatchExecutorRegistry, authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: () => clock,
     });
     const request = {candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000};
     await expect(internal.execute(request)).resolves.toMatchObject({replayed: false});
     clock = new Date("2026-09-07T12:10:00.000Z");
     await expect(internal.execute(request)).rejects.toMatchObject({code: "dispatch_context_resolution_expired"});
+  });
+
+  it("discards executor output when authorization expires across the await boundary", async () => {
+    const value = candidate();
+    const resolution = contextResolution(value);
+    let clock = new Date("2026-09-07T12:00:00.000Z");
+    let expireDuringExecution = true;
+    const invoke = vi.fn(async (rawInput: unknown, executionContext: {signal: AbortSignal}) => {
+      const output = await executor.execute(rawInput, executionContext);
+      if (expireDuringExecution) clock = new Date("2026-09-07T12:05:00.000Z");
+      return output;
+    });
+    const signedAuthorization = issueInternalFixtureAuthorization({
+      candidate: value, contextResolution: resolution, keyId: "ci-key", secret: authorizationKey,
+      issuedAt: "2026-09-07T12:00:00.000Z", expiresAt: "2026-09-07T12:05:00.000Z", contextResolutionTrust,
+    });
+    const internal = createInternalUniversalDispatchRuntime({
+      registry: [{...executor, execute: invoke}], authorizationKeys: {"ci-key": authorizationKey}, contextResolutionTrust, now: () => clock,
+    });
+    const request = {candidate: value, contextResolution: resolution, authorization: signedAuthorization, inputsByTaskId: {R01: input}, timeoutMs: 1_000};
+    await expect(internal.execute(request)).rejects.toMatchObject({code: "dispatch_authority_expired_after_executor"});
+    expect(invoke).toHaveBeenCalledTimes(1);
+
+    // The post-await refusal evicts the graph promise; no stale output/receipt was cached.
+    clock = new Date("2026-09-07T12:00:00.000Z");
+    expireDuringExecution = false;
+    await expect(internal.execute(request)).resolves.toMatchObject({replayed: false, receipt: {status: "succeeded"}});
+    expect(invoke).toHaveBeenCalledTimes(2);
   });
 
   it("refuses a blocked candidate before consulting authorization or invoking an executor", async () => {
@@ -418,7 +453,7 @@ describe("internal universal dispatch runtime", () => {
     await expect(createInternalUniversalDispatchRuntime({
       registry: [effectful] as unknown as readonly InternalBundledExecutor[],
       authorizationKeys: {"ci-key": authorizationKey},
-      contextResolutionKeys,
+      contextResolutionTrust,
       now,
     }).execute({
       candidate: value, contextResolution: contextResolution(value), authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 1_000,

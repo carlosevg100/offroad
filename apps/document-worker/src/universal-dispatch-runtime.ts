@@ -11,6 +11,7 @@ import {
 import {
   verifyAuthorizedContextResolution,
   type AuthorizedContextResolution,
+  type ContextIssuerTrust,
 } from "@offroad/governed-retrieval";
 import {
   receivablesPoolUnderwritingInputSchema,
@@ -138,11 +139,11 @@ export function issueInternalFixtureAuthorization(input: {
   secret: string;
   issuedAt: string;
   expiresAt: string;
-  contextResolutionKeys: Readonly<Record<string, string>>;
+  contextResolutionTrust: readonly ContextIssuerTrust[];
 }): InternalDispatchAuthorization {
   const candidate = universalDispatchCandidateSchema.parse(input.candidate);
   const issuedAt = new Date(input.issuedAt);
-  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionKeys, issuedAt);
+  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionTrust, issuedAt);
   if (Date.parse(input.issuedAt) < Date.parse(contextResolution.resolvedAt)
     || Date.parse(input.expiresAt) > Date.parse(contextResolution.validUntil)) {
     throw new InternalDispatchRefusal("dispatch_authorization_exceeds_context_resolution");
@@ -172,7 +173,7 @@ export function issueInternalFixtureAuthorization(input: {
 export function createInternalUniversalDispatchRuntime(options: {
   registry: readonly InternalBundledExecutor[];
   authorizationKeys: Readonly<Record<string, string>>;
-  contextResolutionKeys: Readonly<Record<string, string>>;
+  contextResolutionTrust: readonly ContextIssuerTrust[];
   now?: () => Date;
 }) {
   const registry = [...options.registry];
@@ -188,7 +189,7 @@ export function createInternalUniversalDispatchRuntime(options: {
       timeoutMs: number;
       signal?: AbortSignal;
     }): Promise<{receipt: InternalDispatchGraphReceipt; outputsByTaskId: Readonly<Record<string, unknown>>; replayed: boolean}> {
-      const prepared = prepareExecution({...input, registry, authorizationKeys: options.authorizationKeys, contextResolutionKeys: options.contextResolutionKeys, now});
+      const prepared = prepareExecution({...input, registry, authorizationKeys: options.authorizationKeys, contextResolutionTrust: options.contextResolutionTrust, now});
       const existing = graphRuns.get(prepared.graphExecutionFingerprint);
       if (existing) {
         const replay = await existing;
@@ -224,7 +225,9 @@ type PreparedTask = {
 type PreparedExecution = {
   candidate: UniversalDispatchCandidate;
   contextResolution: AuthorizedContextResolution;
-  contextResolutionKeys: Readonly<Record<string, string>>;
+  contextResolutionTrust: readonly ContextIssuerTrust[];
+  authorization: InternalDispatchAuthorization;
+  authorizationKeys: Readonly<Record<string, string>>;
   contextResolutionFingerprint: string;
   tasksById: Map<string, PreparedTask>;
   timeoutMs: number;
@@ -244,7 +247,7 @@ function prepareExecution(input: {
   timeoutMs: number;
   registry: readonly InternalBundledExecutor[];
   authorizationKeys: Readonly<Record<string, string>>;
-  contextResolutionKeys: Readonly<Record<string, string>>;
+  contextResolutionTrust: readonly ContextIssuerTrust[];
   now: () => Date;
 }): PreparedExecution {
   const candidate = universalDispatchCandidateSchema.parse(input.candidate);
@@ -252,7 +255,7 @@ function prepareExecution(input: {
   if (computeUniversalDispatchCandidateFingerprint(candidate) !== candidate.fingerprint) {
     throw new InternalDispatchRefusal("dispatch_candidate_fingerprint_mismatch");
   }
-  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionKeys, input.now());
+  const contextResolution = verifyDispatchContext(candidate, input.contextResolution, input.contextResolutionTrust, input.now());
   const authorization = verifyAuthorization(candidate, contextResolution, input.authorization, input.authorizationKeys, input.now());
   if (!Number.isInteger(input.timeoutMs) || input.timeoutMs < 1 || input.timeoutMs > 60_000) {
     throw new InternalDispatchRefusal("dispatch_timeout_invalid");
@@ -305,18 +308,18 @@ function prepareExecution(input: {
     contextResolutionFingerprint: contextResolution.fingerprint,
     tasks: preparedTasks.map((task) => ({taskId: task.candidateTask.taskId, fingerprint: task.taskExecutionFingerprint})),
   });
-  return {candidate, contextResolution, contextResolutionKeys: input.contextResolutionKeys, contextResolutionFingerprint: contextResolution.fingerprint, tasksById: new Map(preparedTasks.map((task) => [task.candidateTask.taskId, task])), timeoutMs: input.timeoutMs, graphExecutionFingerprint};
+  return {candidate, contextResolution, contextResolutionTrust: input.contextResolutionTrust, authorization, authorizationKeys: input.authorizationKeys, contextResolutionFingerprint: contextResolution.fingerprint, tasksById: new Map(preparedTasks.map((task) => [task.candidateTask.taskId, task])), timeoutMs: input.timeoutMs, graphExecutionFingerprint};
 }
 
 function verifyDispatchContext(
   candidate: UniversalDispatchCandidate,
   raw: unknown,
-  keys: Readonly<Record<string, string>>,
+  trust: readonly ContextIssuerTrust[],
   now: Date,
 ): AuthorizedContextResolution {
   let resolution: AuthorizedContextResolution;
   try {
-    resolution = verifyAuthorizedContextResolution(raw, keys, now);
+    resolution = verifyAuthorizedContextResolution(raw, trust, now);
   } catch (error) {
     if (error instanceof Error && error.message === "context_resolution_expired") {
       throw new InternalDispatchRefusal("dispatch_context_resolution_expired");
@@ -388,7 +391,10 @@ async function executePreparedGraph(
       now,
       parentSignal,
       prepared.contextResolution,
-      prepared.contextResolutionKeys,
+      prepared.contextResolutionTrust,
+      prepared.candidate,
+      prepared.authorization,
+      prepared.authorizationKeys,
     )));
     for (const result of results) {
       receipts.set(result.receipt.taskId, result.receipt);
@@ -437,28 +443,22 @@ async function executePreparedTask(
   now: () => Date,
   parentSignal?: AbortSignal,
   contextResolution?: AuthorizedContextResolution,
-  contextResolutionKeys?: Readonly<Record<string, string>>,
+  contextResolutionTrust?: readonly ContextIssuerTrust[],
+  candidate?: UniversalDispatchCandidate,
+  authorization?: InternalDispatchAuthorization,
+  authorizationKeys?: Readonly<Record<string, string>>,
 ): Promise<{receipt: InternalDispatchTaskReceipt; output?: unknown}> {
   const startedAt = now().toISOString();
-  if (contextResolution && contextResolutionKeys) {
+  if (contextResolution && contextResolutionTrust) {
     try {
-      verifyAuthorizedContextResolution(contextResolution, contextResolutionKeys, now());
+      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, now());
     } catch {
       throw new InternalDispatchRefusal("dispatch_context_resolution_expired_before_executor");
     }
   }
+  let raw: unknown;
   try {
-    const raw = await withDeadline(task.executor, task.parsedInput, timeoutMs, parentSignal);
-    const parsed = task.executor.resultSchema.safeParse(raw);
-    if (!parsed.success) throw new TaskExecutionFailure("output_invalid", "executor result violated the exact result schema");
-    const resultFingerprint = fingerprint(parsed.data);
-    return {
-      receipt: taskReceipt({
-        candidateFingerprint, contextResolutionFingerprint, task, status: "succeeded", resultFingerprint, error: null,
-        startedAt, completedAt: now().toISOString(),
-      }),
-      output: parsed.data,
-    };
+    raw = await withDeadline(task.executor, task.parsedInput, timeoutMs, parentSignal);
   } catch (error) {
     const failure = error instanceof TaskExecutionFailure
       ? error
@@ -468,11 +468,40 @@ async function executePreparedTask(
       error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: now().toISOString(),
     })};
   }
+  // Result bytes remain untrusted and unpublished until both authorities are checked after the
+  // await boundary. An expiry here rejects the graph promise: no output, cache entry or receipt is
+  // emitted for the stale result.
+  if (contextResolution && contextResolutionTrust && candidate && authorization && authorizationKeys) {
+    try {
+      const checkedAt = now();
+      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, checkedAt);
+      verifyAuthorization(candidate, contextResolution, authorization, authorizationKeys, checkedAt);
+    } catch {
+      throw new InternalDispatchRefusal("dispatch_authority_expired_after_executor");
+    }
+  }
+  const parsed = task.executor.resultSchema.safeParse(raw);
+  if (!parsed.success) {
+    const failure = new TaskExecutionFailure("output_invalid", "executor result violated the exact result schema");
+    return {receipt: taskReceipt({
+      candidateFingerprint, contextResolutionFingerprint, task, status: "failed", resultFingerprint: null,
+      error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: now().toISOString(),
+    })};
+  }
+  const resultFingerprint = fingerprint(parsed.data);
+  return {
+    receipt: taskReceipt({
+      candidateFingerprint, contextResolutionFingerprint, task, status: "succeeded", resultFingerprint, error: null,
+      startedAt, completedAt: now().toISOString(),
+    }),
+    output: parsed.data,
+  };
 }
 
 function revalidatePreparedContext(prepared: PreparedExecution, at: Date): void {
   try {
-    verifyAuthorizedContextResolution(prepared.contextResolution, prepared.contextResolutionKeys, at);
+    verifyAuthorizedContextResolution(prepared.contextResolution, prepared.contextResolutionTrust, at);
+    verifyAuthorization(prepared.candidate, prepared.contextResolution, prepared.authorization, prepared.authorizationKeys, at);
   } catch {
     throw new InternalDispatchRefusal("dispatch_context_resolution_expired_before_read");
   }

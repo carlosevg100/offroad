@@ -35,9 +35,11 @@ live capability only to prove the runtime contract in CI.
 - `blocked` and `needs_context` resolutions are refused before task execution. `empty` is explicitly
   valid: the absence of prior context never manufactures memory or a canned user message.
 - Timeout and cancellation use an `AbortSignal`. A signal already aborted never invokes the task.
-- Resolution issuer and validity are checked at preparation, before graph work and immediately
-  before executor invocation. Fixture authorization is bounded by the resolution window, and a
-  completed in-memory graph is not replayed after resolution expiry.
+- Resolution issuer and validity are checked at preparation, before graph work, immediately before
+  executor invocation and immediately after its awaited return. Fixture authorization is bounded by
+  the resolution window and is also revalidated after the await. If either authority expired, the
+  raw result is discarded before schema validation, receipt creation, output publication or cache;
+  a completed in-memory graph is not replayed after resolution expiry.
 - Authorization or identity failures throw a named refusal before any task runs. Runtime failures
   produce explicit failed receipts; later graph batches are marked skipped.
 - Returned outputs are internal values only. There is no artifact publishing, database write,
@@ -66,6 +68,7 @@ live capability only to prove the runtime contract in CI.
 17. fixture authorization that predates or outlives the resolution;
 18. expiry between preparation and executor invocation; and
 19. refusal to replay a completed graph after context expiry.
+20. discarded executor output and retryability when authorization expires across the await boundary.
 
 The existing R01 test suite also exercises the newly explicit strict result schema at the method
 boundary.

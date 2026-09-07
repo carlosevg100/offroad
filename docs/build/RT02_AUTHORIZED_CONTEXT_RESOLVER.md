@@ -35,7 +35,9 @@ No context is a normal result (`empty`), not an error and not a reason to emit a
    `document_snapshot`), never arbitrary URLs or paths.
 
 All three use canonical SHA-256 fingerprints. System control and resolution also carry HMAC-SHA256
-issuer signatures in this internal slice. The resolver returns inclusion and exclusion reasons,
+issuer signatures in this internal slice. Verification requires a valid explicit `now` and exactly
+one trust entry matching `issuerId + keyId + algorithm`; the key's rotation window and revocation
+state are enforced, rather than trusting a bare secret selected only by key ID. The resolver returns inclusion and exclusion reasons,
 structured gaps, blockers, exact selected snapshot identities, control revision/issuer, its own
 issuer and `validUntil = min(control expiry, selected heads' validity/freshness/future revocation)`.
 
@@ -54,6 +56,8 @@ Within the authorized scope:
 - jurisdiction and as-of policy must match confirmed execution context;
 - company-scoped context requires a matching exact `company` object reference in the intent; a
   broad company kind is not permission to reuse another company's memory;
+- every company ref in selectors must equal the candidate's `companyId`, and that company must be
+  in the signed control allowlist; non-company-scoped candidates cannot carry company refs;
 - at least one explicit topical selector must match primary work, object kind, a non-company exact object or
   requested product; and
 - one logical context key must have exactly one authorized lineage head.
@@ -80,8 +84,10 @@ window are included in the signed fixture authorization. Authorization may neith
 resolution nor outlive it. The resolution fingerprint is also included in task execution
 fingerprints, graph idempotency identity and receipts. A changed resolution therefore cannot replay
 under an older authorization. Vigência and issuer signature are revalidated during preparation,
-again before graph work, and immediately before executor invocation; an expired resolution cannot
-return an in-memory replay.
+again before graph work, immediately before executor invocation, and after the awaited executor
+returns. Resolution and fixture authorization must both still be valid before output validation,
+receipt construction or caching; stale output is discarded. An expired resolution cannot return an
+in-memory replay.
 
 This is a safe control-plane connection only. The bundled R01 fixture still receives its separately
 typed input; selected payload bytes are not loaded or injected by the resolver. No production route
@@ -118,8 +124,9 @@ authorization-window containment, pre-executor TOCTOU closure and refusal to rep
 - Candidate retrieval remains an injected in-memory input; no RLS query or durable resolution store
   exists in this slice.
 - Payload bytes are not loaded, decrypted, summarized or passed to an executor.
-- Signatures use injected fixture HMAC keys. There is no production workload identity, managed key
-  rotation, revocation service or durable audit trail.
+- Signatures use injected fixture HMAC trust entries. Identity/algorithm binding, rotation windows
+  and revocation are enforced, but there is no production workload identity, managed key service or
+  durable audit trail.
 - Candidate-set completeness is cryptographically frozen by the control, but the in-memory slice
   does not prove that a database produced that set transactionally.
 - Public/organization/company memory quality and retention policy are not homologated here.

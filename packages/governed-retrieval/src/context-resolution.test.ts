@@ -13,8 +13,8 @@ const sha = (value: string) => value.repeat(64);
 const NOW = new Date("2026-09-07T15:00:00.000Z");
 const CONTROL_SECRET = "control-secret-for-internal-shadow-tests";
 const RESOLUTION_SECRET = "resolution-secret-for-internal-shadow-tests";
-const CONTROL_KEYS = {"control-key": CONTROL_SECRET};
-const RESOLUTION_KEYS = {"resolution-key": RESOLUTION_SECRET};
+const CONTROL_TRUST = [{issuerId: "control-plane-test", keyId: "control-key", algorithm: "hmac-sha256" as const, secret: CONTROL_SECRET, validFrom: "2026-01-01T00:00:00.000Z", validUntil: "2027-01-01T00:00:00.000Z", revokedAt: null}];
+const RESOLUTION_TRUST = [{issuerId: "context-resolver-test", keyId: "resolution-key", algorithm: "hmac-sha256" as const, secret: RESOLUTION_SECRET, validFrom: "2026-01-01T00:00:00.000Z", validUntil: "2027-01-01T00:00:00.000Z", revokedAt: null}];
 const RESOLUTION_ISSUER = {issuerId: "context-resolver-test", keyId: "resolution-key", algorithm: "hmac-sha256" as const, secret: RESOLUTION_SECRET};
 const AUTHORIZED_CONTEXT_IDS = new Set(["ctx-project-v1", "ctx-project-v2", "ctx-conflict", "ctx-company", "ctx-document", "ctx-stale", "ctx-revoked", "ctx-wrong-date", "ctx-wrong-jurisdiction", "ctx-irrelevant"]);
 
@@ -111,11 +111,11 @@ function resolve(input: {systemControl: unknown; intent: unknown; candidates: re
       authorizedContextSnapshots: snapshots,
     }, CONTROL_SECRET);
   }
-  return resolveAuthorizedContext({...input, systemControl, systemControlKeys: CONTROL_KEYS, resolutionIssuer: RESOLUTION_ISSUER});
+  return resolveAuthorizedContext({...input, systemControl, systemControlTrust: CONTROL_TRUST, resolutionIssuer: RESOLUTION_ISSUER});
 }
 
-function verify(raw: unknown, now?: Date) {
-  return verifyAuthorizedContextResolution(raw, RESOLUTION_KEYS, now);
+function verify(raw: unknown, at: Date = NOW) {
+  return verifyAuthorizedContextResolution(raw, RESOLUTION_TRUST, at);
 }
 
 describe("authorized context resolution", () => {
@@ -363,6 +363,10 @@ describe("authorized context resolution", () => {
     expect(() => candidate("ctx-project-v1", {
       selectors: {primaryWorks: ["capital_strategy"], objectKinds: ["company"], objectRefs: [{kind: "company", id: "company-b"}], productKeys: []},
     })).toThrow(/company-scoped context requires exactly coherent company selectors/);
+    expect(() => candidate("ctx-project-v1", {
+      companyId: null,
+      selectors: {primaryWorks: ["capital_strategy"], objectKinds: ["company"], objectRefs: [{kind: "company", id: "company-b"}], productKeys: []},
+    })).toThrow(/non-company-scoped context cannot carry company selectors/);
   });
 
   it("deduplicates exact object references before fingerprinting intent", () => {
@@ -391,7 +395,7 @@ describe("authorized context resolution", () => {
       issuer: {issuerId: "control-plane-test", keyId: "control-key", algorithm: "hmac-sha256"},
     }, CONTROL_SECRET);
     const result = resolveAuthorizedContext({
-      systemControl: frozenControl, systemControlKeys: CONTROL_KEYS, intent: intent(), candidates: [substituted], now: NOW, resolutionIssuer: RESOLUTION_ISSUER,
+      systemControl: frozenControl, systemControlTrust: CONTROL_TRUST, intent: intent(), candidates: [substituted], now: NOW, resolutionIssuer: RESOLUTION_ISSUER,
     });
     expect(result).toMatchObject({status: "blocked", included: []});
     expect(result.blockers.map(({code}) => code)).toEqual(expect.arrayContaining(["control_snapshot_mismatch", "control_candidate_set_mismatch"]));
@@ -457,11 +461,30 @@ describe("authorized context resolution", () => {
 
   it("requires verifiable control and resolution issuers", () => {
     const badControl = resolveAuthorizedContext({
-      systemControl: control(), systemControlKeys: {"control-key": "wrong"}, intent: intent(), candidates: [], now: NOW, resolutionIssuer: RESOLUTION_ISSUER,
+      systemControl: control(), systemControlTrust: [{...CONTROL_TRUST[0]!, secret: "wrong-secret-value"}], intent: intent(), candidates: [], now: NOW, resolutionIssuer: RESOLUTION_ISSUER,
     });
     expect(badControl).toMatchObject({status: "blocked", blockers: [{code: "system_control_invalid"}]});
     const result = resolve({systemControl: control(), intent: intent(), candidates: [], now: NOW});
-    expect(() => verifyAuthorizedContextResolution(result, {"resolution-key": "wrong"})).toThrow("context_resolution_signature_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, secret: "wrong-secret-value"}], NOW)).toThrow("context_resolution_signature_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, issuerId: "other-resolver"}], NOW)).toThrow("context_resolution_signature_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, revokedAt: "2026-09-07T14:59:59.000Z"}], NOW)).toThrow("context_resolution_signature_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, [{...RESOLUTION_TRUST[0]!, validUntil: "2026-09-07T14:59:59.000Z"}], NOW)).toThrow("context_resolution_signature_invalid");
+    expect(() => verifyAuthorizedContextResolution(result, RESOLUTION_TRUST, new Date(Number.NaN))).toThrow("context_resolution_now_invalid");
+  });
+
+  it("never reflects foreign lineage identities through derived blockers", () => {
+    const foreign = candidate("ctx-project-v1", {
+      organizationId: "org-b",
+      companyId: null,
+      selectors: {primaryWorks: ["read_documents"], objectKinds: ["instrument"], objectRefs: [], productKeys: ["project-finance"]},
+      supersedesId: "foreign-parent-secret",
+    });
+    const result = resolve({systemControl: control(), intent: intent(), candidates: [foreign], now: NOW});
+    expect(result).toMatchObject({status: "blocked", included: []});
+    expect(result.blockers.map(({code}) => code)).toContain("cross_tenant_candidate");
+    expect(result.blockers.map(({code}) => code)).not.toContain("lineage_parent_missing");
+    expect(JSON.stringify(result)).not.toContain("ctx-project-v1");
+    expect(JSON.stringify(result)).not.toContain("foreign-parent-secret");
   });
 
   it("accepts only typed allowlisted payload locators", () => {
