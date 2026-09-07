@@ -1,5 +1,21 @@
 # Build State
 
+## Acceptance Evidence trust boundary, candidate, 07/09/2026
+
+- O primeiro slice reconstruído de CTRL-03 remove roots, allowlists, verifier labels e relógio do
+  request público. O evaluator obtém um snapshot somente do control plane; o registro governado de
+  roots está vazio, portanto nenhum claim positivo pode ser promovido hoje.
+- O envelope Ed25519 vincula a definição exata de claim e criterion, subject e revisão, tenant e
+  projeto, deployment/account/region/environment, trust domain, artifact content-addressed, gate e
+  validade. Substituição semântica, replay cross-scope, backdating e bytes alterados falham fechado.
+- A lista `verifiedEvidenceIds` inclui somente evidência que passou definição, escopo, root,
+  assinatura, validade, gate e integridade dos bytes; uma fonte apenas resolvida ou expirada não é
+  apresentada como verificada.
+
+Status: **candidate security boundary**. Ainda faltam root onboarding real, collector, storage,
+receipt transacional/CAS, current registry, renderer, integração com Ledger/Board e continuous
+evidence. CTRL-03 não está concluído e nenhuma capability foi promovida.
+
 ## Endgame Program Board executável, candidate, 07/09/2026
 
 - A evolução do blueprint passa a ter uma fonte canônica machine-readable em
