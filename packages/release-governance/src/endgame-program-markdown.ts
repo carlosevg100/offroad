@@ -42,7 +42,7 @@ export function renderEndgameProgramBoard(board: EndgameProgramBoard, fingerprin
     lines.push("| ID | Estado | Resultado | Dependências | Bloqueadores abertos |");
     lines.push("|---|---|---|---|---|");
     for (const task of tasks) {
-      lines.push(`| ${task.taskId} | ${stateLabel[task.state]} | ${task.outcome} | ${task.dependsOn.join(", ") || "—"} | ${task.blockers.filter((blocker) => blocker.status === "open").map((blocker) => blocker.blockerId).join(", ") || "—"} |`);
+      lines.push(`| ${task.taskId} | ${stateLabel[task.state]} | ${task.outcome} | ${task.dependsOn.join(", ") || "sem dependência"} | ${task.blockers.filter((blocker) => blocker.status === "open").map((blocker) => blocker.blockerId).join(", ") || "sem blocker"} |`);
     }
     lines.push("");
   }
@@ -55,10 +55,10 @@ export function renderEndgameProgramBoard(board: EndgameProgramBoard, fingerprin
 }
 
 function renderTask(lines: string[], task: ProgramTask) {
-  lines.push(`### ${task.taskId} — ${task.title}`, "", `Estado: **${stateLabel[task.state]}** · owner: ${task.ownerRole}`, "", "Subtarefas:", "");
-  for (const subtask of task.subtasks) lines.push(`- [${subtask.state === "done" ? "x" : " "}] ${subtask.subtaskId} — ${subtask.title} (${subtask.state})`);
+  lines.push(`### ${task.taskId}: ${task.title}`, "", `Estado: **${stateLabel[task.state]}** · owner: ${task.ownerRole}`, "", "Subtarefas:", "");
+  for (const subtask of task.subtasks) lines.push(`- [${subtask.state === "done" ? "x" : " "}] ${subtask.subtaskId}: ${subtask.title} (${subtask.state})`);
   lines.push("", "Critérios de aceite:", "");
-  for (const criterion of task.acceptance) lines.push(`- ${criterion.criterionId} — ${criterion.description} · **${criterion.status}**${criterion.evidenceRefs.length ? ` · ${criterion.evidenceRefs.join(", ")}` : ""}`);
+  for (const criterion of task.acceptance) lines.push(`- ${criterion.criterionId}: ${criterion.description} · **${criterion.status}**${criterion.evidenceRefs.length ? ` · ${criterion.evidenceRefs.join(", ")}` : ""}`);
   if (task.capabilityTransition) lines.push("", `Transição planejada: \`${task.capabilityTransition.capabilityId}\` · ${task.capabilityTransition.from} → ${task.capabilityTransition.to} (${task.capabilityTransition.status}).`);
   lines.push("");
 }
