@@ -22,6 +22,7 @@
     "fakeco:gold": "tsx scripts/build-fakeco-gold.ts",
     "fakeco:verify": "tsx scripts/verify-fakeco.ts",
     "gc02:alternatives": "tsx scripts/build-gc02-alternatives.ts",
+    "gc02:reference-snapshot": "tsx scripts/build-gc02-reference-snapshot.ts",
     "gc03:tables": "tsx scripts/build-gc03-tables.ts",
     "gc04:tables": "tsx scripts/build-gc04-tables.ts",
     "gc05:tables": "tsx scripts/build-gc05-tables.ts",
