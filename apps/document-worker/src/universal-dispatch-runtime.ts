@@ -170,8 +170,19 @@ export function createInternalUniversalDispatchRuntime(options: {
       }
       const run = executePreparedGraph(prepared, now, input.signal);
       graphRuns.set(prepared.graphExecutionFingerprint, run);
-      const completed = await run;
-      return {...completed, replayed: false};
+      try {
+        const completed = await run;
+        if (completed.receipt.status !== "succeeded"
+          && graphRuns.get(prepared.graphExecutionFingerprint) === run) {
+          graphRuns.delete(prepared.graphExecutionFingerprint);
+        }
+        return {...completed, replayed: false};
+      } catch (error) {
+        if (graphRuns.get(prepared.graphExecutionFingerprint) === run) {
+          graphRuns.delete(prepared.graphExecutionFingerprint);
+        }
+        throw error;
+      }
     },
   };
 }

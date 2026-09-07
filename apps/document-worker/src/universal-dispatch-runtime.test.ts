@@ -220,7 +220,7 @@ describe("internal universal dispatch runtime", () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  it("records timeout and cancellation explicitly without exposing an output", async () => {
+  it("records a timeout but allows the same identity to succeed on a later retry", async () => {
     const value = candidate();
     const invoke = vi.fn((_input: unknown, {signal}: {signal: AbortSignal}) => new Promise((resolve) => {
       const timer = setTimeout(() => resolve(executor.execute(input, {signal})), 100);
@@ -230,7 +230,8 @@ describe("internal universal dispatch runtime", () => {
       ...executor,
       execute: invoke,
     };
-    const timedOut = await runtime([delayed]).execute({
+    const dispatcher = runtime([delayed]);
+    const timedOut = await dispatcher.execute({
       candidate: value, authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 5,
     });
     expect(timedOut.receipt).toMatchObject({
@@ -238,15 +239,31 @@ describe("internal universal dispatch runtime", () => {
     });
     expect(timedOut.outputsByTaskId).toEqual({});
 
+    const retry = await dispatcher.execute({
+      candidate: value, authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 1_000,
+    });
+    expect(retry).toMatchObject({replayed: false, receipt: {status: "succeeded"}});
+    expect(invoke).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not invoke a pre-cancelled task and allows the same identity to succeed on retry", async () => {
+    const value = candidate();
+    const invoke = vi.fn(executor.execute);
+    const dispatcher = runtime([{...executor, execute: invoke}]);
     const controller = new AbortController();
     controller.abort();
-    invoke.mockClear();
-    const cancelled = await runtime([delayed]).execute({
+    const cancelled = await dispatcher.execute({
       candidate: value, authorization: authorization(value), inputsByTaskId: {R01: input},
       timeoutMs: 1_000, signal: controller.signal,
     });
     expect(cancelled.receipt.taskReceipts[0]?.error?.code).toBe("cancelled");
     expect(invoke).not.toHaveBeenCalled();
+
+    const retry = await dispatcher.execute({
+      candidate: value, authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 1_000,
+    });
+    expect(retry).toMatchObject({replayed: false, receipt: {status: "succeeded"}});
+    expect(invoke).toHaveBeenCalledTimes(1);
   });
 
   it("replays the exact receipt for the same candidate, task and parsed input fingerprint", async () => {
@@ -263,6 +280,22 @@ describe("internal universal dispatch runtime", () => {
     expect(replay.replayed).toBe(true);
     expect(replay.receipt).toEqual(first.receipt);
     expect(replay.outputsByTaskId).toEqual(first.outputsByTaskId);
+  });
+
+  it("coalesces concurrent requests for the same identity into one execution", async () => {
+    const value = candidate();
+    const invoke = vi.fn(async (_input: unknown, {signal}: {signal: AbortSignal}) => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      return executor.execute(input, {signal});
+    });
+    const dispatcher = runtime([{...executor, execute: invoke}]);
+    const request = () => dispatcher.execute({
+      candidate: value, authorization: authorization(value), inputsByTaskId: {R01: input}, timeoutMs: 1_000,
+    });
+    const [first, coalesced] = await Promise.all([request(), request()]);
+    expect(invoke).toHaveBeenCalledTimes(1);
+    expect([first.replayed, coalesced.replayed].sort()).toEqual([false, true]);
+    expect(coalesced.receipt).toEqual(first.receipt);
   });
 
   it("records invalid output and executor failure as explicit failed receipts", async () => {

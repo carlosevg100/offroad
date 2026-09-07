@@ -25,8 +25,9 @@ live capability only to prove the runtime contract in CI.
 ## Execution properties
 
 - Execution is idempotent within one runtime process by a graph fingerprint derived from the
-  candidate and each task/input/executor fingerprint. Concurrent and later identical requests share
-  the same stored promise and receipt.
+  candidate and each task/input/executor fingerprint. Concurrent identical requests share the same
+  in-flight promise. A successful result remains replayable; a failed, timed-out, cancelled or
+  rejected attempt is evicted after settlement so a later request can retry the same identity.
 - Each task emits a fingerprinted receipt with exact identity, input/result fingerprints, status,
   timestamps and a sanitized error. The graph emits a fingerprinted aggregate receipt.
 - Timeout and cancellation use an `AbortSignal`. A signal already aborted never invokes the task.
@@ -46,10 +47,12 @@ live capability only to prove the runtime contract in CI.
 5. duplicate and absent executor registrations;
 6. invalid input before execution;
 7. rejection of an executor adapter that declares any effect;
-8. timeout and cancellation, including pre-cancel without invocation;
-9. idempotent replay;
-10. invalid output and executor exception; and
-11. modified signed authorization.
+8. timeout followed by a successful retry of the same identity;
+9. pre-cancel without invocation followed by a successful retry;
+10. idempotent replay after success;
+11. coalescence of concurrent requests into one execution;
+12. invalid output and executor exception; and
+13. modified signed authorization.
 
 The existing R01 test suite also exercises the newly explicit strict result schema at the method
 boundary.
