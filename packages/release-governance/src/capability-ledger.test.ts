@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(31);
+    expect(decision.entryCount).toBe(32);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -26,6 +26,16 @@ describe("capability ledger", () => {
     const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
     expect(byId.get("experience.execution-brief")).toMatchObject({availability: "live", exposure: "universal", qualityMaturity: "implemented", allowedUses: ["internal_validation"]});
     expect(byId.get("experience.live-work")).toMatchObject({availability: "live", exposure: "universal", qualityMaturity: "implemented", allowedUses: ["internal_validation"]});
+  });
+
+  it("records the database compatibility preflight without overstating operational maturity", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("trust.worker-schema-boot-gate")).toMatchObject({
+      availability: "live",
+      exposure: "internal",
+      qualityMaturity: "implemented",
+      allowedUses: ["internal_validation"],
+    });
   });
 
   it("fails closed when a specified capability claims runtime or a fixture is presented as live evidence", () => {

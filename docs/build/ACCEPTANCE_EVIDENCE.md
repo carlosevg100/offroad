@@ -1367,5 +1367,15 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Binding da pergunta | `receivables-information-requests.ts` | lacuna R01 gera pergunta com field path, tipo, unidade, faixa, opções e hash do dataset; binding faz parte do fingerprint | 2026-09-07 |
 | Aplicação determinística | `receivables-information-response.test.ts` e `agent-operation-brief.test.ts` | resposta numérica, escolha e texto tipado viram patch validado e revisão acumulada sem chamada de modelo; valor inválido é recusado | 2026-09-07 |
-| Persistência e isolamento | `20260907050148_receivables_information_request_bindings.sql` e `receivables_information_request_bindings.sql` | pergunta, resposta, patch e draft permanecem capability-bound, por organização/projeto/dataset; replay é idempotente e escrita direta é negada | 2026-09-07 |
+| Persistência e isolamento | `20260907051254_receivables_information_request_bindings.sql` e `receivables_information_request_bindings.sql` | pergunta, resposta, patch e draft permanecem capability-bound, por organização/projeto/dataset; replay é idempotente e escrita direta é negada | 2026-09-07 |
 | Limite | código e testes | bridge atualiza inputs do R01; não homologa o método, não fecha lacunas não respondidas e não autoriza recomendação, estrutura ou contato externo | 2026-09-07 |
+
+## Compatibilidade banco-worker no rollout, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Contrato autenticado | `20260907051611_worker_runtime_schema_contract.sql` | staging e produção retornam `document-worker-runtime.2026-09-07.r01-governed-answer.v1`; `authenticated` executa e `anon` não | 2026-09-07 |
+| Bloqueio antes da fila | `runtime-schema.ts` e `main.ts` | a verificação ocorre depois do login e antes de `createQueueClient`; endpoint ausente ou versão divergente lança falha fatal | 2026-09-07 |
+| Paridade código-SQL | `runtime-schema.test.ts` | contrato exato passa; endpoint ausente e versão antiga falham; constante da imagem precisa existir na migration mais recente | 2026-09-07 |
+| Advisors depois da DDL | Security Advisor em staging e produção | nenhum finding novo; permanecem somente dois INFO preexistentes em tabelas `private` deliberadamente sem policy | 2026-09-07 |
+| Escopo atual | rollout ECS pendente | migration está presente nos dois bancos; controle só será marcado operacional depois de CI integral e task nova estável | 2026-09-07 |

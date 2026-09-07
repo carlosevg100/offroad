@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.06-v3
+Versão: 2026.09.07-v9
 
-Baseline inspecionada: branch `docs/endgame-blueprint`, PR #466
+Baseline inspecionada: commit `744bbfcaf76c`
 
 Status: primeira classificação executável do produto atual
 
@@ -49,6 +49,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Atualização incremental do Caso 01 | live | allowlisted | tested | provada somente dentro do preview |
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
+| Compatibilidade banco-worker no boot | live | internal | implemented | requer bump conjunto do contrato em toda mudança dependente de schema e estabilização do primeiro rollout protegido |
 | Assurance enterprise externa | absent | none | unsupported | sem pentest, SOC 2 ou ISO emitidos |
 | Execution Brief específico | live | universal | implemented | compiler, histórico imutável e card estão ligados; somente G1 possui gate E2E |
 | Live Work stream | live | universal | implemented | progresso seguro vem dos runs reais; eventos narrativos por frente ainda são estreitos |

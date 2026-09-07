@@ -2610,3 +2610,19 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   Resposta inválida, fora da faixa, ligada a outro projeto ou a outro dataset falha fechada.
 - A capacidade permanece `candidate/internal`: testes unitários e staging cobrem o bridge; banco,
   CI integral, E2E e promoção ainda são gates obrigatórios.
+
+## Contrato de schema no boot do worker, implemented, 07/09/2026
+
+- O deploy do worker deixa de pressupor que um merge nominal da branch promoveu o banco. Depois de
+  autenticar, mas antes de construir a fila ou buscar qualquer job, cada nova task consulta
+  `worker_runtime_schema_contract_v1` e exige a versão exata compilada na imagem.
+- Endpoint ausente, versão antiga ou payload inválido encerra a task nova. O rollout do ECS não
+  estabiliza e a task anterior permanece atendendo; nenhum job de cliente é reivindicado por uma
+  imagem incompatível.
+- A versão esperada vive em `runtime-schema.ts`. Um teste lê a migration mais recente do contrato e
+  impede que código e SQL sejam alterados separadamente. O endpoint aceita somente sessão
+  `authenticated`, não expõe dados de tenant e retorna apenas versão e nomes de capacidades.
+- A migration do bridge R01 foi reconciliada com o carimbo efetivo de produção
+  `20260907051254`; o contrato de boot foi aplicado a staging e produção, com carimbo canônico de
+  produção `20260907051611`. O worker ainda precisa passar CI e estabilizar no ECS antes de este
+  controle contar como operacional.
