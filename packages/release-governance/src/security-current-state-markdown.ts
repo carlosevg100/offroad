@@ -8,6 +8,7 @@ import {
 import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.ts";
 import {
   evaluateSecurityAssuranceStatement,
+  getSecurityAssuranceMilestoneEvidenceBinding,
   renderSecurityAssuranceMilestone,
   renderSecurityAssuranceStatement,
 } from "./security-assurance-statements.ts";
@@ -41,7 +42,11 @@ export function renderSecurityCurrentStateInventory(
       milestone,
       "pt-BR",
       milestone.evidenceRef
-        ? issueTrustedSecurityEvidenceResolutionReceipt(candidateInventory, candidateDecision, milestone.evidenceRef)
+        ? issueTrustedSecurityEvidenceResolutionReceipt(
+          candidateInventory,
+          candidateDecision,
+          getSecurityAssuranceMilestoneEvidenceBinding(milestone),
+        )
         : null,
     ));
   const lines: string[] = [

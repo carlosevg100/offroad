@@ -4,7 +4,9 @@ import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.t
 import {
   assuranceEvidenceSigningPayload,
   createSecurityAssuranceScopeFingerprint,
+  currentSecurityAssuranceMilestones,
   evaluateSecurityAssuranceStatement,
+  getSecurityAssuranceMilestoneEvidenceBinding,
   renderSecurityAssuranceMilestone,
   renderSecurityAssuranceStatement,
   securityAssuranceMilestoneSchema,
@@ -175,16 +177,14 @@ describe("governed security assurance statements", () => {
   });
 
   it("keeps planned milestones typed and rejects invented evidence receipts for completion", () => {
-    const planned = securityAssuranceMilestoneSchema.parse({
-      milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment",
-      status: "planned", scope, evidenceRef: null,
-    });
+    const planned = currentSecurityAssuranceMilestones.find((milestone) => milestone.milestoneId === "ASSURANCE-MILESTONE-ISO-GAP")!;
     expect(renderSecurityAssuranceMilestone(planned, "pt-BR")).toBe("ISO/IEC 27001: avaliação de lacunas. Status: planejado.");
     expect(() => securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: null})).toThrow(/completed milestone requires evidence/);
-    const completed = securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: "SEV-SECURITY-PLAN"});
+    const completed = currentSecurityAssuranceMilestones.find((milestone) => milestone.milestoneId === "ASSURANCE-MILESTONE-REMEDIATION-PLAN")!;
+    const binding = getSecurityAssuranceMilestoneEvidenceBinding(completed);
     const inventedReceipt = Object.freeze({
+      ...binding,
       receiptId: `sha256:${"a".repeat(64)}`,
-      evidenceRef: "SEV-SECURITY-PLAN",
       contentFingerprint: `sha256:${"b".repeat(64)}`,
     }) as TrustedSecurityEvidenceResolutionReceipt;
     expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", inventedReceipt)).toThrow(/trusted evidence receipt/);
@@ -194,10 +194,11 @@ describe("governed security assurance statements", () => {
       ["SEV-SECURITY-PLAN"] as unknown as TrustedSecurityEvidenceResolutionReceipt,
     )).toThrow(/trusted evidence receipt/);
     const inventedEvidenceMilestone = securityAssuranceMilestoneSchema.parse({
-      ...completed,
+      ...planned,
+      status: "completed",
       evidenceRef: "SEV-INVENTED",
     });
-    expect(() => renderSecurityAssuranceMilestone(inventedEvidenceMilestone, "pt-BR", inventedReceipt)).toThrow(/trusted evidence receipt/);
+    expect(() => renderSecurityAssuranceMilestone(inventedEvidenceMilestone, "pt-BR", inventedReceipt)).toThrow(/governed catalogue record/);
     expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", null)).toThrow(/trusted evidence receipt/);
   });
 

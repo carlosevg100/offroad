@@ -424,17 +424,82 @@ const trustedRenderDecisionReceipts = new WeakMap<SecurityInventoryDecision, {
   decisionSnapshot: SecurityInventoryDecision;
 }>();
 
-export type TrustedSecurityEvidenceResolutionReceipt = Readonly<{
-  receiptId: string;
+export type SecurityAssuranceMilestoneEvidenceBinding = Readonly<{
+  catalogueRevision: string;
+  catalogueFingerprint: string;
+  milestoneId: string;
+  framework: string;
+  kind: string;
+  status: "completed";
+  scopeId: string;
+  scopeFingerprint: string;
+  environmentRefs: readonly string[];
+  systemRefs: readonly string[];
   evidenceRef: string;
+}>;
+
+export type TrustedSecurityEvidenceResolutionReceipt = Readonly<SecurityAssuranceMilestoneEvidenceBinding & {
+  receiptId: string;
   contentFingerprint: string;
 }>;
 
 const trustedEvidenceResolutionReceipts = new WeakMap<TrustedSecurityEvidenceResolutionReceipt, {
-  receiptId: string;
-  evidenceRef: string;
-  contentFingerprint: string;
+  receipt: TrustedSecurityEvidenceResolutionReceipt;
 }>();
+
+export type SecurityAssuranceMilestoneCatalogueRecord = Readonly<{
+  catalogueRevision: string;
+  catalogueFingerprint: string;
+  milestoneId: string;
+  framework: "soc2" | "iso27001" | "penetration_test" | "independent_audit";
+  kind: "gap_assessment" | "remediation_plan" | "readiness_review" | "external_engagement" | "retest";
+  status: "planned" | "in_progress" | "completed";
+  scopeId: string;
+  scopeFingerprint: string;
+  environmentRefs: readonly string[];
+  systemRefs: readonly string[];
+  evidenceRef: string | null;
+}>;
+
+const assuranceMilestoneCatalogueRevision = "security-assurance-milestones.2026-09-07.v1";
+const assuranceMilestoneScope = {
+  scopeId: "offroad-platform-current-inventory",
+  scopeFingerprint: "3eaca6b2afc4a66605f04ada2241e7cff106ed71268f12f619cebf26b9839e8f",
+  environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING"],
+  systemRefs: ["SYS-WEB", "SYS-SUPABASE", "SYS-WORKER", "SYS-GITHUB"],
+} as const;
+const assuranceMilestoneCatalogueBody = {
+  catalogueRevision: assuranceMilestoneCatalogueRevision,
+  milestones: [
+    {milestoneId: "ASSURANCE-MILESTONE-REMEDIATION-PLAN", framework: "soc2", kind: "remediation_plan", status: "completed", ...assuranceMilestoneScope, evidenceRef: "SEV-SECURITY-PLAN"},
+    {milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment", status: "planned", ...assuranceMilestoneScope, evidenceRef: null},
+    {milestoneId: "ASSURANCE-MILESTONE-PENTEST", framework: "penetration_test", kind: "external_engagement", status: "planned", ...assuranceMilestoneScope, evidenceRef: null},
+  ],
+} as const;
+const assuranceMilestoneCatalogueFingerprint = sha256(Buffer.from(stableJson(assuranceMilestoneCatalogueBody), "utf8"));
+const canonicalAssuranceMilestoneCatalogue = deepFreeze(assuranceMilestoneCatalogueBody.milestones.map((milestone) => ({
+  catalogueRevision: assuranceMilestoneCatalogueRevision,
+  catalogueFingerprint: assuranceMilestoneCatalogueFingerprint,
+  ...milestone,
+}))) satisfies readonly SecurityAssuranceMilestoneCatalogueRecord[];
+const trustedMilestoneEvidenceBindings = new WeakSet<SecurityAssuranceMilestoneEvidenceBinding>();
+const canonicalMilestoneEvidenceBindings = new Map<string, SecurityAssuranceMilestoneEvidenceBinding>();
+for (const milestone of canonicalAssuranceMilestoneCatalogue) {
+  if (milestone.status !== "completed" || !milestone.evidenceRef) continue;
+  const binding = deepFreeze({...milestone, status: "completed" as const, evidenceRef: milestone.evidenceRef});
+  trustedMilestoneEvidenceBindings.add(binding);
+  canonicalMilestoneEvidenceBindings.set(milestone.milestoneId, binding);
+}
+
+export function getSecurityAssuranceMilestoneCatalogue(): readonly SecurityAssuranceMilestoneCatalogueRecord[] {
+  return canonicalAssuranceMilestoneCatalogue;
+}
+
+export function getSecurityAssuranceMilestoneEvidenceBinding(
+  milestoneId: string,
+): SecurityAssuranceMilestoneEvidenceBinding | null {
+  return canonicalMilestoneEvidenceBindings.get(milestoneId) ?? null;
+}
 
 const secretPatterns: Array<{name: string; pattern: RegExp}> = [
   {name: "private_key", pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/},
@@ -824,32 +889,69 @@ export function assertTrustedSecurityInventoryRenderDecision(
 export function issueTrustedSecurityEvidenceResolutionReceipt(
   inventory: SecurityCurrentStateInventory,
   decision: SecurityInventoryDecision,
-  evidenceRef: string,
+  binding: SecurityAssuranceMilestoneEvidenceBinding,
 ): TrustedSecurityEvidenceResolutionReceipt | null {
+  if (!trustedMilestoneEvidenceBindings.has(binding)) {
+    throw new Error("security assurance milestone evidence receipt requires a governed catalogue binding");
+  }
   const {decision: trustedDecision} = assertTrustedSecurityInventoryRenderDecision(inventory, decision);
-  const resolution = trustedDecision.evidenceResolutions.find((candidate) => candidate.evidenceId === evidenceRef);
+  const resolution = trustedDecision.evidenceResolutions.find((candidate) => candidate.evidenceId === binding.evidenceRef);
   if (!resolution) return null;
+  const receiptBody = {
+    catalogueRevision: binding.catalogueRevision,
+    catalogueFingerprint: binding.catalogueFingerprint,
+    milestoneId: binding.milestoneId,
+    framework: binding.framework,
+    kind: binding.kind,
+    status: binding.status,
+    scopeId: binding.scopeId,
+    scopeFingerprint: binding.scopeFingerprint,
+    environmentRefs: binding.environmentRefs,
+    systemRefs: binding.systemRefs,
+    evidenceRef: binding.evidenceRef,
+    contentFingerprint: resolution.contentFingerprint,
+  };
   const receipt = deepFreeze({
-    receiptId: sha256(Buffer.from(`${trustedDecision.inventoryFingerprint}:${resolution.evidenceId}:${resolution.contentFingerprint}`, "utf8")),
-    evidenceRef: resolution.evidenceId,
-    contentFingerprint: resolution.contentFingerprint,
+    ...receiptBody,
+    receiptId: sha256(Buffer.from(`${trustedDecision.inventoryFingerprint}:${stableJson(receiptBody)}`, "utf8")),
   });
-  trustedEvidenceResolutionReceipts.set(receipt, {
-    receiptId: receipt.receiptId,
-    evidenceRef: resolution.evidenceId,
-    contentFingerprint: resolution.contentFingerprint,
-  });
+  trustedEvidenceResolutionReceipts.set(receipt, {receipt});
   return receipt;
 }
 
 export function assertTrustedSecurityEvidenceResolutionReceipt(
   receipt: TrustedSecurityEvidenceResolutionReceipt | null,
-  evidenceRef: string,
+  binding: SecurityAssuranceMilestoneEvidenceBinding,
 ): void {
   if (!receipt) throw new Error("completed security assurance milestone requires a trusted evidence receipt");
   const trusted = trustedEvidenceResolutionReceipts.get(receipt);
-  if (!trusted || receipt.receiptId !== trusted.receiptId || trusted.evidenceRef !== evidenceRef || receipt.evidenceRef !== trusted.evidenceRef
-    || receipt.contentFingerprint !== trusted.contentFingerprint) {
+  const expected = {
+    catalogueRevision: binding.catalogueRevision,
+    catalogueFingerprint: binding.catalogueFingerprint,
+    milestoneId: binding.milestoneId,
+    framework: binding.framework,
+    kind: binding.kind,
+    status: binding.status,
+    scopeId: binding.scopeId,
+    scopeFingerprint: binding.scopeFingerprint,
+    environmentRefs: binding.environmentRefs,
+    systemRefs: binding.systemRefs,
+    evidenceRef: binding.evidenceRef,
+  };
+  if (!trusted || stableJson(receipt) !== stableJson(trusted.receipt)
+    || stableJson(expected) !== stableJson({
+      catalogueRevision: receipt.catalogueRevision,
+      catalogueFingerprint: receipt.catalogueFingerprint,
+      milestoneId: receipt.milestoneId,
+      framework: receipt.framework,
+      kind: receipt.kind,
+      status: receipt.status,
+      scopeId: receipt.scopeId,
+      scopeFingerprint: receipt.scopeFingerprint,
+      environmentRefs: receipt.environmentRefs,
+      systemRefs: receipt.systemRefs,
+      evidenceRef: receipt.evidenceRef,
+    })) {
     throw new Error("completed security assurance milestone requires a trusted evidence receipt");
   }
 }

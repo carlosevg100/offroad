@@ -2,6 +2,9 @@ import {createHash, createPublicKey, verify} from "node:crypto";
 import {z} from "zod";
 import {
   assertTrustedSecurityEvidenceResolutionReceipt,
+  getSecurityAssuranceMilestoneCatalogue,
+  getSecurityAssuranceMilestoneEvidenceBinding as getCanonicalSecurityAssuranceMilestoneEvidenceBinding,
+  type SecurityAssuranceMilestoneEvidenceBinding,
   type TrustedSecurityEvidenceResolutionReceipt,
 } from "./security-current-state.ts";
 
@@ -76,6 +79,41 @@ export const securityAssuranceMilestoneSchema = z.object({
   }
 });
 export type SecurityAssuranceMilestone = z.infer<typeof securityAssuranceMilestoneSchema>;
+
+const milestoneCatalogueRecords = getSecurityAssuranceMilestoneCatalogue().map((record) =>
+  securityAssuranceMilestoneSchema.parse({
+    milestoneId: record.milestoneId,
+    framework: record.framework,
+    kind: record.kind,
+    status: record.status,
+    scope: {
+      scopeId: record.scopeId,
+      scopeFingerprint: record.scopeFingerprint,
+      environmentRefs: [...record.environmentRefs],
+      systemRefs: [...record.systemRefs],
+    },
+    evidenceRef: record.evidenceRef,
+  }));
+export const currentSecurityAssuranceMilestones = deepFreeze(milestoneCatalogueRecords);
+const trustedMilestoneBindings = new WeakMap<SecurityAssuranceMilestone, {
+  binding: SecurityAssuranceMilestoneEvidenceBinding | null;
+}>();
+for (const milestone of currentSecurityAssuranceMilestones) {
+  trustedMilestoneBindings.set(milestone, {
+    binding: milestone.status === "completed"
+      ? getCanonicalSecurityAssuranceMilestoneEvidenceBinding(milestone.milestoneId)
+      : null,
+  });
+}
+
+export function getSecurityAssuranceMilestoneEvidenceBinding(
+  milestone: SecurityAssuranceMilestone,
+): SecurityAssuranceMilestoneEvidenceBinding {
+  const record = trustedMilestoneBindings.get(milestone);
+  if (!record) throw new Error("security assurance milestone rendering requires a governed catalogue record");
+  if (!record.binding) throw new Error("security assurance milestone has no governed evidence binding");
+  return record.binding;
+}
 
 export const securityAssuranceTrustRootSchema = z.object({
   trustRootId: z.string().regex(/^ATR-[A-Z0-9-]+$/),
@@ -212,8 +250,13 @@ export function renderSecurityAssuranceMilestone(
   locale: "pt-BR" | "en-US",
   evidenceReceipt: TrustedSecurityEvidenceResolutionReceipt | null = null,
 ): string {
+  const catalogueRecord = trustedMilestoneBindings.get(candidate);
+  if (!catalogueRecord) throw new Error("security assurance milestone rendering requires a governed catalogue record");
   const milestone = securityAssuranceMilestoneSchema.parse(candidate);
-  if (milestone.status === "completed") assertTrustedSecurityEvidenceResolutionReceipt(evidenceReceipt, milestone.evidenceRef!);
+  if (milestone.status === "completed") {
+    if (!catalogueRecord.binding) throw new Error("completed security assurance milestone has no governed evidence binding");
+    assertTrustedSecurityEvidenceResolutionReceipt(evidenceReceipt, catalogueRecord.binding);
+  }
   const framework = frameworkLabel(milestone.framework);
   const kind = milestoneKindLabel(milestone.kind, locale);
   const status = milestoneStatusLabel(milestone.status, locale);

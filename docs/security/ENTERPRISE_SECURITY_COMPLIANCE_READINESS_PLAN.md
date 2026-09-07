@@ -435,8 +435,9 @@ Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem tria
   agora usam objetos, escopo, evidência assinada, validade, revogação e um registro interno
   fingerprintado de trust roots Ed25519; roots e relógio fornecidos pelo caller não entram na
   decisão. Sem esses elementos o renderer emite somente estado não certificado/não atestado.
-  Milestones também são tipados, conclusão exige receipt de evidência resolvida e nunca promove um
-  claim automaticamente. A fronteira está documentada em
+  Milestones também são tipados em catálogo fingerprintado; conclusão exige receipt que vincula o
+  registro canônico completo à evidência e aos bytes resolvidos, e nunca promove um claim
+  automaticamente. A fronteira está documentada em
   `ASSURANCE_CLAIM_TRUST_BOUNDARY.md`;
 - [ ] SEC-008 coletar configuração live read-only de AWS, Supabase, Vercel, GitHub, Sentry e PostHog;
 - [ ] SEC-009 fechar DPA/ZDR/retention/region de OpenAI, Anthropic, Perplexity e Firecrawl;

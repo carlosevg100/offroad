@@ -5,13 +5,21 @@ import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 import {
   currentSecurityInventory,
+  currentSecurityAssuranceMilestones,
   evaluateSecurityCurrentStateInventory,
   evaluateSecurityCurrentStateInventoryTrusted,
   findForbiddenAssuranceClaims,
+  getSecurityAssuranceMilestoneEvidenceBinding,
+  issueTrustedSecurityEvidenceResolutionReceipt,
   masterTrustControlCatalogue,
   renderSecurityCurrentStateInventory,
   type SecurityCurrentStateInventory,
+  type SecurityAssuranceMilestoneEvidenceBinding,
 } from "./index";
+import {
+  renderSecurityAssuranceMilestone,
+  securityAssuranceMilestoneSchema,
+} from "./security-assurance-statements.ts";
 
 function copyInventory(): SecurityCurrentStateInventory {
   return structuredClone(currentSecurityInventory);
@@ -81,6 +89,38 @@ describe("security current-state inventory", () => {
       expect(flow.gapRefs).toContain("SG-PROVIDER-ASSURANCE");
     }
     expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-GITHUB-EVAL-SECRETS")!.gapRefs).toContain("SG-PRIVILEGED-ACCESS");
+  });
+
+  it("binds a resolved-evidence receipt to the exact governed milestone relationship", async () => {
+    const trusted = await evaluateSecurityCurrentStateInventoryTrusted(currentSecurityInventory, masterTrustControlCatalogue);
+    const binding = getSecurityAssuranceMilestoneEvidenceBinding("ASSURANCE-MILESTONE-REMEDIATION-PLAN");
+    expect(binding).not.toBeNull();
+    const receipt = issueTrustedSecurityEvidenceResolutionReceipt(currentSecurityInventory, trusted, binding!);
+    expect(receipt).toMatchObject({
+      milestoneId: "ASSURANCE-MILESTONE-REMEDIATION-PLAN",
+      framework: "soc2",
+      kind: "remediation_plan",
+      evidenceRef: "SEV-SECURITY-PLAN",
+    });
+
+    const isoMilestone = currentSecurityAssuranceMilestones.find((milestone) =>
+      milestone.milestoneId === "ASSURANCE-MILESTONE-ISO-GAP")!;
+    const arbitraryCompletedIso = securityAssuranceMilestoneSchema.parse({
+      ...isoMilestone,
+      status: "completed",
+      evidenceRef: "SEV-SECURITY-PLAN",
+    });
+    expect(() => renderSecurityAssuranceMilestone(arbitraryCompletedIso, "pt-BR", receipt)).toThrow(/governed catalogue record/);
+
+    const inventedAgentsScopeRelation = {
+      ...binding!,
+      evidenceRef: "SEV-AGENTS-SCOPE",
+    } as SecurityAssuranceMilestoneEvidenceBinding;
+    expect(() => issueTrustedSecurityEvidenceResolutionReceipt(
+      currentSecurityInventory,
+      trusted,
+      inventedAgentsScopeRelation,
+    )).toThrow(/governed catalogue binding/);
   });
 
   it("never treats the IAM operator note as verified or recommends a grant first", () => {

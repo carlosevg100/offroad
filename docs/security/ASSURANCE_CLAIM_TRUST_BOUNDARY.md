@@ -28,9 +28,12 @@ rotular material Ed448 como Ed25519 falha fechado. O registro atual é deliberad
 chave, root ou relógio apresentados pelo caller nunca são fonte de confiança.
 
 `SecurityAssuranceMilestone` representa gap assessment, plano de remediação, readiness review,
-contratação externa e reteste. Milestone concluído exige receipt opaco emitido pelo resolver para os
-bytes da evidência exata; uma lista de IDs, um objeto reconstruído ou uma referência inventada não
-servem. O milestone nunca se converte automaticamente em claim externo.
+contratação externa e reteste. Os milestones vêm de catálogo interno fingerprintado. Uma conclusão
+exige receipt opaco emitido pelo resolver para a relação canônica completa: revisão e fingerprint do
+catálogo, ID, framework, tipo, status, escopo completo e evidência exata, além do hash dos bytes
+resolvidos. Uma lista de IDs, objeto reconstruído, referência inventada ou evidência verdadeira
+emprestada de outro milestone não servem. O milestone nunca se converte automaticamente em claim
+externo.
 
 ## Gate
 
@@ -68,8 +71,10 @@ milestones legítimos seguem a rota tipada em vez de depender da regex como se e
 Os testes cobrem recusa de root autocriada pelo caller, material Ed448 rotulado Ed25519, evidência
 ausente, bytes ausentes ou alterados, escopo divergente, validade expirada, evidência revogada,
 decision receipt reconstruído, milestone concluído com ID ou receipt inventado, tentativa de
-allowlist textual, polaridade mista e prose positiva arbitrária. O caminho `attested` positivo só
-poderá ganhar fixture de sucesso quando uma root externa real for governada no registro.
+allowlist textual, polaridade mista e prose positiva arbitrária. Também provam que a evidência real
+`SEV-AGENTS-SCOPE` não pode ganhar receipt para concluir um milestone ISO arbitrário. O caminho
+`attested` positivo só poderá ganhar fixture de sucesso quando uma root externa real for governada
+no registro.
 
 ## Limite atual
 

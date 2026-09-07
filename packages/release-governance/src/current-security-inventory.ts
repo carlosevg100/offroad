@@ -9,7 +9,6 @@ import {
 } from "./security-current-state.ts";
 import {createCanonicalSecurityEvidenceManifest} from "./security-current-state-canonical.ts";
 import {
-  securityAssuranceMilestoneSchema,
   securityAssuranceStatementSchema,
   createSecurityAssuranceScopeFingerprint,
   type SecurityAssuranceScope,
@@ -36,12 +35,8 @@ export const currentSecurityAssuranceStatements = deepFreezeAssuranceRecords([
   securityAssuranceStatementSchema.parse({statementId: "ASSURANCE-PRODUCTION-AUDIT", claim: "production_independently_audited", status: "not_independently_audited", scope: currentAssuranceScope, evidenceRef: null, issuedAt: null, validThrough: null}),
 ]);
 
-/** Program milestones are not assurance claims and cannot be rendered as certification. */
-export const currentSecurityAssuranceMilestones = deepFreezeAssuranceRecords([
-  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-REMEDIATION-PLAN", framework: "soc2", kind: "remediation_plan", status: "completed", scope: currentAssuranceScope, evidenceRef: "SEV-SECURITY-PLAN"}),
-  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
-  securityAssuranceMilestoneSchema.parse({milestoneId: "ASSURANCE-MILESTONE-PENTEST", framework: "penetration_test", kind: "external_engagement", status: "planned", scope: currentAssuranceScope, evidenceRef: null}),
-]);
+/** Program milestones are governed in the assurance module and cannot become certifications. */
+export {currentSecurityAssuranceMilestones} from "./security-assurance-statements.ts";
 
 function deepFreezeAssuranceRecords<T>(value: T): T {
   if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
