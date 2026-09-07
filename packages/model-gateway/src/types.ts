@@ -27,6 +27,7 @@ export type TaskKind =
   | "audit_evidence"
   | "localize"
   | "route_intent"
+  | "extract_semantic_objects"
   | "preview_questions"
   | "preview_synthesis"
   | "baseline_generalist";

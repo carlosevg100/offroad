@@ -111,6 +111,11 @@ describe("policy", () => {
     const shadow = resolveModel("extract_fields", defaultTaskPolicies, {useShadow: true});
     expect(shadow.primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "medium"});
     expect(resolveModel("classify_document", defaultTaskPolicies, {}).primary).toEqual({provider: "openai", model: "gpt-5.6-terra", effort: "low"});
+    expect(resolveModel("extract_semantic_objects", defaultTaskPolicies, {})).toMatchObject({
+      primary: {provider: "anthropic", model: "claude-sonnet-5", effort: "low"},
+      fallback: {provider: "openai", model: "gpt-5.6-terra", effort: "low"},
+      policy: {maxOutputTokens: 3_000, timeoutMs: 60_000},
+    });
     const audit = resolveModel("audit_evidence", defaultTaskPolicies, {});
     expect(audit.primary.provider).toBe("openai");
     expect(audit.fallback?.provider).toBe("anthropic");

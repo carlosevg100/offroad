@@ -3,9 +3,13 @@ import {createHash} from "node:crypto";
 import {
   compositionPolicy,
   intentClassifierOutputSchema,
+  semanticObjectCompilationSchema,
+  semanticObjectExtractorOutputSchema,
+  type SemanticObjectCompilation,
   type IntentClassifierOutput,
   type NamedComposition,
 } from "@offroad/agent-contracts";
+import {fingerprintJson} from "@offroad/case-understanding";
 import {z} from "zod";
 
 import {
@@ -28,7 +32,11 @@ export const intentRouterGateObservationSchema = z.object({
   turnId: z.string(), suite: intentGoldSuiteSchema, repeat: z.number().int().min(1).max(3),
   messageFingerprint: z.string().regex(/^[a-f0-9]{64}$/), expected: intentGoldTurnSchema.shape.expected,
   rawActual: intentClassifierOutputSchema.nullable(), actual: intentClassifierOutputSchema.nullable(), error: z.string().nullable(),
+  rawObjectActual: semanticObjectExtractorOutputSchema.nullable(), objectCompilation: semanticObjectCompilationSchema.nullable(),
+  rawActualFingerprint: z.string().regex(/^[a-f0-9]{64}$/).nullable(), rawObjectActualFingerprint: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
   checks: intentRouterGateChecksSchema, routingFingerprint: z.string().nullable(), provider: z.string().nullable(), model: z.string().nullable(),
+  objectProvider: z.string().nullable(), objectModel: z.string().nullable(), objectAttemptCount: z.number().int().nonnegative(),
+  objectCostUsd: z.number().nonnegative(), objectLatencyMs: z.number().nonnegative(),
   costUsd: z.number().nonnegative(), latencyMs: z.number().nonnegative(),
 });
 export type IntentRouterGateObservation = z.infer<typeof intentRouterGateObservationSchema>;
@@ -83,10 +91,11 @@ export function scoreIntentGoldTurn(
   gold: IntentGoldTurn,
   output: IntentClassifierOutput | null,
   rawOutput: IntentClassifierOutput | null = output,
+  objectCompilation?: SemanticObjectCompilation | null,
 ): IntentRouterGateChecks {
   if (!output || !rawOutput) return emptyChecks();
   const expected = gold.expected;
-  const semanticOutput = expected.abstain ? output : rawOutput;
+  const semanticOutput = output;
   const question = normalizeText(output.firstQuestion ?? "");
   const questionTheme = expected.firstQuestionTheme === null
     ? output.firstQuestion === null
@@ -100,7 +109,10 @@ export function scoreIntentGoldTurn(
     ? semanticOutput.routingCore.audienceType.state === "unknown" || semanticOutput.routingCore.audienceType.state === "not_applicable"
     : assertsMeaning(semanticOutput.routingCore.audienceType.state);
   return {
-    completed: hasGovernedClassifierConfidence(rawOutput),
+    completed: hasGovernedClassifierConfidence(rawOutput)
+      && (objectCompilation === undefined || (objectCompilation !== null && (expected.abstain
+        ? objectCompilation.status !== "complete" && objectCompilation.coverage.issues.length > 0
+        : objectCompilation.status === "complete"))),
     composition: output.composition === expected.composition,
     abstain: output.abstain === expected.abstain,
     depth: output.routingCore.depth.value === expected.depth && supportsPlanField(output.routingCore.depth.state, expected.abstain),
@@ -181,14 +193,22 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
   const turnById = new Map(turns.map((turn) => [turn.id, turn]));
   const evaluated = observations.map((observation) => {
     const turn = turnById.get(observation.turnId);
-    const checks = turn ? scoreIntentGoldTurn(turn, observation.actual, observation.rawActual) : emptyChecks();
+    const checks = turn ? scoreIntentGoldTurn(turn, observation.actual, observation.rawActual, observation.objectCompilation) : emptyChecks();
     const routingFingerprint = observation.actual ? intentRoutingFingerprint(observation.actual) : null;
     return {observation, turn, checks, routingFingerprint};
   });
   const expectedMismatches = evaluated.filter(({observation, turn}) => !turn || JSON.stringify(observation.expected) !== JSON.stringify(turn.expected))
     .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
-  const invalidObservationEntries = evaluated.filter(({observation}) => !observation.rawActual || !observation.actual
-    || observation.error !== null || !observation.provider || !observation.model).map(({observation}) => `${observation.turnId}:${observation.repeat}`);
+  const invalidObservationEntries = evaluated.filter(({observation, turn}) => !observation.rawActual || !observation.actual
+    || !observation.rawObjectActual || !observation.objectCompilation
+    || observation.rawActualFingerprint !== fingerprintJson(observation.rawActual)
+    || observation.rawObjectActualFingerprint !== fingerprintJson(observation.rawObjectActual)
+    || (turn?.expected.abstain
+      ? observation.objectCompilation?.status === "complete" || observation.objectCompilation?.coverage.issues.length === 0
+      : observation.objectCompilation?.status !== "complete")
+    || observation.error !== null || !observation.provider || !observation.model
+    || !observation.objectProvider || !observation.objectModel || observation.objectAttemptCount < 1)
+    .map(({observation}) => `${observation.turnId}:${observation.repeat}`);
   const recordedCheckMismatches = evaluated.filter(({observation, checks}) =>
     Object.keys(intentRouterGateChecksSchema.shape).some((name) => observation.checks[name as keyof IntentRouterGateChecks] !== checks[name as keyof IntentRouterGateChecks]))
     .map(({observation}) => `${observation.turnId}:${observation.repeat}`);

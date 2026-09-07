@@ -49,6 +49,7 @@ describe("intent router provider preflight", () => {
       {provider: "anthropic", passed: true},
       {provider: "openai", passed: true},
     ]);
+    expect(results.every(({task, schemaName}) => task === "route_intent" && schemaName === "shadow_routing_output")).toBe(true);
     expect(requests).toHaveLength(2);
     expect(requests.every((entry) => entry.task === "route_intent"
       && entry.system === request.system

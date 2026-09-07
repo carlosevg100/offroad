@@ -96,6 +96,9 @@ export const defaultTaskPolicies: Record<TaskKind, TaskPolicy> = {
   // Shadow classification of a turn into an Intent Envelope. Cheap, structured, never on the answer path.
   // The envelope schema is too large for the provider's compiled grammar; the router asks for prompted JSON (see the gateway's output mode). Low effort suffices, the probe showed.
   route_intent: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 4_000, timeoutMs: 60_000},
+  // A separate attributable-span pass owns semantic objects. It runs beside intent routing,
+  // returns no prose and cannot route or execute, so its output and exposure stay tightly bounded.
+  extract_semantic_objects: {primary: anthropic("claude-sonnet-5", "low"), shadow: openai("gpt-5.6-terra", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 3_000, timeoutMs: 60_000},
   // Questions to the person from the gaps the signed objects declare: short, cheap, bounded to four.
   preview_questions: {primary: anthropic("claude-sonnet-5", "low"), fallback: openai("gpt-5.6-terra", "low"), maxOutputTokens: 2_000, timeoutMs: 60_000},
   // The banker's synthesis of the signed objects: prose whose numbers are checked against the objects afterwards.

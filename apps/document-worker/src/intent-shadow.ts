@@ -1,14 +1,22 @@
 import {
   INTENT_CLASSIFIER_SYSTEM,
+  SEMANTIC_OBJECT_EXTRACTOR_SYSTEM,
+  applySemanticObjectCompilation,
+  buildSemanticObjectExtractorInput,
   buildIntentClassifierInput,
   canonicalizeIntentClassifierOutput,
+  compileSemanticObjects,
   intentClassifierOutputSchema,
   intentEnvelopeSchema,
+  semanticObjectExtractorOutputSchema,
   compositionPolicy,
   authorityGrantSchema,
+  type ActiveWorkContext,
   type AuthorityGrant,
   type IntentEnvelope,
   type IntentClassifierOutput,
+  type SemanticObjectCompilation,
+  type SemanticObjectExtractorOutput,
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
 
@@ -42,6 +50,8 @@ export type ShadowRoutingContext = {
   authorityGrants: readonly AuthorityGrant[];
   documentIds: string[];
   professionalContext: {useForms: string[]; professionalRoles: string[]; practiceAreas: string[]; primaryObjectives: string[]} | null;
+  /** Governed work memory. Assistant prose and profile inference may never populate this object. */
+  activeWorkContext?: ActiveWorkContext | null;
 };
 
 export function governedShadowAccessBasis(value: string | null | undefined): ShadowRoutingContext["accessBasis"] {
@@ -136,34 +146,82 @@ export async function shadowIntentEnvelope(input: {
   gateway: ModelGateway;
   context: ShadowRoutingContext;
   now?: () => Date;
-}): Promise<{envelope: IntentEnvelope; output: ShadowRoutingOutput; modelRoute: typeof governedModelRoute; costUsd: number; calls: number; latencyMs: number}> {
+}): Promise<{
+  envelope: IntentEnvelope;
+  output: ShadowRoutingOutput;
+  rawIntentOutput: ShadowRoutingOutput;
+  semanticObjects: {
+    rawOutput: SemanticObjectExtractorOutput;
+    compilation: SemanticObjectCompilation;
+    modelRoute: typeof governedModelRoute;
+    successfulAttempt: {costUsd: number; latencyMs: number};
+    attemptCount: number;
+  };
+  modelRoute: typeof governedModelRoute;
+  costUsd: number;
+  calls: number;
+  latencyMs: number;
+}> {
   const {context} = input;
   const spentBefore = input.gateway.spent();
   const startedAt = Date.now();
+  const userConversation = context.recentMessages
+    .filter((message): message is {role: "user" | "assistant"; content: string} => message.role === "user" || message.role === "assistant")
+    .slice(-8);
   const classifierInput = buildIntentClassifierInput({
     locale: context.locale,
     latestUserMessage: context.message,
-    recentConversation: context.recentMessages.slice(-8),
+    recentConversation: userConversation,
     entryJob: context.entryJob,
     documentCount: context.documentIds.length,
     professionalContext: context.professionalContext,
   });
-  const completion = await input.gateway.complete({
-    task: "route_intent",
-    system: SHADOW_ROUTING_SYSTEM,
-    input: [{
-      type: "text",
-      text: JSON.stringify(classifierInput),
-    }],
-    schema: shadowRoutingOutputSchema,
-    schemaName: "shadow_routing_output",
-    // The envelope schema is too large for the provider's compiled grammar; the schema travels in the prompt.
-    outputMode: "prompted_json",
-    thinking: "off",
-    metadata: {surface: "shadow_router"},
+  const objectInput = buildSemanticObjectExtractorInput({
+    locale: context.locale,
+    latestUserMessage: context.message,
+    recentConversation: userConversation,
+    activeWorkContext: context.activeWorkContext ?? null,
   });
-  const output = canonicalizeIntentClassifierOutput(completion.output, classifierInput);
+  const [intentCompletion, objectCompletion] = await Promise.all([
+    input.gateway.complete({
+      task: "route_intent",
+      system: SHADOW_ROUTING_SYSTEM,
+      input: [{type: "text", text: JSON.stringify(classifierInput)}],
+      schema: shadowRoutingOutputSchema,
+      schemaName: "shadow_routing_output",
+      // The envelope schema is too large for the provider's compiled grammar; the schema travels in the prompt.
+      outputMode: "prompted_json",
+      thinking: "off",
+      metadata: {surface: "shadow_router"},
+    }),
+    input.gateway.complete({
+      task: "extract_semantic_objects",
+      system: SEMANTIC_OBJECT_EXTRACTOR_SYSTEM,
+      input: [{type: "text", text: JSON.stringify(objectInput)}],
+      schema: semanticObjectExtractorOutputSchema,
+      schemaName: "semantic_object_extractor_output",
+      outputMode: "prompted_json",
+      thinking: "off",
+      metadata: {surface: "shadow_semantic_object_extractor"},
+    }),
+  ]);
+  const compilation = compileSemanticObjects(objectInput, objectCompletion.output);
+  const compiledIntent = applySemanticObjectCompilation(intentCompletion.output, compilation);
+  const output = canonicalizeIntentClassifierOutput(compiledIntent, classifierInput);
   const envelope = stampIntentEnvelope(output, context, input.now);
   const telemetry = safeModelTurnTelemetry(spentBefore, input.gateway.spent(), Date.now() - startedAt);
-  return {envelope, output, modelRoute: governedModelRoute, ...telemetry};
+  return {
+    envelope,
+    output,
+    rawIntentOutput: intentCompletion.output,
+    semanticObjects: {
+      rawOutput: objectCompletion.output,
+      compilation,
+      modelRoute: governedModelRoute,
+      successfulAttempt: {costUsd: objectCompletion.costUsd, latencyMs: objectCompletion.latencyMs},
+      attemptCount: objectCompletion.attempts.length,
+    },
+    modelRoute: governedModelRoute,
+    ...telemetry,
+  };
 }

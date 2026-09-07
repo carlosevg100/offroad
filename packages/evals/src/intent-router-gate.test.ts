@@ -1,4 +1,5 @@
-import {canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
+import {canonicalizeIntentClassifierOutput, intentClassifierOutputSchema, semanticObjectCompilationSchema, type IntentClassifierOutput} from "@offroad/agent-contracts";
+import {fingerprintJson} from "@offroad/case-understanding";
 import {describe, expect, it} from "vitest";
 
 import {intentGoldTurns} from "./intent-gold";
@@ -46,9 +47,34 @@ function messageFor(turn: typeof intentGoldTurns[number], repeat: number): strin
 const observation = (turn: typeof intentGoldTurns[number], repeat: number, output: IntentClassifierOutput | null): IntentRouterGateObservation => ({
   turnId: turn.id, suite: turn.suite, repeat, messageFingerprint: fingerprintIntentMessage(messageFor(turn, repeat)), expected: turn.expected,
   rawActual: output, actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output, output),
+  rawActualFingerprint: output ? fingerprintJson(output) : null,
   routingFingerprint: output ? intentRoutingFingerprint(output) : null, provider: output ? "anthropic" : null,
-  model: output ? "governed-test-model" : null, costUsd: output ? 0.01 : 0, latencyMs: output ? 100 : 0,
+  model: output ? "governed-test-model" : null,
+  rawObjectActual: output ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []} : null,
+  rawObjectActualFingerprint: output ? fingerprintJson({objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []}) : null,
+  objectCompilation: output ? compilationFor(outputFor(turn), turn.expected.abstain) : null,
+  objectProvider: output ? "anthropic" : null, objectModel: output ? "governed-object-model" : null,
+  objectAttemptCount: output ? 1 : 0, objectCostUsd: output ? 0.005 : 0, objectLatencyMs: output ? 80 : 0,
+  costUsd: output ? 0.015 : 0, latencyMs: output ? 100 : 0,
 });
+
+function compilationFor(output: IntentClassifierOutput, abstain = false) {
+  const objects = output.routingCore.object.value.map((object) => ({
+    ...object,
+    source: {type: "text" as const, spans: [{source: "latest_user_message" as const, messageIndex: null, start: 0, end: 1, text: "x"}]},
+  }));
+  const body = {
+    schemaVersion: "semantic-object-compilation.v1" as const,
+    status: abstain ? "incomplete" as const : "complete" as const,
+    objects,
+    usableObjects: abstain ? [] : objects,
+    coverage: {
+      sourceSpansChecked: objects.length, quantitativeMentions: 0, quantitativeMentionsCovered: 0, activeContextReferencesChecked: 0,
+      issues: abstain ? [{code: "unresolved_reference" as const, severity: "error" as const, detail: "synthetic unresolved reference"}] : [],
+    },
+  };
+  return semanticObjectCompilationSchema.parse({...body, fingerprint: fingerprintJson(body)});
+}
 
 const completeObservations = (): IntentRouterGateObservation[] => intentGoldTurns.flatMap((turn) => {
   const repeats = turn.stabilityParaphrases ? [1, 2, 3] : [1];
@@ -68,6 +94,7 @@ const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: 
   return {
     ...observation(turn, repeat, actual),
     rawActual: raw,
+    rawActualFingerprint: fingerprintJson(raw),
     checks: scoreIntentGoldTurn(turn, actual, raw),
     routingFingerprint: intentRoutingFingerprint(actual),
   };
@@ -94,19 +121,19 @@ describe("intent router promotion gate", () => {
     expect(scoreIntentGoldTurn(turn, null, null).completed).toBe(false);
   });
 
-  it("scores raw semantics instead of accepting fields repaired by canonical policy", () => {
+  it("scores the production output while keeping raw confidence validation independent", () => {
     const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
     const raw = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, action: {value: ["review"], state: "inferred"}}});
     const actual = canonicalizeIntentClassifierOutput(raw, {
       locale: "pt-BR", latestUserMessage: turn.message, recentConversation: [], entryJob: null, documentCount: turn.documentCount, professionalContext: null,
     });
     expect(actual.routingCore.action.value).toEqual(["prepare_meeting"]);
-    expect(scoreIntentGoldTurn(turn, actual, raw).canonicalAction).toBe(false);
+    expect(scoreIntentGoldTurn(turn, actual, raw).canonicalAction).toBe(true);
 
     const noDecision = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, decisionType: {value: "none", state: "not_applicable"}}});
     const decisionChecks = scoreIntentGoldTurn(turn, actual, noDecision);
-    expect(decisionChecks.decisionPresence).toBe(false);
-    expect(decisionChecks.decisionCategory).toBe(false);
+    expect(decisionChecks.decisionPresence).toBe(true);
+    expect(decisionChecks.decisionCategory).toBe(true);
   });
 
   it("rejects semantically populated fields that disclaim their meaning", () => {
@@ -300,7 +327,7 @@ describe("intent router promotion gate", () => {
 
     const forgedChecks = valid.map((entry, index) => index === 1 ? {
       ...entry,
-      rawActual: {...entry.rawActual!, routingCore: {...entry.rawActual!.routingCore, action: {value: ["review" as const], state: "explicit" as const}}},
+      rawActual: {...entry.rawActual!, routingCore: {...entry.rawActual!.routingCore, action: {...entry.rawActual!.routingCore.action, state: "inferred" as const, confidence: null}}},
       checks: Object.fromEntries(Object.keys(entry.checks).map((key) => [key, true])) as typeof entry.checks,
     } : entry);
     const forgedChecksSummary = summarizeIntentRouterGate(forgedChecks);
@@ -318,6 +345,27 @@ describe("intent router promotion gate", () => {
     const forgedSummary = summarizeIntentRouterGate(forgedFingerprints);
     expect(forgedSummary.passed).toBe(false);
     expect(forgedSummary.routingFingerprintMismatches).toHaveLength(52);
+
+    const forgedRawObjectFingerprint = valid.map((entry, index) => index === 3
+      ? {...entry, rawObjectActualFingerprint: "0".repeat(64)}
+      : entry);
+    expect(summarizeIntentRouterGate(forgedRawObjectFingerprint).invalidObservationEntries)
+      .toContain(`${valid[3]!.turnId}:${valid[3]!.repeat}`);
+  });
+
+  it("requires complete object coverage for routed work and diagnostic incompleteness for honest abstention", () => {
+    const valid = completeObservations();
+    const routed = intentGoldTurns.find(({expected}) => !expected.abstain)!;
+    const abstention = intentGoldTurns.find(({expected}) => expected.abstain)!;
+    const wrongRoutedCoverage = valid.map((entry) => entry.turnId === routed.id && entry.repeat === 1
+      ? {...entry, objectCompilation: compilationFor(outputFor(routed), true)}
+      : entry);
+    expect(summarizeIntentRouterGate(wrongRoutedCoverage).invalidObservationEntries).toContain(`${routed.id}:1`);
+
+    const falseCompleteAbstention = valid.map((entry) => entry.turnId === abstention.id && entry.repeat === 1
+      ? {...entry, objectCompilation: compilationFor(outputFor(abstention), false)}
+      : entry);
+    expect(summarizeIntentRouterGate(falseCompleteAbstention).invalidObservationEntries).toContain(`${abstention.id}:1`);
   });
 
   it("rejects forged plan order and duplicate responsibilities across the complete manifest", () => {

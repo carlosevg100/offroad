@@ -1,11 +1,13 @@
-import {intentClassifierOutputSchema} from "@offroad/agent-contracts";
-import {ModelGatewayError, type GatewayRequest, type ModelGateway, type ModelRef, type Provider} from "@offroad/model-gateway";
+import {ModelGatewayError, type GatewayRequest, type ModelGateway, type ModelRef, type Provider, type TaskKind} from "@offroad/model-gateway";
+import type {z} from "zod";
 
-type IntentRouterRequest = Omit<GatewayRequest<typeof intentClassifierOutputSchema>, "model" | "allowFallback" | "metadata"> & {
+type IntentRouterRequest = Omit<GatewayRequest<z.ZodType>, "model" | "allowFallback" | "metadata"> & {
   metadata?: Record<string, string>;
 };
 
 export type IntentRouterProviderPreflight = {
+  task: TaskKind;
+  schemaName: string;
   provider: Provider;
   configuredModel: string;
   resolvedModel: string | null;
@@ -51,6 +53,8 @@ export async function preflightIntentRouterProviders(
       });
       const after = gateway.spent();
       results.push({
+        task: request.task,
+        schemaName: request.schemaName,
         provider: ref.provider,
         configuredModel: ref.model,
         resolvedModel: result.model,
@@ -64,6 +68,8 @@ export async function preflightIntentRouterProviders(
     } catch (cause) {
       const after = gateway.spent();
       results.push({
+        task: request.task,
+        schemaName: request.schemaName,
         provider: ref.provider,
         configuredModel: ref.model,
         resolvedModel: null,

@@ -367,6 +367,9 @@ export async function processAgentOperationBriefJob(
                   primaryObjectives: context.professional_context.primaryObjectives,
                 }
               : null,
+            // The current project projection does not yet expose a governed ActiveWorkContext.
+            // Pass absence explicitly; never synthesize it from chat history or the gold oracle.
+            activeWorkContext: null,
           },
         });
         const objectiveRouting = objectiveRoutingObservation(context, shadow.envelope, {
@@ -380,6 +383,12 @@ export async function processAgentOperationBriefJob(
             abstainReason: shadow.output.abstainReason,
             firstQuestion: shadow.output.firstQuestion,
             objectiveRouting,
+            semanticObjectCompilation: shadow.semanticObjects.compilation,
+            semanticObjectExtractor: {
+              model: shadow.semanticObjects.modelRoute,
+              attemptCount: shadow.semanticObjects.attemptCount,
+              successfulAttempt: shadow.semanticObjects.successfulAttempt,
+            },
           },
           model: shadow.modelRoute,
           costUsd: shadow.costUsd,

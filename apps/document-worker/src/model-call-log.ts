@@ -10,6 +10,7 @@ const tasks = new Set([
   "explain_exception", "structure_design", "case_brief", "preliminary_understanding",
   "origination_thesis", "company_debt_view", "capital_planning", "agent_operation_brief",
   "write_output", "audit_evidence", "localize", "route_intent", "preview_questions",
+  "extract_semantic_objects",
   "preview_synthesis", "baseline_generalist",
 ]);
 
