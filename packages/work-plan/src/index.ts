@@ -5,6 +5,27 @@ export * from "./task-localization";
 export * from "./capital-jobs";
 export * from "./job-inference";
 export * from "./objective-plan";
+export {
+  terminalWorkProductSchema,
+  terminalDeliveryFormatSchema,
+  terminalAudienceSchema,
+  outputTerminalRequestSchema,
+  resolvedTerminalArtifactBindingSchema,
+  outputTerminalResolutionStructuralSchema,
+  resolveOutputTerminal,
+  assertTrustedOutputTerminalResolution,
+  revalidateSameProcessOutputTerminalResolution,
+} from "./output-terminal";
+export type {
+  TerminalWorkProduct,
+  TerminalDeliveryFormat,
+  TerminalAudience,
+  OutputTerminalRequest,
+  ResolvedTerminalArtifactBinding,
+  OutputTerminalAuthorization,
+  OutputTerminalResolution,
+  TrustedOutputTerminalResolution,
+} from "./output-terminal";
 export * from "./execution-readiness";
 export * from "./execution-brief";
 
