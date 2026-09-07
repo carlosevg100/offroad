@@ -165,6 +165,13 @@ informação, mapeamento de mercado, monitoramento e gestão do trabalho, viram 
 nomeados; não são comprimidas em um plano genérico. A promoção só poderá ocorrer depois de corpus
 gold, métricas por classe e suite adversarial.
 
+Checkpoint seguinte em 07/09/2026: o prompt, o schema e o formato de entrada do classificador foram
+centralizados no contrato que produto e avaliação importam. Um gate manual mede os 16 turnos
+canônicos e repete seis entroncamentos críticos. Composição, abstenção, profundidade, continuidade,
+primeiro trabalho e invariância exigem 100%; a pergunta precisa tratar o tema material do gabarito.
+O gate está implementado, mas continua sem autoridade e sem selo `tested` até completar a primeira
+corrida com modelo real.
+
 ## 3. Peers e inspirações: princípios, não colagem
 
 Os peers convergem em uma categoria: um sistema persistente de trabalho profissional, com contexto,

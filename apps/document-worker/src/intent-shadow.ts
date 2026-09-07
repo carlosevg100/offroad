@@ -1,14 +1,12 @@
 import {
-  intentContinuitySchema,
-  intentDepthSchema,
+  INTENT_CLASSIFIER_SYSTEM,
+  buildIntentClassifierInput,
+  intentClassifierOutputSchema,
   intentEnvelopeSchema,
-  intentObjectKindSchema,
-  primaryWorkSchema,
-  workResponsibilitySchema,
   type IntentEnvelope,
+  type IntentClassifierOutput,
 } from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
-import {z} from "zod";
 
 /**
  * Shadow routing. The classifier reads a turn and writes an Intent Envelope beside the
@@ -20,65 +18,11 @@ import {z} from "zod";
  * authority, organization, project and documents come from the job's context and are stamped
  * as system fields after the model has answered.
  */
-// Prompted JSON is not grammar-bound: a null basis or an omitted confidence must not sink the turn.
-const inferred = <T extends z.ZodTypeAny>(value: T) => z.object({
-  value,
-  state: z.enum(["explicit", "inferred", "ambiguous", "unknown", "not_applicable"]),
-  confidence: z.number().min(0).max(1).nullish(),
-  basis: z.string().max(200).nullish(),
-});
-
-// A prompted model is not grammar-bound: it writes longer strings and longer lists than the
-// envelope contract allows. The classifier accepts them here and `stampIntentEnvelope` clamps
-// every value to the contract's limits, so a long phrase never sinks the turn.
-export const shadowRoutingOutputSchema = z.object({
-  routingCore: z.object({
-    action: inferred(z.array(z.string().min(1).max(400)).min(1).max(16)),
-    object: inferred(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).min(1).max(24)),
-    desiredOutcome: inferred(z.string().min(1).max(1_200)),
-    decision: inferred(z.string().max(1_200).nullable()),
-    audience: inferred(z.array(z.string().min(1).max(200)).min(1).max(12)),
-    depth: inferred(intentDepthSchema),
-    continuity: inferred(intentContinuitySchema),
-    workResponsibility: inferred(z.array(workResponsibilitySchema).min(1).max(8)),
-  }),
-  inferableContext: z.object({
-    jurisdiction: inferred(z.array(z.string().min(1).max(40)).max(8)),
-    asOfDate: inferred(z.string().max(40).nullable()),
-    currency: inferred(z.string().max(12).nullable()),
-    deadline: inferred(z.string().max(300).nullable()),
-    sponsorInstruction: inferred(z.string().max(2_000).nullable()),
-    constraints: inferred(z.array(z.string().max(600)).max(40)),
-    urgency: inferred(z.enum(["now", "today", "this_week", "ongoing"]).nullable()),
-    availableInputs: inferred(z.array(z.string().max(400)).max(80)),
-  }),
-  primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).min(1).max(6),
-  composition: z.string().max(120).nullable(),
-  /** The one question the classifier would ask first, if it were allowed to ask. Recorded, never asked. */
-  firstQuestion: z.string().max(600).nullable(),
-  abstain: z.boolean(),
-  abstainReason: z.string().max(600).nullable(),
-});
-export type ShadowRoutingOutput = z.infer<typeof shadowRoutingOutputSchema>;
-
-export const SHADOW_ROUTING_SYSTEM = `You classify one turn of a debt capital markets conversation into an intent envelope. You do
-not answer the request and you do not plan work.
-
-Fill only what the turn, the recent conversation and the listed inputs support. Every field carries
-a state and a confidence: "explicit" when the person said it, "inferred" when it follows from what
-they said, "ambiguous" when two readings remain, "unknown" when nothing supports a value. Never
-guess authority, evidence regime, permissions or documents: they are not yours to fill.
-
-Primary works (choose one to three, most likely first): find_and_organize, extract_and_reconcile,
-understand, analyze, model, capital_strategy, read_documents, market, capital_match.
-Work responsibility describes the person's role in this work, never their job title: producer,
-coordinator, reviewer, decision_maker, sponsor, recipient, external_authorizer.
-Depth: point (a delimited question), preliminary, institutional. Continuity: new, refresh,
-monitor, comparison, resume.
-
-If the turn is too ambiguous to name a primary work, set abstain to true and say why. If one
-question would change the plan, put it in firstQuestion; otherwise leave it null.
-Return the requested JSON only.`;
+// Compatibility exports for the preview router. Runtime and evals now consume one canonical
+// contract from agent-contracts, so a prompt or schema change cannot bypass the gold gate.
+export const shadowRoutingOutputSchema = intentClassifierOutputSchema;
+export type ShadowRoutingOutput = IntentClassifierOutput;
+export const SHADOW_ROUTING_SYSTEM = INTENT_CLASSIFIER_SYSTEM;
 
 export type ShadowRoutingContext = {
   locale: "pt-BR" | "en-US";
@@ -164,14 +108,14 @@ export async function shadowIntentEnvelope(input: {
     system: SHADOW_ROUTING_SYSTEM,
     input: [{
       type: "text",
-      text: JSON.stringify({
+      text: JSON.stringify(buildIntentClassifierInput({
         locale: context.locale,
         latestUserMessage: context.message,
         recentConversation: context.recentMessages.slice(-8),
         entryJob: context.entryJob,
         documentCount: context.documentIds.length,
         professionalContext: context.professionalContext,
-      }),
+      })),
     }],
     schema: shadowRoutingOutputSchema,
     schemaName: "shadow_routing_output",

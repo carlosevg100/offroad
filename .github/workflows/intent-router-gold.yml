@@ -1,0 +1,89 @@
+name: Intent router gold gate
+
+# Manual promotion evidence for the semantic router. It uses only the canonical synthetic turns,
+# the exact production classifier prompt/schema and short-lived AWS OIDC credentials. No customer
+# content enters this workflow and a passing run never changes the production route by itself.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stability_repeats:
+        description: "Runs for each invariance turn (2-5)"
+        required: false
+        default: "3"
+      max_cost:
+        description: "Hard gateway budget in USD (max 10)"
+        required: false
+        default: "3"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: intent-router-gold
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Score accuracy and repeated-prompt invariance
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the canonical router gate
+        env:
+          STABILITY_REPEATS: ${{ inputs.stability_repeats || '3' }}
+          MAX_COST: ${{ inputs.max_cost || '3' }}
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+
+          set +e
+          pnpm --filter @offroad/evals intent-router:gold -- \
+            --stability-repeats "$STABILITY_REPEATS" \
+            --max-cost "$MAX_COST" \
+            --out "$RUNNER_TEMP/intent-router-gold"
+          gate_status=$?
+          set -e
+          if [[ -f "$RUNNER_TEMP/intent-router-gold/intent-router-gold.md" ]]; then
+            cat "$RUNNER_TEMP/intent-router-gold/intent-router-gold.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$gate_status"
+
+      - name: Upload compact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: intent-router-gold
+          path: ${{ runner.temp }}/intent-router-gold
+          if-no-files-found: warn
+          retention-days: 90

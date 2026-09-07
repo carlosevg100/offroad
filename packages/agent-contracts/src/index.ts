@@ -9,6 +9,7 @@ export * from "./professional-functions";
 export * from "./specializations";
 export * from "./decision-value";
 export * from "./intent-envelope";
+export * from "./intent-classifier";
 export * from "./reading-manifest";
 export * from "./autonomy";
 export * from "./findings";
