@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 
 import {z} from "zod";
 
-import {analyzeReceivables, type ReceivablesAnalysis} from "./analyze";
+import {analyzeReceivables} from "./analyze";
 import {receivablesCaseSchema} from "./schema";
 
 export const receivablesPoolUnderwritingVersion = "2026.09.06-v1" as const;
@@ -15,33 +15,118 @@ export const receivablesPoolUnderwritingInputSchema = z.object({
 }).strict();
 export type ReceivablesPoolUnderwritingInput = z.input<typeof receivablesPoolUnderwritingInputSchema>;
 
-export type ReceivablesPoolUnderwriting = {
-  schema_version: "method.underwrite-receivables-pool.v1";
-  state: ReceivablesAnalysis["decision"]["status"];
-  case_id: string;
-  reference_date: string;
-  currency: z.infer<typeof currencySchema>;
-  portfolio_summary: ReceivablesAnalysis["metrics"]["portfolio"];
-  eligibility: ReceivablesAnalysis["analyzedReceivables"];
-  aging: ReceivablesAnalysis["metrics"]["aging"];
-  performance: ReceivablesAnalysis["metrics"]["performance"];
-  evidence_coverage: ReceivablesAnalysis["metrics"]["evidence"];
-  reconciliation: ReceivablesAnalysis["reconciliation"];
-  borrowing_base: Omit<ReceivablesAnalysis["structure"], "waterfall" | "residualCash">;
-  waterfall: ReceivablesAnalysis["structure"]["waterfall"];
-  triggers: ReceivablesAnalysis["triggers"];
-  gaps: ReceivablesAnalysis["gaps"];
-  decision_boundary: ReceivablesAnalysis["decision"];
-  trace: {
-    method_version: typeof receivablesPoolUnderwritingVersion;
-    engine_version: ReceivablesAnalysis["version"];
-    input_fingerprint: string;
-    output_fingerprint: string;
-    policy: ReceivablesPoolUnderwritingInput["case"]["policy"];
-    source_rows: Array<{receivable_id: string; document_id: string; anchor: string}>;
-    cash_rows: Array<{receipt_id: string; document_id: string; anchor: string}>;
-  };
-};
+const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
+const metricMoneySchema = z.string().regex(/^-?\d+(?:\.\d+)?$/);
+const eligibilityReasonSchema = z.enum([
+  "zero_balance", "defaulted", "past_due", "remaining_term", "seasoning",
+  "not_assignable", "evidence_unverified", "anchor_unverified", "registration_missing",
+  "registration_conflict", "encumbered", "disputed", "related_party", "sector_outside_policy",
+]);
+
+/** Exact result contract consumed by the internal dispatcher and artifact gates. */
+export const receivablesPoolUnderwritingSchema = z.object({
+  schema_version: z.literal("method.underwrite-receivables-pool.v1"),
+  state: z.enum(["ready_for_structuring", "needs_remediation", "not_viable"]),
+  case_id: z.string().min(1),
+  reference_date: z.iso.date(),
+  currency: currencySchema,
+  portfolio_summary: z.object({
+    receivableCount: z.number().int().nonnegative(),
+    debtorCount: z.number().int().nonnegative(),
+    debtorGroupCount: z.number().int().nonnegative(),
+    totalOutstanding: metricMoneySchema,
+    preliminaryEligibleBalance: metricMoneySchema,
+    concentrationAdjustedEligibleBalance: metricMoneySchema,
+    eligibleShare: metricMoneySchema,
+    weightedAverageRemainingDays: metricMoneySchema,
+    topDebtorShare: metricMoneySchema,
+    topFiveDebtorShare: metricMoneySchema,
+    topGroupShare: metricMoneySchema,
+    debtorHerfindahl: metricMoneySchema,
+  }).strict(),
+  eligibility: z.array(z.object({
+    receivableId: z.string().min(1), debtorId: z.string().min(1), debtorGroupId: z.string().min(1),
+    balance: metricMoneySchema, daysPastDue: z.number().int().nonnegative(),
+    seasoningDays: z.number().int().nonnegative(), remainingTermDays: z.number().int().nonnegative(),
+    eligible: z.boolean(), reasons: z.array(eligibilityReasonSchema),
+  }).strict()),
+  aging: z.object({
+    current: metricMoneySchema, days_1_30: metricMoneySchema, days_31_60: metricMoneySchema,
+    days_61_90: metricMoneySchema, days_91_plus: metricMoneySchema,
+  }).strict(),
+  performance: z.object({
+    delinquency1Share: metricMoneySchema, delinquency30Share: metricMoneySchema,
+    delinquency90Share: metricMoneySchema, grossDefaultRate: metricMoneySchema,
+    netLossRate: metricMoneySchema, recoveryRate: metricMoneySchema, dilutionRate: metricMoneySchema,
+    repurchaseRate: metricMoneySchema, substitutionRate: metricMoneySchema,
+  }).strict(),
+  evidence_coverage: z.object({
+    verifiedBalanceShare: metricMoneySchema, anchoredBalanceShare: metricMoneySchema,
+    registrationCoverageShare: metricMoneySchema, assignableBalanceShare: metricMoneySchema,
+    freeBalanceShare: metricMoneySchema,
+  }).strict(),
+  reconciliation: z.object({
+    tapeToAccounting: reconciliationLineSchema(),
+    tapeCollectionsToAccounting: z.object({
+      tape: metricMoneySchema, reported: metricMoneySchema, difference: metricMoneySchema,
+      differenceShare: metricMoneySchema, status: z.enum(["tied", "outside_tolerance"]),
+    }).strict(),
+    collectionsToCash: z.object({
+      reported: metricMoneySchema, cash: metricMoneySchema, difference: metricMoneySchema,
+      differenceShare: metricMoneySchema, status: z.enum(["tied", "outside_tolerance"]),
+    }).strict(),
+    cashControls: z.object({
+      mappedShare: metricMoneySchema, linkedAccountShare: metricMoneySchema,
+      duplicateReceiptIds: z.array(z.string()), unanchoredReceiptIds: z.array(z.string()),
+      unknownMappingReceiptIds: z.array(z.string()),
+    }).strict(),
+  }).strict(),
+  borrowing_base: z.object({
+    requestedFacility: metricMoneySchema, maximumByAdvanceRate: metricMoneySchema,
+    maximumByOvercollateralization: metricMoneySchema, supportedFacility: metricMoneySchema,
+    overcollateralizationAtRequest: metricMoneySchema, requiredOvercollateralization: metricMoneySchema,
+    actualSubordinationRate: metricMoneySchema, requiredSubordinationRate: metricMoneySchema,
+    reserveTarget: metricMoneySchema,
+  }).strict(),
+  waterfall: z.array(z.object({
+    priority: z.number().int().positive(), item: z.string().min(1), due: metricMoneySchema,
+    paid: metricMoneySchema, shortfall: metricMoneySchema,
+  }).strict()),
+  triggers: z.array(z.object({
+    id: z.string().min(1), actual: metricMoneySchema, threshold: metricMoneySchema,
+    comparison: z.enum(["maximum", "minimum"]), status: z.enum(["within_limit", "breached"]),
+    consequence: z.enum(["block", "remediate"]),
+  }).strict()),
+  gaps: z.array(z.object({
+    code: z.string().min(1), severity: z.enum(["blocking", "material", "attention"]),
+    scope: z.enum(["portfolio", "cedent", "obligor", "servicing", "structure"]),
+    message: z.object({pt: z.string(), en: z.string()}).strict(), evidenceIds: z.array(z.string()),
+  }).strict()),
+  decision_boundary: z.object({
+    status: z.enum(["ready_for_structuring", "needs_remediation", "not_viable"]),
+    blockingCodes: z.array(z.string()), remediationCodes: z.array(z.string()),
+    refusalCodes: z.array(z.string()), externalDirectionAllowed: z.literal(false),
+  }).strict(),
+  trace: z.object({
+    method_version: z.literal(receivablesPoolUnderwritingVersion),
+    engine_version: z.literal("2026.08.24-v1"), input_fingerprint: sha256Schema,
+    output_fingerprint: sha256Schema, policy: receivablesCaseSchema.shape.policy,
+    source_rows: z.array(z.object({
+      receivable_id: z.string().min(1), document_id: z.string().min(1), anchor: z.string().min(1),
+    }).strict()),
+    cash_rows: z.array(z.object({
+      receipt_id: z.string().min(1), document_id: z.string().min(1), anchor: z.string().min(1),
+    }).strict()),
+  }).strict(),
+}).strict();
+export type ReceivablesPoolUnderwriting = z.infer<typeof receivablesPoolUnderwritingSchema>;
+
+function reconciliationLineSchema() {
+  return z.object({
+    tape: metricMoneySchema, accounting: metricMoneySchema, difference: metricMoneySchema,
+    differenceShare: metricMoneySchema, status: z.enum(["tied", "outside_tolerance"]),
+  }).strict();
+}
 
 /**
  * Produces the governed method result for a receivables pool. The model never calculates an
@@ -103,7 +188,7 @@ export function underwriteReceivablesPool(raw: ReceivablesPoolUnderwritingInput)
     source_rows: sourceRows,
     cash_rows: cashRows,
   });
-  return {
+  return receivablesPoolUnderwritingSchema.parse({
     ...resultWithoutTrace,
     trace: {
       method_version: receivablesPoolUnderwritingVersion,
@@ -114,7 +199,7 @@ export function underwriteReceivablesPool(raw: ReceivablesPoolUnderwritingInput)
       source_rows: sourceRows,
       cash_rows: cashRows,
     },
-  };
+  });
 }
 
 function hash(value: unknown): string {
