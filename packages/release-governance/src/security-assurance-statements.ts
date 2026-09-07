@@ -1,5 +1,9 @@
-import {createHash, verify} from "node:crypto";
+import {createHash, createPublicKey, verify} from "node:crypto";
 import {z} from "zod";
+import {
+  assertTrustedSecurityEvidenceResolutionReceipt,
+  type TrustedSecurityEvidenceResolutionReceipt,
+} from "./security-current-state.ts";
 
 const dateTimeSchema = z.string().datetime({offset: true});
 const fingerprintSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
@@ -75,6 +79,8 @@ export type SecurityAssuranceMilestone = z.infer<typeof securityAssuranceMilesto
 
 export const securityAssuranceTrustRootSchema = z.object({
   trustRootId: z.string().regex(/^ATR-[A-Z0-9-]+$/),
+  keyId: z.string().min(1),
+  algorithm: z.literal("Ed25519"),
   issuer: z.string().min(1),
   publicKeyPem: z.string().min(1),
   permittedClaims: z.array(securityAssuranceClaimSchema).min(1),
@@ -90,6 +96,8 @@ export const securityAssuranceEvidenceSchema = z.object({
   scopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   issuer: z.string().min(1),
   trustRootId: z.string().regex(/^ATR-[A-Z0-9-]+$/),
+  keyId: z.string().min(1),
+  algorithm: z.literal("Ed25519"),
   issuedAt: dateTimeSchema,
   validThrough: dateTimeSchema,
   revokedAt: dateTimeSchema.nullable(),
@@ -105,6 +113,7 @@ export type SecurityAssuranceDecision = Readonly<{
   status: SecurityAssuranceStatus;
   blockers: readonly string[];
   canonicalText: Readonly<{"pt-BR": string; "en-US": string}>;
+  trustRegistryFingerprint: string;
   decisionFingerprint: string;
 }>;
 
@@ -113,27 +122,33 @@ const trustedDecisions = new WeakMap<SecurityAssuranceDecision, {
   statement: SecurityAssuranceStatement;
 }>();
 
+const canonicalTrustRegistryBody = {
+  registryVersion: "security-assurance-trust-roots.v1",
+  // Deliberately empty until an assessor public key is onboarded through a reviewed change.
+  roots: [] as SecurityAssuranceTrustRoot[],
+};
+const canonicalTrustRegistry = deepFreeze({
+  ...canonicalTrustRegistryBody,
+  registryFingerprint: sha256(stableJson(canonicalTrustRegistryBody)),
+});
+
 /**
- * The caller must supply roots from a separately governed trust store. A root embedded in the
- * statement or attestation is never trusted. The current Offroad inventory supplies an empty
- * registry, so no external claim can be rendered until a real assessor root is onboarded.
+ * Trust roots and time come from this module's governed registry and process clock, never from the
+ * statement/evidence caller. The current registry is empty, so no external claim can be rendered
+ * until a real assessor root is onboarded in a reviewed source change.
  */
-export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
+export function evaluateSecurityAssuranceStatement(input: {
   statement: SecurityAssuranceStatement;
   evidence: SecurityAssuranceEvidence[];
-  trustedRoots: SecurityAssuranceTrustRoot[];
   resolvedEvidence: Array<{evidenceRef: string; immutableRef: string; bytes: Uint8Array}>;
-  evaluatedAt: Date;
 }): SecurityAssuranceDecision {
   const source = input.statement;
   const statement = securityAssuranceStatementSchema.parse(source);
   const evidence = z.array(securityAssuranceEvidenceSchema).parse(input.evidence);
-  const roots = z.array(securityAssuranceTrustRootSchema).parse(input.trustedRoots);
-  const now = input.evaluatedAt.getTime();
+  const roots = canonicalTrustRegistry.roots;
+  const now = Date.now();
   const blockers: string[] = [];
-  if (!Number.isFinite(now)) blockers.push("trusted_clock_invalid");
   for (const duplicate of duplicateValues(evidence.map((item) => item.evidenceRef))) blockers.push(`duplicate_attestation_evidence:${duplicate}`);
-  for (const duplicate of duplicateValues(roots.map((item) => item.trustRootId))) blockers.push(`duplicate_attestation_trust_root:${duplicate}`);
   for (const duplicate of duplicateValues(input.resolvedEvidence.map((item) => item.evidenceRef))) blockers.push(`duplicate_resolved_attestation_bytes:${duplicate}`);
 
   if (statement.status === "attested") {
@@ -144,12 +159,15 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
       if (!root) blockers.push("attestation_trust_root_missing");
       else {
         if (root.issuer !== attestation.issuer) blockers.push("attestation_issuer_mismatch");
+        if (root.keyId !== attestation.keyId) blockers.push("attestation_key_id_mismatch");
+        if (root.algorithm !== attestation.algorithm) blockers.push("attestation_algorithm_mismatch");
         if (!root.permittedClaims.includes(attestation.claim)) blockers.push("attestation_claim_not_permitted");
         if (root.revokedAt && new Date(root.revokedAt).getTime() <= now) blockers.push("attestation_trust_root_revoked");
         if (new Date(root.validFrom).getTime() > now || new Date(root.validThrough).getTime() < now) blockers.push("attestation_trust_root_not_current");
         if (new Date(root.validThrough).getTime() <= new Date(root.validFrom).getTime()) blockers.push("attestation_trust_root_validity_window_invalid");
         const issuedAt = new Date(attestation.issuedAt).getTime();
         if (issuedAt < new Date(root.validFrom).getTime() || issuedAt > new Date(root.validThrough).getTime()) blockers.push("attestation_issued_outside_trust_root_window");
+        blockers.push(...validateSecurityAssuranceTrustRootCryptography(root));
         if (!verifyAssuranceEvidenceSignature(attestation, root.publicKeyPem)) blockers.push("attestation_signature_invalid");
       }
       if (attestation.claim !== statement.claim) blockers.push("attestation_claim_mismatch");
@@ -171,7 +189,7 @@ export function evaluateSecurityAssuranceStatementAgainstTrustedRoots(input: {
   const allowed = stableBlockers.length === 0;
   const effectiveStatus: SecurityAssuranceStatus = allowed ? statement.status : fallbackStatus(statement.claim);
   const canonicalText = deepFreeze(canonicalAssuranceText(statement.claim, effectiveStatus));
-  const payload = {allowed, statementId: statement.statementId, status: effectiveStatus, blockers: stableBlockers, canonicalText};
+  const payload = {allowed, statementId: statement.statementId, status: effectiveStatus, blockers: stableBlockers, canonicalText, trustRegistryFingerprint: canonicalTrustRegistry.registryFingerprint};
   const decision = deepFreeze({...payload, decisionFingerprint: sha256(stableJson(payload))});
   trustedDecisions.set(decision, {source, statement: deepFreeze(structuredClone(statement))});
   return decision;
@@ -183,7 +201,7 @@ export function renderSecurityAssuranceStatement(
   locale: "pt-BR" | "en-US",
 ): string {
   const receipt = trustedDecisions.get(decision);
-  if (!receipt || receipt.source !== statement || receipt.statement.statementId !== statement.statementId) {
+  if (!receipt || receipt.source !== statement) {
     throw new Error("security assurance rendering requires the original statement and trusted decision receipt");
   }
   return decision.canonicalText[locale];
@@ -192,12 +210,10 @@ export function renderSecurityAssuranceStatement(
 export function renderSecurityAssuranceMilestone(
   candidate: SecurityAssuranceMilestone,
   locale: "pt-BR" | "en-US",
-  resolvedEvidenceRefs: readonly string[] = [],
+  evidenceReceipt: TrustedSecurityEvidenceResolutionReceipt | null = null,
 ): string {
   const milestone = securityAssuranceMilestoneSchema.parse(candidate);
-  if (milestone.status === "completed" && !resolvedEvidenceRefs.includes(milestone.evidenceRef!)) {
-    throw new Error("completed security assurance milestone requires resolved evidence");
-  }
+  if (milestone.status === "completed") assertTrustedSecurityEvidenceResolutionReceipt(evidenceReceipt, milestone.evidenceRef!);
   const framework = frameworkLabel(milestone.framework);
   const kind = milestoneKindLabel(milestone.kind, locale);
   const status = milestoneStatusLabel(milestone.status, locale);
@@ -226,6 +242,15 @@ function verifyAssuranceEvidenceSignature(evidence: SecurityAssuranceEvidence, p
     return verify(null, assuranceEvidenceSigningPayload(payload), publicKeyPem, Buffer.from(detachedSignature, "base64"));
   } catch {
     return false;
+  }
+}
+
+export function validateSecurityAssuranceTrustRootCryptography(root: SecurityAssuranceTrustRoot): string[] {
+  try {
+    const key = createPublicKey(root.publicKeyPem);
+    return key.asymmetricKeyType === "ed25519" ? [] : ["attestation_trust_root_key_type_invalid"];
+  } catch {
+    return ["attestation_trust_root_public_key_invalid"];
   }
 }
 

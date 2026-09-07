@@ -1,12 +1,13 @@
 import {
   assertTrustedSecurityInventoryRenderDecision,
+  issueTrustedSecurityEvidenceResolutionReceipt,
   type SecurityCurrentStateInventory,
   type SecurityInventoryDecision,
   type SecurityOwner,
 } from "./security-current-state.ts";
 import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.ts";
 import {
-  evaluateSecurityAssuranceStatementAgainstTrustedRoots,
+  evaluateSecurityAssuranceStatement,
   renderSecurityAssuranceMilestone,
   renderSecurityAssuranceStatement,
 } from "./security-assurance-statements.ts";
@@ -23,22 +24,26 @@ export function renderSecurityCurrentStateInventory(
   const claimAssessmentById = new Map(decision.claimAssessments.map((claim) => [claim.claimId, claim]));
   const entityAssessmentById = new Map(decision.entityAssessments.map((entity) => [entity.entityId, entity]));
   const gapAssessmentById = new Map(decision.gapAssessments.map((gap) => [gap.gapId, gap]));
+  assertNoNonCanonicalAssuranceNarrative(inventory);
   const entityAssessment = (entityId: string) => entityAssessmentById.get(entityId);
   const entityStatus = (entityId: string) => entityAssessmentById.get(entityId)?.status ?? "coverage_contract_invalid";
   const entityGapRefs = (entityId: string) => entityAssessment(entityId)?.gapRefs ?? [];
   const assuranceTexts = currentSecurityAssuranceStatements.map((statement) => {
-    const assuranceDecision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
+    const assuranceDecision = evaluateSecurityAssuranceStatement({
       statement,
       evidence: [],
-      trustedRoots: [],
       resolvedEvidence: [],
-      evaluatedAt: new Date(inventory.generatedAt),
     });
     return renderSecurityAssuranceStatement(statement, assuranceDecision, "pt-BR");
   });
-  const resolvedEvidenceRefs = decision.evidenceResolutions.map((evidence) => evidence.evidenceId);
   const milestoneTexts = currentSecurityAssuranceMilestones.map((milestone) =>
-    renderSecurityAssuranceMilestone(milestone, "pt-BR", resolvedEvidenceRefs));
+    renderSecurityAssuranceMilestone(
+      milestone,
+      "pt-BR",
+      milestone.evidenceRef
+        ? issueTrustedSecurityEvidenceResolutionReceipt(candidateInventory, candidateDecision, milestone.evidenceRef)
+        : null,
+    ));
   const lines: string[] = [
     "# Inventário atual de segurança da Offroad",
     "",
@@ -190,12 +195,36 @@ export function renderSecurityCurrentStateInventory(
     "A existência desta vista não fecha as lacunas listadas. Evidência live, contratos, owners nominais e operação ao longo do tempo precisam ser coletados em tarefas posteriores.",
     "",
   ];
-  const output = lines.join("\n");
-  const forbiddenClaims = findNonCanonicalAssuranceLanguage(output, [...assuranceTexts, ...milestoneTexts]);
-  if (forbiddenClaims.length > 0) {
-    throw new Error(`security inventory contains noncanonical assurance language: ${forbiddenClaims.map((finding) => finding.match).join(",")}`);
+  return lines.join("\n");
+}
+
+/**
+ * Assurance prose lint runs only over inventory-authored narrative. Typed assurance statements and
+ * milestones bypass this lint because their renderer receipts are the authentication boundary;
+ * there is deliberately no caller-provided text allowlist and no subtraction from final output.
+ */
+function assertNoNonCanonicalAssuranceNarrative(inventory: SecurityCurrentStateInventory): void {
+  const narratives = [
+    inventory.scopeStatement,
+    ...inventory.limitations,
+    ...inventory.coverageClaims.flatMap((claim) => [
+      claim.criterion,
+      ...claim.evidenceRequirements.map((requirement) => requirement.criterion),
+    ]),
+    ...inventory.environments.flatMap((item) => [item.title, item.purpose, item.region ?? ""]),
+    ...inventory.dataClasses.flatMap((item) => [item.title, item.description, item.handlingRule]),
+    ...inventory.systems.flatMap((item) => [item.title, item.purpose]),
+    ...inventory.dataStores.flatMap((item) => [item.title, item.tenancyBoundary]),
+    ...inventory.dataFlows.flatMap((item) => [item.title, item.purpose, item.authorizationBoundary]),
+    ...inventory.identities.flatMap((item) => [item.title, item.authentication]),
+    ...inventory.vendors.flatMap((item) => [item.title, item.service]),
+    ...inventory.gaps.flatMap((item) => [item.title, item.nextAction]),
+    ...inventory.evidenceIndex.flatMap((item) => [item.description]),
+  ];
+  const findings = narratives.flatMap((narrative) => findNonCanonicalAssuranceLanguage(narrative));
+  if (findings.length > 0) {
+    throw new Error(`security inventory contains noncanonical assurance language: ${findings.map((finding) => finding.match).join(",")}`);
   }
-  return output;
 }
 
 type GovernedView = {

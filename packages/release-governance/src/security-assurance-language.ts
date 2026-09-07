@@ -13,13 +13,8 @@ const highRiskSubjects = /\b(?:soc\s*2(?:\s+type\s+(?:i|ii|1|2))?|iso(?:\s*\/\s*
  */
 export function findNonCanonicalAssuranceLanguage(
   output: string,
-  canonicalStatements: readonly string[] = [],
 ): ForbiddenAssuranceClaim[] {
-  let remainder = normalize(output);
-  for (const statement of canonicalStatements) {
-    const canonical = normalize(statement);
-    if (canonical.length > 0) remainder = remainder.replaceAll(canonical, " ");
-  }
+  const remainder = normalize(output);
   highRiskSubjects.lastIndex = 0;
   const seen = new Set<string>();
   const findings: ForbiddenAssuranceClaim[] = [];
@@ -32,7 +27,7 @@ export function findNonCanonicalAssuranceLanguage(
   return findings;
 }
 
-/** @deprecated Use findNonCanonicalAssuranceLanguage with canonical renderer output. */
+/** @deprecated Use findNonCanonicalAssuranceLanguage on untrusted narrative fields. */
 export function findForbiddenAssuranceClaims(output: string): ForbiddenAssuranceClaim[] {
   return findNonCanonicalAssuranceLanguage(output);
 }

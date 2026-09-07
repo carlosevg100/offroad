@@ -1,19 +1,22 @@
 import {createHash, generateKeyPairSync, sign} from "node:crypto";
 import {describe, expect, it} from "vitest";
+import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.ts";
 import {
   assuranceEvidenceSigningPayload,
   createSecurityAssuranceScopeFingerprint,
-  evaluateSecurityAssuranceStatementAgainstTrustedRoots,
+  evaluateSecurityAssuranceStatement,
   renderSecurityAssuranceMilestone,
   renderSecurityAssuranceStatement,
   securityAssuranceMilestoneSchema,
   securityAssuranceStatementSchema,
+  securityAssuranceTrustRootSchema,
+  validateSecurityAssuranceTrustRootCryptography,
+  type SecurityAssuranceDecision,
   type SecurityAssuranceEvidence,
   type SecurityAssuranceTrustRoot,
 } from "./security-assurance-statements.ts";
-import {findNonCanonicalAssuranceLanguage} from "./security-assurance-language.ts";
+import type {TrustedSecurityEvidenceResolutionReceipt} from "./security-current-state.ts";
 
-const now = new Date("2026-09-07T12:00:00.000Z");
 const scopeSeed = {
   scopeId: "offroad-production",
   environmentRefs: ["ENV-PRODUCTION"],
@@ -22,13 +25,15 @@ const scopeSeed = {
 const scope = {...scopeSeed, scopeFingerprint: createSecurityAssuranceScopeFingerprint(scopeSeed)};
 const reportBytes = Buffer.from("independent assessment report bytes", "utf8");
 const {privateKey, publicKey} = generateKeyPairSync("ed25519");
-const root: SecurityAssuranceTrustRoot = {
-  trustRootId: "ATR-TEST-ASSESSOR",
-  issuer: "Independent Test Assessor",
+const selfGeneratedRoot: SecurityAssuranceTrustRoot = {
+  trustRootId: "ATR-SELF-GENERATED",
+  keyId: "self-generated-key",
+  algorithm: "Ed25519",
+  issuer: "Self Generated Assessor",
   publicKeyPem: publicKey.export({type: "spki", format: "pem"}).toString(),
   permittedClaims: ["soc2_type2_examined"],
-  validFrom: "2026-01-01T00:00:00.000Z",
-  validThrough: "2027-01-01T00:00:00.000Z",
+  validFrom: "2020-01-01T00:00:00.000Z",
+  validThrough: "2099-01-01T00:00:00.000Z",
   revokedAt: null,
 };
 
@@ -40,103 +45,119 @@ function attestedStatement() {
     scope,
     evidenceRef: "ASE-SOC2-REPORT",
     issuedAt: "2026-08-01T00:00:00.000Z",
-    validThrough: "2026-12-31T23:59:59.000Z",
+    validThrough: "2099-01-01T00:00:00.000Z",
   });
 }
 
 function signedEvidence(overrides: Partial<Omit<SecurityAssuranceEvidence, "detachedSignature">> = {}): SecurityAssuranceEvidence {
-  const unsigned = {
+  const unsigned: Omit<SecurityAssuranceEvidence, "detachedSignature"> = {
     evidenceRef: "ASE-SOC2-REPORT",
-    claim: "soc2_type2_examined" as const,
+    claim: "soc2_type2_examined",
     scopeFingerprint: scope.scopeFingerprint,
-    issuer: root.issuer,
-    trustRootId: root.trustRootId,
+    issuer: selfGeneratedRoot.issuer,
+    trustRootId: selfGeneratedRoot.trustRootId,
+    keyId: selfGeneratedRoot.keyId,
+    algorithm: "Ed25519",
     issuedAt: "2026-08-01T00:00:00.000Z",
-    validThrough: "2026-12-31T23:59:59.000Z",
+    validThrough: "2099-01-01T00:00:00.000Z",
     revokedAt: null,
     immutableRef: "evidence://assessor/report/2026",
-    contentFingerprint: `sha256:${createHash("sha256").update(reportBytes).digest("hex")}` as const,
+    contentFingerprint: `sha256:${createHash("sha256").update(reportBytes).digest("hex")}`,
     ...overrides,
   };
   return {...unsigned, detachedSignature: sign(null, assuranceEvidenceSigningPayload(unsigned), privateKey).toString("base64")};
 }
 
+const resolvedReport = [{
+  evidenceRef: "ASE-SOC2-REPORT",
+  immutableRef: "evidence://assessor/report/2026",
+  bytes: reportBytes,
+}];
+
 describe("governed security assurance statements", () => {
-  it("renders an attested claim only from current, scope-matched, signed evidence under a trusted root", () => {
+  it("rejects a caller-supplied self-generated trust root even when its signature is valid", () => {
     const statement = attestedStatement();
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({statement, evidence: [signedEvidence()], trustedRoots: [root], resolvedEvidence: [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes}], evaluatedAt: now});
-    expect(decision.allowed).toBe(true);
-    expect(decision.status).toBe("attested");
-    expect(renderSecurityAssuranceStatement(statement, decision, "pt-BR")).toBe("SOC 2 Type II: atestado no escopo e período indicados.");
+    const evaluateWithForbiddenRoots = evaluateSecurityAssuranceStatement as unknown as (input: {
+      statement: typeof statement;
+      evidence: SecurityAssuranceEvidence[];
+      resolvedEvidence: typeof resolvedReport;
+      trustedRoots: SecurityAssuranceTrustRoot[];
+    }) => SecurityAssuranceDecision;
+    const decision = evaluateWithForbiddenRoots({
+      statement,
+      evidence: [signedEvidence()],
+      resolvedEvidence: resolvedReport,
+      trustedRoots: [selfGeneratedRoot],
+    });
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.status).toBe("not_certified");
+    expect(decision.blockers).toContain("attestation_trust_root_missing");
+    expect(decision.trustRegistryFingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(renderSecurityAssuranceStatement(statement, decision, "pt-BR")).toBe("SOC 2 Type II: não certificado.");
   });
 
   it.each([
-    ["missing evidence", [], [root], "attestation_evidence_missing"],
-    ["missing trust root", [signedEvidence()], [], "attestation_trust_root_missing"],
-    ["wrong scope", [signedEvidence({scopeFingerprint: "c".repeat(64)})], [root], "attestation_scope_mismatch"],
-    ["expired evidence", [signedEvidence({validThrough: "2026-09-01T00:00:00.000Z"})], [root], "attestation_not_current"],
-    ["revoked evidence", [signedEvidence({revokedAt: "2026-09-01T00:00:00.000Z"})], [root], "attestation_revoked"],
-    ["revoked root", [signedEvidence()], [{...root, revokedAt: "2026-09-01T00:00:00.000Z"}], "attestation_trust_root_revoked"],
-  ] as const)("downgrades an external claim on %s", (_label, evidence, trustedRoots, blocker) => {
+    ["missing evidence", [], "attestation_evidence_missing"],
+    ["wrong scope", [signedEvidence({scopeFingerprint: "c".repeat(64)})], "attestation_scope_mismatch"],
+    ["expired evidence", [signedEvidence({validThrough: "2020-01-01T00:00:00.000Z"})], "attestation_not_current"],
+    ["revoked evidence", [signedEvidence({revokedAt: "2020-01-01T00:00:00.000Z"})], "attestation_revoked"],
+  ] as const)("downgrades an external claim on %s", (_label, evidence, blocker) => {
     const statement = attestedStatement();
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
+    const decision = evaluateSecurityAssuranceStatement({
       statement,
       evidence: [...evidence],
-      trustedRoots: [...trustedRoots],
-      resolvedEvidence: [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes}],
-      evaluatedAt: now,
+      resolvedEvidence: resolvedReport,
     });
     expect(decision.allowed).toBe(false);
     expect(decision.status).toBe("not_certified");
     expect(decision.blockers).toContain(blocker);
-    expect(renderSecurityAssuranceStatement(statement, decision, "en-US")).toBe("SOC 2 Type II: not certified.");
   });
 
   it.each([
-    ["invalid clock", {evaluatedAt: new Date("invalid")}, "trusted_clock_invalid"],
     ["duplicate evidence", {evidence: [signedEvidence(), signedEvidence()]}, "duplicate_attestation_evidence:ASE-SOC2-REPORT"],
-    ["duplicate root", {trustedRoots: [root, root]}, "duplicate_attestation_trust_root:ATR-TEST-ASSESSOR"],
-    ["duplicate resolved bytes", {resolvedEvidence: [
-      {evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes},
-      {evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes},
-    ]}, "duplicate_resolved_attestation_bytes:ASE-SOC2-REPORT"],
+    ["duplicate resolved bytes", {resolvedEvidence: [...resolvedReport, ...resolvedReport]}, "duplicate_resolved_attestation_bytes:ASE-SOC2-REPORT"],
   ])("fails closed on %s", (_label, override, blocker) => {
-    const statement = attestedStatement();
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
-      statement,
+    const decision = evaluateSecurityAssuranceStatement({
+      statement: attestedStatement(),
       evidence: [signedEvidence()],
-      trustedRoots: [root],
-      resolvedEvidence: [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes}],
-      evaluatedAt: now,
+      resolvedEvidence: resolvedReport,
       ...override,
     });
     expect(decision.allowed).toBe(false);
     expect(decision.blockers).toContain(blocker);
   });
 
-  it("rejects a tampered attestation and a reconstructed render decision", () => {
-    const statement = attestedStatement();
-    const evidence = signedEvidence();
-    evidence.immutableRef = "evidence://attacker/replacement";
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({statement, evidence: [evidence], trustedRoots: [root], resolvedEvidence: [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: reportBytes}], evaluatedAt: now});
-    expect(decision.allowed).toBe(false);
-    expect(decision.blockers).toContain("attestation_signature_invalid");
-    expect(() => renderSecurityAssuranceStatement(structuredClone(statement), decision, "pt-BR")).toThrow(/original statement/);
-    expect(() => renderSecurityAssuranceStatement(statement, structuredClone(decision), "pt-BR")).toThrow(/trusted decision/);
-  });
-
   it.each([
     ["unresolved bytes", [], "attestation_bytes_unresolved"],
-    ["wrong immutable reference", [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://wrong", bytes: reportBytes}], "attestation_immutable_ref_mismatch"],
-    ["wrong content bytes", [{evidenceRef: "ASE-SOC2-REPORT", immutableRef: "evidence://assessor/report/2026", bytes: Buffer.from("tampered")}], "attestation_content_fingerprint_mismatch"],
+    ["wrong immutable reference", [{...resolvedReport[0]!, immutableRef: "evidence://wrong"}], "attestation_immutable_ref_mismatch"],
+    ["wrong content bytes", [{...resolvedReport[0]!, bytes: Buffer.from("tampered")}], "attestation_content_fingerprint_mismatch"],
   ] as const)("does not render attested status with %s", (_label, resolvedEvidence, blocker) => {
-    const statement = attestedStatement();
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({
-      statement, evidence: [signedEvidence()], trustedRoots: [root], resolvedEvidence: [...resolvedEvidence], evaluatedAt: now,
+    const decision = evaluateSecurityAssuranceStatement({
+      statement: attestedStatement(),
+      evidence: [signedEvidence()],
+      resolvedEvidence: [...resolvedEvidence],
     });
     expect(decision.allowed).toBe(false);
     expect(decision.status).toBe("not_certified");
     expect(decision.blockers).toContain(blocker);
+  });
+
+  it("rejects Ed448 key material even when its caller label says Ed25519", () => {
+    const {publicKey: ed448PublicKey} = generateKeyPairSync("ed448");
+    const mislabeledRoot: SecurityAssuranceTrustRoot = {
+      ...selfGeneratedRoot,
+      publicKeyPem: ed448PublicKey.export({type: "spki", format: "pem"}).toString(),
+    };
+    expect(validateSecurityAssuranceTrustRootCryptography(mislabeledRoot)).toEqual(["attestation_trust_root_key_type_invalid"]);
+    expect(() => securityAssuranceTrustRootSchema.parse({...mislabeledRoot, algorithm: "Ed448"})).toThrow();
+  });
+
+  it("rejects a reconstructed decision or substituted statement at the rendering boundary", () => {
+    const statement = attestedStatement();
+    const decision = evaluateSecurityAssuranceStatement({statement, evidence: [signedEvidence()], resolvedEvidence: resolvedReport});
+    expect(() => renderSecurityAssuranceStatement(structuredClone(statement), decision, "pt-BR")).toThrow(/original statement/);
+    expect(() => renderSecurityAssuranceStatement(statement, structuredClone(decision), "pt-BR")).toThrow(/trusted decision/);
   });
 
   it.each([
@@ -148,12 +169,12 @@ describe("governed security assurance statements", () => {
       statementId: "ASSURANCE-SOC2-TYPE2", claim: "soc2_type2_examined", status, scope,
       evidenceRef: null, issuedAt: null, validThrough: null,
     });
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({statement, evidence: [], trustedRoots: [], resolvedEvidence: [], evaluatedAt: now});
+    const decision = evaluateSecurityAssuranceStatement({statement, evidence: [], resolvedEvidence: []});
     expect(decision.allowed).toBe(true);
     expect(renderSecurityAssuranceStatement(statement, decision, "pt-BR")).toBe(expected);
   });
 
-  it("keeps milestones structured and prevents unevidenced completion", () => {
+  it("keeps planned milestones typed and rejects invented evidence receipts for completion", () => {
     const planned = securityAssuranceMilestoneSchema.parse({
       milestoneId: "ASSURANCE-MILESTONE-ISO-GAP", framework: "iso27001", kind: "gap_assessment",
       status: "planned", scope, evidenceRef: null,
@@ -161,30 +182,34 @@ describe("governed security assurance statements", () => {
     expect(renderSecurityAssuranceMilestone(planned, "pt-BR")).toBe("ISO/IEC 27001: avaliação de lacunas — planejado.");
     expect(() => securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: null})).toThrow(/completed milestone requires evidence/);
     const completed = securityAssuranceMilestoneSchema.parse({...planned, status: "completed", evidenceRef: "SEV-SECURITY-PLAN"});
-    expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", [])).toThrow(/requires resolved evidence/);
-    expect(renderSecurityAssuranceMilestone(completed, "pt-BR", ["SEV-SECURITY-PLAN"])).toContain("concluído com evidência referenciada");
+    const inventedReceipt = Object.freeze({
+      receiptId: `sha256:${"a".repeat(64)}`,
+      evidenceRef: "SEV-SECURITY-PLAN",
+      contentFingerprint: `sha256:${"b".repeat(64)}`,
+    }) as TrustedSecurityEvidenceResolutionReceipt;
+    expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", inventedReceipt)).toThrow(/trusted evidence receipt/);
+    expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", null)).toThrow(/trusted evidence receipt/);
   });
 
   it.each([
-    "SOC 2 has not been certified, but ISO 27001 is certified",
+    "SOC 2 is certified",
+    "SOC 2 has not been certified — Production has been independently audited",
     "While SOC 2 is planned, penetration testing has passed",
-    "A auditoria SOC 2 será concluída no próximo trimestre",
-    "Production has been independently audited",
     "Possuímos certificação ISO 27001 vigente",
-  ])("blocks arbitrary high-risk prose instead of attempting NLP: %s", (prose) => {
+  ])("blocks mixed-polarity and arbitrary positive assurance prose: %s", (prose) => {
     expect(findNonCanonicalAssuranceLanguage(prose)).toEqual(expect.arrayContaining([
       expect.objectContaining({code: "noncanonical_assurance_language"}),
     ]));
   });
 
-  it("permits only the exact output of the canonical statement and milestone renderers", () => {
-    const statement = securityAssuranceStatementSchema.parse({
-      statementId: "ASSURANCE-SOC2-TYPE2", claim: "soc2_type2_examined", status: "not_certified", scope,
-      evidenceRef: null, issuedAt: null, validThrough: null,
-    });
-    const decision = evaluateSecurityAssuranceStatementAgainstTrustedRoots({statement, evidence: [], trustedRoots: [], resolvedEvidence: [], evaluatedAt: now});
-    const canonicalStatement = renderSecurityAssuranceStatement(statement, decision, "pt-BR");
-    expect(findNonCanonicalAssuranceLanguage(canonicalStatement, [canonicalStatement])).toEqual([]);
-    expect(findNonCanonicalAssuranceLanguage(`${canonicalStatement} SOC 2 certified`, [canonicalStatement])).toHaveLength(1);
+  it("does not allow callers to subtract arbitrary assurance prose as if it were canonical", () => {
+    const prose = "SOC 2 certified";
+    const tryCallerAllowlist = findNonCanonicalAssuranceLanguage as unknown as (
+      output: string,
+      callerAllowlist: readonly string[],
+    ) => ReturnType<typeof findNonCanonicalAssuranceLanguage>;
+    expect(tryCallerAllowlist(prose, [prose])).toEqual([
+      {code: "noncanonical_assurance_language", match: "soc 2"},
+    ]);
   });
 });

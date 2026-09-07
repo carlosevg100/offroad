@@ -424,6 +424,18 @@ const trustedRenderDecisionReceipts = new WeakMap<SecurityInventoryDecision, {
   decisionSnapshot: SecurityInventoryDecision;
 }>();
 
+export type TrustedSecurityEvidenceResolutionReceipt = Readonly<{
+  receiptId: string;
+  evidenceRef: string;
+  contentFingerprint: string;
+}>;
+
+const trustedEvidenceResolutionReceipts = new WeakMap<TrustedSecurityEvidenceResolutionReceipt, {
+  receiptId: string;
+  evidenceRef: string;
+  contentFingerprint: string;
+}>();
+
 const secretPatterns: Array<{name: string; pattern: RegExp}> = [
   {name: "private_key", pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/},
   {name: "openai_style_key", pattern: /\bsk-[A-Za-z0-9_-]{20,}\b/},
@@ -806,6 +818,40 @@ export function assertTrustedSecurityInventoryRenderDecision(
   // canonical fingerprint, resolved the evidence and captured parser-owned values. Both snapshots
   // are deeply frozen before the decision leaves the trusted boundary.
   return {inventory: receipt.inventorySnapshot, decision: receipt.decisionSnapshot};
+}
+
+/** Issues an opaque evidence receipt only from the exact trusted inventory decision. */
+export function issueTrustedSecurityEvidenceResolutionReceipt(
+  inventory: SecurityCurrentStateInventory,
+  decision: SecurityInventoryDecision,
+  evidenceRef: string,
+): TrustedSecurityEvidenceResolutionReceipt | null {
+  const {decision: trustedDecision} = assertTrustedSecurityInventoryRenderDecision(inventory, decision);
+  const resolution = trustedDecision.evidenceResolutions.find((candidate) => candidate.evidenceId === evidenceRef);
+  if (!resolution) return null;
+  const receipt = deepFreeze({
+    receiptId: sha256(Buffer.from(`${trustedDecision.inventoryFingerprint}:${resolution.evidenceId}:${resolution.contentFingerprint}`, "utf8")),
+    evidenceRef: resolution.evidenceId,
+    contentFingerprint: resolution.contentFingerprint,
+  });
+  trustedEvidenceResolutionReceipts.set(receipt, {
+    receiptId: receipt.receiptId,
+    evidenceRef: resolution.evidenceId,
+    contentFingerprint: resolution.contentFingerprint,
+  });
+  return receipt;
+}
+
+export function assertTrustedSecurityEvidenceResolutionReceipt(
+  receipt: TrustedSecurityEvidenceResolutionReceipt | null,
+  evidenceRef: string,
+): void {
+  if (!receipt) throw new Error("completed security assurance milestone requires a trusted evidence receipt");
+  const trusted = trustedEvidenceResolutionReceipts.get(receipt);
+  if (!trusted || receipt.receiptId !== trusted.receiptId || trusted.evidenceRef !== evidenceRef || receipt.evidenceRef !== trusted.evidenceRef
+    || receipt.contentFingerprint !== trusted.contentFingerprint) {
+    throw new Error("completed security assurance milestone requires a trusted evidence receipt");
+  }
 }
 
 function deepFreeze<T>(value: T): T {
