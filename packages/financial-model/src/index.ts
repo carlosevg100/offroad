@@ -4,6 +4,7 @@ export const financialModelVersion = "2026.08.29-v1";
 export const institutionalFinancialModelVersion = "2026.09.03-v2";
 
 export * from "./assumptions";
+export * from "./governed-workbook";
 export * from "./institutional-model";
 export * from "./market-curves";
 export * from "./model";
