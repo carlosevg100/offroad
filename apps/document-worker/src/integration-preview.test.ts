@@ -1,10 +1,12 @@
 import {createHash} from "node:crypto";
 
-import {decisionArtifactContractSchema, decisionArtifactIdentityReport} from "@offroad/case-understanding";
+import {offroadHousePresentationTemplate} from "@offroad/case-export";
+import {decisionArtifactContractSchema, decisionArtifactIdentityReport, renderedMaterialManifestSchema} from "@offroad/case-understanding";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
 import {buildPreviewInformationRequestProjection, parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
+import type {MaterialRenderInspector} from "./material-render-inspection";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const ids = {
@@ -55,6 +57,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
   let completion: {content: string; artifactId: string; result: unknown} | null = null;
   let failure: unknown = null;
   let questionProjection: Record<string, unknown> | null = null;
+  const storedMaterials: Array<{bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}> = [];
   const runsByTask = new Map<string, string>();
   const queue = {
     writeStage: async (_job: unknown, stage: string, status: string) => { stages.push({stage, status}); },
@@ -81,6 +84,14 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       recorded.push({taskId, artifactType: artifact.artifactType, inputFingerprint: artifact.inputFingerprint, content: artifact.content as Record<string, unknown>, id, artifactFingerprint});
       return {id, artifactFingerprint, artifactVersion: 1, replayed: false};
     },
+    storeCapitalProjectMaterial: async (_job: unknown, material: {bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}) => {
+      storedMaterials.push(material);
+      return {
+        objectPath: `${ids.organization}/${ids.project}/materials/${material.contentSha256}.${material.format}`,
+        storageEtag: `etag-${material.contentSha256}`,
+        replayed: false,
+      };
+    },
     finishCapitalTask: async () => "finished",
     syncProjectInformationRequests: async (_job: unknown, projection: unknown) => {
       questionProjection = projection as Record<string, unknown>;
@@ -89,7 +100,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
     completeIntegrationPreviewRun: async (_job: unknown, value: {content: string; artifactId: string; result: unknown}) => { completion = value; return {replayed: false}; },
     fail: async (_job: unknown, error: unknown) => { failure = error; },
   } as unknown as QueueClient;
-  return {queue, recorded, started, stages, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
+  return {queue, recorded, started, stages, storedMaterials, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
 }
 
 describe("integration_preview governed questions", () => {
@@ -278,5 +289,48 @@ describe("integration_preview run processor", () => {
     const brief = material.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
     expect(brief.page_plan.pages).toHaveLength(3);
+  });
+  it("renders, inspects, stores and binds the exact governed presentation bytes before exposing the decision surface", async () => {
+    const first = fakeQueue({composition: "prepare_meeting"});
+    await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
+    const material = fakeQueue({
+      composition: "prepare_material",
+      prior: first.recorded,
+      request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []},
+    });
+    const inspector: MaterialRenderInspector = {
+      inspect: async (input) => ({
+        version: "2026.09.07-v1",
+        source: {format: input.format, byteLength: input.bytes.byteLength, sha256: input.contentSha256},
+        renderer: {id: "libreoffice", version: "test"},
+        pdf: {byteLength: 999, sha256: "1".repeat(64), pageCount: 9},
+        pages: [{pageNumber: 1, byteLength: 111, sha256: "2".repeat(64), widthPx: 1600, heightPx: 900}],
+        renderabilityPassed: true,
+        visualInspection: "awaiting_review",
+        releaseEligible: false,
+        inspectedAt: input.inspectedAt,
+        receiptFingerprint: "3".repeat(64),
+      }),
+    };
+    const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {
+      queue: material.queue,
+      materialInspector: inspector,
+      presentationTemplate: offroadHousePresentationTemplate,
+      now: () => new Date("2026-09-07T12:00:00.000Z"),
+    });
+    expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
+    expect(outcome.status).toBe("succeeded");
+    expect(material.storedMaterials).toHaveLength(1);
+    expect(new TextDecoder().decode(material.storedMaterials[0]!.bytes.slice(0, 2))).toBe("PK");
+    const renderedArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_presentation_material")!;
+    const manifest = renderedMaterialManifestSchema.parse(renderedArtifact.content.manifest);
+    expect(manifest.storage.state).toBe("stored");
+    expect(manifest.quality).toMatchObject({schemaValidated: true, numericIdentityPassed: true, visualInspection: "not_run", releaseEligible: false});
+    expect(manifest.release.state).toBe("internal_only");
+    const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
+    expect(contract.views.find((view) => view.surface === "presentation")).toMatchObject({
+      artifactId: manifest.id,
+      artifactFingerprint: manifest.contentSha256,
+    });
   });
 });

@@ -1,5 +1,5 @@
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
-import {ArrowDownToLine, CircleDotDashed, FileSpreadsheet, LockKeyhole, Milestone} from "lucide-react";
+import {ArrowDownToLine, CircleDotDashed, FileSpreadsheet, LockKeyhole, Milestone, Presentation} from "lucide-react";
 
 type Props = {
   contract: DecisionArtifactContract;
@@ -25,6 +25,7 @@ const copy = {
     evidence: {observed_public: "observado · público", observed_private: "observado · privado", calculated: "calculado", assumption: "premissa", mixed: "misto", not_computable: "não calculável"},
     materials: "Materiais desta versão",
     workbook: "Baixar planilha",
+    presentation: "Baixar apresentação",
     trace: "Todos os números acima apontam para o objeto, as fontes, as premissas e as lacunas que os sustentam.",
   },
   "en-US": {
@@ -44,6 +45,7 @@ const copy = {
     evidence: {observed_public: "observed · public", observed_private: "observed · private", calculated: "calculated", assumption: "assumption", mixed: "mixed", not_computable: "not computable"},
     materials: "Materials in this version",
     workbook: "Download workbook",
+    presentation: "Download presentation",
     trace: "Every number above points back to the object, sources, assumptions and gaps that support it.",
   },
 } as const;
@@ -76,6 +78,7 @@ export function DecisionArtifactWork({contract, locale, materialHref}: Props) {
   const gaps = new Map(contract.gaps.map((gap) => [gap.id, gap]));
   const conversation = contract.views.find((view) => view.surface === "conversation");
   const workbookReady = contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint !== null;
+  const presentationReady = contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint !== null;
   const visibleClaimIds = new Set(conversation?.blocks.flatMap((block) => block.claimIds) ?? []);
   const claims = contract.claims.filter((claim) => visibleClaimIds.has(claim.id));
 
@@ -134,9 +137,12 @@ export function DecisionArtifactWork({contract, locale, materialHref}: Props) {
         </div>
       </section> : null}
 
-      {materialHref && workbookReady ? <footer className="decision-work__materials">
+      {materialHref && (workbookReady || presentationReady) ? <footer className="decision-work__materials">
         <div><ArrowDownToLine aria-hidden="true" size={16} /><span>{t.materials}</span></div>
-        <nav><a href={`${materialHref}?format=xlsx`}><FileSpreadsheet aria-hidden="true" size={15} /> {t.workbook}</a></nav>
+        <nav>
+          {workbookReady ? <a href={`${materialHref}?format=xlsx`}><FileSpreadsheet aria-hidden="true" size={15} /> {t.workbook}</a> : null}
+          {presentationReady ? <a href={`${materialHref}?format=pptx`}><Presentation aria-hidden="true" size={15} /> {t.presentation}</a> : null}
+        </nav>
       </footer> : null}
     </article>
   );

@@ -1,4 +1,8 @@
+import {readFile} from "node:fs/promises";
+import {join} from "node:path";
+
 import {createClient} from "@supabase/supabase-js";
+import {offroadHousePresentationTemplate} from "@offroad/case-export";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type GatewayCallLog} from "@offroad/model-gateway";
 import {loadConfig, describeConfig, type WorkerConfig} from "./config";
 import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} from "./queue";
@@ -31,6 +35,7 @@ import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
 import {assertWorkerRuntimeSchema} from "./runtime-schema";
+import {createMaterialRenderInspector} from "./material-render-inspection";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -90,6 +95,26 @@ async function main(): Promise<void> {
     toolVersion(config.PDFINFO_BIN),
   ]);
   log("worker.tools", {libreoffice: sofficeVersion, tesseract: tesseractVersion, pdfinfo: pdfinfoVersion});
+
+  // Materials use the current circular Offroad mark from the same immutable assets as the web
+  // application. A missing asset is a broken build and stops boot; silently generating a deck
+  // with stale or invented branding would be worse than refusing the job.
+  const [brandLogo, brandLogoOnDark] = await Promise.all([
+    readFile(join(config.BRAND_ASSETS_DIR, "offroad-symbol.png")),
+    readFile(join(config.BRAND_ASSETS_DIR, "offroad-symbol-inverted.png")),
+  ]);
+  const presentationTemplate = {
+    ...offroadHousePresentationTemplate,
+    logo: {data: new Uint8Array(brandLogo), extension: "png" as const},
+    logoOnDark: {data: new Uint8Array(brandLogoOnDark), extension: "png" as const},
+  };
+  const materialInspector = createMaterialRenderInspector({
+    sofficeBin: config.SOFFICE_BIN,
+    pdftoppmBin: config.PDFTOPPM_BIN,
+    pdfinfoBin: config.PDFINFO_BIN,
+    timeoutMs: config.CONVERT_TIMEOUT_MS,
+    libreOfficeVersion: sofficeVersion,
+  });
 
   const scanner = config.REQUIRE_VIRUS_SCAN
     ? createClamdScanner({host: config.CLAMD_HOST, port: config.CLAMD_PORT, timeoutMs: config.CLAMD_TIMEOUT_MS})
@@ -312,7 +337,13 @@ async function main(): Promise<void> {
         ? job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true
-              ? processIntegrationPreviewRunJob(job, {queue, log, gateway: gatewayRun.gateway})
+              ? processIntegrationPreviewRunJob(job, {
+                  queue,
+                  log,
+                  gateway: gatewayRun.gateway,
+                  materialInspector,
+                  presentationTemplate,
+                })
               : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
           : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {

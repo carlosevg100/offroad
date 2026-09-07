@@ -29,6 +29,9 @@ WORKDIR /repo
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json turbo.json ./
 COPY packages ./packages
 COPY apps/document-worker ./apps/document-worker
+# The renderer uses the same governed brand source as the product. Only the four current
+# circular-symbol assets are copied into the runtime image; no web application code ships.
+COPY apps/web/public/brand ./brand
 
 RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 
@@ -65,6 +68,8 @@ ENV NODE_ENV=production \
     SOFFICE_BIN=/usr/bin/soffice \
     TESSERACT_BIN=/usr/bin/tesseract \
     PDFTOPPM_BIN=/usr/bin/pdftoppm \
+    PDFINFO_BIN=/usr/bin/pdfinfo \
+    BRAND_ASSETS_DIR=/app/brand \
     CLAMD_HOST=127.0.0.1 \
     CLAMD_PORT=3310 \
     HOME=/tmp
@@ -122,6 +127,7 @@ WORKDIR /app
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/dist ./dist
 COPY --from=build /out/package.json ./package.json
+COPY --from=build /repo/brand ./brand
 # Frozen source packs of the gold cases travel with the image: a job bound to a pack reads it
 # from here and never reaches the internet.
 COPY packages/testing-fixtures/assets/camil/source-pack ./source-packs/gc01-analista-ib-camil
