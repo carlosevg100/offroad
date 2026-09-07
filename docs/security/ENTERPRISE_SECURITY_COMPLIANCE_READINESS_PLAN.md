@@ -429,12 +429,14 @@ Gate: nenhum risco crítico conhecido sem owner; nenhum high de código sem tria
   8 sistemas, 7 classes de dados, 8 stores, 25 fluxos, 11 identidades, 17 vendors, 8 claims
   canônicos e 18 gaps obrigatórios. O gate confiável confirma o remote autorizado, resolve o commit
   real contido em `origin/main`, resolve cada referência nesse objeto Git e vincula observações
-  locais a bytes, SHA-256 e metadados de origem e autoridade allowlisted. O status dos claims é
+  locais a bytes, SHA-256 e metadados de origem e autoridade governados. O status dos claims é
   derivado; remover ou reclassificar coverage/gaps falha fechado. A completude live continua aberta
   em SEC-008 e não é inferida desta baseline. Claims externos de SOC 2, ISO, pentest e auditoria
-  agora usam objetos, escopo, evidência assinada, validade, revogação e trust root separados; sem
-  esses elementos o renderer emite somente estado não certificado/não atestado. Milestones também
-  são tipados e nunca promovem um claim automaticamente. A fronteira está documentada em
+  agora usam objetos, escopo, evidência assinada, validade, revogação e um registro interno
+  fingerprintado de trust roots Ed25519; roots e relógio fornecidos pelo caller não entram na
+  decisão. Sem esses elementos o renderer emite somente estado não certificado/não atestado.
+  Milestones também são tipados, conclusão exige receipt de evidência resolvida e nunca promove um
+  claim automaticamente. A fronteira está documentada em
   `ASSURANCE_CLAIM_TRUST_BOUNDARY.md`;
 - [ ] SEC-008 coletar configuração live read-only de AWS, Supabase, Vercel, GitHub, Sentry e PostHog;
 - [ ] SEC-009 fechar DPA/ZDR/retention/region de OpenAI, Anthropic, Perplexity e Firecrawl;

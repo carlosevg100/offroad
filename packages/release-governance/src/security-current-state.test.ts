@@ -64,7 +64,10 @@ describe("security current-state inventory", () => {
     expect(decision.claimAssessments).toHaveLength(8);
     expect(decision.claimAssessments.every((claim) => claim.status === "blocked_by_open_gaps")).toBe(true);
     const generatedPath = fileURLToPath(new URL("../../../docs/security/CURRENT_STATE_INVENTORY.md", import.meta.url));
-    expect(readFileSync(generatedPath, "utf8")).toBe(renderSecurityCurrentStateInventory(currentSecurityInventory, decision));
+    const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, decision);
+    expect(readFileSync(generatedPath, "utf8")).toBe(rendered);
+    expect(rendered).toContain("SOC 2: plano de remediação — concluído com evidência referenciada.");
+    expect(rendered).toContain("ISO/IEC 27001: avaliação de lacunas — planejado.");
   });
 
   it("makes the evaluation OIDC, secret retrieval and provider boundaries explicit", () => {

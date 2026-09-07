@@ -17,16 +17,20 @@ tipados; o texto é somente uma vista canônica.
 referência de evidência, emissão e validade. Estados não atestados são `planned`, `in_progress`,
 `not_certified` e `not_independently_audited`. `attested` é reservado à decisão do gate.
 
-`SecurityAssuranceEvidence` vincula claim e escopo ao emissor, trust root, janela de validade,
-revogação, referência imutável, hash dos bytes e assinatura Ed25519 destacada.
+`SecurityAssuranceEvidence` vincula claim e escopo ao emissor, `trustRootId`, `keyId`, algoritmo
+literal `Ed25519`, janela de validade, revogação, referência imutável, hash dos bytes e assinatura
+destacada.
 
-`SecurityAssuranceTrustRoot` é configuração governada separadamente do claim e da evidência. Define
-emissor, chave pública, claims permitidos, validade e revogação. Uma chave apresentada pelo próprio
-payload nunca é fonte de confiança.
+`SecurityAssuranceTrustRoot` vive em registro interno governado e fingerprintado, fora do payload da
+avaliação. Define emissor, `keyId`, algoritmo literal `Ed25519`, chave pública, claims permitidos,
+validade e revogação. A avaliação confere também que o tipo assimétrico real da chave é `ed25519`;
+rotular material Ed448 como Ed25519 falha fechado. O registro atual é deliberadamente vazio. Uma
+chave, root ou relógio apresentados pelo caller nunca são fonte de confiança.
 
 `SecurityAssuranceMilestone` representa gap assessment, plano de remediação, readiness review,
-contratação externa e reteste. Milestone concluído exige evidência resolvida, mas nunca se converte
-automaticamente em claim externo.
+contratação externa e reteste. Milestone concluído exige receipt opaco emitido pelo resolver para os
+bytes da evidência exata; uma lista de IDs, um objeto reconstruído ou uma referência inventada não
+servem. O milestone nunca se converte automaticamente em claim externo.
 
 ## Gate
 
@@ -35,8 +39,8 @@ Para renderizar `attested`, todas as condições precisam ser verdadeiras:
 1. evidence ref existe e resolve para bytes;
 2. hash dos bytes corresponde ao fingerprint assinado;
 3. referência imutável resolvida corresponde à referência assinada;
-4. assinatura Ed25519 é válida contra uma trust root pré-configurada;
-5. emissor e tipo de claim são autorizados pela root;
+4. assinatura Ed25519 é válida contra uma root do registro interno fingerprintado;
+5. `keyId`, algoritmo, tipo assimétrico real, emissor e claim são autorizados pela root;
 6. root e evidência estão vigentes e não revogadas;
 7. emissão ocorreu dentro da validade da root;
 8. claim, scope fingerprint e janela de validade coincidem exatamente com o statement.
@@ -46,22 +50,26 @@ Qualquer falha produz blocker tipado e rebaixa a vista para `not_certified` ou
 
 ## Renderer e lint
 
-O renderer aceita apenas o statement original e o receipt imutável produzido pelo gate. Decisão
-reconstruída ou statement substituído falham fechados. O inventário atual passa um registro vazio de
-trust roots e evidências externas; portanto hoje nenhum claim positivo pode ser emitido.
+O renderer aceita apenas o statement original e o objeto de decisão que recebeu receipt interno do
+gate. Decisão reconstruída ou statement substituído falham fechados. O fingerprint do registro de
+trust roots entra na decisão e no seu fingerprint. O caller não passa o registro nem seu relógio. O
+registro interno atual não contém roots nem attestations externas; portanto hoje nenhum claim
+positivo pode ser emitido.
 
-O scanner de prose é apenas defense in depth. Ele não tenta compreender negação, tempo verbal,
-contraste ou verdade. Remove exclusivamente frases produzidas pelos renderers canônicos e manda
-qualquer outra menção de alto risco para revisão. Isso inclui frases aparentemente negativas,
-futuras ou de milestone escritas manualmente. Essa política elimina a dependência de uma regex que
-pretenda funcionar como NLP.
+O scanner de prose é apenas lint de defense in depth. Ele roda somente nos campos narrativos não
+tipados do inventário e manda menções de alto risco para revisão; não tenta compreender negação,
+tempo verbal, contraste ou verdade. Saídas de claim e milestone não são autenticadas por texto: são
+emitidas apenas pelos renderers a partir dos objetos e receipts correspondentes. Não existe
+allowlist de frases fornecida pelo caller, nem subtração textual do output final. Estados futuros e
+milestones legítimos seguem a rota tipada em vez de depender da regex como se ela fosse NLP.
 
 ## Evidência de teste
 
-Os testes cobrem atestação válida e as recusas por evidência ausente, bytes ausentes ou alterados,
-escopo divergente, validade expirada, evidência revogada, root ausente ou revogada, assinatura
-adulterada, decision receipt reconstruído, milestone concluído sem evidência, polaridade mista e
-prose positiva arbitrária.
+Os testes cobrem recusa de root autocriada pelo caller, material Ed448 rotulado Ed25519, evidência
+ausente, bytes ausentes ou alterados, escopo divergente, validade expirada, evidência revogada,
+decision receipt reconstruído, milestone concluído com ID ou receipt inventado, tentativa de
+allowlist textual, polaridade mista e prose positiva arbitrária. O caminho `attested` positivo só
+poderá ganhar fixture de sucesso quando uma root externa real for governada no registro.
 
 ## Limite atual
 

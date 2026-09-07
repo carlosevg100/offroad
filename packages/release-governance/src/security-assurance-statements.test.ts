@@ -188,6 +188,16 @@ describe("governed security assurance statements", () => {
       contentFingerprint: `sha256:${"b".repeat(64)}`,
     }) as TrustedSecurityEvidenceResolutionReceipt;
     expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", inventedReceipt)).toThrow(/trusted evidence receipt/);
+    expect(() => renderSecurityAssuranceMilestone(
+      completed,
+      "pt-BR",
+      ["SEV-SECURITY-PLAN"] as unknown as TrustedSecurityEvidenceResolutionReceipt,
+    )).toThrow(/trusted evidence receipt/);
+    const inventedEvidenceMilestone = securityAssuranceMilestoneSchema.parse({
+      ...completed,
+      evidenceRef: "SEV-INVENTED",
+    });
+    expect(() => renderSecurityAssuranceMilestone(inventedEvidenceMilestone, "pt-BR", inventedReceipt)).toThrow(/trusted evidence receipt/);
     expect(() => renderSecurityAssuranceMilestone(completed, "pt-BR", null)).toThrow(/trusted evidence receipt/);
   });
 
