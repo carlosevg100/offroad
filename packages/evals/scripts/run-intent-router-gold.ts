@@ -11,6 +11,7 @@ import {resolve} from "node:path";
 import {
   INTENT_CLASSIFIER_SYSTEM,
   buildIntentClassifierInput,
+  canonicalizeIntentClassifierOutput,
   intentClassifierOutputSchema,
   type IntentClassifierOutput,
 } from "@offroad/agent-contracts";
@@ -114,7 +115,7 @@ async function main(): Promise<void> {
           thinking: "off",
           metadata: {surface: "intent_router_gold", caseId: turn.caseId, turnId: turn.id, repeat: String(repeat)},
         });
-        actual = result.output;
+        actual = canonicalizeIntentClassifierOutput(result.output, turn.locale);
         provider = result.provider;
         model = result.model;
         costUsd = result.costUsd;

@@ -46,14 +46,17 @@ const inferredClassifierField = <T extends z.ZodTypeAny>(value: T) => z.object({
 
 export const intentClassifierOutputSchema = z.object({
   routingCore: z.object({
-    action: inferredClassifierField(z.array(z.string().min(1).max(400)).min(1).max(16)),
-    object: inferredClassifierField(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).min(1).max(24)),
-    desiredOutcome: inferredClassifierField(z.string().min(1).max(1_200)),
+    // Empty lists are representable at the model boundary so an honest abstention is valid JSON.
+    // `canonicalizeIntentClassifierOutput` then supplies a fail-closed envelope shape; the
+    // persisted contract remains strict and never accepts an empty routing core.
+    action: inferredClassifierField(z.array(z.string().min(1).max(400)).max(16)),
+    object: inferredClassifierField(z.array(z.object({kind: intentObjectKindSchema, reference: z.string().max(400).nullish()})).max(24)),
+    desiredOutcome: inferredClassifierField(z.string().max(1_200)),
     decision: inferredClassifierField(z.string().max(1_200).nullable()),
-    audience: inferredClassifierField(z.array(z.string().min(1).max(200)).min(1).max(12)),
+    audience: inferredClassifierField(z.array(z.string().min(1).max(200)).max(12)),
     depth: inferredClassifierField(intentDepthSchema),
     continuity: inferredClassifierField(intentContinuitySchema),
-    workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).min(1).max(8)),
+    workResponsibility: inferredClassifierField(z.array(workResponsibilitySchema).max(8)),
   }),
   inferableContext: z.object({
     jurisdiction: inferredClassifierField(z.array(z.string().min(1).max(40)).max(8)),
@@ -65,7 +68,7 @@ export const intentClassifierOutputSchema = z.object({
     urgency: inferredClassifierField(z.enum(["now", "today", "this_week", "ongoing"]).nullable()),
     availableInputs: inferredClassifierField(z.array(z.string().max(400)).max(80)),
   }),
-  primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).min(1).max(6),
+  primaryWorks: z.array(z.object({work: primaryWorkSchema, confidence: z.number().min(0).max(1)})).max(6),
   composition: namedCompositionSchema.nullable(),
   /** The one question the classifier would ask first, if it were allowed to ask. */
   firstQuestion: z.string().max(600).nullable(),
@@ -73,6 +76,55 @@ export const intentClassifierOutputSchema = z.object({
   abstainReason: z.string().max(600).nullable(),
 });
 export type IntentClassifierOutput = z.infer<typeof intentClassifierOutputSchema>;
+
+const abstentionQuestion = (locale: IntentClassifierInput["locale"]): string => locale === "pt-BR"
+  ? "Qual material, documento ou assunto você quer que eu examine, e qual resultado você espera?"
+  : "Which material, document or subject should I examine, and what result do you expect?";
+
+/**
+ * Converts a model-written abstention into the minimum persisted envelope shape. This is a
+ * boundary adapter, not a guessed route: composition stays null and `abstain` remains the signal
+ * that prevents execution. It also fails closed when the model claims confidence while omitting
+ * a field the persisted envelope requires.
+ */
+export function canonicalizeIntentClassifierOutput(
+  output: IntentClassifierOutput,
+  locale: IntentClassifierInput["locale"],
+): IntentClassifierOutput {
+  const incomplete = output.routingCore.action.value.length === 0
+    || output.routingCore.object.value.length === 0
+    || output.routingCore.desiredOutcome.value.trim().length === 0
+    || output.routingCore.audience.value.length === 0
+    || output.routingCore.workResponsibility.value.length === 0
+    || output.primaryWorks.length === 0;
+  if (!output.abstain && !incomplete) return output;
+
+  return intentClassifierOutputSchema.parse({
+    ...output,
+    routingCore: {
+      ...output.routingCore,
+      action: {value: [locale === "pt-BR" ? "esclarecer pedido" : "clarify request"], state: "unknown", confidence: null, basis: null},
+      object: {value: [{kind: "document", reference: null}], state: "unknown", confidence: null, basis: null},
+      desiredOutcome: {
+        value: locale === "pt-BR" ? "Entender o resultado esperado antes de iniciar." : "Understand the expected result before starting.",
+        state: "unknown",
+        confidence: null,
+        basis: null,
+      },
+      audience: {value: [locale === "pt-BR" ? "solicitante" : "requester"], state: "unknown", confidence: null, basis: null},
+      depth: {value: "point", state: "unknown", confidence: null, basis: null},
+      continuity: {value: "new", state: "unknown", confidence: null, basis: null},
+      workResponsibility: {value: ["producer"], state: "unknown", confidence: null, basis: null},
+    },
+    primaryWorks: [{work: "understand", confidence: 0}],
+    composition: null,
+    firstQuestion: output.firstQuestion?.trim() || abstentionQuestion(locale),
+    abstain: true,
+    abstainReason: output.abstainReason?.trim() || (locale === "pt-BR"
+      ? "O objeto e o resultado esperado ainda não estão identificados."
+      : "The object and expected result are not identified yet."),
+  });
+}
 
 /** Stable production classifier instructions, shared verbatim by runtime and gold gate. */
 export const INTENT_CLASSIFIER_SYSTEM = `You classify one turn of a debt capital markets conversation into an intent envelope. You do
@@ -89,6 +141,10 @@ capital_match. Do not add a generic work when the turn names a bounded one. A po
 a number starts with extract_and_reconcile. An explicit assumption change starts with model. A
 market terms question starts with market. A received opportunity triage starts with analyze. A
 structure request with attached material starts with extract_and_reconcile before strategy.
+For a vague assignment to prepare for a meeting, start with understand, then capital_strategy.
+For a board or committee decision, include capital_strategy, analyze and model. For a received
+opportunity with documents, include analyze and read_documents. For a financing meeting, include
+capital_strategy, understand and model. For covenant headroom, include analyze and model.
 
 Composition is either null or exactly one of these identifiers. Never describe a sequence in this
 field:
@@ -112,6 +168,10 @@ Choose the composition that names the requested outcome, not an intermediate ste
 - collecting without analysis is find_and_organize_information;
 - asking for market terms or precedents is map_market_and_precedents;
 - analysing covenant headroom or credit performance is analyze_performance_and_credit.
+The requested outcome wins over an intermediate task: a board discussion remains prepare_decision
+even though diagnosis is required; an explicit request to produce the selected material remains
+prepare_material even when the file will be used in a meeting. A follow-up such as "revise isso"
+uses the recent conversation to resolve "isso"; do not abstain merely because it is a pronoun.
 
 Work responsibility describes the person's role in this work, never their job title: producer,
 coordinator, reviewer, decision_maker, sponsor, recipient, external_authorizer.
@@ -119,6 +179,9 @@ Producer applies when the person asks the system to create or analyse. Reviewer 
 ask for a challenge or review. Coordinator applies when they orchestrate a structure, process or
 capital outreach. Decision_maker applies when they own the choice being prepared; sponsor applies
 when they own the broader programme. Multiple responsibilities may apply.
+Never infer decision_maker or external_authorizer from a banker, analyst, advisor or investor job
+title. A person preparing client work is normally producer and coordinator; the client owns the
+capital decision. A person screening received material can be both producer and reviewer.
 
 Depth: point only for a bounded factual question or a truly context-free request; preliminary for
 early exploration, triage or idea generation; institutional for an existing deliverable, decision,
@@ -133,4 +196,10 @@ work family, ordering, audience or deliverable, put that single question in firs
 Questions about missing evidence belong to the downstream coverage engine, not here, unless the
 missing fact changes the workflow itself. For a point explanation, explicit model update, review,
 collection-only request, market query or bounded covenant analysis, leave firstQuestion null.
+Do not abstain merely because evidence, assumptions, thesis angle or format is incomplete when the
+subject and requested outcome family are already clear. Ask here when the answer changes the
+workflow or external effect: internal review versus client-ready material, thesis angle plus output
+form for an underspecified sponsor assignment, or authorization and selected structure before an
+external introduction. Evidence such as a receivables tape, budget, debt schedule, mandate or capex
+amount is requested later by coverage and is not a router question.
 Return the requested JSON only.`;

@@ -1,6 +1,7 @@
 import {
   INTENT_CLASSIFIER_SYSTEM,
   buildIntentClassifierInput,
+  canonicalizeIntentClassifierOutput,
   intentClassifierOutputSchema,
   intentEnvelopeSchema,
   type IntentEnvelope,
@@ -124,7 +125,7 @@ export async function shadowIntentEnvelope(input: {
     thinking: "off",
     metadata: {surface: "shadow_router"},
   });
-  const output = completion.output;
+  const output = canonicalizeIntentClassifierOutput(completion.output, context.locale);
   const envelope = stampIntentEnvelope(output, context, input.now);
   return {envelope, output, model: completion.model, costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore)};
 }

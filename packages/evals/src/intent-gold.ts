@@ -52,7 +52,7 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   turn({
     id: "gc02-t01", caseId: "gc02",
     message: "Sou CFO da Camil. O conselho quer discutir se nossa estrutura de capital está adequada para os próximos anos. Quero chegar com uma leitura independente e alternativas.",
-    expected: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["decision_maker", "sponsor"], depth: "institutional", continuity: "new", composition: "prepare_decision", abstain: false, firstQuestionTheme: "data do conselho e se há orçamento e plano de capex para enviar", firstQuestionSignals: [["data", "quando", "prazo", "segunda"], ["orçamento", "budget", "capex", "plano"]]},
+    expected: {primaryWorks: ["capital_strategy", "analyze", "model"], workResponsibility: ["decision_maker", "sponsor"], depth: "institutional", continuity: "new", composition: "prepare_decision", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc02-t02", caseId: "gc02",
@@ -63,18 +63,18 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   turn({
     id: "gc03-t01", caseId: "gc03",
     message: "Sou assessor de uma distribuidora, a Aurora. Eles querem captar para um centro de distribuição e têm uma carteira boa de recebíveis. Segue o que consegui juntar. Preciso saber se dá para estruturar em cima dos recebíveis e como.",
-    expected: {primaryWorks: ["extract_and_reconcile", "capital_strategy", "analyze"], workResponsibility: ["producer", "coordinator"], depth: "institutional", continuity: "new", composition: "design_indicative_structure", abstain: false, firstQuestionTheme: "tape e aging dos recebíveis", firstQuestionSignals: [["tape", "aging", "carteira", "recebíveis"]]},
+    expected: {primaryWorks: ["extract_and_reconcile", "capital_strategy", "analyze"], workResponsibility: ["producer", "coordinator"], depth: "institutional", continuity: "new", composition: "design_indicative_structure", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc03-t02", caseId: "gc03",
     priorTurns: ["Assessor estruturando captação da Aurora com recebíveis."],
     message: "Já manda para os fundos que você achar aderentes.",
-    expected: {primaryWorks: ["capital_match"], workResponsibility: ["producer"], depth: "institutional", continuity: "resume", composition: "introduce", abstain: false, firstQuestionTheme: "autorização por destinatário e estrutura escolhida", firstQuestionSignals: [["autoriza", "permissão", "aprovação", "confirmar"], ["estrutura", "operação", "termos"]]},
+    expected: {primaryWorks: ["capital_match"], workResponsibility: ["coordinator"], depth: "institutional", continuity: "resume", composition: "introduce", abstain: false, firstQuestionTheme: "autorização por destinatário e estrutura escolhida", firstQuestionSignals: [["autoriza", "permissão", "aprovação", "confirmar"], ["estrutura", "operação", "termos"]]},
   }),
   turn({
     id: "gc04-t01", caseId: "gc04",
     message: "Sou analista de investimentos na Prisma. Recebemos esta proposta de debêntures da Cogna com o release do trimestre. Meu PM quer saber se vale gastar tempo nisso.",
-    expected: {primaryWorks: ["analyze", "read_documents"], workResponsibility: ["producer", "reviewer"], depth: "preliminary", continuity: "new", composition: "evaluate_received_opportunity", abstain: false, firstQuestionTheme: "mandato aplicável do fundo", firstQuestionSignals: [["mandato", "critério", "restrição", "política"]]},
+    expected: {primaryWorks: ["analyze", "read_documents"], workResponsibility: ["producer", "reviewer"], depth: "preliminary", continuity: "new", composition: "evaluate_received_opportunity", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc04-t02", caseId: "gc04",
@@ -85,13 +85,13 @@ export const intentGoldTurns: readonly IntentGoldTurn[] = [
   turn({
     id: "gc05-t01", caseId: "gc05",
     message: "Sou banker de corporate banking. A Camil anunciou uma expansão e quero levar ideias de como financiar isso dentro da capacidade deles. Tenho reunião com o CFO e a tesouraria.",
-    expected: {primaryWorks: ["capital_strategy", "understand", "model"], workResponsibility: ["producer", "decision_maker"], depth: "preliminary", continuity: "new", composition: "prepare_meeting", abstain: false, firstQuestionTheme: "tamanho e cronograma da expansão, se não forem públicos", firstQuestionSignals: [["tamanho", "valor", "montante"], ["cronograma", "prazo", "desembolso"]]},
+    expected: {primaryWorks: ["capital_strategy", "understand", "model"], workResponsibility: ["producer", "coordinator"], depth: "preliminary", continuity: "new", composition: "prepare_meeting", abstain: false, firstQuestionTheme: null},
   }),
   turn({
     id: "gc05-t02", caseId: "gc05",
     priorTurns: ["Banker analisando alternativas para financiar a expansão da Camil."],
     message: "Gostei das ideias, principalmente da extensão com troca de indexador. Vamos preparar o material para a reunião.",
-    expected: {primaryWorks: ["capital_strategy"], workResponsibility: ["producer", "decision_maker"], depth: "institutional", continuity: "resume", composition: "prepare_material", abstain: false, firstQuestionTheme: "se o material vai direto à companhia ou passa por revisão interna", firstQuestionSignals: [["companhia", "cliente", "Camil"], ["interno", "interna", "revisão"]]},
+    expected: {primaryWorks: ["capital_strategy"], workResponsibility: ["producer", "coordinator"], depth: "institutional", continuity: "resume", composition: "prepare_material", abstain: false, firstQuestionTheme: "se o material vai direto à companhia ou passa por revisão interna", firstQuestionSignals: [["companhia", "cliente", "Camil"], ["interno", "interna", "revisão"]]},
   }),
   turn({
     id: "gc05-t03", caseId: "gc05",

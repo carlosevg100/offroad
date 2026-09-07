@@ -1,6 +1,6 @@
 # Gate gold do roteador semântico
 
-Estado em 07/09/2026: implementado, ainda não executado com modelo real. Não governa produção.
+Estado em 07/09/2026: implementado e medido com modelo real; ainda não aprovado. Não governa produção.
 
 ## O problema que este gate resolve
 
@@ -23,6 +23,18 @@ Todos os 16 turnos rodam uma vez para medir:
 - primeiro trabalho do plano;
 - cobertura dos demais trabalhos e responsabilidades;
 - presença ou ausência de pergunta material e aderência ao tema do gabarito.
+
+## Fronteira das perguntas
+
+Este gate mede somente a pergunta que altera o workflow: família de trabalho, ordem, audiência,
+forma de entrega ou efeito externo. O roteador não deve interromper um trabalho já identificável
+para pedir orçamento, dívida, tape, aging, mandato ou cronograma de capex. Essas são lacunas de
+evidência e pertencem ao mapa de cobertura e ao question gate do executor especializado.
+
+Essa separação evita duas falhas opostas: um roteador engessado que pergunta tudo antes de começar
+e um executor que simula dados inexistentes. O primeiro inicia o trilho correto; o segundo mostra o
+que já consegue fazer, pede apenas o que muda materialmente a análise e registra o que ficou sem
+cobertura.
 
 Seis entroncamentos rodam três vezes por padrão:
 
@@ -55,9 +67,9 @@ Com três repetições, são 28 resultados planejados. O orçamento padrão é U
 nunca pode exceder US$ 10. O workflow termina com falha quando qualquer gate não passa, preservando o
 relatório para diagnóstico.
 
-## Próxima decisão após a primeira corrida
+## Decisões a partir das corridas reais
 
-O primeiro resultado real deve ser tratado como medição, não como aprovação. Cada divergência vira
+Cada resultado real é tratado como medição, não como aprovação. Cada divergência vira
 uma de quatro ações: corrigir o gold quando o gabarito estiver errado; melhorar o contrato quando a
 intenção estiver subespecificada; separar uma composição quando dois trabalhos legítimos estiverem
 colidindo; ou manter a família fora de produção quando o classificador não for estável.
