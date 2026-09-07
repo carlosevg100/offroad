@@ -240,6 +240,20 @@
   width: 100%;
 }
 
+.advisor-analysis-progress {background:#fff;border:1px solid #dfe3df;border-radius:14px;box-shadow:0 14px 36px rgb(28 35 39 / 4%);overflow:hidden;width:100%;}
+.advisor-analysis-progress > header {align-items:flex-start;border-bottom:1px solid #e7e9e6;display:flex;gap:20px;justify-content:space-between;padding:20px 23px 17px;}
+.advisor-analysis-progress > header small {color:#718050;font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}
+.advisor-analysis-progress > header h2 {font-family:var(--serif);font-size:21px;font-weight:430;letter-spacing:-.02em;margin:4px 0 0;}
+.advisor-analysis-progress > header > span {background:#f1f4ed;border-radius:999px;color:#607541;font-size:9px;font-weight:700;padding:6px 9px;}
+.advisor-analysis-progress ol {display:grid;list-style:none;margin:0;padding:4px 23px 8px;}
+.advisor-analysis-progress li {align-items:center;border-top:1px solid #eceeeb;color:#596268;display:grid;font-size:10px;gap:9px;grid-template-columns:14px minmax(0,1fr) auto;padding:10px 0;}
+.advisor-analysis-progress li:first-child {border-top:0;}
+.advisor-analysis-progress li > svg {color:#a2a9a4;}
+.advisor-analysis-progress li.is-complete > svg {color:#71874d;}
+.advisor-analysis-progress li.is-in_progress > svg {color:#9b7627;}
+.advisor-analysis-progress li.is-conflicting > svg {color:#a95c45;}
+.advisor-analysis-progress li > small {color:#8b9397;font-size:8px;}
+
 .execution-brief-card {
   background: #fff;
   border: 1px solid #dfe3df;

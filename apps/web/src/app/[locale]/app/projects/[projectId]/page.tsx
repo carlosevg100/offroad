@@ -25,6 +25,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
+import {advisorReceivablesProgress} from "@/lib/advisor/receivables-progress";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {OriginationDecision} from "./origination-decision";
@@ -223,7 +224,7 @@ async function ConversationalCapitalProject({
   const t = await getTranslations({locale, namespace: "App.advisorProject"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: session} = await supabase.from("document_intake_sessions")
-    .select("id, status, representation_status")
+    .select("id, status, representation_status, result_summary")
     .eq("organization_id", organization.id)
     .eq("capital_project_id", project.id)
     .order("created_at", {ascending: true})
@@ -388,7 +389,11 @@ async function ConversationalCapitalProject({
       ]);
 
   const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
+    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"), analysisDepth: t("analysisDepth"), analysisDepthBody: t("analysisDepthBody"),
+    analysisStage: {
+      portfolio_diagnostics: t("analysisStage.portfolio_diagnostics"), evidence_reconciliation: t("analysisStage.evidence_reconciliation"), eligibility_analysis: t("analysisStage.eligibility_analysis"), structure_sizing: t("analysisStage.structure_sizing"), cash_waterfall: t("analysisStage.cash_waterfall"), full_underwriting: t("analysisStage.full_underwriting"),
+    },
+    analysisStageState: {complete: t("analysisStageState.complete"), in_progress: t("analysisStageState.in_progress"), waiting: t("analysisStageState.waiting"), conflicting: t("analysisStageState.conflicting")},
     errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
     informationRequest: {
       eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), attachEvidence: t("informationRequest.attachEvidence"), attachEvidenceHelp: t("informationRequest.attachEvidenceHelp"), downloadTemplate: t("informationRequest.downloadTemplate"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
@@ -545,6 +550,7 @@ async function ConversationalCapitalProject({
   const openCoverage = openExpected + openOutsideProfile;
   const totalCoverage = expectedRequirements.length
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
+  const receivablesProgress = advisorReceivablesProgress(session.result_summary);
 
   return <AdvisorProject
     accessBasis={project.access_basis}
@@ -577,6 +583,7 @@ async function ConversationalCapitalProject({
       status: decision.status,
     }))}
     pendingRequests={pendingRequests}
+    receivablesProgress={receivablesProgress}
     proposals={(proposals ?? []).map((proposal): AdvisorChangeProposal => ({id: proposal.id, status: proposal.status, title: proposal.title, rationale: proposal.rationale, impactSummary: proposal.impact_summary, proposal: proposal.proposal}))}
     projectId={project.id}
     projectName={project.project_name}

@@ -1235,6 +1235,22 @@
       "ready": "Pronto para continuar",
       "needsAttention": "Precisa de atenção",
       "messageFailed": "Esta mensagem não foi processada. Você pode enviá-la novamente; o trabalho já concluído será preservado.",
+      "analysisDepth": "Profundidade da análise",
+      "analysisDepthBody": "Do primeiro diagnóstico ao underwriting completo",
+      "analysisStage": {
+        "portfolio_diagnostics": "Leitura e diagnóstico da carteira",
+        "evidence_reconciliation": "Reconciliação documental e financeira",
+        "eligibility_analysis": "Política e teste de elegibilidade",
+        "structure_sizing": "Dimensionamento da estrutura",
+        "cash_waterfall": "Waterfall e cobertura do caixa",
+        "full_underwriting": "Underwriting especialista completo"
+      },
+      "analysisStageState": {
+        "complete": "Concluída",
+        "in_progress": "Em construção",
+        "waiting": "Aguarda etapa anterior",
+        "conflicting": "Requer conciliação"
+      },
       "informationRequest": {
         "eyebrow": "Uma informação pode melhorar a análise",
         "why": "Por que pergunto",

@@ -1235,6 +1235,22 @@
       "ready": "Ready to continue",
       "needsAttention": "Needs attention",
       "messageFailed": "This message was not processed. You can send it again; completed work will be preserved.",
+      "analysisDepth": "Analysis depth",
+      "analysisDepthBody": "From first diagnostics to complete underwriting",
+      "analysisStage": {
+        "portfolio_diagnostics": "Portfolio readout and diagnostics",
+        "evidence_reconciliation": "Document and financial reconciliation",
+        "eligibility_analysis": "Eligibility policy and testing",
+        "structure_sizing": "Structure sizing",
+        "cash_waterfall": "Cash waterfall and coverage",
+        "full_underwriting": "Complete specialist underwriting"
+      },
+      "analysisStageState": {
+        "complete": "Complete",
+        "in_progress": "In progress",
+        "waiting": "Waiting for prior stage",
+        "conflicting": "Reconciliation required"
+      },
       "informationRequest": {
         "eyebrow": "One answer can materially improve the analysis",
         "why": "Why I am asking",

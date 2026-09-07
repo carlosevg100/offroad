@@ -19,6 +19,7 @@ import {
 } from "@/components/advisor/advisor-change-proposal";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
+import type {AdvisorReceivablesProgress} from "@/lib/advisor/receivables-progress";
 import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
@@ -41,7 +42,6 @@ export type AdvisorProjectDocument = {id: string; name: string; size: number | n
 export type AdvisorProjectTask = {id: string; label: string; status: string};
 export type AdvisorProjectArtifact = {id: string; label: string; status: string};
 export type AdvisorProjectActivityEvent = {id: string; type: string; summary: string; createdAt: string};
-
 export type AdvisorProjectCopy = {
   advisor: string;
   context: string;
@@ -72,6 +72,10 @@ export type AdvisorProjectCopy = {
   ready: string;
   needsAttention: string;
   messageFailed: string;
+  analysisDepth: string;
+  analysisDepthBody: string;
+  analysisStage: Record<string, string>;
+  analysisStageState: Record<string, string>;
   informationRequest: InformationRequestCopy;
   errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   proposal: AdvisorChangeProposalCopy;
@@ -92,6 +96,7 @@ type Props = {
   projectId: string;
   projectName: string;
   pendingRequests?: AdvisorInformationRequest[];
+  receivablesProgress?: AdvisorReceivablesProgress | null;
   proposals: AdvisorChangeProposal[];
   sessionId: string;
   sessionStatus: string;
@@ -293,6 +298,19 @@ export function AdvisorProject(props: Props) {
             </article>;
           })}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
+          {props.receivablesProgress ? <section className="advisor-analysis-progress">
+            <header>
+              <div><small>{props.copy.analysisDepth}</small><h2>{props.copy.analysisDepthBody}</h2></div>
+              <span>{props.receivablesProgress.completed}/{props.receivablesProgress.total}</span>
+            </header>
+            <ol>{props.receivablesProgress.stages.map((stage) => (
+              <li className={`is-${stage.state}`} key={stage.id}>
+                {stage.state === "complete" ? <Check aria-hidden="true" size={12} /> : stage.state === "in_progress" ? <LoaderCircle aria-hidden="true" className="spin" size={12} /> : stage.state === "conflicting" ? <X aria-hidden="true" size={12} /> : <Circle aria-hidden="true" size={12} />}
+                <span>{props.copy.analysisStage[stage.id] ?? stage.id}</span>
+                <small>{props.copy.analysisStageState[stage.state] ?? stage.state}</small>
+              </li>
+            ))}</ol>
+          </section> : null}
           {props.pendingRequests?.length ? <InformationRequestCard
             copy={props.copy.informationRequest}
             disabled={pending || uploading}
