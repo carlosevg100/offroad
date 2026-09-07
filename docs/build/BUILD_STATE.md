@@ -4,6 +4,25 @@ Atualizado em: 2026-09-06
 Baseline: branch `docs/endgame-blueprint`; documentação sobre o estado atual de `main`
 Repositório: `carlosevg100/offroad` · Produção: `https://offroad.capital`
 
+## Receita canônica de refinance e liability management, candidate, 06/09/2026
+
+- Extraída a cadeia fixa de dez etapas do Caso 01 para uma receita reutilizável de refinance e
+  liability management. O Caso 01 continua existindo como adaptador de compatibilidade e regressão,
+  mas deixa de ser a fonte do grafo.
+- A receita liga cada etapa a método e versão, executor, artefato, objetos requeridos, coverage keys,
+  política de verificação, chaves de invalidação, dependências, classe de execução, efeito e orçamento.
+- O compiler expande a partir do resultado pedido e contrai o grafo ao menor slice suficiente. A
+  mesma receita produz grafos diferentes para diagnóstico, cenários, alternativas, plano de reunião
+  e material, com batches paralelos derivados das dependências reais.
+- O schema falha fechado para tarefas repetidas, dependências ou targets inexistentes, self-loop e
+  ciclos. Fingerprints estáveis distinguem receita e slice compilado.
+- Esta entrega generaliza a verdade do grafo, não a exposição do produto. O roteador live ainda não
+  seleciona a receita e os executor keys continuam apontando para o trilho de integration preview.
+  Nenhuma nova capacidade foi promovida a produção ou expert.
+
+Status: **candidate reusable recipe**. O próximo gate é selecionar receita e resultado pelo envelope
+de intenção atrás de flag, sem `case01.*`, e provar seis intenções estruturalmente diferentes.
+
 ## Blueprint executável do endgame, candidate, 06/09/2026
 
 - Criado `docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md` como fonte proposta de execução do

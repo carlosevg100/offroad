@@ -1,5 +1,21 @@
 # Acceptance Evidence
 
+## Receita canônica de refinance e liability management, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Contrato da receita | `workflow-recipe.ts` + schema estrito | cada nó declara método/version, executor, artefato, labels localizados, deps, objetos, coverage, verification, invalidation, classe, estágio, failure policy, efeito e custo |
+| Expansão e contração | `compileWorkflowSlice` | diagnóstico compila 5 nós, alternativas 8 e material 10; o prefixo econômico é preservado quando o resultado avança |
+| Integridade do grafo | `workflow-recipe.test.ts` | tarefa duplicada, dependência desconhecida, target desconhecido, self-loop e ciclo falham fechado |
+| Grounding metodológico | catálogo de métodos e documentos Markdown | os dez métodos e versões resolvem a fontes existentes e possuem contrato de resultado executável |
+| Identidade estável | fingerprints da receita e do slice | mesma receita e resultado produzem fingerprint determinístico; resultados diferentes produzem slices diferentes |
+| Compatibilidade | `preview/workflow.ts` | Caso 01 consome os nós da receita e conserva labels e batches esperados sem permanecer como fonte do grafo |
+| Gate focado | test + typecheck de `@offroad/credit-playbook`; typecheck do worker | 37 arquivos/315 testes verdes; pacote e worker compilam |
+| Limite provado | inspeção do binding de runtime | recipe selection pelo envelope, remoção de `case01.*`, interface live e seis intenções ainda não foram provadas |
+
+Status: **candidate reusable recipe**. Esta evidência prova o primeiro grafo econômico reutilizável,
+não um roteador universal, homologação top-tier ou disponibilidade externa.
+
 ## Blueprint executável do endgame, candidate, 06/09/2026
 
 | Evidência | Verificação | Resultado |
