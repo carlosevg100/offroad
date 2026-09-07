@@ -150,9 +150,14 @@ function hasExplicitExternalOutreach(text: string): boolean {
   const modalCommand = /(?:(?:pode|podem|can you|quero que|vamos)\s+)(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
   const directCommand = new RegExp(`${courtesy.source}(?:${imperative.source}|${modalCommand.source})`);
   const rejected = /\b(?:nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid|proibid[oa]|forbidden|not allowed|fora de questao|nem pensar|de jeito nenhum|absolutely not|definitely not)\b/;
-  return directCommand.test(text)
-    && /\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/.test(text)
-    && !rejected.test(text);
+  const target = text.match(/\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/);
+  if (!directCommand.test(text) || !target || rejected.test(text)) return false;
+
+  // External effects use a closed grammar. Once the provider target is named, only a bounded
+  // fit/selection qualifier and terminal punctuation may follow. Any answer, predicate,
+  // retraction or other prose fails closed and is left for clarification.
+  const tail = text.slice((target.index ?? 0) + target[0].length).trim();
+  return /^(?:(?:selecionad[oa]s?|aderentes?|compativeis?|selected|best[- ]?fit)|(?:de|of)\s+(?:credito|credit)|(?:com|with)\s+(?:(?:a|the)\s+)?(?:melhor|best)\s+(?:aderencia|fit)|que\s+(?:(?:voce|you)\s+)?(?:achar|considerar|find|consider)\s+(?:mais\s+|most\s+)?(?:aderentes?|compativeis?|best[- ]?fit)|que\s+(?:tiverem|tenham|have)\s+fit)?[.!?]?$/.test(tail);
 }
 
 /** Classify one affirmative, user-authored clause. Cross-clause noun/verb joins are forbidden. */
@@ -221,7 +226,9 @@ function explicitComposition(input: IntentClassifierInput): NamedComposition | n
     .replace(/(?:^|[.;!\x0a])\s*[^?]{0,180}\?\s*(?:nao|not|no|nem pensar|de jeito nenhum|absolutely not|definitely not)\b[^.;!\x0a]*/g, " ");
   const clauses = normalized
     .replace(/\b(apenas|somente|so|only|just)\b/g, ". $1")
-    .split(/[.;!?\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
+    // Keep question marks inside a clause. `Can you send this?` remains an explicit request,
+    // while `Send this? I refuse` reaches the closed external grammar as one rejected clause.
+    .split(/[.;!\x0a]|\b(?:mas|porem|contudo|but|however)\b/)
     .map((clause) => clause.trim())
     .filter(Boolean)
     .filter((clause) => !/\b(nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid)\b/.test(clause));

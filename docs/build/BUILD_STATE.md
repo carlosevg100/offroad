@@ -14,13 +14,15 @@
   confusões e adversariais e declara assinatura semântica por turno. O manifesto exige 52
   observações: 40 bases e duas paráfrases autorais adicionais em seis IDs.
 - O score exige, na resposta bruta anterior ao reparo canônico, significado correto para ação,
-  objetos, referências ligadas ao objeto, resultado, decisão e audiência. Números e entidades
-  materiais entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`. Outcome,
-  decisão e audiência têm polaridade derivada também da prosa: um rótulo `affirmed` incompatível
-  com “não preparar”, “não existe decisão” ou “não é para VP” reprova e muda o fingerprint.
+  objetos, referências ligadas ao objeto, decisão e audiência. Números e entidades materiais
+  entram no gabarito e no fingerprint; `CDI` não equivale a `CDI + 15%`. Não há campos narrativos
+  de outcome, decisão ou audiência nem rótulo `affirmed` no contrato do classificador: o gate
+  compara enums, estados assertivos, confiança de inferências e o oracle explícito de cada turno.
+  Negação e ambiguidade são testadas por casos delimitados e pela política fail-closed de efeitos
+  externos; isso não equivale a uma prova geral de compreensão de toda prosa possível.
 - O oracle gold é independente da policy de produção. Slots normalizados preservam montante,
-  moeda, percentual, indexador e prazo, com cardinalidade singular por objeto; valores extras ou
-  conflitantes reprovam. O Caso 03 exige BRL 50 milhões e começa pela conciliação
+  moeda, percentual, basis points, ratio, indexador, prazo, páginas, contagem e cadência, com
+  cardinalidade singular por objeto; valores extras ou conflitantes reprovam. O Caso 03 exige BRL 50 milhões e começa pela conciliação
   dos dois anexos, enquanto reunião de financiamento começa por entendimento.
 - Os 52 textos passam por um teste local raw-to-canonicalizer. O summary recompõe checks,
   fingerprint e manifesto, e rejeita resposta nula, erro de provedor, expected, checks ou hashes

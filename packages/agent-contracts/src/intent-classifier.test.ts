@@ -151,6 +151,12 @@ describe("intent classifier boundary", () => {
     "Enviar aos fundos? De jeito nenhum.",
     "Send this to investors? Absolutely not.",
     "Send this to investors? Definitely not.",
+    "Send this to investors? I refuse.",
+    "Send this to investors? I'd rather not.",
+    "Send this to investors? Under no circumstances.",
+    "Send this to investors would be a mistake.",
+    "Send this to investors — scratch that.",
+    "Send this to investors? Forget it.",
   ])("never preserves a model-proposed introduction when outreach is rejected: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
@@ -158,6 +164,21 @@ describe("intent classifier boundary", () => {
     });
     expect(canonical.composition).not.toBe("introduce");
     expect(canonical.routingCore.action.value).not.toEqual(["introduce"]);
+  });
+
+  it.each([
+    "Please send this to investors.",
+    "Can you send this to investors?",
+    "Já manda a operação para os fundos que você achar aderentes.",
+    "Pode enviar esse case aos fundos com melhor aderência.",
+    "Faça a introdução da operação aos investidores que tiverem fit.",
+  ])("preserves a bounded direct external command: %s", (latestUserMessage) => {
+    const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
+      locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+    });
+    expect(canonical.composition).toBe("introduce");
+    expect(canonical.routingCore.action.value).toEqual(["introduce"]);
   });
 
   it.each([
