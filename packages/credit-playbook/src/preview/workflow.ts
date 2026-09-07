@@ -10,42 +10,18 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 
+import {compileWorkflowSlice, refinanceLiabilityManagementWorkflow, type WorkflowRecipeStep} from "../workflow-recipe";
+
 export const previewCompositionSchema = z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]);
 export type PreviewComposition = z.infer<typeof previewCompositionSchema>;
 
 export const previewWorkflowVersion = "2026.09.05-v1";
 export const previewCompilerVersion = `integration-preview-${previewWorkflowVersion}`;
 
-export type PreviewWorkflowStep = {
-  /** TaskSpec of the registry the step is anchored to. */
-  taskId: string;
-  /** Method of the library the step executes. */
-  methodId: string;
-  /** Version of the method the executor implements. */
-  methodVersion: string;
-  /** Key the worker uses to pick the executor. */
-  executorKey: string;
-  /** Artifact type recorded for the step's output. */
-  artifactType: string;
-  label: {pt: string; en: string};
-  dependencies: readonly string[];
-  executionClass: "deterministic" | "compilation";
-  /** Stage the step belongs to in the conversation. */
-  stage: "research" | "analysis" | "alternatives" | "material";
-};
+export type PreviewWorkflowStep = WorkflowRecipeStep;
 
-export const case01PreviewSteps: readonly PreviewWorkflowStep[] = [
-  {taskId: "C05", methodId: "build-debt-ledger", methodVersion: "2026.09.05-v15", executorKey: "integration-preview.build-debt-ledger", artifactType: "preview_debt_ledger", label: {pt: "Mapear a dívida instrumento a instrumento", en: "Map the debt instrument by instrument"}, dependencies: [], executionClass: "deterministic", stage: "research"},
-  {taskId: "D07", methodId: "reconcile-financial-statements", methodVersion: "2026.09.05-v9", executorKey: "integration-preview.reconcile-financial-statements", artifactType: "preview_financial_statements", label: {pt: "Conciliar demonstrações, notas e release", en: "Reconcile statements, notes and release"}, dependencies: [], executionClass: "deterministic", stage: "research"},
-  {taskId: "C09", methodId: "reconcile-covenant-definitions", methodVersion: "2026.09.05-v14", executorKey: "integration-preview.reconcile-covenant-definitions", artifactType: "preview_covenants", label: {pt: "Ler os covenants pelas escrituras", en: "Read the covenants from the indentures"}, dependencies: ["C05", "D07"], executionClass: "deterministic", stage: "analysis"},
-  {taskId: "C10", methodId: "diagnose-maturity-wall", methodVersion: "2026.09.05-v8", executorKey: "integration-preview.diagnose-maturity-wall", artifactType: "preview_maturity_wall", label: {pt: "Diagnosticar vencimentos e cobertura", en: "Diagnose maturities and coverage"}, dependencies: ["C05"], executionClass: "deterministic", stage: "analysis"},
-  {taskId: "C07", methodId: "build-interest-and-indexation-schedule", methodVersion: "2026.09.05-v7", executorKey: "integration-preview.build-interest-and-indexation-schedule", artifactType: "preview_interest_schedule", label: {pt: "Projetar juros e correção por série", en: "Project interest and indexation by series"}, dependencies: ["C05"], executionClass: "deterministic", stage: "analysis"},
-  {taskId: "S07", methodId: "estimate-exit-cost-by-series", methodVersion: "2026.09.05-v8", executorKey: "integration-preview.estimate-exit-cost-by-series", artifactType: "preview_exit_costs", label: {pt: "Estimar o custo de saída por série", en: "Estimate the exit cost by series"}, dependencies: ["C05", "C07"], executionClass: "deterministic", stage: "analysis"},
-  {taskId: "C08", methodId: "declare-scenarios", methodVersion: "2026.09.05-v6", executorKey: "integration-preview.declare-scenarios", artifactType: "preview_scenarios", label: {pt: "Declarar cenários e estresses", en: "Declare scenarios and stresses"}, dependencies: ["C05", "C10"], executionClass: "deterministic", stage: "analysis"},
-  {taskId: "S10", methodId: "compare-refinancing-before-after", methodVersion: "2026.09.05-v7", executorKey: "integration-preview.compare-refinancing-before-after", artifactType: "preview_alternatives", label: {pt: "Comparar as alternativas antes e depois", en: "Compare the alternatives before and after"}, dependencies: ["C05", "C09", "C10", "S07", "C08"], executionClass: "deterministic", stage: "alternatives"},
-  {taskId: "A01", methodId: "plan-meeting-brief", methodVersion: "2026.09.05-v7", executorKey: "integration-preview.plan-meeting-brief", artifactType: "preview_meeting_brief", label: {pt: "Planejar a devolutiva e o material", en: "Plan the readout and the material"}, dependencies: ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10"], executionClass: "compilation", stage: "material"},
-  {taskId: "A02", methodId: "write-meeting-synthesis", methodVersion: "2026.09.05-v1", executorKey: "integration-preview.write-meeting-synthesis", artifactType: "preview_material", label: {pt: "Escrever a síntese e o material", en: "Write the synthesis and the material"}, dependencies: ["C05", "D07", "C09", "C10", "C07", "S07", "C08", "S10", "A01"], executionClass: "compilation", stage: "material"},
-] as const;
+/** Backward-compatible preview projection; the reusable recipe is the source of graph truth. */
+export const case01PreviewSteps: readonly PreviewWorkflowStep[] = refinanceLiabilityManagementWorkflow.steps;
 
 const canonical = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : inner));
 
@@ -66,23 +42,13 @@ export function previewTargetTaskIds(composition: PreviewComposition): string[] 
     case "prepare_decision":
     case "deepen":
     case "change_premise":
-      return case01PreviewSteps.filter((step) => step.stage !== "material").map((step) => step.taskId);
+      return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, "alternatives").steps.map((step) => step.taskId);
   }
 }
 
 /** Steps in dependency order, batched: a step's batch is one past its deepest dependency. */
 export function previewBatches(): string[][] {
-  const batchOf = new Map<string, number>();
-  for (const step of case01PreviewSteps) {
-    const depth = step.dependencies.reduce((deepest, dependency) => Math.max(deepest, (batchOf.get(dependency) ?? -1) + 1), 0);
-    batchOf.set(step.taskId, depth);
-  }
-  const batches: string[][] = [];
-  for (const step of case01PreviewSteps) {
-    const batch = batchOf.get(step.taskId)!;
-    (batches[batch] ??= []).push(step.taskId);
-  }
-  return batches;
+  return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, "material").parallelBatches;
 }
 
 /**

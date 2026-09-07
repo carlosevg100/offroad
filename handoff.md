@@ -39,6 +39,15 @@ economic dimensions and calculations it will cover, what may still be needed and
 deliver. It is projected from the compiled task graph, not generated as a generic checklist, and can
 be edited without exposing private reasoning or internal agent topology.
 
+The first fixed preview graph has now been extracted into a canonical refinance and liability
+management recipe. A result-driven compiler expands backwards from the requested outcome and
+contracts the same recipe into diagnostic, scenario, alternatives, meeting-plan or material slices.
+Every node binds method/version, executor, artifact, required objects, coverage, verification,
+invalidation, failure policy, effect and budget. Case 01 remains only as a compatibility adapter and
+regression. This is not yet the universal live router: envelope-to-recipe selection, removal of the
+remaining `case01.*` runtime identity and six structurally different live intentions are the next
+gate.
+
 Trust is not deferred to enterprise packaging. The canonical program is
 `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
 construction and gates. Release 7 is reserved for enterprise integration, independent pentest and
