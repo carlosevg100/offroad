@@ -18,3 +18,6 @@ export * from "./control-register";
 export * from "./trust-control-catalogue";
 export * from "./capability-ledger";
 export * from "./current-capability-ledger";
+export * from "./endgame-program-board";
+export * from "./endgame-program-markdown";
+export * from "./current-endgame-program";
