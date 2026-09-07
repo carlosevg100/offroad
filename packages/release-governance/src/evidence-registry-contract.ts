@@ -27,14 +27,36 @@ export const evidenceSubjectSchema = z.object({
     "capability_ledger", "endgame_program_board", "trust_control_catalogue", "release_manifest",
   ]),
   catalogueRevision: immutableRevisionSchema,
-}).strict();
+}).strict().superRefine((subject, context) => {
+  const catalogueByKind = {
+    capability: "capability_ledger",
+    program_task: "endgame_program_board",
+    control: "trust_control_catalogue",
+    release: "release_manifest",
+  } as const;
+  if (subject.catalogue !== catalogueByKind[subject.kind]) {
+    context.addIssue({
+      code: "custom",
+      path: ["catalogue"],
+      message: "subject kind and catalogue are incoherent",
+    });
+  }
+});
 export type EvidenceSubject = z.infer<typeof evidenceSubjectSchema>;
 
 export const evidenceTenantScopeSchema = z.object({
   tenantKind: z.enum(["platform", "organization"]),
   tenantId: z.string().regex(/^[a-z0-9][a-z0-9:._/-]+$/),
   projectId: z.string().min(1).nullable(),
-}).strict();
+}).strict().superRefine((tenant, context) => {
+  if (tenant.tenantKind === "platform" && tenant.projectId !== null) {
+    context.addIssue({
+      code: "custom",
+      path: ["projectId"],
+      message: "platform evidence cannot be project scoped",
+    });
+  }
+});
 
 export const evidenceDeploymentScopeSchema = z.object({
   environment: evidenceEnvironmentSchema,
@@ -85,6 +107,28 @@ export const evidenceCollectorSchema = z.object({
   method: z.string().regex(/^[a-z0-9][a-z0-9._/-]+$/),
   version: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9._+-]+$/),
 }).strict();
+export type EvidenceCollector = z.infer<typeof evidenceCollectorSchema>;
+
+export const evidenceWorkloadIdentitySchema = z.object({
+  oidcIssuer: z.string().url(),
+  audience: z.string().min(1),
+  repository: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
+  workflowRef: z.string().min(1),
+  gitRef: z.string().min(1),
+}).strict();
+export type EvidenceWorkloadIdentity = z.infer<typeof evidenceWorkloadIdentitySchema>;
+
+export const evidenceRunBindingSchema = z.object({
+  runId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9:._/-]+$/),
+  runAttempt: z.number().int().positive(),
+  workloadIdentity: evidenceWorkloadIdentitySchema,
+}).strict();
+export type EvidenceRunBinding = z.infer<typeof evidenceRunBindingSchema>;
+
+export const evidenceGateResultSchema = z.object({
+  gateId: z.string().min(1),
+  result: z.enum(["passed", "failed", "not_run"]),
+}).strict();
 
 export const attestedEvidenceSchema = z.object({
   schemaVersion: z.literal("offroad-acceptance-evidence.v1"),
@@ -105,7 +149,9 @@ export const attestedEvidenceSchema = z.object({
     contentSha256: sha256Schema,
   }).strict(),
   collector: evidenceCollectorSchema,
-  gate: z.object({gateId: z.string().min(1), result: z.enum(["passed", "failed", "not_run"])}).strict().nullable(),
+  gate: evidenceGateResultSchema.nullable(),
+  runBinding: evidenceRunBindingSchema,
+  nonce: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9:._-]{15,127}$/),
   issuedAt: dateTimeSchema,
   expiresAt: dateTimeSchema,
   trustRootId: z.string().regex(/^ATR-[A-Z0-9-]+$/),
@@ -135,6 +181,23 @@ export const evidenceRegistrySchema = z.object({
 }).strict();
 export type EvidenceRegistry = z.infer<typeof evidenceRegistrySchema>;
 
+/**
+ * Definitions accepted by the control plane. Registry claims, criteria and limitations are
+ * compared to this manifest; callers cannot define their own acceptance claim.
+ */
+export const evidenceAcceptanceManifestSchema = z.object({
+  manifestId: z.string().regex(/^EAM-[A-Z0-9-]+$/),
+  manifestVersion: z.string().min(1),
+  registryVersion: z.string().min(1),
+  scope: evidenceTrustScopeSchema,
+  criteria: z.array(evidenceCriterionSchema).min(1),
+  claims: z.array(evidenceClaimSchema).min(1),
+  limitations: z.array(z.string().min(1)).min(1),
+  trustRootIds: z.array(z.string().regex(/^ATR-[A-Z0-9-]+$/)).min(1)
+    .refine((values) => new Set(values).size === values.length, "trust root ids must be unique"),
+}).strict();
+export type EvidenceAcceptanceManifest = z.infer<typeof evidenceAcceptanceManifestSchema>;
+
 export const resolvedEvidenceArtifactSchema = z.object({
   evidenceId: evidenceIdSchema,
   immutableRef: contentAddressedArtifactRefSchema,
@@ -148,15 +211,67 @@ export const evidenceTrustRootSchema = z.object({
   keyId: z.string().min(1),
   algorithm: z.literal("Ed25519"),
   publicKeyPem: z.string().min(1),
-  permittedTrustDomains: z.array(z.string().min(1)).min(1),
-  permittedTenantIds: z.array(z.string().min(1)).min(1),
-  permittedDeploymentIds: z.array(z.string().min(1)).min(1),
-  permittedEvidenceTypes: z.array(evidenceTypeSchema).min(1),
+  purpose: z.literal("acceptance_evidence"),
+  scope: evidenceTrustScopeSchema,
+  subject: evidenceSubjectSchema,
+  claimBinding: z.object({
+    claimId: claimIdSchema,
+    claimDefinitionFingerprint: sha256Schema,
+  }).strict(),
+  criterionBinding: z.object({
+    criterionId: criterionIdSchema,
+    criterionDefinitionFingerprint: sha256Schema,
+  }).strict(),
+  evidenceType: evidenceTypeSchema,
+  collector: evidenceCollectorSchema,
+  gate: evidenceGateResultSchema,
+  workloadIdentity: evidenceWorkloadIdentitySchema,
+  artifactNamespace: z.literal("artifact://sha256/"),
+  freshness: z.object({
+    maxAttestationTtlSeconds: z.number().int().positive(),
+    maxIssuanceToReceiptSeconds: z.number().int().nonnegative(),
+    maxReceiptAgeSeconds: z.number().int().positive(),
+    clockSkewSeconds: z.number().int().nonnegative().max(300),
+  }).strict(),
   validFrom: dateTimeSchema,
   validThrough: dateTimeSchema,
   revokedAt: dateTimeSchema.nullable(),
 }).strict();
 export type EvidenceTrustRoot = z.infer<typeof evidenceTrustRootSchema>;
+
+export const evidenceIngestReceiptSchema = z.object({
+  schemaVersion: z.literal("offroad-evidence-receipt.v1"),
+  receiptId: z.string().regex(/^ERC-[A-Z0-9-]+$/),
+  evidenceId: evidenceIdSchema,
+  registryFingerprint: sha256Schema,
+  attestationFingerprint: sha256Schema,
+  artifact: z.object({
+    immutableRef: contentAddressedArtifactRefSchema,
+    contentSha256: sha256Schema,
+  }).strict(),
+  receivedAt: dateTimeSchema,
+  runBinding: evidenceRunBindingSchema,
+  nonce: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9:._-]{15,127}$/),
+  casRevision: z.number().int().nonnegative(),
+  state: z.enum(["available", "consumed"]),
+  consumedByPromotionId: z.string().min(1).nullable(),
+}).strict().superRefine((receipt, context) => {
+  if ((receipt.state === "available") !== (receipt.consumedByPromotionId === null)) {
+    context.addIssue({
+      code: "custom",
+      path: ["consumedByPromotionId"],
+      message: "receipt consumption state and promotion id must agree",
+    });
+  }
+  if (receipt.artifact.immutableRef !== `artifact://sha256/${receipt.artifact.contentSha256}`) {
+    context.addIssue({
+      code: "custom",
+      path: ["artifact", "immutableRef"],
+      message: "receipt artifact reference must contain the declared content digest",
+    });
+  }
+});
+export type EvidenceIngestReceipt = z.infer<typeof evidenceIngestReceiptSchema>;
 
 export const evidenceEvaluationRequestSchema = z.object({
   registry: evidenceRegistrySchema,
@@ -189,6 +304,12 @@ export const evidenceRegistryDecisionSchema = z.object({
   trustRegistryFingerprint: sha256Schema,
   registryFingerprint: sha256Schema,
   verifiedEvidenceIds: z.array(evidenceIdSchema),
+  promotionPreconditions: z.array(z.object({
+    receiptId: z.string().regex(/^ERC-[A-Z0-9-]+$/),
+    evidenceId: evidenceIdSchema,
+    expectedCasRevision: z.number().int().nonnegative(),
+    nonce: z.string().min(16),
+  }).strict()),
   claimDecisions: z.array(evidenceClaimDecisionSchema),
   blockers: z.array(evidenceRegistryIssueSchema),
   decisionFingerprint: sha256Schema,
@@ -217,7 +338,8 @@ export function evidenceAttestationSigningPayload(
   return Buffer.from(stableJson(evidence), "utf8");
 }
 
-export function verifyEvidenceAttestationSignature(
+/** Cryptographic check only. Authority and acceptance are evaluated separately and internally. */
+export function verifyAttestationCryptographicSignatureOnly(
   evidence: AttestedEvidence,
   publicKeyPem: string,
 ): boolean {
@@ -234,6 +356,10 @@ export function verifyEvidenceAttestationSignature(
   } catch {
     return false;
   }
+}
+
+export function evidenceAttestationFingerprint(evidence: AttestedEvidence): string {
+  return fingerprintJson(attestedEvidenceSchema.parse(evidence));
 }
 
 export function sha256EvidenceBytes(bytes: Uint8Array): string {

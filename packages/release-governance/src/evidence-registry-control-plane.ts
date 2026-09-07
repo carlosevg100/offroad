@@ -1,6 +1,11 @@
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
+  evidenceAcceptanceManifestSchema,
+  evidenceIngestReceiptSchema,
   evidenceTrustRootSchema,
+  type EvidenceAcceptanceManifest,
+  type EvidenceIngestReceipt,
+  type EvidenceRegistryDecision,
   type EvidenceTrustRoot,
 } from "./evidence-registry-contract.ts";
 
@@ -8,13 +13,17 @@ export type EvidenceControlPlaneSnapshot = Readonly<{
   registryVersion: string;
   registryFingerprint: string;
   roots: readonly EvidenceTrustRoot[];
+  manifests: readonly EvidenceAcceptanceManifest[];
+  receipts: readonly EvidenceIngestReceipt[];
   nowMs: number;
 }>;
 
 const trustRegistryBody = {
   registryVersion: "acceptance-evidence-trust-roots.v1",
-  // Intentionally empty. A real collector or assessor key requires a reviewed control-plane change.
+  // Intentionally empty. Real roots, manifests and receipts require reviewed control-plane writes.
   roots: [] as EvidenceTrustRoot[],
+  manifests: [] as EvidenceAcceptanceManifest[],
+  receipts: [] as EvidenceIngestReceipt[],
 };
 
 const trustRegistry = deepFreeze({
@@ -31,8 +40,63 @@ export function readEvidenceControlPlaneSnapshot(): EvidenceControlPlaneSnapshot
     registryVersion: trustRegistry.registryVersion,
     registryFingerprint: trustRegistry.registryFingerprint,
     roots: trustRegistry.roots.map((root) => evidenceTrustRootSchema.parse(root)),
+    manifests: trustRegistry.manifests.map((manifest) => evidenceAcceptanceManifestSchema.parse(manifest)),
+    receipts: trustRegistry.receipts.map((receipt) => evidenceIngestReceiptSchema.parse(receipt)),
     nowMs: Date.now(),
   });
+}
+
+export type EvidencePromotionCasRequest = Readonly<{
+  promotionId: string;
+  decisionFingerprint: string;
+  receipts: ReadonlyArray<Readonly<{
+    receiptId: string;
+    evidenceId: string;
+    expectedCasRevision: number;
+    nonce: string;
+  }>>;
+}>;
+
+/** The durable control plane must implement this as one atomic compare-and-swap transaction. */
+export type EvidencePromotionCasStore = Readonly<{
+  consumeAvailableReceiptsAtomically: (request: EvidencePromotionCasRequest) => Promise<boolean>;
+}>;
+
+export type EvidencePromotionAuthorization = Readonly<{
+  authorized: boolean;
+  code: "authorized" | "decision_not_eligible" | "receipt_cas_rejected";
+  decisionFingerprint: string;
+}>;
+
+/**
+ * Control-plane-only promotion boundary. Evaluation is not promotion: every receipt must be
+ * consumed in one atomic CAS before the caller may transition a capability or release.
+ */
+export async function consumeEvidenceDecisionForPromotion(
+  decision: EvidenceRegistryDecision,
+  promotionId: string,
+  store: EvidencePromotionCasStore,
+): Promise<EvidencePromotionAuthorization> {
+  const {decisionFingerprint, ...decisionPayload} = decision;
+  const eligible = decisionFingerprint === fingerprintJson(decisionPayload)
+    && decision.registryValid
+    && decision.allClaimsSupported
+    && decision.verifiedEvidenceIds.length > 0
+    && decision.promotionPreconditions.length === decision.verifiedEvidenceIds.length
+    && decision.promotionPreconditions.every((entry) => decision.verifiedEvidenceIds.includes(entry.evidenceId));
+  if (!eligible) {
+    return {authorized: false, code: "decision_not_eligible", decisionFingerprint};
+  }
+  const consumed = await store.consumeAvailableReceiptsAtomically({
+    promotionId,
+    decisionFingerprint,
+    receipts: decision.promotionPreconditions,
+  });
+  return {
+    authorized: consumed,
+    code: consumed ? "authorized" : "receipt_cas_rejected",
+    decisionFingerprint,
+  };
 }
 
 function deepFreeze<T>(value: T): T {

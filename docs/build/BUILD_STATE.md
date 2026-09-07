@@ -2,19 +2,19 @@
 
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
-- O primeiro slice reconstruído de CTRL-03 remove roots, allowlists, verifier labels e relógio do
+- O slice reconstruído de CTRL-03 remove roots, manifests, receipts, verifier labels e relógio do
   request público. O evaluator obtém um snapshot somente do control plane; o registro governado de
   roots está vazio, portanto nenhum claim positivo pode ser promovido hoje.
-- O envelope Ed25519 vincula a definição exata de claim e criterion, subject e revisão, tenant e
-  projeto, deployment/account/region/environment, trust domain, artifact content-addressed, gate e
-  validade. Substituição semântica, replay cross-scope, backdating e bytes alterados falham fechado.
+- A root single-purpose fixa scope, subject, claim, criterion, tipo, collector, gate, OIDC e
+  freshness. Claim, criterion e limitations são definidos pelo control plane. Receipt imutável
+  vincula registry, atestação, bytes, primeiro recebimento, run e nonce; promoção exige CAS atômico.
 - A lista `verifiedEvidenceIds` inclui somente evidência que passou definição, escopo, root,
-  assinatura, validade, gate e integridade dos bytes; uma fonte apenas resolvida ou expirada não é
-  apresentada como verificada.
+  assinatura, validade, receipt, gate e integridade dos bytes. Erro global zera IDs, precondições
+  de promoção e suporte de claims.
 
-Status: **candidate security boundary**. Ainda faltam root onboarding real, collector, storage,
-receipt transacional/CAS, current registry, renderer, integração com Ledger/Board e continuous
-evidence. CTRL-03 não está concluído e nenhuma capability foi promovida.
+Status: **candidate security boundary**. Ainda faltam root onboarding real, collector OIDC/KMS,
+storage imutável, adapter CAS durável/transacional, current registry, renderer, integração com
+Ledger/Board e continuous evidence. CTRL-03 não está concluído e nenhuma capability foi promovida.
 
 ## Endgame Program Board executável, candidate, 07/09/2026
 

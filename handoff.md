@@ -18,13 +18,13 @@ anterior. O evaluator público recebe apenas registry e bytes resolvidos. Trust 
 verifier labels e tempo pertencem ao control plane e não podem ser injetados pelo caller. O root
 registry atual está vazio; por isso o produto ainda não pode transformar uma atestação em promoção.
 
-O statement Ed25519 agora vincula claim e criterion completos por fingerprint, subject e revisão,
-tenant/projeto, deployment/account/region/environment, trust domain, artifact digest, gate e janela
-de validade. Os testes reproduzem substitution, cross-scope replay e backdating e exigem falha
-fechada. O caminho positivo existe somente no evaluator interno com chave efêmera de teste.
+O statement Ed25519 vincula claim/criterion, subject, scope, artifact, gate, collector, run, OIDC e
+nonce. Uma root single-purpose autoriza exatamente essas dimensões; o manifest do control plane
+define claims, criteria e limitations. Receipt interno ancora registry, atestação, bytes e primeiro
+recebimento; promoção exige CAS atômico de uso único. O caminho positivo continua só em teste.
 
-Isto não conclui CTRL-03. Root onboarding, collectors, private immutable storage, receipt
-transacional/CAS, current registry, renderer, integração com Ledger/Board e continuous evidence
+Isto não conclui CTRL-03. Root onboarding, collector OIDC/KMS, storage privado imutável, adapter CAS
+durável/transacional, current registry, renderer, integração com Ledger/Board e continuous evidence
 continuam pendentes. Nenhuma capability, auditoria ou readiness claim foi promovida. A fronteira e
 as limitações completas estão em `docs/security/ACCEPTANCE_EVIDENCE_TRUST_BOUNDARY.md`.
 

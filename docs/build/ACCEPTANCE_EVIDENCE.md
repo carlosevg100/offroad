@@ -5,18 +5,18 @@
 | Evidência | Verificação | Resultado |
 |---|---|---|
 | API pública | schema estrito de `evaluateEvidenceRegistry` | caller não fornece root, allowlist, verifier ou clock; campos extras invalidam o request |
-| Trust root | `evidence-registry-control-plane.ts` | registro interno fingerprintado e vazio; sem root real, nenhum claim assinado é suportado |
-| Binding semântico | fingerprints de claim, criterion e subject no payload Ed25519 | claim/criterion/subject substituídos falham; reescrever o binding invalida a assinatura |
-| Isolamento | tenant/project + deployment/account/region + trust domain | seis formas de replay cross-scope falham fechado |
-| Freshness | relógio interno + validade da root/evidência + max age/TTL | evidência de 2020 permanece expirada; `now` enviado pelo caller é rejeitado |
+| Control plane | `evidence-registry-control-plane.ts` | roots, manifests e receipts entram no fingerprint; registro real vazio |
+| Binding semântico | manifest canônico + payload Ed25519 | caller não define claim, criterion ou limitations aceitos |
+| Isolamento | root single-purpose | scope, subject, collector, gate, tipo e identidade OIDC são exatos |
+| Freshness | relógio e primeiro receipt internos | validade, TTL, max-age e issuance-to-receipt são limitados |
 | Integridade | referência `artifact://sha256/<digest>` + bytes resolvidos | outra referência e outros bytes não verificam |
-| Gate focado | Node 24, package test/typecheck/lint | 8 arquivos/149 testes verdes; tipos e lint verdes |
+| Replay de promoção | precondições + CAS atômico | primeiro consumo autoriza; replay e decisão forjada falham |
+| Gate focado | Node 24, package test/typecheck | 8 arquivos/169 testes verdes; tipos verdes |
 | Gate integral | Node 24, `pnpm check` | lint, typecheck, testes e build verdes; 43/43 targets |
 
 Status: **candidate local evidence**. O teste positivo usa root efêmera somente no evaluator interno.
-Não existe root real, collector, artifact store, receipt transacional, index populado ou promoção.
-O gate integral local está verde. A revisão independente ainda precisa ser registrada antes de
-qualquer PR.
+Não existe root real, collector, artifact store, receipt persistido, adapter CAS durável, index
+populado ou promoção. O gate integral local está verde; revisão independente ainda é necessária.
 
 ## Endgame Program Board executável, candidate, 07/09/2026
 

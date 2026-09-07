@@ -1,18 +1,24 @@
+import {createHash} from "node:crypto";
 import {fingerprintJson, stableJson} from "@offroad/case-understanding";
 import {
+  evidenceAcceptanceManifestSchema,
+  evidenceAttestationFingerprint,
   evidenceClaimDefinitionFingerprint,
   evidenceCriterionDefinitionFingerprint,
+  evidenceIngestReceiptSchema,
   evidenceRegistryDecisionSchema,
   evidenceSubjectFingerprint,
   evidenceTrustRootSchema,
   evidenceTrustScopeFingerprint,
   sha256EvidenceBytes,
-  verifyEvidenceAttestationSignature,
+  verifyAttestationCryptographicSignatureOnly,
+  type EvidenceAcceptanceManifest,
   type AttestedEvidence,
   type EvidenceClaim,
   type EvidenceClaimDecision,
   type EvidenceCriterion,
   type EvidenceEvaluationRequest,
+  type EvidenceIngestReceipt,
   type EvidenceRegistryDecision,
   type EvidenceRegistryIssue,
   type ResolvedEvidenceArtifact,
@@ -22,6 +28,12 @@ import type {EvidenceControlPlaneSnapshot} from "./evidence-registry-control-pla
 type EvaluatedEvidence = Readonly<{
   verified: boolean;
   blockers: readonly EvidenceRegistryIssue[];
+  promotionPrecondition: Readonly<{
+    receiptId: string;
+    evidenceId: string;
+    expectedCasRevision: number;
+    nonce: string;
+  }> | null;
 }>;
 
 /** Internal pure evaluator. Production callers only reach it through the control-plane wrapper. */
@@ -37,6 +49,8 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
   const expectedTrustRegistryFingerprint = fingerprintJson({
     registryVersion: controlPlane.registryVersion,
     roots: controlPlane.roots,
+    manifests: controlPlane.manifests,
+    receipts: controlPlane.receipts,
   });
   if (controlPlane.registryFingerprint !== expectedTrustRegistryFingerprint) {
     globalBlockers.push(issue("trust_registry_fingerprint_mismatch"));
@@ -46,6 +60,18 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     controlPlane.roots.map((root) => evidenceTrustRootSchema.parse(root)),
     (root) => root.trustRootId,
     "duplicate_trust_root_id",
+    globalBlockers,
+  );
+  const manifests = uniqueIndex(
+    controlPlane.manifests.map((manifest) => evidenceAcceptanceManifestSchema.parse(manifest)),
+    (manifest) => manifest.manifestId,
+    "duplicate_acceptance_manifest_id",
+    globalBlockers,
+  );
+  const receipts = uniqueIndex(
+    controlPlane.receipts.map((receipt) => evidenceIngestReceiptSchema.parse(receipt)),
+    (receipt) => receipt.evidenceId,
+    "duplicate_evidence_receipt",
     globalBlockers,
   );
   const claims = uniqueIndex(registry.claims, (claim) => claim.claimId, "duplicate_claim_id", globalBlockers);
@@ -58,6 +84,16 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     : "1970-01-01T00:00:00.000Z";
   if (nowIsValid && new Date(registry.generatedAt).getTime() > controlPlane.nowMs) {
     globalBlockers.push(issue("registry_generated_in_future"));
+  }
+
+  const manifest = resolveAcceptanceManifest(registry, [...manifests.values()], globalBlockers);
+  const registryFingerprint = fingerprintJson(registry);
+
+  const nonceOwners = new Map<string, string>();
+  for (const receipt of controlPlane.receipts) {
+    const previous = nonceOwners.get(receipt.nonce);
+    if (previous && previous !== receipt.evidenceId) globalBlockers.push(issue("receipt_nonce_reused", null, null, receipt.evidenceId));
+    nonceOwners.set(receipt.nonce, receipt.evidenceId);
   }
 
   for (const criterion of registry.criteria) {
@@ -75,6 +111,9 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
       criterion: criteria.get(entry.criterionBinding.criterionId) ?? null,
       resolved: resolved.get(entry.evidenceId) ?? null,
       root: roots.get(entry.trustRootId) ?? null,
+      receipt: receipts.get(entry.evidenceId) ?? null,
+      manifest,
+      registryFingerprint,
       nowMs: controlPlane.nowMs,
       nowIsValid,
     }));
@@ -86,7 +125,7 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     }
   }
 
-  const claimDecisions = registry.claims.map((claim) => evaluateClaim({
+  let claimDecisions = registry.claims.map((claim) => evaluateClaim({
     claim,
     criteria,
     evidence: registry.evidence,
@@ -99,10 +138,22 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     ...claimDecisions.flatMap((entry) => entry.blockers),
   ]);
   const registryValid = blockers.length === 0;
-  const verifiedEvidenceIds = [...evaluatedEvidence.entries()]
+  let verifiedEvidenceIds = [...evaluatedEvidence.entries()]
     .filter(([, result]) => result.verified)
     .map(([evidenceId]) => evidenceId)
     .sort();
+  let promotionPreconditions = [...evaluatedEvidence.values()]
+    .flatMap((entry) => entry.promotionPrecondition ? [entry.promotionPrecondition] : [])
+    .sort((left, right) => left.evidenceId.localeCompare(right.evidenceId));
+  if (!registryValid) {
+    verifiedEvidenceIds = [];
+    promotionPreconditions = [];
+    claimDecisions = claimDecisions.map((decision) => ({
+      ...decision,
+      supported: false,
+      supportedCriteria: 0,
+    }));
+  }
   const payload = {
     registryValid,
     allClaimsSupported: registryValid && claimDecisions.length > 0
@@ -110,8 +161,9 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
     verificationMode: "control_plane" as const,
     evaluatedAt,
     trustRegistryFingerprint: controlPlane.registryFingerprint,
-    registryFingerprint: fingerprintJson(registry),
+    registryFingerprint,
     verifiedEvidenceIds,
+    promotionPreconditions,
     claimDecisions,
     blockers,
   };
@@ -121,6 +173,35 @@ export function evaluateEvidenceRegistryAgainstControlPlane(
   });
 }
 
+function resolveAcceptanceManifest(
+  registry: EvidenceEvaluationRequest["registry"],
+  manifests: EvidenceAcceptanceManifest[],
+  blockers: EvidenceRegistryIssue[],
+): EvidenceAcceptanceManifest | null {
+  const matches = manifests.filter((candidate) =>
+    candidate.registryVersion === registry.registryVersion
+    && evidenceTrustScopeFingerprint(candidate.scope) === evidenceTrustScopeFingerprint(registry.scope));
+  if (matches.length === 0) {
+    blockers.push(issue("acceptance_manifest_missing"));
+    return null;
+  }
+  if (matches.length > 1) {
+    blockers.push(issue("acceptance_manifest_ambiguous"));
+    return null;
+  }
+  const manifest = matches[0]!;
+  if (fingerprintJson(manifest.claims) !== fingerprintJson(registry.claims)) {
+    blockers.push(issue("registry_claims_not_control_plane_canonical"));
+  }
+  if (fingerprintJson(manifest.criteria) !== fingerprintJson(registry.criteria)) {
+    blockers.push(issue("registry_criteria_not_control_plane_canonical"));
+  }
+  if (fingerprintJson(manifest.limitations) !== fingerprintJson(registry.limitations)) {
+    blockers.push(issue("registry_limitations_not_control_plane_canonical"));
+  }
+  return manifest;
+}
+
 function evaluateEvidence(input: {
   evidence: AttestedEvidence;
   registryScopeFingerprint: string;
@@ -128,10 +209,13 @@ function evaluateEvidence(input: {
   criterion: EvidenceCriterion | null;
   resolved: ResolvedEvidenceArtifact | null;
   root: ReturnType<typeof evidenceTrustRootSchema.parse> | null;
+  receipt: EvidenceIngestReceipt | null;
+  manifest: EvidenceAcceptanceManifest | null;
+  registryFingerprint: string;
   nowMs: number;
   nowIsValid: boolean;
 }): EvaluatedEvidence {
-  const {evidence, claim, criterion, resolved, root, nowMs, nowIsValid} = input;
+  const {evidence, claim, criterion, resolved, root, receipt, manifest, nowMs, nowIsValid} = input;
   const blockers: EvidenceRegistryIssue[] = [];
   const push = (code: string, claimId = evidence.claimBinding.claimId, criterionId = evidence.criterionBinding.criterionId) => {
     blockers.push(issue(code, claimId, criterionId, evidence.evidenceId));
@@ -157,24 +241,33 @@ function evaluateEvidence(input: {
   if (claim && claim.environment !== evidence.scope.deployment.environment) push("claim_environment_mismatch");
   if (criterion && criterion.environment !== evidence.scope.deployment.environment) push("criterion_environment_mismatch");
   if (criterion && !criterion.acceptedEvidenceTypes.includes(evidence.type)) push("evidence_type_not_accepted");
+  if (manifest && !manifest.trustRootIds.includes(evidence.trustRootId)) push("trust_root_not_authorized_by_manifest");
 
   if (!root) {
     push("attestation_trust_root_missing");
   } else {
     if (root.issuer !== evidence.issuer) push("attestation_issuer_mismatch");
     if (root.keyId !== evidence.keyId || root.algorithm !== evidence.algorithm) push("attestation_key_mismatch");
-    if (!root.permittedTrustDomains.includes(evidence.scope.trustDomain)) push("attestation_trust_domain_not_permitted");
-    if (!root.permittedTenantIds.includes(evidence.scope.tenant.tenantId)) push("attestation_tenant_not_permitted");
-    if (!root.permittedDeploymentIds.includes(evidence.scope.deployment.deploymentId)) push("attestation_deployment_not_permitted");
-    if (!root.permittedEvidenceTypes.includes(evidence.type)) push("attestation_evidence_type_not_permitted");
+    if (evidenceTrustScopeFingerprint(root.scope) !== evidenceTrustScopeFingerprint(evidence.scope)) push("attestation_scope_not_permitted");
+    if (evidenceSubjectFingerprint(root.subject) !== evidenceSubjectFingerprint(evidence.subject)) push("attestation_subject_not_permitted");
+    if (stableJson(root.claimBinding) !== stableJson(evidence.claimBinding)) push("attestation_claim_not_permitted");
+    if (stableJson(root.criterionBinding) !== stableJson(evidence.criterionBinding)) push("attestation_criterion_not_permitted");
+    if (root.evidenceType !== evidence.type) push("attestation_evidence_type_not_permitted");
+    if (stableJson(root.collector) !== stableJson(evidence.collector)) push("attestation_collector_not_permitted");
+    if (stableJson(root.gate) !== stableJson(evidence.gate)) push("attestation_gate_not_permitted");
+    if (stableJson(root.workloadIdentity) !== stableJson(evidence.runBinding.workloadIdentity)) push("attestation_workload_identity_not_permitted");
+    if (!evidence.artifact.immutableRef.startsWith(root.artifactNamespace)) push("attestation_artifact_namespace_not_permitted");
     const rootFrom = new Date(root.validFrom).getTime();
     const rootThrough = new Date(root.validThrough).getTime();
     const issuedAt = new Date(evidence.issuedAt).getTime();
+    const expiresAt = new Date(evidence.expiresAt).getTime();
     if (rootThrough <= rootFrom) push("attestation_trust_root_validity_window_invalid");
-    if (root.revokedAt && nowIsValid && new Date(root.revokedAt).getTime() <= nowMs) push("attestation_trust_root_revoked");
+    const revokedAt = root.revokedAt ? new Date(root.revokedAt).getTime() : null;
+    if (revokedAt !== null && ((nowIsValid && revokedAt <= nowMs) || issuedAt >= revokedAt)) push("attestation_trust_root_revoked");
     if (nowIsValid && (rootFrom > nowMs || rootThrough <= nowMs)) push("attestation_trust_root_not_current");
     if (issuedAt < rootFrom || issuedAt >= rootThrough) push("attestation_issued_outside_trust_root_window");
-    if (!verifyEvidenceAttestationSignature(evidence, root.publicKeyPem)) push("attestation_signature_invalid");
+    if ((expiresAt - issuedAt) / 1_000 > root.freshness.maxAttestationTtlSeconds) push("root_attestation_ttl_exceeded");
+    if (!verifyAttestationCryptographicSignatureOnly(evidence, root.publicKeyPem)) push("attestation_signature_invalid");
   }
 
   const issuedAt = new Date(evidence.issuedAt).getTime();
@@ -184,7 +277,6 @@ function evaluateEvidence(input: {
   if (nowIsValid && expiresAt <= nowMs) push("evidence_expired");
   if (criterion) {
     if ((expiresAt - issuedAt) / 1_000 > criterion.freshness.maxTtlSeconds) push("criterion_ttl_exceeded");
-    if (nowIsValid && (nowMs - issuedAt) / 1_000 > criterion.freshness.maxAgeSeconds) push("criterion_max_age_exceeded");
     if (criterion.gate) {
       if (!evidence.gate || evidence.gate.gateId !== criterion.gate.gateId
         || evidence.gate.result !== criterion.gate.requiredResult) push("evidence_gate_mismatch");
@@ -192,6 +284,32 @@ function evaluateEvidence(input: {
   }
   if ((evidence.subject.kind === "capability" || evidence.subject.kind === "release") && !criterion?.gate) {
     push("promotable_subject_requires_gate");
+  }
+
+  if (!receipt) {
+    push("control_plane_receipt_missing");
+  } else {
+    const receivedAt = new Date(receipt.receivedAt).getTime();
+    if (receipt.registryFingerprint !== input.registryFingerprint) push("receipt_registry_fingerprint_mismatch");
+    if (receipt.attestationFingerprint !== evidenceAttestationFingerprint(evidence)) push("receipt_attestation_fingerprint_mismatch");
+    if (stableJson(receipt.artifact) !== stableJson(evidence.artifact)) push("receipt_artifact_mismatch");
+    if (stableJson(receipt.runBinding) !== stableJson(evidence.runBinding)) push("receipt_run_binding_mismatch");
+    if (receipt.nonce !== evidence.nonce) push("receipt_nonce_mismatch");
+    if (receipt.state !== "available") push("receipt_already_consumed");
+    if (nowIsValid && receivedAt > nowMs + ((root?.freshness.clockSkewSeconds ?? 0) * 1_000)) push("receipt_received_in_future");
+    if (root) {
+      const skewMs = root.freshness.clockSkewSeconds * 1_000;
+      if (issuedAt > receivedAt + skewMs) push("evidence_issued_after_receipt");
+      if (receivedAt - issuedAt > (root.freshness.maxIssuanceToReceiptSeconds * 1_000) + skewMs) {
+        push("evidence_receipt_delay_exceeded");
+      }
+      if (nowIsValid && nowMs - receivedAt > (root.freshness.maxReceiptAgeSeconds * 1_000) + skewMs) {
+        push("root_receipt_max_age_exceeded");
+      }
+      if (criterion && nowIsValid && nowMs - receivedAt > (criterion.freshness.maxAgeSeconds * 1_000) + skewMs) {
+        push("criterion_max_age_exceeded");
+      }
+    }
   }
 
   if (!resolved) {
@@ -202,7 +320,16 @@ function evaluateEvidence(input: {
   }
 
   const stable = stableIssues(blockers);
-  return {verified: stable.length === 0, blockers: stable};
+  return {
+    verified: stable.length === 0,
+    blockers: stable,
+    promotionPrecondition: stable.length === 0 && receipt ? {
+      receiptId: receipt.receiptId,
+      evidenceId: receipt.evidenceId,
+      expectedCasRevision: receipt.casRevision,
+      nonce: receipt.nonce,
+    } : null,
+  };
 }
 
 function evaluateClaim(input: {
@@ -263,12 +390,47 @@ export function invalidEvidenceRegistryDecision(
     verificationMode: "control_plane" as const,
     evaluatedAt: nowIsValid ? new Date(controlPlane.nowMs).toISOString() : "1970-01-01T00:00:00.000Z",
     trustRegistryFingerprint: controlPlane.registryFingerprint,
-    registryFingerprint: fingerprintJson(input),
+    registryFingerprint: safeUnknownFingerprint(input),
     verifiedEvidenceIds: [],
+    promotionPreconditions: [],
     claimDecisions: [],
     blockers: [issue(code)],
   };
   return evidenceRegistryDecisionSchema.parse({...payload, decisionFingerprint: fingerprintJson(payload)});
+}
+
+function safeUnknownFingerprint(input: unknown): string {
+  try {
+    return fingerprintJson(input);
+  } catch {
+    try {
+      const seen = new WeakMap<object, string>();
+      const normalize = (value: unknown, path: string): unknown => {
+        if (typeof value === "bigint") return {$type: "bigint", value: value.toString()};
+        if (typeof value === "undefined") return {$type: "undefined"};
+        if (typeof value === "number" && !Number.isFinite(value)) return {$type: "number", value: String(value)};
+        if (typeof value === "symbol") return {$type: "symbol", value: String(value.description ?? "")};
+        if (typeof value === "function") return {$type: "function"};
+        if (!value || typeof value !== "object") return value;
+        const previous = seen.get(value);
+        if (previous) return {$ref: previous};
+        seen.set(value, path);
+        if (Array.isArray(value)) return value.map((entry, index) => normalize(entry, `${path}/${index}`));
+        const output: Record<string, unknown> = {};
+        for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+          try {
+            output[key] = normalize((value as Record<string, unknown>)[key], `${path}/${key}`);
+          } catch {
+            output[key] = {$type: "unreadable"};
+          }
+        }
+        return output;
+      };
+      return fingerprintJson(normalize(input, "$"));
+    } catch {
+      return createHash("sha256").update("offroad:invalid-unfingerprintable-input:v1").digest("hex");
+    }
+  }
 }
 
 function issue(
