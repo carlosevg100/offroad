@@ -22,7 +22,9 @@ cost_eval_ids: [deterministic:no-model-calls]
 house_procedure_ids: [Q-06, Q-14, D-07, ES-11, ES-12, OP-01]
 authorities: [DEF, CASA]
 reference_data_keys: [policy.receivables.aging, policy.concentration.materiality, policy.structure.collateral_haircuts, policy.structure.collateral-coverage]
-task_specs: [D06, C06, C10, S04]
+task_specs: [R01]
+required_depth_pack_ids: [analysis.receivables-underwriting]
+binding_priority: 100
 gold_cases: [gc03-assessor-recebiveis]
 ---
 

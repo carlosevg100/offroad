@@ -161,6 +161,11 @@ export const offroadTaskRegistry = [
   task("C10", "Calcular capacidade", "case", ["C05", "C08", "C09"], "deterministic"),
   task("C11", "Compilar tese de estruturação", "case", ["C09", "C10"], "judgment"),
 
+  // Specialist tasks are activated by governed depth packs, not by persona or prompt wording.
+  // Keeping them as their own nodes lets several expert methods compose without replacing a
+  // broad company-analysis task that still has independent work to perform.
+  task("R01", "Conciliar e testar carteira de recebíveis", "case", ["D06"], "deterministic"),
+
   task("S01", "Comparar pedido e necessidade", "case", ["M02", "C06", "C10"], "deterministic"),
   task("S02", "Gerar universo de instrumentos", "case", ["M04", "C10"], "deterministic"),
   task("S03", "Aplicar filtros jurídicos, jurisdicionais e econômicos", "case", ["S02"], "deterministic"),

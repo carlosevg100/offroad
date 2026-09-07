@@ -3,9 +3,9 @@ import {offroadTaskRegistry, validateOffroadTaskRegistry} from "./task-registry"
 import {hasLocalizedOffroadTaskLabel, localizedOffroadTaskLabel} from "./task-localization";
 
 describe("Offroad TaskSpec registry", () => {
-  it("contains exactly 80 unique, acyclic target tasks", () => {
-    expect(offroadTaskRegistry).toHaveLength(80);
-    expect(new Set(offroadTaskRegistry.map((task) => task.id)).size).toBe(80);
+  it("contains exactly 81 unique, acyclic target tasks", () => {
+    expect(offroadTaskRegistry).toHaveLength(81);
+    expect(new Set(offroadTaskRegistry.map((task) => task.id)).size).toBe(81);
     expect(() => validateOffroadTaskRegistry()).not.toThrow();
   });
 
