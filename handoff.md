@@ -1,10 +1,10 @@
 # Offroad Capital: Product and Engineering Handoff
 
-> Current as of 6 September 2026. The universal advisor foundation, persistent project memory,
+> Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
-> implemented but not yet homologated as top-tier expertise. The first human gold case remains the
-> controlling next step; section 42 is the current operational handoff.
+> implemented but not yet homologated as top-tier expertise. The executable Endgame Program Board
+> is the controlling implementation index; no broad founder test or customer reliance is authorized.
 >
 > This is the fastest complete orientation document for a new product, design,
 > engineering, data, credit, security, or AI session. It describes both the
@@ -3493,3 +3493,17 @@ econômica de covenant; não presume pré-pagamento a par; e não ranqueia estru
 comparáveis. O G2 continua `specified`. Próximo gate: construir planilha e board paper editáveis
 sobre o mesmo snapshot assinado, revisar visualmente e só depois decompor os dois produtos em
 objetos, procedimentos e blocos de artifact compiler.
+
+# Endgame Program Control, candidate, 07/09/2026
+
+O roadmap do blueprint agora possui controle executável em `@offroad/release-governance`, e não
+apenas uma sequência narrativa. A fonte canônica `current-endgame-program.ts` registra 62 work
+packages R0-R7 com dependências, subtarefas, acceptance, evidências, blockers, TRUST IDs e
+transições de maturity. `docs/build/ENDGAME_PROGRAM_BOARD.md` é uma vista gerada e testada por
+paridade; alterações devem começar na fonte tipada e rodar `program-board:render`.
+
+O baseline inicial é `main@b760167`. Não tratar o PPTX governado como integrado: o PR 523 segue
+aberto e seu E2E falhou. Não tratar nenhuma capacidade como pronta para cliente: o ledger atual não
+autoriza `customer_work`, `external_material` ou `external_action`. O próximo maintainer deve fechar
+os findings do board com evidência, não apenas mudar estados. O gate recusa conclusão sem transição
+correspondente no Capability Ledger.

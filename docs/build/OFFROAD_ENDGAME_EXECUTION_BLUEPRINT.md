@@ -1862,6 +1862,14 @@ O programa trabalha em oito streams permanentes e integra entregas em releases v
 uma fila única que espera "terminar o backend" antes de construir experiência ou referência de work
 product.
 
+O controle operacional deste programa está em `@offroad/release-governance/current-endgame-program`.
+`docs/build/ENDGAME_PROGRAM_BOARD.md` é uma vista gerada dessa fonte, não um segundo roadmap. Um
+item só pode atravessar `gate_passed` e `promoted` quando o avaliador comprovar dependências,
+acceptance, evidências, bloqueadores e a transição correspondente no Capability Ledger. Este
+blueprint define o destino e a decomposição; o board registra a execução e o baseline corrente.
+A cadência, a separação entre agentes de frente e integrador e o protocolo de promoção estão em
+`docs/build/ENDGAME_PROGRAM_OPERATING_CADENCE.md`.
+
 ### 20.1 Streams permanentes
 
 | Stream | Responsabilidade | Primeiro resultado verificável |

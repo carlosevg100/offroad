@@ -1,5 +1,23 @@
 # Acceptance Evidence
 
+## Endgame Program Board executável, candidate, 07/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Fonte canônica | `current-endgame-program.ts` | baseline, evidence index, findings e 62 work packages R0-R7 em um objeto tipado |
+| Gate de conclusão | `evaluateEndgameProgramBoard` | impede `gate_passed`/`promoted` sem subtarefas, acceptance, evidência, dependências, blockers fechados e transição registrada no ledger |
+| Integridade do grafo | testes de dependências | referência ausente, self-loop, duplicidade e ciclo falham fechado |
+| Integridade de evidência | evidence index + testes negativos | evidence ref inexistente, acceptance passada sem prova e blocker resolvido sem prova falham fechado |
+| Segurança | Control Register real | cada `TRUST-*` referenciado precisa resolver a um objetivo existente no catálogo canônico |
+| Capability truth | Capability Ledger real | transição planejada parte da maturidade atual; transição registrada precisa aparecer no ledger; promoção exige live e exposure diferente de none |
+| Paridade humana | `ENDGAME_PROGRAM_BOARD.md` | conteúdo gerado precisa ser byte-identical ao renderer da fonte canônica |
+| Baseline real | inspeção de origin/main e GitHub | `main@b760167`; ledger v13 em `cb5f674`; PR 523 aberto e bloqueado por E2E |
+| Gate focado | test + typecheck + lint de `@offroad/release-governance` | 5 arquivos/37 testes verdes antes do registro final deste incremento |
+| Gate integral local | `pnpm check` em Node 24 | lint, typecheck, test e build verdes nos 43 targets; CI externa ainda pendente |
+
+Status: **candidate control evidence**. A evidência valida o mecanismo de controle, não encerra
+CTRL-01/CTRL-02 e não promove capacidade de produto.
+
 ## Roteamento de intenção com política governada, tested interno, 07/09/2026
 
 | Evidência | Verificação | Resultado |
