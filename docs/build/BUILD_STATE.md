@@ -2611,7 +2611,7 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - A capacidade permanece `candidate/internal`: testes unitários e staging cobrem o bridge; banco,
   CI integral, E2E e promoção ainda são gates obrigatórios.
 
-## Contrato de schema no boot do worker, implemented, 07/09/2026
+## Contrato de schema no boot do worker, tested, 07/09/2026
 
 - O deploy do worker deixa de pressupor que um merge nominal da branch promoveu o banco. Depois de
   autenticar, mas antes de construir a fila ou buscar qualquer job, cada nova task consulta
@@ -2619,13 +2619,16 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
 - Endpoint ausente, versão antiga ou payload inválido encerra a task nova. O rollout do ECS não
   estabiliza e a task anterior permanece atendendo; nenhum job de cliente é reivindicado por uma
   imagem incompatível.
-- A versão esperada vive em `runtime-schema.ts`. Um teste lê a migration mais recente do contrato e
-  impede que código e SQL sejam alterados separadamente. O endpoint aceita somente sessão
-  `authenticated`, não expõe dados de tenant e retorna apenas versão e nomes de capacidades.
+- A versão e as capacidades obrigatórias vivem em `runtime-schema.ts`. Um teste lê a migration mais
+  recente do contrato e impede que código e SQL sejam alterados separadamente. Mudança incompatível
+  exige nova versão; comando aditivo entra por nome de capacidade, preservando restart da imagem
+  anterior durante o rollout. O endpoint aceita somente sessão `authenticated`, não expõe dados de
+  tenant e retorna apenas versão e nomes de capacidades.
 - A migration do bridge R01 foi reconciliada com o carimbo efetivo de produção
   `20260907051254`; o contrato de boot foi aplicado a staging e produção, com carimbo canônico de
-  produção `20260907051611`. O worker ainda precisa passar CI e estabilizar no ECS antes de este
-  controle contar como operacional.
+  produção `20260907051611`. O PR #505 passou a CI e a imagem `cb5f674af932` estabilizou como
+  `offroad-document-worker:244` no ECS no workflow `34087160541`; este é o primeiro rollout
+  efetivamente protegido pelo gate.
 
 ## Refresh governado quando o input R01 fica completo, implemented, 07/09/2026
 
@@ -2639,6 +2642,10 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   janela recente do chat. O R01 continua em sombra e não autoriza recomendação ou material externo.
 - O teste de orquestração prova os dois ramos: input incompleto não enfileira; resposta que fecha
   exatamente `structure.advanceRate` compila o draft e inicia o refresh sem chamada de modelo.
+- O primeiro teste remoto encontrou uma fronteira errada antes da produção: o comando interno
+  chamava uma RPC de tenant e exigiria que a conta isolada do worker pertencesse à organização. O
+  refresh agora nasce diretamente da capability do job leased, sem impersonar o usuário; autoria,
+  orçamento e execução controlada continuam atribuídos à resposta de origem.
 - A migration e a capacidade aditiva do contrato de boot ainda precisam ser promovidas em
   produção, passar pela CI integral e estabilizar no ECS antes de esta fatia contar como live. O
   número de versão permanece compatível com a imagem anterior durante o rollout; a imagem nova

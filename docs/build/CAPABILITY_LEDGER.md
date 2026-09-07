@@ -50,7 +50,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Fechamento governado e refresh R01 | live | internal | implemented | executa o case rail atual; o especialista R01 continua em sombra e sem uso externo |
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
-| Compatibilidade banco-worker no boot | live | internal | implemented | requer bump conjunto do contrato em toda mudança dependente de schema e estabilização do primeiro rollout protegido |
+| Compatibilidade banco-worker no boot | live | internal | tested | primeiro rollout protegido estabilizado; mudança incompatível exige versão nova e mudança aditiva exige capacidade nominal |
 | Assurance enterprise externa | absent | none | unsupported | sem pentest, SOC 2 ou ISO emitidos |
 | Execution Brief específico | live | universal | implemented | compiler, histórico imutável e card estão ligados; somente G1 possui gate E2E |
 | Live Work stream | live | universal | implemented | progresso seguro vem dos runs reais; eventos narrativos por frente ainda são estreitos |
