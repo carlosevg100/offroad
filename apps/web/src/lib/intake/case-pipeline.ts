@@ -50,6 +50,17 @@ export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
         state: "satisfied" | "missing" | "conflicting";
         gapCodes: readonly string[];
       }[];
+      progress: {
+        completed: number;
+        total: 6;
+        currentStageId: "portfolio_diagnostics" | "evidence_reconciliation" | "eligibility_analysis" | "structure_sizing" | "cash_waterfall" | "full_underwriting" | null;
+        stages: readonly {
+          id: "portfolio_diagnostics" | "evidence_reconciliation" | "eligibility_analysis" | "structure_sizing" | "cash_waterfall" | "full_underwriting";
+          state: "complete" | "in_progress" | "waiting" | "conflicting";
+          outputAvailable: boolean;
+          dependsOn: readonly string[];
+        }[];
+      };
       gaps: readonly {
         code: string;
         dimensionId: string;

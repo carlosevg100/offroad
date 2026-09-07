@@ -16,7 +16,7 @@ const copy = {
   submit: "Incorporar resposta",
   submitting: "Incorporando",
   unavailable: "Não tenho essa informação",
-  unavailableMessage: "Não tenho essa informação no momento. Siga com uma premissa explícita.",
+  unavailableMessage: "Não tenho essa informação no momento. Preserve a lacuna e siga apenas com o que puder ser sustentado.",
   remaining: "perguntas depois desta",
   confirmYes: "Sim",
   confirmNo: "Não",

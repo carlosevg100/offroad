@@ -102,6 +102,8 @@ describe("receivables specialist method readiness", () => {
       "eligibility_policy_not_governed", "facility_and_waterfall_not_governed",
     ]));
     expect(result.nextQuestions.every((item) => item.text.pt.length > 20)).toBe(true);
+    expect(result.progress).toMatchObject({completed: 1, total: 6, currentStageId: "evidence_reconciliation"});
+    expect(result.progress.stages[0]).toMatchObject({id: "portfolio_diagnostics", state: "complete", outputAvailable: true});
   });
 
   it("does not treat absent event histories as zero", () => {
@@ -124,6 +126,11 @@ describe("receivables specialist method readiness", () => {
     expect(result.primaryReason).toBe("needs_policy");
     expect(result.gaps.map((item) => item.code)).toEqual(["eligibility_policy_not_governed", "facility_and_waterfall_not_governed"]);
     expect(result.dimensions.find((item) => item.id === "cash_reconciliation")?.state).toBe("satisfied");
+    expect(result.progress.stages).toEqual(expect.arrayContaining([
+      expect.objectContaining({id: "evidence_reconciliation", state: "complete"}),
+      expect.objectContaining({id: "eligibility_analysis", state: "in_progress"}),
+      expect.objectContaining({id: "structure_sizing", state: "waiting"}),
+    ]));
   });
 
   it("surfaces a partial-draft conflict instead of choosing a value", () => {
@@ -134,6 +141,27 @@ describe("receivables specialist method readiness", () => {
     });
     expect(result.primaryReason).toBe("conflicting");
     expect(result.gaps[0]?.code).toContain("supplement_draft_conflicted");
+    expect(result.progress.currentStageId).toBe("evidence_reconciliation");
+    expect(result.progress.stages.slice(1).every((stage) => stage.state === "conflicting")).toBe(true);
+  });
+
+  it("opens waterfall only after evidence, policy and sizing inputs are complete", () => {
+    const result = assessReceivablesPoolMethodReadiness({
+      phaseOne,
+      detection,
+      partialDraft: {
+        state: "incomplete",
+        openConflictIds: [],
+        missingSections: ["structure.waterfall.availableCash", "structure.waterfall.seniorInterestDue"],
+      },
+    });
+    expect(result.progress.stages).toEqual(expect.arrayContaining([
+      expect.objectContaining({id: "eligibility_analysis", state: "complete"}),
+      expect.objectContaining({id: "structure_sizing", state: "complete"}),
+      expect.objectContaining({id: "cash_waterfall", state: "in_progress"}),
+      expect.objectContaining({id: "full_underwriting", state: "waiting"}),
+    ]));
+    expect(result.progress.currentStageId).toBe("cash_waterfall");
   });
 
   it("allows execution only after a fully evidenced, one-to-one assembly reconciles", () => {
@@ -141,6 +169,7 @@ describe("receivables specialist method readiness", () => {
     expect(result).toMatchObject({state: "ready", primaryReason: "ready", methodExecutionAllowed: true, gaps: []});
     expect(result.validatedInput).toEqual(methodInput);
     expect(result.dimensions.every((item) => item.state === "satisfied")).toBe(true);
+    expect(result.progress).toMatchObject({completed: 6, total: 6, currentStageId: null});
   });
 
   it("fails closed when a mapped title changes economics", () => {
