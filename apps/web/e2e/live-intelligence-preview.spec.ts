@@ -216,7 +216,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     await send(page, prompt);
     const reply = await waitForAssistant(page, /live_intelligence_preview\] composição=change_premise/);
     record("premissa", prompt, reply);
-    const update = await waitForAssistant(page, /7 de 10 etapas replicaram sem recálculo/);
+    const update = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
     transcript.push(`\n**Offroad (atualização incremental):** ${update}\n`);
     await page.screenshot({path: join(outputDirectory, "05-premise-change.png"), fullPage: true});
   });

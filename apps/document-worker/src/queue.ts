@@ -100,7 +100,7 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
     /** integration_preview only: the composition, case and workflow the activation compiled, plus the premises of the turn. */
     preview: z.object({
       mode: z.literal("integration_preview"),
-      composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen"]),
+      composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]),
       caseId: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/),
       workflow: z.object({id: z.string().min(1), version: z.string().min(3), fingerprint: z.string().regex(/^[a-f0-9]{64}$/)}),
       premises: z.record(z.string(), z.unknown()).default({}),

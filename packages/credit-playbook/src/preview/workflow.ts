@@ -7,7 +7,6 @@
  * method of the library (the procedure the executor implements) and to an artifact type. The
  * maturity is `implemented` for all of them: this is exactly what the preview mode exists to run.
  */
-import {createHash} from "node:crypto";
 import {z} from "zod";
 
 import {compileWorkflowSlice, refinanceLiabilityManagementWorkflow, type WorkflowRecipeStep} from "../workflow-recipe";
@@ -15,7 +14,7 @@ import {compileWorkflowSlice, refinanceLiabilityManagementWorkflow, type Workflo
 export const previewCompositionSchema = z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]);
 export type PreviewComposition = z.infer<typeof previewCompositionSchema>;
 
-export const previewWorkflowVersion = "2026.09.05-v1";
+export const previewWorkflowVersion = refinanceLiabilityManagementWorkflow.version;
 export const previewCompilerVersion = `integration-preview-${previewWorkflowVersion}`;
 
 export type PreviewWorkflowStep = WorkflowRecipeStep;
@@ -23,40 +22,45 @@ export type PreviewWorkflowStep = WorkflowRecipeStep;
 /** Backward-compatible preview projection; the reusable recipe is the source of graph truth. */
 export const case01PreviewSteps: readonly PreviewWorkflowStep[] = refinanceLiabilityManagementWorkflow.steps;
 
-const canonical = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : inner));
+export type PreviewWorkflowOutcome = "meeting_plan" | "material";
+
+export function previewOutcome(composition: PreviewComposition): PreviewWorkflowOutcome {
+  return composition === "prepare_material" || composition === "prepare_decision" ? "material" : "meeting_plan";
+}
+
+export function previewStepsForComposition(composition: PreviewComposition): PreviewWorkflowStep[] {
+  return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, previewOutcome(composition)).steps;
+}
 
 /** The workflow identity the activation records: id, version and the fingerprint of its steps. */
 export function previewWorkflowIdentity(composition: PreviewComposition): {id: string; version: string; fingerprint: string} {
+  const outcome = previewOutcome(composition);
+  const compiled = compileWorkflowSlice(refinanceLiabilityManagementWorkflow, outcome);
   return {
-    id: `case01.${composition}`,
-    version: previewWorkflowVersion,
-    fingerprint: createHash("sha256").update(canonical({composition, steps: case01PreviewSteps})).digest("hex"),
+    id: `${refinanceLiabilityManagementWorkflow.id}.${outcome}`,
+    version: refinanceLiabilityManagementWorkflow.version,
+    fingerprint: compiled.fingerprint,
   };
 }
 
-/** Which steps a composition targets; the plan always holds every step so dependencies resolve. */
+/** The terminal task requested by each preview composition. Dependencies are compiled into its slice. */
 export function previewTargetTaskIds(composition: PreviewComposition): string[] {
-  switch (composition) {
-    case "prepare_material": return ["A01", "A02"];
-    case "prepare_meeting":
-    case "prepare_decision":
-    case "deepen":
-    case "change_premise":
-      return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, "alternatives").steps.map((step) => step.taskId);
-  }
+  return [...refinanceLiabilityManagementWorkflow.supportedOutcomes[previewOutcome(composition)]!];
 }
 
 /** Steps in dependency order, batched: a step's batch is one past its deepest dependency. */
-export function previewBatches(): string[][] {
-  return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, "material").parallelBatches;
+export function previewBatches(composition: PreviewComposition): string[][] {
+  return compileWorkflowSlice(refinanceLiabilityManagementWorkflow, previewOutcome(composition)).parallelBatches;
 }
 
 /**
  * The `capital-project-plan.v1` snapshot the activation persists as the preview plan. The entry
- * job stays the project's own; the targets and the first work product come from the composition.
+ * job stays the project's own; the target and the minimal dependency-closed slice come from the
+ * composition.
  */
 export function compileIntegrationPreviewPlan(input: {composition: PreviewComposition; entryJob: string; locale: "pt-BR" | "en-US"; registryVersion: string; turn?: {messageId: string}}) {
-  const batches = previewBatches();
+  const steps = previewStepsForComposition(input.composition);
+  const batches = previewBatches(input.composition);
   const batchOf = new Map(batches.flatMap((batch, index) => batch.map((taskId) => [taskId, index] as const)));
   return {
     schemaVersion: "capital-project-plan.v1",
@@ -74,7 +78,7 @@ export function compileIntegrationPreviewPlan(input: {composition: PreviewCompos
       inputPolicy: {company: "required", documents: "optional", capitalIntent: "optional", existingTransaction: "not_applicable", publicResearch: "frozen_case_evidence"},
       mode: "integration_preview",
     },
-    taskSpecs: case01PreviewSteps.map((step, ordinal) => ({
+    taskSpecs: steps.map((step, ordinal) => ({
       id: step.taskId,
       label: step.label[input.locale === "en-US" ? "en" : "pt"],
       graph: "case",

@@ -60,6 +60,15 @@ immutable, capability-bound, tenant-scoped, replayable by fingerprint and valida
 parity plus a complete task-to-batch partition. It remains shadow-only. Worker tests are green;
 database, RLS and SQL evidence remain candidate until CI runs the local Supabase gate.
 
+The preview executor now consumes the compiled recipe slice instead of running all ten Case 01
+steps for every request. Meeting, deepen and premise-change compositions stop at the nine-step
+meeting-plan outcome; material and decision compositions include the tenth material step. Runtime
+identity is recipe plus outcome, not `case01.*`, and the executor fails closed if the persisted
+identity or exact task set diverges from the selected slice. The visible readout no longer calls the
+user's work Case 01. This remains candidate code on frozen Camil evidence until its stacked PR
+passes database, E2E, build and security gates; it does not prove universal dispatch or output
+quality.
+
 Trust is not deferred to enterprise packaging. The canonical program is
 `docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md`; every release now has security
 construction and gates. Release 7 is reserved for enterprise integration, independent pentest and

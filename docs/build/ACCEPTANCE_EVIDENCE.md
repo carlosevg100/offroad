@@ -1,5 +1,23 @@
 # Acceptance Evidence
 
+## Dispatch do preview pelo slice compilado, candidate, 06/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Recorte real | `previewStepsForComposition` + `processIntegrationPreviewRunJob` | reunião executa nove tarefas até `A01`; material e decisão de conselho executam dez até `A02` |
+| Identidade econômica | `previewWorkflowIdentity` | IDs `refinance-liability-management.meeting_plan` e `.material`, versão da receita e fingerprint do slice |
+| Fail-closed | validação no início do executor | identidade divergente, quantidade divergente ou TaskSpec selecionada ausente bloqueiam o run |
+| Sem material prematuro | `integration-preview.test.ts` | primeiro pedido de reunião não grava `preview_material` |
+| Atualização incremental | teste de mudança de premissa | `S10` e `A01` recalculados; sete de nove tarefas replicadas; `A02` não executa |
+| Linguagem externa | completion message + E2E | devolutiva não identifica o trabalho do usuário como Caso 01 |
+| Gate do playbook | Vitest + typecheck | 37 arquivos/315 testes verdes; tipos verdes |
+| Gate do worker | Vitest + typecheck | 31 arquivos/185 testes verdes; tipos verdes, incluindo claim e execução de `prepare_decision` |
+| Gate web aplicável | typegen + typecheck | tipos de rota regenerados; TypeScript verde |
+| Pendência integral | CI do PR | banco, E2E local Supabase, build e security ainda não executados para este commit |
+
+Status: **candidate dispatch slice**. A evidência demonstra execução seletiva do preview para uma
+receita; não demonstra todos os workflows, pesquisa aberta, arquivos institucionais ou produção.
+
 ## Seleção de workflow persistida no preflight, candidate, 06/09/2026
 
 | Evidência | Verificação | Resultado |
