@@ -60,10 +60,11 @@ responsabilidade ou decisão de perguntar diferente gera outro fingerprint e rep
 
 ## Regra de promoção
 
-Composição, abstenção, profundidade, continuidade, primeiro trabalho, completude e invariância
-exigem 100%. Trabalhos complementares, responsabilidades e presença da pergunta exigem pelo menos
-93%, o que permite no máximo um erro no conjunto atual. Um resultado verde é necessário, mas não
-suficiente: ele não promove o roteador, não libera executor e não autoriza conclusão para cliente.
+Composição, abstenção, profundidade, continuidade, primeiro trabalho, responsabilidades,
+completude e invariância exigem 100%. Trabalhos complementares e presença e tema da pergunta exigem
+pelo menos 93%, o que permite no máximo um erro no conjunto atual. Um resultado verde é necessário,
+mas não suficiente: ele não promove o roteador, não libera executor e não autoriza conclusão para
+cliente.
 
 ## Execução e segurança
 

@@ -127,8 +127,9 @@ export type IntentRouterGateSummary = {
 
 /**
  * Promotion thresholds are deliberately strict on fields that select a workflow. Supporting
- * works/responsibilities and whether to ask are allowed one miss in a sixteen-turn set, but a
- * composition, abstention, depth, continuity or first work miss blocks promotion.
+ * supporting works and whether to ask are allowed one miss in the bounded gold set. Responsibility
+ * is plan-driving authority and therefore requires exact coverage, just like composition,
+ * abstention, depth, continuity and first work.
  */
 export const intentRouterGateThresholds: Record<keyof IntentRouterGateChecks, number> = {
   completed: 1,
@@ -138,7 +139,7 @@ export const intentRouterGateThresholds: Record<keyof IntentRouterGateChecks, nu
   continuity: 1,
   primaryFirst: 1,
   primaryWorksIncludeExpected: 0.93,
-  responsibilitiesIncludeExpected: 0.93,
+  responsibilitiesIncludeExpected: 1,
   questionPresence: 0.93,
   questionTheme: 0.93,
 };
