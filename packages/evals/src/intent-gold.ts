@@ -1,4 +1,4 @@
-import {primaryWorkSchema, workResponsibilitySchema, type NamedComposition, type PrimaryWork, type WorkResponsibility} from "@offroad/agent-contracts";
+import {namedCompositionSchema, primaryWorkSchema, workResponsibilitySchema, type NamedComposition, type PrimaryWork, type WorkResponsibility} from "@offroad/agent-contracts";
 import {z} from "zod";
 
 /**
@@ -18,7 +18,7 @@ export const intentGoldTurnSchema = z.object({
     workResponsibility: z.array(workResponsibilitySchema).min(1),
     depth: z.enum(["point", "preliminary", "institutional"]),
     continuity: z.enum(["new", "refresh", "monitor", "comparison", "resume"]),
-    composition: z.string().nullable(),
+    composition: namedCompositionSchema.nullable(),
     abstain: z.boolean(),
     /** The one thing a careful desk would still need to know. Null when the turn stands alone. */
     firstQuestionTheme: z.string().nullable(),
@@ -128,6 +128,6 @@ export function intentGoldCoverage(): {works: PrimaryWork[]; responsibilities: W
   return {
     works: [...new Set(intentGoldTurns.flatMap((entry) => entry.expected.primaryWorks))],
     responsibilities: [...new Set(intentGoldTurns.flatMap((entry) => entry.expected.workResponsibility))],
-    compositions: [...new Set(intentGoldTurns.map((entry) => entry.expected.composition).filter((value): value is string => value !== null))],
+    compositions: [...new Set(intentGoldTurns.map((entry) => entry.expected.composition).filter((value): value is NamedComposition => value !== null))],
   };
 }

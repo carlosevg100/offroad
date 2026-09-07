@@ -56,7 +56,7 @@ const clampField = <T, U>(field: {value: T; state: string; confidence?: number |
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Stamps the system fields around a classifier output and clamps every value to the envelope contract; the model never writes the system fields. */
-export function stampIntentEnvelope(output: ShadowRoutingOutput, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
+export function stampIntentEnvelope(output: Omit<ShadowRoutingOutput, "composition"> & {composition: string | null}, context: ShadowRoutingContext, now: () => Date = () => new Date()): IntentEnvelope {
   const core = output.routingCore;
   const ctx = output.inferableContext;
   return intentEnvelopeSchema.parse({

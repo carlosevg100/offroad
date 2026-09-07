@@ -113,7 +113,13 @@ export function normalizePreviewTurn(raw: z.infer<typeof rawPreviewTurnSchema>):
 
 
 
-export const liveRoutingOutputSchema = shadowRoutingOutputSchema.extend({turn: previewTurnSchema});
+export const liveRoutingOutputSchema = shadowRoutingOutputSchema.extend({
+  // `deepen` is an internal preview continuation, not an Atlas composition emitted by the
+  // canonical classifier. Keep the compatibility rail explicit while the universal compiler is
+  // still in shadow.
+  composition: z.union([shadowRoutingOutputSchema.shape.composition.unwrap(), z.literal("deepen")]).nullable(),
+  turn: previewTurnSchema,
+});
 export type LiveRoutingOutput = Omit<z.infer<typeof liveRoutingOutputSchema>, "turn"> & {turn: PreviewTurn};
 
 export const LIVE_ROUTING_SYSTEM = `${SHADOW_ROUTING_SYSTEM}
