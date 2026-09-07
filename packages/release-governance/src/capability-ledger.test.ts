@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(32);
+    expect(decision.entryCount).toBe(33);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
@@ -31,6 +31,16 @@ describe("capability ledger", () => {
   it("records the database compatibility preflight without overstating operational maturity", () => {
     const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
     expect(byId.get("trust.worker-schema-boot-gate")).toMatchObject({
+      availability: "live",
+      exposure: "internal",
+      qualityMaturity: "tested",
+      allowedUses: ["internal_validation"],
+    });
+  });
+
+  it("keeps the governed R01 refresh internal until the specialist is promoted", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("continuity.r01-governed-refresh")).toMatchObject({
       availability: "live",
       exposure: "internal",
       qualityMaturity: "implemented",

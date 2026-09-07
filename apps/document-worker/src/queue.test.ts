@@ -188,6 +188,46 @@ describe("case input loading", () => {
       job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, projection,
     )).resolves.toEqual({openCount: 2, preservedClosedCount: 1, supersededCount: 1, boundCount: 2});
   });
+
+  it("queues one bounded refresh for a complete immutable supplement draft", async () => {
+    const agentJob: AgentOperationBriefJob = {
+      claimed: true, kind: "agent_operation_brief",
+      job_id: "10000000-0000-4000-8000-000000000010",
+      capability_token: job.capability_token,
+      lease_expires_at: job.lease_expires_at,
+      attempt: 1,
+      organization_id: job.organization_id,
+      intake_session_id: job.intake_session_id,
+      processing_run_id: job.processing_run_id,
+      payload: {message_id: "10000000-0000-4000-8000-000000000011", locale: "pt-BR"},
+    };
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_enqueue_receivables_method_refresh_v1");
+      expect(args).toEqual({
+        p_job_id: agentJob.job_id,
+        p_capability_token: agentJob.capability_token,
+        p_draft_fingerprint: "d".repeat(64),
+        p_compiled_supplement_fingerprint: "e".repeat(64),
+      });
+      return {data: {
+        processing_run_id: "50000000-0000-4000-8000-000000000001",
+        job_id: "60000000-0000-4000-8000-000000000001",
+        compiled_supplement_fingerprint: "e".repeat(64),
+        replayed: false,
+      }, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.enqueueReceivablesMethodRefresh!(agentJob, {
+      draftFingerprint: "d".repeat(64),
+      compiledSupplementFingerprint: "e".repeat(64),
+    })).resolves.toEqual({
+      processingRunId: "50000000-0000-4000-8000-000000000001",
+      jobId: "60000000-0000-4000-8000-000000000001",
+      compiledSupplementFingerprint: "e".repeat(64),
+      replayed: false,
+    });
+  });
 });
 
 describe("operating-control persistence", () => {

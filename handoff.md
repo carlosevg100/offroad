@@ -3462,5 +3462,18 @@ com a constante compilada. Banco atrasado, endpoint ausente ou resposta malforma
 nova antes de qualquer claim; o ECS não substitui a versão saudável. O contrato não contém dados
 de cliente, não aceita `anon` e tem teste que mantém SQL e TypeScript alinhados. A migration foi
 aplicada em staging e produção e usa no repositório o carimbo efetivo de produção
-`20260907051611_worker_runtime_schema_contract.sql`; CI e estabilização do serviço ainda são a
-prova operacional restante.
+`20260907051611_worker_runtime_schema_contract.sql`. O PR #505 passou a CI; a imagem
+`cb5f674af932` estabilizou como `offroad-document-worker:244` no workflow `34087160541`, primeira
+prova de rollout protegido pelo gate.
+
+O próximo elo fecha o ciclo da pergunta governada sem transformar qualquer mensagem em gatilho.
+Enquanto o draft R01 estiver incompleto ou em conflito, o sistema apenas preserva o valor e avança
+as lacunas materiais. Quando uma resposta vinculada fecha o último input, o worker inicia um único
+refresh do case rail, atribuído ao usuário e deduplicado pelo fingerprint da revisão imutável. O
+run lê o estado acumulado do projeto, não o histórico recente do chat. O teste remoto encontrou e
+corrigiu a fronteira de autoridade: a conta isolada do worker não precisa pertencer à organização;
+o job leased autoriza exatamente um refresh, enquanto autoria e orçamento permanecem ligados à
+resposta de origem. A imagem exige a capacidade aditiva nominal antes de acessar a fila, mantendo a
+versão compatível com a imagem anterior durante o rollout. Esta fatia melhora continuidade, mas o
+executor R01 permanece interno e em sombra; ela não homologa recebíveis nem libera recomendação
+externa.

@@ -1376,6 +1376,17 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 | --- | --- | --- | --- |
 | Contrato autenticado | `20260907051611_worker_runtime_schema_contract.sql` | staging e produção retornam `document-worker-runtime.2026-09-07.r01-governed-answer.v1`; `authenticated` executa e `anon` não | 2026-09-07 |
 | Bloqueio antes da fila | `runtime-schema.ts` e `main.ts` | a verificação ocorre depois do login e antes de `createQueueClient`; endpoint ausente ou versão divergente lança falha fatal | 2026-09-07 |
-| Paridade código-SQL | `runtime-schema.test.ts` | contrato exato passa; endpoint ausente e versão antiga falham; constante da imagem precisa existir na migration mais recente | 2026-09-07 |
+| Paridade código-SQL | `runtime-schema.test.ts` | contrato exato passa; endpoint ausente, versão antiga e capacidade requerida ausente falham; versão e capacidades da imagem precisam existir na migration mais recente | 2026-09-07 |
 | Advisors depois da DDL | Security Advisor em staging e produção | nenhum finding novo; permanecem somente dois INFO preexistentes em tabelas `private` deliberadamente sem policy | 2026-09-07 |
-| Escopo atual | rollout ECS pendente | migration está presente nos dois bancos; controle só será marcado operacional depois de CI integral e task nova estável | 2026-09-07 |
+| Primeiro rollout protegido | PR #505, workflow `34087160541` | imagem `cb5f674af932`, task definition `offroad-document-worker:244`, CI verde e serviço ECS estável; task incompatível teria encerrado antes de criar a fila | 2026-09-07 |
+
+## Refresh após completar o input R01, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Decisão de refresh | `agent-operation-brief.test.ts` | draft incompleto não enfileira; a última resposta material compila o draft completo, inicia um run e mantém zero chamadas de modelo | 2026-09-07 |
+| Comando capability-bound | `queue.test.ts` e `receivables_method_complete_refresh.sql` | job, token e fingerprint exato são exigidos; o retorno contém run, job e indicador de replay | 2026-09-07 |
+| Idempotência, autoridade e autoria | `receivables_information_request_bindings.sql` em staging e produção, com rollback | worker sem membership cria o refresh somente pela capability leased; duas chamadas com o mesmo draft retornam o mesmo run; run e execução controlada são atribuídos ao usuário da resposta; fingerprint compilado e orçamento permanecem no lineage | 2026-09-07 |
+| Compatibilidade de rollout | `worker_runtime_schema_contract.sql` e `runtime-schema.test.ts` | a imagem que chama o refresh exige nominalmente `receivables-complete-draft-refresh.v1` antes de tocar a fila; a capacidade é aditiva e mantém a versão aceita pela imagem anterior durante o rollout | 2026-09-07 |
+| Banco de produção preparado | migrations `20260907054112` e `20260907054118` | comando de refresh e capacidade nominal aplicados em ordem; a imagem anterior permanece compatível até o rollout do novo caller | 2026-09-07 |
+| Limite | código e testes | refresh executa o case rail atual e o especialista R01 permanece interno e em sombra; nenhuma alegação de expertise ou output externo é liberada | 2026-09-07 |

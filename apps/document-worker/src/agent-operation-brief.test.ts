@@ -1,4 +1,10 @@
 import type {ModelGateway} from "@offroad/model-gateway";
+import {
+  applyReceivablesSupplementPatch,
+  compileReceivablesSupplementDraft,
+  newReceivablesSupplementDraft,
+  receivablesSupplementPatchVersion,
+} from "@offroad/receivables-analysis";
 import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
@@ -17,6 +23,71 @@ const job: AgentOperationBriefJob = {
   processing_run_id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
   payload: {message_id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", locale: "pt-BR"},
 };
+
+function r01DraftMissingAdvanceRate() {
+  const datasetHash = "a".repeat(64);
+  const source = (id: string) => ({sourceClass: "provided_document" as const, sourceId: id, anchor: "page:1"});
+  const evidence = {
+    cedentAndServicing: [source("cedent")],
+    titleLegalControls: [source("title")],
+    performanceHistory: [source("performance")],
+    cashReconciliation: [source("cash")],
+    accountingReconciliation: [source("accounting")],
+    eligibilityPolicy: [{sourceClass: "house_method" as const, sourceId: "policy", anchor: "method:R01"}],
+    facilityAndWaterfall: [{sourceClass: "user_confirmation" as const, sourceId: "structure", anchor: "message:seed"}],
+  };
+  const policy = {
+    maxDaysPastDue: 30, maxRemainingTermDays: 180, minSeasoningDays: 0,
+    requireAssignable: true, requireEvidenceVerified: true, registrationRule: "required" as const,
+    excludeDisputed: true, excludeRelatedParties: true, excludeEncumbered: true, allowedDebtorSectors: [],
+    maxSingleDebtorShare: "1", maxDebtorGroupShare: "1", minimumEligibleShare: "0.5", minimumEvidenceCoverage: "1",
+    minimumRegistrationCoverage: "1", maximumDelinquency30Share: "0.1", maximumDilutionShare: "0.1",
+    maximumRepurchaseShare: "0.1", minimumRecoveryRate: "0.2", maximumAccountingMismatchShare: "0.01",
+    maximumCashMismatchShare: "0.01", minimumMappedCashShare: "0.95", minimumLinkedAccountCashShare: "0.95",
+  };
+  const structureFields = [
+    ["/structure/requestedFacility", "500"],
+    ["/structure/requiredOvercollateralization", "1.2"],
+    ["/structure/requiredSubordinationRate", "0.1"],
+    ["/structure/actualSeniorAmount", "500"],
+    ["/structure/actualMezzanineAmount", "0"],
+    ["/structure/actualSubordinatedAmount", "400"],
+    ["/structure/reserveRate", "0.02"],
+    ["/structure/waterfall/availableCash", "100"],
+    ["/structure/waterfall/servicingFeeDue", "5"],
+    ["/structure/waterfall/seniorInterestDue", "10"],
+    ["/structure/waterfall/seniorPrincipalDue", "50"],
+    ["/structure/waterfall/reserveOpening", "10"],
+    ["/structure/waterfall/mezzanineDue", "0"],
+  ].map(([path, value]) => ({path, value}));
+  return applyReceivablesSupplementPatch({
+    draft: newReceivablesSupplementDraft(datasetHash),
+    patch: {
+      schemaVersion: receivablesSupplementPatchVersion,
+      patchId: "seed-except-advance-rate",
+      sourceDatasetHash: datasetHash,
+      suppliedBy: {actorType: "document_worker", actorId: "worker-1", suppliedAt: "2026-09-07T00:00:00.000Z", evidence: [source("seed")]},
+      sections: {
+        cedent: {value: {id: "cedent-1", legalName: "Cedente S.A.", servicingRole: "cedent"}},
+        titles: {value: [{
+          sourceReceivableId: "title-1", debtorSector: "varejo", collectedInPeriod: "100",
+          defaultedBalance: "0", recoveredInPeriod: "0", dilutionInPeriod: "0", repurchasedInPeriod: "0",
+          substitutedInPeriod: "0", assignable: true, evidenceVerified: true, registration: "registered",
+          encumbrance: "free", disputed: false, relatedParty: false,
+        }]},
+        cashReceipts: {value: [{
+          id: "cash-1", receivedAt: "2026-08-31", amount: "100", sourceReceivableId: "title-1",
+          debtorId: "debtor-1", linkedAccount: true, duplicateOf: null, sourceDocumentId: "bank-1",
+          sourceAnchor: "row:2", anchorVerified: true,
+        }]},
+        accounting: {value: {grossReceivablesBalance: "900", allowanceBalance: "0", reportedCollectionsInPeriod: "100"}},
+        policy: {value: policy},
+      },
+      fields: structureFields,
+      evidence,
+    },
+  });
+}
 
 describe("agent operation brief worker", () => {
   it("applies a bound R01 answer without a model and records the resulting draft revision", async () => {
@@ -57,6 +128,7 @@ describe("agent operation brief worker", () => {
         storedPatch = input as unknown as Record<string, unknown>;
         return {patchId: "30000000-0000-4000-8000-000000000001", draftId: "40000000-0000-4000-8000-000000000001", revision: 1, draftFingerprint: "b".repeat(64), replayed: false};
       },
+      enqueueReceivablesMethodRefresh: async () => { throw new Error("incomplete input must not start a refresh"); },
       recordAgentResponse: async (_job: unknown, _id: string, value: unknown) => { response = value as Record<string, unknown>; return {}; },
       complete: async (_job: unknown, value: unknown) => { completion = value as Record<string, unknown>; },
       recordAgentFailure: async () => {},
@@ -75,7 +147,95 @@ describe("agent operation brief worker", () => {
       nextDraft: {revision: 1},
     });
     expect(response?.reply).toContain("input confirmado do modelo R01");
-    expect(completion).toMatchObject({mode: "governed_receivables_information_response", draftRevision: 1});
+    expect(completion).toMatchObject({
+      mode: "governed_receivables_information_response",
+      draftRevision: 1,
+      draftState: "incomplete",
+      refreshProcessingRunId: null,
+    });
+  });
+
+  it("starts one bounded refresh when a governed answer completes the R01 draft", async () => {
+    const priorDraft = r01DraftMissingAdvanceRate();
+    expect(compileReceivablesSupplementDraft(priorDraft)).toMatchObject({
+      state: "incomplete",
+      missingSections: ["structure.advanceRate"],
+    });
+    let storedDraft: unknown;
+    let refreshFingerprint = "";
+    let completion: Record<string, unknown> | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({
+        session_id: job.intake_session_id,
+        message_id: job.payload.message_id,
+        locale: "pt-BR",
+        message: "72,5%",
+        message_metadata: {kind: "information_request_response"},
+        answered_information_request: {
+          id: "10000000-0000-4000-8000-000000000001",
+          requirementKey: "receivables.r01.field.structure.advance_rate",
+          question: "Qual advance rate devemos testar?",
+          answerKind: "number",
+          answerSource: "custom",
+          sourceNamespace: "receivables_method_r01_fields",
+          answeredAt: "2026-09-07T02:00:00.000Z",
+          answeredBy: "20000000-0000-4000-8000-000000000001",
+          producerBinding: {
+            schemaVersion: "receivables-information-request-binding.v1",
+            methodId: "R01", sourceDatasetHash: "a".repeat(64),
+            fieldPath: "/structure/advanceRate", valueKind: "percentage",
+            unit: "percent_0_100", minimum: 0, maximum: 100, options: [],
+          },
+        },
+        brief: {}, snapshot_fingerprint: "a".repeat(64),
+        projection_updated_at: "2026-09-07T02:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Aurora", entryJob: "capital_planning", accessBasis: "authorized_private", phase: "analyze", status: "active"},
+        company_profile: {}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+      }),
+      loadReceivablesMethodSupplementDraft: async () => priorDraft,
+      applyReceivablesMethodSupplementPatch: async (_job: unknown, input: {nextDraft: unknown}) => {
+        storedDraft = input.nextDraft;
+        return {
+          patchId: "30000000-0000-4000-8000-000000000001",
+          draftId: "40000000-0000-4000-8000-000000000001",
+          revision: 2,
+          draftFingerprint: "f".repeat(64),
+          replayed: false,
+        };
+      },
+      enqueueReceivablesMethodRefresh: async (_job: unknown, input: {
+        draftFingerprint: string;
+        compiledSupplementFingerprint: string;
+      }) => {
+        refreshFingerprint = input.draftFingerprint;
+        expect(input.compiledSupplementFingerprint).toMatch(/^[a-f0-9]{64}$/);
+        return {
+          processingRunId: "50000000-0000-4000-8000-000000000001",
+          jobId: "60000000-0000-4000-8000-000000000001",
+          compiledSupplementFingerprint: input.compiledSupplementFingerprint,
+          replayed: false,
+        };
+      },
+      recordAgentResponse: async () => ({}),
+      complete: async (_job: unknown, value: unknown) => { completion = value as Record<string, unknown>; },
+      recordAgentFailure: async () => {},
+      fail: async () => { throw new Error("must not fail"); },
+    } as unknown as QueueClient;
+    const gateway = {
+      complete: async () => { throw new Error("a governed field answer must not call a model"); },
+      spent: () => ({costUsd: 0, calls: 0}),
+    } as unknown as ModelGateway;
+
+    const result = await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false});
+
+    expect(result.status).toBe("succeeded");
+    expect(compileReceivablesSupplementDraft(storedDraft)).toMatchObject({state: "complete", missingSections: []});
+    expect(refreshFingerprint).toBe("f".repeat(64));
+    expect(completion).toMatchObject({
+      draftState: "complete",
+      refreshProcessingRunId: "50000000-0000-4000-8000-000000000001",
+    });
   });
 
   it.each([

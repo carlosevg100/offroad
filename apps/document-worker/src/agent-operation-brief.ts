@@ -13,6 +13,7 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {fingerprintJson} from "@offroad/case-understanding";
 import {
   bindObjectiveMethods,
   compileObjectiveSpecialization,
@@ -283,16 +284,25 @@ export async function processAgentOperationBriefJob(
         const projected = await queue.syncReceivablesInformationRequests(job, nextProjection);
         nextQuestionCount = projected.openCount;
       }
+      const refresh = applied.status.state === "complete"
+        ? await queue.enqueueReceivablesMethodRefresh?.(job, {
+            draftFingerprint: stored.draftFingerprint,
+            compiledSupplementFingerprint: fingerprintJson(applied.status.supplement),
+          })
+        : undefined;
+      if (applied.status.state === "complete" && !refresh) {
+        throw new Error("receivables_method_refresh_unavailable");
+      }
       const assistantMessageId = randomUUID();
       const missingCount = applied.status.missingSections.length;
       const reply = context.locale === "en-US"
         ? applied.status.state === "complete"
-          ? `I recorded this value as a confirmed R01 model input (revision ${stored.revision}), with its source and unit preserved. The method input is now complete and ready for a new analysis run.`
+        ? `I recorded this value as a confirmed R01 model input (revision ${stored.revision}), with its source and unit preserved. The input is complete and I have started a new analysis run.`
           : applied.status.state === "conflicted"
           ? `I preserved this value in R01 revision ${stored.revision}, but it conflicts with prior evidence. I will not recalculate until the conflict is resolved.`
           : `I recorded this value as a confirmed R01 model input (revision ${stored.revision}), with its source and unit preserved. ${missingCount} required input${missingCount === 1 ? " remains" : "s remain"}; the method will stay blocked until they are supplied.`
         : applied.status.state === "complete"
-        ? `Registrei este valor como input confirmado do modelo R01 (revisão ${stored.revision}), preservando fonte e unidade. O input do método agora está completo e pronto para uma nova análise.`
+        ? `Registrei este valor como input confirmado do modelo R01 (revisão ${stored.revision}), preservando fonte e unidade. O input está completo e iniciei uma nova análise.`
         : applied.status.state === "conflicted"
         ? `Preservei este valor na revisão ${stored.revision} do R01, mas ele conflita com uma evidência anterior. Não vou recalcular enquanto o conflito não for resolvido.`
         : `Registrei este valor como input confirmado do modelo R01 (revisão ${stored.revision}), preservando fonte e unidade. Ainda faltam ${missingCount} inputs obrigatórios; o método continuará bloqueado até que sejam informados.`;
@@ -306,6 +316,9 @@ export async function processAgentOperationBriefJob(
         missingInputCount: missingCount,
         conflictCount: applied.status.openConflictIds.length,
         nextQuestionCount,
+        refreshProcessingRunId: refresh?.processingRunId ?? null,
+        refreshInputFingerprint: refresh?.compiledSupplementFingerprint ?? null,
+        refreshReplayed: refresh?.replayed ?? null,
         replayed: stored.replayed,
         modelCalls: 0,
       });
@@ -314,6 +327,8 @@ export async function processAgentOperationBriefJob(
         assistantMessageId,
         draftRevision: stored.revision,
         draftState: applied.status.state,
+        refreshProcessingRunId: refresh?.processingRunId ?? null,
+        refreshInputFingerprint: refresh?.compiledSupplementFingerprint ?? null,
         spend: gateway.spent(),
       });
       return {status: "succeeded"};
