@@ -135,7 +135,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const {receipt} = governed;
     await queue.recordDocument(job, {scanResult: receipt});
 
-    if (receipt.verdict !== "clean" || !governed.parserBytes) {
+    if (receipt.verdict !== "clean" || !governed.authorization) {
       const reason = receipt.reasons[0] ?? "scanner_unavailable";
       await queue.fail(
         job,
@@ -154,16 +154,16 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       log("document.rejected_by_gate", {job: job.job_id, verdict: receipt.verdict, reasons: receipt.reasons});
       return {status: "failed", stages};
     }
-    const parserBytes = governed.parserBytes;
+    const authorized = governed.authorization;
 
     // Fiscal XML archives are evidence, not generic documents. They deliberately bypass the
     // Office/PDF parser and are stored as a bounded sample. A random ZIP is not accepted as an
     // empty sample: that would make an unread archive look like evidence of no cancellations.
-    if (payload.original_name.toLowerCase().endsWith(".zip")) {
+    if (authorized.detectedMediaType === "application/zip" && authorized.originalName.toLowerCase().endsWith(".zip")) {
       const archive = await stage("parse_nfe_archive", () => parseNfeArchive({
-        bytes: parserBytes,
-        archiveId: payload.source_document_id,
-        fileHash: receipt.observedSha256,
+        bytes: authorized.bytes,
+        archiveId: authorized.sourceDocumentId,
+        fileHash: authorized.observedSha256,
       }));
       if (archive.invoices.length === 0 && archive.cancellations.length === 0) {
         throw new ParserError("the ZIP contains no supported NF-e invoice or cancellation event", "unsupported_format");
@@ -172,7 +172,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
         contentKind: "nfe_archive",
         schemaVersion: encoded.schemaVersion,
-        sourceSha256: receipt.observedSha256,
+        sourceSha256: authorized.observedSha256,
         contentSha256: encoded.contentSha256,
         payloadSha256: encoded.payloadSha256,
         uncompressedBytes: encoded.uncompressedBytes,
@@ -195,11 +195,11 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const parsed = await stage("parse", () =>
       parseDocument(
         {
-          bytes: parserBytes,
-          documentId: payload.source_document_id,
-          documentVersion: payload.document_version,
-          fileName: payload.original_name,
-          ...(payload.mime_type ? {mimeType: payload.mime_type} : {}),
+          bytes: authorized.bytes,
+          documentId: authorized.sourceDocumentId,
+          documentVersion: authorized.documentVersion,
+          fileName: authorized.originalName,
+          ...(authorized.declaredMediaType ? {mimeType: authorized.declaredMediaType} : {}),
           ...(payload.locale === "en-US" || payload.locale === "pt-BR" ? {localeHint: payload.locale} : {}),
         },
         {
@@ -212,15 +212,15 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const layerBody = new TextEncoder().encode(JSON.stringify(parsed.layer));
 
     const receivablesEvidence = encodeReceivablesEvidence(documentEvidence({
-      documentId: payload.source_document_id,
-      fileName: payload.original_name,
-      fileHash: receipt.observedSha256,
+      documentId: authorized.sourceDocumentId,
+      fileName: authorized.originalName,
+      fileHash: authorized.observedSha256,
       parsed,
     }));
     await stage("store_receivables_evidence", () => queue.recordReceivablesEvidence(job, {
       contentKind: "document_layer",
       schemaVersion: receivablesEvidence.schemaVersion,
-      sourceSha256: receipt.observedSha256,
+      sourceSha256: authorized.observedSha256,
       contentSha256: receivablesEvidence.contentSha256,
       payloadSha256: receivablesEvidence.payloadSha256,
       uncompressedBytes: receivablesEvidence.uncompressedBytes,
@@ -233,7 +233,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
 
     // ---- E1 profile ------------------------------------------------------------------
     const classified = await stage("profile", () =>
-      deps.classify({parsed, fileName: payload.original_name, ...(payload.locale ? {locale: payload.locale} : {})}),
+      deps.classify({parsed, fileName: authorized.originalName, ...(payload.locale ? {locale: payload.locale} : {})}),
     );
 
     await queue.writeStage(
@@ -270,11 +270,11 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     // keeps the page, sheet, section or slide anchor that produced it, and the database
     // re-checks its SHA-256 before accepting it. No model-generated summary enters this index.
     const retrievalChunks = buildCaseChunks({
-      organizationId: job.organization_id,
+      organizationId: authorized.organizationId,
       intakeSessionId: job.intake_session_id,
-      sourceDocumentId: payload.source_document_id,
-      documentVersion: payload.document_version,
-      sourceLabel: payload.original_name,
+      sourceDocumentId: authorized.sourceDocumentId,
+      documentVersion: authorized.documentVersion,
+      sourceLabel: authorized.originalName,
       layer: parsed.layer,
       ...(payload.locale === "pt-BR" || payload.locale === "en-US" ? {locale: payload.locale} : {}),
     });
@@ -300,7 +300,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
     const extractionPolicy = genericExtractionPolicy(parsed, classified.profile);
     if (deps.extract && extractionPolicy.mode === "model") {
       extracted = await stage("extract", () =>
-        deps.extract!({parsed, profile: classified.profile, fileName: payload.original_name, ...(payload.locale ? {locale: payload.locale} : {})}),
+        deps.extract!({parsed, profile: classified.profile, fileName: authorized.originalName, ...(payload.locale ? {locale: payload.locale} : {})}),
       );
       const result = await stage("record_candidates", () => queue.recordCandidates(job, extracted!.candidates));
       written = result.written;

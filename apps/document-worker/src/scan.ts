@@ -4,6 +4,7 @@ import {connect} from "node:net";
 import {
   authorizeParserInput,
   quarantineDocument,
+  type AuthorizedParserInput,
   type DocumentQuarantinePolicy,
   type DocumentQuarantineReceipt,
   type QuarantineDocumentBinding,
@@ -76,9 +77,10 @@ export type Scanner = {
 };
 
 /**
- * The governed gate used by the worker pipeline. It returns parser bytes only when the
- * immutable receipt is clean and still binds the exact tenant, document version, operation,
- * policy and bytes. A rejected receipt is data to persist, never permission to continue.
+ * The governed gate used by the worker pipeline. It returns an authorized parser snapshot only
+ * when the immutable receipt is clean and still binds the exact tenant, document version,
+ * operation, name, MIME, policy and bytes. A rejected receipt is data to persist, never
+ * permission to continue.
  */
 export async function runGovernedGate(input: {
   bytes: Uint8Array;
@@ -86,7 +88,7 @@ export async function runGovernedGate(input: {
   scanner: Scanner | null;
   policy?: DocumentQuarantinePolicy;
   now?: () => string;
-}): Promise<{receipt: DocumentQuarantineReceipt; parserBytes: Uint8Array | null}> {
+}): Promise<{receipt: DocumentQuarantineReceipt; authorization: AuthorizedParserInput | null}> {
   const receipt = await quarantineDocument({
     bytes: input.bytes,
     binding: input.binding,
@@ -104,10 +106,10 @@ export async function runGovernedGate(input: {
     ...(input.policy ? {policy: input.policy} : {}),
     ...(input.now ? {now: input.now} : {}),
   });
-  if (receipt.verdict !== "clean") return {receipt, parserBytes: null};
+  if (receipt.verdict !== "clean") return {receipt, authorization: null};
   return {
     receipt,
-    parserBytes: authorizeParserInput({
+    authorization: authorizeParserInput({
       receipt,
       binding: input.binding,
       bytes: input.bytes,

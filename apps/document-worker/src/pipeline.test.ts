@@ -270,6 +270,32 @@ describe("a healthy document goes through every stage", () => {
     expect(started).toContain("parse");
   });
 
+  it("routes and parses from the authorized name and MIME snapshot, not a mutated job payload", async () => {
+    const claimed = job();
+    const baseline = fakes();
+    const classify = vi.fn(baseline.deps.classify);
+    const {deps, calls} = fakes({
+      classify,
+      scanner: {
+        name: "fake",
+        scan: async () => {
+          claimed.payload.original_name = "swapped.zip";
+          claimed.payload.mime_type = "application/zip";
+          return {clean: true};
+        },
+      },
+    });
+
+    const outcome = await processDocumentJob(claimed, deps);
+
+    expect(outcome.status).toBe("succeeded");
+    expect(calls.stages).not.toContainEqual(expect.objectContaining({stage: "parse_nfe_archive"}));
+    expect(classify).toHaveBeenCalledWith(expect.objectContaining({fileName: "dre.csv"}));
+    expect(calls.documents[0]).toMatchObject({
+      scanResult: {originalName: "dre.csv", declaredMediaType: "text/csv"},
+    });
+  });
+
   it("does not send a large operational tape cell by cell to the model", async () => {
     const rows = Array.from(
       {length: 900},

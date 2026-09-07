@@ -65,6 +65,23 @@ async function workbook(entries: Record<string, string | Uint8Array> = {}): Prom
   return zip.generateAsync({type: "uint8array", compression: "DEFLATE", compressionOptions: {level: 9}});
 }
 
+function forgeZipUncompressedSize(bytes: Uint8Array, entryName: string, declaredBytes: number): Uint8Array {
+  const body = Buffer.from(bytes);
+  for (let offset = 0; offset <= body.length - 30; offset += 1) {
+    const signature = body.readUInt32LE(offset);
+    if (signature === 0x04034b50) {
+      const nameLength = body.readUInt16LE(offset + 26);
+      const name = body.subarray(offset + 30, offset + 30 + nameLength).toString("utf8");
+      if (name === entryName) body.writeUInt32LE(declaredBytes, offset + 22);
+    } else if (signature === 0x02014b50 && offset <= body.length - 46) {
+      const nameLength = body.readUInt16LE(offset + 28);
+      const name = body.subarray(offset + 46, offset + 46 + nameLength).toString("utf8");
+      if (name === entryName) body.writeUInt32LE(declaredBytes, offset + 24);
+    }
+  }
+  return Uint8Array.from(body);
+}
+
 async function inspect(bytes: Uint8Array, overrides: Partial<QuarantineDocumentBinding> = {}, scanner: GovernedMalwareScanner | null = cleanScanner) {
   return quarantineDocument({bytes, binding: binding(bytes, overrides), scanner, now: clock()});
 }
@@ -89,7 +106,17 @@ describe("governed document quarantine", () => {
     });
     expect(Object.isFrozen(first)).toBe(true);
     expect(Object.isFrozen(first.transitions)).toBe(true);
-    expect(authorizeParserInput({receipt: first, binding: binding(bytes), bytes})).toEqual(bytes);
+    expect(authorizeParserInput({receipt: first, binding: binding(bytes), bytes})).toMatchObject({
+      bytes,
+      organizationId: ids.organization,
+      sourceDocumentId: ids.document,
+      documentVersion: 1,
+      operationId: ids.operation,
+      originalName: "analysis.pdf",
+      declaredMediaType: "application/pdf",
+      detectedMediaType: "application/pdf",
+      observedSha256: hash(bytes),
+    });
   });
 
   it("fails closed when the scanner is absent, unavailable, or detects malware", async () => {
@@ -104,6 +131,24 @@ describe("governed document quarantine", () => {
     for (const receipt of [absent, unavailable, infected]) {
       expect(() => authorizeParserInput({receipt, binding: binding(bytes), bytes})).toThrow("receipt_not_clean");
     }
+  });
+
+  it("does not invoke ZIP or container inspection until the malware scanner is clean", async () => {
+    const malformedZip = Uint8Array.from([0x50, 0x4b, 0x03, 0x04, 0x62, 0x61, 0x64]);
+    const zipBinding = {originalName: "malformed.zip", declaredMediaType: "application/zip"};
+    const infected = await inspect(malformedZip, zipBinding, {
+      ...cleanScanner,
+      async scan() { return {verdict: "infected", signature: "known-malware"}; },
+    });
+    const unavailable = await inspect(malformedZip, zipBinding, {
+      ...cleanScanner,
+      async scan() { throw new Error("scanner offline"); },
+    });
+    const clean = await inspect(malformedZip, zipBinding);
+
+    expect(infected).toMatchObject({reasons: ["malware_detected"], detected: null});
+    expect(unavailable).toMatchObject({reasons: ["scanner_unavailable"], detected: null});
+    expect(clean.reasons).toContain("malformed_container");
   });
 
   it("rejects malformed, encrypted, polyglot, and declared-type-mismatched PDFs before parsing", async () => {
@@ -175,6 +220,68 @@ describe("governed document quarantine", () => {
     ]));
   });
 
+  it("aborts the entire archive inspection after an actual decompression bound is crossed", async () => {
+    const zip = new JSZip();
+    zip.file("[Content_Types].xml", "<Types/>");
+    zip.file("xl/workbook.xml", "<workbook/>");
+    zip.file("payload.bin", "A".repeat(4_096));
+    zip.file("xl/worksheets/after-bound.xml", "<worksheet><f>[external.xlsx]A1</f></worksheet>");
+    const generated = await zip.generateAsync({type: "uint8array", compression: "DEFLATE", compressionOptions: {level: 9}});
+    const bytes = forgeZipUncompressedSize(generated, "payload.bin", 10);
+    const receipt = await quarantineDocument({
+      bytes,
+      binding: binding(bytes, {
+        originalName: "analysis.xlsx",
+        declaredMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      scanner: cleanScanner,
+      policy: {
+        ...defaultDocumentQuarantinePolicy,
+        policyVersion: "test-actual-decompression-bound",
+        maxArchiveMemberBytes: 100,
+        maxArchiveTotalUncompressedBytes: 10_000,
+        maxArchiveCompressionRatio: 10_000,
+      },
+      now: clock(),
+    });
+
+    expect(receipt.reasons).toContain("archive_member_exceeded");
+    expect(receipt.reasons).not.toContain("external_formula");
+  });
+
+  it("reports the active-content inspection cap separately from the member size limit", async () => {
+    const bytes = await workbook({
+      "xl/worksheets/sheet1.xml": `<worksheet>${" ".repeat(128)}</worksheet>`,
+    });
+    const receipt = await quarantineDocument({
+      bytes,
+      binding: binding(bytes, {
+        originalName: "analysis.xlsx",
+        declaredMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      scanner: cleanScanner,
+      policy: {...defaultDocumentQuarantinePolicy, policyVersion: "test-capture-bound", maxActiveContentInspectionBytes: 32},
+      now: clock(),
+    });
+
+    expect(receipt.reasons).toContain("active_content_inspection_exceeded");
+    expect(receipt.reasons).not.toContain("archive_member_exceeded");
+  });
+
+  it("detects a renamed nested archive from member magic bytes", async () => {
+    const nested = new JSZip();
+    nested.file("inside.txt", "nested");
+    const nestedBytes = await nested.generateAsync({type: "uint8array"});
+    const bytes = await workbook({"xl/media/renamed.bin": nestedBytes});
+    const receipt = await inspect(bytes, {
+      originalName: "analysis.xlsx",
+      declaredMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    expect(receipt.reasons).toContain("nested_archive");
+    expect(receipt.detected?.archiveMaxDepth).toBe(1);
+  });
+
   it("rejects spreadsheet formula injection in delimited text", async () => {
     const bytes = encoder.encode("name,amount\nlegitimate,100\nattack,=WEBSERVICE(\"https://example.test\")\n");
     const receipt = await inspect(bytes, {originalName: "input.csv", declaredMediaType: "text/csv"});
@@ -188,6 +295,8 @@ describe("governed document quarantine", () => {
       {organizationId: ids.otherOrganization},
       {documentVersion: 2},
       {operationId: "55555555-5555-4555-8555-555555555555"},
+      {originalName: "renamed.pdf"},
+      {declaredMediaType: "application/x-pdf"},
     ];
     for (const swap of swaps) {
       expect(() => authorizeParserInput({receipt, binding: binding(bytes, swap), bytes})).toThrow("binding_mismatch");

@@ -27,6 +27,7 @@ export const quarantineReasonSchema = z.enum([
   "archive_ratio_exceeded",
   "nested_archive",
   "archive_path_unsafe",
+  "active_content_inspection_exceeded",
   "active_macro",
   "active_script",
   "embedded_object",
@@ -45,7 +46,9 @@ export const documentQuarantinePolicySchema = z.object({
   maxArchiveMemberBytes: z.number().int().positive(),
   maxArchiveTotalUncompressedBytes: z.number().int().positive(),
   maxArchiveCompressionRatio: z.number().positive(),
-  maxArchiveDepth: z.number().int().min(0).max(10),
+  /** This slice rejects nested archives; recursive inspection is not implemented. */
+  maxArchiveDepth: z.literal(0),
+  maxActiveContentInspectionBytes: z.number().int().positive(),
   rejectDeclaredTypeMismatch: z.boolean(),
   rejectExtensionTypeMismatch: z.boolean(),
   rejectEncryptedDocuments: z.boolean(),
@@ -67,6 +70,7 @@ export const defaultDocumentQuarantinePolicy: Readonly<DocumentQuarantinePolicy>
   maxArchiveTotalUncompressedBytes: 512 * 1024 * 1024,
   maxArchiveCompressionRatio: 250,
   maxArchiveDepth: 0,
+  maxActiveContentInspectionBytes: 8 * 1024 * 1024,
   rejectDeclaredTypeMismatch: true,
   rejectExtensionTypeMismatch: true,
   rejectEncryptedDocuments: true,
@@ -171,6 +175,20 @@ export const documentQuarantineReceiptSchema = z.object({
 }).strict();
 export type DocumentQuarantineReceipt = z.infer<typeof documentQuarantineReceiptSchema>;
 
+export type AuthorizedParserInput = Readonly<{
+  bytes: Uint8Array;
+  organizationId: string;
+  sourceDocumentId: string;
+  documentVersion: number;
+  operationId: string;
+  originalName: string;
+  declaredMediaType: string | null;
+  detectedMediaType: string;
+  detectedExtension: string;
+  observedSha256: string;
+  observedByteSize: number;
+}>;
+
 export class GovernedDocumentQuarantineError extends Error {
   constructor(readonly code: "receipt_invalid" | "receipt_not_clean" | "binding_mismatch" | "bytes_changed") {
     super(code);
@@ -199,19 +217,6 @@ export async function quarantineDocument(input: {
   if (immutableBytes.byteLength !== binding.expectedByteSize) reasons.add("size_mismatch");
   if (observedSha256 !== binding.expectedSha256) reasons.add("hash_mismatch");
 
-  let detected: z.infer<typeof detectedContentSchema> | null = null;
-  if (reasons.size === 0) {
-    try {
-      const inspection = await inspectDocumentBytes(immutableBytes, binding, policy);
-      detected = inspection.detected;
-      for (const reason of inspection.reasons) reasons.add(reason);
-    } catch {
-      // A detector/parser crash is itself a malformed input verdict. The gate must still emit a
-      // durable rejection receipt; throwing here would leave the document stuck in `scanning`.
-      reasons.add("malformed_container");
-    }
-  }
-
   let scannerResult: DocumentQuarantineReceipt["scanner"] = {
     scannerId: input.scanner?.scannerId ?? "none",
     engineVersion: input.scanner?.engineVersion ?? null,
@@ -236,6 +241,21 @@ export async function quarantineDocument(input: {
     }
   } else if (reasons.size === 0) {
     reasons.add("scanner_unavailable");
+  }
+
+  // Container detection can invoke complex archive code. It is deliberately sequenced after a
+  // clean malware verdict; before that point the gate does only byte count and SHA-256.
+  let detected: z.infer<typeof detectedContentSchema> | null = null;
+  if (reasons.size === 0 && scannerResult.verdict === "clean") {
+    try {
+      const inspection = await inspectDocumentBytes(immutableBytes, binding, policy);
+      detected = inspection.detected;
+      for (const reason of inspection.reasons) reasons.add(reason);
+    } catch {
+      // A detector/parser crash is itself a malformed input verdict. The gate must still emit a
+      // durable rejection receipt; throwing here would leave the document stuck in `scanning`.
+      reasons.add("malformed_container");
+    }
   }
 
   const completedAt = checkedTimestamp(now());
@@ -290,7 +310,7 @@ export function authorizeParserInput(input: {
   binding: QuarantineDocumentBinding;
   bytes: Uint8Array;
   policy?: DocumentQuarantinePolicy;
-}): Uint8Array {
+}): AuthorizedParserInput {
   const receipt = documentQuarantineReceiptSchema.parse(structuredClone(input.receipt));
   const {receiptFingerprint: _fingerprint, ...body} = receipt;
   if (fingerprint(body) !== receipt.receiptFingerprint) throw new GovernedDocumentQuarantineError("receipt_invalid");
@@ -305,6 +325,8 @@ export function authorizeParserInput(input: {
     || receipt.operationId !== binding.operationId
     || receipt.expectedSha256 !== binding.expectedSha256
     || receipt.expectedByteSize !== binding.expectedByteSize
+    || receipt.originalName !== binding.originalName
+    || receipt.declaredMediaType !== binding.declaredMediaType
   ) throw new GovernedDocumentQuarantineError("binding_mismatch");
 
   const policy = documentQuarantinePolicySchema.parse(input.policy ?? defaultDocumentQuarantinePolicy);
@@ -316,7 +338,20 @@ export function authorizeParserInput(input: {
   if (current.byteLength !== receipt.observedByteSize || sha256(current) !== receipt.observedSha256) {
     throw new GovernedDocumentQuarantineError("bytes_changed");
   }
-  return current;
+  if (!receipt.detected) throw new GovernedDocumentQuarantineError("receipt_invalid");
+  return Object.freeze({
+    bytes: current,
+    organizationId: receipt.organizationId,
+    sourceDocumentId: receipt.sourceDocumentId,
+    documentVersion: receipt.documentVersion,
+    operationId: receipt.operationId,
+    originalName: receipt.originalName,
+    declaredMediaType: receipt.declaredMediaType,
+    detectedMediaType: receipt.detected.mediaType,
+    detectedExtension: receipt.detected.extension,
+    observedSha256: receipt.observedSha256,
+    observedByteSize: receipt.observedByteSize,
+  });
 }
 
 async function inspectDocumentBytes(
@@ -418,9 +453,14 @@ async function inspectDocumentBytes(
               entry,
               policy.maxArchiveMemberBytes,
               policy.maxArchiveTotalUncompressedBytes - actualTotal,
-              capture ? Math.min(policy.maxArchiveMemberBytes, 8 * 1024 * 1024) : 0,
+              capture ? policy.maxActiveContentInspectionBytes : 0,
             );
             actualTotal += result.bytes;
+            if (archiveMagic(result.prefix)) {
+              archiveMaxDepth = Math.max(archiveMaxDepth, 1);
+              reasons.add("nested_archive");
+              break;
+            }
             if (!result.source) continue;
             if (lower.endsWith(".rels") && /TargetMode\s*=\s*["']External["']/i.test(result.source)) {
               activeContent.add("external_relationship");
@@ -431,7 +471,10 @@ async function inspectDocumentBytes(
               if (policy.rejectExternalFormulas) reasons.add("external_formula");
             }
           } catch (error) {
-            if (error instanceof ArchiveBoundError) reasons.add(error.reason);
+            if (error instanceof ArchiveBoundError) {
+              reasons.add(error.reason);
+              break;
+            }
             else throw error;
           }
         }
@@ -536,7 +579,7 @@ function archivePathSafe(name: string): boolean {
 }
 
 class ArchiveBoundError extends Error {
-  constructor(readonly reason: "archive_member_exceeded" | "archive_total_uncompressed_exceeded") {
+  constructor(readonly reason: "archive_member_exceeded" | "archive_total_uncompressed_exceeded" | "active_content_inspection_exceeded") {
     super(reason);
     this.name = "ArchiveBoundError";
   }
@@ -547,14 +590,16 @@ async function readZipEntryBounded(
   maxMemberBytes: number,
   maxRemainingTotalBytes: number,
   captureLimit: number,
-): Promise<{bytes: number; source: string | null}> {
+): Promise<{bytes: number; source: string | null; prefix: Uint8Array}> {
   const stream = entry.nodeStream("nodebuffer");
   const captured: Buffer[] = [];
+  const prefix: number[] = [];
   let bytes = 0;
   return new Promise((resolve, reject) => {
     stream.on("data", (chunk: Buffer | Uint8Array | string) => {
       const body = typeof chunk === "string" ? Buffer.from(chunk) : Buffer.from(chunk);
       bytes += body.byteLength;
+      for (const byte of body.subarray(0, Math.max(0, 8 - prefix.length))) prefix.push(byte);
       if (bytes > maxMemberBytes) {
         (stream as NodeJS.ReadableStream & {destroy?: () => void}).destroy?.();
         reject(new ArchiveBoundError("archive_member_exceeded"));
@@ -568,15 +613,32 @@ async function readZipEntryBounded(
       if (captureLimit > 0) {
         if (bytes > captureLimit) {
           (stream as NodeJS.ReadableStream & {destroy?: () => void}).destroy?.();
-          reject(new ArchiveBoundError("archive_member_exceeded"));
+          reject(new ArchiveBoundError("active_content_inspection_exceeded"));
           return;
         }
         captured.push(body);
       }
     });
     stream.on("error", reject);
-    stream.on("end", () => resolve({bytes, source: captureLimit > 0 ? Buffer.concat(captured).toString("utf8") : null}));
+    stream.on("end", () => resolve({
+      bytes,
+      source: captureLimit > 0 ? Buffer.concat(captured).toString("utf8") : null,
+      prefix: Uint8Array.from(prefix),
+    }));
   });
+}
+
+function archiveMagic(prefix: Uint8Array): boolean {
+  return (
+    startsWith(prefix, [0x50, 0x4b, 0x03, 0x04])
+    || startsWith(prefix, [0x1f, 0x8b])
+    || startsWith(prefix, [0x52, 0x61, 0x72, 0x21, 0x1a, 0x07])
+    || startsWith(prefix, [0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c])
+  );
+}
+
+function startsWith(bytes: Uint8Array, prefix: readonly number[]): boolean {
+  return prefix.every((byte, index) => bytes[index] === byte);
 }
 
 function latin1(bytes: Uint8Array): string {
