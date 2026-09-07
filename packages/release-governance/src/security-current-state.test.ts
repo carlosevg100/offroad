@@ -269,11 +269,15 @@ describe("security current-state inventory", () => {
     ["SOC 2 is certified", "certification_claim"],
     ["SOC 2—certified", "certification_claim"],
     ["SOC 2 is now certified", "certification_claim"],
+    ["SOC 2 has successfully been certified", "certification_claim"],
+    ["SOC 2 has now been certified", "certification_claim"],
     ["ISO 27001 is fully compliant", "certification_claim"],
     ["Pentest: passed", "pentest_claim"],
     ["Pentest has successfully passed", "pentest_claim"],
     ["Production is verified", "live_assurance_claim"],
     ["Production is independently verified", "live_assurance_claim"],
+    ["Production controls have been independently validated", "live_assurance_claim"],
+    ["SOC 2 has not been certified, and ISO 27001 has been certified", "certification_claim"],
     ["SOC 2 is certi\u200bfied", "certification_claim"],
   ] as const)("normalizes and detects forbidden assurance language: %s", (claim, code) => {
     expect(findForbiddenAssuranceClaims(claim)).toEqual(expect.arrayContaining([
@@ -283,12 +287,17 @@ describe("security current-state inventory", () => {
 
   it.each([
     "SOC 2 is not certified",
+    "We have not been certified under SOC 2",
+    "We have never been certified under SOC 2",
+    "SOC 2 has yet to be certified",
     "ISO 27001 is not compliant",
     "Pentest has not passed",
     "Production is not verified",
     "Telemetry activation is not live-verified",
     "SOC 2 não é certificado",
+    "Não fomos certificados pela SOC 2",
     "ISO 27001 não está em conformidade",
+    "Não estamos em conformidade com ISO 27001",
     "Pentest não foi aprovado",
     "Produção não está verificada",
   ])("permits an explicit negative assurance statement: %s", (claim) => {
