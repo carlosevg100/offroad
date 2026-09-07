@@ -253,6 +253,7 @@ export type QueueClient = {
     objectivePlan: unknown;
     preflightDecision: unknown;
     specialization: unknown;
+    methodBinding: unknown;
   }): Promise<{
     id: string;
     status: "ready" | "partial" | "blocked";
@@ -263,6 +264,12 @@ export type QueueClient = {
     packIds: string[];
     minimumMaturity: "specified" | "implemented" | "tested" | "production";
     specializationReplayed: boolean;
+    methodBindingId: string;
+    methodBindingFingerprint: string;
+    methodBindingStatus: "bound" | "partial" | "blocked" | "conflicted";
+    boundTaskIds: string[];
+    specialistTaskIds: string[];
+    methodBindingReplayed: boolean;
   }>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
@@ -734,12 +741,13 @@ export function createQueueClient(
     },
 
     async recordObjectivePlanPreflight(job, input) {
-      const data = await call("worker_record_objective_plan_preflight_v2", {
+      const data = await call("worker_record_objective_plan_preflight_v3", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_objective_plan: input.objectivePlan,
         p_preflight_decision: input.preflightDecision,
         p_specialization: input.specialization,
+        p_method_binding: input.methodBinding,
       });
       const parsed = z.object({
         id: z.uuid(),
@@ -751,6 +759,12 @@ export function createQueueClient(
         pack_ids: z.array(z.string().min(3)).min(1),
         minimum_maturity: z.enum(["specified", "implemented", "tested", "production"]),
         specialization_replayed: z.boolean(),
+        method_binding_id: z.uuid(),
+        method_binding_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        method_binding_status: z.enum(["bound", "partial", "blocked", "conflicted"]),
+        bound_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)),
+        specialist_task_ids: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)),
+        method_binding_replayed: z.boolean(),
       }).parse(data);
       return {
         id: parsed.id,
@@ -762,6 +776,12 @@ export function createQueueClient(
         packIds: parsed.pack_ids,
         minimumMaturity: parsed.minimum_maturity,
         specializationReplayed: parsed.specialization_replayed,
+        methodBindingId: parsed.method_binding_id,
+        methodBindingFingerprint: parsed.method_binding_fingerprint,
+        methodBindingStatus: parsed.method_binding_status,
+        boundTaskIds: parsed.bound_task_ids,
+        specialistTaskIds: parsed.specialist_task_ids,
+        methodBindingReplayed: parsed.method_binding_replayed,
       };
     },
 

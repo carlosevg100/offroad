@@ -222,6 +222,30 @@ export function compileObjectiveToPlan(input: ObjectiveToPlanInput): ObjectiveTo
   });
 }
 
+/**
+ * Adds specialist terminal tasks selected by governed depth packs and recomputes the complete
+ * objective identity. Callers cannot inject unknown tasks: `compileTaskGraph` remains the
+ * allowlist and dependency-closure boundary.
+ */
+export function expandObjectivePlanWithTaskTargets(
+  plan: ObjectiveToPlanDecision,
+  additionalTargetTaskIds: readonly string[],
+): ObjectiveToPlanDecision {
+  const targetTaskIds = [...new Set([...plan.targetTaskIds, ...additionalTargetTaskIds])].sort();
+  return finalize({
+    objectiveKind: plan.objectiveKind,
+    mode: plan.mode,
+    entryJob: plan.entryJob,
+    outputTerminal: plan.outputTerminal,
+    targetTaskIds,
+    sourcePlan: plan.sourcePlan,
+    analysisPlan: plan.analysisPlan,
+    proposedDeliverable: plan.proposedDeliverable,
+    requiredContext: plan.requiredContext,
+    reasonCode: plan.reasonCode,
+  });
+}
+
 function inferObjectiveKind(message: string, hasAttachments: boolean): WorkspaceObjectiveKind {
   if (!message) return "ambiguous";
   if (objectivePatterns.capitalMatching.test(message)) return "capital_matching";
