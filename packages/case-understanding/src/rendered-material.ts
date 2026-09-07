@@ -114,21 +114,40 @@ export function bindRenderedMaterialToDecisionArtifact(
   contract: DecisionArtifactContract,
   manifest: RenderedMaterialManifest,
 ): DecisionArtifactContract {
-  if (manifest.decisionContractFingerprint !== contract.contractFingerprint) {
-    throw new Error("rendered material was produced from a different decision contract");
-  }
-  if (manifest.storage.state !== "stored") throw new Error("rendered material must be stored before it can be bound to a decision surface");
-  if (manifest.surface === "supporting_document") throw new Error("supporting documents are not primary decision surfaces");
+  return bindRenderedMaterialsToDecisionArtifact(contract, [manifest]);
+}
 
+/**
+ * Bind every independently rendered surface to the same source snapshot in one atomic rebuild.
+ * Binding one surface changes the contract fingerprint, so sequential binding would incorrectly
+ * make the second receipt look stale even when both files came from the same signed contract.
+ */
+export function bindRenderedMaterialsToDecisionArtifact(
+  contract: DecisionArtifactContract,
+  manifests: readonly RenderedMaterialManifest[],
+): DecisionArtifactContract {
   const knownClaims = new Set(contract.claims.map((claim) => claim.id));
-  for (const claimId of manifest.claimIds) {
-    if (!knownClaims.has(claimId)) throw new Error(`rendered material references unknown claim ${claimId}`);
+  const bySurface = new Map<"workbook" | "presentation", RenderedMaterialManifest>();
+  for (const manifest of manifests) {
+    if (manifest.decisionContractFingerprint !== contract.contractFingerprint) {
+      throw new Error("rendered material was produced from a different decision contract");
+    }
+    if (manifest.storage.state !== "stored") throw new Error("rendered material must be stored before it can be bound to a decision surface");
+    if (manifest.surface === "supporting_document") throw new Error("supporting documents are not primary decision surfaces");
+    if (bySurface.has(manifest.surface)) throw new Error(`more than one rendered material targets the ${manifest.surface} surface`);
+    for (const claimId of manifest.claimIds) {
+      if (!knownClaims.has(claimId)) throw new Error(`rendered material references unknown claim ${claimId}`);
+    }
+    bySurface.set(manifest.surface, manifest);
   }
-  const surface = manifest.surface;
-  const views = contract.views.map((view) => view.surface === surface
-    ? {...view, artifactId: manifest.id, artifactFingerprint: manifest.contentSha256}
-    : view);
-  if (!views.some((view) => view.surface === surface)) throw new Error(`decision contract has no ${surface} surface`);
+  for (const surface of bySurface.keys()) {
+    if (!contract.views.some((view) => view.surface === surface)) throw new Error(`decision contract has no ${surface} surface`);
+  }
+  const views = contract.views.map((view) => {
+    if (view.surface !== "workbook" && view.surface !== "presentation") return view;
+    const manifest = bySurface.get(view.surface);
+    return manifest ? {...view, artifactId: manifest.id, artifactFingerprint: manifest.contentSha256} : view;
+  });
   return buildDecisionArtifactContract({...stripContractFingerprint(contract), views});
 }
 

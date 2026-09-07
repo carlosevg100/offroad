@@ -24,6 +24,7 @@ export type GovernedWorkbookMetadata = {
   scale: string;
   classification: "internal" | "confidential";
   decisionContractFingerprint?: string;
+  artifactClass?: "credit_model" | "decision_workbook";
 };
 
 export type GovernedWorkbookAudit = {
@@ -231,7 +232,23 @@ export async function toGovernedXlsxBuffer(
   metadata: GovernedWorkbookMetadata,
 ): Promise<GovernedWorkbookResult> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(metadata.asOfDate)) throw new RangeError("workbook as-of date must use YYYY-MM-DD");
-  const basic = toXlsxBuffer(model, lang);
+  const decisionWorkbook = metadata.artifactClass === "decision_workbook";
+  const basic = toXlsxBuffer(model, lang, decisionWorkbook ? {
+    title: lang === "pt" ? "Workbook de decisão, interno" : "Decision workbook, internal",
+    description: lang === "pt"
+      ? "Este arquivo projeta claims, premissas, séries, fontes e lacunas de um Decision Artifact assinado. Não é um modelo financeiro integrado e não cria projeções ausentes."
+      : "This file projects claims, assumptions, series, sources and gaps from a signed Decision Artifact. It is not an integrated financial model and does not create missing projections.",
+    controls: lang === "pt"
+      ? "As células editáveis estão na aba Premissas. A aba Controle liga os indicadores às linhas governadas de Claims; nenhuma alteração no arquivo modifica o objeto assinado que o originou."
+      : "Editable cells are on the Assumptions sheet. The Control sheet links indicators to governed Claim rows; editing this file does not change its signed source object.",
+    sources: lang === "pt"
+      ? "Claims, séries e premissas mantêm os identificadores de fontes, objetos e lacunas do contrato na própria linha."
+      : "Claims, series and assumptions retain the contract's source, object and gap identifiers on the same row.",
+    assumptionHeading: lang === "pt" ? "Premissas editáveis declaradas no Decision Artifact" : "Editable assumptions declared in the Decision Artifact",
+    disclaimer: lang === "pt"
+      ? "Uso interno. Este workbook não constitui proposta, aprovação, diligência final, opinião jurídica, distribuição ou recomendação executável."
+      : "Internal use. This workbook is not an offer, approval, final diligence, legal opinion, distribution or executable recommendation.",
+  } : undefined);
   const zip = await JSZip.loadAsync(basic);
   const catalogue = styleCatalogue();
   zip.file("xl/styles.xml", stylesXml(catalogue.xfs), {date: new Date("1980-01-01T00:00:00.000Z")});

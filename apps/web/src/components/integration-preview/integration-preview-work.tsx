@@ -158,7 +158,7 @@ export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props)
               </div> : null)}
               {synthesis ? (
               <div className="preview-work__synthesis" data-source={String(synthesisSource?.kind ?? "")}>
-                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{locale === "en-US" ? "Download the Word file" : "Baixar o arquivo Word"}</a> · <a href={`${materialHref}?format=xlsx`}>{locale === "en-US" ? "Download the spreadsheet" : "Baixar a planilha"}</a></p> : null}
+                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{locale === "en-US" ? "Download the Word file" : "Baixar o arquivo Word"}</a></p> : null}
                 {synthesisSource ? <p className="preview-work__note">{locale === "en-US" ? "Source" : "Fonte"}: {String(synthesisSource.kind)}{synthesisSource.model ? ` · ${String(synthesisSource.model)}` : ""}{typeof synthesisSource.costUsd === "number" ? ` · US$ ${synthesisSource.costUsd.toFixed(4)}` : ""}</p> : null}
                 {synthesis.map((section) => (
                   <section key={section.id}>

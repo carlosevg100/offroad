@@ -2729,3 +2729,24 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   executor geral empacotado e sua capability ainda é shadow.
 - Vitest e typecheck focados estão verdes. O Docker local está indisponível; migration, RLS e SQL
   adversarial permanecem pendentes do gate Supabase da CI antes de qualquer promoção para tested.
+
+## Materiais Office governados no Caso 01, implemented/internal, 07/09/2026
+
+- A apresentação e o workbook de decisão partem do mesmo `Decision Artifact` assinado. Os dois
+  arquivos são gerados como Office nativo, passam pela suíte LibreOffice/pdfinfo/pdftoppm, são
+  armazenados no bucket privado por capability de uso único e recebem manifesto com SHA-256,
+  tenant, projeto, renderer, template, qualidade, lineage e estado de release.
+- Os dois manifestos são vinculados em uma única reconstrução do contrato. O download autenticado
+  falha fechado se faltar manifesto, se organização/projeto divergirem, se o contrato mais recente
+  não contiver o binding exato ou se os bytes baixados tiverem sido alterados.
+- A planilha ad hoc, antes reconstruída pela rota web a partir da síntese, foi removida. Sem a suíte
+  de inspeção completa, o plano conversacional pode terminar, mas nenhum PPTX/XLSX é gravado,
+  vinculado ou exposto. Esse ramo é separado do teste que prova geração, inspeção e storage reais.
+- O bloqueio observado no E2E do PR #523 não era lentidão: o job falhou em 646 ms com
+  `spawn soffice ENOENT`, mas a jornada aguardou por 180 segundos uma mensagem que nunca chegaria.
+  O boot agora mede LibreOffice, pdfinfo e pdftoppm e só injeta a capacidade quando os três estão
+  presentes; aumentar o timeout teria apenas escondido o diagnóstico.
+- O XLSX entregue nesta fatia é um **workbook de decisão**: projeta claims, premissas editáveis,
+  séries, fontes e lacunas já presentes no contrato e preserva seus identificadores. Não projeta
+  dimensões ausentes e não deve ser chamado de modelo financeiro integrado. O modelo institucional
+  integrado, templates de cliente, revisão visual aprovada e DOCX nativo continuam fora do escopo.

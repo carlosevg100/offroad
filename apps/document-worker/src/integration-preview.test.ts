@@ -289,8 +289,15 @@ describe("integration_preview run processor", () => {
     const brief = material.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
     expect(brief.page_plan.pages).toHaveLength(3);
+    // A runner without the complete Office inspection suite may still finish the governed plan,
+    // but must not claim that it created or stored a binary material.
+    expect(material.storedMaterials).toEqual([]);
+    expect(material.recorded.some((artifact) => artifact.artifactType === "preview_presentation_material" || artifact.artifactType === "preview_workbook_material")).toBe(false);
+    const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
+    expect(contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint).toBeNull();
+    expect(contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint).toBeNull();
   });
-  it("renders, inspects, stores and binds the exact governed presentation bytes before exposing the decision surface", async () => {
+  it("renders, inspects, stores and binds exact presentation and decision-workbook bytes when the suite is present", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
     await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
     const material = fakeQueue({
@@ -298,8 +305,12 @@ describe("integration_preview run processor", () => {
       prior: first.recorded,
       request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []},
     });
+    const inspected: Array<{format: string; sha256: string; byteLength: number}> = [];
     const inspector: MaterialRenderInspector = {
-      inspect: async (input) => ({
+      inspect: async (input) => {
+        expect(createHash("sha256").update(input.bytes).digest("hex")).toBe(input.contentSha256);
+        inspected.push({format: input.format, sha256: input.contentSha256, byteLength: input.bytes.byteLength});
+        return ({
         version: "2026.09.07-v1",
         source: {format: input.format, byteLength: input.bytes.byteLength, sha256: input.contentSha256},
         renderer: {id: "libreoffice", version: "test"},
@@ -310,7 +321,8 @@ describe("integration_preview run processor", () => {
         releaseEligible: false,
         inspectedAt: input.inspectedAt,
         receiptFingerprint: "3".repeat(64),
-      }),
+        });
+      },
     };
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {
       queue: material.queue,
@@ -320,17 +332,31 @@ describe("integration_preview run processor", () => {
     });
     expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
-    expect(material.storedMaterials).toHaveLength(1);
-    expect(new TextDecoder().decode(material.storedMaterials[0]!.bytes.slice(0, 2))).toBe("PK");
-    const renderedArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_presentation_material")!;
-    const manifest = renderedMaterialManifestSchema.parse(renderedArtifact.content.manifest);
-    expect(manifest.storage.state).toBe("stored");
-    expect(manifest.quality).toMatchObject({schemaValidated: true, numericIdentityPassed: true, visualInspection: "not_run", releaseEligible: false});
-    expect(manifest.release.state).toBe("internal_only");
+    expect(inspected.map((item) => item.format)).toEqual(["pptx", "xlsx"]);
+    expect(material.storedMaterials.map((item) => item.format)).toEqual(["pptx", "xlsx"]);
+    expect(material.storedMaterials.every((item) => new TextDecoder().decode(item.bytes.slice(0, 2)) === "PK")).toBe(true);
+    for (const stored of material.storedMaterials) {
+      expect(createHash("sha256").update(stored.bytes).digest("hex")).toBe(stored.contentSha256);
+      expect(inspected).toContainEqual({format: stored.format, sha256: stored.contentSha256, byteLength: stored.bytes.byteLength});
+    }
+    const presentationArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_presentation_material")!;
+    const workbookArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_workbook_material")!;
+    const presentationManifest = renderedMaterialManifestSchema.parse(presentationArtifact.content.manifest);
+    const workbookManifest = renderedMaterialManifestSchema.parse(workbookArtifact.content.manifest);
+    for (const manifest of [presentationManifest, workbookManifest]) {
+      expect(manifest.storage.state).toBe("stored");
+      expect(manifest.quality).toMatchObject({schemaValidated: true, numericIdentityPassed: true, visualInspection: "not_run", releaseEligible: false});
+      expect(manifest.release.state).toBe("internal_only");
+    }
+    expect((workbookArtifact.content.rendererAudit as {decisionContractFingerprint: string}).decisionContractFingerprint).toBe(workbookManifest.decisionContractFingerprint);
     const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
     expect(contract.views.find((view) => view.surface === "presentation")).toMatchObject({
-      artifactId: manifest.id,
-      artifactFingerprint: manifest.contentSha256,
+      artifactId: presentationManifest.id,
+      artifactFingerprint: presentationManifest.contentSha256,
+    });
+    expect(contract.views.find((view) => view.surface === "workbook")).toMatchObject({
+      artifactId: workbookManifest.id,
+      artifactFingerprint: workbookManifest.contentSha256,
     });
   });
 });

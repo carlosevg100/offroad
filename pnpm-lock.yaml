@@ -330,6 +330,9 @@ importers:
       '@offroad/case-understanding':
         specifier: workspace:*
         version: link:../case-understanding
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../financial-model
       jszip:
         specifier: 3.10.1
         version: 3.10.1

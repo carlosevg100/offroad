@@ -35,7 +35,7 @@ import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
 import {assertWorkerRuntimeSchema} from "./runtime-schema";
-import {createMaterialRenderInspector} from "./material-render-inspection";
+import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./material-render-inspection";
 
 /**
  * The worker process (P1 plan §13, D-003: AWS ECS Fargate, sa-east-1).
@@ -89,12 +89,13 @@ async function main(): Promise<void> {
   });
 
   // External tools: report their versions once, so a run records exactly what read the file.
-  const [sofficeVersion, tesseractVersion, pdfinfoVersion] = await Promise.all([
+  const [sofficeVersion, tesseractVersion, pdfinfoVersion, pdftoppmVersion] = await Promise.all([
     toolVersion(config.SOFFICE_BIN),
     toolVersion(config.TESSERACT_BIN),
     toolVersion(config.PDFINFO_BIN),
+    toolVersion(config.PDFTOPPM_BIN),
   ]);
-  log("worker.tools", {libreoffice: sofficeVersion, tesseract: tesseractVersion, pdfinfo: pdfinfoVersion});
+  log("worker.tools", {libreoffice: sofficeVersion, tesseract: tesseractVersion, pdfinfo: pdfinfoVersion, pdftoppm: pdftoppmVersion});
 
   // Materials use the current circular Offroad mark from the same immutable assets as the web
   // application. A missing asset is a broken build and stops boot; silently generating a deck
@@ -108,13 +109,23 @@ async function main(): Promise<void> {
     logo: {data: new Uint8Array(brandLogo), extension: "png" as const},
     logoOnDark: {data: new Uint8Array(brandLogoOnDark), extension: "png" as const},
   };
-  const materialInspector = createMaterialRenderInspector({
-    sofficeBin: config.SOFFICE_BIN,
-    pdftoppmBin: config.PDFTOPPM_BIN,
-    pdfinfoBin: config.PDFINFO_BIN,
-    timeoutMs: config.CONVERT_TIMEOUT_MS,
-    libreOfficeVersion: sofficeVersion,
-  });
+  const materialInspector = materialRenderToolsAvailable({sofficeVersion, pdftoppmVersion, pdfinfoVersion})
+    ? createMaterialRenderInspector({
+        sofficeBin: config.SOFFICE_BIN,
+        pdftoppmBin: config.PDFTOPPM_BIN,
+        pdfinfoBin: config.PDFINFO_BIN,
+        timeoutMs: config.CONVERT_TIMEOUT_MS,
+        libreOfficeVersion: sofficeVersion,
+      })
+    : null;
+  if (!materialInspector) {
+    log("worker.material_renderer_disabled", {
+      reason: "office_render_toolchain_unavailable",
+      libreoffice: sofficeVersion,
+      pdfinfo: pdfinfoVersion,
+      pdftoppm: pdftoppmVersion,
+    });
+  }
 
   const scanner = config.REQUIRE_VIRUS_SCAN
     ? createClamdScanner({host: config.CLAMD_HOST, port: config.CLAMD_PORT, timeoutMs: config.CLAMD_TIMEOUT_MS})
@@ -341,7 +352,7 @@ async function main(): Promise<void> {
                   queue,
                   log,
                   gateway: gatewayRun.gateway,
-                  materialInspector,
+                  ...(materialInspector ? {materialInspector} : {}),
                   presentationTemplate,
                 })
               : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))

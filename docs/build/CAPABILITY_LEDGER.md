@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v14
+Versão: 2026.09.07-v15
 
-Baseline inspecionada: commit `8557d22`
+Baseline inspecionada: commit `f352d65`
 
 Status: primeira classificação executável do produto atual
 
@@ -43,8 +43,8 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Specialist Runtime geral | specified | none | specified | dispatch universal ainda ausente |
 | Kernels financeiros determinísticos | live | internal | implemented | não formam modelo institucional integrado |
 | Modelo institucional integrado | specified | none | specified | sem fechamento completo e drivers setoriais promovidos |
-| DOCX/XLSX básico do preview | live | allowlisted | tested | não passou gate top-tier ou template fidelity |
-| Fundação Office nativa governada | live | allowlisted | implemented | PPTX do Caso 01 é armazenado e verificado; revisão visual, XLSX runtime, DOCX nativo e template de cliente ainda faltam |
+| DOCX básico do preview | live | allowlisted | tested | a planilha ad hoc foi bloqueada; DOCX não passou gate top-tier ou template fidelity |
+| Fundação Office nativa governada | live | allowlisted | implemented | PPTX e decision workbook do Caso 01 usam manifesto, storage privado, binding e download autenticado; ambos continuam internal-only e o workbook não é o modelo integrado |
 | Suite de artifacts template-faithful | specified | none | specified | referências ainda não aprovadas |
 | Verifier universal | specified | none | specified | gates atuais são estreitos |
 | Matching com mandatos sintéticos | mocked | internal | implemented | sem base live suficiente |
