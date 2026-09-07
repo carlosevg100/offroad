@@ -1456,3 +1456,13 @@ Evidências são adicionadas somente depois de execução real. Nenhum item pend
 
 Status: **implemented em shadow**. O corte aproxima RT-05/RT-06/RT-07 ao transformar a prontidão
 persistida em uma decisão de dispatch verificável, mas deliberadamente ainda não é um dispatcher.
+
+## SEC-01: inventário atual de segurança, 07/09/2026
+
+| Evidência | Comando/artefato | Resultado | Data |
+| --- | --- | --- | --- |
+| Fonte canônica | `current-security-inventory.ts` | baseline do commit `b2e38975` cobre ambientes, classes de dados, sistemas, stores, fluxos, identidades, vendors, evidências, owners funcionais e gaps; nenhum valor de segredo é armazenado | 2026-09-07 |
+| Validador fail-closed | `security-current-state.ts` e `security-current-state.test.ts` | recusa ID duplicado, owner ou backup ausente, evidência ausente/vencida/sem hash, baseline fora do SLA, ambiente sem classificação, referência ou backlink inválido e material semelhante a segredo antes do parse | 2026-09-07 |
+| Vista humana | `docs/security/CURRENT_STATE_INVENTORY.md` | gerada da fonte tipada e protegida por teste de paridade byte a byte | 2026-09-07 |
+| Gaps de rollout | snapshot IAM read-only e histórico de rollout | role de deploy não possui as ações de leitura usadas nos diagnósticos de falha; pipeline ainda não prova schema hospedado antes da imagem do worker; correções ficam fora de SEC-01 | 2026-09-07 |
+| Limite | baseline do repositório | configuração live, contratos, owners nominais, retenção, regiões, restore, relação ambiente/dado, logging e descoberta permanecem 17 gaps; nenhuma alegação de SOC 2, ISO, pentest ou compliance | 2026-09-07 |

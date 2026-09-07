@@ -3508,3 +3508,22 @@ autoriza `customer_work`, `external_material` ou `external_action`. O próximo m
 os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
 evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
 amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
+
+## 46. SEC-01: inventário atual de segurança, 07/09/2026
+
+O primeiro inventário de segurança agora possui fonte tipada em
+`packages/release-governance/src/current-security-inventory.ts` e vista gerada em
+`docs/security/CURRENT_STATE_INVENTORY.md`. A baseline está presa ao commit `b2e38975` e cobre as
+fronteiras observáveis no repositório: seis ambientes, sete sistemas, sete classes de dados, sete
+stores, treze fluxos, nove identidades e service roles, treze vendors e subprocessadores, evidências
+e owners funcionais.
+
+O validador falha fechado para ID duplicado, owner ou backup ausente, evidência ausente ou vencida,
+ambiente sem classificação, referência inválida e material semelhante a segredo. A vista Markdown
+é testada por paridade com a fonte. Esta entrega não prova configuração live, contratos, owners
+nominais, retenção, regiões, restore ou operação ao longo do tempo: dezessete lacunas continuam
+abertas. Entre elas estão dois gaps operacionais observados, ainda não corrigidos por SEC-01: a role
+de deploy não possui as leituras usadas no diagnóstico de falhas do rollout e o pipeline não prova
+schema hospedado antes da imagem do worker. Ela não autoriza alegação de SOC 2, ISO, pentest ou
+compliance. Próximo passo: SEC-008, coleta read-only e datada das configurações live, seguida da
+verificação contratual dos vendors.

@@ -14,7 +14,8 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --exclude 'dist/**'",
-    "program-board:render": "node --experimental-strip-types scripts/render-endgame-program-board.ts"
+    "program-board:render": "node --experimental-strip-types scripts/render-endgame-program-board.ts",
+    "security-inventory:render": "node --experimental-strip-types scripts/render-security-current-state.ts"
   },
   "dependencies": {
     "@offroad/case-runner": "workspace:*",

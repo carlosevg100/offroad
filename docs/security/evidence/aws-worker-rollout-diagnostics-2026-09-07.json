@@ -1,0 +1,19 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-09-07T09:20:00.000-03:00",
+  "validThrough": "2026-09-14T09:20:00.000-03:00",
+  "source": "read-only effective-policy inspection",
+  "collector": {
+    "name": "manual-read-only-policy-inspection",
+    "version": "1",
+    "principalClass": "authorized cloud administrator"
+  },
+  "scope": "worker deployment role",
+  "observation": "required rollout diagnostic actions are absent",
+  "absentActions": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents"
+  ],
+  "redaction": "Cloud account identifiers, role identifiers and policy documents are intentionally excluded."
+}
