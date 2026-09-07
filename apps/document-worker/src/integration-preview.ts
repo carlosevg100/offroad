@@ -13,7 +13,7 @@
  */
 import {randomUUID} from "node:crypto";
 
-import {fingerprintJson} from "@offroad/case-understanding";
+import {fingerprintJson, type DecisionArtifactContract} from "@offroad/case-understanding";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 
@@ -43,8 +43,9 @@ type PreviewWorkflowStep = preview.PreviewWorkflowStep;
 import {offroadTaskRegistryVersion} from "@offroad/work-plan";
 import {z} from "zod";
 
-import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
+import {compilePreviewDecisionArtifact} from "./preview-decision-artifact";
+import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 export const PREVIEW_MARK = "[Validação interna, integration_preview]";
 export const PREVIEW_MARK_EN = "[Internal validation, integration_preview]";
@@ -445,9 +446,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     const premises = previewPremisesSchema.parse(context.preview.premises);
     const request = requestSchema.parse({...(context.brief.content.request as Record<string, unknown> | undefined ?? {}), composition: context.preview.composition});
     const locale = context.session.locale;
-    const priorByTask = new Map(context.prior_artifacts.map((artifact) => [artifact.task_id, artifact]));
+    // The cross-surface contract may be written by the terminal task, but it is not that task's
+    // method output. It must never shadow the brief/material object selected for replay.
+    const priorByTask = new Map(context.prior_artifacts.filter((artifact) => artifact.artifact_type !== "preview_decision_contract").map((artifact) => [artifact.task_id, artifact]));
     const outputs = new Map<string, PreviewStepOutput>();
     const artifactByTask = new Map<string, {id: string; artifactFingerprint: string; replayed: boolean}>();
+    const decisionContractArtifacts: Array<{id: string; artifactFingerprint: string}> = [];
+    const decisionContracts: DecisionArtifactContract[] = [];
     const previousBriefArtifact = priorByTask.get("A01");
     const previousBriefOutput = previousBriefArtifact ? outputOf(previousBriefArtifact) : null;
     const runContext: PreviewRunContext = {
@@ -456,6 +461,36 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
       outputs,
       request,
       previousBrief: previousBriefOutput ? {output: previousBriefOutput, objectFingerprints: Object.fromEntries(context.prior_artifacts.filter((artifact) => artifact.task_id !== "A01").flatMap((artifact) => { const output = outputOf(artifact); return output ? [[artifact.task_id.toLowerCase(), fingerprintOf({...output})]] : []; }))} : null,
+    };
+    const hadPriorDecisionContract = context.prior_artifacts.some((artifact) => artifact.artifact_type === "preview_decision_contract");
+    const recordDecisionContract = async (input: {taskRunId: string; inputFingerprint: string; dependencies: Array<{artifactId: string; artifactFingerprint: string}>}) => {
+      const contract = compilePreviewDecisionArtifact({
+        caseId: case01.case01EvidenceManifest.caseId,
+        asOf: case01.case01EvidenceManifest.referenceDate,
+        outputs,
+        premises,
+      });
+      const recorded = await queue.recordCapitalProjectArtifact(job, {
+        taskRunId: input.taskRunId,
+        artifactType: "preview_decision_contract",
+        schemaVersion: "decision-artifact.2026.09.07-v1",
+        status: "draft",
+        inputFingerprint: input.inputFingerprint,
+        content: {
+          preview: {
+            mode: "integration_preview",
+            role: "cross_surface_decision_contract",
+            evidence: {caseId: case01.case01EvidenceManifest.caseId, basis: case01.case01EvidenceManifest.basis, version: case01.case01EvidenceManifest.version},
+            disclaimer: "Objeto interno de decisão. Não é parecer, aprovação, diligência final, distribuição ou recomendação executável.",
+          },
+          contract,
+        },
+        evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
+        dependencies: input.dependencies,
+      });
+      decisionContracts.push(contract);
+      decisionContractArtifacts.push(recorded);
+      return recorded;
     };
     const workflowSteps = previewStepsForComposition(context.preview.composition);
     const expectedWorkflow = previewWorkflowIdentity(context.preview.composition);
@@ -525,6 +560,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
               replayOf: prior.id, sourceClasses: ["prior_preview_artifacts"], excludedContext: ["live_extraction", "public_research", "private_documents", "model_calls"],
             },
           });
+          if (step.taskId === workflowSteps.at(-1)!.taskId && !hadPriorDecisionContract) {
+            await recordDecisionContract({
+              taskRunId: replayRunId,
+              inputFingerprint,
+              dependencies: [...artifactByTask.values()].map((dependency) => ({artifactId: dependency.id, artifactFingerprint: dependency.artifactFingerprint})),
+            });
+          }
           // No artifact is written for a replay: the run's output points at the object it replayed
           // (the preview job does not require an artifact per run; computed steps still write theirs).
           await queue.finishCapitalTask(job, {
@@ -576,6 +618,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         evidenceRefs: [{sourceType: "frozen_case_evidence", sourceId: case01.case01EvidenceManifest.caseId, accessBasis: "public", version: case01.case01EvidenceManifest.version, note: case01.case01EvidenceManifest.note}],
         dependencies: step.dependencies.map((dependency) => ({artifactId: artifactByTask.get(dependency)!.id, artifactFingerprint: artifactByTask.get(dependency)!.artifactFingerprint})),
       });
+      if (step.taskId === workflowSteps.at(-1)!.taskId) {
+        const dependencies = [
+          ...artifactByTask.values(),
+          {id: artifact.id, artifactFingerprint: artifact.artifactFingerprint, replayed: artifact.replayed},
+        ].map((dependency) => ({artifactId: dependency.id, artifactFingerprint: dependency.artifactFingerprint}));
+        await recordDecisionContract({taskRunId, inputFingerprint, dependencies});
+      }
       await queue.finishCapitalTask(job, {
         taskRunId, status: "succeeded", outputReference: {type: "capital_project_artifact", id: artifact.id}, outputFingerprint: artifact.artifactFingerprint,
         qualityResults: [{id: "executor_state", passed: true, detail: `state ${String(output.state)} declared by the executor; nothing filled by default`}, {id: "deterministic", passed: true, detail: "no model call; every number from financial-core or the executor"}],
@@ -601,13 +650,15 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
     log("integration_preview.questions_projected", {job: job.job_id, ...questionProjection});
 
     const final = artifactByTask.get(workflowSteps.at(-1)!.taskId)!;
-    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult});
+    const decisionContractArtifact = decisionContractArtifacts.at(-1) ?? null;
+    const decisionArtifact = decisionContracts.at(-1) ?? compilePreviewDecisionArtifact({caseId: case01.case01EvidenceManifest.caseId, asOf: case01.case01EvidenceManifest.referenceDate, outputs, premises});
+    const content = completionMessage({locale, composition: context.preview.composition, outputs, premises, replayedCount, totalSteps: workflowSteps.length, request, questions: questionsResult, decisionArtifact});
     const completionMessageId = randomUUID();
     if (!queue.completeIntegrationPreviewRun) throw new Error("the queue cannot complete an integration_preview run");
     await queue.writeStage(job, stage, "succeeded", {summary_pt: "Validação interna concluída: devolutiva publicada na conversa", summary_en: "Internal validation finished: readout published in the conversation", artifactId: final.id});
     await queue.completeIntegrationPreviewRun(job, {
       completionMessageId, artifactId: final.id, artifactFingerprint: final.artifactFingerprint, content,
-      result: {mode: "integration_preview", composition: context.preview.composition, workflow: expectedWorkflow, artifact_fingerprint: final.artifactFingerprint, steps: workflowSteps.map((step) => ({taskId: step.taskId, methodId: step.methodId, state: outputs.get(step.taskId)?.state ?? null, replayed: artifactByTask.get(step.taskId)?.replayed ?? false})), replayedCount, modelCalls: 0, costUsd: 0},
+      result: {mode: "integration_preview", composition: context.preview.composition, workflow: expectedWorkflow, artifact_fingerprint: final.artifactFingerprint, decision_contract: decisionContractArtifact ? {id: decisionContractArtifact.id, fingerprint: decisionContractArtifact.artifactFingerprint} : null, steps: workflowSteps.map((step) => ({taskId: step.taskId, methodId: step.methodId, state: outputs.get(step.taskId)?.state ?? null, replayed: artifactByTask.get(step.taskId)?.replayed ?? false})), replayedCount, modelCalls: 0, costUsd: 0},
     });
     log("integration_preview.run_completed", {job: job.job_id, composition: context.preview.composition, replayed: replayedCount});
     return {status: "succeeded", artifactId: final.id};
@@ -631,13 +682,12 @@ export function stateLabel(state: string, locale: "pt-BR" | "en-US"): string {
 }
 
 /** The readout the conversation receives: states, facts and gaps read from the objects, never written by hand. */
-export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null}): string {
+export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition: PreviewComposition; outputs: Map<string, PreviewStepOutput>; premises: PreviewPremises; replayedCount: number; totalSteps: number; request: PreviewRequest; questions?: PreviewQuestionsResult | null; decisionArtifact?: DecisionArtifactContract | null}): string {
   const {locale, outputs} = input;
   const mark = locale === "en-US" ? PREVIEW_MARK_EN : PREVIEW_MARK;
   const lines: string[] = [];
   const brief = outputs.get("A01");
   const deliverable = brief?.deliverable && typeof brief.deliverable === "object" ? (brief.deliverable as {blocks: Array<{id: string; label: string; state: string; object_ids: string[]; gap: string | null; headlines: Array<{text: string}>}>; objects_pending: Array<{id: string; state: string; reason?: string}>}) : null;
-  const states = case01PreviewSteps.filter((step) => step.stage !== "material").map((step) => `${step.label[locale === "en-US" ? "en" : "pt"]}: ${stateLabel(String(outputs.get(step.taskId)?.state ?? "blocked"), locale)}`);
   if (previewOutcome(input.composition) === "material") {
     const plan = brief?.page_plan && typeof brief.page_plan === "object" ? (brief.page_plan as {state: string; pages: Array<{title: string; blocks: string[]}>; reason?: string | null}) : null;
     lines.push(t(locale, "Plano do material a partir dos objetos assinados.", "Material plan from the signed objects."));
@@ -652,9 +702,14 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   } else {
     lines.push(input.composition === "change_premise"
       ? t(locale, `Análise atualizada com a premissa (${describePremises(input.premises)}); ${input.replayedCount} de ${input.totalSteps} etapas replicaram sem recálculo, por fingerprint.`, `Analysis updated with the premise (${describePremises(input.premises)}); ${input.replayedCount} of ${input.totalSteps} steps replayed without recomputation, by fingerprint.`)
-      : t(locale, "Primeira devolutiva compilada dos objetos rastreáveis. Estado de cada método:", "First readout compiled from traceable objects. State of each method:"));
-    lines.push(states.join("; ") + ".");
-    if (deliverable) {
+      : t(locale, "Concluí a primeira leitura financeira e organizei o que ela sustenta, o que ainda depende de informação e por onde vale aprofundar.", "I completed the first financial readout and organized what it supports, what still depends on information, and where it is worth going deeper."));
+    if (input.decisionArtifact) {
+      const conversation = input.decisionArtifact.views.find((view) => view.surface === "conversation");
+      const visible = new Set(conversation?.blocks.flatMap((block) => block.claimIds) ?? []);
+      const claims = input.decisionArtifact.claims.filter((claim) => visible.has(claim.id));
+      if (claims.length) lines.push(t(locale, `Leitura financeira: ${claims.map((claim) => `${claim.label}: ${formatDecisionClaim(claim.value, claim.unit, locale)}`).join(" | ")}.`, `Financial readout: ${claims.map((claim) => `${claim.label}: ${formatDecisionClaim(claim.value, claim.unit, locale)}`).join(" | ")}.`));
+      if (input.decisionArtifact.gaps.length) lines.push(t(locale, `O que ainda muda a decisão: ${input.decisionArtifact.gaps.map((gap) => `${gap.label} — ${gap.impact}`).join(" | ")}.`, `What can still change the decision: ${input.decisionArtifact.gaps.map((gap) => `${gap.label} — ${gap.impact}`).join(" | ")}.`));
+    } else if (deliverable) {
       // Facts once each, from the blocks that cite objects; the open questions are listed apart.
       const filled = deliverable.blocks.filter((block) => block.state === "filled" && block.id !== "open_questions");
       const facts = [...new Set(filled.flatMap((block) => block.headlines.map((headline) => headline.text)))];
@@ -670,12 +725,23 @@ export function completionMessage(input: {locale: "pt-BR" | "en-US"; composition
   const synthesis = outputs.get("A02") as unknown as preview.SynthesisOutput | undefined;
   if (synthesis) {
     lines.push(synthesis.source.kind === "model"
-      ? t(locale, `Síntese redigida pelo modelo ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} números verificados nos objetos, ${synthesis.numbers.removed.length} frases removidas por número não sustentado. Arquivo Word e planilha no painel.`, `Synthesis written by the model ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} numbers verified against the objects, ${synthesis.numbers.removed.length} sentences removed for an unsupported number. Word file and spreadsheet in the panel.`)
-      : t(locale, `Síntese em esqueleto (${synthesis.source.reason ?? "sem modelo"}): as manchetes dos próprios objetos, sem prosa. Arquivo Word e planilha no painel.`, `Skeleton synthesis (${synthesis.source.reason ?? "no model"}): the objects' own headlines, no prose. Word file and spreadsheet in the panel.`));
+      ? t(locale, `Síntese redigida pelo modelo ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} números verificados nos objetos e ${synthesis.numbers.removed.length} frases removidas por número não sustentado. A versão permanece interna até os materiais passarem pelo gate próprio.`, `Synthesis written by model ${synthesis.source.model} (US$ ${synthesis.source.costUsd.toFixed(4)}): ${synthesis.numbers.verified} numbers verified against the objects and ${synthesis.numbers.removed.length} sentences removed for an unsupported number. The version remains internal until the materials pass their own gate.`)
+      : t(locale, `Síntese em esqueleto (${synthesis.source.reason ?? "sem modelo"}): somente os fatos dos objetos, sem completar a narrativa por conta própria.`, `Skeleton synthesis (${synthesis.source.reason ?? "no model"}): only facts from the objects, without filling in the narrative on its own.`));
     if (synthesis.change_note.length) lines.push(t(locale, `Mudanças desde a síntese anterior: ${synthesis.change_note.join("; ")}.`, `Changes since the previous synthesis: ${synthesis.change_note.join("; ")}.`));
   }
-  lines.push(t(locale, "Os objetos completos, com âncoras, operandos e lacunas, estão no painel de trabalho. Métodos em estágio implemented; validação interna, sem liberação.", "The full objects, with anchors, operands and gaps, are in the work panel. Methods in the implemented rung; internal validation, no release."));
+  lines.push(t(locale, "Na leitura de decisão, cada número abre sua origem, premissas e lacunas. Esta versão é interna e não representa aprovação, parecer ou termos executáveis.", "In the decision readout, every number opens its sources, assumptions, and gaps. This version is internal and does not represent approval, an opinion, or executable terms."));
   return `${mark} ${lines.join("\n")}`.slice(0, 4_000);
+}
+
+function formatDecisionClaim(value: string | number | boolean | null, unit: string | null, locale: "pt-BR" | "en-US"): string {
+  if (value === null) return t(locale, "não calculável", "not computable");
+  if (typeof value === "boolean") return String(value);
+  const numeric = typeof value === "number" ? value : /^-?\d+(\.\d+)?$/.test(value) ? Number(value) : null;
+  if (numeric === null) return String(value).replaceAll("-", " ");
+  if (unit === "BRL thousand") return `${new Intl.NumberFormat(locale, {style: "currency", currency: "BRL", maximumFractionDigits: 1}).format(numeric / 1_000)} ${t(locale, "milhões", "million")}`;
+  if (unit === "x") return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(numeric)}x`;
+  if (unit === "decimal a.a.") return `${new Intl.NumberFormat(locale, {style: "percent", maximumFractionDigits: 2}).format(numeric)} ${t(locale, "a.a.", "p.a.")}`;
+  return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(numeric)}${unit ? ` ${unit}` : ""}`;
 }
 
 export type {PreviewWorkflowStep, PreviewStepOutput, PreviewComposition, PreviewPremises, PreviewRequest};

@@ -140,20 +140,23 @@ test.describe("integration_preview: Case 01 end to end", () => {
   });
 
   test("research and analysis: the first readout stops at the nine-step meeting plan", async () => {
-    const readout = await waitForAssistant(page, /Primeira devolutiva compilada dos objetos rastreáveis/, 240_000);
+    const readout = await waitForAssistant(page, /Concluí a primeira leitura financeira/, 240_000);
     expect(readout).toContain(MARK);
-    expect(readout).toMatch(/Mapear a dívida instrumento a instrumento: incompleto/);
-    expect(readout).toMatch(/Comparar as alternativas antes e depois: comparado/);
-    expect(readout).toMatch(/Lacunas declaradas/);
+    expect(readout).toMatch(/Dívida bruta contábil: R\$\s?5\.670,2 milhões/);
+    expect(readout).toMatch(/Pico de vencimentos — 2026\/27: R\$\s?1\.229,8 milhões/);
+    expect(readout).toMatch(/Covenants e headroom ainda condicionais/);
+    expect(readout).toMatch(/Modelo prospectivo integrado incompleto/);
     expect(readout).toMatch(/Para alinhar com o VP/);
     record("primeira devolutiva", readout);
-    const work = page.locator('[data-testid="integration-preview-work"]');
+    const work = page.getByTestId("preview-decision-artifact");
     await expect(work).toBeVisible();
-    await expect(work.locator(".preview-work__section")).toHaveCount(9);
-    await expect(work.locator('[data-artifact-type="preview_debt_ledger"] .preview-work__state')).toContainText("incompleto");
-    await expect(work.locator('[data-artifact-type="preview_alternatives"] .preview-work__state')).toContainText("comparado");
-    await expect(work.locator('[data-artifact-type="preview_covenants"] .preview-work__gaps')).toBeVisible();
-    await expect(page.locator(".advisor-context-section--activity > div small")).toHaveText("9/9");
+    await expect(work.locator(".decision-work__metric")).toHaveCount(6);
+    await expect(work.locator(".decision-work__metric").first()).toContainText("Dívida bruta contábil");
+    await expect(work.locator(".decision-work__metric details")).toHaveCount(6);
+    await expect(work.locator(".decision-work__section--gaps article")).toHaveCount(7);
+    await expect(work).toContainText("O que ainda muda a decisão");
+    await expect(work).toContainText("Covenants e headroom ainda condicionais");
+    await expect(work.getByRole("link", {name: "Baixar planilha"})).toHaveCount(0);
     const executionBrief = page.getByTestId("execution-brief");
     await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);
@@ -230,9 +233,11 @@ test.describe("integration_preview: Case 01 end to end", () => {
     const plan = await waitForAssistant(page, /Plano do material a partir dos objetos assinados/);
     expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
     record("plano do material", plan);
-    const brief = page.locator('[data-artifact-type="preview_meeting_brief"]');
-    await expect(brief).toBeVisible();
-    await expect(brief.locator(".preview-work__pages ol li")).toHaveCount(3);
+    const decisionArtifact = page.getByTestId("preview-decision-artifact");
+    await expect(decisionArtifact).toBeVisible();
+    // Planning a material does not publish an improvised file. A download only appears when a
+    // renderer has stored exact bytes and bound their immutable fingerprint to the contract.
+    await expect(decisionArtifact.getByRole("link", {name: "Baixar planilha"})).toHaveCount(0);
     await page.screenshot({path: join(outputDirectory, "04-material-plan.png"), fullPage: true});
   });
 
@@ -251,7 +256,9 @@ test.describe("integration_preview: Case 01 end to end", () => {
     const updated = await waitForAssistant(page, /7 de 9 etapas replicaram sem recálculo/);
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);
-    await expect(page.locator('[data-artifact-type="preview_alternatives"] .preview-work__premises')).toContainText("newDebtAnnualRate = 0.155");
+    const decisionArtifact = page.getByTestId("preview-decision-artifact");
+    await expect(decisionArtifact).toContainText("Taxa anual da nova dívida");
+    await expect(decisionArtifact).toContainText("15,5% a.a.");
     const briefChanges = page.getByTestId("execution-brief-changes");
     await expect(briefChanges).toBeVisible();
     await expect(briefChanges).toContainText("O que mudou nesta versão");

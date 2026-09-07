@@ -1,5 +1,6 @@
 import {createHash} from "node:crypto";
 
+import {decisionArtifactContractSchema, decisionArtifactIdentityReport} from "@offroad/case-understanding";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
@@ -76,7 +77,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       }
       const taskId = artifact.taskRunId.replace("run-", "");
       const artifactFingerprint = createHash("sha256").update(JSON.stringify(artifact.content)).digest("hex");
-      const id = `00000000-0000-4000-8000-0000000000${String(steps.indexOf(taskId) + 10)}`;
+      const id = `00000000-0000-4000-8000-${String(recorded.length + 10).padStart(12, "0")}`;
       recorded.push({taskId, artifactType: artifact.artifactType, inputFingerprint: artifact.inputFingerprint, content: artifact.content as Record<string, unknown>, id, artifactFingerprint});
       return {id, artifactFingerprint, artifactVersion: 1, replayed: false};
     },
@@ -181,22 +182,37 @@ describe("integration_preview turn router", () => {
 });
 
 describe("integration_preview run processor", () => {
-  it("runs the nine-step meeting slice, records one preview artifact each and publishes the compiled readout", async () => {
+  it("runs the nine-step meeting slice, records its methods and one cross-surface decision contract", async () => {
     const fake = fakeQueue({composition: "prepare_meeting"});
     const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: fake.queue});
     expect(fake.failure(), JSON.stringify(fake.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(fake.started).toEqual(steps.slice(0, 9));
-    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief"]);
-    for (const artifact of fake.recorded) {
+    expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief", "preview_decision_contract"]);
+    for (const artifact of fake.recorded.filter((candidate) => candidate.artifactType !== "preview_decision_contract")) {
       expect((artifact.content.preview as {mode: string}).mode).toBe("integration_preview");
       expect((artifact.content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
       expect(typeof (artifact.content.output as {state: string}).state).toBe("string");
     }
+    const decisionArtifact = fake.recorded.find((artifact) => artifact.artifactType === "preview_decision_contract")!;
+    const contract = decisionArtifactContractSchema.parse(decisionArtifact.content.contract);
+    expect(decisionArtifactIdentityReport(contract).valid).toBe(true);
+    expect(contract.release).toEqual({state: "internal_only", recipientIds: []});
+    expect(contract.claims).toEqual(expect.arrayContaining([
+      expect.objectContaining({id: "claim-gross-debt", value: "5670186"}),
+      expect.objectContaining({id: "claim-peak-maturity-amount", value: "1229828"}),
+      expect.objectContaining({id: "claim-reported-leverage", value: "4.72", evidenceState: "mixed"}),
+    ]));
+    expect(contract.gaps).toEqual(expect.arrayContaining([
+      expect.objectContaining({id: "gap-covenant-definition-and-headroom", materiality: "blocker"}),
+      expect.objectContaining({id: "gap-forward-cash-generation", materiality: "blocker"}),
+    ]));
     const completion = fake.completion()!;
-    expect(completion.artifactId).toBe(fake.recorded.at(-1)!.id);
+    expect(completion.artifactId).toBe(fake.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.id);
     expect(completion.content).toMatch(/^\[Validação interna, integration_preview\]/);
-    expect(completion.content).toContain("Primeira devolutiva compilada dos objetos rastreáveis");
+    expect(completion.content).toContain("Concluí a primeira leitura financeira");
+    expect(completion.content).toContain("Dívida bruta contábil: R$");
+    expect(completion.content).toContain("O que ainda muda a decisão");
     expect(completion.content).toContain("Para alinhar com o VP");
     expect(fake.questionProjection()).toMatchObject({
       schemaVersion: "project-information-request-projection.v1",
@@ -214,7 +230,8 @@ describe("integration_preview run processor", () => {
     expect(fake.failure(), JSON.stringify(fake.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(fake.started).toEqual(steps);
-    expect(fake.recorded.at(-1)?.artifactType).toBe("preview_material");
+    expect(fake.recorded.some((artifact) => artifact.artifactType === "preview_material")).toBe(true);
+    expect(fake.recorded.at(-1)?.artifactType).toBe("preview_decision_contract");
     expect(fake.completion()?.content).toContain("Plano do material a partir dos objetos assinados");
   });
   it("replays every unchanged step by fingerprint on a repeated run, and recomputes only the alternatives and the plan when a premise changes", async () => {
@@ -232,10 +249,21 @@ describe("integration_preview run processor", () => {
     const changedOutcome = await processIntegrationPreviewRunJob(previewJob("change_premise", {newDebtAnnualRate: "0.155"}), {queue: changed.queue});
     expect(changedOutcome.status).toBe("succeeded");
     expect(changed.started).toEqual(steps.slice(0, 9));
-    expect(changed.recorded.map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
+    expect(changed.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["S10", "A01"]);
     expect(changed.completion()?.content).toContain("7 de 9 etapas replicaram");
     const alternatives = changed.recorded.find((artifact) => artifact.taskId === "S10")!;
     expect((alternatives.content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.155"});
+  });
+  it("backfills the decision contract for an existing preview without recomputing unchanged method objects", async () => {
+    const first = fakeQueue({composition: "prepare_meeting"});
+    await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
+    const legacyArtifacts = first.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract");
+    const backfill = fakeQueue({composition: "deepen", prior: legacyArtifacts});
+    const outcome = await processIntegrationPreviewRunJob(previewJob("deepen"), {queue: backfill.queue});
+    expect(backfill.failure(), JSON.stringify(backfill.failure())).toBeNull();
+    expect(outcome.status).toBe("succeeded");
+    expect(backfill.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_decision_contract"]);
+    expect(decisionArtifactContractSchema.parse(backfill.recorded[0]!.content.contract).claims).not.toHaveLength(0);
   });
   it("prepares the material on a later turn from the signed objects, with a change note against the first readout", async () => {
     const first = fakeQueue({composition: "prepare_meeting"});
@@ -245,9 +273,9 @@ describe("integration_preview run processor", () => {
     expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
     expect(outcome.status).toBe("succeeded");
     expect(material.started).toEqual(steps);
-    expect(material.recorded.map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
+    expect(material.recorded.filter((artifact) => artifact.artifactType !== "preview_decision_contract").map((artifact) => artifact.taskId)).toEqual(["A01", "A02"]);
     expect(material.completion()?.content).toContain("Plano do material");
-    const brief = material.recorded[0]!.content.output as {page_plan: {state: string; pages: unknown[]}};
+    const brief = material.recorded.find((artifact) => artifact.artifactType === "preview_meeting_brief")!.content.output as {page_plan: {state: string; pages: unknown[]}};
     expect(brief.page_plan.state).toBe("proposed");
     expect(brief.page_plan.pages).toHaveLength(3);
   });
