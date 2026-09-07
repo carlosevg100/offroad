@@ -1240,6 +1240,8 @@
         "why": "Por que pergunto",
         "impact": "O que pode mudar",
         "evidence": "Se tiver, ajuda enviar",
+        "attachEvidence": "Anexar os documentos desta pergunta",
+        "attachEvidenceHelp": "A pergunta permanece aberta até a Offroad processar os arquivos e confirmar que a evidência é suficiente.",
         "other": "Outra resposta",
         "placeholder": "Responda com o que você souber...",
         "submit": "Incorporar resposta",

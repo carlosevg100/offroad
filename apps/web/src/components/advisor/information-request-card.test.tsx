@@ -8,6 +8,8 @@ const copy = {
   why: "Por que pergunto",
   impact: "O que pode mudar",
   evidence: "Se tiver, ajuda enviar",
+  attachEvidence: "Anexar os documentos desta pergunta",
+  attachEvidenceHelp: "A pergunta permanece aberta até a análise dos arquivos.",
   other: "Outra resposta",
   placeholder: "Escreva aqui",
   submit: "Incorporar resposta",
@@ -41,5 +43,23 @@ describe("InformationRequestCard", () => {
     expect(html).toContain("Não tenho essa informação");
     expect(html).not.toContain("requirementKey");
     expect(html).not.toContain("information_gain");
+  });
+
+  it("asks for the actual file when the gap requires documentary evidence", () => {
+    const html = renderToStaticMarkup(<InformationRequestCard copy={copy} onAnswer={vi.fn()} onAttachEvidence={vi.fn()} remaining={0} request={{
+      id: "70000000-0000-4000-8000-000000000394",
+      question: "Envie o extrato e o arquivo de baixas para reconciliar os recebimentos.",
+      whyItMatters: "Os recebimentos ainda não estão ligados aos títulos.",
+      decisionImpact: "Sem esta evidência o método permanece bloqueado.",
+      answerKind: "document",
+      choices: [],
+      acceptableEvidence: ["Extrato bancário", "Arquivo de baixas"],
+      updatedAt: "2026-09-06T19:40:00.000Z",
+    }} />);
+
+    expect(html).toContain("Anexar os documentos desta pergunta");
+    expect(html).toContain("Extrato bancário · Arquivo de baixas");
+    expect(html).toContain("A pergunta permanece aberta até a análise dos arquivos.");
+    expect(html).not.toContain('placeholder="Escreva aqui"');
   });
 });

@@ -1240,6 +1240,8 @@
         "why": "Why I am asking",
         "impact": "What it may change",
         "evidence": "Helpful evidence, if available",
+        "attachEvidence": "Attach the documents for this question",
+        "attachEvidenceHelp": "The question remains open until Offroad processes the files and confirms that the evidence is sufficient.",
         "other": "Another answer",
         "placeholder": "Answer with what you know...",
         "submit": "Incorporate answer",

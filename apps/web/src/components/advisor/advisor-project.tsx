@@ -297,6 +297,7 @@ export function AdvisorProject(props: Props) {
             copy={props.copy.informationRequest}
             disabled={pending || uploading}
             onAnswer={answerInformationRequest}
+            onAttachEvidence={() => inputRef.current?.click()}
             remaining={Math.max(0, props.pendingRequests.length - 1)}
             request={props.pendingRequests[0]!}
           /> : null}
