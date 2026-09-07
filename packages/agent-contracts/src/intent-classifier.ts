@@ -150,13 +150,19 @@ function hasExplicitExternalOutreach(text: string): boolean {
   const modalCommand = /(?:(?:pode|podem|can you|quero que|vamos)\s+)(?:envie|enviar|manda|mande|mandar|compartilhe|compartilhar|conecte|conectar|introduza|introduzir|apresente|apresentar|send|share|connect|introduce|faca a introducao|make the introduction)\b/;
   const directCommand = new RegExp(`${courtesy.source}(?:${imperative.source}|${modalCommand.source})`);
   const rejected = /\b(?:nao|not|sem|without|nunca|jamais|never|evite|evitar|avoid|proibid[oa]|forbidden|not allowed|fora de questao|nem pensar|de jeito nenhum|absolutely not|definitely not)\b/;
-  const target = text.match(/\b(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)\b/);
-  if (!directCommand.test(text) || !target || rejected.test(text)) return false;
+  const command = text.match(directCommand);
+  if (!command || rejected.test(text)) return false;
 
-  // External effects use a closed grammar. Once the provider target is named, only a bounded
-  // fit/selection qualifier and terminal punctuation may follow. Any answer, predicate,
-  // retraction or other prose fails closed and is left for clarification.
-  const tail = text.slice((target.index ?? 0) + target[0].length).trim();
+  // External effects use a closed grammar for the complete clause: command, bounded direct
+  // object, destination preposition and provider. This prevents a leading word such as "send"
+  // in a label or explanation from combining with "investors" later in the sentence.
+  const remainder = text.slice(command[0].length).trim();
+  const routed = remainder.match(/^(?:(?:this|that|these|those|isso|isto)(?:\s+[a-z0-9_-]+){0,8}|(?:a|o|as|os|esse|essa|este|esta|da|do|das|dos|the)\s+[a-z0-9_-]+(?:\s+[a-z0-9_-]+){0,7})\s+(?:a|ao|aos|para|to)\s+(?:(?:os|as|the|tres|three|\d+)\s+)?(fundos?|investidores?|financiadores?|bancos?|lenders?|investors?|providers?)(.*)$/);
+  if (!routed) return false;
+
+  // Once the provider target is named, only a bounded fit/selection qualifier and terminal
+  // punctuation may follow. Any answer, predicate, retraction or other prose fails closed.
+  const tail = routed[2]!.trim();
   return /^(?:(?:selecionad[oa]s?|aderentes?|compativeis?|selected|best[- ]?fit)|(?:de|of)\s+(?:credito|credit)|(?:com|with)\s+(?:(?:a|the)\s+)?(?:melhor|best)\s+(?:aderencia|fit)|que\s+(?:(?:voce|you)\s+)?(?:achar|considerar|find|consider)\s+(?:mais\s+|most\s+)?(?:aderentes?|compativeis?|best[- ]?fit)|que\s+(?:tiverem|tenham|have)\s+fit)?[.!?]?$/.test(tail);
 }
 
