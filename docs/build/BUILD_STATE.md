@@ -2586,3 +2586,14 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   não copia ativação anterior nem contorna a comparação exata da RPC v5.
 - A mudança está em `candidate/internal`: staging e contratos SQL passaram; E2E e deploy de produção
   continuam gates obrigatórios antes de qualquer promoção de exposição ou maturidade.
+
+### Reconciliação do rollout, 07/09/2026
+
+- O merge da branch de staging respondeu sucesso sem aplicar sua fila de migrations na produção.
+  A checagem explícita do catálogo e das RPCs detectou a divergência antes do rollout do worker, e
+  o deploy automático foi cancelado.
+- As 15 migrations já mescladas e homologadas foram aplicadas manualmente em ordem de dependência.
+  Seus nomes no repositório agora usam os carimbos efetivos de produção `20260907044208` a
+  `20260907044325`; o conteúdo SQL não mudou.
+- O próximo deploy só pode prosseguir depois de catálogo remoto, grants, advisors e smoke de RPC
+  confirmarem paridade. Sucesso do comando de merge, isoladamente, não é evidência de promoção.
