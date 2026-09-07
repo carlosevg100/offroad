@@ -3,6 +3,7 @@ import {describe, expect, it} from "vitest";
 
 import {intentGoldTurns} from "./intent-gold";
 import {
+  deriveSemanticPolarity,
   expectedIntentRouterManifest,
   fingerprintIntentMessage,
   intentRoutingFingerprint,
@@ -138,6 +139,24 @@ describe("intent router promotion gate", () => {
     for (const output of contradicted) expect(intentRoutingFingerprint(output)).not.toBe(intentRoutingFingerprint(base));
   });
 
+  it("derives polarity from prose and rejects a classifier that falsely affirms negated claims", () => {
+    const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
+    const base = outputFor(turn);
+    const falselyAffirmed = [
+      outputFor(turn, {routingCore: {...base.routingCore, desiredOutcome: {value: "não preparar reunião", state: "explicit", affirmation: "affirmed"}}}),
+      outputFor(turn, {routingCore: {...base.routingCore, decision: {value: "não existe decisão de capital", state: "explicit", affirmation: "affirmed"}}}),
+      outputFor(turn, {routingCore: {...base.routingCore, audience: {value: ["não é para VP"], state: "explicit", affirmation: "affirmed"}}}),
+    ];
+    expect(deriveSemanticPolarity("não preparar reunião")).toBe("negated");
+    expect(deriveSemanticPolarity("não existe decisão de capital")).toBe("negated");
+    expect(deriveSemanticPolarity(["não é para VP"])).toBe("negated");
+    expect(scoreIntentGoldTurn(turn, falselyAffirmed[0]!, falselyAffirmed[0]!).desiredOutcome).toBe(false);
+    expect(scoreIntentGoldTurn(turn, falselyAffirmed[1]!, falselyAffirmed[1]!).decisionPresence).toBe(false);
+    expect(scoreIntentGoldTurn(turn, falselyAffirmed[1]!, falselyAffirmed[1]!).decisionCategory).toBe(false);
+    expect(scoreIntentGoldTurn(turn, falselyAffirmed[2]!, falselyAffirmed[2]!).audienceCategory).toBe(false);
+    for (const output of falselyAffirmed) expect(intentRoutingFingerprint(output)).not.toBe(intentRoutingFingerprint(base));
+  });
+
   it("binds each material reference to its object and requires numeric assumptions", () => {
     const capitalTurn = intentGoldTurns.find(({id}) => id === "hx04")!;
     const swapped = outputFor(capitalTurn);
@@ -168,6 +187,12 @@ describe("intent router promotion gate", () => {
     ]));
     expect(normalizedMaterialSlots("captação de R$ 50 milhões, CDI de 12%, prazo de sete anos"))
       .toEqual(normalizedMaterialSlots("captação BRL50m, CDI em 12%, prazo de 7 anos"));
+
+    const conflictingRate = outputFor(modelTurn);
+    conflictingRate.routingCore.object.value = conflictingRate.routingCore.object.value.map((object) => object.kind === "scenario"
+      ? {...object, reference: "CDI 12% e CDI 15%, prazo 7 anos"}
+      : object);
+    expect(scoreIntentGoldTurn(modelTurn, conflictingRate, conflictingRate).materialReferences).toBe(false);
   });
 
   it("changes the stability fingerprint for every semantic or plan-driving axis", () => {
@@ -217,6 +242,20 @@ describe("intent router promotion gate", () => {
     expect(summary.suiteGates.every(({passed}) => passed)).toBe(true);
     expect(summary.metrics.every(({gatePassed}) => gatePassed)).toBe(true);
     expect(summary.stabilityRate).toBe(1);
+  });
+
+  it("recomputes the complete manifest and rejects conflicting single-valued material slots", () => {
+    const modelTurn = intentGoldTurns.find(({id}) => id === "gc05-t03")!;
+    const conflictingRate = outputFor(modelTurn);
+    conflictingRate.routingCore.object.value = conflictingRate.routingCore.object.value.map((object) => object.kind === "scenario"
+      ? {...object, reference: "CDI 12% e CDI 15%, prazo 7 anos"}
+      : object);
+    const observations = completeObservations().map((entry) => entry.turnId === modelTurn.id && entry.repeat === 1
+      ? observation(modelTurn, 1, conflictingRate)
+      : entry);
+    const summary = summarizeIntentRouterGate(observations);
+    expect(summary.passed).toBe(false);
+    expect(summary.metrics.find(({name}) => name === "materialReferences")?.gatePassed).toBe(false);
   });
 
   it("recomputes evidence and rejects provider failure, forged checks and forged fingerprints", () => {

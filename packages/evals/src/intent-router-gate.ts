@@ -72,6 +72,31 @@ function semanticTags(value: string): string[] {
 }
 
 type NormalizedMaterialSlot = {slot: "amount" | "currency" | "percentage" | "indexer" | "tenor_months"; value: string};
+type SemanticPolarity = "affirmed" | "negated" | "ambiguous" | "absent";
+
+/**
+ * Independent semantic check over classifier prose. The provider-controlled
+ * `affirmation` label is evidence to verify, never the source of truth.
+ */
+export function deriveSemanticPolarity(value: string | readonly string[] | null): SemanticPolarity {
+  const prose = typeof value === "string" ? value : value?.join(" ") ?? "";
+  const text = normalizeText(prose).trim();
+  if (!text) return "absent";
+  if (/\b(?:nao sei|nao esta claro|incert[oa]|talvez|desconhecid[oa]|nao especificad[oa]|not sure|unclear|uncertain|unknown|unspecified|maybe)\b/.test(text)) return "ambiguous";
+  const negated = /(?:^|[.;,!?:]\s*|\b(?:e|and|mas|but)\s+)\s*(?:nao|nunca|not|never|sem|without)\b/.test(text)
+    || /\b(?:nao|not)\s+(?:existe|ha|is|are|e|sera|deve|should|will|para|for)\b/.test(text);
+  const contradicted = negated && /\b(?:mas|porem|contudo|however|but)\b/.test(text);
+  if (contradicted) return "ambiguous";
+  return negated ? "negated" : "affirmed";
+}
+
+function affirmationMatchesProse(output: IntentClassifierOutput["routingCore"]["desiredOutcome"] | IntentClassifierOutput["routingCore"]["decision"] | IntentClassifierOutput["routingCore"]["audience"]): boolean {
+  const polarity = deriveSemanticPolarity(output.value);
+  if (output.affirmation === "affirmed") return polarity === "affirmed";
+  if (output.affirmation === "negated") return polarity === "negated";
+  if (output.affirmation === "uncertain") return polarity === "ambiguous";
+  return polarity === "absent";
+}
 
 /** Canonical finance slots make equivalent surface forms comparable without losing economics. */
 export function normalizedMaterialSlots(value: string): NormalizedMaterialSlot[] {
@@ -99,7 +124,8 @@ export function normalizedMaterialSlots(value: string): NormalizedMaterialSlot[]
 }
 
 function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisionCategorySchema> {
-  if (output.routingCore.decision.affirmation !== "affirmed") return "none";
+  if (output.routingCore.decision.affirmation !== "affirmed"
+    || deriveSemanticPolarity(output.routingCore.decision.value) !== "affirmed") return "none";
   const decision = output.routingCore.decision.value?.trim();
   if (!decision) return "none";
   const text = normalizeText(decision);
@@ -114,7 +140,8 @@ function classifyDecision(output: IntentClassifierOutput): z.infer<typeof decisi
 }
 
 function classifyAudience(output: IntentClassifierOutput): z.infer<typeof audienceCategorySchema> {
-  if (output.routingCore.audience.affirmation !== "affirmed") return "unspecified";
+  if (output.routingCore.audience.affirmation !== "affirmed"
+    || deriveSemanticPolarity(output.routingCore.audience.value) !== "affirmed") return "unspecified";
   const text = normalizeText(output.routingCore.audience.value.join(" "));
   if (!text || /\b(unknown|desconhecid|unspecified)\b/.test(text)) return "unspecified";
   if (/\b(conselh\w*|board|comite\w*|committee)\b/.test(text)) return "board_or_committee";
@@ -143,10 +170,29 @@ export function scoreIntentGoldTurn(
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
   const outcomeAffirmed = rawOutput.routingCore.desiredOutcome.affirmation === "affirmed";
+  const outcomePolarityValid = affirmationMatchesProse(rawOutput.routingCore.desiredOutcome);
+  const decisionPolarityValid = affirmationMatchesProse(rawOutput.routingCore.decision);
+  const audiencePolarityValid = affirmationMatchesProse(rawOutput.routingCore.audience);
   const decisionPresent = rawOutput.routingCore.decision.affirmation === "affirmed"
+    && deriveSemanticPolarity(rawOutput.routingCore.decision.value) === "affirmed"
     && Boolean(rawOutput.routingCore.decision.value?.trim());
   const actualSlots = rawOutput.routingCore.object.value.flatMap((object) =>
     normalizedMaterialSlots(object.reference ?? "").map((slot) => ({kind: object.kind, ...slot})));
+  const actualSlotsByObjectAndKind = new Map<string, Set<string>>();
+  for (const slot of actualSlots) {
+    const key = `${slot.kind}:${slot.slot}`;
+    actualSlotsByObjectAndKind.set(key, new Set([...(actualSlotsByObjectAndKind.get(key) ?? []), slot.value]));
+  }
+  const expectedSlotsByObjectAndKind = new Map<string, Set<string>>();
+  for (const slot of expected.semantic.materialSlots) {
+    const key = `${slot.kind}:${slot.slot}`;
+    expectedSlotsByObjectAndKind.set(key, new Set([...(expectedSlotsByObjectAndKind.get(key) ?? []), slot.value]));
+  }
+  const materialSlotCardinalityValid = [...actualSlotsByObjectAndKind.values()].every((values) => values.size <= 1)
+    && [...expectedSlotsByObjectAndKind.entries()].every(([key, expectedValues]) => {
+      const actualValues = actualSlotsByObjectAndKind.get(key) ?? new Set<string>();
+      return actualValues.size === expectedValues.size && [...expectedValues].every((value) => actualValues.has(value));
+    });
   return {
     completed: true,
     composition: output.composition === expected.composition,
@@ -162,13 +208,12 @@ export function scoreIntentGoldTurn(
     materialReferences: expected.semantic.materialReferences.every((expectedReference) => rawOutput.routingCore.object.value.some((object) =>
       object.kind === expectedReference.kind
       && normalizeText(object.reference ?? "").includes(normalizeText(expectedReference.reference))))
-      && expected.semantic.materialSlots.every((expectedSlot) => actualSlots.some((actualSlot) =>
-        actualSlot.kind === expectedSlot.kind && actualSlot.slot === expectedSlot.slot && actualSlot.value === expectedSlot.value)),
-    desiredOutcome: outcomeAffirmed
+      && materialSlotCardinalityValid,
+    desiredOutcome: outcomeAffirmed && outcomePolarityValid
       && expected.semantic.desiredOutcomeSignals.every((alternatives) => alternatives.some((signal) => outcome.includes(normalizeText(signal)))),
-    decisionPresence: decisionPresent === expected.semantic.decision.present,
-    decisionCategory: classifyDecision(rawOutput) === expected.semantic.decision.category,
-    audienceCategory: classifyAudience(rawOutput) === expected.semantic.audienceCategory,
+    decisionPresence: decisionPolarityValid && decisionPresent === expected.semantic.decision.present,
+    decisionCategory: decisionPolarityValid && classifyDecision(rawOutput) === expected.semantic.decision.category,
+    audienceCategory: audiencePolarityValid && classifyAudience(rawOutput) === expected.semantic.audienceCategory,
     questionPresence: (output.firstQuestion !== null) === (expected.firstQuestionTheme !== null),
     questionTheme,
   };
@@ -182,9 +227,9 @@ export function intentRoutingFingerprint(output: IntentClassifierOutput): string
     abstain: output.abstain, composition, policy,
     action: output.routingCore.action.value,
     objects: output.routingCore.object.value.map((object) => ({kind: object.kind, semanticTags: semanticTags(object.reference ?? ""), materialSlots: normalizedMaterialSlots(object.reference ?? "")})).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
-    desiredOutcome: {affirmation: output.routingCore.desiredOutcome.affirmation, semanticTags: semanticTags(output.routingCore.desiredOutcome.value)},
-    decision: {affirmation: output.routingCore.decision.affirmation, present: output.routingCore.decision.affirmation === "affirmed" && Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
-    audience: {affirmation: output.routingCore.audience.affirmation, category: classifyAudience(output)}, depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
+    desiredOutcome: {affirmation: output.routingCore.desiredOutcome.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.desiredOutcome.value), semanticTags: semanticTags(output.routingCore.desiredOutcome.value)},
+    decision: {affirmation: output.routingCore.decision.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.decision.value), present: output.routingCore.decision.affirmation === "affirmed" && Boolean(output.routingCore.decision.value?.trim()), category: classifyDecision(output)},
+    audience: {affirmation: output.routingCore.audience.affirmation, derivedPolarity: deriveSemanticPolarity(output.routingCore.audience.value), category: classifyAudience(output)}, depth: output.routingCore.depth.value, continuity: output.routingCore.continuity.value,
     primaryWorks: output.primaryWorks.map(({work}) => work), responsibilities: [...output.routingCore.workResponsibility.value].sort(),
     asksQuestion: output.firstQuestion !== null,
   };
