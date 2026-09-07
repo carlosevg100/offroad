@@ -416,6 +416,8 @@ async function executePreparedGraph(
       completedAt: now().toISOString(),
     }));
   }
+  const graphCompletedAt = now();
+  revalidatePreparedContext(prepared, graphCompletedAt);
   const orderedReceipts = prepared.candidate.tasks.map((task) => receipts.get(task.taskId)!);
   const payload = {
     schemaVersion: "internal-dispatch-graph-receipt.v2" as const,
@@ -426,7 +428,7 @@ async function executePreparedGraph(
     graphExecutionFingerprint: prepared.graphExecutionFingerprint,
     taskReceipts: orderedReceipts,
     startedAt,
-    completedAt: now().toISOString(),
+    completedAt: graphCompletedAt.toISOString(),
     externalEffectAllowed: false as const,
   };
   return {
@@ -457,42 +459,46 @@ async function executePreparedTask(
     }
   }
   let raw: unknown;
+  let executionError: unknown;
   try {
     raw = await withDeadline(task.executor, task.parsedInput, timeoutMs, parentSignal);
   } catch (error) {
-    const failure = error instanceof TaskExecutionFailure
-      ? error
-      : new TaskExecutionFailure("execution_failed", error instanceof Error ? error.name : "non-error rejection");
-    return {receipt: taskReceipt({
-      candidateFingerprint, contextResolutionFingerprint, task, status: "failed", resultFingerprint: null,
-      error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: now().toISOString(),
-    })};
+    executionError = error;
   }
   // Result bytes remain untrusted and unpublished until both authorities are checked after the
   // await boundary. An expiry here rejects the graph promise: no output, cache entry or receipt is
   // emitted for the stale result.
+  const authorityCheckedAt = now();
   if (contextResolution && contextResolutionTrust && candidate && authorization && authorizationKeys) {
     try {
-      const checkedAt = now();
-      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, checkedAt);
-      verifyAuthorization(candidate, contextResolution, authorization, authorizationKeys, checkedAt);
+      verifyAuthorizedContextResolution(contextResolution, contextResolutionTrust, authorityCheckedAt);
+      verifyAuthorization(candidate, contextResolution, authorization, authorizationKeys, authorityCheckedAt);
     } catch {
       throw new InternalDispatchRefusal("dispatch_authority_expired_after_executor");
     }
+  }
+  if (executionError !== undefined) {
+    const failure = executionError instanceof TaskExecutionFailure
+      ? executionError
+      : new TaskExecutionFailure("execution_failed", executionError instanceof Error ? executionError.name : "non-error rejection");
+    return {receipt: taskReceipt({
+      candidateFingerprint, contextResolutionFingerprint, task, status: "failed", resultFingerprint: null,
+      error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: authorityCheckedAt.toISOString(),
+    })};
   }
   const parsed = task.executor.resultSchema.safeParse(raw);
   if (!parsed.success) {
     const failure = new TaskExecutionFailure("output_invalid", "executor result violated the exact result schema");
     return {receipt: taskReceipt({
       candidateFingerprint, contextResolutionFingerprint, task, status: "failed", resultFingerprint: null,
-      error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: now().toISOString(),
+      error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: authorityCheckedAt.toISOString(),
     })};
   }
   const resultFingerprint = fingerprint(parsed.data);
   return {
     receipt: taskReceipt({
       candidateFingerprint, contextResolutionFingerprint, task, status: "succeeded", resultFingerprint, error: null,
-      startedAt, completedAt: now().toISOString(),
+      startedAt, completedAt: authorityCheckedAt.toISOString(),
     }),
     output: parsed.data,
   };
