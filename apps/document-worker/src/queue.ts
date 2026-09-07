@@ -184,6 +184,19 @@ export type QueueClient = {
     assemblyFingerprint: string;
     replayed: boolean;
   }>;
+  /** Applies one validated patch and its deterministic next draft atomically. Both payloads stay
+   * outside the Data API; the capability may be a case run or the exact chat turn it answers. */
+  applyReceivablesMethodSupplementPatch?(job: FullCaseAnalysisJob | AgentOperationBriefJob, input: {
+    patch: unknown;
+    nextDraft: unknown;
+  }): Promise<{
+    patchId: string;
+    draftId: string;
+    revision: number;
+    draftFingerprint: string;
+    replayed: boolean;
+  }>;
+  loadReceivablesMethodSupplementDraft?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown | null>;
   recordReceivablesSpecialistShadowRun?(job: FullCaseAnalysisJob, input: {
     inputAssemblyId: string;
     result: unknown;
@@ -507,6 +520,36 @@ export function createQueueClient(
         assemblyFingerprint: parsed.assembly_fingerprint,
         replayed: parsed.replayed,
       };
+    },
+
+    async applyReceivablesMethodSupplementPatch(job, input) {
+      const data = await call("worker_apply_receivables_method_supplement_patch_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_patch: input.patch,
+        p_next_draft: input.nextDraft,
+      });
+      const parsed = z.object({
+        patch_id: z.uuid(),
+        draft_id: z.uuid(),
+        revision: z.number().int().positive(),
+        draft_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        patchId: parsed.patch_id,
+        draftId: parsed.draft_id,
+        revision: parsed.revision,
+        draftFingerprint: parsed.draft_fingerprint,
+        replayed: parsed.replayed,
+      };
+    },
+
+    async loadReceivablesMethodSupplementDraft(job) {
+      return await call("worker_load_receivables_method_supplement_draft_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
     },
 
     async recordReceivablesSpecialistShadowRun(job, input) {

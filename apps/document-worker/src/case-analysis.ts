@@ -75,6 +75,8 @@ import {
   detectReceivablesRawEvidence,
   receivablesCaseSchema,
   receivablesPoolInputAssemblySchema,
+  receivablesSupplementDraftSchema,
+  type ReceivablesPoolInputAssembly,
   type ReceivablesProviderMetricSet,
   type ReceivablesEvidenceDocument,
   type ReceivablesFiscalArchiveEvidence,
@@ -102,6 +104,7 @@ import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-as
 import {describeJobFailure} from "./job-failure";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {buildReceivablesMethodInformationRequestProjection} from "./receivables-information-requests";
+import {resolveReceivablesMethodInput, type ReceivablesMethodInputResolution} from "./receivables-method-input-resolution";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -375,6 +378,13 @@ const rawCaseInputSchema = z.object({
     source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
     assembly_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
     assembly: receivablesPoolInputAssemblySchema,
+  }).nullable().default(null),
+  receivables_method_supplement_draft: z.object({
+    id: z.uuid(),
+    source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
+    revision: z.number().int().nonnegative(),
+    draft_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    draft: receivablesSupplementDraftSchema,
   }).nullable().default(null),
   receivables_provider_context: receivablesProviderContextSchema.default({programs: [], observations: []}),
   pricing_context: pricingContextSchema.nullable().default(null),
@@ -1046,12 +1056,27 @@ export async function processCaseAnalysisJob(
         readiness: receivablesVertical.methodReadiness,
       }));
     }
-    if (receivables?.specialistShadow && receivables.inputAssemblyId) {
+    let receivablesInputAssemblyId = receivables?.inputAssemblyId ?? null;
+    if (receivables?.inputAssembly && !receivablesInputAssemblyId) {
+      if (!dependencies.queue.recordReceivablesMethodInputAssembly) {
+        throw new Error("receivables_method_input_assembly_persistence_unavailable");
+      }
+      const persistedAssembly = await dependencies.queue.recordReceivablesMethodInputAssembly(job, receivables.inputAssembly);
+      receivablesInputAssemblyId = persistedAssembly.id;
+      await dependencies.queue.writeStage(job, "receivables_method_input_assembly", "succeeded", {
+        taskId: "R01",
+        source: receivables.inputResolution.origin,
+        sourceDatasetHash: persistedAssembly.sourceDatasetHash,
+        assemblyFingerprint: persistedAssembly.assemblyFingerprint,
+        replayed: persistedAssembly.replayed,
+      });
+    }
+    if (receivables?.specialistShadow && receivablesInputAssemblyId) {
       if (!dependencies.queue.recordReceivablesSpecialistShadowRun) {
         throw new Error("receivables_specialist_shadow_persistence_unavailable");
       }
       const persistedShadow = await dependencies.queue.recordReceivablesSpecialistShadowRun(job, {
-        inputAssemblyId: receivables.inputAssemblyId,
+        inputAssemblyId: receivablesInputAssemblyId,
         result: receivables.specialistShadow,
       });
       await dependencies.queue.writeStage(job, "receivables_specialist_R01_shadow", "succeeded", {
@@ -1656,6 +1681,8 @@ function buildReceivablesVertical(
   privateReport: ReceivablesCasePipelineReport | null;
   specialistShadow: ReceivablesSpecialistShadowResult | null;
   inputAssemblyId: string | null;
+  inputAssembly: ReceivablesPoolInputAssembly | null;
+  inputResolution: ReceivablesMethodInputResolution;
 } | null {
   if (raw.receivables_evidence.length === 0) return null;
 
@@ -1684,10 +1711,16 @@ function buildReceivablesVertical(
     fiscalArchives,
   });
   const storedAssembly = raw.receivables_method_input_assembly;
+  const inputResolution = resolveReceivablesMethodInput({
+    phaseOne: built.phaseOne,
+    storedAssembly: storedAssembly?.assembly,
+    supplementDraft: raw.receivables_method_supplement_draft?.draft,
+  });
+  const methodAssembly = inputResolution.assembly;
   const readinessAssessment = assessReceivablesPoolMethodReadiness({
     phaseOne: built.phaseOne,
     detection,
-    ...(storedAssembly ? {assembly: storedAssembly.assembly} : {}),
+    ...(methodAssembly ? {assembly: methodAssembly} : {}),
   });
   const methodReadiness: Omit<typeof readinessAssessment, "validatedInput"> = {
     version: readinessAssessment.version,
@@ -1710,7 +1743,7 @@ function buildReceivablesVertical(
     qualityResults: [],
     failureCode: null,
   };
-  if (readinessAssessment.methodExecutionAllowed && storedAssembly) {
+  if (readinessAssessment.methodExecutionAllowed && methodAssembly) {
     const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === "R01");
     if (!capability) throw new Error("receivables_specialist_capability_not_registered");
     try {
@@ -1720,7 +1753,7 @@ function buildReceivablesVertical(
         executorVersion: capability.executorVersion,
         phaseOne: built.phaseOne,
         detection,
-        assembly: storedAssembly.assembly,
+        assembly: methodAssembly,
       });
       methodExecution = {
         mode: "internal_shadow",
@@ -1772,7 +1805,9 @@ function buildReceivablesVertical(
       publicReport: {...common, status: "needs_requested_amount", pipeline: null},
       privateReport: null,
       specialistShadow,
-      inputAssemblyId: storedAssembly?.id ?? null,
+      inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
+      inputAssembly: methodAssembly,
+      inputResolution,
     };
   }
 
@@ -1818,7 +1853,9 @@ function buildReceivablesVertical(
   return {
     privateReport: report,
     specialistShadow,
-    inputAssemblyId: storedAssembly?.id ?? null,
+    inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
+    inputAssembly: methodAssembly,
+    inputResolution,
     publicReport: {
       ...common,
       status: "analyzed",
