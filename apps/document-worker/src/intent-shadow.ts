@@ -65,6 +65,8 @@ export type ShadowRoutingContext = {
     sourceManifestDocumentIds: string[];
     sourceManifestEvidenceObjectIds: string[];
     sourceManifestMembershipFingerprint: string;
+    /** Per-object allowlist authored by the control plane, never by the extractor. */
+    activeWorkObjectBindings: Array<{id: string; fingerprint: string}>;
   } | null;
 };
 
@@ -79,6 +81,26 @@ export function activeWorkSourceManifestMembershipFingerprint(manifest: {
     documentIds: [...manifest.documentIds].sort(),
     evidenceObjectIds: [...manifest.evidenceObjectIds].sort(),
   });
+}
+
+export function activeWorkObjectFingerprint(object: ActiveWorkContext["objects"][number]): string {
+  return fingerprintJson({
+    schemaVersion: "active-work-object-binding.v1",
+    id: object.id,
+    ordinal: object.ordinal,
+    kind: object.kind,
+    slots: [...object.slots].sort((left, right) => `${left.key}:${left.value}`.localeCompare(`${right.key}:${right.value}`)),
+    label: object.label,
+    governance: {
+      state: object.governance.state,
+      sourceIds: [...object.governance.sourceIds].sort(),
+    },
+  });
+}
+
+export function activeWorkObjectBindings(objects: ActiveWorkContext["objects"]): Array<{id: string; fingerprint: string}> {
+  return objects.map((object) => ({id: object.id, fingerprint: activeWorkObjectFingerprint(object)}))
+    .sort((left, right) => left.id.localeCompare(right.id));
 }
 
 export function governedShadowAccessBasis(value: string | null | undefined): ShadowRoutingContext["accessBasis"] {
@@ -288,6 +310,12 @@ export function validateActiveWorkContextBinding(context: ShadowRoutingContext):
   if (binding.sourceManifestMembershipFingerprint !== boundMembershipFingerprint
     || activeMembershipFingerprint !== boundMembershipFingerprint) {
     throw new Error("active_work_context_manifest_membership_mismatch");
+  }
+  const boundObjects = [...binding.activeWorkObjectBindings].sort((left, right) => left.id.localeCompare(right.id));
+  const activeObjects = activeWorkObjectBindings(active.objects);
+  if (new Set(boundObjects.map(({id}) => id)).size !== boundObjects.length
+    || fingerprintJson(boundObjects) !== fingerprintJson(activeObjects)) {
+    throw new Error("active_work_context_object_binding_mismatch");
   }
   const availableDocuments = new Set(context.documentIds);
   if (active.sourceManifest.documentIds.some((id) => !availableDocuments.has(id))) {

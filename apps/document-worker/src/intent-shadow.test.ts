@@ -1,7 +1,7 @@
 import {createModelGateway, type AdapterResponse, type GatewayCallLog, type ModelGateway, type ProviderAdapter} from "@offroad/model-gateway";
 import {describe, expect, it} from "vitest";
 
-import {activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSchema, stampIntentEnvelope, type ShadowRoutingContext} from "./intent-shadow";
+import {activeWorkObjectBindings, activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope, shadowRoutingOutputSchema, stampIntentEnvelope, type ShadowRoutingContext} from "./intent-shadow";
 
 const field = <T,>(value: T, state: "explicit" | "inferred" | "ambiguous" | "unknown" = "explicit") => ({
   value, state, confidence: state === "explicit" ? 1 : 0.7,
@@ -75,6 +75,7 @@ const activeBinding = {
   sourceManifestDocumentIds: [...activeContext.sourceManifest.documentIds],
   sourceManifestEvidenceObjectIds: [...activeContext.sourceManifest.evidenceObjectIds],
   sourceManifestMembershipFingerprint: activeWorkSourceManifestMembershipFingerprint(activeContext.sourceManifest),
+  activeWorkObjectBindings: activeWorkObjectBindings(activeContext.objects),
 };
 
 describe("shadow intent observability boundary", () => {
@@ -219,7 +220,10 @@ describe("shadow intent observability boundary", () => {
       provider: "anthropic",
       complete: async (request): Promise<AdapterResponse> => {
         const output = request.schemaName === "semantic_object_extractor_output"
-          ? {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: []}
+          ? {objects: [], activeContextReferences: [], unresolvedReferences: [{span: {
+              source: "latest_user_message", messageIndex: null, start: context.message.indexOf("Camil"),
+              end: context.message.indexOf("Camil") + "Camil".length, text: "Camil",
+            }, reason: "no_governed_match"}], excludedQuantitativeSpans: []}
           : validOutput();
         return {output, rawText: JSON.stringify(output), usage: {inputTokens: 10, outputTokens: 10, cachedInputTokens: 0}, model: request.model, stopReason: "end"};
       },
@@ -290,6 +294,20 @@ describe("shadow intent observability boundary", () => {
       },
       activeWorkContextBinding: activeBinding,
     }})).rejects.toThrow("active_work_context_manifest_membership_mismatch");
+
+    await expect(shadowIntentEnvelope({gateway, context: {
+      ...context,
+      activeWorkContext: {
+        ...activeContext,
+        objects: [...activeContext.objects, {
+          id: "ctx-smuggled", ordinal: 2, kind: "claim" as const,
+          slots: [{key: "subject" as const, value: "tenant B secret ledger"}], label: "tenant B secret ledger",
+          // A permitted source id cannot authorize content that was never bound by the control plane.
+          governance: {state: "system_resolved" as const, sourceIds: [context.projectId!]},
+        }],
+      },
+      activeWorkContextBinding: activeBinding,
+    }})).rejects.toThrow("active_work_context_object_binding_mismatch");
   });
 
   it("fails closed before returning an envelope when spend telemetry is invalid", async () => {

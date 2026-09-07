@@ -48,7 +48,8 @@ describe("intent gold turns", () => {
     expect(new Set(intentGoldCoverage().compositions)).toEqual(new Set(namedCompositionKeys));
     for (const turn of intentGoldTurns) {
       expect(turn.expected.semantic.canonicalAction).toBeTruthy();
-      expect(turn.expected.semantic.objects.length).toBeGreaterThan(0);
+      if (turn.expected.abstain) expect(turn.expected.semantic.objects.length, turn.id).toBe(0);
+      else expect(turn.expected.semantic.objects.length, turn.id).toBeGreaterThan(0);
       expect(turn.expected.semantic.objects.map(({ordinal}) => ordinal)).toEqual(turn.expected.semantic.objects.map((_, index) => index + 1));
       expect(new Set(turn.expected.semantic.objects.map(({id}) => id)).size).toBe(turn.expected.semantic.objects.length);
       for (const object of turn.expected.semantic.objects) {
@@ -58,6 +59,27 @@ describe("intent gold turns", () => {
       }
       expect(turn.expected.semantic.decision.category).toBeTruthy();
       expect(turn.expected.semantic.audienceCategory).toBeTruthy();
+    }
+  });
+
+  it("keeps every oracle head realizable from each authored message or governed active work context", () => {
+    const normalize = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("pt-BR").replace(/\s+/g, " ").trim();
+    for (const turn of intentGoldTurns) {
+      const messages = [turn.message, ...(turn.stabilityParaphrases ?? [])];
+      for (const message of messages) {
+        for (const object of turn.expected.semantic.objects) {
+          const heads = object.slots.filter(({key}) => key === "entity" || key === "subject");
+          expect(heads, `${turn.id}:${object.id}:exactly_one_head`).toHaveLength(1);
+          const head = heads[0]!;
+          const inCurrentTurn = head.allowedValues.some((value) => normalize(message).includes(normalize(value)));
+          const inGovernedContext = turn.activeWorkContext?.objects.some((contextObject) =>
+            contextObject.kind === object.kind
+            && contextObject.slots.some((slot) => slot.key === head.key
+              && head.allowedValues.map(normalize).includes(normalize(slot.value)))) ?? false;
+          expect(inCurrentTurn || inGovernedContext, `${turn.id}:${object.id}:${head.allowedValues.join("|")}`).toBe(true);
+        }
+      }
     }
   });
 

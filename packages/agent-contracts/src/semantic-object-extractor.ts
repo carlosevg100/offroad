@@ -274,6 +274,7 @@ const coverageIssueSchema = z.object({
     "invalid_exclusion_reason",
     "historical_text_is_not_governed_context",
     "uncovered_semantic_head",
+    "explicit_semantic_head_marked_unresolved",
     "merged_semantic_heads",
     "semantic_head_multiply_claimed",
     "object_cardinality_exceeded",
@@ -458,9 +459,15 @@ function magnitude(raw: string): number {
   return 1;
 }
 
-function normalizeSlotValue(key: IntentObjectSlotKey, raw: string): string | null {
+const CANONICAL_HEAD_ALIASES: Partial<Record<z.infer<typeof intentObjectKindSchema>, Readonly<Record<string, string>>>> = {
+  claim: {folga: "headroom"},
+  operation: {case: "operação"},
+  provider: {fundos: "investidores"},
+};
+
+function normalizeSlotValue(key: IntentObjectSlotKey, raw: string, kind?: z.infer<typeof intentObjectKindSchema>): string | null {
   const text = normalizeSearchText(raw);
-  if (key === "entity" || key === "subject") return normalizeLexical(raw);
+  if (key === "entity" || key === "subject") return (kind ? CANONICAL_HEAD_ALIASES[kind]?.[text] : undefined) ?? normalizeLexical(raw);
   if (key === "currency") {
     if (/\bbrl\b|r\$|\breais?\b/.test(text)) return "BRL";
     if (/\busd\b|us\$|u\$|\bdolares?\b|\bdollars?\b/.test(text)) return "USD";
@@ -602,6 +609,19 @@ function governedEntityMentions(input: SemanticObjectExtractorInput): SemanticHe
   return matches;
 }
 
+function isProfessionalSelfDescriptionHead(text: string, mention: SemanticHeadMention): boolean {
+  if (mention.expectedKind !== "provider") return false;
+  const prefix = normalizeSearchText(text.slice(Math.max(0, mention.start - 80), mention.start));
+  return /\b(?:sou|trabalho|atuo|meu cargo|my role|i work|i am)\b[^.!?]{0,60}$/.test(prefix);
+}
+
+function isExplicitlyIdentifiableHead(text: string, mention: SemanticHeadMention): boolean {
+  if (mention.expectedKind === null) return true;
+  const prefix = normalizeSearchText(text.slice(Math.max(0, mention.start - 24), mention.start));
+  // "qual operação eu quero" names a missing class, not a resolvable operation instance.
+  return !/\b(?:qual|quais|que|which|what)\s*$/.test(prefix);
+}
+
 function semanticHeadMentions(input: SemanticObjectExtractorInput): SemanticHeadMention[] {
   const text = input.latestUserMessage;
   const mentions: SemanticHeadMention[] = SEMANTIC_HEAD_PATTERNS.flatMap(({kind, pattern}) =>
@@ -609,7 +629,7 @@ function semanticHeadMentions(input: SemanticObjectExtractorInput): SemanticHead
       source: "latest_user_message" as const,
       messageIndex: null,
       start: match.index!, end: match.index! + match[0].length, text: match[0], expectedKind: kind,
-    })),
+    })).filter((mention) => !isProfessionalSelfDescriptionHead(text, mention)),
   );
   mentions.push(...governedEntityMentions(input));
   const ordered = mentions.sort((left, right) => left.start - right.start || right.end - left.end);
@@ -751,7 +771,7 @@ export function compileSemanticObjects(
         candidateValid = false;
         continue;
       }
-      const value = normalizeSlotValue(slot.key, slot.span.text);
+      const value = normalizeSlotValue(slot.key, slot.span.text, candidate.kind);
       if (value === null) {
         addIssue(issues, "normalization_failed", `${slot.key} could not be normalized from: ${slot.span.text}`);
         candidateValid = false;
@@ -850,9 +870,12 @@ export function compileSemanticObjects(
   let semanticHeadMentionsCovered = 0;
   for (const head of heads) {
     const claimingHeads = acceptedHeads.filter(({span}) => overlaps(head, span));
-    const explicitlyAccounted = output.unresolvedReferences.some(({span}) => span.source === "latest_user_message" && overlaps(head, span))
-      || semanticExclusions.some(({span}) => overlaps(head, span));
+    const unresolvedHead = output.unresolvedReferences.some(({span}) => span.source === "latest_user_message" && overlaps(head, span));
+    const explicitlyAccounted = unresolvedHead || semanticExclusions.some(({span}) => overlaps(head, span));
     if (claimingHeads.length === 1 || explicitlyAccounted) semanticHeadMentionsCovered += 1;
+    if (unresolvedHead && isExplicitlyIdentifiableHead(input.latestUserMessage, head)) {
+      addIssue(issues, "explicit_semantic_head_marked_unresolved", `${head.expectedKind ?? "named_entity"}:${head.text} is explicitly identifiable in the current turn`);
+    }
     if (claimingHeads.length === 0 && !explicitlyAccounted) {
       addIssue(issues, "uncovered_semantic_head", `${head.expectedKind ?? "named_entity"}:${head.text} at latest:${head.start}`);
     } else if (claimingHeads.length > 1) {

@@ -34,7 +34,7 @@ const expectedObjectInstanceSchema = z.object({
 
 const semanticSignatureSchema = z.object({
   canonicalAction: canonicalIntentActionSchema,
-  objects: z.array(expectedObjectInstanceSchema).min(1),
+  objects: z.array(expectedObjectInstanceSchema),
   decision: z.object({present: z.boolean(), category: decisionCategorySchema}),
   audienceCategory: audienceCategorySchema,
 });
@@ -60,6 +60,13 @@ export const intentGoldTurnSchema = z.object({
     firstQuestionSignals: z.array(z.array(z.string().min(2)).min(1)).default([]),
     semantic: semanticSignatureSchema,
   }),
+}).superRefine((turn, ctx) => {
+  if (turn.expected.abstain && turn.expected.semantic.objects.length !== 0) {
+    ctx.addIssue({code: "custom", path: ["expected", "semantic", "objects"], message: "an abstention expects no asserted semantic objects"});
+  }
+  if (!turn.expected.abstain && turn.expected.semantic.objects.length === 0) {
+    ctx.addIssue({code: "custom", path: ["expected", "semantic", "objects"], message: "a routed turn expects at least one semantic object"});
+  }
 });
 export type IntentGoldTurn = z.infer<typeof intentGoldTurnSchema>;
 
@@ -79,7 +86,7 @@ type GoldInput = {
 
 type CanonicalGoldObject = {
   kind: z.infer<typeof intentObjectKindSchema>;
-  slots?: Partial<Record<z.infer<typeof intentObjectSlotKeySchema>, string>>;
+  slots?: Partial<Record<z.infer<typeof intentObjectSlotKeySchema>, string | readonly string[]>>;
 };
 const o = (kind: CanonicalGoldObject["kind"], slots?: CanonicalGoldObject["slots"]): CanonicalGoldObject => ({kind, ...(slots ? {slots} : {})});
 const assistant = (content: string): z.infer<typeof priorTurnSchema> => ({role: "assistant", content});
@@ -121,8 +128,10 @@ function goldActiveWorkContext(input: Pick<GoldInput, "id" | "caseId" | "activeC
       id: `context-${index + 1}`,
       ordinal: index + 1,
       kind: object.kind,
-      slots: Object.entries(object.slots ?? {}).map(([key, value]) => ({key: intentObjectSlotKeySchema.parse(key), value})),
-      label: Object.values(object.slots ?? {})[0] ?? object.kind,
+      slots: Object.entries(object.slots ?? {}).map(([key, value]) => ({
+        key: intentObjectSlotKeySchema.parse(key), value: Array.isArray(value) ? value[0]! : value,
+      })),
+      label: (() => { const value = Object.values(object.slots ?? {})[0]; return Array.isArray(value) ? value[0] : value ?? object.kind; })(),
       governance: {state: "system_resolved", sourceIds: [projectId]},
     })),
   });
@@ -137,42 +146,42 @@ const canonicalGoldObjects = {
   "gc01-t01": [o("company", {entity: "Camil"}), o("operation", {subject: "refinanciamento"})],
   "gc01-t02": [o("material", {subject: "pitch", page_count: "3"}), o("alternative", {subject: "alternativas"}), o("company", {entity: "Camil"}), o("operation", {subject: "refinanciamento"})],
   "gc01-t03": [o("claim", {subject: "alavancagem", ratio: "4.7"}), o("material", {subject: "pitch de refinanciamento"}), o("company", {entity: "Camil"})],
-  "gc02-t01": [o("company", {entity: "Camil"}), o("decision", {subject: "adequação da estrutura de capital"})],
+  "gc02-t01": [o("company", {entity: "Camil"}), o("decision", {subject: "estrutura de capital"}), o("alternative", {subject: "alternativas"})],
   "gc02-t02": [o("material", {subject: "análise de estrutura de capital"}), o("company", {entity: "Camil"})],
-  "gc02-t03": [o("claim", {subject: "headroom"}), o("instrument", {subject: "covenant"}), o("scenario", {subject: "safra"})],
-  "gc02-t04": [o("alternative", {subject: "alongamento da dívida existente"}), o("alternative", {subject: "nova emissão"}), o("decision", {subject: "recomendação entre alternativas"})],
+  "gc02-t03": [o("claim", {subject: ["headroom", "folga"]}), o("instrument", {subject: "covenant"}), o("scenario", {subject: "safra"})],
+  "gc02-t04": [o("alternative", {subject: "alongamento da dívida existente"}), o("alternative", {subject: "nova emissão"}), o("decision", {subject: "recomendação"})],
   "gc03-t01": [o("company", {entity: "Aurora"}), o("document", {subject: "balanços"}), o("document", {subject: "material institucional"}), o("operation", {subject: "captação", amount: "50000000", currency: "BRL"}), o("asset_or_pool", {subject: "recebíveis"})],
-  "gc03-t02": [o("operation", {subject: "estrutura indicativa"}), o("provider", {subject: "fundos aderentes"}), o("company", {entity: "Aurora"})],
+  "gc03-t02": [o("operation", {subject: ["operação", "case"]}), o("provider", {subject: ["investidores", "fundos"]}), o("company", {entity: "Aurora"})],
   "gc04-t01": [o("operation", {subject: "proposta de debêntures"}), o("company", {entity: "Cogna"}), o("document", {subject: "release trimestral"})],
   "gc04-t02": [o("claim", {subject: "alavancagem da proposta"}), o("claim", {subject: "alavancagem calculada pela Offroad"}), o("operation", {subject: "proposta"}), o("company", {entity: "Cogna"})],
   "gc05-t01": [o("company", {entity: "Camil"}), o("operation", {subject: "expansão anunciada"})],
-  "gc05-t02": [o("alternative", {subject: "troca de indexador"}), o("material", {subject: "material para reunião"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
-  "gc05-t03": [o("scenario", {indexer: "CDI", percentage: "0.12", tenor_months: "84"}), o("model", {subject: "modelo"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
-  "gc05-t04": [o("document")],
+  "gc05-t02": [o("alternative", {subject: "troca de indexador"}), o("material", {subject: "material"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
+  "gc05-t03": [o("scenario", {subject: "CDI", indexer: "CDI", percentage: "0.12", tenor_months: "84"}), o("model", {subject: "modelo"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
+  "gc05-t04": [],
   "gc01-t04": [o("document", {subject: "fatos relevantes"}), o("document", {subject: "apresentações"}), o("document", {subject: "notícias"}), o("company", {entity: "Camil"})],
-  "gc05-t05": [o("instrument", {subject: "debêntures"}), o("market", {subject: "setor de alimentos"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
+  "gc05-t05": [o("instrument", {subject: "debêntures"}), o("market", {subject: "alimentos"}), o("operation", {subject: "expansão"}), o("company", {entity: "Camil"})],
   hx01: [o("document", {subject: "planilhas de dívida", count: "2"}), o("instrument", {subject: "dívida"})],
   hx02: [o("instrument", {subject: "debênture incentivada"}), o("instrument", {subject: "CCB"})],
-  hx03: [o("instrument", {subject: "dívida"}), o("claim", {subject: "vencimentos concentrados"}), o("claim", {subject: "caixa mínimo pressionado"})],
+  hx03: [o("instrument", {subject: "dívida"}), o("claim", {subject: "os vencimentos estão concentrados"}), o("claim", {subject: "o caixa mínimo está pressionado"})],
   hx04: [o("operation", {subject: "capex", amount: "80000000", currency: "BRL"}), o("alternative", {subject: "bilateral"}), o("alternative", {subject: "debênture"}), o("alternative", {subject: "private credit"})],
   hx05: [o("document", {subject: "cláusula de covenant"}), o("instrument", {subject: "covenant"}), o("claim", {subject: "fórmula de dívida líquida"})],
-  hx06: [o("provider", {subject: "financiadores aderentes"}), o("operation", {amount: "120000000", currency: "BRL", tenor_months: "60"}), o("asset_or_pool", {subject: "recebíveis"})],
-  hx07: [o("process", {subject: "monitoramento", cadence: "quarterly"}), o("instrument", {subject: "covenant"}), o("claim", {subject: "headroom", percentage: "0.20"})],
-  hx08: [o("project", {subject: "projeto"}), o("material", {subject: "versões válidas"}), o("process", {subject: "pendências abertas"})],
-  cx01: [o("process", {subject: "reunião com CFO"})],
+  hx06: [o("operation", {subject: "operação", amount: "120000000", currency: "BRL", tenor_months: "60"}), o("asset_or_pool", {subject: "recebíveis"})],
+  hx07: [o("process", {subject: "Monitore", cadence: "quarterly"}), o("instrument", {subject: "covenant"}), o("claim", {subject: "headroom", percentage: "0.20"})],
+  hx08: [o("project", {subject: "projeto"}), o("material", {subject: "versões"}), o("process", {subject: "pendências"})],
+  cx01: [o("process", {subject: "reunião"})],
   cx02: [o("material", {subject: "deck", page_count: "5"}), o("process", {subject: "reunião com CFO"})],
   cx03: [o("provider", {subject: "fundos aderentes"}), o("claim", {subject: "fit"})],
-  cx04: [o("decision", {subject: "aprovação da shortlist"}), o("material", {subject: "material"}), o("provider", {subject: "fundos selecionados", count: "3"})],
-  cx05: [o("operation", {subject: "emissões comparáveis"}), o("market", {subject: "condições de mercado"})],
-  cx06: [o("operation", {subject: "novas emissões"}), o("process", {subject: "monitoramento", cadence: "weekly"}), o("claim", {subject: "variação do spread", basis_points: "50"})],
+  cx04: [o("decision", {subject: "shortlist está aprovada"}), o("material", {subject: "material"}), o("provider", {subject: "fundos selecionados", count: "3"})],
+  cx05: [o("market", {subject: "emissões comparáveis"})],
+  cx06: [o("operation", {subject: "novas emissões"}), o("process", {subject: "Acompanhe", cadence: "weekly"}), o("claim", {subject: "spread", basis_points: "50"})],
   cx07: [o("model", {subject: "modelo financeiro"})],
-  ax01: [o("document")], ax02: [o("document")],
+  ax01: [], ax02: [],
   ax03: [o("document", {subject: "cláusula de covenant"}), o("instrument", {subject: "covenant"}), o("claim", {subject: "fórmula"})],
   ax04: [o("provider", {subject: "investidores"}), o("mandate", {subject: "mandato"})],
   ax05: [o("market", {subject: "precedentes e condições de mercado"})],
-  ax06: [o("document")],
+  ax06: [],
   ax07: [o("company", {entity: "Companhia Delta"})],
-  ax08: [o("decision", {subject: "escolha de estrutura de capital"}), o("alternative", {subject: "alongar a dívida"}), o("alternative", {subject: "emitir debêntures"})],
+  ax08: [o("decision", {subject: "decisão"}), o("alternative", {subject: "alongar a dívida"}), o("alternative", {subject: "emitir debêntures"})],
 } as const satisfies Record<string, readonly CanonicalGoldObject[]>;
 
 function expectedObjects(turnId: string): z.infer<typeof expectedObjectInstanceSchema>[] {
@@ -183,7 +192,7 @@ function expectedObjects(turnId: string): z.infer<typeof expectedObjectInstanceS
     ordinal: index + 1,
     kind: object.kind,
     slots: Object.entries(object.slots ?? {}).map(([key, value]) => ({
-      key: intentObjectSlotKeySchema.parse(key), allowedValues: [value], cardinality: 1,
+      key: intentObjectSlotKeySchema.parse(key), allowedValues: Array.isArray(value) ? [...value] : [value], cardinality: 1,
     })),
     allowAdditional: false,
   }));

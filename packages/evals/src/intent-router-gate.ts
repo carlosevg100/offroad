@@ -27,7 +27,7 @@ import {intentGoldClassifierInput, intentGoldMessage, intentGoldObjectInput} fro
 export const intentRouterGateChecksSchema = z.object({
   completed: z.boolean(), composition: z.boolean(), abstain: z.boolean(), depth: z.boolean(), continuity: z.boolean(),
   primaryWorksExact: z.boolean(), responsibilitiesExact: z.boolean(), canonicalAction: z.boolean(), objectKindsExact: z.boolean(),
-  materialReferences: z.boolean(), decisionPresence: z.boolean(), decisionCategory: z.boolean(),
+  materialReferences: z.boolean(), objectCompilationStatus: z.boolean(), decisionPresence: z.boolean(), decisionCategory: z.boolean(),
   audienceCategory: z.boolean(), questionPresence: z.boolean(), questionTheme: z.boolean(),
 });
 export type IntentRouterGateChecks = z.infer<typeof intentRouterGateChecksSchema>;
@@ -71,8 +71,7 @@ const hasGovernedClassifierConfidence = (output: IntentClassifierOutput): boolea
 export const fingerprintIntentMessage = (message: string): string => createHash("sha256").update(message, "utf8").digest("hex");
 
 function objectInstancesMatch(gold: IntentGoldTurn, output: IntentClassifierOutput, allowUnknownState = false): boolean {
-  if (!assertsMeaning(output.routingCore.object.state)
-    && !(allowUnknownState && output.routingCore.object.state === "unknown")) return false;
+  if (allowUnknownState ? output.routingCore.object.state !== "unknown" : !assertsMeaning(output.routingCore.object.state)) return false;
   const expected = gold.expected.semantic.objects;
   const actual = output.routingCore.object.value;
   if (actual.length !== expected.length) return false;
@@ -108,6 +107,15 @@ export function scoreIntentGoldTurn(
     ? output.firstQuestion === null
     : expected.firstQuestionSignals.every((alternatives) => alternatives.some((signal) => question.includes(normalizeText(signal))));
   const objectsExact = objectInstancesMatch(gold, semanticOutput, expected.abstain);
+  const honestAbstentionCodes = new Set(["unresolved_reference", "no_semantic_object"]);
+  const objectCompilationStatus = objectCompilation != null && (expected.abstain
+    ? objectCompilation.status === "incomplete"
+      && objectCompilation.objects.length === 0
+      && objectCompilation.usableObjects.length === 0
+      && objectCompilation.coverage.issues.length > 0
+      && objectCompilation.coverage.issues.every(({code}) => honestAbstentionCodes.has(code))
+    : objectCompilation.status === "complete"
+      && objectCompilation.usableObjects.length === objectCompilation.objects.length);
   const decisionStateValid = expected.semantic.decision.present
     ? assertsMeaning(semanticOutput.routingCore.decisionType.state)
     : semanticOutput.routingCore.decisionType.state === "not_applicable";
@@ -131,6 +139,7 @@ export function scoreIntentGoldTurn(
       && (assertsMeaning(semanticOutput.routingCore.action.state) || (expected.abstain && semanticOutput.routingCore.action.state === "unknown")),
     objectKindsExact: objectsExact,
     materialReferences: objectsExact,
+    objectCompilationStatus,
     decisionPresence: decisionPresent === expected.semantic.decision.present,
     decisionCategory: semanticOutput.routingCore.decisionType.value === expected.semantic.decision.category && decisionStateValid,
     audienceCategory: semanticOutput.routingCore.audienceType.value === expected.semantic.audienceCategory && audienceStateValid,
@@ -229,7 +238,7 @@ export function summarizeIntentRouterGate(observations: IntentRouterGateObservat
       }
     }
     const checks = turn ? scoreIntentGoldTurn(turn, recomposedActual, observation.rawActual, recomposedCompilation) : emptyChecks();
-    const rawChecks = turn ? scoreIntentGoldTurn(turn, observation.rawActual, observation.rawActual) : emptyChecks();
+    const rawChecks = turn ? scoreIntentGoldTurn(turn, observation.rawActual, observation.rawActual, recomposedCompilation) : emptyChecks();
     const routingFingerprint = recomposedActual ? intentRoutingFingerprint(recomposedActual) : null;
     return {observation, turn, message, classifierInputFingerprint, objectInputFingerprint, recomposedCompilation, recomposedActual, chainError, checks, rawChecks, routingFingerprint};
   });

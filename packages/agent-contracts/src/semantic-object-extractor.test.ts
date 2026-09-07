@@ -94,6 +94,29 @@ describe("semantic object extractor contract", () => {
     expect(result.objects.map(({slots}) => slots[0]?.value)).toEqual(["bilateral", "debênture", "private credit"]);
   });
 
+  it("canonicalizes reviewed semantic aliases without changing the authored prompts", () => {
+    const compilePair = (message: string, operation: string, provider: string) => compileSemanticObjects(input(message), {
+      objects: [
+        {candidateId: "candidate-1", kind: "operation" as const, head: {key: "subject" as const, span: span(message, operation)}, modifiers: []},
+        {candidateId: "candidate-2", kind: "provider" as const, head: {key: "subject" as const, span: span(message, provider)}, modifiers: []},
+      ],
+      activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+    });
+    const first = compilePair("Envie esse case aos fundos.", "case", "fundos");
+    const second = compilePair("Envie a operação aos investidores.", "operação", "investidores");
+    expect(first.status).toBe("complete");
+    expect(second.status).toBe("complete");
+    expect(first.objects.map(({kind, slots}) => ({kind, slots})))
+      .toEqual(second.objects.map(({kind, slots}) => ({kind, slots})));
+    expect(first.objects.map(({slots}) => slots[0]?.value)).toEqual(["operação", "investidores"]);
+
+    const folga = compileSemanticObjects(input("Analise a folga."), {
+      objects: [{candidateId: "candidate-1", kind: "claim", head: {key: "subject", span: span("Analise a folga.", "folga")}, modifiers: []}],
+      activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [],
+    });
+    expect(folga.objects[0]?.slots).toContainEqual({key: "subject", value: "headroom"});
+  });
+
   it("fails closed when the model omits independent company, material or operation heads", () => {
     const message = "Analise a Camil e prepare um memo sobre a operação.";
     const result = compileSemanticObjects(input(message), {
@@ -138,6 +161,14 @@ describe("semantic object extractor contract", () => {
     });
     expect(result.status).toBe("complete");
     expect(result.coverage).toMatchObject({semanticHeadMentions: 1, semanticHeadMentionsCovered: 1});
+  });
+
+  it("does not turn a bank mentioned only as the user's employer into the work object", () => {
+    const message = "Atuo como diretor de banco. Faça automaticamente a tarefa típica dessa função.";
+    const output = {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []};
+    const result = compileSemanticObjects(input(message), output);
+    expect(result.coverage).toMatchObject({semanticHeadMentions: 0, semanticHeadMentionsCovered: 0});
+    expect(validateSemanticObjectOutput(input(message), output)).toEqual({accepted: true});
   });
 
   it.each([
@@ -344,6 +375,33 @@ describe("semantic object extractor contract", () => {
       excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
     };
     expect(validateSemanticObjectOutput(objectInput, output)).toEqual({accepted: true});
+  });
+
+  it("allows a generic interrogative object class to remain unresolved", () => {
+    const message = "Trabalho no maior banco do país. Conclua qual operação eu quero.";
+    const objectInput = input(message);
+    const output = {
+      objects: [], activeContextReferences: [],
+      unresolvedReferences: [{span: span(message, "operação"), reason: "missing_referent" as const}],
+      excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    };
+    expect(validateSemanticObjectOutput(objectInput, output)).toEqual({accepted: true});
+  });
+
+  it("rejects unresolvedReference as a disguise for an explicit current-turn head", () => {
+    const message = "Analise a Camil.";
+    const objectInput = input(message);
+    const output = {
+      objects: [], activeContextReferences: [],
+      unresolvedReferences: [{span: span(message, "Camil"), reason: "no_governed_match" as const}],
+      excludedQuantitativeSpans: [], excludedSemanticHeadSpans: [],
+    };
+    const compilation = compileSemanticObjects(objectInput, output);
+    expect(compilation.status).toBe("rejected");
+    expect(compilation.coverage.issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({code: "explicit_semantic_head_marked_unresolved"}),
+    ]));
+    expect(validateSemanticObjectOutput(objectInput, output)).toMatchObject({accepted: false});
   });
 
   it("does not accept a routed semantic omission as an honest abstention", () => {

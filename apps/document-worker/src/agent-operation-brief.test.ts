@@ -157,6 +157,9 @@ describe("agent operation brief worker", () => {
         sourceManifestDocumentIds: ["33333333-3333-4333-8333-333333333333"],
         sourceManifestEvidenceObjectIds: [projectId, objectiveId],
         sourceManifestMembershipFingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+        activeWorkObjectBindings: expect.arrayContaining([
+          expect.objectContaining({id: expect.stringMatching(/^project:/), fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/)}),
+        ]),
       },
     });
     expect(JSON.stringify(compiled)).not.toContain("Segredo histórico");

@@ -62,7 +62,7 @@ const observation = (turn: typeof intentGoldTurns[number], repeat: number, outpu
   turnId: turn.id, suite: turn.suite, repeat, messageFingerprint: fingerprintIntentMessage(messageFor(turn, repeat)), expected: turn.expected,
   classifierInputFingerprint: fingerprintJson(intentGoldClassifierInput(turn, intentGoldMessage(turn, repeat))),
   objectInputFingerprint: fingerprintJson(intentGoldObjectInput(turn, intentGoldMessage(turn, repeat))),
-  rawActual: output, actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output, output),
+  rawActual: output, actual: output, error: output ? null : "provider failure", checks: scoreIntentGoldTurn(turn, output, output, output ? compilationFor(outputFor(turn), turn.expected.abstain) : null),
   rawActualFingerprint: output ? fingerprintJson(output) : null,
   actualFingerprint: output ? fingerprintJson(output) : null,
   routingFingerprint: output ? intentRoutingFingerprint(output) : null, provider: output ? "anthropic" : null,
@@ -118,7 +118,7 @@ const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: 
     ...observation(turn, repeat, actual),
     rawActual: raw,
     rawActualFingerprint: fingerprintJson(raw),
-    checks: scoreIntentGoldTurn(turn, actual, raw),
+    checks: scoreIntentGoldTurn(turn, actual, raw, compilationFor(outputFor(turn), turn.expected.abstain)),
     routingFingerprint: intentRoutingFingerprint(actual),
   };
 };
@@ -369,8 +369,9 @@ describe("intent router promotion gate", () => {
 
   it("scores the explicit semantic answer key rather than only checking field presence", () => {
     const turn = intentGoldTurns[0]!;
-    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn)))).toEqual(expect.arrayContaining([true]));
-    expect(Object.values(scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn))).every(Boolean)).toBe(true);
+    const validChecks = scoreIntentGoldTurn(turn, outputFor(turn), outputFor(turn), compilationFor(outputFor(turn)));
+    expect(Object.values(validChecks)).toEqual(expect.arrayContaining([true]));
+    expect(Object.values(validChecks).every(Boolean)).toBe(true);
     const wrongObject = outputFor(turn, {
       routingCore: {...outputFor(turn).routingCore, object: {value: [{id: "object-1", ordinal: 1, kind: "market", slots: []}], state: "explicit"}},
     });
@@ -621,12 +622,12 @@ describe("intent router promotion gate", () => {
     expect(summarizeIntentRouterGate(wrongRoutedCoverage).chainRecompositionMismatches).toContain(`${routed.id}:1`);
 
     const falseCompleteAbstention = valid.map((entry) => entry.turnId === abstention.id && entry.repeat === 1
-      ? {...entry, objectCompilation: compilationFor(outputFor(abstention), false)}
+      ? {...entry, objectCompilation: compilationFor(outputFor(routed), false)}
       : entry);
     const abstentionSummary = summarizeIntentRouterGate(falseCompleteAbstention);
     expect(abstentionSummary.chainRecompositionMismatches).toContain(`${abstention.id}:1`);
-    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(abstention), false)).completed).toBe(true);
-    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(abstention), true)).completed).toBe(true);
+    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(routed), false)).objectCompilationStatus).toBe(false);
+    expect(scoreIntentGoldTurn(abstention, outputFor(abstention), outputFor(abstention), compilationFor(outputFor(abstention), true)).objectCompilationStatus).toBe(true);
   });
 
   it("rejects forged plan order and duplicate responsibilities across the complete manifest", () => {

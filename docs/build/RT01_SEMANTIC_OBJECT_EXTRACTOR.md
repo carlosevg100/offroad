@@ -47,6 +47,10 @@ expected oracle or from assistant summaries. The binding also carries the contro
 and evidence-object allowlists plus a recomputable membership fingerprint. Runtime recomputes and
 compares both memberships, so adding an otherwise schema-valid foreign source id fails before a
 provider call even if the visible manifest id and revision fingerprints still match.
+The same control-plane binding contains a sorted allowlist of object ids and canonical
+fingerprints. Each fingerprint covers the object's id, ordinal, kind, slots, label, governance
+state and sorted source ids. Runtime recomputes every entry; reusing an allowed project or manifest
+source id cannot smuggle different object content into the model-visible context.
 
 ## Atomicity
 
@@ -74,6 +78,17 @@ An `incomplete` output containing only `no_semantic_object` and/or an attributab
 `unresolved_reference` is an honest model abstention: the gateway accepts it without spending a
 repair or fallback, while application still clears objects and abstains. Any uncovered semantic
 head, quantity, cardinality breach or structural issue remains invalid provider output.
+An explicit identifiable head cannot be hidden behind `unresolved_reference`: for example, Camil
+in “Analise a Camil” is deterministically recognized and forces repair/fallback if the extractor
+does not return the company object. Generic interrogatives such as “qual operação” may remain
+unresolved because no operation instance was supplied.
+
+Gold abstentions assert zero objects and are scored only when compilation is independently
+`incomplete`, has no diagnostic or usable objects, and reports only a named honest-abstention
+issue. Routed turns require `complete` compilation. A corpus invariant checks every expected head
+against each of the 52 authored messages or its independently governed active-work fixture.
+Reviewed lexical equivalents are normalized by code (`folga`/`headroom`, `case`/`operação`, and
+`fundos`/`investidores`) so semantic stability never depends on rewriting the authored prompts.
 
 The code-owned semantic coverage detector is deliberately bounded to credit-work vocabulary and
 entities introduced through explicit grammar or resolved governed context. It has negative
