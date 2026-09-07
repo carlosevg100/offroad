@@ -7,6 +7,7 @@ import {
   authorizeParserInput,
   defaultDocumentQuarantinePolicy,
   GovernedDocumentQuarantineError,
+  governedDocumentQuarantineRuntimeBoundary,
   quarantineDocument,
   type GovernedMalwareScanner,
   type QuarantineDocumentBinding,
@@ -108,11 +109,13 @@ describe("governed document quarantine", () => {
   it("rejects malformed, encrypted, polyglot, and declared-type-mismatched PDFs before parsing", async () => {
     const malformed = encoder.encode("%PDF-1.7\nnot finished");
     const encrypted = pdf("/Encrypt 2 0 R");
+    const scripted = pdf("/OpenAction 2 0 R /JavaScript (app.alert('x'))");
     const polyglot = Uint8Array.from([...pdf(), 0x50, 0x4b, 0x03, 0x04, 0x00]);
     const wrongDeclaration = await inspect(pdf(), {declaredMediaType: "image/png"});
 
     expect((await inspect(malformed)).reasons).toContain("malformed_container");
     expect((await inspect(encrypted)).reasons).toContain("encrypted_document");
+    expect((await inspect(scripted)).reasons).toContain("active_script");
     expect((await inspect(polyglot)).reasons).toContain("polyglot_content");
     expect(wrongDeclaration.reasons).toContain("declared_type_mismatch");
   });
@@ -139,7 +142,11 @@ describe("governed document quarantine", () => {
   });
 
   it("rejects compression bombs, oversized members, nested archives and excessive entries", async () => {
-    const bytes = await workbook({"xl/media/repeated.bin": encoder.encode("A".repeat(2_000_000)), "nested.zip": "PK"});
+    const bytes = await workbook({
+      "xl/media/repeated.bin": encoder.encode("A".repeat(2_000_000)),
+      "nested.zip": "PK",
+      "../escape.xml": "<unsafe/>",
+    });
     const receipt = await quarantineDocument({
       bytes,
       binding: binding(bytes, {
@@ -164,6 +171,7 @@ describe("governed document quarantine", () => {
       "archive_total_uncompressed_exceeded",
       "archive_ratio_exceeded",
       "nested_archive",
+      "archive_path_unsafe",
     ]));
   });
 
@@ -199,5 +207,19 @@ describe("governed document quarantine", () => {
     const tampered = {...receipt, scanner: {...receipt.scanner, scannerId: "forged"}};
     expect(() => authorizeParserInput({receipt: tampered, binding: binding(bytes), bytes})).toThrow(GovernedDocumentQuarantineError);
     expect(() => authorizeParserInput({receipt: tampered, binding: binding(bytes), bytes})).toThrow("receipt_invalid");
+  });
+
+  it("exports unresolved persistence and runtime isolation as blockers, not live claims", () => {
+    expect(governedDocumentQuarantineRuntimeBoundary).toMatchObject({
+      maturity: "code_complete_candidate",
+      exposure: "internal_shadow",
+      parserAuthorization: "clean_receipt_required",
+      blockers: expect.arrayContaining([
+        "append_only_receipt_persistence",
+        "atomic_compare_and_swap",
+        "runtime_task_isolation",
+        "runtime_egress_enforcement",
+      ]),
+    });
   });
 });

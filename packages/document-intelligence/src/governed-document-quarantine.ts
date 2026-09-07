@@ -26,6 +26,7 @@ export const quarantineReasonSchema = z.enum([
   "archive_total_uncompressed_exceeded",
   "archive_ratio_exceeded",
   "nested_archive",
+  "archive_path_unsafe",
   "active_macro",
   "active_script",
   "embedded_object",
@@ -49,6 +50,7 @@ export const documentQuarantinePolicySchema = z.object({
   rejectExtensionTypeMismatch: z.boolean(),
   rejectEncryptedDocuments: z.boolean(),
   rejectMacros: z.boolean(),
+  rejectActiveScripts: z.boolean(),
   rejectEmbeddedObjects: z.boolean(),
   rejectExternalRelationships: z.boolean(),
   rejectExternalFormulas: z.boolean(),
@@ -69,6 +71,7 @@ export const defaultDocumentQuarantinePolicy: Readonly<DocumentQuarantinePolicy>
   rejectExtensionTypeMismatch: true,
   rejectEncryptedDocuments: true,
   rejectMacros: true,
+  rejectActiveScripts: true,
   rejectEmbeddedObjects: true,
   rejectExternalRelationships: true,
   rejectExternalFormulas: true,
@@ -86,6 +89,22 @@ export const defaultDocumentQuarantinePolicy: Readonly<DocumentQuarantinePolicy>
     "application/zip",
   ],
 }));
+
+/** Machine-readable honesty boundary for the pure contract in this package. */
+export const governedDocumentQuarantineRuntimeBoundary = deepFreeze({
+  maturity: "code_complete_candidate",
+  exposure: "internal_shadow",
+  parserAuthorization: "clean_receipt_required",
+  blockers: [
+    "append_only_receipt_persistence",
+    "atomic_compare_and_swap",
+    "immutable_storage_version_binding",
+    "scanner_version_and_signature_attestation",
+    "runtime_task_isolation",
+    "runtime_egress_enforcement",
+    "staging_adversarial_validation",
+  ],
+} as const);
 
 export const quarantineDocumentBindingSchema = z.object({
   organizationId: uuidSchema,
@@ -326,7 +345,7 @@ async function inspectDocumentBytes(
     if (policy.rejectEncryptedDocuments && /\/Encrypt\b/.test(ascii)) reasons.add("encrypted_document");
     if (/\/(?:JavaScript|JS|Launch|OpenAction|AA)\b/.test(ascii)) {
       activeContent.add("script");
-      reasons.add("active_script");
+      if (policy.rejectActiveScripts) reasons.add("active_script");
     }
     if (/\/(?:EmbeddedFile|Filespec)\b/.test(ascii)) {
       activeContent.add("embedded_object");
@@ -341,6 +360,7 @@ async function inspectDocumentBytes(
       archiveEntries = entries.length;
       if (entries.length > policy.maxArchiveEntries) reasons.add("archive_entries_exceeded");
       for (const entry of entries) {
+        if (entry.unsafeOriginalName && !archivePathSafe(entry.unsafeOriginalName)) reasons.add("archive_path_unsafe");
         const sizes = (entry as unknown as {_data?: {compressedSize?: number; uncompressedSize?: number}})._data;
         const compressed = sizes?.compressedSize ?? 0;
         const uncompressed = sizes?.uncompressedSize ?? 0;
@@ -380,22 +400,34 @@ async function inspectDocumentBytes(
         if (policy.rejectEmbeddedObjects) reasons.add("embedded_object");
       }
 
-      for (const entry of entries) {
-        const lower = entry.name.toLowerCase();
-        if (entry.dir || (!lower.endsWith(".rels") && !/^xl\/worksheets\/.*\.xml$/.test(lower))) continue;
-        const sizes = (entry as unknown as {_data?: {uncompressedSize?: number}})._data;
-        if ((sizes?.uncompressedSize ?? 0) > Math.min(policy.maxArchiveMemberBytes, 8 * 1024 * 1024)) {
-          reasons.add("archive_member_exceeded");
-          continue;
-        }
-        const source = await entry.async("string");
-        if (lower.endsWith(".rels") && /TargetMode\s*=\s*["']External["']/i.test(source)) {
-          activeContent.add("external_relationship");
-          if (policy.rejectExternalRelationships) reasons.add("external_relationship");
-        }
-        if (/^xl\/worksheets\/.*\.xml$/.test(lower) && hasExternalFormula(source)) {
-          activeContent.add("external_formula");
-          if (policy.rejectExternalFormulas) reasons.add("external_formula");
+      const declaredLimitFailure = [...reasons].some((reason) => reason.startsWith("archive_") || reason === "nested_archive");
+      if (!declaredLimitFailure) {
+        let actualTotal = 0;
+        for (const entry of entries) {
+          if (entry.dir) continue;
+          const lower = entry.name.toLowerCase();
+          const capture = lower.endsWith(".rels") || /^xl\/worksheets\/.*\.xml$/.test(lower);
+          try {
+            const result = await readZipEntryBounded(
+              entry,
+              policy.maxArchiveMemberBytes,
+              policy.maxArchiveTotalUncompressedBytes - actualTotal,
+              capture ? Math.min(policy.maxArchiveMemberBytes, 8 * 1024 * 1024) : 0,
+            );
+            actualTotal += result.bytes;
+            if (!result.source) continue;
+            if (lower.endsWith(".rels") && /TargetMode\s*=\s*["']External["']/i.test(result.source)) {
+              activeContent.add("external_relationship");
+              if (policy.rejectExternalRelationships) reasons.add("external_relationship");
+            }
+            if (/^xl\/worksheets\/.*\.xml$/.test(lower) && hasExternalFormula(result.source)) {
+              activeContent.add("external_formula");
+              if (policy.rejectExternalFormulas) reasons.add("external_formula");
+            }
+          } catch (error) {
+            if (error instanceof ArchiveBoundError) reasons.add(error.reason);
+            else throw error;
+          }
         }
       }
     } catch {
@@ -489,6 +521,56 @@ function hasExternalFormula(source: string): boolean {
 
 function archiveDepth(name: string): number {
   return /\.(?:zip|jar|7z|rar|gz|bz2|xz)$/i.test(name) ? 1 : 0;
+}
+
+function archivePathSafe(name: string): boolean {
+  return !name.startsWith("/")
+    && !name.includes("\\")
+    && !name.split("/").some((part) => part === "" || part === "." || part === "..");
+}
+
+class ArchiveBoundError extends Error {
+  constructor(readonly reason: "archive_member_exceeded" | "archive_total_uncompressed_exceeded") {
+    super(reason);
+    this.name = "ArchiveBoundError";
+  }
+}
+
+async function readZipEntryBounded(
+  entry: JSZip.JSZipObject,
+  maxMemberBytes: number,
+  maxRemainingTotalBytes: number,
+  captureLimit: number,
+): Promise<{bytes: number; source: string | null}> {
+  const stream = entry.nodeStream("nodebuffer");
+  const captured: Buffer[] = [];
+  let bytes = 0;
+  return new Promise((resolve, reject) => {
+    stream.on("data", (chunk: Buffer | Uint8Array | string) => {
+      const body = typeof chunk === "string" ? Buffer.from(chunk) : Buffer.from(chunk);
+      bytes += body.byteLength;
+      if (bytes > maxMemberBytes) {
+        (stream as NodeJS.ReadableStream & {destroy?: () => void}).destroy?.();
+        reject(new ArchiveBoundError("archive_member_exceeded"));
+        return;
+      }
+      if (bytes > maxRemainingTotalBytes) {
+        (stream as NodeJS.ReadableStream & {destroy?: () => void}).destroy?.();
+        reject(new ArchiveBoundError("archive_total_uncompressed_exceeded"));
+        return;
+      }
+      if (captureLimit > 0) {
+        if (bytes > captureLimit) {
+          (stream as NodeJS.ReadableStream & {destroy?: () => void}).destroy?.();
+          reject(new ArchiveBoundError("archive_member_exceeded"));
+          return;
+        }
+        captured.push(body);
+      }
+    });
+    stream.on("error", reject);
+    stream.on("end", () => resolve({bytes, source: captureLimit > 0 ? Buffer.concat(captured).toString("utf8") : null}));
+  });
 }
 
 function latin1(bytes: Uint8Array): string {
