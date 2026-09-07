@@ -228,7 +228,10 @@ test.describe("integration_preview: Case 01 end to end", () => {
 
   test("material: the transition plans three pitch pages from the signed objects", async () => {
     await send(page, "Vamos preparar o material: meu VP quer três páginas de pitch, situação atual, alternativas e impacto nos indicadores.");
-    const acknowledged = await waitForAssistant(page, /Vou planejar o material a partir dos objetos já assinados: 3 páginas/);
+    const acknowledged = await waitForAssistant(
+      page,
+      /Vou planejar o material a partir das informações governadas e rastreáveis: 3 páginas/,
+    );
     record("transição para o material", acknowledged);
     const plan = await waitForAssistant(page, /Plano do material a partir dos objetos assinados/);
     expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
