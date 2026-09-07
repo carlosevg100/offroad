@@ -19,7 +19,7 @@ const claimFamilies: readonly ClaimFamily[] = [
   {
     code: "certification_claim",
     subject: /\b(?:soc\s*2(?:\s+type\s+(?:i|ii|1|2))?|iso(?:\s+iec)?\s*27001|gdpr|lgpd)\b/gu,
-    predicate: /\b(?:certified|compliant|examined|attested|ready|complete|certificad[ao]s?|auditad[ao]s?|pront[ao]s?|complet[ao]s?|em\s+conformidade)\b/gu,
+    predicate: /\b(?:certified|compliant|examined|attested|ready|complete|issued|certificad[ao]s?|auditad[ao]s?|pront[ao]s?|complet[ao]s?|conclu[ií]d[ao]s?|emitid[ao]s?|vigente|em\s+conformidade)\b/gu,
   },
   {
     code: "pentest_claim",
@@ -29,16 +29,23 @@ const claimFamilies: readonly ClaimFamily[] = [
   {
     code: "live_assurance_claim",
     subject: /\b(?:live|production(?:\s+controls?)?|operating|produ[cç][aã]o(?:\s+controles?)?|opera[cç][aã]o)\b/gu,
-    predicate: /\b(?:verified|validated|attested|assured|proven|audited|verificad[ao]s?|validad[ao]s?|atestad[ao]s?|comprovad[ao]s?|auditad[ao]s?)\b/gu,
+    predicate: /\b(?:passed|verified|validated|attested|assured|proven|audited|aprovad[ao]s?|verificad[ao]s?|validad[ao]s?|atestad[ao]s?|comprovad[ao]s?|auditad[ao]s?)\b/gu,
   },
 ];
 
 const maximumBridgeTokens = 12;
 const maximumPolarityTokens = 12;
-const negationToken = /^(?:not|no|never|without|neither|nor|n[aã]o|nunca|jamais|sem)$/u;
-const contractionNegation = /\b(?:isn t|aren t|wasn t|weren t|hasn t|haven t|hadn t|didn t|doesn t|don t)\b/u;
+const negationToken = /^(?:not|no|never|without|neither|nor|cannot|n[aã]o|nunca|jamais|sem)$/u;
+const contractionNegation = /\b(?:isn t|aren t|wasn t|weren t|hasn t|haven t|hadn t|didn t|doesn t|don t|can t|couldn t|shouldn t|won t)\b/u;
 const contrastBoundary = /\b(?:but|however|although|and|mas|por[eé]m|contudo|todavia|e)\b/gu;
 const deferredPredicate = /\b(?:yet\s+to\s+be|still\s+(?:needs?\s+to\s+be|must\s+be|to\s+be)|needs?\s+to\s+be|ainda\s+(?:por\s+ser|precisa\s+ser|deve\s+ser|n[aã]o))\s*$/u;
+const futurePredicate = /(?:^|\s)(?:will|shall|going\s+to|scheduled\s+to|expected\s+to|planned\s+to|vai\s+ser|ser[aá]|ser[aã]o|estar[aá]|estar[aã]o)(?=\s|$)/u;
+const subordinateAssuranceObject = /\b(?:gap|readiness)\s+assessment\b|\b(?:remediation|implementation)\s+(?:plan|project|roadmap)\b|\bcertification\s+(?:plan|project|roadmap)\b|\b(?:avalia[cç][aã]o\s+de\s+lacunas|plano\s+de\s+remedia[cç][aã]o|projeto\s+de\s+certifica[cç][aã]o)\b/u;
+
+const compactDashBeforeAssuranceSubject = new RegExp(
+  String.raw`[\u2014\u2013-](?=\s*(?:${claimFamilies.map(({subject}) => subject.source).join("|")}))`,
+  "gu",
+);
 
 type LocatedText = {start: number; end: number; text: string};
 
@@ -51,10 +58,11 @@ function normalizeAssuranceClauses(output: string): string[] {
     .toLocaleLowerCase("en-US")
     // ISO/IEC is one standard name, not two assurance propositions separated by a slash.
     .replace(/\biso\s*\/\s*iec\b/gu, "iso iec")
-    // Sentence punctuation and explicit clause separators end polarity scope. A compact dash stays
-    // intact so label-value forms such as "SOC 2—certified" remain one proposition; a spaced dash
-    // separates natural-language propositions.
+    // A compact dash starts a new proposition only when its right side is another assurance
+    // subject. This separates "not certified—ISO 27001 is certified" without breaking the
+    // label-value compounds "SOC 2—certified" and "SOC 2-certified".
     .replace(/[.!?;\r\n]+/gu, "\n")
+    .replace(compactDashBeforeAssuranceSubject, "\n")
     .replace(/\s+[\u2014\u2013-]\s+|[,/]+|\b(?:while|enquanto)\b/gu, "\n")
     .split("\n")
     .map((clause) => clause.replace(/[\p{P}\p{S}\p{Z}\s]+/gu, " ").trim().replace(/\s+/gu, " "))
@@ -90,7 +98,7 @@ function predicateIsNegated(clause: string, subject: LocatedText, predicate: Loc
   for (const boundary of prefix.matchAll(contrastBoundary)) lastBoundaryEnd = boundary.index + boundary[0].length;
   prefix = prefix.slice(lastBoundaryEnd).trim();
 
-  if (deferredPredicate.test(prefix)) return true;
+  if (deferredPredicate.test(prefix) || futurePredicate.test(prefix)) return true;
 
   const tokens = prefix.split(/\s+/u).filter(Boolean).slice(-maximumPolarityTokens);
   for (let index = tokens.length - 1; index >= 0; index -= 1) {
@@ -100,6 +108,12 @@ function predicateIsNegated(clause: string, subject: LocatedText, predicate: Loc
     return true;
   }
   return contractionNegation.test(prefix);
+}
+
+function predicateDescribesSubordinateObject(clause: string, subject: LocatedText, predicate: LocatedText): boolean {
+  const start = Math.min(subject.start, predicate.start);
+  const end = Math.max(subject.end, predicate.end);
+  return subordinateAssuranceObject.test(clause.slice(start, end));
 }
 
 /** Defense in depth for text that leaves the typed inventory as a human-readable assurance view. */
@@ -115,7 +129,9 @@ export function findForbiddenAssuranceClaims(output: string): ForbiddenAssurance
           .map((candidate) => ({candidate, distance: bridgeTokenCount(candidate, predicate, clause)}))
           .filter(({distance}) => distance <= maximumBridgeTokens)
           .sort((left, right) => left.distance - right.distance || left.candidate.start - right.candidate.start)[0]?.candidate;
-        if (!subject || predicateIsNegated(clause, subject, predicate)) continue;
+        if (!subject
+          || predicateIsNegated(clause, subject, predicate)
+          || predicateDescribesSubordinateObject(clause, subject, predicate)) continue;
         const start = Math.min(subject.start, predicate.start);
         const end = Math.max(subject.end, predicate.end);
         const match = clause.slice(start, end);

@@ -290,11 +290,25 @@ describe("security current-state inventory", () => {
     ["Não fomos certificados pela SOC 2 / o teste de invasão foi aprovado", "pentest_claim"],
     ["Não fomos certificados pela SOC 2 — a produção foi auditada", "live_assurance_claim"],
     ["Enquanto a SOC 2 ainda precisa ser certificada, o teste de penetração foi aprovado", "pentest_claim"],
+    ["SOC 2 is not certified\u2014ISO 27001 is certified", "certification_claim"],
+    ["SOC 2 não é certificado\u2014produção foi auditada", "live_assurance_claim"],
+    ["Possuímos certificação ISO 27001 vigente", "certification_claim"],
+    ["O relatório SOC 2 Type II foi emitido", "certification_claim"],
+    ["A auditoria SOC 2 foi concluída", "certification_claim"],
+    ["Production audit passed", "live_assurance_claim"],
+    ["SOC 2-certified", "certification_claim"],
     ["SOC 2 is certi\u200bfied", "certification_claim"],
   ] as const)("normalizes and detects forbidden assurance language: %s", (claim, code) => {
     expect(findForbiddenAssuranceClaims(claim)).toEqual(expect.arrayContaining([
       expect.objectContaining({code}),
     ]));
+  });
+
+  it.each([
+    ["SOC 2 is not certified\u2014ISO 27001 is certified", "certification_claim", "iso 27001 is certified"],
+    ["SOC 2 não é certificado\u2014produção foi auditada", "live_assurance_claim", "produção foi auditada"],
+  ] as const)("keeps compact-dash polarity local: %s", (claim, code, match) => {
+    expect(findForbiddenAssuranceClaims(claim)).toEqual([{code, match}]);
   });
 
   it.each([
@@ -314,7 +328,12 @@ describe("security current-state inventory", () => {
     "Não estamos em conformidade com ISO 27001",
     "Pentest não foi aprovado",
     "Produção não está verificada",
-  ])("permits an explicit negative assurance statement: %s", (claim) => {
+    "SOC 2 will be certified next quarter",
+    "A SOC 2 será certificada no próximo trimestre",
+    "SOC 2 cannot be considered certified",
+    "ISO 27001 gap assessment is complete",
+    "Pentest remediation plan completed",
+  ])("permits language that does not assert current assurance: %s", (claim) => {
     expect(findForbiddenAssuranceClaims(claim)).toEqual([]);
   });
 
