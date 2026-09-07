@@ -148,11 +148,14 @@ O inventário executável correspondente está em `docs/build/CAPABILITY_LEDGER.
 `@offroad/release-governance/current-capability-ledger`. Ele separa availability, exposure, quality
 maturity e bloqueia promoção por linguagem. A tabela acima permanece o resumo executivo.
 
-Checkpoint de implementação em 06/09/2026: os PRs #466 a #469 provaram o acordo de execução antes
-do trabalho, eventos seguros derivados de runs reais, ajuste vinculado à versão exibida e resposta
-atômica à pergunta exata. O próximo gate conecta as perguntas selecionadas pelo workflow ao objeto
-visível do projeto, preserva respostas fechadas entre runs e prova no navegador o ciclo pergunta,
-resposta e replanejamento incremental. Isso avança Release 1; não promove os demais releases.
+Checkpoint de implementação em 06/09/2026: os PRs #466 a #473 provaram o acordo de execução antes
+do trabalho, eventos seguros derivados de runs reais, edição e resposta governadas, perguntas do
+workflow ligadas ao chat, objective-to-plan com grafos diferentes por intenção, preflight
+fail-closed por capability e persistência segura da decisão em sombra. A fatia seguinte conecta o
+mesmo preflight ao registry de depth packs: a necessidade econômica, os domínios de análise, o
+instrumento e a jurisdição passam a formar uma composição versionada com requirements, procedures,
+cálculos, disconfirmers, quality gates, maturity e lacunas não reconhecidas explícitas. Isso avança
+Release 1; não autoriza o dispatcher universal nem promove qualquer pack a `tested` ou `production`.
 
 ## 3. Peers e inspirações: princípios, não colagem
 
@@ -1895,6 +1898,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - Object Resolver sem companhia obrigatória;
 - Output Terminal Resolver;
 - minimal task graph compiler;
+- composição versionada de depth packs por necessidade econômica, domínio de análise, instrumento,
+  setor e jurisdição, com provenance, dependency closure, maturity e necessidades não cobertas;
 - Execution Brief compiler e card editável antes da execução;
 - justification e pruning de tarefas;
 - Question Engine por materialidade;

@@ -306,25 +306,37 @@ describe("execution-brief activation", () => {
     };
     const objectivePlan = {schemaVersion: "objective-plan.v1", structuralIdentity: "a".repeat(64)};
     const preflightDecision = {schemaVersion: "objective-plan-readiness.v1", readinessFingerprint: "b".repeat(64)};
+    const specialization = {schemaVersion: "objective-specialization.v1", fingerprint: "c".repeat(64)};
     const rpc = vi.fn(async () => ({data: {
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
       terminal_reachable: false,
       replayed: false,
+      specialization_id: "90000000-0000-4000-8000-000000000001",
+      specialization_fingerprint: "c".repeat(64),
+      pack_ids: ["core.institutional-dcm"],
+      minimum_maturity: "implemented",
+      specialization_replayed: false,
     }, error: null}));
     const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
 
-    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision})).resolves.toEqual({
+    await expect(queue.recordObjectivePlanPreflight!(advisorJob, {objectivePlan, preflightDecision, specialization})).resolves.toEqual({
       id: "80000000-0000-4000-8000-000000000001",
       status: "blocked",
       terminalReachable: false,
       replayed: false,
+      specializationId: "90000000-0000-4000-8000-000000000001",
+      specializationFingerprint: "c".repeat(64),
+      packIds: ["core.institutional-dcm"],
+      minimumMaturity: "implemented",
+      specializationReplayed: false,
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v1", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_objective_plan_preflight_v2", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_objective_plan: objectivePlan,
       p_preflight_decision: preflightDecision,
+      p_specialization: specialization,
     });
   });
 });

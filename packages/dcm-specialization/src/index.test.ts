@@ -4,6 +4,7 @@ import {economicSituations} from "@offroad/credit-playbook";
 import {
   assessDepthPackPromotion,
   auditDepthPackRegistry,
+  compileObjectiveSpecialization,
   depthPackById,
   inferDepthPackActivationKeys,
   mapDepthRequirementsToTasks,
@@ -29,6 +30,7 @@ describe("DCM depth-pack registry", () => {
       "analysis.collateral-security",
       "analysis.covenants",
       "analysis.downside-sensitivities",
+      "analysis.receivables-underwriting",
       "jurisdiction.brazil",
       "jurisdiction.united-states",
     ]));
@@ -83,7 +85,78 @@ describe("DCM depth-pack registry", () => {
       .toEqual(expect.arrayContaining(["objective:refinancing", "analysis:covenants", "analysis:downside", "jurisdiction:BR"]));
     expect(inferDepthPackActivationKeys("Please assess a US unitranche acquisition financing."))
       .toEqual(expect.arrayContaining(["objective:acquisition", "instrument:US:private_credit", "jurisdiction:US"]));
+    expect(inferDepthPackActivationKeys("Temos um loan tape de recebíveis para um centro de distribuição."))
+      .toEqual(expect.arrayContaining(["analysis:receivables", "objective:capex"]));
     expect(inferDepthPackActivationKeys("Ajude a entender a companhia.")).toEqual([]);
+  });
+
+  it("keeps generic receivables economics separate from jurisdiction-specific instruments", () => {
+    const objectiveText = "A Aurora quer captar para um centro de distribuição e avaliar uma carteira de recebíveis.";
+    const economic = compileObjectiveSpecialization({objectiveText});
+    expect(economic.selectedPackIds).toEqual(expect.arrayContaining([
+      "core.institutional-dcm",
+      "objective.capex-expansion",
+      "analysis.collateral-security",
+      "analysis.receivables-underwriting",
+    ]));
+    expect(economic.selectedPackIds).not.toEqual(expect.arrayContaining([
+      "jurisdiction.brazil", "instrument.br-receivables", "instrument.us-asset-based-loan",
+    ]));
+
+    const brazilRoute = compileObjectiveSpecialization({
+      objectiveText,
+      explicitActivationKeys: ["jurisdiction:BR", "instrument:BR:fidc"],
+    });
+    expect(brazilRoute.selectedPackIds).toEqual(expect.arrayContaining([
+      "analysis.receivables-underwriting", "jurisdiction.brazil", "instrument.br-receivables",
+    ]));
+  });
+
+  it("compiles a traceable objective composition without a bespoke workflow", () => {
+    const result = compileObjectiveSpecialization({
+      objectiveText: "Quero refinanciar a dívida no Brasil com uma debênture, revisar covenants e testar o downside.",
+      taskIds: ["M01", "C03", "C05", "C08", "S02", "S05", "S08"],
+    });
+    expect(result.selectedPackIds).toEqual(expect.arrayContaining([
+      "core.institutional-dcm",
+      "objective.refinance-liability-management",
+      "analysis.covenants",
+      "analysis.downside-sensitivities",
+      "jurisdiction.brazil",
+      "instrument.br-capital-markets",
+    ]));
+    expect(result.activations).toEqual(expect.arrayContaining([
+      {key: "objective:refinancing", sources: ["objective_text"]},
+      {key: "analysis:covenants", sources: ["objective_text"]},
+      {key: "jurisdiction:BR", sources: ["objective_text"]},
+    ]));
+    expect(result.unmatchedActivationKeys).toEqual([]);
+    expect(result.profile.requirements.map((requirement) => requirement.key)).toContain("refi.exit-cost");
+    expect(result.coverageBinding.requirementKeysByTask.C05).toContain("refi.maturity-wall");
+    expect(result.coverageBinding.requirementKeysByTask.S08).toContain("covenant.literal-definition");
+    expect(result.coverageBinding.unmappedRequirementKeys).toContain("refi.contingency");
+  });
+
+  it("keeps semantic additions and unknown needs explicit", () => {
+    const result = compileObjectiveSpecialization({
+      objectiveText: "Avalie a estrutura de capital.",
+      explicitActivationKeys: ["objective:capex", "sector:retail"],
+    });
+    expect(result.activations).toEqual([
+      {key: "objective:capex", sources: ["semantic_envelope"]},
+      {key: "sector:retail", sources: ["semantic_envelope"]},
+    ]);
+    expect(result.selectedPackIds).toEqual(expect.arrayContaining(["core.institutional-dcm", "objective.capex-expansion"]));
+    expect(result.unmatchedActivationKeys).toEqual(["sector:retail"]);
+  });
+
+  it("does not let a persona change the economic work", () => {
+    const request = "Quero refinanciar a dívida no Brasil, revisar covenants e testar o downside.";
+    const analyst = compileObjectiveSpecialization({objectiveText: `Sou analista de DCM. ${request}`});
+    const cfo = compileObjectiveSpecialization({objectiveText: `Sou CFO. ${request}`});
+    expect(analyst.profile.fingerprint).toBe(cfo.profile.fingerprint);
+    expect(analyst.fingerprint).toBe(cfo.fingerprint);
+    expect(analyst.selectedPackIds).toEqual(cfo.selectedPackIds);
   });
 
   it("binds coverage only to TaskSpecs available in the compiled job", () => {

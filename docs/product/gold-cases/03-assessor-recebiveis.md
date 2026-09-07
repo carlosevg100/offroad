@@ -42,7 +42,7 @@ required_depth_packs: [core.institutional-dcm, objective.capex-expansion, instru
 | --- | --- | --- |
 | Turno 1 | texto acima com os nove documentos anexados | hashes registrados no manifesto do fixture |
 | `00_Ficha_Cadastral_Aurora.docx`, `01_Carta_CFO_Pedido_e_Racional.docx`, `02_Demonstracoes_Auditadas_2023_2025.pdf`, `03_Balancete_Gerencial_Jul2026.xls`, `04_Mapa_Divida_Jul2026.xlsx`, `05_Concentracao_Clientes_2025.xlsx`, `06_Memorial_CD_Jacarei.pdf`, `07_Contrato_Social_Consolidado.png`, `08_Projecoes_2026_2030.xlsx` | fixture privada sintética | o PNG passa por OCR e nunca é aceito automaticamente |
-| Tape e aging de recebíveis | fixture a criar: `09_Aging_Recebiveis_Jul2026.xlsx`, `10_Tape_Duplicatas_Jul2026.csv` | chegam no ramo "envia documentos"; até existirem, o ramo fica `deferred` e a análise para no ponto em que os pede |
+| Tape e aging de recebíveis | fixtures existentes: `09_Aging_Recebiveis_Jul2026.xlsx`, `10_Tape_Duplicatas_Jul2026.csv`; verdade declarada em `packages/testing-fixtures/src/fakeco/receivables.ts` | entram somente no ramo "envia documentos"; o turno inicial continua obrigado a reconhecer a ausência antes de calculá-los |
 | Perfil profissional | `use_forms: [independent_practice]`, `professional_roles: [financial_advisor]`, `practice_areas: [structured_finance, credit]`, `primary_objectives: [structure_transactions, connect_capital]` | orientação |
 
 ## Comportamento esperado
@@ -123,7 +123,8 @@ existente que afeta a comparação.
 - Rejeita todas: pede o que mudaria; registra a decisão.
 - Solicita matching: só após estrutura escolhida; filtros duros de mandato antes de qualquer
   recuperação semântica; nenhum contato.
-- `deferred`: introdução autorizada (X01-X09), revisão sênior.
+- `deferred`: introdução autorizada (X01-X09). Revisão independente por IA permanece obrigatória
+  antes do teste amplo do fundador; revisão humana externa entra somente no gate formal de promoção.
 
 ## Adversariais
 
@@ -145,7 +146,9 @@ duros explicados.
 
 ## Painel de revisão
 
-Assessor de dívida (função encenada), analista de crédito (função oposta), fundador.
+Assessor de dívida e analista de crédito como responsabilidades de revisão independentes executadas
+por IA nesta fase. O fundador revisa decisões de produto e, após os gates, faz o fine-tuning amplo;
+não é o operador manual do gate econômico atual.
 
 ## Nunca
 

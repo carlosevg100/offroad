@@ -84,8 +84,42 @@ declare
       'reasons',jsonb_build_array(jsonb_build_object('code','executor_unbound','detail',null))
     ))
   );
+  specialization jsonb := jsonb_build_object(
+    'schemaVersion','objective-specialization.v1',
+    'activationRulesetVersion','dcm-specialization-activation.2026-09-06-v1',
+    'fingerprint',repeat('c',64),
+    'activations',jsonb_build_array(
+      jsonb_build_object('key','objective:refinancing','sources',jsonb_build_array('objective_text'))
+    ),
+    'explicitPackIds',jsonb_build_array(),
+    'selectedPackIds',jsonb_build_array(
+      'core.institutional-dcm','objective.refinance-liability-management'
+    ),
+    'unmatchedActivationKeys',jsonb_build_array(),
+    'profile',jsonb_build_object(
+      'schemaVersion','dcm-specialization-profile.v1',
+      'packIds',jsonb_build_array(
+        'core.institutional-dcm','objective.refinance-liability-management'
+      ),
+      'requirements',jsonb_build_array(jsonb_build_object('key','refi.maturity-wall')),
+      'procedureIds',jsonb_build_array('D-03'),
+      'calculationIds',jsonb_build_array('financial.maturity_buckets'),
+      'qualityGateIds',jsonb_build_array('gate.refi.before-after'),
+      'minimumMaturity','implemented',
+      'fingerprint',repeat('d',64)
+    ),
+    'coverageBinding',jsonb_build_object(
+      'taskIds',jsonb_build_array('M02'),
+      'requirementKeysByTask',jsonb_build_object(
+        'M02',jsonb_build_array('refi.maturity-wall')
+      ),
+      'unmappedRequirementKeys',jsonb_build_array()
+    )
+  );
   first_result jsonb;
   replay_result jsonb;
+  specialization_result jsonb;
+  specialization_replay jsonb;
   accepted boolean;
 begin
   first_result := public.worker_record_objective_plan_preflight_v1(
@@ -102,6 +136,25 @@ begin
   if replay_result ->> 'id' <> first_result ->> 'id'
     or not (replay_result ->> 'replayed')::boolean then
     raise exception 'identical objective preflight did not replay: %', replay_result;
+  end if;
+
+  specialization_result := public.worker_record_objective_plan_preflight_v2(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization
+  );
+  if specialization_result ->> 'id' <> first_result ->> 'id'
+    or specialization_result ->> 'specialization_fingerprint' <> repeat('c',64)
+    or specialization_result ->> 'minimum_maturity' <> 'implemented'
+    or (specialization_result ->> 'specialization_replayed')::boolean then
+    raise exception 'objective specialization was not recorded correctly: %', specialization_result;
+  end if;
+  specialization_replay := public.worker_record_objective_plan_preflight_v2(
+    '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+    blocked_preflight, specialization
+  );
+  if specialization_replay ->> 'specialization_id' <> specialization_result ->> 'specialization_id'
+    or not (specialization_replay ->> 'specialization_replayed')::boolean then
+    raise exception 'identical objective specialization did not replay: %', specialization_replay;
   end if;
 
   begin
@@ -125,6 +178,28 @@ begin
   if accepted then raise exception 'overlapping executable and blocked task partition was accepted'; end if;
 
   begin
+    perform public.worker_record_objective_plan_preflight_v2(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight,
+      jsonb_set(specialization, '{selectedPackIds}', '["core.institutional-dcm"]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'pack list divergent from the compiled profile was accepted'; end if;
+
+  begin
+    perform public.worker_record_objective_plan_preflight_v2(
+      '80000000-0000-4000-8000-000000000711', repeat('r',64), objective_plan,
+      blocked_preflight,
+      jsonb_set(specialization, '{coverageBinding,taskIds}', '[]'::jsonb)
+    );
+    accepted := true;
+  exception when invalid_parameter_value then accepted := false;
+  end;
+  if accepted then raise exception 'coverage binding divergent from the objective graph was accepted'; end if;
+
+  begin
     perform public.worker_record_objective_plan_preflight_v1(
       '80000000-0000-4000-8000-000000000711', repeat('x',64), objective_plan, blocked_preflight
     );
@@ -135,6 +210,9 @@ begin
 
   if (select count(*) from public.capital_project_objective_preflights) <> 0 then
     raise exception 'worker principal gained direct visibility into tenant preflights';
+  end if;
+  if (select count(*) from public.capital_project_objective_specializations) <> 0 then
+    raise exception 'worker principal gained direct visibility into tenant specializations';
   end if;
 end;
 $$;
@@ -148,6 +226,9 @@ declare accepted boolean;
 begin
   if (select count(*) from public.capital_project_objective_preflights) <> 1 then
     raise exception 'project owner could not read the objective preflight';
+  end if;
+  if (select count(*) from public.capital_project_objective_specializations) <> 1 then
+    raise exception 'project owner could not read the objective specialization';
   end if;
   begin
     insert into public.capital_project_objective_preflights (
@@ -166,6 +247,22 @@ begin
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'authenticated client inserted an objective preflight directly'; end if;
+  begin
+    insert into public.capital_project_objective_specializations (
+      organization_id, capital_project_id, objective_preflight_id, source_message_id,
+      processing_job_id, schema_version, activation_ruleset_version,
+      specialization_fingerprint, profile_fingerprint, minimum_maturity,
+      selected_pack_ids, specialization, created_by
+    ) select
+      organization_id, capital_project_id, id, source_message_id, processing_job_id,
+      'objective-specialization.v1', 'dcm-specialization-activation.2026-09-06-v1',
+      repeat('e',64), repeat('f',64), 'implemented', array['core.institutional-dcm'],
+      '{}'::jsonb, created_by
+    from public.capital_project_objective_preflights limit 1;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'authenticated client inserted an objective specialization directly'; end if;
 end;
 $$;
 
@@ -174,6 +271,9 @@ do $$
 begin
   if (select count(*) from public.capital_project_objective_preflights) <> 0 then
     raise exception 'tenant B read tenant A objective preflight';
+  end if;
+  if (select count(*) from public.capital_project_objective_specializations) <> 0 then
+    raise exception 'tenant B read tenant A objective specialization';
   end if;
 end;
 $$;
@@ -184,7 +284,12 @@ begin
     or has_table_privilege('authenticated', 'public.capital_project_objective_preflights', 'insert')
     or has_table_privilege('authenticated', 'public.capital_project_objective_preflights', 'update')
     or has_table_privilege('authenticated', 'public.capital_project_objective_preflights', 'delete')
-    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v1(uuid,text,jsonb,jsonb)', 'execute') then
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v1(uuid,text,jsonb,jsonb)', 'execute')
+    or has_table_privilege('anon', 'public.capital_project_objective_specializations', 'select')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'insert')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'update')
+    or has_table_privilege('authenticated', 'public.capital_project_objective_specializations', 'delete')
+    or has_function_privilege('anon', 'public.worker_record_objective_plan_preflight_v2(uuid,text,jsonb,jsonb,jsonb)', 'execute') then
     raise exception 'objective preflight grants are wider than the design';
   end if;
 end;

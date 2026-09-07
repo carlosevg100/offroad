@@ -1,4 +1,5 @@
 import {
+  compiledSpecializationProfileSchema,
   composeDepthPacks,
   depthPackManifestSchema,
   type CompiledSpecializationProfile,
@@ -25,6 +26,68 @@ export type DepthPackSelection = {
   selectedPackIds: string[];
   unmatchedActivationKeys: string[];
 };
+
+export const objectiveSpecializationSchema = z.object({
+  schemaVersion: z.literal("objective-specialization.v1"),
+  activationRulesetVersion: z.literal("dcm-specialization-activation.2026-09-06-v1"),
+  activations: z.array(z.object({
+    key: z.string().trim().min(2).max(160),
+    sources: z.array(z.enum(["objective_text", "semantic_envelope"])).min(1).max(2),
+  }).strict()).max(100),
+  explicitPackIds: z.array(z.string().trim().min(3).max(120)).max(50),
+  selectedPackIds: z.array(z.string().trim().min(3).max(120)).min(1).max(50),
+  unmatchedActivationKeys: z.array(z.string().trim().min(2).max(160)).max(100),
+  profile: compiledSpecializationProfileSchema,
+  coverageBinding: z.object({
+    taskIds: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).max(80),
+    requirementKeysByTask: z.record(
+      z.string().regex(/^[A-Z][0-9]{2}$/),
+      z.array(z.string().regex(/^[a-z0-9_.-]{3,120}$/)),
+    ),
+    unmappedRequirementKeys: z.array(z.string().regex(/^[a-z0-9_.-]{3,120}$/)),
+  }).strict(),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+}).superRefine((value, context) => {
+  const selected = [...value.selectedPackIds].sort();
+  const profile = [...value.profile.packIds].sort();
+  if (JSON.stringify(selected) !== JSON.stringify(profile)) {
+    context.addIssue({code: "custom", path: ["selectedPackIds"], message: "selected packs must equal the compiled profile packs"});
+  }
+  const activationKeys = value.activations.map((activation) => activation.key);
+  if (new Set(activationKeys).size !== activationKeys.length) {
+    context.addIssue({code: "custom", path: ["activations"], message: "activation keys must be unique"});
+  }
+  if (new Set(value.coverageBinding.taskIds).size !== value.coverageBinding.taskIds.length) {
+    context.addIssue({code: "custom", path: ["coverageBinding", "taskIds"], message: "coverage task ids must be unique"});
+  }
+  const taskIds = new Set(value.coverageBinding.taskIds);
+  const mappedKeys = Object.entries(value.coverageBinding.requirementKeysByTask).flatMap(([taskId, keys]) => {
+    if (!taskIds.has(taskId)) {
+      context.addIssue({code: "custom", path: ["coverageBinding", "requirementKeysByTask", taskId], message: "coverage task is absent from the objective graph"});
+    }
+    return keys;
+  });
+  const boundRequirementKeys = [...new Set([
+    ...mappedKeys,
+    ...value.coverageBinding.unmappedRequirementKeys,
+  ])].sort();
+  if (mappedKeys.length + value.coverageBinding.unmappedRequirementKeys.length !== boundRequirementKeys.length) {
+    context.addIssue({code: "custom", path: ["coverageBinding"], message: "coverage requirements must form a non-overlapping partition"});
+  }
+  const profileRequirementKeys = value.profile.requirements.map((requirement) => requirement.key).sort();
+  if (JSON.stringify(boundRequirementKeys) !== JSON.stringify(profileRequirementKeys)) {
+    context.addIssue({code: "custom", path: ["coverageBinding"], message: "coverage binding must partition every specialization requirement"});
+  }
+});
+export type ObjectiveSpecialization = z.infer<typeof objectiveSpecializationSchema>;
+
+export const objectiveSpecializationInputSchema = z.object({
+  objectiveText: z.string().max(50_000),
+  explicitActivationKeys: z.array(z.string().trim().min(2).max(160)).max(100).default([]),
+  explicitPackIds: z.array(z.string().trim().min(3).max(120)).max(50).default([]),
+  taskIds: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).max(80).default([]),
+}).strict();
+export type ObjectiveSpecializationInput = z.input<typeof objectiveSpecializationInputSchema>;
 
 function addWithDependencies(selected: Map<string, DepthPackManifest>, candidate: DepthPackManifest): void {
   for (const dependencyId of candidate.dependsOn) {
@@ -65,15 +128,16 @@ export function selectDepthPacks(rawInput: DepthPackSelectionInput): DepthPackSe
 const activationPatterns: readonly [string, RegExp][] = [
   ["objective:refinancing", /\b(refinanc|refi\b|rolagem|rollover|along|liability management|repric|reprecifica|venciment|maturity wall|d[ií]vida cara|expensive debt)\w*/iu],
   ["objective:liquidity", /\b(liquidez|liquidity|capital de giro|working capital|sazonal|seasonal|fornecedor|supplier finance|estoque|inventory)\b/iu],
-  ["objective:capex", /\b(capex|expans[aã]o|expansion|nova planta|new plant|ramp[- ]?up|greenfield|equipamento|equipment)\b/iu],
+  ["objective:capex", /\b(capex|expans[aã]o|expansion|nova planta|new plant|centro de distribui[cç][aã]o|distribution cent(?:er|re)|ramp[- ]?up|greenfield|equipamento|equipment)\b/iu],
   ["objective:acquisition", /\b(aquisi[cç][aã]o|acquisition|m&a|comprar (uma )?empresa|buyout|takeover)\b/iu],
   ["analysis:covenants", /\b(covenant|waiver|negative pledge|cross[- ]?default|headroom)\w*/iu],
   ["analysis:collateral", /\b(garantia|collateral|security package|alienação|cess[aã]o fiduci[aá]ria|lien|borrowing base)\b/iu],
+  ["analysis:receivables", /\b(receb[ií]veis|receivables?|duplicatas?|loan tape|aging|borrowing base)\b/iu],
   ["analysis:downside", /\b(downside|stress|estresse|sensibilidade|sensitivity|cen[aá]rio adverso|breakpoint)\b/iu],
   ["instrument:BR:debenture", /\b(deb[eê]nture|nota comercial)\b/iu],
   ["instrument:BR:fidc", /\b(fidc|direitos credit[oó]rios|cess[aã]o de receb[ií]veis)\b/iu],
   ["instrument:BR:ccb", /\b(ccb|c[eé]dula de cr[eé]dito banc[aá]rio)\b/iu],
-  ["instrument:US:abl", /\b(abl|asset[- ]based (loan|lending)|borrowing base)\b/iu],
+  ["instrument:US:abl", /\b(abl|asset[- ]based (loan|lending))\b/iu],
   ["instrument:US:private_credit", /\b(unitranche|direct lending|private credit)\b/iu],
   ["instrument:US:term_loan", /\b(term loan|revolver|revolving credit|syndicated loan)\b/iu],
   ["instrument:US:high_yield", /\b(high[- ]yield|144a|rule 144a|private placement|bond issuance)\b/iu],
@@ -85,6 +149,58 @@ const activationPatterns: readonly [string, RegExp][] = [
 export function inferDepthPackActivationKeys(text: string): string[] {
   const normalized = text.normalize("NFKC");
   return activationPatterns.filter(([, pattern]) => pattern.test(normalized)).map(([key]) => key);
+}
+
+/**
+ * Compiles the economic lenses stated in the objective into one governed specialization profile.
+ * Persona and seniority are deliberately absent from the input: they may tune presentation, but
+ * they cannot remove the financial work, evidence or quality gates required by the economics.
+ * Semantic routing may add explicit keys, while the compatibility classifier remains visible as
+ * separate provenance until the semantic envelope is promoted.
+ */
+export function compileObjectiveSpecialization(rawInput: ObjectiveSpecializationInput): ObjectiveSpecialization {
+  const input = objectiveSpecializationInputSchema.parse(rawInput);
+  const explicitPackIds = [...new Set(input.explicitPackIds)].sort();
+  const inferredKeys = inferDepthPackActivationKeys(input.objectiveText);
+  const activationSources = new Map<string, Set<"objective_text" | "semantic_envelope">>();
+  for (const key of inferredKeys) activationSources.set(key, new Set(["objective_text"]));
+  for (const key of input.explicitActivationKeys) {
+    const sources = activationSources.get(key) ?? new Set<"objective_text" | "semantic_envelope">();
+    sources.add("semantic_envelope");
+    activationSources.set(key, sources);
+  }
+  const activationKeys = [...activationSources.keys()].sort();
+  const selection = selectDepthPacks({
+    activationKeys,
+    explicitPackIds,
+  });
+  const taskIds = [...new Set(input.taskIds)].sort();
+  const requirementKeysByTask = mapDepthRequirementsToTasks(selection.profile, taskIds);
+  const mappedRequirementKeys = new Set(Object.values(requirementKeysByTask).flat());
+  const payload = {
+    schemaVersion: "objective-specialization.v1" as const,
+    activationRulesetVersion: "dcm-specialization-activation.2026-09-06-v1" as const,
+    activations: activationKeys.map((key) => ({
+      key,
+      sources: [...activationSources.get(key)!].sort(),
+    })),
+    explicitPackIds,
+    selectedPackIds: selection.selectedPackIds,
+    unmatchedActivationKeys: selection.unmatchedActivationKeys,
+    profile: selection.profile,
+    coverageBinding: {
+      taskIds,
+      requirementKeysByTask,
+      unmappedRequirementKeys: selection.profile.requirements
+        .map((requirement) => requirement.key)
+        .filter((key) => !mappedRequirementKeys.has(key))
+        .sort(),
+    },
+  };
+  return objectiveSpecializationSchema.parse({
+    ...payload,
+    fingerprint: createHash("sha256").update(stableJson(payload)).digest("hex"),
+  });
 }
 
 const taskByCoverageDomain: Readonly<Record<string, readonly string[]>> = {

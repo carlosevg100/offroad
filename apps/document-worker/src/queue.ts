@@ -252,7 +252,18 @@ export type QueueClient = {
   recordObjectivePlanPreflight?(job: AgentOperationBriefJob, input: {
     objectivePlan: unknown;
     preflightDecision: unknown;
-  }): Promise<{id: string; status: "ready" | "partial" | "blocked"; terminalReachable: boolean; replayed: boolean}>;
+    specialization: unknown;
+  }): Promise<{
+    id: string;
+    status: "ready" | "partial" | "blocked";
+    terminalReachable: boolean;
+    replayed: boolean;
+    specializationId: string;
+    specializationFingerprint: string;
+    packIds: string[];
+    minimumMaturity: "specified" | "implemented" | "tested" | "production";
+    specializationReplayed: boolean;
+  }>;
   completeAdvisorSpecializedJob(job: CapitalProjectAnalysisJob, input: {
     completionMessageId: string;
     artifactId: string;
@@ -723,23 +734,34 @@ export function createQueueClient(
     },
 
     async recordObjectivePlanPreflight(job, input) {
-      const data = await call("worker_record_objective_plan_preflight_v1", {
+      const data = await call("worker_record_objective_plan_preflight_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_objective_plan: input.objectivePlan,
         p_preflight_decision: input.preflightDecision,
+        p_specialization: input.specialization,
       });
       const parsed = z.object({
         id: z.uuid(),
         status: z.enum(["ready", "partial", "blocked"]),
         terminal_reachable: z.boolean(),
         replayed: z.boolean(),
+        specialization_id: z.uuid(),
+        specialization_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        pack_ids: z.array(z.string().min(3)).min(1),
+        minimum_maturity: z.enum(["specified", "implemented", "tested", "production"]),
+        specialization_replayed: z.boolean(),
       }).parse(data);
       return {
         id: parsed.id,
         status: parsed.status,
         terminalReachable: parsed.terminal_reachable,
         replayed: parsed.replayed,
+        specializationId: parsed.specialization_id,
+        specializationFingerprint: parsed.specialization_fingerprint,
+        packIds: parsed.pack_ids,
+        minimumMaturity: parsed.minimum_maturity,
+        specializationReplayed: parsed.specialization_replayed,
       };
     },
 

@@ -13,6 +13,7 @@ import {
   type WorkspaceRequestRoute,
 } from "@offroad/agent-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {compileObjectiveSpecialization} from "@offroad/dcm-specialization";
 import {
   capitalProjectJobSchema,
   compileObjectiveToPlan,
@@ -497,13 +498,24 @@ export async function processAgentOperationBriefJob(
     const executionBrief = response.activation
       ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), response.activation)
       : undefined;
-    let objectivePreflight: {id: string; status: "ready" | "partial" | "blocked"; terminalReachable: boolean; replayed: boolean} | null = null;
+    let objectivePreflight: {
+      id: string;
+      status: "ready" | "partial" | "blocked";
+      terminalReachable: boolean;
+      replayed: boolean;
+      specializationId: string;
+      specializationFingerprint: string;
+      packIds: string[];
+      minimumMaturity: "specified" | "implemented" | "tested" | "production";
+      specializationReplayed: boolean;
+    } | null = null;
     if (response.activation && queue.recordObjectivePlanPreflight) {
       try {
         const shadow = compileObjectivePreflight(context);
         objectivePreflight = await queue.recordObjectivePlanPreflight(job, {
           objectivePlan: shadow.objectivePlan,
           preflightDecision: shadow.preflightDecision,
+          specialization: shadow.specialization,
         });
         log("objective_plan.preflight_recorded", {
           job: job.job_id,
@@ -512,6 +524,9 @@ export async function processAgentOperationBriefJob(
           activatedJob: response.activation.job,
           readiness: objectivePreflight.status,
           terminalReachable: objectivePreflight.terminalReachable,
+          specializationFingerprint: objectivePreflight.specializationFingerprint,
+          selectedPackIds: objectivePreflight.packIds,
+          minimumPackMaturity: objectivePreflight.minimumMaturity,
           mode: "shadow",
         });
       } catch (preflightError) {
@@ -537,6 +552,8 @@ export async function processAgentOperationBriefJob(
       activatedJob: response.activation?.job,
       objectivePreflightId: objectivePreflight?.id,
       objectivePreflightStatus: objectivePreflight?.status,
+      objectiveSpecializationFingerprint: objectivePreflight?.specializationFingerprint,
+      objectivePackIds: objectivePreflight?.packIds,
     }, completion.usage as unknown as Record<string, number>);
     await queue.complete(job, {
       assistantMessageId,
@@ -585,6 +602,10 @@ function compileObjectivePreflight(context: AgentContext) {
       hasCurrentMandates: false,
     }} : {}),
   });
+  const specialization = compileObjectiveSpecialization({
+    objectiveText: context.message,
+    taskIds: objectivePlan.taskGraph.tasks.map((task) => task.id),
+  });
   const confidential = context.documents.length > 0 || context.project?.accessBasis !== "public_information";
   const preflightDecision = evaluateObjectivePlanReadiness({
     graph: objectivePlan.taskGraph,
@@ -609,7 +630,7 @@ function compileObjectivePreflight(context: AgentContext) {
       disabledToolIds: [],
     },
   });
-  return {objectivePlan, preflightDecision};
+  return {objectivePlan, preflightDecision, specialization};
 }
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
