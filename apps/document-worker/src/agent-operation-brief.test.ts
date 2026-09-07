@@ -70,7 +70,7 @@ describe("agent operation brief worker", () => {
 
   it("activates capital planning deterministically when company and intent are already explicit", async () => {
     let activation: unknown;
-    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown} | undefined;
+    let objectivePreflightInput: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown} | undefined;
     const queue = {
       writeStage: async () => {},
       loadAgentContext: async () => ({
@@ -92,13 +92,18 @@ describe("agent operation brief worker", () => {
         activation = value;
         return {};
       },
-      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown}) => {
+      recordObjectivePlanPreflight: async (_job: unknown, input: {objectivePlan: unknown; preflightDecision: unknown; specialization: unknown}) => {
         objectivePreflightInput = input;
         return {
           id: "99999999-9999-4999-8999-999999999999",
           status: "blocked" as const,
           terminalReachable: false,
           replayed: false,
+          specializationId: "88888888-8888-4888-8888-888888888888",
+          specializationFingerprint: "c".repeat(64),
+          packIds: ["core.institutional-dcm", "objective.capex-expansion"],
+          minimumMaturity: "implemented" as const,
+          specializationReplayed: false,
         };
       },
       complete: async () => {}, recordAgentFailure: async () => {},
@@ -124,6 +129,16 @@ describe("agent operation brief worker", () => {
         schemaVersion: "objective-plan-readiness.v1",
         status: "blocked",
         terminalReachable: false,
+      },
+      specialization: {
+        schemaVersion: "objective-specialization.v1",
+        selectedPackIds: expect.arrayContaining([
+          "core.institutional-dcm",
+          "objective.capex-expansion",
+        ]),
+        profile: {
+          minimumMaturity: "implemented",
+        },
       },
     });
   });
