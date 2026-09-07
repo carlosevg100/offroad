@@ -35,6 +35,8 @@ import {describeJobFailure} from "./job-failure";
 import {shadowIntentEnvelope} from "./intent-shadow";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
+import {applyGovernedReceivablesInformationResponse} from "./receivables-information-response";
+import {buildReceivablesMethodFieldRequestProjection} from "./receivables-information-requests";
 
 import {decideLiveTurn, researchReplyLine, researchUnknownCompany, understandLiveTurn} from "./live-preview";
 import {routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
@@ -72,7 +74,12 @@ const contextSchema = z.object({
     id: z.uuid(),
     requirementKey: z.string(),
     question: z.string(),
+    answerKind: z.enum(["text", "number", "date", "choice", "document", "confirmation"]).optional(),
     answerSource: z.enum(["choice", "custom", "unavailable"]),
+    sourceNamespace: z.string().optional(),
+    answeredAt: z.string().datetime({offset: true}).optional(),
+    answeredBy: z.string().optional(),
+    producerBinding: z.unknown().nullable().optional(),
   }).nullable().optional(),
   brief: z.record(z.string(), z.unknown()),
   snapshot_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
@@ -236,6 +243,75 @@ export async function processAgentOperationBriefJob(
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
+    if (context.answered_information_request?.sourceNamespace === "receivables_method_r01_fields"
+      && context.answered_information_request.answerSource !== "unavailable") {
+      if (!queue.loadReceivablesMethodSupplementDraft || !queue.applyReceivablesMethodSupplementPatch) {
+        throw new Error("receivables_information_response_store_unavailable");
+      }
+      const currentDraft = await queue.loadReceivablesMethodSupplementDraft(job);
+      const applied = applyGovernedReceivablesInformationResponse({
+        answeredRequest: context.answered_information_request,
+        content: context.message,
+        messageId: context.message_id,
+        currentDraft,
+      });
+      if (!applied) throw new Error("receivables_information_response_binding_missing");
+      const stored = await queue.applyReceivablesMethodSupplementPatch(job, {
+        patch: applied.patch,
+        nextDraft: applied.nextDraft,
+      });
+      let nextQuestionCount = 0;
+      if (queue.syncReceivablesInformationRequests) {
+        const activeGroups = [...new Set(applied.status.missingSections.flatMap((section) =>
+          section.startsWith("policy.") ? ["policy" as const]
+            : section.startsWith("structure.") ? ["structure" as const] : [],
+        ))];
+        const nextProjection = buildReceivablesMethodFieldRequestProjection({
+          projectId: context.project!.id,
+          processingRunId: job.processing_run_id,
+          locale: context.locale,
+          sourceDatasetHash: applied.nextDraft.sourceDatasetHash,
+          activeGroups,
+          missingSections: applied.status.missingSections,
+        });
+        const projected = await queue.syncReceivablesInformationRequests(job, nextProjection);
+        nextQuestionCount = projected.openCount;
+      }
+      const assistantMessageId = randomUUID();
+      const missingCount = applied.status.missingSections.length;
+      const reply = context.locale === "en-US"
+        ? applied.status.state === "complete"
+          ? `I recorded this value as a confirmed R01 model input (revision ${stored.revision}), with its source and unit preserved. The method input is now complete and ready for a new analysis run.`
+          : applied.status.state === "conflicted"
+          ? `I preserved this value in R01 revision ${stored.revision}, but it conflicts with prior evidence. I will not recalculate until the conflict is resolved.`
+          : `I recorded this value as a confirmed R01 model input (revision ${stored.revision}), with its source and unit preserved. ${missingCount} required input${missingCount === 1 ? " remains" : "s remain"}; the method will stay blocked until they are supplied.`
+        : applied.status.state === "complete"
+        ? `Registrei este valor como input confirmado do modelo R01 (revisão ${stored.revision}), preservando fonte e unidade. O input do método agora está completo e pronto para uma nova análise.`
+        : applied.status.state === "conflicted"
+        ? `Preservei este valor na revisão ${stored.revision} do R01, mas ele conflita com uma evidência anterior. Não vou recalcular enquanto o conflito não for resolvido.`
+        : `Registrei este valor como input confirmado do modelo R01 (revisão ${stored.revision}), preservando fonte e unidade. Ainda faltam ${missingCount} inputs obrigatórios; o método continuará bloqueado até que sejam informados.`;
+      await queue.recordAgentResponse(job, assistantMessageId, {state: "idle", reply});
+      await queue.writeStage(job, "receivables_information_response", "succeeded", {
+        taskId: "R01",
+        informationRequestId: context.answered_information_request.id,
+        fieldPath: applied.fieldPath,
+        draftRevision: stored.revision,
+        draftState: applied.status.state,
+        missingInputCount: missingCount,
+        conflictCount: applied.status.openConflictIds.length,
+        nextQuestionCount,
+        replayed: stored.replayed,
+        modelCalls: 0,
+      });
+      await queue.complete(job, {
+        mode: "governed_receivables_information_response",
+        assistantMessageId,
+        draftRevision: stored.revision,
+        draftState: applied.status.state,
+        spend: gateway.spent(),
+      });
+      return {status: "succeeded"};
+    }
     const route = routeWorkspaceRequest({message: context.message, surface: "case_workspace"});
     // Shadow routing: the envelope is recorded for measurement and never consulted here. A
     // failure in the classifier is logged and the turn proceeds exactly as before.

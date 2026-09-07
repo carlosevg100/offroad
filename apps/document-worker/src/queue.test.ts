@@ -160,6 +160,34 @@ describe("case input loading", () => {
       job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, {patch, nextDraft},
     )).resolves.toMatchObject({revision: 1, draftFingerprint: "c".repeat(64), replayed: false});
   });
+
+  it("stores private field bindings after the visible question projection", async () => {
+    const projection = {schemaVersion: "project-information-request-projection.v1", requests: [{producerBinding: {methodId: "R01"}}]};
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_bind_receivables_information_request_fields_v1");
+      expect(args).toEqual({p_job_id: job.job_id, p_capability_token: job.capability_token, p_projection: projection});
+      return {data: {bound_count: 1, replayed_count: 0}, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.bindReceivablesInformationRequestFields!(
+      job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, projection,
+    )).resolves.toEqual({boundCount: 1, replayedCount: 0});
+  });
+
+  it("advances the R01 question window through its dedicated scoped command", async () => {
+    const projection = {schemaVersion: "project-information-request-projection.v1", sourceNamespace: "receivables_method_r01_fields", requests: []};
+    const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
+      expect(name).toBe("worker_sync_receivables_information_requests_v1");
+      expect(args).toEqual({p_job_id: job.job_id, p_capability_token: job.capability_token, p_projection: projection});
+      return {data: {open_count: 2, preserved_closed_count: 1, superseded_count: 1, bound_count: 2}, error: null};
+    });
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+
+    await expect(queue.syncReceivablesInformationRequests!(
+      job as Extract<CaseAnalysisJob, {kind: "case_analysis"}>, projection,
+    )).resolves.toEqual({openCount: 2, preservedClosedCount: 1, supersededCount: 1, boundCount: 2});
+  });
 });
 
 describe("operating-control persistence", () => {
