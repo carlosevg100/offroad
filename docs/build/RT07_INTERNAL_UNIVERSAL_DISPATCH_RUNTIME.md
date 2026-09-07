@@ -11,7 +11,7 @@ executor it validates, all-or-nothing:
 
 - candidate status and canonical fingerprint;
 - authorization signature, lifetime, task partition, candidate fingerprint, capability manifest,
-  execution context and complete executor-registry fingerprint;
+  execution context, exact authorized-context resolution and complete executor-registry fingerprint;
 - exact task, executor version, procedure and result-contract identity;
 - complete graph/batch partition;
 - exact input schema for every task; and
@@ -25,11 +25,15 @@ live capability only to prove the runtime contract in CI.
 ## Execution properties
 
 - Execution is idempotent within one runtime process by a graph fingerprint derived from the
-  candidate and each task/input/executor fingerprint. Concurrent identical requests share the same
+  candidate, the exact authorized-context resolution and each task/input/executor fingerprint.
+  Concurrent identical requests share the same
   in-flight promise. A successful result remains replayable; a failed, timed-out, cancelled or
   rejected attempt is evicted after settlement so a later request can retry the same identity.
 - Each task emits a fingerprinted receipt with exact identity, input/result fingerprints, status,
-  timestamps and a sanitized error. The graph emits a fingerprinted aggregate receipt.
+  timestamps, exact context-resolution fingerprint and a sanitized error. The graph emits a
+  fingerprinted aggregate receipt.
+- `blocked` and `needs_context` resolutions are refused before task execution. `empty` is explicitly
+  valid: the absence of prior context never manufactures memory or a canned user message.
 - Timeout and cancellation use an `AbortSignal`. A signal already aborted never invokes the task.
 - Authorization or identity failures throw a named refusal before any task runs. Runtime failures
   produce explicit failed receipts; later graph batches are marked skipped.
@@ -52,7 +56,10 @@ live capability only to prove the runtime contract in CI.
 10. idempotent replay after success;
 11. coalescence of concurrent requests into one execution;
 12. invalid output and executor exception; and
-13. modified signed authorization.
+13. modified signed authorization;
+14. execution-context mismatch in the context resolution; and
+15. a changed context resolution under an older signed authorization; and
+16. blocked or needs-context resolution before executor invocation.
 
 The existing R01 test suite also exercises the newly explicit strict result schema at the method
 boundary.
@@ -65,6 +72,8 @@ This is a minimal internal runtime, not a live universal dispatcher:
 - fixture authorization uses injected HMAC keys and has no production issuer, rotation, revocation,
   audit storage, or workload-identity integration;
 - receipts and outputs are not durably persisted;
+- the context resolver currently binds metadata and immutable payload references only; it does not
+  load or inject selected payload bytes into an executor;
 - only R01 is registered, and its real capability remains blocked in shadow;
 - no production route imports or invokes this runtime; and
 - no customer-facing result or external effect is possible.

@@ -9,6 +9,10 @@ import {
   type UniversalDispatchCandidate,
 } from "@offroad/dcm-specialization";
 import {
+  verifyAuthorizedContextResolution,
+  type AuthorizedContextResolution,
+} from "@offroad/governed-retrieval";
+import {
   receivablesPoolUnderwritingInputSchema,
   receivablesPoolUnderwritingSchema,
   underwriteReceivablesPool,
@@ -20,12 +24,13 @@ const isoInstantSchema = z.iso.datetime({offset: true});
 const taskIdSchema = z.string().regex(/^[A-Z][0-9]{2}$/);
 
 const internalDispatchAuthorizationPayloadSchema = z.object({
-  schemaVersion: z.literal("internal-universal-dispatch-authorization.v1"),
+  schemaVersion: z.literal("internal-universal-dispatch-authorization.v2"),
   purpose: z.literal("internal_validation_fixture"),
   keyId: z.string().min(1),
   candidateFingerprint: sha256Schema,
   capabilityManifestHash: sha256Schema,
   executionContextHash: sha256Schema,
+  contextResolutionFingerprint: sha256Schema,
   executorRegistryHash: sha256Schema,
   authorizedTaskIds: z.array(taskIdSchema).min(1),
   issuedAt: isoInstantSchema,
@@ -44,10 +49,11 @@ const taskReceiptErrorSchema = z.object({
 }).strict();
 
 export const internalDispatchTaskReceiptSchema = z.object({
-  schemaVersion: z.literal("internal-dispatch-task-receipt.v1"),
+  schemaVersion: z.literal("internal-dispatch-task-receipt.v2"),
   mode: z.literal("internal_validation_fixture"),
   status: z.enum(["succeeded", "failed", "skipped"]),
   candidateFingerprint: sha256Schema,
+  contextResolutionFingerprint: sha256Schema,
   taskId: taskIdSchema,
   taskExecutionFingerprint: sha256Schema,
   inputFingerprint: sha256Schema,
@@ -65,10 +71,11 @@ export const internalDispatchTaskReceiptSchema = z.object({
 export type InternalDispatchTaskReceipt = z.infer<typeof internalDispatchTaskReceiptSchema>;
 
 export const internalDispatchGraphReceiptSchema = z.object({
-  schemaVersion: z.literal("internal-dispatch-graph-receipt.v1"),
+  schemaVersion: z.literal("internal-dispatch-graph-receipt.v2"),
   mode: z.literal("internal_validation_fixture"),
   status: z.enum(["succeeded", "failed"]),
   candidateFingerprint: sha256Schema,
+  contextResolutionFingerprint: sha256Schema,
   graphExecutionFingerprint: sha256Schema,
   taskReceipts: z.array(internalDispatchTaskReceiptSchema).min(1),
   startedAt: isoInstantSchema,
@@ -120,19 +127,22 @@ export class InternalDispatchRefusal extends Error {
 
 export function issueInternalFixtureAuthorization(input: {
   candidate: UniversalDispatchCandidate;
+  contextResolution: AuthorizedContextResolution;
   keyId: string;
   secret: string;
   issuedAt: string;
   expiresAt: string;
 }): InternalDispatchAuthorization {
   const candidate = universalDispatchCandidateSchema.parse(input.candidate);
+  const contextResolution = verifyDispatchContext(candidate, input.contextResolution);
   const payload = internalDispatchAuthorizationPayloadSchema.parse({
-    schemaVersion: "internal-universal-dispatch-authorization.v1",
+    schemaVersion: "internal-universal-dispatch-authorization.v2",
     purpose: "internal_validation_fixture",
     keyId: input.keyId,
     candidateFingerprint: candidate.fingerprint,
     capabilityManifestHash: candidate.capabilityManifestHash,
     executionContextHash: candidate.executionContextHash,
+    contextResolutionFingerprint: contextResolution.fingerprint,
     executorRegistryHash: candidate.executorRegistryHash,
     authorizedTaskIds: candidate.tasks.map((task) => task.taskId),
     issuedAt: input.issuedAt,
@@ -157,6 +167,7 @@ export function createInternalUniversalDispatchRuntime(options: {
   return {
     async execute(input: {
       candidate: unknown;
+      contextResolution: unknown;
       authorization: unknown;
       inputsByTaskId: Readonly<Record<string, unknown>>;
       timeoutMs: number;
@@ -197,6 +208,7 @@ type PreparedTask = {
 
 type PreparedExecution = {
   candidate: UniversalDispatchCandidate;
+  contextResolutionFingerprint: string;
   tasksById: Map<string, PreparedTask>;
   timeoutMs: number;
   graphExecutionFingerprint: string;
@@ -209,6 +221,7 @@ type StoredGraphRun = {
 
 function prepareExecution(input: {
   candidate: unknown;
+  contextResolution: unknown;
   authorization: unknown;
   inputsByTaskId: Readonly<Record<string, unknown>>;
   timeoutMs: number;
@@ -221,7 +234,8 @@ function prepareExecution(input: {
   if (computeUniversalDispatchCandidateFingerprint(candidate) !== candidate.fingerprint) {
     throw new InternalDispatchRefusal("dispatch_candidate_fingerprint_mismatch");
   }
-  const authorization = verifyAuthorization(candidate, input.authorization, input.authorizationKeys, input.now());
+  const contextResolution = verifyDispatchContext(candidate, input.contextResolution);
+  const authorization = verifyAuthorization(candidate, contextResolution, input.authorization, input.authorizationKeys, input.now());
   if (!Number.isInteger(input.timeoutMs) || input.timeoutMs < 1 || input.timeoutMs > 60_000) {
     throw new InternalDispatchRefusal("dispatch_timeout_invalid");
   }
@@ -257,6 +271,7 @@ function prepareExecution(input: {
     const inputFingerprint = fingerprint(parsed.data);
     const taskExecutionFingerprint = fingerprint({
       candidateFingerprint: candidate.fingerprint,
+      contextResolutionFingerprint: contextResolution.fingerprint,
       taskId: candidateTask.taskId,
       inputFingerprint,
       executor: identity,
@@ -269,13 +284,34 @@ function prepareExecution(input: {
   }
   const graphExecutionFingerprint = fingerprint({
     candidateFingerprint: candidate.fingerprint,
+    contextResolutionFingerprint: contextResolution.fingerprint,
     tasks: preparedTasks.map((task) => ({taskId: task.candidateTask.taskId, fingerprint: task.taskExecutionFingerprint})),
   });
-  return {candidate, tasksById: new Map(preparedTasks.map((task) => [task.candidateTask.taskId, task])), timeoutMs: input.timeoutMs, graphExecutionFingerprint};
+  return {candidate, contextResolutionFingerprint: contextResolution.fingerprint, tasksById: new Map(preparedTasks.map((task) => [task.candidateTask.taskId, task])), timeoutMs: input.timeoutMs, graphExecutionFingerprint};
+}
+
+function verifyDispatchContext(candidate: UniversalDispatchCandidate, raw: unknown): AuthorizedContextResolution {
+  let resolution: AuthorizedContextResolution;
+  try {
+    resolution = verifyAuthorizedContextResolution(raw);
+  } catch {
+    throw new InternalDispatchRefusal("dispatch_context_resolution_invalid");
+  }
+  if (resolution.status === "blocked" || resolution.status === "needs_context") {
+    throw new InternalDispatchRefusal(`dispatch_context_${resolution.status}`);
+  }
+  if (resolution.executionContextHash !== candidate.executionContextHash) {
+    throw new InternalDispatchRefusal("dispatch_context_execution_identity_mismatch");
+  }
+  if (resolution.externalEffectAllowed !== false) {
+    throw new InternalDispatchRefusal("dispatch_context_effect_denied");
+  }
+  return resolution;
 }
 
 function verifyAuthorization(
   candidate: UniversalDispatchCandidate,
+  contextResolution: AuthorizedContextResolution,
   raw: unknown,
   keys: Readonly<Record<string, string>>,
   now: Date,
@@ -292,6 +328,7 @@ function verifyAuthorization(
   if (authorization.candidateFingerprint !== candidate.fingerprint
     || authorization.capabilityManifestHash !== candidate.capabilityManifestHash
     || authorization.executionContextHash !== candidate.executionContextHash
+    || authorization.contextResolutionFingerprint !== contextResolution.fingerprint
     || authorization.executorRegistryHash !== candidate.executorRegistryHash) {
     throw new InternalDispatchRefusal("dispatch_authorization_identity_mismatch");
   }
@@ -311,6 +348,7 @@ async function executePreparedGraph(
     if (halted) break;
     const results = await Promise.all(batch.map((taskId) => executePreparedTask(
       prepared.candidate.fingerprint,
+      prepared.contextResolutionFingerprint,
       prepared.tasksById.get(taskId)!,
       prepared.timeoutMs,
       now,
@@ -327,6 +365,7 @@ async function executePreparedGraph(
     const task = prepared.tasksById.get(candidateTask.taskId)!;
     receipts.set(candidateTask.taskId, taskReceipt({
       candidateFingerprint: prepared.candidate.fingerprint,
+      contextResolutionFingerprint: prepared.contextResolutionFingerprint,
       task,
       status: "skipped",
       resultFingerprint: null,
@@ -337,10 +376,11 @@ async function executePreparedGraph(
   }
   const orderedReceipts = prepared.candidate.tasks.map((task) => receipts.get(task.taskId)!);
   const payload = {
-    schemaVersion: "internal-dispatch-graph-receipt.v1" as const,
+    schemaVersion: "internal-dispatch-graph-receipt.v2" as const,
     mode: "internal_validation_fixture" as const,
     status: orderedReceipts.every((receipt) => receipt.status === "succeeded") ? "succeeded" as const : "failed" as const,
     candidateFingerprint: prepared.candidate.fingerprint,
+    contextResolutionFingerprint: prepared.contextResolutionFingerprint,
     graphExecutionFingerprint: prepared.graphExecutionFingerprint,
     taskReceipts: orderedReceipts,
     startedAt,
@@ -355,6 +395,7 @@ async function executePreparedGraph(
 
 async function executePreparedTask(
   candidateFingerprint: string,
+  contextResolutionFingerprint: string,
   task: PreparedTask,
   timeoutMs: number,
   now: () => Date,
@@ -368,7 +409,7 @@ async function executePreparedTask(
     const resultFingerprint = fingerprint(parsed.data);
     return {
       receipt: taskReceipt({
-        candidateFingerprint, task, status: "succeeded", resultFingerprint, error: null,
+        candidateFingerprint, contextResolutionFingerprint, task, status: "succeeded", resultFingerprint, error: null,
         startedAt, completedAt: now().toISOString(),
       }),
       output: parsed.data,
@@ -378,7 +419,7 @@ async function executePreparedTask(
       ? error
       : new TaskExecutionFailure("execution_failed", error instanceof Error ? error.name : "non-error rejection");
     return {receipt: taskReceipt({
-      candidateFingerprint, task, status: "failed", resultFingerprint: null,
+      candidateFingerprint, contextResolutionFingerprint, task, status: "failed", resultFingerprint: null,
       error: {code: failure.code, detail: failure.detail}, startedAt, completedAt: now().toISOString(),
     })};
   }
@@ -386,6 +427,7 @@ async function executePreparedTask(
 
 function taskReceipt(input: {
   candidateFingerprint: string;
+  contextResolutionFingerprint: string;
   task: PreparedTask;
   status: "succeeded" | "failed" | "skipped";
   resultFingerprint: string | null;
@@ -394,10 +436,11 @@ function taskReceipt(input: {
   completedAt: string;
 }): InternalDispatchTaskReceipt {
   const payload = {
-    schemaVersion: "internal-dispatch-task-receipt.v1" as const,
+    schemaVersion: "internal-dispatch-task-receipt.v2" as const,
     mode: "internal_validation_fixture" as const,
     status: input.status,
     candidateFingerprint: input.candidateFingerprint,
+    contextResolutionFingerprint: input.contextResolutionFingerprint,
     taskId: input.task.candidateTask.taskId,
     taskExecutionFingerprint: input.task.taskExecutionFingerprint,
     inputFingerprint: input.task.inputFingerprint,
