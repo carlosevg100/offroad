@@ -50,12 +50,12 @@ describe("capability ledger", () => {
     });
   });
 
-  it("records the router gate as implemented, not tested, until a real-model run passes", () => {
+  it("records the bounded router gate as tested after a strict real-model run passes", () => {
     const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
     expect(byId.get("gold.intent-router-stability-gate")).toMatchObject({
       availability: "live",
       exposure: "internal",
-      qualityMaturity: "implemented",
+      qualityMaturity: "tested",
       allowedUses: ["internal_validation"],
     });
   });

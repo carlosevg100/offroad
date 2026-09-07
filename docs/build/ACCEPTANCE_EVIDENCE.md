@@ -1,5 +1,22 @@
 # Acceptance Evidence
 
+## Roteamento de intenção com política governada, tested interno, 07/09/2026
+
+| Evidência | Verificação | Resultado |
+|---|---|---|
+| Contrato real | `intent-router-gold.yml` no commit `919def6` | mesmo prompt, schema, canonicalizador e política determinística consumidos pelo worker |
+| Cobertura | run `34096964058` | 17 turnos canônicos e 29 observações dos cinco casos gold |
+| Campos plan-driving | relatório compacto | 17/17 em composição, abstenção, profundidade, continuidade e primeiro trabalho |
+| Autoridade | responsabilidade com threshold de 100% | 17/17, incluindo `decision_maker` somente quando o CFO declara que a decisão é dele |
+| Perguntas | presença e aderência temática | 17/17; o roteador pergunta somente o que altera workflow e deixa lacunas de evidência ao coverage engine |
+| Repetibilidade | seis entroncamentos executados três vezes | 6/6 fingerprints invariantes |
+| Operação e custo | gateway real | 31 tentativas, US$ 0,5265, nenhum custo desconhecido |
+| Segurança do gate | OIDC + corpus sintético | segredos temporários e mascarados; nenhum documento ou conteúdo de cliente no artefato |
+
+Status: **tested para validação interna no conjunto delimitado**. Esta evidência não promove o
+roteador para uso amplo, não autoriza executor e não comprova pesquisa, análise financeira,
+modelagem, materiais, matching ou uma jornada longitudinal completa.
+
 ## Dispatch do preview pelo slice compilado, candidate, 06/09/2026
 
 | Evidência | Verificação | Resultado |
