@@ -18,14 +18,14 @@ import {
 
 export const receivablesPoolInputSupplementVersion = "2026.09.07-v1" as const;
 
-const evidenceReferenceSchema = z.object({
+export const receivablesMethodEvidenceReferenceSchema = z.object({
   sourceClass: z.enum(["provided_document", "project_context", "house_method", "user_confirmation"]),
   sourceId: z.string().min(1),
   anchor: z.string().min(1),
 }).strict();
-const evidenceSectionSchema = z.array(evidenceReferenceSchema).min(1);
+export const receivablesMethodEvidenceSectionSchema = z.array(receivablesMethodEvidenceReferenceSchema).min(1);
 
-const titleSupplementSchema = z.object({
+export const receivablesTitleSupplementSchema = z.object({
   sourceReceivableId: z.string().min(1),
   debtorSector: z.string().min(1),
   collectedInPeriod: moneySchema,
@@ -42,7 +42,7 @@ const titleSupplementSchema = z.object({
   relatedParty: z.boolean(),
 }).strict();
 
-const cashSupplementSchema = z.object({
+export const receivablesCashSupplementSchema = z.object({
   id: z.string().min(1),
   receivedAt: z.iso.date(),
   amount: moneySchema,
@@ -63,8 +63,8 @@ export const receivablesPoolInputSupplementSchema = z.object({
     legalName: z.string().min(2),
     servicingRole: z.enum(["cedent", "third_party", "shared"]),
   }).strict(),
-  titles: z.array(titleSupplementSchema).min(1),
-  cashReceipts: z.array(cashSupplementSchema),
+  titles: z.array(receivablesTitleSupplementSchema).min(1),
+  cashReceipts: z.array(receivablesCashSupplementSchema),
   accounting: z.object({
     grossReceivablesBalance: moneySchema,
     allowanceBalance: moneySchema,
@@ -73,19 +73,19 @@ export const receivablesPoolInputSupplementSchema = z.object({
   policy: eligibilityPolicySchema,
   structure: receivablesStructureSchema,
   evidence: z.object({
-    cedentAndServicing: evidenceSectionSchema,
-    titleLegalControls: evidenceSectionSchema,
-    performanceHistory: evidenceSectionSchema,
-    cashReconciliation: evidenceSectionSchema,
-    accountingReconciliation: evidenceSectionSchema,
-    eligibilityPolicy: evidenceSectionSchema,
-    facilityAndWaterfall: evidenceSectionSchema,
+    cedentAndServicing: receivablesMethodEvidenceSectionSchema,
+    titleLegalControls: receivablesMethodEvidenceSectionSchema,
+    performanceHistory: receivablesMethodEvidenceSectionSchema,
+    cashReconciliation: receivablesMethodEvidenceSectionSchema,
+    accountingReconciliation: receivablesMethodEvidenceSectionSchema,
+    eligibilityPolicy: receivablesMethodEvidenceSectionSchema,
+    facilityAndWaterfall: receivablesMethodEvidenceSectionSchema,
   }).strict(),
   findingResolutions: z.array(z.object({
     findingId: z.string().min(1),
     disposition: z.enum(["remediated", "false_positive", "incorporated_in_method_input"]),
     rationale: z.string().min(10),
-    evidence: evidenceSectionSchema,
+    evidence: receivablesMethodEvidenceSectionSchema,
   }).strict()),
 }).strict().superRefine((supplement, context) => {
   const titleIds = supplement.titles.map((item) => item.sourceReceivableId);
