@@ -92,7 +92,7 @@ declare
   inserted_row private.receivables_method_input_assemblies;
   existing_row private.receivables_method_input_assemblies;
   dataset_hash text;
-  assembly_fingerprint text;
+  v_assembly_fingerprint text;
 begin
   if job_row.kind <> 'case_analysis' then
     raise exception 'case_analysis_capability_required' using errcode = '42501';
@@ -126,7 +126,7 @@ begin
   end if;
 
   dataset_hash := p_assembly #>> '{source,datasetHash}';
-  assembly_fingerprint := encode(
+  v_assembly_fingerprint := encode(
     extensions.digest(convert_to(p_assembly::text, 'UTF8'), 'sha256'), 'hex'
   );
 
@@ -135,7 +135,7 @@ begin
   where stored.organization_id = job_row.organization_id
     and stored.intake_session_id = job_row.intake_session_id
     and stored.source_dataset_hash = dataset_hash
-    and stored.assembly_fingerprint = assembly_fingerprint;
+    and stored.assembly_fingerprint = v_assembly_fingerprint;
   if found then
     return jsonb_build_object(
       'id', existing_row.id,
@@ -151,7 +151,7 @@ begin
   ) values (
     job_row.organization_id, session_row.capital_project_id, job_row.intake_session_id,
     job_row.processing_run_id, job_row.id, dataset_hash,
-    'receivables-pool-input-assembly.2026-09-07-v1', assembly_fingerprint, p_assembly
+    'receivables-pool-input-assembly.2026-09-07-v1', v_assembly_fingerprint, p_assembly
   ) returning * into inserted_row;
 
   return jsonb_build_object(
