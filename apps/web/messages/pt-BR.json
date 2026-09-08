@@ -3411,7 +3411,56 @@
       "blocked": "bloqueado",
       "planned": "planejado",
       "awaiting_confirmation": "aguardando confirmação"
-    }
+    },
+    "inspectMethods": "Consultar análises e métodos completos",
+    "decisionUnavailable": "A leitura de decisão ainda não está disponível nesta versão.",
+    "availableResults": "Os resultados disponíveis permanecem acessíveis abaixo, com suas condições e fontes.",
+    "fields": {
+      "ledger_rows": "Instrumentos de dívida",
+      "reconciliations": "Conciliações",
+      "identities": "Identidades contábeis",
+      "covenants": "Covenants",
+      "walls": "Vencimentos por período",
+      "sources": "Fontes",
+      "schedule_by_series": "Cronograma por série",
+      "exit_costs": "Custos de saída",
+      "scenarios": "Cenários",
+      "assumption_register": "Registro de premissas",
+      "alternatives": "Alternativas",
+      "gross_debt": "Dívida bruta",
+      "net_debt_views": "Definições de dívida líquida",
+      "amount": "Montante",
+      "value": "Valor",
+      "unit": "Unidade",
+      "state": "Estado",
+      "status": "Estado",
+      "period": "Período",
+      "year": "Ano",
+      "rate": "Taxa",
+      "annual_rate": "Taxa anual",
+      "principal": "Principal",
+      "interest": "Juros",
+      "balance": "Saldo",
+      "currency": "Moeda",
+      "maturity": "Vencimento",
+      "document": "Documento",
+      "page": "Página",
+      "clause": "Cláusula",
+      "anchors": "Referências na fonte",
+      "reason": "Motivo",
+      "detail": "Detalhe",
+      "assumptions": "Premissas",
+      "block_reasons": "Impedimentos",
+      "incomplete_reasons": "Pendências",
+      "unsupported": "Sem suporte",
+      "unproven_conditions": "Condições não comprovadas",
+      "legal_conditions": "Condições jurídicas",
+      "uncovered_terms": "Termos não cobertos",
+      "uncovered_series": "Séries não cobertas",
+      "open_divergences": "Divergências abertas",
+      "alignment_questions": "Perguntas de alinhamento"
+    },
+    "references": "Referências deste trecho"
   },
   "ExecutionBriefCard": {
     "editVersion": "Seu pedido ficará vinculado à versão {version}.",
@@ -3536,5 +3585,64 @@
       "unknown": "Impacto a avaliar"
     },
     "addFiles": "Adicionar documentos"
+  },
+  "decisionReadout": {
+    "eyebrow": "Leitura de decisão",
+    "title": "O que a análise sustenta agora",
+    "internal": "Rascunho interno",
+    "asOf": "Data-base",
+    "exact": "Valor no objeto",
+    "why": "Como chegamos aqui",
+    "object": "Objeto assinado",
+    "sources": "Fontes utilizadas",
+    "assumptions": "Premissas utilizadas",
+    "gaps": "O que ainda muda a decisão",
+    "impact": "Impacto na análise",
+    "needed": "O que fecha este ponto",
+    "materiality": {
+      "blocker": "bloqueante",
+      "high": "alta",
+      "medium": "média",
+      "low": "baixa"
+    },
+    "evidence": {
+      "observed_public": "observado · público",
+      "observed_private": "observado · privado",
+      "calculated": "calculado",
+      "assumption": "premissa",
+      "mixed": "misto",
+      "not_computable": "não calculável"
+    },
+    "materials": "Materiais desta versão",
+    "workbook": "Baixar planilha",
+    "presentation": "Baixar apresentação",
+    "trace": "Todos os números acima apontam para o objeto, as fontes, as premissas e as lacunas que os sustentam.",
+    "back": "Voltar ao achado: {label}",
+    "definition": "Definição no objeto",
+    "notComputable": "Não calculável",
+    "yes": "Sim",
+    "no": "Não",
+    "references": "Referências do bloco",
+    "status": {
+      "reference": "Referência",
+      "draft": "Rascunho",
+      "reviewable": "Disponível para revisão",
+      "approved": "Aprovado"
+    },
+    "release": {
+      "internal_only": "Uso interno",
+      "reviewable": "Disponível para revisão",
+      "approved_for_named_recipients": "Aprovado para destinatários definidos"
+    },
+    "classification": {
+      "public": "Pública",
+      "private": "Privada",
+      "synthetic": "Sintética",
+      "market": "Mercado"
+    },
+    "period": "Ponto",
+    "evidenceLabel": "Base da informação",
+    "editable": "Premissa revisável",
+    "fixed": "Não editável nesta versão"
   }
 }

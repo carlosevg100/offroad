@@ -1,5 +1,16 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Leitura executiva e conferência completa, 08/09/2026
+
+Em implementação sobre main `146104e0a51e6963f92af874ff442cebf66373f8` (PR #548). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.
+
+Os resultados completos dos métodos permanecem acessíveis junto da leitura executiva. Sem contrato válido ou sem visão de conversa, a interface informa a indisponibilidade da leitura e conserva os métodos existentes. Rótulos conhecidos são localizados em PT/EN; referências e campos desconhecidos permanecem literais. Nenhuma narrativa é inventada para preencher blocos sem corpo narrativo.
+
+Escopo somente leitura do payload autorizado: sem migrações, providers novos, telemetria, mudanças de autorização, fórmulas financeiras ou autorização de divulgação. Os fingerprints demonstram consistência interna, não homologação econômica. Não promove capabilities, materiais institucionais completos, integração privada com worker, matching ou introduções. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (304 testes web) e build, 43/43 targets em cada etapa. E2E acrescenta navegação por teclado entre achado e fonte, acesso aos métodos e viewport de 390px com inspeção aberta. Validação remota e visual desta fatia ainda pendente.
+
+Baseline de publicação: PR #548 já publicou a precisão decimal da inspeção, a proteção de downloads por fingerprint válido, os rótulos de planos novos e os identificadores das onze migrações de produção. Quality `34185381699` aprovou 20 E2E, com 10 dependentes de provedores pulados; main Quality `34186017704`, Security `34186017689` e worker `34186017715` passaram. O worker verificou PRIMARY exata (task 278) com capacidade positiva; Vercel e navegação de produção foram conferidos. Registros anteriores de follow-up pendente são históricos e não representam o estado atual.
+
+
 ## Plano aprovado e inventário do Advisor: publicação operacional verificada, 08/09/2026
 
 [PR #547](https://github.com/carlosevg100/offroad/pull/547) integrado em main `31e5a92830f50e21e2d17f4a93d3ed4d1403dd40`. Os checks obrigatórios e de segurança passaram. [Quality 34184277267](https://github.com/carlosevg100/offroad/actions/runs/34184277267) aprovou 20 testes E2E; 10 testes dependentes de provedores foram pulados, portanto não constituem evidência de integração com esses provedores.

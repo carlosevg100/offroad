@@ -3411,7 +3411,56 @@
       "blocked": "blocked",
       "planned": "planned",
       "awaiting_confirmation": "awaiting confirmation"
-    }
+    },
+    "inspectMethods": "Inspect complete analysis and methods",
+    "decisionUnavailable": "The decision readout is not yet available in this version.",
+    "availableResults": "Available results remain accessible below, with their conditions and sources.",
+    "fields": {
+      "ledger_rows": "Debt instruments",
+      "reconciliations": "Reconciliations",
+      "identities": "Accounting identities",
+      "covenants": "Covenants",
+      "walls": "Maturities by period",
+      "sources": "Sources",
+      "schedule_by_series": "Schedule by series",
+      "exit_costs": "Exit costs",
+      "scenarios": "Scenarios",
+      "assumption_register": "Assumption register",
+      "alternatives": "Alternatives",
+      "gross_debt": "Gross debt",
+      "net_debt_views": "Net debt definitions",
+      "amount": "Amount",
+      "value": "Value",
+      "unit": "Unit",
+      "state": "State",
+      "status": "Status",
+      "period": "Period",
+      "year": "Year",
+      "rate": "Rate",
+      "annual_rate": "Annual rate",
+      "principal": "Principal",
+      "interest": "Interest",
+      "balance": "Balance",
+      "currency": "Currency",
+      "maturity": "Maturity",
+      "document": "Document",
+      "page": "Page",
+      "clause": "Clause",
+      "anchors": "Source anchors",
+      "reason": "Reason",
+      "detail": "Detail",
+      "assumptions": "Assumptions",
+      "block_reasons": "Blocking reasons",
+      "incomplete_reasons": "Incomplete items",
+      "unsupported": "Unsupported",
+      "unproven_conditions": "Unproven conditions",
+      "legal_conditions": "Legal conditions",
+      "uncovered_terms": "Uncovered terms",
+      "uncovered_series": "Uncovered series",
+      "open_divergences": "Open differences",
+      "alignment_questions": "Alignment questions"
+    },
+    "references": "References for this passage"
   },
   "ExecutionBriefCard": {
     "editVersion": "Your request will be bound to version {version}.",
@@ -3536,5 +3585,64 @@
       "unknown": "Impact to assess"
     },
     "addFiles": "Add documents"
+  },
+  "decisionReadout": {
+    "eyebrow": "Decision readout",
+    "title": "What the analysis supports now",
+    "internal": "Internal draft",
+    "asOf": "As of",
+    "exact": "Value in object",
+    "why": "How we got here",
+    "object": "Signed object",
+    "sources": "Sources used",
+    "assumptions": "Assumptions used",
+    "gaps": "What can still change the decision",
+    "impact": "Impact on the analysis",
+    "needed": "What closes this point",
+    "materiality": {
+      "blocker": "blocking",
+      "high": "high",
+      "medium": "medium",
+      "low": "low"
+    },
+    "evidence": {
+      "observed_public": "observed · public",
+      "observed_private": "observed · private",
+      "calculated": "calculated",
+      "assumption": "assumption",
+      "mixed": "mixed",
+      "not_computable": "not computable"
+    },
+    "materials": "Materials in this version",
+    "workbook": "Download workbook",
+    "presentation": "Download presentation",
+    "trace": "Every number above points back to the object, sources, assumptions and gaps that support it.",
+    "back": "Back to finding: {label}",
+    "definition": "Definition in object",
+    "notComputable": "Not computable",
+    "yes": "Yes",
+    "no": "No",
+    "references": "Block references",
+    "status": {
+      "reference": "Reference",
+      "draft": "Draft",
+      "reviewable": "Ready for review",
+      "approved": "Approved"
+    },
+    "release": {
+      "internal_only": "Internal use",
+      "reviewable": "Available for review",
+      "approved_for_named_recipients": "Approved for named recipients"
+    },
+    "classification": {
+      "public": "Public",
+      "private": "Private",
+      "synthetic": "Synthetic",
+      "market": "Market"
+    },
+    "period": "Point",
+    "evidenceLabel": "Evidence basis",
+    "editable": "Revisable assumption",
+    "fixed": "Not editable in this version"
   }
 }

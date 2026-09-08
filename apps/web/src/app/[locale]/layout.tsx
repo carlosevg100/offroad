@@ -118,6 +118,7 @@ export default async function LocaleLayout({children, params}: Props) {
   const clientMessages = {
     App: {privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
     IntegrationPreviewWork: messages.IntegrationPreviewWork,
+    decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,
     AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
     Intake: {executionApproval: messages.Intake.executionApproval},
