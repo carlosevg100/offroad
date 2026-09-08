@@ -1488,3 +1488,49 @@ Antes de converter todo o Atlas em contratos de runtime, precisam ser homologado
 8. composição do painel de revisão por domínio;
 9. critérios quantitativos do survival test;
 10. política de maturidade `catalogued → specified → implemented → tested → production`.
+
+## Complemento: especialização por objeto, mecanismo e estágio
+
+**Fundação em implementação em 8 de setembro de 2026.** O contrato
+`packages/agent-contracts/src/economic-context.ts` define contexto e pedido de composição;
+o catálogo inicial de módulos permanece `specified`. Compor requisitos não executa métodos,
+não verifica fontes e não promove uma capability.
+
+Uma intenção aponta explicitamente para objetos-alvo. Cada companhia, grupo, SPV, ativo,
+carteira ou contrato pode carregar setor, subsetor, modelo de negócio, mecanismo de receita,
+estágio, recurso econômico e jurisdição. Atributos pertencem ao objeto e ao período; um
+contrato de uma subsidiária não caracteriza automaticamente o grupo. Valores distintos
+podem coexistir, como receita contratada e merchant. Duplicar a mesma identidade
+objeto/dimensão/valor/período exige consolidação; divergência de fonte precisa de revisão
+explícita, não de escolha silenciosa.
+
+A interface de composição distingue cinco intenções delimitadas: `factual_answer`,
+`contract_review`, `financial_analysis`, `financing_comparison` e `market_matching`.
+São o escopo inicial do contrato, não o fechamento do universo de intenções do Atlas.
+A mesma base serve a tarefas isoladas e jornadas compostas. Trocar audiência pode alterar
+linguagem e formato; trocar objetivo pode adicionar trabalho, mas não apaga objetos e
+fontes ainda válidos. Comparar alternativas precede a decisão econômica que as seleciona.
+
+Regras de ativação:
+
+- Referências conservam fonte, versão e âncora. `confirmed` exige evidência; `unknown`
+  não fornece valor ativável. Proposto, inferido e conflitante permanecem distinguíveis.
+- O compilador não herda automaticamente atributos do pai nem combina atributos de
+  objetos diferentes para simular um mecanismo inexistente.
+- A data de conhecimento é distinta do período econômico; períodos futuros são válidos.
+- A pergunta factual não adquire modelo financeiro, cenários ou matching apenas porque
+  pertence a um setor complexo. Um requisito adicional precisa explicar sua relação com
+  a intenção e o objeto.
+- Termos, contratos e estágios não informados produzem lacunas focalizadas. Não é necessário
+  preencher um cadastro setorial inteiro para obter uma resposta delimitada.
+
+O aceite exige pares econômicos: mesmo setor com receitas ou estágios distintos deve mudar
+requisitos relevantes; mesmos objetos e intenção com públicos distintos devem preservar
+números, evidência e controles. Um contexto misto deve conservar mecanismos coexistentes,
+e um termo desconhecido deve aparecer como não coberto, sem ativação por aproximação.
+
+As dez famílias e seus pares planejados estão no complemento de contexto econômico do
+[Execution Blueprint](../build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md). Essa cobertura é
+planejamento, não declaração de executores disponíveis. A experiência deve mostrar o
+contexto reconhecido e permitir corrigi-lo em linguagem simples, sem pedir que o usuário
+escolha packs, agentes ou grafos.

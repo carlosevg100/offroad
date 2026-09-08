@@ -2425,3 +2425,61 @@ Executar Release 0 nesta ordem, mantendo somente correções P0/P1 em paralelo:
 
 Essa sequência evita dois erros: automatizar um output ruim e continuar adicionando infraestrutura
 sem consequência visível para o usuário.
+
+## Complemento canônico: contexto econômico por objeto (8 de setembro de 2026)
+
+**Estado:** fundação em implementação. O contrato `economic-context.v1` e a composição de
+requisitos não homologam expertise setorial. Os módulos de
+`packages/credit-playbook/src/depth-packs/sector-context-catalog.ts` têm estado `specified`;
+seus identificadores de métodos, cenários e critérios são especificações, não executores
+liberados ou evidências disponíveis.
+
+O plano deve combinar setor/subsetor, modelo de negócio, mecanismo de receita, estágio,
+recurso econômico e jurisdição **por objeto**: companhia, grupo, SPV, ativo, carteira ou
+contrato. A relação pai/filho não autoriza herança automática. Um grupo pode conter ativos
+com contratos, riscos e estágios distintos; receita contratada e exposição merchant podem
+coexistir no mesmo objeto ou em períodos diferentes.
+
+Cada atributo preserva valor, estado (`confirmed`, `proposed`, `inferred`, `conflicting` ou
+`unknown`), referências de fonte/versionamento/âncora e período econômico quando informado.
+A data de conhecimento não impede contratos ou projeções futuros. Confirmação exige fonte,
+mas o contrato em memória não comprova autoridade do repositório. Atributo desconhecido ou
+conflitante não ativa uma conclusão; evidência ausente vira requisito explícito. Valores
+permanecem vocabulário aberto controlado pelo catálogo, sem outra taxonomia concorrente.
+
+A composição recebe intenção e objetos-alvo. Uma pergunta factual requer resposta citada;
+revisão contratual exige cláusulas e aplicabilidade; análise financeira e comparação podem
+exigir cenários; matching exige mandatos atuais e autorizados. Nenhuma dessas entradas
+obriga o usuário a percorrer uma jornada completa de financiamento. Critérios de mercado
+não representam distribuição autorizada. O cargo pode ajustar a apresentação, nunca os
+fatos, a matemática ou os gates necessários.
+
+### Cobertura planejada e critérios de pares
+
+As dez famílias abaixo delimitam expansão planejada, sem afirmar cobertura implementada
+ou release. O catálogo inicial é menor e deve declarar valores sem módulo correspondente.
+
+| Família planejada | Par mínimo que deve mudar requisitos de forma material |
+|---|---|
+| Energia | Receita contratada × merchant; construção × operação |
+| Transportes e logística | Pedágio por tráfego × remuneração por disponibilidade |
+| Saneamento e serviços ambientais | Receita tarifária × contrato de prestação/disponibilidade |
+| Imobiliário e construção | Venda de unidades × renda de locação; obra × ativo estabilizado |
+| Varejo e consumo | Lojas maduras × expansão; estoque próprio × intermediação |
+| Indústria | Produção sob encomenda × venda a mercado; insumo protegido × exposto |
+| Agro, alimentos e recursos naturais | Produção sazonal × processamento; receita contratada × preço de mercado, preservando métodos próprios de mineração, florestas e petróleo/gás |
+| Saúde e educação | Pagamento por serviço × contrato por população/capacidade; mensalidades e coortes em educação, com métodos distintos |
+| Tecnologia, telecomunicações e infraestrutura digital | Software recorrente × capacidade de infraestrutura física contratada; ativo em construção × operação |
+| Serviços financeiros e carteiras | Análise da instituição × análise de carteira segregada; ativos, sacados, originadores e cobrança próprios |
+
+Carteiras de recebíveis e mecanismos contratuais são módulos transversais, não precisam
+ser forçados a uma única família. Cada par deve produzir diferença explicável em evidência,
+cenário, método requerido ou critério de contraparte. Alterar apenas o nome do setor não
+satisfaz o aceite. O mesmo objeto/pedido, apresentado por CFO, assessor ou analista, deve
+preservar identidade econômica e os mesmos controles.
+
+A interface pede apenas informações capazes de mudar o trabalho, mostra o contexto
+reconhecido com fonte e permite correção. Não exige selecionar especialista, códigos de
+packs ou todas as dimensões antes de uma tarefa simples. O contrato de interação e a
+separação entre contexto, intenção e audiência seguem o complemento correspondente do
+[Intent Atlas](../product/CANONICAL_INTENT_WORKFLOW_ATLAS.md).

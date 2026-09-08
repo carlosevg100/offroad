@@ -1,5 +1,15 @@
 # Acceptance Evidence
 
+## Contexto econômico setorial por objeto, 08/09/2026
+
+Implementação candidata sobre main `ea6d233`, sem efeitos de runtime. Evidência de domínio em `packages/agent-contracts/src/economic-context.test.ts`, `packages/credit-playbook/src/depth-packs/sector-context-catalog.test.ts`, `packages/dcm-specialization/src/economic-context.test.ts` e `economic-context-integration.test.ts`.
+
+Cobertura: referências obrigatórias para declarações confirmadas; períodos futuros e datas reais; parent/target inexistente, ciclos, duplicatas e limites agregados; módulos por intenção; contratado+merchant simultâneos; construção versus operação; pedágio versus disponibilidade; pergunta factual sem análise extensa; mandato separado de crédito; ausência de herança entre holding/ativo; conflito temporal sobreposto; períodos incompatíveis; classificação ampla sem presumir subsetor; contexto desconhecido; limite combinatório; hashes estáveis sob reordenação e alterados por fonte nova; isolamento de alterações fora dos objetos-alvo. Integração prova payload/fingerprint legado preservado quando contexto é omitido e ausência de expansão do conjunto de tarefas quando presente.
+
+Revisão adversarial corrigiu uso de confirmação sobreposta a conflito e falso pedido de modelo solar a partir apenas de energia. Contexto e hashes continuam declarações locais, não comprovação de autorização ou verificação de fontes. Módulos e métodos permanecem `specified`; requisitos ficam `not_examined`; `willExecute` e `externalEffectAllowed` permanecem falsos.
+
+Validação local `pnpm check` aprovada em Node 24.19.0: 43/43 targets em lint, typecheck, testes e build. São 42 novos testes nesta fatia (17 contrato, 4 catálogo, 15 compositor, 6 integração); 53 testes totais em dcm-specialization, 315 web e 89 evals passaram. CI e publicação ainda pendentes nesta revisão. Não há novo fluxo de UI, banco ou worker; a API é opt-in e ainda não recebe contexto privado de produção. Segurança: aplicação proporcional de SEC-015 (entradas estruturadas e efeitos), sem declarar conclusão do programa. Sem dados reais ou dados privados em logs, novos provedores ou alterações de acesso. Rollback: reverter esta mudança; não existe backfill ou dado persistido a desfazer.
+
 ## Leitura executiva e conferência completa, 08/09/2026
 
 Em implementação sobre main `900e9e37b9223fe08f483beaad9d32607509bf86` (PR #550). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. O produtor inclui explicitamente a série de vencimentos na visão de conversa dos contratos novos, preservando valores e apresentação. Snapshots existentes não são reescritos. A publicação requer web e worker, sem migração. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.
