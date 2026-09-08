@@ -54,6 +54,67 @@ describe("advisor project current state", () => {
     })).toBe(true);
   });
 
+  it.each(["question_answered", "decision_recorded"])("does not recover execution when %s is recorded", (type) => {
+    const interaction = {type, createdAt: "2026-09-03T10:10:00.000Z"};
+    for (const failureType of ["work_failed", "quality_gate_failed"]) {
+      const failure = {...failed, type: failureType};
+      const events = [failure, interaction];
+      expect(advisorNeedsAttention({
+        active: false, sessionStatus: "review_ready", taskStatuses: [], messageStatuses: [], events,
+      })).toBe(true);
+      expect(latestSuccessfulOutcomeAt(events)).toBeNull();
+      expect(failureWasRecovered(failure.createdAt, latestSuccessfulOutcomeAt(events))).toBe(false);
+    }
+  });
+
+  it("retains aggregate failure fallback when a partial event trail contains only interactions", () => {
+    const events = [{type: "question_answered", createdAt: recovered.createdAt}];
+    for (const state of [
+      {sessionStatus: "failed", taskStatuses: [], messageStatuses: []},
+      {sessionStatus: "review_ready", taskStatuses: ["failed"], messageStatuses: []},
+      {sessionStatus: "review_ready", taskStatuses: [], messageStatuses: ["failed"]},
+    ]) {
+      expect(advisorNeedsAttention({active: false, ...state, events})).toBe(true);
+    }
+    // An answer itself is not a new failure either.
+    expect(advisorNeedsAttention({
+      active: false, sessionStatus: "review_ready", taskStatuses: [], messageStatuses: [], events,
+    })).toBe(false);
+  });
+
+  it("prioritizes active execution without treating a queued retry as recovered", () => {
+    const state = {sessionStatus: "review_ready", taskStatuses: [], messageStatuses: ["queued"]};
+    const events = [failed, {type: "question_answered", createdAt: recovered.createdAt}];
+    expect(advisorIsActive(state)).toBe(true);
+    expect(advisorNeedsAttention({...state, active: advisorIsActive(state), events})).toBe(false);
+    expect(failureWasRecovered(failed.createdAt, latestSuccessfulOutcomeAt(events))).toBe(false);
+    // If processing stops without successful execution, the original failure still needs attention.
+    expect(advisorNeedsAttention({...state, messageStatuses: [], active: false, events})).toBe(true);
+  });
+
+  it("uses event time rather than input order and requires success strictly after failure", () => {
+    const state = {active: false, sessionStatus: "review_ready", taskStatuses: [], messageStatuses: []};
+    expect(advisorNeedsAttention({...state, events: [recovered, failed]})).toBe(false);
+    const laterFailure = {...failed, createdAt: "2026-09-03T10:06:00.000Z"};
+    expect(advisorNeedsAttention({...state, events: [laterFailure, recovered]})).toBe(true);
+    const tiedFailure = {...failed, createdAt: recovered.createdAt};
+    for (const events of [[recovered, tiedFailure], [tiedFailure, recovered]]) {
+      expect(advisorNeedsAttention({...state, events})).toBe(true);
+      expect(failureWasRecovered(tiedFailure.createdAt, latestSuccessfulOutcomeAt(events))).toBe(false);
+    }
+  });
+
+  it("does not use successful intermediate progress as execution recovery", () => {
+    const progress = {
+      type: customerEventType("work_progress", {stage: "public_research", status: "succeeded"}),
+      createdAt: recovered.createdAt,
+    };
+    expect(advisorNeedsAttention({
+      active: false, sessionStatus: "review_ready", taskStatuses: [], messageStatuses: [], events: [failed, progress],
+    })).toBe(true);
+    expect(latestSuccessfulOutcomeAt([failed, progress])).toBeNull();
+  });
+
   it("treats only terminal stage progress as a completed work product", () => {
     expect(customerEventType("work_progress", {stage: "preliminary_understanding", status: "succeeded"})).toBe("work_completed");
     expect(customerEventType("work_progress", {stage: "public_research", status: "succeeded"})).toBe("work_progress");

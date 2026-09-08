@@ -1,5 +1,9 @@
 # Build State
 
+## Estado de execução: recuperação comprovada, 07/09/2026
+
+Respostas a perguntas e decisões registradas deixam de ser consideradas prova de recuperação da execução. Somente work_completed posterior elimina a indicação de uma falha anterior; empate temporal conserva falha independentemente da ordem do array. A prioridade visual de trabalho ativo e o fallback de projetos sem trilha de eventos são preservados. Não muda schema, critérios econômicos nem autorização. Trata um defeito delimitado de UX-01; correlação completa de tarefas paralelas e prontidão por dimensão continuam fora desta fatia. Gate local `pnpm check` aprovado em Node 24.19.0; preview e produção não verificados nesta mudança.
+
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
 - O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->
