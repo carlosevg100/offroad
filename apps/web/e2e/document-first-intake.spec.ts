@@ -709,6 +709,7 @@ test.describe("Document-first intake (company journey)", () => {
     expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
     const periods = result.supportPeriodAssessment;
     expect(periods.schemaVersion).toBe("receivables-support-periods.v1");
+    expect(periods.entries).toHaveLength(37);
     expect(periods.reportingDate).toBe("2026-08-31");
     expect(periods.entries).toEqual(expect.arrayContaining([
       expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-08-31", qualification: "included"}),

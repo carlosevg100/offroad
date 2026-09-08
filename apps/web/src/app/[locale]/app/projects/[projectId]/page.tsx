@@ -1,3 +1,4 @@
+import {ReceivablesProjectSupportPeriods, isReceivablesReportCurrent} from "@/components/intake/receivables-project-support-periods";
 import {loadReceivablesScope} from "@/lib/receivables/scope";
 import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
@@ -623,7 +624,7 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
       canRetry={session.status === "failed"}
       shouldStart={session.status === "collecting"}
-    />{privateWorkbench ? <PrivateDiagnosticWork
+    />{privateWorkbench?.understanding ? <ReceivablesProjectSupportPeriods understanding={privateWorkbench.understanding.value} locale={locale} current={isReceivablesReportCurrent(receivablesScope, privateWorkbench.understanding.row.created_at, privateWorkbench.isProcessing)} /> : null}{privateWorkbench ? <PrivateDiagnosticWork
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       projectId={project.id}

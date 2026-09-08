@@ -1,3 +1,4 @@
+import {ReceivablesProjectSupportPeriods, isReceivablesReportCurrent} from "./receivables-project-support-periods";
 import {createTranslator} from "next-intl";
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it, vi} from "vitest";
@@ -43,3 +44,21 @@ it("bounds the DOM to 25 entries and exposes navigation instead of silently trun
 it.each(["missing","invalid"] as const)("distinguishes %s amounts from invalid dates",async(amountStatus)=>{const html=renderToStaticMarkup(await ReceivablesSupportPeriods({locale:"en-US",assessment:{...assessment,entries:[{...assessment.entries[0]!,amountStatus}]}}));expect(html).toContain(amountStatus==="missing"?en.ReceivablesSupportPeriods.limitation.missing_amount:en.ReceivablesSupportPeriods.limitation.invalid_amount);expect(html).toContain("2026-08-30");expect(html).not.toContain(en.ReceivablesSupportPeriods.qualification.invalid);});
 
 it.each(["pt-BR","en-US"])("shows pending review of an existing source without claiming its date is absent in %s",async(locale)=>{const copy=(locale==="pt-BR"?pt:en).ReceivablesSupportPeriods;const html=renderToStaticMarkup(await ReceivablesSupportPeriods({locale,assessment:{...assessment,entries:[{...assessment.entries[2]!,requiresSourceReview:true}]}}));expect(html).toContain(copy.limitation.source_review_pending);expect(html).toContain(copy.limitationMeaning.source_review_pending);expect(html).not.toContain(copy.qualification.missing);expect(html).not.toContain(copy.meaning.missing);expect(html).not.toContain(copy.missingDate);});
+
+describe("canonical project temporal report projection",()=>{
+ it("renders the persisted assessment from understanding_snapshot",async()=>{const html=renderToStaticMarkup(await ReceivablesProjectSupportPeriods({locale:"en-US",current:true,understanding:{receivablesVertical:{supportPeriodAssessment:assessment,pipeline:{}}}}));expect(html).toContain('data-testid="receivables-support-periods"');expect(html).toContain("2026-08-31");expect(html).toContain("Cash movements");});
+ it("marks legacy receivables reports unassessed",async()=>{const html=renderToStaticMarkup(await ReceivablesProjectSupportPeriods({locale:"en-US",current:true,understanding:{receivablesVertical:{pipeline:{}}}}));expect(html).toContain(en.ReceivablesSupportPeriods.notAssessed);expect(html).not.toContain("<time");});
+ it("does not expose stale report dates as current",async()=>{const html=renderToStaticMarkup(await ReceivablesProjectSupportPeriods({locale:"en-US",current:false,understanding:{receivablesVertical:{supportPeriodAssessment:assessment,pipeline:{}}}}));expect(html).toContain(en.ReceivablesSupportPeriods.notAssessed);expect(html).not.toContain("2026-08-31");});
+ it("does not invent a receivables section in other diagnoses",async()=>{expect(await ReceivablesProjectSupportPeriods({locale:"en-US",current:true,understanding:{readiness:{}}})).toBeNull();});
+ it("fails closed on malformed temporal data",async()=>{const html=renderToStaticMarkup(await ReceivablesProjectSupportPeriods({locale:"en-US",current:true,understanding:{receivablesVertical:{supportPeriodAssessment:{...assessment,entries:[{qualification:"trusted"}]}}}}));expect(html).toContain(en.ReceivablesSupportPeriods.notAssessed);expect(html).not.toContain("<time");});
+});
+
+it("requires current source bindings and valid chronological report freshness",()=>{
+ const id="10000000-0000-4000-8000-000000000001";const source={sourceDocumentId:id,documentVersion:1,contentKind:"document_layer",sourceSha256:"a".repeat(64),contentSha256:"b".repeat(64),schemaVersion:"2026.08.28-v1",fileName:"Pool.xlsx"};
+ const context={state:"current",sourceManifest:{schemaVersion:"receivables-evidence-manifest.v1",fingerprint:"c".repeat(64),sources:[source]},candidates:[{documentId:id,fileName:"Pool.xlsx",sheet:"A",headerRow:1}],scope:{schemaVersion:"receivables-evidence-scope.v1",id,fingerprint:"d".repeat(64),sourceManifestFingerprint:"c".repeat(64),primaryTape:{documentId:id,sheet:"A",headerRow:1},complementDocumentIds:[],reportingDate:"2026-08-31",sourceRevisions:[source],confirmedBy:id,confirmedAt:"2026-09-08T12:00:00-03:00"}};
+ expect(isReceivablesReportCurrent(context,"2026-09-08T15:01:00Z",false)).toBe(true);
+ expect(isReceivablesReportCurrent(context,"2026-09-08T14:59:00Z",false)).toBe(false);
+ expect(isReceivablesReportCurrent(context,"invalid",false)).toBe(false);
+ expect(isReceivablesReportCurrent(context,"2026-09-08T15:01:00Z",true)).toBe(false);
+ expect(isReceivablesReportCurrent({...context,sourceManifest:{...context.sourceManifest,sources:[{...source,documentVersion:2}]}},"2026-09-08T15:01:00Z",false)).toBe(false);
+});
