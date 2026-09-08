@@ -3075,7 +3075,12 @@
       "netFinancialDebt": "Dívida financeira líquida",
       "covenantDebt": "Dívida conforme covenant",
       "capacityObligations": "Obrigações para capacidade",
-      "notInformed": "Não informado"
+      "notInformed": "Não informado",
+      "receivablesNeedsScope": "Carteira a delimitar",
+      "receivablesScopeBody": "Foram identificadas várias tabelas de recebíveis. Nenhuma carteira foi selecionada e os cálculos não foram executados.",
+      "receivablesScopeTable": "Aba {sheet} · cabeçalho na linha {row}",
+      "receivablesScopeGuidance": "Antes da análise, delimite uma única carteira e informe sua data-base, esclarecendo quais arquivos e tabelas pertencem a esse perímetro.",
+      "receivablesScopeCoverage": "{count, plural, one {# fonte recebida} other {# fontes recebidas}}; delimitação da carteira pendente."
     },
     "brief": {
       "kicker": "A operação",

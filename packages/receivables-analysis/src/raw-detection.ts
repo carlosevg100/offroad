@@ -147,7 +147,11 @@ function columnOf(ref: string): string {
 }
 
 function rowOf(ref: string): number {
-  return Number(ref.match(/\d+$/)?.[0] ?? 0);
+  // Anchor both ends: an unanchored digit suffix can backtrack quadratically on
+  // long malformed references. Columns and rows occupy disjoint character sets.
+  const match = /^[A-Z]+([0-9]+)$/.exec(ref);
+  const row = match ? Number(match[1]) : 0;
+  return Number.isSafeInteger(row) && row > 0 ? row : 0;
 }
 
 function sheetRows(document: ReceivablesEvidenceDocument): SheetRow[] {
@@ -197,6 +201,33 @@ function findDataset(documents: readonly ReceivablesEvidenceDocument[], required
     }
   }
   return null;
+}
+
+const receivablesTapeHeaders = [
+  "NUM TITULO", "CNPJ SACADO", "DT EMISSAO", "DT VENCIMENTO", "VLR TITULO", "SITUACAO",
+];
+
+export type ReceivablesTapeCandidate = {
+  documentId: string;
+  fileName: string;
+  sheet: string;
+  headerRow: number;
+};
+
+/** Discover every candidate before choosing a mathematical universe. Multiple sheets or
+ * snapshots are not interchangeable, even when their column names and title IDs match. */
+export function identifyReceivablesTapes(documents: readonly ReceivablesEvidenceDocument[]): ReceivablesTapeCandidate[] {
+  const required = receivablesTapeHeaders.map(fold);
+  return documents.flatMap((document) => sheetRows(document).flatMap((row) => {
+    const headers = new Set([...row.cells.values()].map((cell) => fold(String(cell.v ?? ""))));
+    return required.every((header) => headers.has(header))
+      ? [{documentId: document.id, fileName: document.fileName, sheet: row.sheet, headerRow: row.row}]
+      : [];
+  })).sort((left, right) => {
+    const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
+    return compare(left.documentId, right.documentId) || compare(left.sheet, right.sheet)
+      || left.headerRow - right.headerRow;
+  });
 }
 
 function allText(document: ReceivablesEvidenceDocument): string {
@@ -344,9 +375,14 @@ export function buildReceivablesRawUniverse(input: {
   documents: readonly ReceivablesEvidenceDocument[];
 }): ReceivablesRawUniverseBuild {
   if (!/^[a-f0-9]{64}$/.test(input.datasetHash)) throw new RangeError("raw universe dataset hash must be SHA-256");
-  const dataset = findDataset(input.documents, [
-    "NUM TITULO", "CNPJ SACADO", "DT EMISSAO", "DT VENCIMENTO", "VLR TITULO", "SITUACAO",
-  ]);
+  if (identifyReceivablesTapes(input.documents).length > 1) {
+    return {
+      phaseOne: null,
+      classification: {categoryIds: [], cellIds: [], evidence: []},
+      warnings: ["multiple_receivables_tapes"],
+    };
+  }
+  const dataset = findDataset(input.documents, receivablesTapeHeaders);
   const tape = tapeRows(dataset);
   if (!dataset || tape.length === 0) {
     return {
@@ -728,6 +764,18 @@ export function detectReceivablesRawEvidence(input: {
   const fiscalArchives = input.fiscalArchives ?? [];
   const evidenceIds = [...input.documents.map((document) => document.id), ...fiscalArchives.map((archive) => archive.archiveId)].sort();
   if (new Set(evidenceIds).size !== evidenceIds.length) throw new RangeError("duplicate raw evidence id");
+  if (identifyReceivablesTapes(input.documents).length > 1) {
+    return {
+      version: receivablesRawDetectionVersion,
+      defects: [], questions: [], routeFacts: [],
+      evidenceCoverage: {
+        deliveredEvidenceIds: evidenceIds,
+        searchedEvidenceIds: input.documents.map((document) => document.id).sort(),
+        complete: false,
+        warnings: ["multiple_receivables_tapes"],
+      },
+    };
+  }
   const provenance = (
     anchors: readonly SourceAnchor[],
     formula: string,
