@@ -1,4 +1,4 @@
-import type {DebtTruthSet, FinancialTruthSet, ReconciledFact} from "@offroad/reconciliation";
+import {buildDebtTruthSet, type DebtTruthSet, type FinancialTruthSet, type ReconciledFact} from "@offroad/reconciliation";
 import {describe, expect, it} from "vitest";
 
 import {buildOperationTruthSet} from "./operation";
@@ -10,7 +10,8 @@ const f = (fieldPath: string, value: string, valueType: ReconciledFact["valueTyp
 });
 const financialTruth = {statements: [{period: "2025", adjustedEbitda: "35"}]} as unknown as FinancialTruthSet;
 const debtTruth = {
-  views: {grossFinancialDebt: "60", unrestrictedCash: "10"}, covenants: [], liquidityCoverage: [{period: "downside", coverage: "1.35", deficit: "0"}],
+  status: "partial", instruments: [{id: "loan", principal: "60", principalBasis: "reported_principal"}], exceptions: [], missingInputs: [],
+  views: {balanceBasis: "reported_instruments", grossFinancialDebt: "60", unrestrictedCash: "10", cashBasis: "reported"}, covenants: [], liquidityCoverage: [{period: "downside", coverage: "1.35", deficit: "0"}],
 } as unknown as DebtTruthSet;
 const policies = {version: "2026.08.25-v1", sizingMateriality: "5", residualTolerance: "0", authorizedBuffer: "10", annualDebtCost: "0.16", annualCashYield: "0.10", minimumDscr: "1.2", generalPurposeCap: "5"};
 
@@ -34,6 +35,52 @@ describe("M4 Operation Truth Set", () => {
     expect(truth.proForma).toMatchObject({grossDebt: "160", netDebt: "180", leverage: "5.14285714"});
     expect(truth.procedureCoverage).toHaveLength(14);
     expect(truth.procedureCoverage.find((item) => item.procedureId === "OP-02")?.status).toBe("completed");
+  });
+
+  it("does not turn unknown cash or an unverified historical snapshot into pro forma figures", () => {
+    for (const cashBasis of ["missing", undefined]) {
+      const snapshot = {...debtTruth, views: {...debtTruth.views, unrestrictedCash: "0", cashBasis}} as DebtTruthSet;
+      const result = buildOperationTruthSet({facts: [], financialTruth, debtTruth: snapshot, capacity: null, requestedAmount: "100", referenceDate: "2026-09-08"});
+      expect(result.proForma).toBeNull();
+      expect(result.missingInputs).toContain("debt.unrestricted_cash");
+      expect(result.procedureCoverage.find((item) => item.procedureId === "OP-03")).toMatchObject({status: "not_computable", missingInputs: ["debt.unrestricted_cash"]});
+    }
+  });
+
+  it.each([undefined, "missing"] as const)("refuses unavailable aggregate balance provenance: %s", (balanceBasis) => {
+    const snapshot = {...debtTruth, views: {...debtTruth.views, balanceBasis}} as DebtTruthSet;
+    const result = buildOperationTruthSet({facts: [], financialTruth, debtTruth: snapshot, capacity: null, requestedAmount: "100", referenceDate: "2026-09-08"});
+    expect(result.proForma).toBeNull();
+    expect(result.missingInputs).toContain("debt.balance_provenance");
+    expect(result.procedureCoverage.find((item) => item.procedureId === "OP-03")).toMatchObject({status: "not_computable", missingInputs: ["debt.balance_provenance"]});
+  });
+
+  it("preserves reported zero cash when debt provenance is sufficient", () => {
+    const snapshot = {...debtTruth, views: {...debtTruth.views, unrestrictedCash: "0"}};
+    const result = buildOperationTruthSet({facts: [], financialTruth, debtTruth: snapshot, capacity: null, requestedAmount: "100", referenceDate: "2026-09-08"});
+    expect(result.proForma).toMatchObject({grossDebt: "160", unrestrictedCash: "0", netDebt: "160"});
+  });
+
+  it("blocks actual balance-only debt truth rather than consuming its compatibility values", () => {
+    const snapshot = buildDebtTruthSet([
+      f("debt.instruments.1.balance", "100"), f("debt.instruments.1.accrued_interest", "10"),
+      f("debt.instruments.1.lender", "Lender", "text"), f("debt.instruments.1.instrument_type", "loan", "text"),
+      f("debt.instruments.1.maturity", "2027-09-08", "date"), f("debt.instruments.1.currency", "BRL", "text"),
+      f("debt.unrestricted_cash", "0"),
+    ], "2026-09-08");
+    const result = buildOperationTruthSet({facts: [], financialTruth, debtTruth: snapshot, capacity: null, requestedAmount: "100", referenceDate: "2026-09-08"});
+    expect(snapshot.views.grossFinancialDebt).toBe("100");
+    expect(result.proForma).toBeNull();
+    expect(result.missingInputs).toContain("debt.instruments.1.principal");
+    expect(result.procedureCoverage.find((item) => item.procedureId === "OP-03")?.missingInputs).toContain("debt.instruments.1.principal");
+  });
+
+  it("refuses legacy instrument provenance and blocking debt exceptions even with reported cash", () => {
+    const legacy = {...debtTruth, instruments: [{...debtTruth.instruments[0]!, principalBasis: undefined}]} as DebtTruthSet;
+    const blocked = {...debtTruth, status: "blocked" as const};
+    for (const snapshot of [legacy, blocked]) {
+      expect(buildOperationTruthSet({facts: [], financialTruth, debtTruth: snapshot, capacity: null, requestedAmount: "100", referenceDate: "2026-09-08"}).proForma).toBeNull();
+    }
   });
 
   it("fails closed on a mismatch, an uncovered period and a bridge without take-out", () => {

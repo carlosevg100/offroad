@@ -328,10 +328,10 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
           </header>
           <p>{t("debtTruthBody")}</p>
           <dl className="case-truth__metrics">
-            <div><dt>{t("grossFinancialDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.grossFinancialDebt, locale)}</dd></div>
-            <div><dt>{t("netFinancialDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.netFinancialDebt, locale)}</dd></div>
-            <div><dt>{t("covenantDebt")}</dt><dd>{money(state.reconciliation.debtTruth.views.covenantDebt, locale)}</dd></div>
-            <div><dt>{t("capacityObligations")}</dt><dd>{money(state.reconciliation.debtTruth.views.adjustedCapacityObligations, locale)}</dd></div>
+            <div><dt>{t("grossFinancialDebt")}</dt><dd>{state.reconciliation.debtTruth.views.balanceBasis === "reported_instruments" ? money(state.reconciliation.debtTruth.views.grossFinancialDebt, locale) : t("notInformed")}</dd></div>
+            <div><dt>{t("netFinancialDebt")}</dt><dd>{state.reconciliation.debtTruth.views.balanceBasis === "reported_instruments" && state.reconciliation.debtTruth.views.cashBasis === "reported" ? money(state.reconciliation.debtTruth.views.netFinancialDebt, locale) : t("notInformed")}</dd></div>
+            <div><dt>{t("covenantDebt")}</dt><dd>{state.reconciliation.debtTruth.views.balanceBasis === "reported_instruments" ? money(state.reconciliation.debtTruth.views.covenantDebt, locale) : t("notInformed")}</dd></div>
+            <div><dt>{t("capacityObligations")}</dt><dd>{state.reconciliation.debtTruth.views.balanceBasis === "reported_instruments" ? money(state.reconciliation.debtTruth.views.adjustedCapacityObligations, locale) : t("notInformed")}</dd></div>
             <div><dt>{t("truthService12Months")}</dt><dd>{money(state.reconciliation.debtTruth.serviceNext12Months, locale)}</dd></div>
             <div><dt>{t("truthOffBalance")}</dt><dd>{money(state.reconciliation.debtTruth.views.offBalanceSheetExposures, locale)}</dd></div>
           </dl>
@@ -340,7 +340,7 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
               {state.reconciliation.debtTruth.instruments.map((instrument) => (
                 <li key={instrument.id}>
                   <div><strong>{instrument.lender ?? t("notInformed")}</strong><span>{instrument.instrument ?? t("notInformed")}</span></div>
-                  <span>{money(instrument.balance, locale)}</span>
+                  <span>{instrument.principalBasis === "missing" ? t("notInformed") : money(instrument.balance, locale)}</span>
                   <small>{instrument.maturity ?? t("notInformed")}</small>
                 </li>
               ))}

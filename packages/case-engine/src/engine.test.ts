@@ -138,6 +138,21 @@ async function executeWithConfirmedStructure(
 }
 
 describe("the governed case engine", () => {
+  it("keeps missing cash out of leverage capacity through the real reconciliation path", async () => {
+    const result = await executeCaseEngine({
+      runId: "missing-cash-capacity", caseId: "synthetic-capacity", archetypeId: "growth_expansion",
+      locale: "pt", referenceDate: "2026-08-24",
+      candidates: [candidate("transaction.requested_amount", "100"), candidate("debt.total_gross", "60"), candidate("historical_financials.2025.ebitda", "25", "number", {periodEnd: "2025-12-31"})],
+      documents: [], roomDocuments: [], dealBrief: {requestedAmount: "100", requestedTermMonths: 48, sector: "Varejo", geography: "SP", instruments: ["ccb"], collateralKinds: []},
+      resolvedMandates: [], externalReleaseApproved: false,
+    });
+    expect(result.state.reconciliation.debtTruth.views.cashBasis).toBe("missing");
+    expect(result.state.reconciliation.calculations.some((row) => row.id === "net_debt")).toBe(false);
+    expect(result.state.capacity?.walls.find((wall) => wall.id === "market")?.amount).toBeNull();
+    expect(result.state.capacity?.calculations.some((row) => row.id === "capacity_market")).toBe(false);
+    expect(result.state.capacity?.gaps).toContain("Dívida líquida existente");
+  });
+
   it("runs all eleven layers through real domain engines and keeps an unavailable writer as a domain state", async () => {
     const result = await executeCaseEngine({
       runId: "run-1",
@@ -282,7 +297,8 @@ describe("the governed case engine", () => {
       archetypeId: "other",
       locale: "pt",
       referenceDate: "2026-08-24",
-      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text")],
+      // Explicit reported cash keeps this test focused on its review/production gate.
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text"), candidate("historical_financials.2025.cash", "0", "number", {periodEnd: "2025-12-31"})],
       documents,
       roomDocuments: [],
       dealBrief: {},
@@ -323,7 +339,8 @@ describe("the governed case engine", () => {
       archetypeId: "other",
       locale: "pt",
       referenceDate: "2026-08-24",
-      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text")],
+      // Explicit reported cash keeps this test focused on its review/production gate.
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text"), candidate("historical_financials.2025.cash", "0", "number", {periodEnd: "2025-12-31"})],
       documents,
       roomDocuments: [],
       dealBrief: {},
@@ -403,7 +420,8 @@ describe("the governed case engine", () => {
       archetypeId: "other",
       locale: "pt",
       referenceDate: "2026-08-24",
-      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text")],
+      // Explicit reported cash keeps this test focused on its review/production gate.
+      candidates: [candidate("company.legal_name", "Empresa Teste Ltda", "text"), candidate("historical_financials.2025.cash", "0", "number", {periodEnd: "2025-12-31"})],
       documents,
       roomDocuments: [],
       dealBrief: {},
