@@ -538,8 +538,10 @@ test.describe("Document-first intake (company journey)", () => {
 
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     await expect(page.locator(".advisor-project__composer-wrap footer span")).toHaveText("Projeto privado");
-    const documentsSummary = page.getByText("Documentos", {exact: true}).locator("..");
-    await expect(documentsSummary.locator("small")).toHaveText(String(dataRoomExpectations.documents));
+    const inventory = page.getByTestId("evidence-inventory");
+    await expect(inventory.locator(".advisor-evidence-inventory__summary")).toContainText(`${dataRoomExpectations.documents} arquivos recebidos`);
+    await inventory.getByText("Ver documentos recebidos", {exact: true}).click();
+    await expect(inventory.locator(".advisor-evidence-inventory__files > li")).toHaveCount(dataRoomExpectations.documents);
     await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
   });

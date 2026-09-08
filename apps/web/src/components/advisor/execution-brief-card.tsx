@@ -62,11 +62,11 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
     <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-testid="execution-brief">
       <header>
         <div>
-          <span>{t("title")}</span>
-          <h2>{brief.objective}</h2>
+          <h2>{t("title")}</h2>
         </div>
         <small><ShieldCheck aria-hidden="true" size={12} />{t("version", {version})} · {t(`approval.${approvalStatus}.title`)}</small>
       </header>
+      <p className="execution-brief-card__objective">{brief.objective}</p>
 
       <section className="execution-brief-card__deliverable">
         <FileOutput aria-hidden="true" size={16} />

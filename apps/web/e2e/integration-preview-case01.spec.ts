@@ -50,7 +50,9 @@ async function approveCurrentPlan(page: Page, loseAcceptedResponse = false) {
     await page.reload();
     return panel.getAttribute("data-approval-status");
   }, {timeout: 180_000}).toBe("awaiting");
-  const version = await page.getByTestId("execution-brief").locator(":scope > header > small").innerText();
+  // Read the semantic text; innerText can apply CSS uppercase before/after hydration.
+  const version = await page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
+  if (!version) throw new Error("the proposed execution brief has no displayed version");
   await page.reload();
   await expect(panel).toHaveAttribute("data-approval-status", "awaiting");
   await expect(page.getByTestId("execution-brief").locator(":scope > header > small")).toHaveText(version);
@@ -252,7 +254,8 @@ test.describe("integration_preview: Case 01 end to end", () => {
 
   test("plan control: an adjustment is bound to the displayed version and returns as a visible diff", async () => {
     const brief = page.getByTestId("execution-brief");
-    const versionBefore = await brief.locator(":scope > header > small").innerText();
+    const versionBefore = await brief.locator(":scope > header > small").textContent();
+    if (!versionBefore) throw new Error("the current execution brief has no displayed version");
     await brief.getByRole("button", {name: "Ajustar este plano"}).click();
     await expect(brief.locator(".execution-brief-card__edit form")).toBeVisible();
     const adjustment = "Na comparação, priorize flexibilidade antes de custo e retire qualquer bloco de rating sem evidência.";
@@ -263,7 +266,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     record("ajuste governado do plano", acknowledgement);
     await expect.poll(async () => {
       await page.reload();
-      return page.getByTestId("execution-brief").locator(":scope > header > small").innerText();
+      return page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
     }, {timeout: 180_000}).not.toBe(versionBefore);
     const changes = page.getByTestId("execution-brief-changes");
     await expect(changes).toBeVisible();
