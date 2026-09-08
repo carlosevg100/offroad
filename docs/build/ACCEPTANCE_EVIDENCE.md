@@ -2,7 +2,7 @@
 
 ## Leitura executiva e conferência completa, 08/09/2026
 
-Em implementação sobre main `146104e0a51e6963f92af874ff442cebf66373f8` (PR #548). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.
+Em implementação sobre main `146104e0a51e6963f92af874ff442cebf66373f8` (PR #548). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. O produtor inclui explicitamente a série de vencimentos na visão de conversa dos contratos novos, preservando valores e apresentação. Snapshots existentes não são reescritos. A publicação requer web e worker, sem migração. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.
 
 Os resultados completos dos métodos permanecem acessíveis junto da leitura executiva. Sem contrato válido ou sem visão de conversa, a interface informa a indisponibilidade da leitura e conserva os métodos existentes. Rótulos conhecidos são localizados em PT/EN; referências e campos desconhecidos permanecem literais. Nenhuma narrativa é inventada para preencher blocos sem corpo narrativo.
 

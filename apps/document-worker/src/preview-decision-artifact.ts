@@ -295,7 +295,12 @@ export function compilePreviewDecisionArtifact(input: {
       artifactId: "preview-chat-readout",
       artifactKind: "chat_readout",
       artifactFingerprint: fingerprintFor("conversation"),
-      blocks: [block("executive-metrics", "metric", "Leitura financeira", metricClaimIds), ...decisionBlock, ...gapBlock],
+      blocks: [
+        block("executive-metrics", "metric", "Leitura financeira", metricClaimIds),
+        ...(series.length ? [block("maturity-wall", "chart", "Vencimentos contratuais", [], [], [], [], series.map((item) => item.id))] : []),
+        ...decisionBlock,
+        ...gapBlock,
+      ],
     },
     {
       surface: "workbook",

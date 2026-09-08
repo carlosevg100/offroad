@@ -221,6 +221,21 @@ describe("integration_preview run processor", () => {
     const contract = decisionArtifactContractSchema.parse(decisionArtifact.content.contract);
     expect(decisionArtifactIdentityReport(contract).valid).toBe(true);
     expect(contract.release).toEqual({state: "internal_only", recipientIds: []});
+    const conversation = contract.views.find((view) => view.surface === "conversation")!;
+    const presentation = contract.views.find((view) => view.surface === "presentation")!;
+    expect(conversation.blocks.find((block) => block.kind === "chart")).toMatchObject({
+      id: "maturity-wall", claimIds: [], seriesIds: ["series-maturity-wall"],
+    });
+    const conversationClaims = conversation.blocks.flatMap((block) => block.claimIds);
+    expect(conversationClaims).toHaveLength(6);
+    expect(new Set(conversationClaims).size).toBe(6);
+    expect(presentation.blocks.find((block) => block.kind === "chart")).toMatchObject({
+      id: "maturity-wall", claimIds: ["claim-peak-maturity-amount", "claim-peak-maturity-period"], seriesIds: ["series-maturity-wall"],
+    });
+    const maturityOutput = fake.recorded.find((artifact) => artifact.artifactType === "preview_maturity_wall")!.content.output as {walls: Array<{period: string; amount: string}>};
+    expect(contract.series?.find((series) => series.id === "series-maturity-wall")?.points.map((point) => ({label: point.label, value: point.value})))
+      .toEqual(maturityOutput.walls.map((wall) => ({label: wall.period, value: Number(wall.amount)})));
+
     expect(contract.claims).toEqual(expect.arrayContaining([
       expect.objectContaining({id: "claim-gross-debt", value: "5670186"}),
       expect.objectContaining({id: "claim-peak-maturity-amount", value: "1229828"}),
