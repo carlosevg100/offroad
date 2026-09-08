@@ -2,6 +2,7 @@
 -- idempotent start and C11-only correction. Every fixture is rolled back.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -166,6 +167,7 @@ declare
   v_final_artifact_id uuid;
   v_final_fingerprint text;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('v', 64), 600);
   if claim #>> '{payload,analysis_scope}' <> 'company_debt_view'
     or jsonb_array_length(claim #> '{payload,capital_task_ids}') <> 24
@@ -250,6 +252,7 @@ begin
     raise exception 'company debt revision replay failed: %', revision_replay;
   end if;
 
+  perform pg_temp.fixture_approve_pending_executions();
   revision_claim := public.worker_claim_job(repeat('v', 64), 600);
   if revision_claim #>> '{payload,analysis_scope}' <> 'company_debt_view'
     or revision_claim #>> '{payload,capital_task_ids,0}' <> 'C11'

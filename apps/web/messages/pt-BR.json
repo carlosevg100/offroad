@@ -1309,7 +1309,10 @@
         "high": "alta",
         "medium": "média",
         "low": "baixa"
-      }
+      },
+      "awaitingPlanFallback": "Confira o plano acima e aprove esta versão para iniciar a análise. Se necessário, ajuste o escopo ou acrescente documentos antes de aprovar.",
+      "approvedPlanFallback": "O plano foi aprovado. Você pode acompanhar o andamento aqui; os resultados aparecerão conforme o trabalho for concluído.",
+      "preparingPlanFallback": "O projeto foi criado. Acrescente contexto ou documentos enquanto o plano deste trabalho é preparado."
     },
     "integrationPreview": {
       "kicker": "Validação interna",
@@ -3265,6 +3268,17 @@
       "eligible": "elegível",
       "priceTitle": "Preço indicativo (uso interno; o term sheet não traz taxa)",
       "to": "a"
+    },
+    "executionApproval": {
+      "preparingTitle": "Preparando seu plano de trabalho",
+      "preparingBody": "Você poderá revisar e aprovar o plano antes de iniciar a análise.",
+      "unavailableTitle": "O plano ainda não está disponível",
+      "unavailableBody": "Atualize para consultar o estado mais recente do projeto. A análise aguarda um plano válido e sua aprovação.",
+      "running": "Plano aprovado. A análise está em andamento; esta página mostrará o resultado quando estiver pronto.",
+      "refresh": "Atualizar estado",
+      "stale": "O plano mudou. Atualize para revisar a versão atual antes de aprovar.",
+      "failed": "Não foi possível confirmar a aprovação. Tente novamente.",
+      "editFailed": "Não foi possível enviar o ajuste. Seu pedido foi preservado; tente novamente."
     }
   },
   "Sounding": {
@@ -3398,5 +3412,129 @@
       "planned": "planejado",
       "awaiting_confirmation": "aguardando confirmação"
     }
+  },
+  "ExecutionBriefCard": {
+    "editVersion": "Seu pedido ficará vinculado à versão {version}.",
+    "change": {
+      "objective_changed": "Objetivo",
+      "deliverable_changed": "Entrega",
+      "workstream_added": "Incluído",
+      "workstream_removed": "Removido",
+      "assumption_added": "Premissa",
+      "assumption_updated": "Premissa",
+      "assumption_removed": "Premissa",
+      "source_status_changed": "Fonte",
+      "checkpoint_changed": "Decisão"
+    },
+    "progress": {
+      "waiting": "Aguardando",
+      "queued": "Na fila",
+      "running": "Em andamento",
+      "waiting_user": "Aguardando você",
+      "completed": "Concluída",
+      "needs_attention": "Requer atenção"
+    },
+    "source": {
+      "available": "disponível",
+      "to_research": "a pesquisar",
+      "to_request": "a solicitar"
+    },
+    "startsAfterDisplay": "Início após exibição",
+    "confirmBeforeProceeding": "Confirmação antes de avançar",
+    "externalApproval": "Aprovação antes de qualquer ação externa",
+    "title": "Plano deste trabalho",
+    "deliverable": "O que ficará pronto",
+    "after": "depois de",
+    "stepDetails": "Análises e produto desta etapa",
+    "output": "Saída",
+    "changesTitle": "O que mudou nesta versão",
+    "changesPreserved": "O restante do plano foi preservado",
+    "removed": "removido",
+    "assumptions": "Premissas que você pode alterar",
+    "newVersion": "Toda mudança gera uma nova versão",
+    "edit": "Ajustar este plano",
+    "editHint": "Inclua, retire ou priorize o que muda a entrega",
+    "editQuestion": "O que deve mudar no plano?",
+    "cancelEdit": "Cancelar ajuste",
+    "editPlaceholder": "Descreva o que deseja incluir, retirar, aprofundar ou priorizar...",
+    "editConsequence": "A Offroad recompilará o plano e mostrará as diferenças antes de seguir.",
+    "submitEdit": "Enviar ajuste",
+    "nextDecision": "Próximo ponto de decisão",
+    "version": "Versão {version}",
+    "editUncertain": "Não foi possível confirmar o envio do ajuste. Seu texto foi preservado. Tente novamente.",
+    "approval": {
+      "awaiting": {
+        "title": "Aguardando sua aprovação",
+        "description": "Confira o escopo e as fontes. A análise deste plano começa após sua aprovação."
+      },
+      "approved": {
+        "title": "Plano aprovado",
+        "description": "Sua aprovação foi registrada para esta versão. Acompanhe abaixo o trabalho e eventuais impedimentos."
+      },
+      "superseded": {
+        "title": "Plano atualizado",
+        "description": "Esta versão não está disponível para aprovação. Revise o plano mais recente."
+      },
+      "unavailable": {
+        "title": "Aprovação indisponível",
+        "description": "Ainda não foi possível confirmar o estado de aprovação deste plano."
+      },
+      "approve": "Aprovar plano · versão {version}",
+      "retry": "Tentar aprovar novamente",
+      "saving": "Registrando aprovação…",
+      "refreshing": "Aguardando atualização do estado…",
+      "uncertain": "Não foi possível confirmar a aprovação. Tente novamente; a confirmação será verificada antes de iniciar o trabalho.",
+      "refresh": "Atualizar estado",
+      "reason": {
+        "awaiting_preliminary_confirmation": "Confira e confirme o entendimento inicial dos documentos para avançar.",
+        "required_information_missing": "Ainda há informações necessárias para preparar esta análise. Consulte as pendências do projeto.",
+        "plan_generation_pending": "O plano está sendo preparado a partir do escopo deste projeto. A análise aguarda sua aprovação.",
+        "dispatch_unavailable": "Não há uma execução vinculada a esta versão. Ajuste o plano para preparar uma nova proposta.",
+        "context_changed": "As informações ou o escopo mudaram. Revise a nova versão antes de aprovar.",
+        "approval_required": "Revise o escopo e a entrega. Sua aprovação libera somente o trabalho desta versão.",
+        "approved": "Esta versão foi aprovada. Alterações materiais exigem um novo plano e uma nova aprovação."
+      }
+    }
+  },
+  "AdvisorEvidenceInventory": {
+    "title": "Base de informação",
+    "description": "Confira o material recebido e os pontos que ainda precisam de evidência.",
+    "files": "{count, plural, one {# arquivo recebido} other {# arquivos recebidos}}",
+    "coverage": "Requisitos resolvidos: {verified}/{total}",
+    "coveragePending": "Cobertura ainda não avaliada",
+    "notExamined": "{count, plural, one {# requisito não examinado} other {# requisitos não examinados}}",
+    "reviewFiles": "Ver documentos recebidos",
+    "version": "Versão {version}",
+    "noFiles": "Nenhum arquivo foi enviado a este projeto. As fontes de pesquisa são indicadas no plano.",
+    "processingIsNotVerification": "O processamento de um arquivo não confirma, por si só, a informação necessária à análise.",
+    "requirements": "{count, plural, one {# ponto a esclarecer} other {# pontos a esclarecer}}",
+    "reasonPending": "O impacto deste requisito ainda precisa ser avaliado.",
+    "noRequirements": "Nenhuma pendência foi registrada nesta base. Isso não comprova que a análise esteja completa.",
+    "documentStatus": {
+      "quarantined": "Aguardando verificação de segurança",
+      "scanning": "Em verificação de segurança",
+      "clean": "Liberado para leitura",
+      "processing": "Em processamento",
+      "ready": "Processado",
+      "rejected": "Arquivo recusado",
+      "failed": "Falha no processamento",
+      "unknown": "Estado de processamento não disponível"
+    },
+    "requirementStatus": {
+      "missing": "Informação não encontrada",
+      "partial": "Evidência parcial",
+      "conflicting": "Fontes divergentes",
+      "unavailable": "Informação indisponível",
+      "not_examined": "Ainda não examinado",
+      "unknown": "Avaliação pendente"
+    },
+    "materiality": {
+      "blocking": "Bloqueia a conclusão afetada",
+      "high": "Alta relevância",
+      "medium": "Média relevância",
+      "low": "Complementar",
+      "unknown": "Impacto a avaliar"
+    },
+    "addFiles": "Adicionar documentos"
   }
 }

@@ -1,3 +1,5 @@
+import {IntakeExecutionApproval} from "./intake-execution-approval";
+import type {IntakeExecutionApprovalState} from "@/lib/intake/execution-approval";
 import {AlertTriangle, ArrowLeft, ShieldCheck} from "lucide-react";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
@@ -32,6 +34,7 @@ type CompanyProfile = {
 };
 
 type Props = {
+  executionApproval?: IntakeExecutionApprovalState | null;
   locale: string;
   session: IntakeSession;
   documents: IntakeDocumentSummary[];
@@ -75,7 +78,7 @@ type Props = {
  * Upload step: drop zone + "analyze" action, plus honest states for `processing` and `failed`.
  * Used by onboarding (documents-first journey) and the workspace new-case flow.
  */
-export async function IntakeCollect({locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, preliminaryState, preliminaryAction, stage, operationTypeOnly = false, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
+export async function IntakeCollect({executionApproval, locale, session, documents, organizationId, userId, processAction, removeAction, className, setOperationAction, checklist, answerAction, dealBrief, dealBriefAction, preliminaryState, preliminaryAction, stage, operationTypeOnly = false, companyProfile, companyProfileComplete = false, companyProfileAction, backHref, stageBaseHref, resolveScopeSuggestionAction, revokeAuthorizationAction, surface}: Props) {
   const t = await getTranslations({locale, namespace: "Intake"});
   const failed = session.status === "failed";
   const processing = session.status === "processing";
@@ -112,8 +115,10 @@ export async function IntakeCollect({locale, session, documents, organizationId,
   const authorization = session.advisor_authorization && typeof session.advisor_authorization === "object" && !Array.isArray(session.advisor_authorization)
     ? session.advisor_authorization
     : null;
+  if (executionApproval?.pending) return <IntakeExecutionApproval state={executionApproval} locale={locale} />;
   return (
     <section className={`${className ?? "intake-form"} intake-collect`}>
+      {executionApproval ? <IntakeExecutionApproval state={executionApproval} locale={locale} /> : null}
       <IntakeJourneyTelemetry
         activeRequestCount={checklist?.activeBatch.length ?? 0}
         documentCount={documents.length}

@@ -1,5 +1,10 @@
 # Offroad Capital: fluxo canônico do produto
 
+### Contrato de aprovação do Advisor (implementação candidata)
+
+A preparação delimita documentos recebidos, informações verificadas, conflitos e requisitos não examinados. O plano proposto declara escopo e entrega antes da análise substantiva. Sua aprovação é explícita, persistida e vinculada à versão exata e aos inputs materiais. Alterações materiais exigem uma nova versão; consultas de acompanhamento não devem invalidar uma aprovação válida. Retomar a página não aprova trabalho. Gates de confirmação preliminar e suficiência de informações continuam aplicáveis. Falhas ou respostas incertas permitem recuperação do mesmo comando sem duplicar execução.
+
+
 > Status: aprovado pelo fundador em 29 de agosto de 2026.
 >
 > Este documento é a fonte de verdade para a sequência da jornada, seus estados,

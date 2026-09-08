@@ -10,7 +10,7 @@ import {
 import {after} from "next/server";
 import {z} from "zod";
 
-import {requireWorkspace} from "@/lib/auth/workspace";
+import {requireUser, requireWorkspace} from "@/lib/auth/workspace";
 import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
 import {processIntakeSession} from "@/lib/intake/server";
 
@@ -39,6 +39,11 @@ const informationResponseSchema = continueSchema.extend({
   answerSource: z.enum(["choice", "custom", "unavailable"]),
 });
 const projectSchema = z.object({locale: localeSchema, projectId: z.string().uuid()});
+const executionBriefApprovalSchema = projectSchema.extend({
+  executionBriefId: z.uuid(),
+  expectedFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+  commandId: z.uuid(),
+});
 
 export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing" | "stale";
 export type StartAdvisorProjectResult =
@@ -145,7 +150,7 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
 export async function requestAdvisorExecutionBriefEdit(input: unknown): Promise<AdvisorMessageResult> {
   const parsed = executionBriefEditSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
-  const {supabase} = await requireWorkspace(parsed.data.locale);
+  const {supabase} = await requireUser(parsed.data.locale);
   const {error} = await supabase.rpc("submit_advisor_execution_brief_edit_v1", {
     p_project_id: parsed.data.projectId,
     p_execution_brief_id: parsed.data.executionBriefId,
@@ -153,6 +158,21 @@ export async function requestAdvisorExecutionBriefEdit(input: unknown): Promise<
     p_message_id: parsed.data.messageId,
     p_locale: parsed.data.locale,
     p_content: parsed.data.content,
+  });
+  return error ? {ok: false, error: actionError(error)} : {ok: true};
+}
+
+/** Records exact-plan consent and releases only the already bound work in one transaction.
+ * Workspace identity comes from the authenticated session; the client cannot grant authority. */
+export async function approveAdvisorExecutionBrief(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = executionBriefApprovalSchema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireUser(parsed.data.locale);
+  const {error} = await supabase.rpc("approve_advisor_execution_brief_v1", {
+    p_project_id: parsed.data.projectId,
+    p_execution_brief_id: parsed.data.executionBriefId,
+    p_expected_fingerprint: parsed.data.expectedFingerprint,
+    p_command_id: parsed.data.commandId,
   });
   return error ? {ok: false, error: actionError(error)} : {ok: true};
 }

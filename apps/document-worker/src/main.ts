@@ -1,3 +1,4 @@
+import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
 
@@ -313,6 +314,15 @@ async function main(): Promise<void> {
       log("job.heartbeat_failed", {job: job?.job_id, message: error.message}),
     );
 
+    if (job.kind === "execution_brief_proposal") {
+      current = processExecutionBriefProposalJob(job, queue)
+        .then((outcome) => { log("job.finished", {job: job.job_id, status: outcome.status, ms: Date.now() - startedAt, modelCalls: 0, costUsd: 0}); })
+        .catch(() => { log("job.unreported_failure", {job: job.job_id}); })
+        .finally(() => stopHeartbeat());
+      await current;
+      current = null;
+      continue;
+    }
     let research: Awaited<ReturnType<typeof researchFor>>;
     try {
       research = await researchFor(job);

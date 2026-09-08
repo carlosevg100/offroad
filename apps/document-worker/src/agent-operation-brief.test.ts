@@ -836,6 +836,7 @@ describe("agent operation brief worker", () => {
 
   it("activates a released public DAG in the same project with zero routing model calls", async () => {
     let modelCalls = 0;
+    let recordedBrief: Record<string, unknown> | undefined;
     let recordedActivation: Record<string, unknown> | undefined;
     let completed: Record<string, unknown> | undefined;
     const queue = {
@@ -846,6 +847,7 @@ describe("agent operation brief worker", () => {
         locale: "pt-BR",
         message: "Quero entender os riscos e a capacidade de dívida antes de escolher uma operação.",
         brief: {},
+        approval_input_fingerprint: "b".repeat(64),
         snapshot_fingerprint: "a".repeat(64),
         projection_updated_at: "2026-09-01T12:00:00.000Z",
         manifest_id: null,
@@ -870,7 +872,9 @@ describe("agent operation brief worker", () => {
         _response: unknown,
         _proposal: unknown,
         activation: unknown,
+        executionBrief: unknown,
       ) => {
+        recordedBrief = executionBrief as Record<string, unknown>;
         recordedActivation = activation as Record<string, unknown>;
         return {};
       },
@@ -891,6 +895,7 @@ describe("agent operation brief worker", () => {
     expect(result.status).toBe("succeeded");
     expect(modelCalls).toBe(0);
     expect(recordedActivation).toMatchObject({job: "company_debt_view", company: {name: "Camil"}});
+    expect(recordedBrief).toMatchObject({expectedInputFingerprint: "b".repeat(64), visible: {executionMode: "confirm_before_expensive_work"}});
     expect(completed).toMatchObject({activated_job: "company_debt_view", spend: {costUsd: 0, calls: 0}});
   });
 

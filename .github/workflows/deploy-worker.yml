@@ -141,7 +141,7 @@ jobs:
           if [ "$COUNT" = "0" ]; then
             echo "Service $ECS_SERVICE does not exist yet in cluster $ECS_CLUSTER."
             echo "The image and task definition are ready; create the service once and re-run."
-            exit 0
+            exit 1
           fi
           aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
             --task-definition "${{ steps.taskdef.outputs.arn }}" --force-new-deployment >/dev/null
@@ -174,4 +174,20 @@ jobs:
             echo "::endgroup::"
             exit 1
           fi
+          # A stable service may have rolled back to an older revision. Verify the
+          # exact immutable task definition before declaring this release deployed.
+          CURRENT_TASK=$(aws ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+            --query 'services[0].deployments[?status==`PRIMARY`].taskDefinition | [0]' --output text)
+          if [ "$CURRENT_TASK" != "${{ steps.taskdef.outputs.arn }}" ]; then
+            echo "The service is stable on a different task definition; this release was not deployed."
+            exit 1
+          fi
+          read -r DESIRED_WORKERS RUNNING_WORKERS <<< "$(aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+            --query 'services[0].[desiredCount,runningCount]' --output text)"
+          if ! [[ "$DESIRED_WORKERS" =~ ^[1-9][0-9]*$ ]] || [ "$RUNNING_WORKERS" != "$DESIRED_WORKERS" ]; then
+            echo "The expected worker revision is not running at the desired nonzero capacity."
+            exit 1
+          fi
+          echo "Verified task definition: $CURRENT_TASK"
           echo "Deployment stable."

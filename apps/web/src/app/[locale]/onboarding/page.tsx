@@ -1,3 +1,4 @@
+import {loadIntakeExecutionApproval} from "@/lib/intake/execution-approval";
 import {
   ArrowLeft,
   ArrowRight,
@@ -39,7 +40,7 @@ import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
 import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
 import type {AppLocale} from "@/i18n/routing";
-import {loadIntakeReview} from "@/lib/intake/server";
+import {loadIntakeCollection, loadIntakeReview} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import {resolveBorrowerOnboardingView} from "@/lib/onboarding/state-machine";
 import {createClient} from "@/lib/supabase/server";
@@ -216,9 +217,12 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   ) {
     redirect(`/${locale}/app/new?mode=documents&session=${intakeSessionId}`);
   }
-  const intakeReview = journey !== "capital_provider" && intakeSessionId
-    ? await loadIntakeReview({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId})
-    : null;
+  const intakeRuntime = {supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId: intakeSessionId};
+  const intakeCollection = journey !== "capital_provider" && intakeSessionId ? await loadIntakeCollection(intakeRuntime) : null;
+  const executionApproval = intakeCollection?.session ? await loadIntakeExecutionApproval(supabase, intakeCollection.session) : null;
+  const intakeReview = intakeCollection && !executionApproval?.blockReview
+    ? await loadIntakeReview(intakeRuntime)
+    : intakeCollection ? {...intakeCollection, candidates: [], issues: []} : null;
   const guidedCompanyAnswers = jsonObject(intakeReview?.session?.company_profile);
   const requestedIntakeStage = state.stage === "company" || state.stage === "operation" || state.stage === "preliminary" || state.stage === "documents"
     ? state.stage
@@ -526,8 +530,9 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           ) : null}
 
           {onboardingView === "guided" && isDocumentFirst ? (
-            !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" ? (
+            !intakeReview?.session ? <p className="form-notice form-notice--error">{tIntake("errors.session")}</p> : intakeReview.session.status === "review_ready" && !executionApproval?.blockReview ? (
               <IntakeReview
+                executionApproval={executionApproval}
                 caseState={await resolveCaseState({
                   supabase,
                   organizationId: organization.id,
@@ -544,6 +549,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
               />
             ) : (
               <IntakeCollect
+                executionApproval={executionApproval}
                 {...(requestedIntakeStage ? {stage: requestedIntakeStage} : {})}
                 checklist={await loadIntakeChecklist({
                   supabase,

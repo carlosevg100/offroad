@@ -1,3 +1,4 @@
+import {loadIntakeExecutionApproval} from "./execution-approval";
 import {createHash, randomUUID} from "node:crypto";
 
 import {buildAutoAcceptPolicy, measureAccuracy, type FeedbackRow} from "@offroad/extraction-learning";
@@ -135,13 +136,16 @@ async function ensureReconciled(runtime: IntakeRuntime): Promise<void> {
   const {supabase, organizationId, sessionId} = runtime;
   const {data: session} = await supabase
     .from("document_intake_sessions")
-    .select("status, current_run_id, result_summary")
+    .select("*")
     .eq("organization_id", organizationId)
     .eq("id", sessionId)
     .is("archived_at", null)
     .maybeSingle();
 
   if (!session || session.status !== "review_ready" || !session.current_run_id) return;
+
+  const executionApproval = await loadIntakeExecutionApproval(supabase, session);
+  if (executionApproval?.blockReview) return;
 
   const summary = (session.result_summary ?? {}) as Record<string, unknown>;
   if (summary.reconciled_run === session.current_run_id) return;

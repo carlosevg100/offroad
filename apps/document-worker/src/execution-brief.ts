@@ -36,6 +36,8 @@ const capitalPlanSchema = z.object({
 }).passthrough();
 
 export type ExecutionBriefContext = {
+  requestId?: string;
+  expectedInputFingerprint?: string;
   locale: "pt-BR" | "en-US";
   message: string;
   accessBasis: string;
@@ -46,6 +48,7 @@ export type ExecutionBriefContext = {
 };
 
 export type PreparedExecutionBrief = {
+  expectedInputFingerprint?: string;
   internal: CompiledExecutionBrief;
   visible: VisibleExecutionBrief;
   changeSummary: ExecutionBriefChange[];
@@ -69,6 +72,7 @@ export function prepareExecutionBrief(
   return {
     internal,
     visible,
+    ...(context.expectedInputFingerprint ? { expectedInputFingerprint: context.expectedInputFingerprint } : {}),
     changeSummary: previous.success ? diffVisibleExecutionBrief(previous.data, visible) : [],
   };
 }
@@ -83,6 +87,7 @@ function compileStandardBrief(
   const copy = standardCopy(context.locale, activation);
   return compileCapitalExecutionBrief({
     plan,
+    ...(context.requestId ? {revisionContext: context.requestId} : {}),
     locale: context.locale,
     objective: copy.objective,
     companyLabel: activation.company.name,
@@ -95,9 +100,8 @@ function compileStandardBrief(
       executionAuthority: "analysis_only",
       establishedBy: "system_policy",
     },
-    // Released public-company work starts after the agreement is displayed. A future high-cost
-    // or private workflow must pause its queue and set the confirmation mode before execution.
-    expensiveWork: false,
+    // The persisted queue gate requires explicit consent to this exact proposed work.
+    expensiveWork: true,
   });
 }
 
@@ -164,7 +168,7 @@ function compilePreviewBrief(
   const instruction = activation.brief.request.sponsorInstruction?.trim() || context.message.trim();
   const form = activation.brief.request.form ?? "first_deliverable";
   return compileExecutionBrief({
-    planVersion: `${activation.plan.schemaVersion}:${activation.plan.compilerVersion}:${activation.plan.registryVersion}`,
+    planVersion: `${activation.plan.schemaVersion}:${activation.plan.compilerVersion}:${activation.plan.registryVersion}${context.requestId ? `:${context.requestId}` : ""}`,
     locale: context.locale,
     objective: instruction,
     proposedDeliverable: locale === "pt" ? `Análise e ${form} para ${audience}` : `Analysis and ${form} for ${audience}`,
@@ -178,7 +182,7 @@ function compilePreviewBrief(
       kind: "choice",
     }],
     authority: {evidenceRegime: "public", executionAuthority: "analysis_only", establishedBy: "system_policy"},
-    expensiveWork: false,
+    expensiveWork: true,
   });
 }
 

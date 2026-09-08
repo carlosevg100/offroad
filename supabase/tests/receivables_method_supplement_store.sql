@@ -1,4 +1,5 @@
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -44,6 +45,8 @@ insert into public.processing_jobs (
   'case_analysis', 'leased', '{"analysis_scope":"full_case"}'::jsonb, 1,
   now() + interval '10 minutes', extensions.digest(repeat('u',64), 'sha256')
 );
+
+select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000732","role":"authenticated","aal":"aal1"}', true);

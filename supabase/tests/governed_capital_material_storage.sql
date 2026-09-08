@@ -2,6 +2,7 @@
 -- one content-addressed object, the project member may read it, and an unrelated tenant may not.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -55,7 +56,8 @@ insert into public.processing_jobs (
   '80000000-0000-4000-8000-000000000761', '20000000-0000-4000-8000-000000000761',
   '70000000-0000-4000-8000-000000000761', '40000000-0000-4000-8000-000000000761',
   'capital_project_analysis', 'leased',
-  '{"capital_project_id":"30000000-0000-4000-8000-000000000761"}'::jsonb,
+  jsonb_build_object('capital_project_id','30000000-0000-4000-8000-000000000761',
+    'capital_project_plan_id',pg_temp.fixture_execution_plan('40000000-0000-4000-8000-000000000761')),
   1, now() + interval '10 minutes', extensions.digest(repeat('c', 64), 'sha256')
 );
 
@@ -68,6 +70,8 @@ create temporary table material_storage_test_state (
 -- Temporary tables are owned by the migration runner, so grant only the two operations the
 -- fixture needs; this does not affect any application table or production policy.
 grant select, insert on material_storage_test_state to authenticated;
+
+select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000761',true);
 
 set local role authenticated;
 select set_config(

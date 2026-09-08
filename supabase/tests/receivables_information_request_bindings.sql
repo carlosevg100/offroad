@@ -1,4 +1,5 @@
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -59,6 +60,8 @@ insert into public.capital_project_information_requests (
    'Qual reserve rate devemos testar?', 'Altera a proteção.', 'Vira input do modelo.',
    array['Confirmação expressa'], 'number', '{}', 'blocking', 0.9, 1, 1, 0, 'open',
    'receivables_method_r01_fields');
+
+select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000741',true);
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000742","role":"authenticated","aal":"aal1"}', true);
@@ -264,7 +267,7 @@ begin
     or run_row.versions ->> 'activatedBy' <> 'receivables_complete_draft_refresh_v1'
     or run_row.versions ->> 'compiledSupplementFingerprint' <> repeat('f',64)
     or job_row.kind <> 'case_analysis'
-    or job_row.status <> 'queued'
+    or job_row.status <> 'awaiting_approval'
     or job_row.payload #>> '{model_budget,max_calls}' <> '4'
     or execution_row.created_by <> '10000000-0000-4000-8000-000000000741'::uuid
     or execution_row.status <> 'queued' then
