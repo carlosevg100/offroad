@@ -66,14 +66,14 @@ export function caseDiagnosisMarkdown(input: {state: CaseState; locale: Locale; 
     "",
     `## ${text(locale, "3. Endividamento e liquidez", "3. Debt and liquidity")}`,
     "",
-    `- ${text(locale, "Dívida financeira bruta", "Gross financial debt")}: ${money(debt.views.grossFinancialDebt, locale, currency)}`,
-    `- ${text(locale, "Dívida financeira líquida", "Net financial debt")}: ${money(debt.views.netFinancialDebt, locale, currency)}`,
+    `- ${text(locale, "Dívida financeira bruta", "Gross financial debt")}: ${money(debt.views.balanceBasis === "reported_instruments" ? debt.views.grossFinancialDebt : null, locale, currency)}`,
+    `- ${text(locale, "Dívida financeira líquida", "Net financial debt")}: ${money(debt.views.balanceBasis === "reported_instruments" && debt.views.cashBasis === "reported" ? debt.views.netFinancialDebt : null, locale, currency)}`,
     `- ${text(locale, "Serviço nos próximos 12 meses", "Debt service over the next 12 months")}: ${money(debt.serviceNext12Months, locale, currency)}`,
     `- ${text(locale, "Exposições fora do balanço", "Off-balance-sheet exposures")}: ${money(debt.views.offBalanceSheetExposures, locale, currency)}`,
     "",
   );
   for (const instrument of debt.instruments) {
-    output.push(`- ${instrument.lender ?? text(locale, "Credor não informado", "Lender not provided")} | ${instrument.instrument ?? text(locale, "instrumento não informado", "instrument not provided")} | ${money(instrument.balance, locale, instrument.currency ?? currency)} | ${instrument.maturity ?? text(locale, "vencimento não informado", "maturity not provided")}`);
+    output.push(`- ${instrument.lender ?? text(locale, "Credor não informado", "Lender not provided")} | ${instrument.instrument ?? text(locale, "instrumento não informado", "instrument not provided")} | ${money(instrument.principalBasis === "missing" ? null : instrument.balance, locale, instrument.currency ?? currency)} | ${instrument.maturity ?? text(locale, "vencimento não informado", "maturity not provided")}`);
   }
 
   output.push(

@@ -1,5 +1,16 @@
 # Build State
 
+## Saldo de dívida e proveniência do caixa: correção em validação, 08/09/2026
+
+Corrige duplicação de juros quando a companhia informa saldo devedor sem principal separado: saldo 100 e juros acumulados 10 permanecem saldo 100, com principal desconhecido, em vez de 110. Principal explícito 90 com juros 10 concilia com saldo 100. O saldo reportado continua utilizável no diagnóstico mesmo sem composição nominal; a lacuna de principal permanece explícita e impede o pró-forma, sem bloquear indiscriminadamente todo o brief. Divergência entre principal recomposto e saldo reportado gera exceção bloqueante. A falta de caixa fica registrada e impede dívida líquida apresentada e cálculo pró-forma; caixa explicitamente zero continua válido.
+
+A capacidade por alavancagem também deixa de assumir dívida líquida zero quando esta não está disponível. Nos casos não venture, os limites individuais computáveis permanecem visíveis, mas a recomendação agregada e a restrição vinculante ficam indisponíveis até a informação necessária; a exceção venture, que usa ARR/rodada, é preservada.
+
+Novos snapshots identificam a proveniência de principal, saldo agregado e caixa. Um ledger ausente ou com saldo desconhecido não comprova dívida zero: os consumidores retêm esses agregados, inclusive dívida líquida, como não informados. Um instrumento com zero explicitamente informado continua válido. Snapshots históricos permanecem legíveis, mas não recebem confirmação retroativa. Os campos numéricos legados permanecem compatíveis internamente e não autorizam apresentação de caixa ausente como saldo comprovado. A versão de reconciliação passa a 2026.09.08-v3 e a de operação a 2026.09.08-v2. Interface e diagnóstico exportado preservam os valores desconhecidos como não informados.
+
+Revisão independente estática sem bloqueador material. Gate local completo aprovado em Node 24.19.0: lint, typecheck, testes e build, 43/43 targets por etapa. Inclui 290 testes web, 299 do worker, 33 do case engine e 89 de evals; o anchor Rede Horizonte passou sem mudança de corpus ou answer key. A lacuna de principal conhecido apenas por saldo permanece em missingInputs e no controle do método dependente, sem fabricar uma exceção de inconsistência no diagnóstico. CI e publicação web/worker ainda pendentes. Sem migração de banco ou reescrita de snapshots históricos. Esta correção não homologa todo o motor financeiro nem implementa a comparação de refinanciamento para casos privados.
+
+
 ## Plano aprovado e inventário do Advisor: publicação operacional verificada, 08/09/2026
 
 [PR #547](https://github.com/carlosevg100/offroad/pull/547) integrado em main `31e5a92830f50e21e2d17f4a93d3ed4d1403dd40`. Os checks obrigatórios e de segurança passaram. [Quality 34184277267](https://github.com/carlosevg100/offroad/actions/runs/34184277267) aprovou 20 testes E2E; 10 testes dependentes de provedores foram pulados, portanto não constituem evidência de integração com esses provedores.

@@ -62,7 +62,7 @@ export type CapacityWall = {
 
 export type CapacityAssessment = {
   requested: string;
-  /** The lowest wall, what the desk would take to market. Null when nothing could be computed. */
+  /** The lowest wall, what the desk would take to market. Null when nothing could be computed or existing net debt is unknown for non-venture sizing. */
   recommended: string | null;
   bindingConstraint: CapacityWall["id"] | null;
   walls: CapacityWall[];
@@ -143,11 +143,13 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   let market: string | null = null;
   if (ventureDebt) {
     // No EBITDA ceiling by construction; the ARR wall above plays this role.
+  } else if (input.existingNetDebt === undefined) {
+    gaps.push("Dívida líquida existente");
   } else if (input.adjustedEbitda) {
     const ebitda = new Decimal(input.adjustedEbitda);
     if (ebitda.gt(0)) {
       const ceiling = ebitda.times(definition.structure.leverageCeiling);
-      const headroom = ceiling.minus(new Decimal(input.existingNetDebt ?? "0"));
+      const headroom = ceiling.minus(new Decimal(input.existingNetDebt));
       // Already above the ceiling means no incremental room, not negative room.
       market = money(Decimal.max(headroom, new Decimal(0)));
       calculations.push({
@@ -157,7 +159,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
         trace: [
           {label: "adjusted_ebitda", value: money(ebitda)},
           {label: "leverage_ceiling", value: definition.structure.leverageCeiling},
-          {label: "existing_net_debt", value: input.existingNetDebt ?? "0"},
+          {label: "existing_net_debt", value: input.existingNetDebt},
         ],
         inputs: ["calculated.adjusted_ebitda", "playbook.leverage_ceiling", "calculated.net_debt"],
         warnings: [],
@@ -220,17 +222,17 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       explanation: {
         pt: market
           ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas, e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
-          : "Não calculada: falta EBITDA ajustado positivo.",
+          : "Não calculada: falta EBITDA ajustado positivo ou dívida líquida existente.",
         en: market
           ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. This ceiling is the desk's read rather than an average of observed transactions, and it speaks to size, not tenor. Not a covenant and not a target.`
-          : "Not computed: positive adjusted EBITDA is missing.",
+          : "Not computed: positive adjusted EBITDA or existing net debt is missing.",
       },
       inputs: ["calculated.adjusted_ebitda"],
     }]),
   ];
 
   const computed = walls.filter((wall): wall is CapacityWall & {amount: string} => wall.amount !== null);
-  if (computed.length === 0) {
+  if (computed.length === 0 || (!ventureDebt && input.existingNetDebt === undefined)) {
     return {requested: input.requested, recommended: null, bindingConstraint: null, walls, calculations, gaps};
   }
 

@@ -27,7 +27,8 @@ export const debtInstrumentSchema = z.object({
   instrument: z.string().nullable(),
   contractId: z.string().nullable(),
   entity: z.string().nullable(),
-  principal: decimalString,
+  principal: decimalString.nullable(),
+  principalBasis: z.enum(["reported_principal", "reported_balance_only", "missing"]).optional(),
   accruedInterest: decimalString,
   pik: decimalString,
   indexation: decimalString,
@@ -103,6 +104,8 @@ export const debtTruthSetSchema = z.object({
   instruments: z.array(debtInstrumentSchema),
   views: z.object({
     grossFinancialDebt: decimalString, unrestrictedCash: decimalString, netFinancialDebt: decimalString,
+    cashBasis: z.enum(["reported", "missing"]).optional(),
+    balanceBasis: z.enum(["reported_instruments", "missing"]).optional(),
     covenantDebt: decimalString, adjustedCapacityObligations: decimalString, commitmentsAndQuasiDebt: decimalString,
     contingentExposures: decimalString, offBalanceSheetExposures: decimalString,
   }).strict(),
@@ -147,7 +150,8 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
     const prefix = `debt.instruments.${index}`;
     const rows = facts.filter((fact) => fact.key.fieldPath.startsWith(`${prefix}.`));
     const get = (name: string) => rows.find((fact) => fact.key.fieldPath === `${prefix}.${name}`);
-    const principal = get("principal") ?? get("balance");
+    const principal = get("principal");
+    const reportedBalance = get("balance");
     if (!principal) missing.add(`${prefix}.principal`);
     for (const required of ["lender", "instrument_type", "maturity", "currency"]) if (!get(required)) missing.add(`${prefix}.${required}`);
     const math: DebtLedgerMathRow = {
@@ -155,13 +159,14 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
       pik: get("pik")?.value ?? "0", indexation: get("indexation_balance")?.value ?? "0",
     };
     const expected = ["lender", "instrument_type", "principal", "currency", "maturity", "amortization", "cash_cost", "collateral", "covenant_included"];
-    const present = expected.filter((name) => get(name) || (name === "principal" && get("balance"))).length;
+    const present = expected.filter((name) => get(name)).length;
     return debtInstrumentSchema.parse({
       id: prefix, borrower: get("borrower")?.value ?? null, lender: get("lender")?.value ?? null,
       instrument: get("instrument_type")?.value ?? null, contractId: get("contract_id")?.value ?? null,
       entity: get("entity")?.value ?? rows[0]?.key.entityName ?? null,
-      principal: principal?.value ?? "0", accruedInterest: get("accrued_interest")?.value ?? "0",
-      pik: get("pik")?.value ?? "0", indexation: get("indexation_balance")?.value ?? "0", balance: debtLedgerBalance(math),
+      principal: principal?.value ?? null,
+      principalBasis: principal ? "reported_principal" : reportedBalance ? "reported_balance_only" : "missing", accruedInterest: get("accrued_interest")?.value ?? "0",
+      pik: get("pik")?.value ?? "0", indexation: get("indexation_balance")?.value ?? "0", balance: principal ? debtLedgerBalance(math) : reportedBalance?.value ?? "0",
       currency: get("currency")?.value ?? null, indexer: get("indexer")?.value ?? null,
       spread: get("spread")?.value ?? null, hedge: get("hedge")?.value ?? null,
       issueDate: get("issue_date")?.value ?? null, drawDate: get("draw_date")?.value ?? null,
@@ -182,9 +187,13 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
     });
   });
 
+  // A reported carrying balance already includes its components. Use it once for
+  // balance-based views; never derive an unreported nominal principal from it.
   const mathRows: DebtLedgerMathRow[] = instruments.map((instrument) => ({
-    id: instrument.id, principal: instrument.principal, accruedInterest: instrument.accruedInterest, pik: instrument.pik,
-    indexation: instrument.indexation, covenantIncluded: instrument.covenantIncluded,
+    id: instrument.id, principal: instrument.principal ?? instrument.balance,
+    accruedInterest: instrument.principal === null ? "0" : instrument.accruedInterest,
+    pik: instrument.principal === null ? "0" : instrument.pik,
+    indexation: instrument.principal === null ? "0" : instrument.indexation, covenantIncluded: instrument.covenantIncluded,
     capacityObligation: instrument.capacityObligation, commitment: instrument.commitment, quasiDebt: instrument.quasiDebt,
     ...(instrument.currency ? {currency: instrument.currency} : {}), ...(instrument.entity ? {entity: instrument.entity} : {}),
     ...(instrument.lender ? {lender: instrument.lender} : {}), ...(instrument.maturity ? {maturity: instrument.maturity} : {}),
@@ -224,6 +233,7 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   const cashFact = facts
     .filter((fact) => /^(historical|interim)_financials\.[^.]+\.cash$/.test(fact.key.fieldPath) && fact.valueType === "number")
     .sort((a, b) => (b.key.periodEnd ?? "").localeCompare(a.key.periodEnd ?? ""))[0];
+  if (!cashFact) missing.add("debt.unrestricted_cash");
   const restrictedCash = facts.find((fact) => /\.restricted_cash$/.test(fact.key.fieldPath) && fact.valueType === "number");
   const baseViews = aggregateDebtViews({rows: mathRows, cash: cashFact?.value ?? "0", restrictedCash: restrictedCash?.value ?? "0"});
   const financialObligations = obligations.filter((item) => item.financialDebt).reduce((sum, item) => sum.plus(item.amount), new Decimal(0));
@@ -232,6 +242,9 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   const offBalanceSheetExposures = obligations.filter((item) => item.offBalanceSheet).reduce((sum, item) => sum.plus(item.amount), new Decimal(0));
   const views = {
     ...baseViews,
+    // Preserve numeric legacy payload shape, but make an unobserved zero unusable as cash evidence.
+    cashBasis: cashFact ? "reported" : "missing",
+    balanceBasis: instruments.length > 0 && instruments.every((instrument) => instrument.principalBasis !== "missing") ? "reported_instruments" : "missing",
     grossFinancialDebt: new Decimal(baseViews.grossFinancialDebt).plus(financialObligations).toFixed(),
     netFinancialDebt: new Decimal(baseViews.netFinancialDebt).plus(financialObligations).toFixed(),
     adjustedCapacityObligations: new Decimal(baseViews.adjustedCapacityObligations).plus(capacityObligations).toFixed(),
@@ -265,6 +278,16 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   });
 
   const reconciliations: z.infer<typeof debtReconciliationSchema>[] = [];
+  for (const instrument of instruments) {
+    const reported = facts.find((fact) => fact.key.fieldPath === `${instrument.id}.balance`);
+    if (instrument.principal === null || !reported) continue;
+    const difference = new Decimal(reported.value).minus(instrument.balance);
+    reconciliations.push({
+      id: `instrument_balance:${instrument.id}`, expected: reported.value, observed: instrument.balance,
+      difference: difference.toFixed(), status: difference.abs().lte(policies.reconciliationTolerance ?? "1") ? "pass" : "fail",
+      evidence: instrument.evidence,
+    });
+  }
   const scheduleTotal = facts.find((fact) => fact.key.fieldPath === "debt.total_gross" && fact.valueType === "number");
   if (scheduleTotal) {
     const observed = instruments.reduce((sum, item) => sum.plus(item.balance), new Decimal(0));
@@ -341,7 +364,7 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   }
   const liquidityInputs = [...yearlyPayments.entries()].sort(([a], [b]) => a.localeCompare(b)).flatMap(([period, service], index) => {
     const cfads = cashFlowByYear.get(period);
-    if (!cfads) return [];
+    if (!cfads || !cashFact) return [];
     return [{
       period, openingCash: index === 0 ? cashFact?.value ?? "0" : "0", cfads: cfads.value,
       principal: service.principal.toFixed(), interest: service.interest.toFixed(), otherObligations: service.other.toFixed(),
@@ -369,6 +392,16 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   const crossDefault = {edges, ...propagation};
 
   const exceptions: z.infer<typeof debtTruthExceptionSchema>[] = [];
+  if (!cashFact) exceptions.push({
+    id: "missing:unrestricted_cash", severity: "high",
+    message: {pt: "O saldo de caixa não foi informado. Informe o caixa disponível para calcular a dívida líquida e a cobertura de liquidez.", en: "The cash balance was not reported. Provide available cash to calculate net debt and liquidity coverage."},
+    affectedInstrumentIds: [], evidence: [], blocksExternalOutputs: true,
+  });
+  for (const row of instruments.filter((item) => item.principalBasis === "missing")) exceptions.push({
+    id: `missing_principal:${row.id}`, severity: "high",
+    message: {pt: "O principal contratual não foi informado; o saldo reportado não comprova sua composição.", en: "Contractual principal was not reported; the reported balance does not establish its composition."},
+    affectedInstrumentIds: [row.id], evidence: row.evidence, blocksExternalOutputs: true,
+  });
   for (const row of instruments.filter((item) => item.completeness < 0.4)) exceptions.push({
     id: `incomplete:${row.id}`, severity: "high",
     message: {pt: `O instrumento ${row.id} não possui dados suficientes para uma leitura contratual.`, en: `Instrument ${row.id} lacks sufficient data for a contractual reading.`},
@@ -376,7 +409,7 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
   });
   for (const reconciliation of reconciliations.filter((item) => item.status === "fail")) exceptions.push({
     id: `reconciliation:${reconciliation.id}`, severity: "critical",
-    message: {pt: "O saldo total do mapa de dívida não concilia com o ledger por instrumento.", en: "The debt schedule total does not reconcile to the instrument ledger."},
+    message: {pt: "O saldo reportado não concilia com o ledger de dívida.", en: "The reported balance does not reconcile to the debt ledger."},
     affectedInstrumentIds: instruments.map((item) => item.id), evidence: reconciliation.evidence, blocksExternalOutputs: true,
   });
   for (const covenant of covenants.filter((item) => item.status === "fail")) exceptions.push({
@@ -437,7 +470,7 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
     ? "blocked"
     : missing.size > 0 || procedureCoverage.some((item) => item.status !== "completed" && item.status !== "not_applicable") ? "partial" : "complete";
   return debtTruthSetSchema.parse({
-    version: "2026.08.25-v2", referenceDate, status, instruments, views,
+    version: "2026.09.08-v3", referenceDate, status, instruments, views,
     maturity: maturityBuckets(mathRows, referenceDate), byEntity: groupDebt(mathRows, "entity"),
     payments, obligations, serviceNext12Months, weightedAverageLifeYears,
     byLender: groupDebt(mathRows, "lender"), byCurrency: groupDebt(mathRows, "currency"),
