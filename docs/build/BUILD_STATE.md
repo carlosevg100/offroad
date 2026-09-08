@@ -1,5 +1,9 @@
 # Build State
 
+## Triagem de segurança e precisão de covenant: 07/09/2026
+
+Corrige normalização linear de listas/chunks, separadores literais de paths de evidência e formatação decimal de limites de covenant. Antes, um limite inteiro 10 podia renderizar 1x; a correção preserva magnitude e precisão. Sete instâncias CodeQL são tratadas nesta fatia; nove permanecem classificadas no relatório docs/security/CODEQL_TRIAGE_2026_09_07.md. Nenhum alerta foi descartado remotamente. A correção não altera auth, tenancy, banco ou grants.
+
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
 - O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->

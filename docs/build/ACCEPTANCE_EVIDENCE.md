@@ -1,5 +1,9 @@
 # Acceptance Evidence
 
+## Triagem de segurança e precisão de covenant: 07/09/2026
+
+232 testes dos pacotes afetados passaram, incluindo 56 de case-materials e regressões de limite 10/0/10.00/1.20/negativos, texto longo, nomes de companhia, anchors e paths que antes fabricavam exceção de input. Gate local completo passou: lint, typecheck, 2.472 testes e build, com 43/43 targets em cada etapa. Nova análise CodeQL e gates de release remotos ainda pendentes. Casos candidatos a falso positivo exigem revisão independente; contagem de alertas não é prova de explorabilidade nem de segurança completa.
+
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |

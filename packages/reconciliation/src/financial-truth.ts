@@ -159,7 +159,7 @@ const numeric = (facts: readonly ReconciledFact[], path: string) =>
 const pathParts = (path: string) => /^(historical_financials|interim_financials|projections)\.(\d{4}(?:_\d{2})?)\.(.+)$/.exec(path);
 
 function indexedRows(facts: readonly ReconciledFact[], prefix: string) {
-  const indexes = [...new Set(facts.map((fact) => fact.key.fieldPath.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\.(\\d+)\.`))?.[1]).filter(Boolean))] as string[];
+  const indexes = [...new Set(facts.map((fact) => fact.key.fieldPath.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(\\d+)\\.`))?.[1]).filter(Boolean))] as string[];
   return indexes.map((index) => ({
     index,
     facts: facts.filter((fact) => fact.key.fieldPath.startsWith(`${prefix}.${index}.`)),
