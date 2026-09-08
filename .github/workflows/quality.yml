@@ -245,6 +245,8 @@ jobs:
         run: pnpm --filter web exec playwright test
         env:
           CI: "true"
+          # Restricted to loopback by the synthetic sector-planning setup.
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Upload Playwright report
         if: always()
