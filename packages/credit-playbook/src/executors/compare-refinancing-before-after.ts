@@ -188,7 +188,11 @@ function canonical(input: z.infer<typeof beforeAfterInputSchema>) {
 }
 
 export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfterOutput {
-  const input = canonical(beforeAfterInputSchema.parse(raw));
+  return runBeforeAfter(canonical(beforeAfterInputSchema.parse(raw)));
+}
+
+/** Shared arithmetic; callers validate their versioned input before entry. */
+function runBeforeAfter(input: ReturnType<typeof canonical>): BeforeAfterOutput {
   const calculations: Calculation[] = [];
   const record = (calculation: Omit<Calculation, "unit">, unit: string = input.unit) => calculations.push({...calculation, unit});
   const unsupported: string[] = [];
@@ -374,4 +378,112 @@ export function compareRefinancingBeforeAfter(raw: BeforeAfterInput): BeforeAfte
   const body = {schema_version: "method.compare-refinancing-before-after.v7" as const, reference_date: input.referenceDate, unit: input.unit, state: blockReasons.length > 0 ? "blocked" as const : "compared" as const, block_reasons: blockReasons, wall_threshold: input.wallThreshold, schedule_adjustments: adjustments.map((entry) => ({id: entry.period, amount: entry.amount})), before, alternatives, ranking, unsupported: [...unsupported].sort(compare)};
   const inputFingerprint = fingerprint(input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
+}
+
+const reviewReferenceV8 = z.object({
+  documentId: nonEmpty, version: z.number().int().positive(), fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  issuedAt: isoDate, effectiveDate: isoDate, expiresAt: isoDate.nullable(), anchor: nonEmpty,
+}).strict();
+const reviewV8 = z.object({reviewerId: nonEmpty, reviewedAt: isoDate, rationale: nonEmpty, sources: z.array(reviewReferenceV8).min(1)}).strict();
+const coverageV8 = z.discriminatedUnion("state", [
+  z.object({instrumentId: nonEmpty, state: z.literal("reviewed_applicable"), covenantIds: z.array(nonEmpty).min(1), review: reviewV8}).strict(),
+  z.object({instrumentId: nonEmpty, state: z.literal("reviewed_none_applicable"), covenantIds: z.array(nonEmpty).length(0), review: reviewV8}).strict(),
+  z.object({instrumentId: nonEmpty, state: z.literal("unknown"), covenantIds: z.array(nonEmpty), reason: nonEmpty}).strict(),
+]);
+// The initial v8 deliberately has no covenant calculation input. It neither invents a
+// placeholder covenant nor interprets a declared metric as net leverage.
+const economicsV8 = beforeAfterInputSchema.safeExtend({covenants: z.array(beforeAfterInputSchema.shape.covenants.element).length(0)});
+export const beforeAfterV8InputSchema = z.object({
+  schemaVersion: z.literal("refinancing-comparison-input.v8"),
+  knowledgeAsOf: isoDate,
+  economics: economicsV8,
+  instrumentScope: z.array(z.object({instrumentId: nonEmpty, role: z.enum(["existing", "proposed"]), alternativeId: nonEmpty.nullable()}).strict()).min(1),
+  coverage: z.array(coverageV8).min(1),
+  covenants: z.array(z.object({covenantId: nonEmpty, instrumentId: nonEmpty, metricKey: nonEmpty}).strict()),
+  paymentConventions: z.array(z.object({instrumentId: nonEmpty, rateType: z.literal("fixed"), rateBasis: z.literal("effective_annual"), paymentFrequency: z.literal("monthly"), paymentDateAdjustment: z.literal("none"), graceInterest: z.literal("paid")}).strict()),
+}).strict().superRefine((input, context) => {
+  const issue = (path: (string | number)[], message: string) => context.addIssue({code: "custom", path, message});
+  const scope = new Map(input.instrumentScope.map((item) => [item.instrumentId, item]));
+  const coverage = new Map(input.coverage.map((item) => [item.instrumentId, item]));
+  const covenants = new Map(input.covenants.map((item) => [item.covenantId, item]));
+  const conventions = new Map(input.paymentConventions.map((item) => [item.instrumentId, item]));
+  if (scope.size !== input.instrumentScope.length) issue(["instrumentScope"], "Duplicate instrument identity.");
+  if (coverage.size !== input.coverage.length) issue(["coverage"], "Duplicate coverage identity.");
+  if (covenants.size !== input.covenants.length) issue(["covenants"], "Duplicate covenant identity.");
+  if (conventions.size !== input.paymentConventions.length) issue(["paymentConventions"], "Duplicate payment convention.");
+  const alternatives = new Map(input.economics.alternatives.map((item) => [item.id, item]));
+  for (const item of input.instrumentScope) {
+    if (!coverage.has(item.instrumentId)) issue(["coverage"], `Missing coverage: ${item.instrumentId}`);
+    if (item.role === "existing" && item.alternativeId !== null) issue(["instrumentScope"], "Existing instruments cannot belong only to a proposed alternative.");
+    if (item.role === "proposed" && (!item.alternativeId || !alternatives.get(item.alternativeId)?.newDebt)) issue(["instrumentScope"], "Proposed instrument must bind an alternative with new debt.");
+  }
+  if (!input.instrumentScope.some((item) => item.role === "existing")) issue(["instrumentScope"], "An existing debt scope is required; this does not attest its completeness.");
+  for (const alternative of alternatives.values()) {
+    const proposed = input.instrumentScope.filter((item) => item.role === "proposed" && item.alternativeId === alternative.id);
+    // Month-end and business-day adjustments need a declared contractual convention.
+    // Preserve the historical executor; v8 must not silently roll a short month forward.
+    if (alternative.newDebt && Number(alternative.newDebt.disbursementDate.slice(-2)) > 28) issue(["economics", "alternatives"], `unsupported_month_end_payment_convention: ${alternative.id}; disbursements on days 29–31 require an explicit supported schedule convention.`);
+    if (proposed.length !== (alternative.newDebt ? 1 : 0)) issue(["instrumentScope"], `Exact proposed instrument scope required for ${alternative.id}.`);
+    if ((alternative.newDebt || alternative.retired.length) && alternative.feesPaidFromCash === null) issue(["economics", "alternatives"], `Explicit cash fees required for ${alternative.id}, including evidenced zero.`);
+    for (const retired of alternative.retired) if (scope.get(retired.seriesId)?.role !== "existing") issue(["instrumentScope"], `Retired series is absent from existing scope: ${retired.seriesId}`);
+  }
+  const documentVersions = new Map<string, string>();
+  for (const item of input.coverage) {
+    if (!scope.has(item.instrumentId)) issue(["coverage"], `Coverage outside scope: ${item.instrumentId}`);
+    if (new Set(item.covenantIds).size !== item.covenantIds.length) issue(["coverage"], "Duplicate covered covenant.");
+    for (const id of item.covenantIds) if (covenants.get(id)?.instrumentId !== item.instrumentId) issue(["coverage"], `Covenant is missing or belongs to another instrument: ${id}`);
+    if (item.state !== "unknown") {
+      if (item.review.reviewedAt > input.knowledgeAsOf) issue(["coverage"], "Review postdates declared knowledge date.");
+      const instrument = scope.get(item.instrumentId);
+      const applicabilityDate = instrument?.role === "proposed" && instrument.alternativeId
+        ? alternatives.get(instrument.alternativeId)?.newDebt?.disbursementDate ?? input.economics.referenceDate
+        : input.economics.referenceDate;
+      const documents = new Set<string>();
+      for (const source of item.review.sources) {
+        if (documents.has(source.documentId)) issue(["coverage"], "Duplicate reviewed document; supply one current version.");
+        documents.add(source.documentId);
+        const versionKey = `${source.documentId}:${source.version}`;
+        const {anchor: _anchor, ...documentIdentity} = source;
+        const sourceIdentity = fingerprint(documentIdentity);
+        if (documentVersions.has(versionKey) && documentVersions.get(versionKey) !== sourceIdentity) issue(["coverage"], "Contradictory metadata for the same document version.");
+        documentVersions.set(versionKey, sourceIdentity);
+        if (source.issuedAt > item.review.reviewedAt) issue(["coverage"], "Source was issued after the declared review.");
+        if (source.effectiveDate > applicabilityDate) issue(["coverage"], "Source is not effective at the instrument assessment date.");
+        if (source.expiresAt !== null && source.expiresAt < applicabilityDate) issue(["coverage"], "Reviewed source expires before the instrument assessment date.");
+      }
+    }
+  }
+  for (const item of input.covenants) if (!coverage.get(item.instrumentId)?.covenantIds.includes(item.covenantId)) issue(["covenants"], `Covenant has no matching coverage: ${item.covenantId}`);
+  for (const item of input.instrumentScope) if (item.role === "proposed" && !conventions.has(item.instrumentId)) issue(["paymentConventions"], `Missing declared convention: ${item.instrumentId}`);
+  for (const item of input.paymentConventions) if (scope.get(item.instrumentId)?.role !== "proposed") issue(["paymentConventions"], "Convention must bind a proposed instrument.");
+});
+export type BeforeAfterV8Input = z.input<typeof beforeAfterV8InputSchema>;
+
+/** Opt-in diagnostic projection. Reference consistency is not authenticated review,
+ * complete contractual coverage, dispatch permission or an executable financing decision. */
+export function compareRefinancingBeforeAfterV8(raw: BeforeAfterV8Input) {
+  const parsed = beforeAfterV8InputSchema.parse(raw);
+  const input = {
+    ...parsed, economics: canonical(parsed.economics),
+    instrumentScope: [...parsed.instrumentScope].sort((a, b) => compare(a.instrumentId, b.instrumentId)),
+    coverage: [...parsed.coverage].sort((a, b) => compare(a.instrumentId, b.instrumentId)).map((item) => ({...item, covenantIds: [...item.covenantIds].sort(compare), ...(item.state !== "unknown" ? {review: {...item.review, sources: [...item.review.sources].sort((a, b) => compare(a.documentId, b.documentId))}} : {})})),
+    covenants: [...parsed.covenants].sort((a, b) => compare(a.covenantId, b.covenantId)),
+    paymentConventions: [...parsed.paymentConventions].sort((a, b) => compare(a.instrumentId, b.instrumentId)),
+  };
+  const economic = runBeforeAfter({...input.economics, ranking: input.economics.ranking?.discriminator === "headroom" ? null : input.economics.ranking});
+  const {trace, schema_version: _version, ...body} = economic;
+  const result = {
+    ...body, schema_version: "method.compare-refinancing-before-after.v8" as const,
+    usage: "diagnostic_only" as const,
+    knowledge_as_of: input.knowledgeAsOf,
+    instrument_scope: input.instrumentScope,
+    payment_conventions: input.paymentConventions,
+    coverage_status: input.coverage.some((item) => item.state === "unknown") ? "partial" as const : "declared_complete" as const,
+    review_validation: "reference_consistency_only" as const,
+    covenant_measurements: input.covenants.map((item) => ({...item, state: "not_measured" as const, reason: "metric_definition_and_measurement_not_supported_in_v8"})),
+    coverage: input.coverage,
+    limitations: ["contractual_universe_requires_authorized_loader_validation", "review_authority_and_source_freshness_require_authorized_loader", "nominal_cash_and_exit_quote_scope_not_authenticated", "no_covenant_compliance_or_aggregate_headroom_assessed", ...(input.economics.ranking?.discriminator === "headroom" ? ["headroom_ranking_unavailable"] : [])],
+  };
+  const inputFingerprint = fingerprint(input);
+  return {...result, trace: {calculations: trace.calculations, inputFingerprint, outputFingerprint: fingerprint({...result, calculations: trace.calculations, inputFingerprint})}};
 }
