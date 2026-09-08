@@ -2,6 +2,7 @@
 -- access. Fixtures are rolled back.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -64,7 +65,7 @@ begin
     'capital_project_analysis', jsonb_build_object(
       'analysis_scope', 'company_debt_view', 'locale', 'pt-BR',
       'capital_project_id', ids.project_id,
-      'capital_project_plan_id', '60000000-0000-4000-8000-000000000291',
+      'capital_project_plan_id', pg_temp.fixture_execution_plan(ids.session_id),
       'capital_project_brief_id', '70000000-0000-4000-8000-000000000291',
       'capital_task_ids', jsonb_build_array('M01'), 'capital_artifact_required', true,
       'model_budget', jsonb_build_object('max_cost_usd', 0.10, 'max_calls', 1)
@@ -95,6 +96,7 @@ declare
   rejected_payload boolean := false;
   rejected boolean := false;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   query_id := encode(extensions.digest(convert_to('identity:' || query_text, 'utf8'), 'sha256'), 'hex');
   entries := jsonb_build_array(jsonb_build_object(

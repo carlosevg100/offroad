@@ -9,6 +9,7 @@ import {routing} from "@/i18n/routing";
 
 import "../globals.css";
 import "../offroad-premium.css";
+import "../advisor-evidence-inventory.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -117,6 +118,9 @@ export default async function LocaleLayout({children, params}: Props) {
   const clientMessages = {
     App: {privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
     IntegrationPreviewWork: messages.IntegrationPreviewWork,
+    ExecutionBriefCard: messages.ExecutionBriefCard,
+    AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
+    Intake: {executionApproval: messages.Intake.executionApproval},
     Errors: messages.Errors,
     Navigation: messages.Navigation,
   };

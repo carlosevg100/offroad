@@ -1,5 +1,17 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Plano aprovado e inventário do Advisor: validação candidata, 08/09/2026
+
+A jornada apresenta inventário documental, cobertura e todos os requisitos abertos/não examinados, com processamento separado de verificação. O plano usa aceite explícito da versão exata, recuperação de comando e atualização manual sem duplicar execução. Chat, atalhos públicos e intake privado usam o mesmo controle no banco; o intake conserva a página e bloqueia reconciliação antecipada.
+
+Análise substantiva aguarda aprovação vinculada a projeto, briefing, plano, job, payload e inputs materiais. A ponte determinística prepara planos para entradas antigas, inclusive casos sem plano ativo, sem chamar modelos ou criar tarefas fictícias. Uma ou duas frentes reais são admitidas em trabalhos pequenos; três a sete seguem como orientação normal. Edição material invalida a versão; conversa de acompanhamento não constitui autorização nem mudança econômica por si só.
+
+Validação em staging isolado: suites de aprovação explícita, ponte com compilador real, RLS principal, controles operacionais, ativação semântica, sistema agentic, origination, preview, pesquisa pública/cache, recebíveis, storage governado, métricas de intenção e contrato de falhas passaram. Advisor de segurança sem lints; FKs acrescentadas ao storage governado possuem índices. Fixtures transacionais, sem dados de produção. Gate local completo, CI, E2E e deploy devem ser reconciliados com a revisão final antes de promoção.
+
+A auditoria identificou três omissões anteriores entre main e os bancos publicados, corrigidas por migração forward apenas em staging: métricas de intenção, storage governado e preservação de múltiplos artefatos. O contrato de falhas de staging também foi alinhado sem substituir as proteções novas do worker. Políticas restritivas explicitaram o bloqueio de dois ledgers privados sem ampliar acesso; o writer comprovado dessa fundação é SQL administrativo, não um endpoint de aplicação com service_role.
+
+Estado: `feat/cfo-plan-approval`, ainda sem promoção de capability ou prova de produção. O E2E privado histórico usa fallback determinístico: não comprova a jornada privada completa com worker real. A jornada pública de preview exige aprovação explícita antes da execução. Geração institucional de todos os formatos, Drive, matching e introduções mantêm gates próprios e não são declarados concluídos. Contrato, controles afetados e rollout em `docs/build/CFO_PLAN_APPROVAL_ROLLOUT.md`.
+
 ## Triagem de segurança e precisão de covenant: 07/09/2026
 
 Corrige normalização linear de listas/chunks, separadores literais de paths de evidência e formatação decimal de limites de covenant. Antes, um limite inteiro 10 podia renderizar 1x; a correção preserva magnitude e precisão. Sete instâncias CodeQL são tratadas nesta fatia; nove permanecem classificadas no relatório docs/security/CODEQL_TRIAGE_2026_09_07.md. Nenhum alerta foi descartado remotamente. A correção não altera auth, tenancy, banco ou grants.

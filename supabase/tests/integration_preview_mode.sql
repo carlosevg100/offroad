@@ -3,6 +3,7 @@
 -- message. Without the grant nothing activates, whatever the payload says.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -317,6 +318,7 @@ declare
   completion_id constant uuid := '60000000-0000-4000-8000-000000000251';
   conversation_state text;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,analysis_scope}' <> 'integration_preview'
@@ -446,6 +448,7 @@ begin
     or (recorded #>> '{activation,plan_id}')::uuid = first_plan_id then
     raise exception 'the later turn reused the plan that already holds task runs: %', recorded;
   end if;
+  perform pg_temp.fixture_approve_pending_executions();
   preview_claim := public.worker_claim_job(repeat('p', 64), 600);
   if preview_claim ->> 'kind' <> 'capital_project_analysis'
     or preview_claim #>> '{payload,analysis_scope}' <> 'integration_preview'

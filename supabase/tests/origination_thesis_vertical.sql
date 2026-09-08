@@ -2,6 +2,7 @@
 -- idempotency, and tenant isolation. All fixtures are rolled back.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -188,6 +189,7 @@ declare
   v_meeting_artifact_fingerprint text;
   rejected boolean := false;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,analysis_scope}' <> 'origination_thesis' then
@@ -335,6 +337,7 @@ begin
     raise exception 'conversational revision message idempotency failed: %', chat_replay;
   end if;
 
+  perform pg_temp.fixture_approve_pending_executions();
   revision_claim := public.worker_claim_job(repeat('w', 64), 600);
   if revision_claim ->> 'job_id' <> revision_result ->> 'job_id'
     or revision_claim #>> '{payload,capital_task_ids,0}' <> 'M07'

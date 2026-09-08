@@ -83,6 +83,7 @@ const specialistCapabilities = specialistTaskCapabilityRuntimeManifest.map((capa
 const contextSchema = z.object({
   session_id: z.uuid(),
   message_id: z.uuid(),
+  approval_input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   locale: z.enum(["pt-BR", "en-US"]),
   message: z.string().min(1).max(8_000),
   message_metadata: z.record(z.string(), z.unknown()).default({}),
@@ -1069,6 +1070,8 @@ async function recordPreviewWorkflowSelection(
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
   return {
     locale: context.locale,
+    requestId: context.message_id,
+    ...(context.approval_input_fingerprint ? { expectedInputFingerprint: context.approval_input_fingerprint } : {}),
     message: context.message,
     accessBasis: context.project?.accessBasis ?? "authorized_private",
     documents: context.documents.map((document) => ({id: document.id, name: document.name})),

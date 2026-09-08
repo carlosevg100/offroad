@@ -1,11 +1,26 @@
+import {NextIntlClientProvider} from "next-intl";
+import pt from "../../../messages/pt-BR.json";
+import en from "../../../messages/en-US.json";
+import type {VisibleExecutionBrief} from "@offroad/work-plan";
 import {renderToStaticMarkup} from "react-dom/server";
-import {describe, expect, it} from "vitest";
+import {afterEach, describe, expect, it, vi} from "vitest";
+
+const approvalRenderState = vi.hoisted(() => ({acceptedFingerprint: null as string | null, stateCalls: 0}));
+vi.mock("react", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react")>();
+  return {...actual, useState: (initial: unknown) => {
+    // Only the seventh card state is submittedFingerprint; errors retain their real empty strings.
+    const index = approvalRenderState.stateCalls++;
+    return actual.useState(index === 6 && initial === null && approvalRenderState.acceptedFingerprint ? approvalRenderState.acceptedFingerprint : initial);
+  }};
+});
+afterEach(() => { approvalRenderState.acceptedFingerprint = null; approvalRenderState.stateCalls = 0; });
 
 import {ExecutionBriefCard} from "./execution-brief-card";
 
 describe("ExecutionBriefCard", () => {
   it("shows the user agreement and never leaks internal graph or authority fields", () => {
-    const html = renderToStaticMarkup(<ExecutionBriefCard version={3} onRequestEdit={async () => ({ok: true})} changes={[
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}><ExecutionBriefCard version={3} onRequestEdit={async () => ({ok: true})} changes={[
       {kind: "assumption_updated", label: "Prazo", from: "60 meses", to: "72 meses"},
     ]} progress={{
       briefId: "10000000-0000-4000-8000-000000000001",
@@ -30,7 +45,7 @@ describe("ExecutionBriefCard", () => {
       assumptions: [{label: "Prazo", value: "60 meses", basis: "Informado pelo usuário", editable: true}],
       checkpoints: [{label: "Escolher o caminho a aprofundar", afterWorkstreamKey: "alternatives", kind: "choice"}],
       executionMode: "start_after_display",
-    }} />);
+    }} /></NextIntlClientProvider>);
 
     expect(html).toContain("Plano deste trabalho");
     expect(html).toContain("a pesquisar");
@@ -47,4 +62,68 @@ describe("ExecutionBriefCard", () => {
     expect(html).not.toContain("executionAuthority");
     expect(html).not.toContain("TaskSpec");
   });
+});
+
+const brief: VisibleExecutionBrief = {
+  schemaVersion: "execution-brief.v1", fingerprint: "a".repeat(64), locale: "pt-BR",
+  objective: "Revisar liquidez", currentContext: [], proposedDeliverable: "Diagnóstico",
+  workstreams: [], assumptions: [], checkpoints: [], executionMode: "start_after_display",
+};
+
+describe("execution brief persisted approval", () => {
+  for (const locale of ["pt-BR", "en-US"] as const) {
+    const messages = locale === "pt-BR" ? pt : en;
+    for (const status of ["awaiting", "approved", "superseded", "unavailable"] as const) {
+      it(`${locale}: renders ${status} without inferring approval from execution mode`, () => {
+        const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}>
+          <ExecutionBriefCard brief={{...brief, locale}} version={2}
+            approval={{status, fingerprint: brief.fingerprint, version: 2}}
+            onApprove={async () => ({ok: true})} />
+        </NextIntlClientProvider>);
+        expect(html).toContain(`data-approval-status="${status}"`);
+        expect(html).toContain(messages.ExecutionBriefCard.approval[status].title);
+        expect(html.includes("<button")).toBe(status === "awaiting");
+        expect(html).not.toContain(messages.ExecutionBriefCard.startsAfterDisplay);
+        expect(html).not.toContain(brief.fingerprint);
+      });
+    }
+  }
+  it("fails closed on missing state and mismatched version or fingerprint", () => {
+    for (const approval of [undefined,
+      {status: "approved" as const, fingerprint: brief.fingerprint, version: 1},
+      {status: "awaiting" as const, fingerprint: "b".repeat(64), version: 2},
+    ]) {
+      const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+        <ExecutionBriefCard brief={brief} version={2} approval={approval} onApprove={async () => ({ok: true})} />
+      </NextIntlClientProvider>);
+      expect(html).not.toContain("<button");
+      expect(html).toContain(`data-approval-status="${approval ? "superseded" : "unavailable"}"`);
+    }
+  });
+  it("disables approval while another project command is pending", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+      <ExecutionBriefCard brief={brief} version={2} disabled approval={{status: "awaiting", fingerprint: brief.fingerprint, version: 2}} onApprove={async () => ({ok: true})} />
+    </NextIntlClientProvider>);
+    expect(html).toContain('<button disabled=""');
+  });
+});
+
+
+it("offers manual refresh after successful submission while authoritative approval remains stale", () => {
+  // Reproduce local state after onApprove returned ok, before fresh server props arrive.
+  approvalRenderState.acceptedFingerprint = brief.fingerprint;
+  for (const locale of ["pt-BR", "en-US"] as const) {
+    const messages = locale === "pt-BR" ? pt : en;
+    approvalRenderState.stateCalls = 0;
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}>
+      <ExecutionBriefCard brief={{...brief, locale}} version={2}
+        approval={{status: "awaiting", fingerprint: brief.fingerprint, version: 2}}
+        onApprove={async () => ({ok: true})} onRefresh={() => {}} />
+    </NextIntlClientProvider>);
+    expect(html).toContain('data-approval-status="awaiting"');
+    expect(html).toContain(messages.ExecutionBriefCard.approval.refreshing);
+    expect(html).toContain(`<button type="button">${messages.ExecutionBriefCard.approval.refresh}</button>`);
+    expect(html).toContain('<button disabled=""');
+    expect(html).not.toContain(messages.ExecutionBriefCard.approval.approved.title);
+  }
 });

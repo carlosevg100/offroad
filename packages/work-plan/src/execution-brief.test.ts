@@ -223,3 +223,14 @@ function minimalInput(): ExecutionBriefCompilerInput {
     expensiveWork: false,
   };
 }
+
+it("keeps a bounded one-task plan proportional without padding or hidden tasks", () => {
+  const canonical = capitalProjectPlanSnapshot("origination_thesis");
+  const task = canonical.taskSpecs.find((item) => item.id === "M01")!;
+  const plan = {...canonical, taskSpecs: [{...task, dependencies: []}]};
+  const brief = compileCapitalExecutionBrief({plan, locale: "en-US", objective: "Confirm the company context", companyLabel: "Company", audienceLabel: "Decision owner", proposedDeliverable: "Confirmed context and open questions", sources, authority, expensiveWork: true});
+  expect(brief.workstreams).toHaveLength(1);
+  expect(brief.workstreams.flatMap((stream) => stream.sourceTaskIds)).toEqual(["M01"]);
+  expect(visibleExecutionBriefSchema.safeParse(visibleExecutionBrief(brief)).success).toBe(true);
+  expect(() => compileCapitalExecutionBrief({plan: {...plan, taskSpecs: []}, locale: "en-US", objective: "Confirm company context", companyLabel: "Company", audienceLabel: "Decision owner", proposedDeliverable: "Context", sources, authority})).toThrow("workstream_count_outside_1_to_7");
+});

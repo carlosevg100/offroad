@@ -22,6 +22,8 @@ describe("worker runtime schema preflight", () => {
           "receivables-information-request-bindings.v1",
           "receivables-complete-draft-refresh.v1",
           "universal-dispatch-candidate-shadow.v1",
+          "explicit-execution-brief-approval.v1",
+          "execution-brief-proposal.v1",
         ],
       },
       error: null,
@@ -51,7 +53,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: universal-dispatch-candidate-shadow.v1");
+    }))).rejects.toThrow("missing capabilities: execution-brief-proposal.v1");
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {
@@ -63,7 +65,7 @@ describe("worker runtime schema preflight", () => {
 
     expect(contractMigration).toBeDefined();
     const sql = readFileSync(`${migrationsDirectory}/${contractMigration}`, "utf8");
-    expect(sql).toContain(`'schemaVersion', '${WORKER_RUNTIME_SCHEMA_VERSION}'`);
+    expect(sql.replace(/,\s*/g, ",")).toContain(`'schemaVersion','${WORKER_RUNTIME_SCHEMA_VERSION}'`);
     for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES) {
       expect(sql).toContain(`'${capability}'`);
     }

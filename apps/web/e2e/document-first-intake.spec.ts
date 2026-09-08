@@ -29,6 +29,24 @@ async function expectNoErrorNotice(page: Page) {
   await expect(page.locator(".form-notice--error")).toHaveCount(0);
 }
 
+/** The default local fixture has no worker. Worker-backed runs must explicitly require consent. */
+async function awaitIntakeAnalysis(page: Page) {
+  const panel = page.getByTestId("intake-execution-approval");
+  const review = page.locator(".intake-review");
+  if (process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL === "1") {
+    await expect(panel).toBeVisible({timeout: 120_000});
+  } else {
+    await expect(panel.or(review).first()).toBeVisible({timeout: 120_000});
+  }
+  if (await panel.isVisible()) {
+    const approval = panel.locator('[data-approval-status="awaiting"]');
+    await expect(approval).toBeVisible({timeout: 120_000});
+    await expect(review).toHaveCount(0);
+    await approval.getByRole("button", {name: /aprovar|approve/i}).click();
+  }
+  await expect(review).toBeVisible({timeout: 120_000});
+}
+
 async function openFolder(page: Page, folderName: string) {
   const folder = page.locator(".app-rail__folder").filter({hasText: folderName});
   await expect(folder).toHaveCount(1);
@@ -230,7 +248,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(analyze).toBeEnabled({timeout: 60_000});
     await analyze.click();
 
-    await expect(page.locator(".intake-review")).toBeVisible({timeout: 120_000});
+    await awaitIntakeAnalysis(page);
     const stats = page.locator(".intake-review__stats");
     await expect(stats.locator("span").nth(0)).toContainText(String(dataRoomExpectations.documents));
     await expect(stats.locator("span").nth(1)).toContainText(String(dataRoomExpectations.candidates));
@@ -263,7 +281,7 @@ test.describe("Document-first intake (company journey)", () => {
     }
 
     await page.locator(".intake-review__reanalyze button[type=submit]").click();
-    await expect(page.locator(".intake-review")).toBeVisible({timeout: 120_000});
+    await awaitIntakeAnalysis(page);
     await expect(page.locator(".intake-case-review-actions")).toBeVisible();
     await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
     // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
@@ -344,7 +362,7 @@ test.describe("Document-first intake (company journey)", () => {
     const analyze = page.locator(".intake-collect__process form button[type=submit]");
     await expect(analyze).toBeEnabled({timeout: 60_000});
     await analyze.click();
-    await expect(page.locator(".intake-review")).toBeVisible({timeout: 120_000});
+    await awaitIntakeAnalysis(page);
     await expect(page.locator(".intake-review__empty")).toBeVisible();
     await expect(page.locator(".intake-issues__list article")).toHaveCount(1);
     await expect(page.locator(".intake-field")).toHaveCount(0);
@@ -371,7 +389,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(projectList).toContainText(initialProjectName);
   });
 
-  test("starts a public debt-lens analysis from the company alone", async () => {
+  test("proposes a public debt-lens analysis from the company alone", async () => {
     await page.goto("/pt-BR/app/new/company-debt");
 
     await expect(page.locator(".origination-setup__header h1")).toHaveText("Entenda o balanço antes de escolher a operação.");
@@ -389,11 +407,15 @@ test.describe("Document-first intake (company journey)", () => {
     const specializedWork = page.locator(".advisor-context-section__open");
     await expect(specializedWork).toBeVisible();
     await specializedWork.click();
-    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+\?view=work$/);
-    await expect(page.locator(".origination-project__header")).toContainText("Companhia Pública Exemplo");
-    await expect(page.locator(".origination-project__access")).toContainText("Somente fontes públicas");
-    await expect(page.locator(".origination-task-panel li")).toHaveCount(24);
-    await expect(page.locator(".origination-working")).toContainText("A Offroad está reconstruindo a leitura da companhia.");
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    // Direct setup has the same consent boundary as the chat. Opening work cannot start it.
+    await expect.poll(async () => {
+      await page.reload();
+      return page.locator(".execution-brief-card__approval").getAttribute("data-approval-status");
+    }, {timeout: 180_000}).toBe("awaiting");
+    await expect(page.getByTestId("execution-brief")).toContainText("Companhia Pública Exemplo");
+    await expect(page.locator(".execution-brief-card__approval button")).toBeEnabled();
+    await expect(page.locator(".origination-working")).toHaveCount(0);
 
     await page.goto("/pt-BR/app");
     const createdProject = railProject(page, companyDebtProjectName);

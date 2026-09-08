@@ -1,6 +1,7 @@
 -- Destructive-safe tenant isolation smoke test: every fixture is rolled back.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id,
@@ -1433,6 +1434,7 @@ begin
     true
   );
 
+  perform pg_temp.fixture_approve_pending_executions();
   case_claim := public.worker_claim_job(repeat('w', 64), 600);
   if case_claim->>'kind' <> 'case_analysis'
     or case_claim->'payload'->>'analysis_scope' <> 'full_case' then
@@ -2855,6 +2857,7 @@ begin
     true
   );
 
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the isolated case snapshot job';
@@ -3137,6 +3140,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   if claim ->> 'kind' <> 'case_analysis' then raise exception 'controlled case job was not claimed'; end if;
   job_id := (claim ->> 'job_id')::uuid;
@@ -3216,6 +3220,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
+  perform pg_temp.fixture_approve_pending_executions();
   claim_two := public.worker_claim_job(repeat('w', 64), 600);
   if claim_two ->> 'kind' <> 'case_analysis' then raise exception 'incremental case job was not claimed'; end if;
   job_id_two := (claim_two ->> 'job_id')::uuid;
@@ -4704,6 +4709,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the public-research fixture';
@@ -5186,6 +5192,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the deal-state context fixture';
@@ -5499,6 +5506,51 @@ end;
 $$;
 
 set local role postgres;
+
+
+-- Approval dispatches expose traceability only inside the project tenant. Fixture
+-- setup above approved real jobs; these negative calls never invoke its helper.
+set local role postgres;
+do $$
+declare d public.capital_project_execution_brief_dispatches; fingerprint text; rejected boolean;
+begin
+  select * into strict d from public.capital_project_execution_brief_dispatches
+    where organization_id='20000000-0000-4000-8000-000000000001'
+    order by created_at,id limit 1;
+  select brief_fingerprint into strict fingerprint from public.capital_project_execution_briefs
+    where id=d.execution_brief_id;
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  if (select count(*) from public.capital_project_execution_brief_dispatches where id=d.id)<>1 then
+    raise exception 'owner cannot read its exact execution approval trace';
+  end if;
+  rejected:=false;
+  begin
+    update public.capital_project_execution_brief_dispatches set accepted_at=null where id=d.id;
+  exception when insufficient_privilege then rejected:=true;
+  end;
+  if not rejected then raise exception 'tenant can rewrite execution approval trace'; end if;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+  if exists(select 1 from public.capital_project_execution_brief_dispatches where id=d.id) then
+    raise exception 'execution approval trace crossed tenant boundary';
+  end if;
+  rejected:=false;
+  begin
+    perform public.approve_advisor_execution_brief_v1(d.capital_project_id,d.execution_brief_id,fingerprint,gen_random_uuid());
+  exception when no_data_found then rejected:=true;
+  end;
+  if not rejected then raise exception 'other tenant accepted private execution brief'; end if;
+  set local role postgres;
+  if not exists(select 1 from public.capital_project_execution_brief_dispatches where id=d.id and accepted_at=d.accepted_at and accepted_by=d.accepted_by) then
+    raise exception 'rejected approval attempt mutated accepted dispatch';
+  end if;
+  if has_table_privilege('anon','public.capital_project_execution_brief_dispatches','SELECT')
+    or has_table_privilege('authenticated','public.capital_project_execution_brief_dispatches','INSERT')
+    or has_table_privilege('authenticated','public.capital_project_execution_brief_dispatches','DELETE') then
+    raise exception 'execution approval trace has excessive grants';
+  end if;
+end;
+$$;
 
 rollback;
 

@@ -1028,6 +1028,100 @@ export type Database = {
           },
         ]
       }
+      capital_project_execution_brief_dispatches: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_event_id: string | null
+          approval_command_id: string | null
+          capital_project_id: string
+          created_at: string
+          execution_brief_id: string
+          id: string
+          input_fingerprint: string
+          organization_id: string
+          payload_fingerprint: string
+          plan_id: string
+          processing_job_id: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_event_id?: string | null
+          approval_command_id?: string | null
+          capital_project_id: string
+          created_at?: string
+          execution_brief_id: string
+          id?: string
+          input_fingerprint: string
+          organization_id: string
+          payload_fingerprint: string
+          plan_id: string
+          processing_job_id: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_event_id?: string | null
+          approval_command_id?: string | null
+          capital_project_id?: string
+          created_at?: string
+          execution_brief_id?: string
+          id?: string
+          input_fingerprint?: string
+          organization_id?: string
+          payload_fingerprint?: string
+          plan_id?: string
+          processing_job_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_execution_br_organization_id_capital_proj_fkey2"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_br_organization_id_execution_br_fkey1"
+            columns: ["organization_id", "execution_brief_id"]
+            isOneToOne: true
+            referencedRelation: "capital_project_execution_briefs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_bri_organization_id_accepted_eve_fkey"
+            columns: ["organization_id", "accepted_event_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_execution_brief_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_bri_organization_id_processing_j_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: true
+            referencedRelation: "processing_jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_brief_di_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_execution_brief_dispatches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_project_execution_brief_events: {
         Row: {
           actor_type: string
@@ -1088,6 +1182,7 @@ export type Database = {
       }
       capital_project_execution_briefs: {
         Row: {
+          approval_input_fingerprint: string | null
           brief_fingerprint: string
           brief_version: number
           capital_project_id: string
@@ -1108,6 +1203,7 @@ export type Database = {
           workstream_count: number
         }
         Insert: {
+          approval_input_fingerprint?: string | null
           brief_fingerprint: string
           brief_version: number
           capital_project_id: string
@@ -1128,6 +1224,7 @@ export type Database = {
           workstream_count: number
         }
         Update: {
+          approval_input_fingerprint?: string | null
           brief_fingerprint?: string
           brief_version?: number
           capital_project_id?: string
@@ -1255,6 +1352,137 @@ export type Database = {
           },
           {
             foreignKeyName: "capital_project_information_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      capital_project_objective_dispatch_candidates: {
+        Row: {
+          candidate_fingerprint: string
+          candidate_status: string
+          capability_manifest_hash: string
+          capital_project_id: string
+          created_at: string
+          created_by: string
+          dispatch_candidate: Json
+          execution_context_hash: string
+          executor_registry_hash: string
+          external_effect_allowed: boolean
+          id: string
+          mode: string
+          objective_method_binding_id: string
+          objective_preflight_id: string
+          objective_workflow_selection_id: string
+          organization_id: string
+          parallel_batches: Json
+          processing_job_id: string
+          readiness_fingerprint: string
+          reasons: Json
+          schema_version: string
+          source_message_id: string
+          task_ids: string[]
+          will_execute: boolean
+        }
+        Insert: {
+          candidate_fingerprint: string
+          candidate_status: string
+          capability_manifest_hash: string
+          capital_project_id: string
+          created_at?: string
+          created_by: string
+          dispatch_candidate: Json
+          execution_context_hash: string
+          executor_registry_hash: string
+          external_effect_allowed?: boolean
+          id?: string
+          mode: string
+          objective_method_binding_id: string
+          objective_preflight_id: string
+          objective_workflow_selection_id: string
+          organization_id: string
+          parallel_batches: Json
+          processing_job_id: string
+          readiness_fingerprint: string
+          reasons: Json
+          schema_version: string
+          source_message_id: string
+          task_ids?: string[]
+          will_execute?: boolean
+        }
+        Update: {
+          candidate_fingerprint?: string
+          candidate_status?: string
+          capability_manifest_hash?: string
+          capital_project_id?: string
+          created_at?: string
+          created_by?: string
+          dispatch_candidate?: Json
+          execution_context_hash?: string
+          executor_registry_hash?: string
+          external_effect_allowed?: boolean
+          id?: string
+          mode?: string
+          objective_method_binding_id?: string
+          objective_preflight_id?: string
+          objective_workflow_selection_id?: string
+          organization_id?: string
+          parallel_batches?: Json
+          processing_job_id?: string
+          readiness_fingerprint?: string
+          reasons?: Json
+          schema_version?: string
+          source_message_id?: string
+          task_ids?: string[]
+          will_execute?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_objective_me_fkey"
+            columns: ["organization_id", "objective_method_binding_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_objective_method_bindings"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_objective_pr_fkey"
+            columns: ["organization_id", "objective_preflight_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_objective_preflights"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_objective_wo_fkey"
+            columns: ["organization_id", "objective_workflow_selection_id"]
+            isOneToOne: false
+            referencedRelation: "capital_project_objective_workflow_selections"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_processing_j_fkey"
+            columns: ["organization_id", "processing_job_id"]
+            isOneToOne: false
+            referencedRelation: "processing_jobs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dis_organization_id_source_messa_fkey"
+            columns: ["organization_id", "source_message_id"]
+            isOneToOne: false
+            referencedRelation: "agent_messages"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_objective_dispatch_candida_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -7696,6 +7924,15 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_advisor_execution_brief_v1: {
+        Args: {
+          p_command_id: string
+          p_execution_brief_id: string
+          p_expected_fingerprint: string
+          p_project_id: string
+        }
+        Returns: Json
+      }
       approve_match_shortlist: {
         Args: {
           p_match_screen_fingerprint: string
@@ -7901,6 +8138,10 @@ export type Database = {
       }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
+        Returns: Json
+      }
+      read_advisor_execution_brief_approval_v1: {
+        Args: { p_execution_brief_id: string; p_project_id: string }
         Returns: Json
       }
       read_capital_project_execution_brief_narrative_v1: {
@@ -8559,7 +8800,39 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_apply_receivables_method_supplement_patch_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_next_draft: Json
+          p_patch: Json
+        }
+        Returns: Json
+      }
+      worker_authorize_capital_project_material_upload_v1: {
+        Args: {
+          p_byte_length: number
+          p_capability_token: string
+          p_content_sha256: string
+          p_format: string
+          p_job_id: string
+          p_mime_type: string
+        }
+        Returns: Json
+      }
+      worker_bind_receivables_information_request_fields_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_projection: Json
+        }
+        Returns: Json
+      }
       worker_claim_job: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
+      worker_claim_job_v2: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
       }
@@ -8587,6 +8860,15 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_complete_capital_project_material_upload_v1: {
+        Args: {
+          p_capability_token: string
+          p_grant_id: string
+          p_job_id: string
+          p_storage_etag: string
+        }
+        Returns: Json
+      }
       worker_complete_integration_preview_run_v1: {
         Args: {
           p_artifact_fingerprint: string
@@ -8607,6 +8889,15 @@ export type Database = {
         Args: {
           p_capability_token: string
           p_event_id: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_enqueue_receivables_method_refresh_v1: {
+        Args: {
+          p_capability_token: string
+          p_compiled_supplement_fingerprint: string
+          p_draft_fingerprint: string
           p_job_id: string
         }
         Returns: Json
@@ -8655,6 +8946,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_agent_context_v2: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_agent_plan_context_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -8688,6 +8983,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_claim_decisions: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_execution_brief_proposal_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -8736,6 +9035,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_receivables_method_input_assembly_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_receivables_method_supplement_draft_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -8849,6 +9152,21 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_agent_response_and_activate_v6: {
+        Args: {
+          p_activation?: Json
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_execution_brief_change_summary?: Json
+          p_execution_brief_internal?: Json
+          p_execution_brief_visible?: Json
+          p_expected_input_fingerprint?: string
+          p_job_id: string
+          p_proposal?: Json
+          p_response: Json
+        }
+        Returns: Json
+      }
       worker_record_agent_stage_event_v1: {
         Args: {
           p_capability_token: string
@@ -8943,6 +9261,17 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_execution_brief_proposal_v1: {
+        Args: {
+          p_capability_token: string
+          p_expected_input_fingerprint: string
+          p_internal_snapshot: Json
+          p_job_id: string
+          p_plan?: Json
+          p_visible_snapshot: Json
+        }
+        Returns: Json
+      }
       worker_record_intake_request_ladders: {
         Args: { p_capability_token: string; p_events: Json; p_job_id: string }
         Returns: Json
@@ -8991,6 +9320,19 @@ export type Database = {
       worker_record_objective_plan_preflight_v4: {
         Args: {
           p_capability_token: string
+          p_job_id: string
+          p_method_binding: Json
+          p_objective_plan: Json
+          p_preflight_decision: Json
+          p_specialization: Json
+          p_workflow_selection: Json
+        }
+        Returns: Json
+      }
+      worker_record_objective_plan_preflight_v5: {
+        Args: {
+          p_capability_token: string
+          p_dispatch_candidate: Json
           p_job_id: string
           p_method_binding: Json
           p_objective_plan: Json
@@ -9061,6 +9403,7 @@ export type Database = {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
       }
+      worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
       worker_start_capital_project_task: {
         Args: {
           p_capability_token: string
@@ -9082,6 +9425,14 @@ export type Database = {
         Returns: Json
       }
       worker_sync_project_information_requests_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_projection: Json
+        }
+        Returns: Json
+      }
+      worker_sync_receivables_information_requests_v1: {
         Args: {
           p_capability_token: string
           p_job_id: string

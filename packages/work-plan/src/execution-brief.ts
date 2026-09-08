@@ -141,7 +141,7 @@ export const executionBriefProgressSchema = z.object({
     status: executionBriefWorkstreamProgressStatusSchema,
     completed: z.number().int().nonnegative(),
     total: z.number().int().positive(),
-  }).strict()).min(3).max(7),
+  }).strict()).min(1).max(7),
 }).strict();
 export type ExecutionBriefProgress = z.infer<typeof executionBriefProgressSchema>;
 
@@ -217,7 +217,7 @@ export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.o
     analyses: z.array(z.string().trim().min(1).max(1_000)).min(1).max(20),
     output: z.string().trim().min(1).max(1_000),
     dependencies: z.array(z.string().trim().min(1).max(500)).max(7),
-  }).strict()).min(3).max(7),
+  }).strict()).min(1).max(7),
   assumptions: z.array(z.object({
     label: z.string().trim().min(1).max(500),
     value: z.string().trim().min(1).max(1_000),
@@ -407,7 +407,7 @@ export function evaluateExecutionBriefInput(input: ExecutionBriefCompilerInput):
   const warnings: string[] = [];
   const taskIds = new Set(input.tasks.map((task) => task.id));
   if (taskIds.size !== input.tasks.length) blockers.push("duplicate_task_id");
-  if (input.workstreams.length < 3 || input.workstreams.length > 7) blockers.push("workstream_count_outside_3_to_7");
+  if (input.workstreams.length < 1 || input.workstreams.length > 7) blockers.push("workstream_count_outside_1_to_7");
   if (!input.objective.trim()) blockers.push("missing_objective");
   if (!input.proposedDeliverable.trim()) blockers.push("missing_deliverable");
   if (input.authority.establishedBy !== "system_policy" && input.authority.establishedBy !== "user") {
@@ -663,6 +663,8 @@ const jobCopyOverrides: Partial<Record<CapitalProjectJob, Partial<Record<keyof t
 
 export function compileCapitalExecutionBrief(input: {
   plan: CapitalProjectPlanSnapshot;
+  /** Distinguishes an immutable held dispatch from a previous identical plan. */
+  revisionContext?: string;
   locale: ExecutionBriefLocale;
   objective: string;
   companyLabel: string;
@@ -678,7 +680,11 @@ export function compileCapitalExecutionBrief(input: {
   const interpolate = (value: string) => value
     .replaceAll("{company}", input.companyLabel.trim() || (localeKey === "pt" ? "a companhia" : "the company"))
     .replaceAll("{audience}", input.audienceLabel.trim() || (localeKey === "pt" ? "a audiência definida" : "the intended audience"));
-  const orderedGroups = jobGroupOrder[input.plan.job.id];
+  // A persisted bounded plan may include material tasks beyond its entry-job defaults.
+  // Surface every existing task; this does not add work or change the approved graph.
+  const preferredGroups = jobGroupOrder[input.plan.job.id];
+  const orderedGroups = [...preferredGroups, ...(Object.keys(sharedGroups) as Array<keyof typeof sharedGroups>)
+    .filter((name) => !preferredGroups.includes(name) && input.plan.taskSpecs.some((task) => sharedGroups[name].prefixes.some((prefix) => task.id.startsWith(prefix))))];
   const workstreams = orderedGroups.map((name) => {
     const recipe = sharedGroups[name];
     const override = jobCopyOverrides[input.plan.job.id]?.[name];
@@ -701,7 +707,7 @@ export function compileCapitalExecutionBrief(input: {
     },
   ];
   return compileExecutionBrief({
-    planVersion: `${input.plan.schemaVersion}:${input.plan.compilerVersion}:${input.plan.registryVersion}`,
+    planVersion: `${input.plan.schemaVersion}:${input.plan.compilerVersion}:${input.plan.registryVersion}${input.revisionContext ? `:${input.revisionContext}` : ""}`,
     locale: input.locale,
     objective: input.objective,
     proposedDeliverable: input.proposedDeliverable,

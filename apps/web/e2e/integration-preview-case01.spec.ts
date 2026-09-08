@@ -2,7 +2,7 @@ import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 
-import {expect, test, type BrowserContext, type Page} from "@playwright/test";
+import {expect, test, type BrowserContext, type Page, type Route} from "@playwright/test";
 
 import {waitForOneTimeCode} from "./support/mail";
 
@@ -41,6 +41,44 @@ async function waitForAssistant(page: Page, pattern: RegExp, timeoutMs = 180_000
     await page.reload();
   }
   throw new Error(`no assistant message matched ${pattern} within ${timeoutMs} ms; last messages: ${JSON.stringify(await assistantMessages(page)).slice(0, 2_000)}`);
+}
+
+/** Approval is explicit for each newly proposed immutable plan. Reload proves durable state. */
+async function approveCurrentPlan(page: Page, loseAcceptedResponse = false) {
+  const panel = page.locator('.execution-brief-card__approval');
+  await expect.poll(async () => {
+    await page.reload();
+    return panel.getAttribute("data-approval-status");
+  }, {timeout: 180_000}).toBe("awaiting");
+  const version = await page.getByTestId("execution-brief").locator(":scope > header > small").innerText();
+  await page.reload();
+  await expect(panel).toHaveAttribute("data-approval-status", "awaiting");
+  await expect(page.getByTestId("execution-brief").locator(":scope > header > small")).toHaveText(version);
+  let replayed = false;
+  let responseLost = false;
+  const replayAndLoseResponse = async (route: Route) => {
+    if (!replayed && route.request().method() === "POST" && route.request().headers()["next-action"]) {
+      replayed = true;
+      // Two concurrent deliveries of one command, then a lost client acknowledgement.
+      // The database must preserve one accepted execution and reload must recover it.
+      await Promise.all([route.fetch(), route.fetch()]);
+      await route.abort("failed");
+      responseLost = true;
+    } else await route.continue();
+  };
+  if (loseAcceptedResponse) await page.route("**/*", replayAndLoseResponse);
+  try {
+    await panel.getByRole("button").click();
+    if (loseAcceptedResponse) await expect.poll(() => responseLost, {timeout: 60_000}).toBe(true);
+    await expect.poll(async () => {
+      await page.reload();
+      return panel.getAttribute("data-approval-status");
+    }, {timeout: 60_000}).toBe("approved");
+    if (loseAcceptedResponse) expect(replayed).toBe(true);
+    await expect(panel.locator('[role="alert"]')).toHaveCount(0);
+  } finally {
+    if (loseAcceptedResponse) await page.unroute("**/*", replayAndLoseResponse);
+  }
 }
 
 async function send(page: Page, message: string) {
@@ -109,7 +147,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.screenshot({path: join(outputDirectory, "01-workspace.png"), fullPage: true});
   });
 
-  test("prompt: the first turn starts the analysis and names the three points to align with the VP", async () => {
+  test("prompt: the first turn proposes analysis and names the three points to align with the VP", async () => {
     const prompt = "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.";
     transcript.push(`\n**Analista:** ${prompt}\n`);
     await page.locator(".advisor-composer--start textarea").fill(prompt);
@@ -137,6 +175,13 @@ test.describe("integration_preview: Case 01 end to end", () => {
     const visiblePlanText = await executionBrief.innerText();
     expect(visiblePlanText).not.toMatch(/sourceTaskIds|executionAuthority|TaskSpec|\b[CDKMSA][0-9]{2}\b/);
     await page.screenshot({path: join(outputDirectory, "02-alignment.png"), fullPage: true});
+  });
+
+  test("approval: proposed work survives reload and cannot produce a readout before acceptance", async () => {
+    await expect(page.getByTestId("preview-decision-artifact")).toHaveCount(0);
+    expect((await assistantMessages(page)).join("\n")).not.toMatch(/Concluí a primeira leitura financeira/);
+    await approveCurrentPlan(page, true);
+    record("aprovação", "A versão exibida foi aprovada explicitamente antes da análise.");
   });
 
   test("research and analysis: the first readout stops at the nine-step meeting plan", async () => {
@@ -193,6 +238,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText("Alternativas de estrutura de capital mais amplas");
     const acknowledgement = await waitForAssistant(page, /Resposta vinculada à pergunta em aberto/);
     record("resposta governada", acknowledgement);
+    await approveCurrentPlan(page);
     await expect.poll(async () => {
       await page.reload();
       return page.locator(".advisor-project__header > span").innerText();
@@ -222,6 +268,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     const changes = page.getByTestId("execution-brief-changes");
     await expect(changes).toBeVisible();
     await expect(changes).toContainText("O que mudou nesta versão");
+    await approveCurrentPlan(page);
     await expect(page.locator(".advisor-project__header > span")).toContainText("Pronto para continuar", {timeout: 240_000});
     await page.screenshot({path: join(outputDirectory, "03b-governed-plan-edit.png"), fullPage: true});
   });
@@ -233,6 +280,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
       /Vou planejar o material a partir das informações governadas e rastreáveis: 3 páginas/,
     );
     record("transição para o material", acknowledged);
+    await approveCurrentPlan(page);
     const plan = await waitForAssistant(page, /Plano do material a partir das informações governadas e rastreáveis/);
     expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
     record("plano do material", plan);
@@ -256,6 +304,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await send(page, "Altere a taxa da nova dívida para 15,50% a.a.");
     const acknowledged = await waitForAssistant(page, /Premissa registrada \(taxa da nova dívida 15[.,]50% a\.a\.\)/);
     record("premissa alterada", acknowledged);
+    await approveCurrentPlan(page);
     const updated = await waitForAssistant(page, /7 de 9 etapas foram reaproveitadas sem recálculo/);
     expect(updated).toContain(MARK);
     record("atualização incremental", updated);

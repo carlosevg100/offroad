@@ -2,13 +2,15 @@ import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 export const WORKER_RUNTIME_SCHEMA_VERSION =
-  "document-worker-runtime.2026-09-07.r01-governed-answer.v1" as const;
+  "document-worker-runtime.2026-09-08.execution-approval.v1" as const;
 
 export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "integration-preview-workflow-continuity.v1",
   "receivables-information-request-bindings.v1",
   "receivables-complete-draft-refresh.v1",
   "universal-dispatch-candidate-shadow.v1",
+  "explicit-execution-brief-approval.v1",
+  "execution-brief-proposal.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

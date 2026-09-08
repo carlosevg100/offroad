@@ -1,6 +1,7 @@
 -- Fail-closed operating-control plane. Every fixture is rolled back.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -94,6 +95,37 @@ begin
 end;
 $$;
 
+-- These platform ledgers intentionally expose neither rows nor direct mutation
+-- privileges to browser roles. Their explicit policies preserve default deny.
+do $$
+declare ledger text; client_role text; privilege_name text;
+begin
+  foreach ledger in array array['platform_capability_accreditations','human_intervention_ledger'] loop
+    if not exists (
+      select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+      where n.nspname='private' and c.relname=ledger and c.relrowsecurity and c.relforcerowsecurity
+    ) then raise exception 'platform ledger lost forced RLS: %',ledger; end if;
+    if not exists (
+      select 1 from pg_policies p where p.schemaname='private' and p.tablename=ledger
+        and p.policyname=ledger||'_deny_clients' and p.permissive='RESTRICTIVE'
+        and p.cmd='ALL' and p.roles @> array['anon','authenticated']::name[]
+        and p.qual='false' and p.with_check='false'
+    ) then raise exception 'platform ledger explicit restrictive deny missing: %',ledger; end if;
+    foreach client_role in array array['anon','authenticated'] loop
+      foreach privilege_name in array array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] loop
+        if has_table_privilege(client_role,'private.'||ledger,privilege_name) then
+          raise exception 'platform ledger gained client privilege: % % %',ledger,client_role,privilege_name;
+        end if;
+      end loop;
+    end loop;
+  end loop;
+end;
+$$;
+
+-- Exercise the existing privileged SQL-operator path. The historical service_role
+-- EXECUTE grants alone are unusable without private schema USAGE; no app writer
+-- or public wrapper exists. This regression does not broaden that boundary.
+set local role postgres;
 select private.record_platform_capability_accreditation_v1(
   'case-analysis:2026.08.29-v15', 'recommend', 'tested', 'tested', true,
   jsonb_build_object(
@@ -105,6 +137,27 @@ select private.record_platform_capability_accreditation_v1(
   ), '{}'::text[], now(), now() + interval '1 day',
   '91000000-0000-4000-8000-000000000001'
 );
+
+select private.record_human_intervention_v1(
+  '92000000-0000-4000-8000-000000000001','93000000-0000-4000-8000-000000000001',
+  'explicit-deny-fixture','required_professional_judgment',1,true,false,true,
+  'Isolated explicit-deny regression','91000000-0000-4000-8000-000000000001'
+);
+reset role;
+do $$
+begin
+  if not exists(select 1 from private.human_intervention_ledger where task_id='explicit-deny-fixture')
+    or not exists(select 1 from private.platform_capability_accreditations where scope_id='case-analysis:2026.08.29-v15' and stage='recommend') then
+    raise exception 'explicit deny blocked an authorized platform writer';
+  end if;
+  if has_function_privilege('authenticated','private.record_human_intervention_v1(uuid,uuid,text,text,numeric,boolean,boolean,boolean,text,uuid)','EXECUTE')
+    or has_function_privilege('anon','private.record_human_intervention_v1(uuid,uuid,text,text,numeric,boolean,boolean,boolean,text,uuid)','EXECUTE')
+    or has_function_privilege('authenticated','private.record_platform_capability_accreditation_v1(text,text,text,text,boolean,jsonb,text[],timestamptz,timestamptz,uuid)','EXECUTE')
+    or has_function_privilege('anon','private.record_platform_capability_accreditation_v1(text,text,text,text,boolean,jsonb,text[],timestamptz,timestamptz,uuid)','EXECUTE') then
+    raise exception 'platform ledger writer became tenant-callable';
+  end if;
+end;
+$$;
 
 set local role authenticated;
 select set_config(
@@ -123,6 +176,7 @@ declare
   replay jsonb;
   base_snapshot jsonb;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('k', 64), 600);
   job_id := (claim ->> 'job_id')::uuid;
   capability := claim ->> 'capability_token';

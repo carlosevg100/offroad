@@ -13727,3 +13727,24 @@ button[disabled].workspace-search,
   .decision-work__gaps article { grid-template-columns: 1fr; gap: 0.5rem; padding-left: 2.3rem; }
   .decision-work__materials { align-items: flex-start; flex-direction: column; }
 }
+
+.execution-brief-card__approval {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 16px 18px;
+  margin: 0 0 18px;
+  border: 1px solid #dce2d1;
+  border-radius: 10px;
+  background: #f7f8f4;
+}
+.execution-brief-card__approval > div {flex: 1 1 240px; min-width: 0;}
+.execution-brief-card__approval strong {font-size: 13px; color: #35412c;}
+.execution-brief-card__approval p {margin: 5px 0 0; font-size: 12px; line-height: 1.6; color: #60685a;}
+.execution-brief-card__approval > button {display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 9px 14px; border: 1px solid #4e603b; border-radius: 7px; background: #4e603b; color: #fff; font: inherit; font-size: 12px; cursor: pointer;}
+.execution-brief-card__approval > button:disabled {opacity: .65; cursor: default;}
+.execution-brief-card__approval > button:focus-visible {outline: 2px solid #35412c; outline-offset: 3px;}
+.execution-brief-card__approval > [role="alert"] {flex-basis: 100%; color: #873e35;}
+.execution-brief-card__approval[data-approval-status="superseded"],
+.execution-brief-card__approval[data-approval-status="unavailable"] {background: #f6f6f4; border-color: #e3e4df;}

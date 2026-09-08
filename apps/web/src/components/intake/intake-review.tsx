@@ -1,3 +1,5 @@
+import {IntakeExecutionApproval} from "./intake-execution-approval";
+import type {IntakeExecutionApprovalState} from "@/lib/intake/execution-approval";
 import {AlertTriangle, ArrowRight, Check, ChevronDown, FileText, History} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 import {diagnosticConfirmationReady} from "@offroad/case-understanding";
@@ -16,6 +18,7 @@ import {IntakeActionSubmit} from "./intake-action-submit";
 import {IntakeInformation} from "./intake-information";
 
 type Props = {
+  executionApproval?: IntakeExecutionApprovalState | null;
   locale: string;
   session: IntakeSession;
   documents: IntakeDocument[];
@@ -82,7 +85,7 @@ export function isReviewAttentionItem(
   return issue.status === "open" && !issue.rule_id;
 }
 
-export async function IntakeReview({locale, session, documents, candidates, issues, actions, caseState, checklist, answerAction, organizationId, userId, removeAction, surface}: Props) {
+export async function IntakeReview({executionApproval, locale, session, documents, candidates, issues, actions, caseState, checklist, answerAction, organizationId, userId, removeAction, surface}: Props) {
   const [t, tIntake] = await Promise.all([
     getTranslations({locale, namespace: "Intake.review"}),
     getTranslations({locale, namespace: "Intake"}),
@@ -105,8 +108,10 @@ export async function IntakeReview({locale, session, documents, candidates, issu
   };
   const diagnosticCanBeConfirmed = caseState ? diagnosticConfirmationReady(caseState.readiness) : false;
 
+  if (executionApproval?.pending) return <IntakeExecutionApproval state={executionApproval} locale={locale} />;
   return (
     <div className="intake-review">
+      {executionApproval ? <IntakeExecutionApproval state={executionApproval} locale={locale} /> : null}
       <IntakeJourneyTelemetry
         documentCount={documents.length}
         journey={session.journey === "originator" ? "originator" : "company"}

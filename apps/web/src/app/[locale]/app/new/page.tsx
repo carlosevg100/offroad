@@ -1,3 +1,4 @@
+import {loadIntakeExecutionApproval} from "@/lib/intake/execution-approval";
 import {ArrowLeft} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
@@ -100,7 +101,10 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     ? await loadPreliminaryUnderstanding(supabase, organization.id, collection.session.id)
     : null;
   const preliminaryConfirmed = preliminary?.current?.row.status === "confirmed";
+  const executionApproval = collection?.session && preliminaryConfirmed
+    ? await loadIntakeExecutionApproval(supabase, collection.session) : null;
   const deepReviewReady = Boolean(
+    !executionApproval?.blockReview &&
     collection?.session?.status === "review_ready"
     && preliminaryConfirmed
     && preliminary?.current?.row.processing_run_id !== collection.session.current_run_id,
@@ -206,6 +210,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           </section>
         ) : deepReviewReady ? (
           <IntakeReview
+            executionApproval={executionApproval}
             answerAction={saveWorkspaceIntakeAnswer}
             caseState={await resolveCaseState({
               supabase,
@@ -227,6 +232,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           />
         ) : (
           <IntakeCollect
+            executionApproval={executionApproval}
             {...(effectiveGuidedStep ? {stage: effectiveGuidedStep} : {})}
             backHref={effectiveGuidedStep === "company"
               ? `/${locale}/app/new?mode=documents&session=${review.session.id}&setup=project`

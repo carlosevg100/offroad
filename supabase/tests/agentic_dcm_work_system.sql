@@ -2,6 +2,7 @@
 -- forced through RLS and read-only to authenticated browser clients.
 
 begin;
+\ir support/execution_approval.sql
 
 do $$
 declare
@@ -212,9 +213,10 @@ begin
     payload, lease_expires_at, capability_sha256
   ) values (
     ids.job_id, '20000000-0000-4000-8000-000000000393', ids.run_id, ids.session_id,
-    'capital_project_analysis', 'leased', '{}', now() + interval '10 minutes',
+    'capital_project_analysis', 'leased', jsonb_build_object('capital_project_plan_id',ids.base_plan_id), now() + interval '10 minutes',
     extensions.digest(repeat('c', 64), 'sha256')
   );
+  perform pg_temp.fixture_approve_execution(ids.job_id,true);
   insert into public.capital_project_agent_plans (
     id, organization_id, capital_project_id, base_plan_id, revision, status, goal,
     trigger_type, trigger_ref, schema_version, snapshot, plan_fingerprint, created_by
@@ -408,6 +410,31 @@ reset role;
 update public.capital_project_agent_plans
 set status = 'superseded'
 where id = '30000000-0000-4000-8000-000000000393';
+-- The response-command assertions above end at enqueue. This next isolated
+-- projection fixture starts after that command has completed, using explicit
+-- synthetic terminal state; real planner execution is covered in the bridge suite.
+update public.processing_jobs set status='succeeded'
+where kind='agent_operation_brief' and payload->>'message_id'='90000000-0000-4000-8000-000000000393';
+update public.agent_messages set status='completed'
+where id='90000000-0000-4000-8000-000000000393';
+-- The answer changed approved inputs. Start a fresh bounded dispatch for the next
+-- projection instead of reviving the capability from before that answer.
+do $$
+declare ids agent_work_system_ids%rowtype; next_run uuid:=gen_random_uuid(); next_job uuid:=gen_random_uuid();
+begin
+  select * into ids from agent_work_system_ids;
+  insert into public.processing_runs (id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
+  select next_run,organization_id,intake_session_id,
+    (select max(run_no)+1 from public.processing_runs where intake_session_id=ids.session_id),
+    'manual','running','question-projection-fixture-v2',created_by
+  from public.processing_runs where id=ids.run_id;
+  insert into public.processing_jobs (id,organization_id,processing_run_id,intake_session_id,kind,status,payload,lease_expires_at,capability_sha256)
+  select next_job,organization_id,next_run,intake_session_id,kind,'leased',payload,
+    now()+interval '10 minutes',capability_sha256 from public.processing_jobs where id=ids.job_id;
+  perform pg_temp.fixture_approve_execution(next_job,true);
+  update agent_work_system_ids set job_id=next_job;
+end;
+$$;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -490,6 +517,7 @@ begin
     '{"analysis_scope":"full_case"}', now() + interval '10 minutes',
     extensions.digest(repeat('r', 64), 'sha256')
   );
+  perform pg_temp.fixture_approve_execution('51000000-0000-4000-8000-000000000393',true);
 end;
 $$;
 set local role authenticated;
@@ -579,7 +607,7 @@ begin
   );
 
   closed_result := public.worker_sync_project_information_requests_v1(
-    ids.job_id, repeat('c', 64), projection
+    '51000000-0000-4000-8000-000000000393', repeat('r', 64), projection
   );
   if closed_result ->> 'open_count' <> '0'
     or closed_result ->> 'preserved_closed_count' <> '1'

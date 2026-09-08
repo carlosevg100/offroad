@@ -3265,6 +3265,17 @@
       "eligible": "eligible",
       "priceTitle": "Indicative price (internal; the term sheet carries no rate)",
       "to": "to"
+    },
+    "executionApproval": {
+      "preparingTitle": "Preparing your work plan",
+      "preparingBody": "You can review and approve the plan before the analysis starts.",
+      "unavailableTitle": "The plan is not available yet",
+      "unavailableBody": "Refresh to check the latest project state. Analysis requires a valid plan and your approval.",
+      "running": "Plan approved. Analysis is running; this page will show the result when ready.",
+      "refresh": "Refresh status",
+      "stale": "The plan changed. Refresh to review the current version before approving.",
+      "failed": "Approval could not be confirmed. Please try again.",
+      "editFailed": "The adjustment could not be sent. Your request was preserved; please try again."
     }
   },
   "Sounding": {
@@ -3398,5 +3409,129 @@
       "planned": "planned",
       "awaiting_confirmation": "awaiting confirmation"
     }
+  },
+  "ExecutionBriefCard": {
+    "editVersion": "Your request will be bound to version {version}.",
+    "change": {
+      "objective_changed": "Objective",
+      "deliverable_changed": "Deliverable",
+      "workstream_added": "Added",
+      "workstream_removed": "Removed",
+      "assumption_added": "Assumption",
+      "assumption_updated": "Assumption",
+      "assumption_removed": "Assumption",
+      "source_status_changed": "Source",
+      "checkpoint_changed": "Decision"
+    },
+    "progress": {
+      "waiting": "Waiting",
+      "queued": "Queued",
+      "running": "In progress",
+      "waiting_user": "Waiting for you",
+      "completed": "Completed",
+      "needs_attention": "Needs attention"
+    },
+    "source": {
+      "available": "available",
+      "to_research": "to research",
+      "to_request": "to request"
+    },
+    "startsAfterDisplay": "Starts after display",
+    "confirmBeforeProceeding": "Confirmation before proceeding",
+    "externalApproval": "Approval before any external action",
+    "title": "Plan for this work",
+    "deliverable": "What will be ready",
+    "after": "after",
+    "stepDetails": "Analyses and output for this step",
+    "output": "Output",
+    "changesTitle": "What changed in this version",
+    "changesPreserved": "The rest of the plan was preserved",
+    "removed": "removed",
+    "assumptions": "Assumptions you can change",
+    "newVersion": "Every change creates a new version",
+    "edit": "Adjust this plan",
+    "editHint": "Add, remove or reprioritize what changes the deliverable",
+    "editQuestion": "What should change in the plan?",
+    "cancelEdit": "Cancel adjustment",
+    "editPlaceholder": "Describe what you want to add, remove, deepen or prioritize...",
+    "editConsequence": "Offroad will recompile the plan and show the differences before proceeding.",
+    "submitEdit": "Submit adjustment",
+    "nextDecision": "Next decision point",
+    "version": "Version {version}",
+    "editUncertain": "The adjustment could not be confirmed. Your text was preserved. Try again.",
+    "approval": {
+      "awaiting": {
+        "title": "Awaiting your approval",
+        "description": "Review the scope and sources. Analysis under this plan begins after your approval."
+      },
+      "approved": {
+        "title": "Plan approved",
+        "description": "Your approval is recorded for this version. Follow the work and any blockers below."
+      },
+      "superseded": {
+        "title": "Plan updated",
+        "description": "This version is no longer available for approval. Review the latest plan."
+      },
+      "unavailable": {
+        "title": "Approval unavailable",
+        "description": "The approval state for this plan could not yet be confirmed."
+      },
+      "approve": "Approve plan · version {version}",
+      "retry": "Retry approval",
+      "saving": "Recording approval…",
+      "refreshing": "Waiting for the updated state…",
+      "uncertain": "Approval could not be confirmed. Try again; confirmation will be checked before work starts.",
+      "refresh": "Refresh status",
+      "reason": {
+        "awaiting_preliminary_confirmation": "Review and confirm the initial understanding of your documents to proceed.",
+        "required_information_missing": "Information needed to prepare this analysis is still missing. Review the project requirements.",
+        "plan_generation_pending": "The plan is being prepared from this project’s scope. Analysis awaits your approval.",
+        "dispatch_unavailable": "No execution is bound to this version. Adjust the plan to prepare a new proposal.",
+        "context_changed": "The information or scope has changed. Review the new version before approving.",
+        "approval_required": "Review the scope and deliverable. Your approval releases only the work in this version.",
+        "approved": "This version was approved. Material changes require a new plan and a new approval."
+      }
+    }
+  },
+  "AdvisorEvidenceInventory": {
+    "title": "Information base",
+    "description": "Review the material received and the points that still need evidence.",
+    "files": "{count, plural, one {# file received} other {# files received}}",
+    "coverage": "Requirements resolved: {verified}/{total}",
+    "coveragePending": "Coverage not yet assessed",
+    "notExamined": "{count, plural, one {# unexamined requirement} other {# unexamined requirements}}",
+    "reviewFiles": "Review received documents",
+    "version": "Version {version}",
+    "noFiles": "No files have been uploaded to this project. Research sources are identified in the plan.",
+    "processingIsNotVerification": "Processing a file does not, by itself, verify the information needed for the analysis.",
+    "requirements": "{count, plural, one {# point to clarify} other {# points to clarify}}",
+    "reasonPending": "The impact of this requirement still needs to be assessed.",
+    "noRequirements": "No gaps have been recorded in this information base. This does not establish that the analysis is complete.",
+    "documentStatus": {
+      "quarantined": "Awaiting security checks",
+      "scanning": "Security checks in progress",
+      "clean": "Cleared for reading",
+      "processing": "Processing",
+      "ready": "Processed",
+      "rejected": "File rejected",
+      "failed": "Processing failed",
+      "unknown": "Processing state unavailable"
+    },
+    "requirementStatus": {
+      "missing": "Information not found",
+      "partial": "Partial evidence",
+      "conflicting": "Conflicting sources",
+      "unavailable": "Information unavailable",
+      "not_examined": "Not yet examined",
+      "unknown": "Assessment pending"
+    },
+    "materiality": {
+      "blocking": "Blocks the affected conclusion",
+      "high": "High relevance",
+      "medium": "Medium relevance",
+      "low": "Supplementary",
+      "unknown": "Impact to assess"
+    },
+    "addFiles": "Add documents"
   }
 }

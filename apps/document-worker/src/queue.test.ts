@@ -441,7 +441,7 @@ describe("execution-brief activation", () => {
       activation: {job_id: "70000000-0000-4000-8000-000000000001"},
       executionBrief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v5", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v6", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_assistant_message_id: "60000000-0000-4000-8000-000000000001",
@@ -451,6 +451,7 @@ describe("execution-brief activation", () => {
       p_execution_brief_internal: internal,
       p_execution_brief_visible: visible,
       p_execution_brief_change_summary: [{kind: "turn_activation"}],
+      p_expected_input_fingerprint: null,
     });
   });
 
@@ -734,4 +735,16 @@ describe("governed capital-project material storage", () => {
     })).rejects.toThrow(/do not match contentSha256/);
     expect(rpc).not.toHaveBeenCalled();
   });
+});
+
+it("uses only capability-scoped proposal RPCs and forwards the loaded input fingerprint", async () => {
+  const rpc = vi.fn(async () => ({data: {status: "proposed"}, error: null}));
+  const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+  const proposal = {...job, kind: "execution_brief_proposal" as const, payload: {approval_target_job_id: "10000000-0000-4000-8000-000000000005", locale: "pt-BR" as const}};
+  await queue.loadExecutionBriefProposal!(proposal);
+  await queue.recordExecutionBriefProposal!(proposal, {internal: true}, {visible: true}, "a".repeat(64));
+  expect(rpc.mock.calls).toEqual([
+    ["worker_load_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token}],
+    ["worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: {internal: true}, p_visible_snapshot: {visible: true}, p_expected_input_fingerprint: "a".repeat(64), p_plan: null}],
+  ]);
 });

@@ -6,7 +6,7 @@ import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lig
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
-import {notFound} from "next/navigation";
+import {notFound, redirect} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
@@ -27,6 +27,8 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
+import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
+import {openEvidenceRequirements} from "@/lib/advisor/evidence-inventory";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {OriginationDecision} from "./origination-decision";
@@ -53,6 +55,16 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
   const specialized = ["company_debt_view", "origination_thesis", "capital_planning"].includes(project.entry_job);
   if (view !== "work" || !specialized || project.entry_job === "origination_thesis") {
     return <ConversationalCapitalProject locale={locale} project={project} />;
+  }
+  // A specialized view must not report analysis in progress while its exact plan awaits
+  // consent. Keep the actionable approval in the canonical project conversation.
+  const {data: approvalSession} = await supabase.from("document_intake_sessions")
+    .select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).maybeSingle();
+  if (approvalSession) {
+    const {data: heldWork} = await supabase.from("processing_jobs")
+      .select("id").eq("organization_id", organization.id).eq("intake_session_id", approvalSession.id)
+      .eq("status", "awaiting_approval").limit(1);
+    if (heldWork?.length) redirect(`/${locale}/app/projects/${project.id}`);
   }
   if (project.entry_job === "company_debt_view") {
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
@@ -235,7 +247,7 @@ async function ConversationalCapitalProject({
 
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}, {data: executionBriefRow}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
-    supabase.from("source_documents").select("id, original_name, byte_size, processing_status").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
+    supabase.from("source_documents").select("id, original_name, byte_size, processing_status, document_version").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
     supabase.from("capital_project_plans").select("id, compiler_version").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
@@ -253,12 +265,13 @@ async function ConversationalCapitalProject({
   const parsedExecutionBriefChanges = executionBriefRow
     ? executionBriefChangeSchema.array().max(20).safeParse(executionBriefRow.change_summary)
     : null;
-  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}] = executionBriefRow
+  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}, {data: executionBriefApprovalRaw}] = executionBriefRow
     ? await Promise.all([
         supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id}),
         supabase.rpc("read_capital_project_execution_brief_narrative_v1", {p_execution_brief_id: executionBriefRow.id}),
+        supabase.rpc("read_advisor_execution_brief_approval_v1", {p_project_id: project.id, p_execution_brief_id: executionBriefRow.id}),
       ])
-    : [{data: null}, {data: null}];
+    : [{data: null}, {data: null}, {data: null}];
   const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
   const parsedExecutionBriefNarrative = executionBriefNarrativeSchema.safeParse(executionBriefNarrativeRaw);
   const executionBriefProgress = parsedExecutionBrief?.success
@@ -533,18 +546,7 @@ async function ConversationalCapitalProject({
   // What is still open is more useful than how much is open. Each requirement already carries
   // the reason it matters and its materiality, so the screen can say why a gap changes the work
   // instead of showing a count and leaving the person to guess.
-  const materialityRank: Record<string, number> = {blocking: 0, high: 1, medium: 2, low: 3};
-  const openRequirements = (requirementCoverage ?? [])
-    .filter((item) => ["missing", "partial", "conflicting", "unavailable"].includes(item.status))
-    .sort((a, b) => (materialityRank[a.materiality] ?? 9) - (materialityRank[b.materiality] ?? 9))
-    .slice(0, 6)
-    .map((item) => ({
-      id: item.id,
-      label: item.label ?? item.requirement_key,
-      status: item.status,
-      materiality: item.materiality,
-      reason: item.missing_reason ?? null,
-    }));
+  const openRequirements = openEvidenceRequirements(expectedRequirements, requirementCoverage ?? []);
   const verifiedCoverage = verifiedExpected + verifiedOutsideProfile;
   const openCoverage = openExpected + openOutsideProfile;
   const totalCoverage = expectedRequirements.length
@@ -558,8 +560,9 @@ async function ConversationalCapitalProject({
       status: artifact.status,
     }))}
     copy={copy}
-    documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status}))}
+    documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status, version: document.document_version}))}
     executionBrief={parsedExecutionBrief?.success ? {
+      approval: projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow!.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow!.brief_version}),
       brief: parsedExecutionBrief.data,
       briefId: executionBriefRow!.id,
       changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],

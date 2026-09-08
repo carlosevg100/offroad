@@ -2,6 +2,7 @@
 -- response, company context, versioned brief and queued execution are atomic and capability-bound.
 
 begin;
+\ir support/execution_approval.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -258,19 +259,28 @@ begin
   from public.processing_runs run
   where run.id = capital_job.processing_run_id;
 
-  if capital_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
+  if capital_job.status <> 'awaiting_approval'
+    or capital_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
     or capital_job.payload #>> '{model_budget,max_cost_usd}' <> '1.50'
     or capital_job.payload #>> '{model_budget,max_calls}' <> '2'
     or capital_run.budget ->> 'maxCostUsd' <> '1.50'
     or capital_run.budget ->> 'externalSearchMaxUsd' <> '0.04'
     or (select company_profile ->> 'name' from public.document_intake_sessions where id = session_id) <> 'Companhia Farol'
     or (select current_run_id from public.document_intake_sessions where id = session_id) <> capital_run.id
-    or (select state from public.agent_conversations where intake_session_id = session_id) <> 'analyzing'
+    or (select state from public.agent_conversations where intake_session_id = session_id) <> 'idle'
     or (select metadata #>> '{activation,analysisScope}' from public.agent_messages where id = assistant_id) <> 'origination_thesis'
     or (select count(*) from public.agent_messages where id = assistant_id) <> 1
     or (select count(*) from public.capital_project_briefs brief where brief.capital_project_id = project_id and brief.request_id = source_request_id) <> 1
     or (select count(*) from public.processing_jobs job where job.kind = 'capital_project_analysis' and job.payload ->> 'capital_project_id' = project_id::text) <> 1 then
-    raise exception 'semantic activation did not persist one coherent idempotent execution';
+    raise exception 'semantic activation did not persist one coherent idempotent execution: %',jsonb_build_object(
+      'job_status',capital_job.status,'job_payload',capital_job.payload,'run_budget',capital_run.budget,
+      'company',(select company_profile->>'name' from public.document_intake_sessions where id=session_id),
+      'current_run',(select current_run_id from public.document_intake_sessions where id=session_id),'expected_run',capital_run.id,
+      'conversation_state',(select state from public.agent_conversations where intake_session_id=session_id),
+      'assistant_metadata',(select metadata from public.agent_messages where id=assistant_id),
+      'assistant_count',(select count(*) from public.agent_messages where id=assistant_id),
+      'brief_count',(select count(*) from public.capital_project_briefs where capital_project_id=project_id and request_id=source_request_id),
+      'analysis_job_count',(select count(*) from public.processing_jobs where kind='capital_project_analysis' and payload->>'capital_project_id'=project_id::text));
   end if;
 end;
 $$;
@@ -409,7 +419,7 @@ begin
   from public.processing_jobs job
   where job.kind = 'capital_project_analysis'
     and job.payload ->> 'capital_project_id' = project_id::text
-    and job.status = 'queued';
+    and job.status = 'awaiting_approval';
 
   if active_brief.brief_version <> 2
     or active_brief.content ->> 'meetingContext' not like '%CFO e tesouraria%'
@@ -438,6 +448,7 @@ declare
   claim jsonb;
   context jsonb;
 begin
+  perform pg_temp.fixture_approve_pending_executions();
   claim := public.worker_claim_job(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route'

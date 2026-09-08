@@ -8,6 +8,7 @@ import {useRef, useState, type ReactNode} from "react";
 
 import {
   answerAdvisorInformationRequest,
+  approveAdvisorExecutionBrief,
   appendAdvisorMessage,
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
@@ -19,13 +20,14 @@ import {
   type AdvisorChangeProposalCopy,
 } from "@/components/advisor/advisor-change-proposal";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
-import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
+import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
-import {ExecutionBriefCard} from "./execution-brief-card";
+import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
+import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
 import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
 
@@ -39,7 +41,7 @@ export type AdvisorProjectMessage = {
   artifactHref?: string;
   proposalId?: string | null;
 };
-export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string};
+export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string; version?: number};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
 export type AdvisorProjectArtifact = {id: string; label: string; status: string};
 export type AdvisorProjectActivityEvent = {id: string; type: string; summary: string; createdAt: string};
@@ -100,12 +102,14 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
-  executionBrief?: {brief: VisibleExecutionBrief; briefId: string; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
+  executionBrief?: {approval?: ExecutionBriefApproval; brief: VisibleExecutionBrief; briefId: string; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
   const router = useRouter();
   const recoveryCopy = useTranslations("App.advisorProject.recovery");
+  const approvalCopy = useTranslations("ExecutionBriefCard");
+  const inventoryCopy = useTranslations("AdvisorEvidenceInventory");
   const inputRef = useRef<HTMLInputElement>(null);
   const [commandRecovery] = useState(() => createAdvisorCommandRecovery());
   const [content, setContent] = useState("");
@@ -153,9 +157,10 @@ export function AdvisorProject(props: Props) {
 
   async function runCommand(
     key: readonly string[],
-    message: string,
+    message: string | null,
     action: (messageId: string) => Promise<AdvisorCommandResult>,
     onAccepted?: () => void,
+    showGlobalError = true,
   ): Promise<AdvisorCommandResult> {
     const result = await commandRecovery.run({
       key: JSON.stringify([props.projectId, props.locale, ...key]),
@@ -166,7 +171,7 @@ export function AdvisorProject(props: Props) {
       onStart: (messageId) => {
         setError("");
         setPending(true);
-        setOptimistic([{id: messageId, role: "user", content: message, status: "queued", createdAt: new Date().toISOString()}]);
+        setOptimistic(message ? [{id: messageId, role: "user", content: message, status: "queued", createdAt: new Date().toISOString()}] : []);
       },
       onSettled: () => {
         setPending(false);
@@ -178,7 +183,7 @@ export function AdvisorProject(props: Props) {
       const message = result.error === "uncertain"
         ? recoveryCopy("uncertain")
         : props.copy.errors[result.error as keyof AdvisorProjectCopy["errors"]] ?? props.copy.errors.save;
-      setError(message);
+      if (showGlobalError) setError(message);
       return {ok: false, error: message};
     }
     setError("");
@@ -206,6 +211,17 @@ export function AdvisorProject(props: Props) {
         content: normalized,
         messageId,
       }));
+  }
+
+  async function approvePlan(input: {expectedFingerprint: string; expectedVersion: number}): Promise<AdvisorCommandResult> {
+    const current = props.executionBrief;
+    if (!current || current.brief.fingerprint !== input.expectedFingerprint || current.version !== input.expectedVersion) {
+      return {ok: false, error: props.copy.errors.stale};
+    }
+    if (pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
+    return runCommand(["plan_approval", current.briefId, input.expectedFingerprint], null,
+      (commandId) => approveAdvisorExecutionBrief({locale: props.locale, projectId: props.projectId,
+        executionBriefId: current.briefId, expectedFingerprint: input.expectedFingerprint, commandId}), undefined, false);
   }
 
   async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<AdvisorCommandResult> {
@@ -260,13 +276,21 @@ export function AdvisorProject(props: Props) {
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>
-          <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.copy.ready}</span>
+          <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.executionBrief?.approval?.status === "awaiting" ? approvalCopy("approval.awaiting.title") : props.copy.ready}</span>
         </header>
 
+        {props.documents.length > 0 || props.executionBrief || props.coverage.total > 0 ? <AdvisorEvidenceInventory
+          disabled={pending || uploading} onAttach={() => inputRef.current?.click()}
+          documents={props.documents} requirements={props.openRequirements} coverage={props.coverage}
+        /> : null}
         <div aria-live="polite" className="advisor-thread">
           {timeline.map((item) => {
             if (item.kind === "execution_brief") {
               return <ExecutionBriefCard
+                approval={item.executionBrief.approval}
+                disabled={pending || uploading || active}
+                onApprove={approvePlan}
+                onRefresh={() => router.refresh()}
                 brief={item.executionBrief.brief}
                 changes={item.executionBrief.changes}
                 key={item.id}
@@ -347,24 +371,8 @@ export function AdvisorProject(props: Props) {
           <p>{props.pendingRequests[0]!.question}</p>
           <small>{props.pendingRequests[0]!.whyItMatters}</small>
         </section> : null}
-        {props.coverage.total > 0 ? <section className="advisor-context-section">
-          <div><strong>{props.copy.evidence}</strong><small>{props.coverage.verified}/{props.coverage.total}</small></div>
-          <ul>
-            <li><Check aria-hidden="true" size={12} /><span>{props.copy.verified}: {props.coverage.verified}</span></li>
-            {props.coverage.notExamined > 0 ? <li><Circle aria-hidden="true" size={12} /><span>{props.copy.notExamined}: {props.coverage.notExamined}</span></li> : null}
-            <li><Circle aria-hidden="true" size={12} /><span>{props.copy.openIssues}: {props.coverage.openIssues}</span></li>
-          </ul>
-          {props.openRequirements.length ? <div className="advisor-context-gaps">
-            <strong>{props.copy.openRequirements}</strong>
-            <ul>
-              {props.openRequirements.map((item) => (
-                <li key={item.id}>
-                  <span><b>{item.label}</b><i data-materiality={item.materiality}>{props.copy.materiality[item.materiality] ?? item.materiality}</i></span>
-                  {item.reason ? <small>{item.reason}</small> : null}
-                </li>
-              ))}
-            </ul>
-          </div> : null}
+        {props.documents.length > 0 || props.executionBrief || props.coverage.total > 0 ? <section className="advisor-context-section">
+          <Link className="advisor-context-section__open" href="#project-evidence">{inventoryCopy("title")}</Link>
         </section> : null}
         {props.decisionRecords.length ? <section className="advisor-context-section">
           <div><strong>{props.copy.decisions}</strong><small>{props.decisionRecords.length}</small></div>
@@ -373,10 +381,6 @@ export function AdvisorProject(props: Props) {
         <section className="advisor-context-section advisor-context-section--activity">
           <div><strong>{props.copy.plan}</strong><small>{completed}/{props.tasks.length}</small></div>
           <ol>{props.tasks.map((task) => <li className={`is-${task.status}`} key={task.id}>{task.status === "succeeded" ? <Check aria-hidden="true" size={12} /> : ["running", "queued"].includes(task.status) ? <LoaderCircle aria-hidden="true" className={task.status === "running" ? "spin" : undefined} size={12} /> : <Circle aria-hidden="true" size={12} />}<span>{task.label}</span></li>)}</ol>
-        </section>
-        <section className="advisor-context-section">
-          <div><strong>{props.copy.documents}</strong><small>{props.documents.length}</small></div>
-          {props.documents.length ? <ul>{props.documents.map((document) => <li key={document.id}><FileText aria-hidden="true" size={13} /><span><strong>{document.name}</strong><small>{document.size ? formatDocumentSize(document.size) : document.status}</small></span></li>)}</ul> : <p>{props.copy.noDocuments}</p>}
         </section>
         <section className="advisor-context-section">
           <div><strong>{props.copy.artifacts}</strong><small>{props.artifacts.length}</small></div>
