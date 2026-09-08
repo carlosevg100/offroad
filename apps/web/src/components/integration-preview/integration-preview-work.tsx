@@ -1,3 +1,5 @@
+import {useTranslations} from "next-intl";
+import {formatPreviewNumber} from "./preview-value-format";
 import {FlaskConical} from "lucide-react";
 
 /**
@@ -17,44 +19,8 @@ export type PreviewArtifactView = {
 
 type Props = {artifacts: PreviewArtifactView[]; locale: "pt-BR" | "en-US"; materialHref?: string};
 
-const labels: Record<string, [string, string]> = {
-  preview_debt_ledger: ["Dívida instrumento a instrumento", "Debt instrument by instrument"],
-  preview_financial_statements: ["Conciliação de demonstrações", "Statement reconciliation"],
-  preview_covenants: ["Covenants pelas escrituras", "Covenants from the indentures"],
-  preview_maturity_wall: ["Vencimentos e cobertura", "Maturities and coverage"],
-  preview_interest_schedule: ["Juros e correção por série", "Interest and indexation by series"],
-  preview_exit_costs: ["Custo de saída por série", "Exit cost by series"],
-  preview_scenarios: ["Cenários declarados", "Declared scenarios"],
-  preview_alternatives: ["Alternativas antes e depois", "Alternatives before and after"],
-  preview_meeting_brief: ["Plano da devolutiva e do material", "Readout and material plan"],
-  preview_material: ["Síntese e material", "Synthesis and material"],
-};
-const order = Object.keys(labels);
-
-const stateLabels: Record<string, [string, string]> = {
-  complete: ["completo", "complete"], resolved: ["resolvido", "resolved"], closes: ["fecha", "closes"], declared: ["declarado", "declared"],
-  compared: ["comparado", "compared"], diagnosed: ["diagnosticado", "diagnosed"], conditioned: ["condicionado", "conditioned"],
-  incomplete: ["incompleto", "incomplete"], partial: ["parcial", "partial"], open_divergences: ["divergências abertas", "open divergences"],
-  identity_failed: ["identidade não fecha", "identity failed"], blocked: ["bloqueado", "blocked"], planned: ["planejado", "planned"],
-  awaiting_confirmation: ["aguardando confirmação", "awaiting confirmation"],
-};
-
-const copy = {
-  "pt-BR": {
-    kicker: "Validação interna, integration_preview",
-    title: "Objetos do Caso 01 produzidos pelos métodos em estágio implemented",
-    intro: "Cada seção é a saída do executor do método, sem redação por cima: estado declarado, números com origem, lacunas nomeadas. Nada aqui é liberação, parecer ou aprovação.",
-    method: "Método", version: "versão", maturity: "estágio", state: "Estado", figures: "Números", gaps: "Lacunas e condições declaradas", evidence: "Evidência", table: "Linhas", more: "e mais", none: "nenhuma", premises: "Premissas aplicadas nesta corrida",
-    artifact: "Artefato", updated: "atualizado em",
-  },
-  "en-US": {
-    kicker: "Internal validation, integration_preview",
-    title: "Case 01 objects produced by the methods in the implemented rung",
-    intro: "Each section is the executor's output for the method, with no prose over it: declared state, numbers with their origin, named gaps. Nothing here is a release, an opinion or an approval.",
-    method: "Method", version: "version", maturity: "rung", state: "State", figures: "Figures", gaps: "Declared gaps and conditions", evidence: "Evidence", table: "Rows", more: "and", none: "none", premises: "Premises applied in this run",
-    artifact: "Artifact", updated: "updated at",
-  },
-} as const;
+const order = ["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief", "preview_material"];
+const knownStates = ["complete", "resolved", "closes", "declared", "compared", "diagnosed", "conditioned", "incomplete", "partial", "open_divergences", "identity_failed", "blocked", "planned", "awaiting_confirmation"];
 
 const gapKeys = ["block_reasons", "incomplete_reasons", "unsupported", "unproven_conditions", "legal_conditions", "uncovered_terms", "uncovered_series", "assumptions", "open_divergences", "alignment_questions"];
 const tableKeys: Record<string, string[]> = {
@@ -74,92 +40,72 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined) return "null";
-  if (typeof value === "string") return /^-?\d+(\.\d+)?$/.test(value) ? value.replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".") : value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) return `[${value.length}]`;
-  if (isRecord(value)) {
-    if (typeof value.value === "string" && Object.keys(value).length <= 3) return formatValue(value.value);
-    if (typeof value.document === "string") return `${value.document}${value.page ? ` p. ${String(value.page)}` : ""}${value.clause ? ` ${String(value.clause)}` : ""}`;
-    return "{…}";
-  }
-  return String(value);
-}
-
-function scalarEntries(output: Record<string, unknown>): Array<[string, string]> {
-  return Object.entries(output)
-    .filter(([key, value]) => !["schema_version", "trace", "state", "unit", "unit_anchor"].includes(key) && !gapKeys.includes(key) && (typeof value === "string" || typeof value === "number" || typeof value === "boolean" || value === null))
-    .map(([key, value]) => [key.replace(/_/g, " "), formatValue(value)]);
-}
-
-function gapEntries(output: Record<string, unknown>): Array<{key: string; items: string[]}> {
-  return gapKeys.flatMap((key) => {
-    const value = output[key];
-    if (!Array.isArray(value) || value.length === 0) return [];
-    const items = value.map((item) => {
-      if (typeof item === "string") return item;
-      if (isRecord(item)) return [item.id ?? item.series_id ?? item.rowId ?? item.field ?? item.text ?? item.question, item.reason ?? item.condition ?? item.detail ?? item.note ?? item.state].filter((part) => typeof part === "string").join(": ") || JSON.stringify(item).slice(0, 200);
-      return String(item);
-    });
-    return [{key: key.replace(/_/g, " "), items}];
-  });
-}
-
-function rows(output: Record<string, unknown>, key: string): {columns: string[]; rows: string[][]; total: number} | null {
+function tableRows(output: Record<string, unknown>, key: string) {
   const value = output[key];
-  if (!Array.isArray(value) || value.length === 0 || !isRecord(value[0])) return null;
-  const columns = Object.keys(value[0] as Record<string, unknown>).filter((column) => {
-    const sample = (value[0] as Record<string, unknown>)[column];
-    return typeof sample !== "object" || sample === null || (isRecord(sample) && (typeof sample.value === "string" || typeof sample.document === "string"));
-  }).slice(0, 8);
-  return {columns, rows: value.slice(0, 12).map((row) => columns.map((column) => formatValue((row as Record<string, unknown>)[column]))), total: value.length};
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const records: Record<string, unknown>[] = value.map((row) => isRecord(row) ? row : {value: row});
+  return {columns: [...new Set(records.flatMap(Object.keys))], rows: records, total: records.length};
 }
 
 export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props) {
-  const t = copy[locale];
+  const t = useTranslations("IntegrationPreviewWork");
+  function valueView(value: unknown, field?: string): React.ReactNode {
+    if (typeof value === "string" && field && /(?:^id$|Id$|_id$|^(clause|page|period|year|version|series|document)$)/.test(field)) return value;
+    if (value === null || value === undefined) return t("missing");
+    if (typeof value === "boolean") return t(value ? "yes" : "no");
+    if (Array.isArray(value)) return <details><summary>{t("details")} ({formatPreviewNumber(value.length, locale)})</summary><ol>{value.map((item, index) => <li key={index}>{valueView(item)}</li>)}</ol></details>;
+    if (isRecord(value)) return <details><summary>{typeof value.value === "string" || typeof value.value === "number" ? <>{formatPreviewNumber(value.value, locale)}{typeof value.unit === "string" ? ` ${value.unit}` : ""} · </> : null}{t("details")}</summary><dl>{Object.entries(value).map(([key, item]) => <div key={key}><dt>{key.replace(/_/g, " ")}</dt><dd>{valueView(item, key)}</dd></div>)}</dl></details>;
+    return typeof value === "string" || typeof value === "number" ? formatPreviewNumber(value, locale) : String(value);
+  }
+  function renderTable(table: NonNullable<ReturnType<typeof tableRows>>, complete: boolean, title: string) {
+    const columns = complete ? table.columns : table.columns.slice(0, 8);
+    const rows = complete ? table.rows : table.rows.slice(0, 12);
+    return <div role="region" aria-label={title} tabIndex={0} style={{overflowX: "auto"}}><table><caption>{title}</caption><thead><tr>{columns.map((column) => <th scope="col" key={column}>{column.replace(/_/g, " ")}</th>)}</tr></thead><tbody>{rows.map((row, index) => <tr key={index}>{columns.map((column) => <td key={column}>{valueView(row[column], column)}</td>)}</tr>)}</tbody></table></div>;
+  }
   const latestByType = new Map<string, PreviewArtifactView>();
   for (const artifact of [...artifacts].sort((a, b) => a.createdAt.localeCompare(b.createdAt))) latestByType.set(artifact.type, artifact);
   const sections = order.flatMap((type) => (latestByType.has(type) ? [latestByType.get(type)!] : []));
   return (
     <article className="preview-work" data-testid="integration-preview-work">
       <header className="preview-work__header">
-        <span className="preview-work__kicker"><FlaskConical aria-hidden="true" size={13} /> {t.kicker}</span>
-        <h2>{t.title}</h2>
-        <p>{t.intro}</p>
+        <span className="preview-work__kicker"><FlaskConical aria-hidden="true" size={13} /> {t("kicker")}</span>
+        <h2>{t("title")}</h2>
+        <p>{t("intro")}</p>
       </header>
       {sections.map((artifact) => {
         const content = isRecord(artifact.content) ? artifact.content : {};
         const preview = isRecord(content.preview) ? content.preview : {};
         const output = isRecord(content.output) ? content.output : {};
         const state = typeof output.state === "string" ? output.state : "blocked";
-        const stateLabel = stateLabels[state]?.[locale === "en-US" ? 1 : 0] ?? state;
+        const stateLabel = knownStates.includes(state) ? t(`states.${state}`) : state;
         const premises = isRecord(preview.premisesApplied) ? Object.entries(preview.premisesApplied) : [];
-        const tables = (tableKeys[artifact.type] ?? []).map((key) => ({key, table: rows(output, key)})).filter((entry) => entry.table);
+        const tables = (tableKeys[artifact.type] ?? []).map((key) => ({key, table: tableRows(output, key)})).filter((entry) => entry.table);
         const brief = artifact.type === "preview_meeting_brief" && isRecord(output.deliverable) ? output.deliverable : null;
         const pagePlan = artifact.type === "preview_meeting_brief" && isRecord(output.page_plan) ? output.page_plan : null;
         const synthesis = artifact.type === "preview_material" && Array.isArray(output.sections) ? output.sections as Array<{id: string; title: string; paragraphs: Array<{text: string; references: string[]}>}> : null;
         const synthesisSource = artifact.type === "preview_material" && isRecord(output.source) ? output.source : null;
         return (
-          <section className={`preview-work__section is-${state}`} data-artifact-type={artifact.type} key={artifact.id}>
-            <header>
+          <section className={`preview-work__section is-${state}`} data-artifact-type={artifact.type} key={artifact.id} style={{minWidth: 0, overflowWrap: "anywhere"}}>
+            <header style={{flexWrap: "wrap"}}>
               <div>
-                <h3>{labels[artifact.type]?.[locale === "en-US" ? 1 : 0] ?? artifact.type}</h3>
-                <small>{t.method} {String(preview.methodId ?? "")} · {t.version} {String(preview.methodVersion ?? "")} · {t.maturity} {String(preview.methodMaturity ?? "")} · {t.artifact} v{artifact.version}</small>
+                <h3>{t(`methods.${artifact.type}`)}</h3>
+                <small>{t("method")} {String(preview.methodId ?? "")} · {t("version")} {String(preview.methodVersion ?? "")} · {t("maturity")} {String(preview.methodMaturity ?? "")} · {t("artifact")} v{artifact.version}</small>
               </div>
-              <span className="preview-work__state" data-state={state}>{t.state}: {stateLabel}</span>
+              <span className="preview-work__state" data-state={state}>{t("state")}: {stateLabel}</span>
             </header>
-            {premises.length ? <p className="preview-work__premises"><strong>{t.premises}:</strong> {premises.map(([key, value]) => `${key} = ${String(value)}`).join("; ")}</p> : null}
+            {premises.length ? <p className="preview-work__premises"><strong>{t("premises")}:</strong> {premises.map(([key, value]) => `${key} = ${formatPreviewNumber(typeof value === "number" || typeof value === "string" ? value : String(value), locale)}`).join("; ")}</p> : null}
             {brief ? <div className="preview-work__blocks">
               {(Array.isArray(brief.blocks) ? brief.blocks : []).map((block) => isRecord(block) ? <div className={`preview-work__block is-${String(block.state)}`} key={String(block.id)}>
                 <strong>{String(block.label)}</strong>
                 {Array.isArray(block.headlines) && block.headlines.length ? <ul>{block.headlines.map((headline, index) => isRecord(headline) ? <li key={index}>{String(headline.text)}</li> : null)}</ul> : null}
                 {typeof block.gap === "string" ? <small>{block.gap}</small> : null}
               </div> : null)}
+            {pagePlan ? <div className="preview-work__pages"><strong>{String(pagePlan.state)}</strong>{Array.isArray(pagePlan.pages) ? <ol>{pagePlan.pages.map((page, index) => isRecord(page) ? <li key={index}>{String(page.title)}{Array.isArray(page.blocks) ? `: ${page.blocks.map(String).join(", ")}` : ""}</li> : null)}</ol> : null}{typeof pagePlan.reason === "string" ? <small>{pagePlan.reason}</small> : null}</div> : null}
+            </div> : null}
               {synthesis ? (
               <div className="preview-work__synthesis" data-source={String(synthesisSource?.kind ?? "")}>
-                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{locale === "en-US" ? "Download the Word file" : "Baixar o arquivo Word"}</a></p> : null}
-                {synthesisSource ? <p className="preview-work__note">{locale === "en-US" ? "Source" : "Fonte"}: {String(synthesisSource.kind)}{synthesisSource.model ? ` · ${String(synthesisSource.model)}` : ""}{typeof synthesisSource.costUsd === "number" ? ` · US$ ${synthesisSource.costUsd.toFixed(4)}` : ""}</p> : null}
+                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{t("download")}</a></p> : null}
+                {synthesisSource ? <p className="preview-work__note">{t("source")}: {String(synthesisSource.kind)}{synthesisSource.model ? ` · ${String(synthesisSource.model)}` : ""}{typeof synthesisSource.costUsd === "number" ? ` · US$ ${formatPreviewNumber(synthesisSource.costUsd, locale)}` : ""}</p> : null}
                 {synthesis.map((section) => (
                   <section key={section.id}>
                     <h4>{section.title}</h4>
@@ -168,18 +114,20 @@ export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props)
                 ))}
               </div>
             ) : null}
-            {pagePlan ? <div className="preview-work__pages"><strong>{String(pagePlan.state)}</strong>{Array.isArray(pagePlan.pages) ? <ol>{pagePlan.pages.map((page, index) => isRecord(page) ? <li key={index}>{String(page.title)}{Array.isArray(page.blocks) ? `: ${page.blocks.map(String).join(", ")}` : ""}</li> : null)}</ol> : null}{typeof pagePlan.reason === "string" ? <small>{pagePlan.reason}</small> : null}</div> : null}
-            </div> : null}
-            {!brief && scalarEntries(output).length ? <dl className="preview-work__figures">
-              {scalarEntries(output).map(([key, value]) => <div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}
+            {typeof output.unit === "string" ? <p><strong>{t("unit")}:</strong> {output.unit}</p> : null}
+            {!brief ? <dl className="preview-work__figures">
+              {Object.entries(output).filter(([key, value]) => !["schema_version", "state", "unit"].includes(key) && (value === null || ["string", "number", "boolean"].includes(typeof value))).map(([key, value]) => <div key={key}><dt>{key.replace(/_/g, " ")}</dt><dd>{valueView(value, key)}</dd></div>)}
             </dl> : null}
-            {tables.map(({key, table}) => <div className="preview-work__table" key={key}>
-              <strong>{key.replace(/_/g, " ")} <small>({table!.total} {t.table.toLowerCase()})</small></strong>
-              <div><table><thead><tr>{table!.columns.map((column) => <th key={column}>{column.replace(/_/g, " ")}</th>)}</tr></thead><tbody>{table!.rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody></table></div>
-              {table!.total > 12 ? <small>{t.more} {table!.total - 12}</small> : null}
-            </div>)}
-            {gapEntries(output).length ? <div className="preview-work__gaps"><strong>{t.gaps}</strong>{gapEntries(output).map((gap) => <div key={gap.key}><em>{gap.key}</em><ul>{gap.items.slice(0, 10).map((item, index) => <li key={index}>{item}</li>)}</ul>{gap.items.length > 10 ? <small>{t.more} {gap.items.length - 10}</small> : null}</div>)}</div> : null}
-            {isRecord(preview.evidence) ? <p className="preview-work__evidence"><strong>{t.evidence}:</strong> {String(preview.evidence.caseId ?? "")} · {String(preview.evidence.basis ?? "")} · {String(preview.evidence.note ?? "")}</p> : null}
+            {tables.map(({key, table}) => table ? <div className="preview-work__table" key={key} style={{minWidth: 0}}>
+              {renderTable(table, false, key.replace(/_/g, " "))}
+              {table.total > 12 || table.columns.length > 8 ? <details><summary>{t("allRows", {count: table.total, columns: table.columns.length})}</summary>{renderTable(table, true, key.replace(/_/g, " "))}</details> : null}
+            </div> : null)}
+            {gapKeys.some((key) => Array.isArray(output[key]) && output[key].length > 0) ? <div className="preview-work__gaps"><strong>{t("gaps")}</strong>{gapKeys.map((key) => {
+              const items = output[key];
+              return Array.isArray(items) && items.length ? <div key={key}><em>{key.replace(/_/g, " ")}</em><ul>{items.slice(0, 10).map((item, index) => <li key={index}>{valueView(item)}</li>)}</ul>{items.length > 10 ? <details><summary>{t("allGaps", {count: items.length - 10})}</summary><ul>{items.slice(10).map((item, index) => <li key={index}>{valueView(item)}</li>)}</ul></details> : null}</div> : null;
+            })}</div> : null}
+            <details><summary>{t("raw")}</summary>{valueView(output)}</details>
+            {isRecord(preview.evidence) ? <p className="preview-work__evidence"><strong>{t("evidence")}:</strong> {String(preview.evidence.caseId ?? "")} · {String(preview.evidence.basis ?? "")} · {String(preview.evidence.note ?? "")}</p> : null}
           </section>
         );
       })}
