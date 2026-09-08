@@ -1,4 +1,4 @@
-import {NextIntlClientProvider} from "next-intl";
+import {createTranslator, NextIntlClientProvider} from "next-intl";
 import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it} from "vitest";
 import pt from "../../../messages/pt-BR.json";
@@ -13,6 +13,30 @@ function render(artifacts: PreviewArtifactView[], locale: "pt-BR" | "en-US" = "p
 }
 
 describe("integration preview review surface", () => {
+  it.each([
+    [1, 1, "Ver tabela completa: 1 linha, 1 coluna", "View complete table: 1 row, 1 column"],
+    [1, 13, "Ver tabela completa: 1 linha, 13 colunas", "View complete table: 1 row, 13 columns"],
+    [13, 1, "Ver tabela completa: 13 linhas, 1 coluna", "View complete table: 13 rows, 1 column"],
+    [13, 2, "Ver tabela completa: 13 linhas, 2 colunas", "View complete table: 13 rows, 2 columns"],
+  ] as const)("renders independent row and column plurals for %i by %i", (count, columns, portuguese, english) => {
+    for (const locale of ["pt-BR", "en-US"] as const) {
+      const t = createTranslator({locale, messages: locale === "pt-BR" ? pt : en, namespace: "IntegrationPreviewWork"});
+      const expected = locale === "pt-BR" ? portuguese : english;
+      expect(renderToStaticMarkup(<summary>{t("allRows", {count, columns})}</summary>)).toBe(`<summary>${expected}</summary>`);
+      if (count > 12 || columns > 8) {
+        const rows = Array.from({length: count}, () => Object.fromEntries(Array.from({length: columns}, (_, index) => [`field_${index}`, "value"])));
+        expect(render([artifact({ledger_rows: rows})], locale)).toContain(expected);
+      }
+    }
+  });
+  it.each([
+    [11, "Ver mais 1 lacuna", "View 1 more gap"],
+    [12, "Ver mais 2 lacunas", "View 2 more gaps"],
+  ] as const)("renders singular and plural remaining gaps for %i total gaps", (count, portuguese, english) => {
+    const input = artifact({uncovered_terms: Array.from({length: count}, (_, index) => `gap-${index}`)});
+    expect(render([input])).toContain(portuguese);
+    expect(render([input], "en-US")).toContain(english);
+  });
   it("preserves financial precision and declared unit without interpreting ratios", () => {
     const input = artifact({state: "complete", unit: "BRL thousand", ratio: "0.21689377", amount: "9007199254740993.001", absent: null});
     const html = render([input]);

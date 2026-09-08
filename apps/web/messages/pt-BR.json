@@ -3361,7 +3361,7 @@
     "premises": "Premissas aplicadas nesta execução",
     "artifact": "Artefato",
     "details": "Ver detalhes",
-    "allRows": "Ver tabela completa: {count} linhas, {columns} colunas",
+    "allRows": "Ver tabela completa: {count, plural, one {# linha} other {# linhas}}, {columns, plural, one {# coluna} other {# colunas}}",
     "allGaps": "Ver mais {count, plural, one {# lacuna} other {# lacunas}}",
     "missing": "Não informado",
     "yes": "Sim",
