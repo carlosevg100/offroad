@@ -1,5 +1,11 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
+
+Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
+
+17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
+
 > Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are

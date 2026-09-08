@@ -1,5 +1,9 @@
 # Build State
 
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
+
+Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
+
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
 - O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->

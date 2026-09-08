@@ -1,5 +1,9 @@
 # Acceptance Evidence
 
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
+
+17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
+
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
