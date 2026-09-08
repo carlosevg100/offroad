@@ -1309,7 +1309,10 @@
         "high": "high",
         "medium": "medium",
         "low": "low"
-      }
+      },
+      "awaitingPlanFallback": "Review the plan above and approve this version to begin the analysis. Adjust the scope or add documents before approving if needed.",
+      "approvedPlanFallback": "The plan has been approved. Follow its progress here; results will appear as the work is completed.",
+      "preparingPlanFallback": "The project has been created. Add context or documents while the work plan is being prepared."
     },
     "integrationPreview": {
       "kicker": "Internal validation",

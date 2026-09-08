@@ -878,7 +878,7 @@ export function createQueueClient(
       return call("worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: internal, p_visible_snapshot: visible, p_expected_input_fingerprint: expectedInputFingerprint, p_plan: plan ?? null});
     },
     async loadAgentContext(job) {
-      return call("worker_load_agent_context", {
+      return call("worker_load_agent_context_v2", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });

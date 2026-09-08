@@ -56,6 +56,8 @@ describe("ExecutionBriefCard", () => {
     expect(html).toContain("Aguardando você · 0/2");
     expect(html).toContain("O que mudou nesta versão");
     expect(html).toContain("Ajustar este plano");
+    expect(html).toContain('class="execution-brief-card__dependencies"');
+    expect(html).toMatch(/<\/header><div class="execution-brief-card__dependencies">/);
     expect(html).toContain("Inclua, retire ou priorize o que muda a entrega");
     expect(html).toContain("60 meses → 72 meses");
     expect(html).not.toContain("sourceTaskIds");

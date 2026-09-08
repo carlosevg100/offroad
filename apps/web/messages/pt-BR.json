@@ -1309,7 +1309,10 @@
         "high": "alta",
         "medium": "média",
         "low": "baixa"
-      }
+      },
+      "awaitingPlanFallback": "Confira o plano acima e aprove esta versão para iniciar a análise. Se necessário, ajuste o escopo ou acrescente documentos antes de aprovar.",
+      "approvedPlanFallback": "O plano foi aprovado. Você pode acompanhar o andamento aqui; os resultados aparecerão conforme o trabalho for concluído.",
+      "preparingPlanFallback": "O projeto foi criado. Acrescente contexto ou documentos enquanto o plano deste trabalho é preparado."
     },
     "integrationPreview": {
       "kicker": "Validação interna",

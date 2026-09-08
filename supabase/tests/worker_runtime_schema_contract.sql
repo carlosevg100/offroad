@@ -21,10 +21,10 @@ declare contract jsonb;
 begin
   contract := public.worker_runtime_schema_contract_v1();
   if contract ->> 'schemaVersion'
-      <> 'document-worker-runtime.2026-09-07.r01-governed-answer.v1' then
+      <> 'document-worker-runtime.2026-09-08.execution-approval.v1' then
     raise exception 'unexpected worker runtime schema version: %', contract;
   end if;
-  if not (contract -> 'capabilities' @> '["integration-preview-workflow-continuity.v1", "receivables-information-request-bindings.v1", "receivables-complete-draft-refresh.v1", "universal-dispatch-candidate-shadow.v1"]'::jsonb) then
+  if not (contract -> 'capabilities' @> '["integration-preview-workflow-continuity.v1", "receivables-information-request-bindings.v1", "receivables-complete-draft-refresh.v1", "universal-dispatch-candidate-shadow.v1", "explicit-execution-brief-approval.v1", "execution-brief-proposal.v1"]'::jsonb) then
     raise exception 'worker runtime capabilities are incomplete: %', contract;
   end if;
 end;

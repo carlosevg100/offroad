@@ -94,8 +94,8 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
                   {progressIcon(workstreamProgress.status)}
                   {t(`progress.${workstreamProgress.status}`)} · {format.number(workstreamProgress.completed)}/{format.number(workstreamProgress.total)}
                 </span> : null}
-                {workstream.dependencies.length ? <small><ArrowDown aria-hidden="true" size={10} />{t("after")} {workstream.dependencies.join(", ")}</small> : null}
               </div></header>
+              {workstream.dependencies.length ? <div className="execution-brief-card__dependencies"><ArrowDown aria-hidden="true" size={10} /><span>{t("after")} {workstream.dependencies.join(", ")}</span></div> : null}
               <p>{workstream.purpose}</p>
               <div className="execution-brief-card__sources">
                 {workstream.sources.map((source) => <span data-status={source.status} key={`${workstream.label}-${source.label}`}>

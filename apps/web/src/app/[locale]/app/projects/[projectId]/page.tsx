@@ -434,6 +434,13 @@ async function ConversationalCapitalProject({
   const originationDecision = originationArtifact
     ? artifactDecisions?.find((item) => item.artifact_id === originationArtifact.id)
     : null;
+  const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
+    ? projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
+    : null;
+  const emptyConversationCopy = displayedApproval?.status === "awaiting"
+    ? "awaitingPlanFallback"
+    : artifacts?.length ? "existingProject"
+      : displayedApproval?.status === "approved" ? "approvedPlanFallback" : "preparingPlanFallback";
   const advisorMessages = messages?.length
     ? messages.map((message) => {
         const artifactId = specializedCompletionArtifactId(message.metadata);
@@ -450,7 +457,7 @@ async function ConversationalCapitalProject({
           proposalId: message.proposal_id,
         };
       })
-    : [{id: `project-${project.id}`, role: "assistant", content: t("existingProject"), status: "completed", createdAt: new Date().toISOString()}];
+    : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
     ? informationRequests ?? []
