@@ -1,6 +1,14 @@
 # Aprovação do plano: contrato e prova de entrega
 
-Estado: implementação candidata. Este documento não é evidência de rollout concluído.
+Estado em 08/09/2026: [PR #547](https://github.com/carlosevg100/offroad/pull/547) integrado em main `31e5a92830f50e21e2d17f4a93d3ed4d1403dd40`; banco de produção atualizado. Worker e aplicação web verificados após publicação.
+
+[Quality 34184277267](https://github.com/carlosevg100/offroad/actions/runs/34184277267) e todos os checks obrigatórios/de segurança passaram: 20 E2E aprovados, 10 testes dependentes de provedores pulados. O E2E público de preview exerce aprovação explícita antes da execução. O E2E privado histórico usa fallback determinístico e não comprova a jornada privada completa com worker real.
+
+As 11 migrações foram aplicadas em produção, com runtime por último. O repositório reconcilia seus nomes com as versões publicadas `20260908035022`–`20260908035058`, preservando integralmente os corpos. Probe de contratos: todos verdadeiros, nenhum job ativo observado. Advisors de produção: segurança zero achados; performance 200 INFO, zero WARN e zero ERROR. Não foram criadas fixtures de produção para provar a jornada.
+
+Publicação operacional verificada: [worker 34184940826](https://github.com/carlosevg100/offroad/actions/runs/34184940826) concluído com sucesso, incluindo PRIMARY exata e capacidade desejada/em execução positiva. Vercel publicou main `31e5a92830f50e21e2d17f4a93d3ed4d1403dd40`; homepage e projeto autenticado existente foram conferidos no navegador, com inventário novo, histórico e nove artefatos anteriores preservados. Nenhuma execução ou fixture foi criada em produção para essa verificação.
+
+Follow-up ainda local, fora do SHA integrado acima: decimais exatos em evidências; downloads condicionados a fingerprint válido de artefato; rótulos de preview localizados somente para snapshots novos; e E2E exigindo versão numérica maior após ajuste. Gate local completo do follow-up aprovado: 43 tarefas. CI e publicação desta atualização permanecem vinculados à sua própria revisão. Não promovem capacidades de exportação institucional, provedores, Drive, matching ou introduções.
 
 ## Resultado exigido
 
@@ -26,15 +34,15 @@ Dados: metadados documentais e requisitos existentes permanecem no projeto autor
 
 Os dois ledgers privados de controle recebem políticas restritivas de negação explícita, conservando os grants anteriores. A escrita comprovada nessa fundação é a operação SQL privilegiada; o grant de EXECUTE para service_role isoladamente não cria um endpoint utilizável, pois o namespace privado não é acessível a esse papel e não existe wrapper público implementado. Esta entrega não amplia esses acessos.
 
-Revisão independente identificou invalidação excessiva/insuficiente, ordenação de locks e encerramento de jobs obsoletos. Esses achados precisam estar corrigidos e cobertos por testes antes de promoção. Testes históricos podem preparar fixtures sintéticas com um plano real e aceite explícito; flags que desligam gates não são aceitas.
+Revisão independente identificou invalidação excessiva/insuficiente, ordenação de locks e encerramento de jobs obsoletos. Os achados desta entrega foram corrigidos e cobertos pelas regressões publicadas. Testes históricos preparam fixtures sintéticas com um plano real e aceite explícito; flags que desligam gates não são aceitas.
 
 ## Sequência de validação e rollout
 
 1. Finalizar SQL e contrato de worker; rever autorização, invalidação, locks e todos os entrypoints afetados.
 2. Aplicar migrações somente no staging isolado, executar regressões transacionais, gerar tipos e revisar advisors. Nunca copiar dados de produção.
 3. Executar o gate local completo em Node 24. Abrir PR com evidência exata; aguardar Quality de aplicação, banco reconstruído do zero, E2E e Vercel.
-4. Aplicar a expansão compatível em produção e promover o worker correspondente. O contrato de schema impede uma imagem incompatível de consumir jobs. Trabalhos sem aprovação permanecem retidos.
-5. Publicar a aplicação, verificar páginas públicas e rotas afetadas e registrar a versão efetivamente entregue. Não criar fixtures em produção para provar a jornada.
+4. Verificar a fila e aplicar as dependências em sequência. Nesta publicação não havia jobs ativos. As correções `execution_approval_trigger_record_scope` e `execution_approval_unbound_revision_metadata` foram aplicadas imediatamente após `explicit_execution_brief_approval`, antes das demais. As transações separadas têm uma janela intermediária em que gravações podem falhar; não caracterizar esse procedimento como atômico ou sem interrupção. Aplicar o marcador de runtime somente depois de todas as dependências.
+5. Promover o commit aprovado. O merge dispara web e worker independentemente: a interface pode chegar antes e manter o trabalho aguardando. A imagem antiga já iniciada não verifica novamente o marcador, mas seus reinícios falham após a mudança; a imagem nova confere o contrato antes de consumir jobs. Verificar a task definition PRIMARY exata e a capacidade desejada/em execução positiva, além da publicação web e das rotas afetadas. Não criar fixtures em produção para provar a jornada.
 
 ## Contenção e recuperação
 
