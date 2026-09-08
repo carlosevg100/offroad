@@ -14,13 +14,14 @@ reconcilia o programa com código já integrado. Não declara o workspace premiu
 
 | Frente | Escopo e aceite | Limite |
 | --- | --- | --- |
+| UX-01 | Falha de execução só é superada por trabalho concluído posteriormente; resposta ou decisão isolada não apaga a falha | Correlação entre trabalhos paralelos e projeção completa permanecem pendentes |
 | UX-03 | Decimais exatos por locale; identificação e anchors preservados; todas as linhas, colunas e lacunas acessíveis; síntese existente visível | Não inventa moeda, escala ou qualidade da análise |
 | UX-04 | Texto preservado até confirmação; pending sempre liberado; retry idempotente; proteção contra envio concorrente | Não muda autorização nem aceita edição de versão obsoleta |
 | SEC-02 | Triagem de alertas existentes, correções semânticas e regressões dos caminhos afetados | Alerta não equivale automaticamente a exploração; não há dismissals automáticos |
 | CTRL-01/02 | Board com vínculos válidos a capabilities, baseline atual e cinco pacotes UX com aceite | Reconciliação não concede uso externo nem comprova operação em produção |
 
 Cada frente usa branch isolada. O integrador revisa diffs, resultados e limitações, inclui a
-evidência correspondente e só entrega após os checks requeridos. Uma correção local não conta como
+evidência correspondente e só entrega após os checks requeridos. A integração final de CTRL/UX-01 e do ajuste de plural reúne os commits revisados das PRs #545 e #546 na PR #536, após as entregas #542–544. Uma correção local não conta como
 deploy, e um deploy não conta como homologação do produto completo.
 
 ## Sequência seguinte
