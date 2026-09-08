@@ -24,8 +24,24 @@ describe("endgame program board", () => {
     expect(decision.valid).toBe(true);
     expect(decision.readyForNextPromotion).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.taskCounts.blocked).toBe(1);
-    expect(currentEndgameProgramBoard.tasks).toHaveLength(64);
+    expect(decision.taskCounts.blocked).toBe(0);
+    expect(currentEndgameProgramBoard.tasks).toHaveLength(69);
+  });
+
+  it("rejects a board evaluated against a different ledger version", () => {
+    const mismatched = {...currentCapabilityLedger, ledgerVersion: "unrelated-version"};
+    const decision = evaluateEndgameProgramBoard(currentEndgameProgramBoard, mismatched, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "capability_ledger_version_mismatch", taskId: null});
+  });
+
+  it("rejects a different inspected ledger baseline without conflating it with the version commit", () => {
+    const mismatched = {...currentCapabilityLedger, baselineCommit: "abcdef1"};
+    const decision = evaluateEndgameProgramBoard(currentEndgameProgramBoard, mismatched, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toContainEqual({code: "capability_ledger_baseline_mismatch", taskId: null});
   });
 
   it("refuses gate_passed when acceptance, evidence or dependencies are incomplete", () => {
@@ -125,6 +141,20 @@ describe("endgame program board", () => {
     expect(decision.blockers).toContainEqual({code: "unknown_security_control:TRUST-FAKE-99", taskId: "SEC-01"});
   });
 
+  it("refuses dangling or duplicate capability references", () => {
+    const invalid = boardWithTask("CTRL-01", (task) => ({
+      ...task,
+      capabilityRefs: ["workspace.project-memory", "workspace.project-memory", "workflow.not-real"],
+    }));
+    const decision = evaluateEndgameProgramBoard(invalid, currentCapabilityLedger, masterTrustControlCatalogue);
+
+    expect(decision.valid).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "duplicate_capability_ref", taskId: "CTRL-01"},
+      {code: "unknown_capability_ref:workflow.not-real", taskId: "CTRL-01"},
+    ]));
+  });
+
   it("refuses expired evidence and incomplete external assessments", () => {
     const invalid: EndgameProgramBoard = {
       ...currentEndgameProgramBoard,
@@ -166,6 +196,21 @@ describe("endgame program board", () => {
 
     expect(decision.valid).toBe(false);
     expect(decision.blockers).toContainEqual({code: "capability_transition_owned_by:MAT-05", taskId: "MAT-01"});
+  });
+
+  it("records merged foundations without granting customer or external use", () => {
+    const byTask = new Map(currentEndgameProgramBoard.tasks.map((task) => [task.taskId, task]));
+    expect(byTask.get("SEC-01")).toMatchObject({state: "code_complete", capabilityRefs: ["trust.security-current-state-inventory"]});
+    expect(byTask.get("VLT-02")).toMatchObject({state: "code_complete", capabilityRefs: ["documents.governed-quarantine-shadow"]});
+    expect(byTask.get("MAT-01")).toMatchObject({
+      state: "code_complete",
+      capabilityRefs: ["artifacts.governed-office-foundation"],
+      capabilityTransition: {from: "unsupported", to: "implemented", status: "recorded"},
+    });
+    expect(byTask.get("VLT-02")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(3);
+    expect(byTask.get("SEC-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(2);
+    expect(byTask.get("MAT-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(1);
+    expect(currentCapabilityLedger.entries.every((entry) => entry.allowedUses.every((use) => use === "internal_design" || use === "internal_validation"))).toBe(true);
   });
 
   it("prevents one pack from promoting the aggregate specialist runtime", () => {

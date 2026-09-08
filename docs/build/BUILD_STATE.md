@@ -1,5 +1,9 @@
 # Build State
 
+## Primeira onda do endgame: controle e experiência, 07/09/2026
+
+Reconciliado o draft #536 com main b6da287. O board mantém o novo RT-01 como candidate, registra fundações delimitadas de segurança, quarentena e Office e acrescenta UX-01 a UX-05. Vínculos de capabilities são validados sem conceder customer work ou uso externo. O plano de execução está em `docs/build/ENDGAME_WAVE1_EXECUTION.md`; correções de interface e segurança são entregas separadas, ainda não comprovadas por este PR.
+
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
 - O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->

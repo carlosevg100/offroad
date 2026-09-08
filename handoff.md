@@ -1,5 +1,9 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Execução estratégica do endgame, 07/09/2026
+
+Retomada autorizada pelo fundador com três frentes paralelas e integração central. Fonte da primeira onda: `docs/build/ENDGAME_WAVE1_EXECUTION.md`. Preservar o diretório original em branch antiga e os arquivos não rastreados; trabalho novo parte de b6da287 em worktrees isoladas. Todos os públicos permanecem no escopo. O board inclui UX-01/02/03/04/05; nenhuma conclusão de UX, runtime universal ou assurance é inferida desta reconciliação.
+
 > Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are

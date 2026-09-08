@@ -1,5 +1,9 @@
 # Acceptance Evidence
 
+## Reconciliação do programa e pacotes UX, 07/09/2026
+
+Baseline de inspeção: b6da287. O gate do board valida referências de capabilities inexistentes/duplicadas e mantém promoção bloqueada por evidências operacionais ausentes. Foram preservados os bloqueios de VLT-02, SEC-01 e materiais; o run histórico 34096964058 continua invalidado. UX-03/04 têm implementação em branches separadas; os demais pacotes UX permanecem backlog. Esse estado não é evidência de interface homologada. Gate local completo aprovado após revisão cruzada: lint, typecheck, 177 testes release-governance e build; 43/43 targets em cada etapa. CI desta reconciliação ainda pendente. Versão do ledger e baseline inspecionado são distintos; CTRL-01.AC01 permanece pendente por ausência de evidência suficiente de ambientes.
+
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
