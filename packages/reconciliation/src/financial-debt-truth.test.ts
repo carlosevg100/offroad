@@ -112,3 +112,17 @@ describe("M3 debt truth", () => {
     expect(truth.crossDefault).toMatchObject({defaulted: ["CCB-001", "DEB-002"], accelerated: ["DEB-002"]});
   });
 });
+
+describe("literal field-path separators", () => {
+  it("does not manufacture monthly rows from malformed neighboring paths", () => {
+    const valid = [candidate("historical_financials.monthly.1.month", "2025-01-31", "date"), candidate("historical_financials.monthly.1.revenue", "80")];
+    const malformed = candidate("historical_financials.monthlyX2Ymonth", "2025-02-28", "date");
+    expect(buildFinancialTruthSet(reconcileFacts([...valid, malformed]))).toEqual(buildFinancialTruthSet(reconcileFacts(valid)));
+  });
+
+  it("does not add missing-payment exceptions from malformed neighboring paths", () => {
+    const valid = [candidate("debt.payments.1.date", "2027-06-30", "date"), candidate("debt.payments.1.principal", "5")];
+    const malformed = candidate("debt.paymentsX2Ydate", "2027-12-31", "date");
+    expect(buildDebtTruthSet(reconcileFacts([...valid, malformed]), "2026-08-25")).toEqual(buildDebtTruthSet(reconcileFacts(valid), "2026-08-25"));
+  });
+});

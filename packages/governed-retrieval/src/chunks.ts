@@ -182,7 +182,13 @@ function tableText(table: LayerTable): string[] {
 }
 
 function splitText(value: string, maxCharacters: number): string[] {
-  const normalized = value.replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").trim();
+  const linesWithoutNulls = value.replace(/\u0000/g, "").split("\n");
+  const normalized = linesWithoutNulls.map((line, index) => {
+    if (index === linesWithoutNulls.length - 1) return line;
+    let end = line.length;
+    while (end > 0 && (line[end - 1] === " " || line[end - 1] === "\t")) end -= 1;
+    return line.slice(0, end);
+  }).join("\n").trim();
   if (!normalized) return [];
   if (normalized.length <= maxCharacters) return [normalized];
 

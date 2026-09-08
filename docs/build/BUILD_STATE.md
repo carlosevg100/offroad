@@ -3,6 +3,9 @@
 ## Primeira onda do endgame: controle e experiência, 07/09/2026
 
 Reconciliado o draft #536 com main b6da287. O board mantém o novo RT-01 como candidate, registra fundações delimitadas de segurança, quarentena e Office e acrescenta UX-01 a UX-05. Vínculos de capabilities são validados sem conceder customer work ou uso externo. O plano de execução está em `docs/build/ENDGAME_WAVE1_EXECUTION.md`; correções de interface e segurança são entregas separadas, ainda não comprovadas por este PR.
+## Triagem de segurança e precisão de covenant: 07/09/2026
+
+Corrige normalização linear de listas/chunks, separadores literais de paths de evidência e formatação decimal de limites de covenant. Antes, um limite inteiro 10 podia renderizar 1x; a correção preserva magnitude e precisão. Sete instâncias CodeQL são tratadas nesta fatia; nove permanecem classificadas no relatório docs/security/CODEQL_TRIAGE_2026_09_07.md. Nenhum alerta foi descartado remotamente. A correção não altera auth, tenancy, banco ou grants.
 ## Revisão de resultados: precisão e acesso completo: 07/09/2026
 
 Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.

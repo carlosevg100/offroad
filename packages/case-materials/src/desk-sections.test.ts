@@ -81,3 +81,35 @@ describe("the sections a fund underwrites from", () => {
     expect(schedule.caption.pt).toContain("primeira aferição");
   });
 });
+
+function renderCovenant(maximum: string): string | undefined {
+  const desk = analyzeCreditPosition({
+    indexLevels: {cdi: "0.1"}, referenceDate: "2026-09-07",
+    audited: {year: 2025, revenue: "100", ebitda: "20"},
+    balance: {periodEnd: "2025-12-31", cash: "5", receivables: "10", grossDebt: "20"},
+    debt: [{lender: "Synthetic lender", balance: "20"}], request: {amounts: []},
+  });
+  // ParsedCovenant exposes a decimal string, including direct library callers.
+  desk.stack.lines[0]!.covenant = {metric: "net_debt_ebitda", maximum, original: maximum};
+  const table = capitalStructure(desk, null)[0];
+  if (table?.type !== "table") throw new Error("Expected capital structure table");
+  return table.rows[0]?.[4];
+}
+
+describe("capital structure covenant precision", () => {
+  it.each([
+    ["10", "10,0"], ["0", "0,0"], ["10.00", "10,0"], ["1.20", "1,2"],
+    ["-10", "-10,0"], ["-1.20", "-1,2"], ["-0", "0,0"],
+    ["1.23456789", "1,23456789"], ["1000000000000000000000000000000", "1,0e+30"],
+  ])("preserves the economic maximum %s", (maximum, formatted) => {
+    expect(renderCovenant(maximum)).toBe(`Dív.líq./EBITDA ≤ ${formatted}x`);
+  });
+
+  it("handles long insignificant fractional zeroes without changing the integer", () => {
+    expect(renderCovenant(`10.${"0".repeat(100_000)}`)).toBe("Dív.líq./EBITDA ≤ 10,0x");
+  });
+
+  it.each(["NaN", "Infinity", "-Infinity", "invalid"])("refuses invalid maximum %s", (maximum) => {
+    expect(() => renderCovenant(maximum)).toThrow();
+  });
+});
