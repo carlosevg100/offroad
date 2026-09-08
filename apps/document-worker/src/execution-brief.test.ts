@@ -1,3 +1,6 @@
+import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
+import {workspaceJobActivationSchema} from "@offroad/agent-contracts";
+import {governedSectorContextInputsSchema} from "./governed-sector-planning";
 import {describe, expect, it} from "vitest";
 import {prepareExecutionBrief} from "./execution-brief";
 import {buildPreviewActivation, type PreviewActivation} from "./integration-preview";
@@ -32,4 +35,19 @@ describe("preview execution brief presentation labels", () => {
     expect(prepare("pt-BR", null, "Comitê Atlas").visible.proposedDeliverable).toBe("Devolutiva com formato a definir para Comitê Atlas");
     expect(prepare("en-US", null, "Atlas committee").visible.proposedDeliverable).toBe("Readout with format to be agreed for Atlas committee");
   });
+});
+
+it("keeps sector planning tied to the displayed objective across short follow-up messages", () => {
+  const activation = workspaceJobActivationSchema.parse({job:"company_debt_view",company:{name:"Synthetic Company"},brief:{focus:"Analisar a companhia e seus riscos de crédito"}});
+  const governedSectorContextInputs = governedSectorContextInputsSchema.parse({schema_version:"governed-sector-context-inputs.v1",as_of:"2026-09-08",sources:[],candidates:[{
+    id:"10000000-0000-4000-8000-000000000080",field_path:"company.revenue_model",normalized_value:"merchant",review_state:"edited",is_primary:true,
+    reviewed_by:"10000000-0000-4000-8000-000000000081",reviewed_at:"2026-09-08T00:00:00Z",entity_name:null,entity_scope:"company",period_start:null,period_end:null,
+    source_anchor:{},anchor_verified:null,extraction_method:"user_entry",processing_run_id:null,source_document_id:null,extraction_document_version:null,extraction_source_sha256:null,
+  }]});
+  const base = {locale:"pt-BR" as const,sessionId:"10000000-0000-4000-8000-000000000082",accessBasis:"authorized_private",documents:[],activePlan:capitalProjectPlanSnapshot("company_debt_view"),governedSectorContextInputs};
+  const initial=prepareExecutionBrief({...base,message:"Analisar a companhia e seus riscos de crédito"},activation);
+  const followup=prepareExecutionBrief({...base,message:"Pode continuar"},activation);
+  expect(initial.visible.planningContext?.objects[0]?.requirements.length).toBeGreaterThan(0);
+  expect(followup.visible.objective).toBe(initial.visible.objective);
+  expect(followup.visible.planningContext).toEqual(initial.visible.planningContext);
 });

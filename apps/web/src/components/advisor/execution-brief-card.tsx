@@ -59,7 +59,7 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
     }
   }
   return (
-    <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-testid="execution-brief">
+    <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-brief-fingerprint={brief.fingerprint} data-testid="execution-brief">
       <header>
         <div>
           <h2>{t("title")}</h2>

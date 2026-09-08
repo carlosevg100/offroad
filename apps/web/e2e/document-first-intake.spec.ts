@@ -282,6 +282,14 @@ test.describe("Document-first intake (company journey)", () => {
       await expect(form).toHaveCount(0);
     }
 
+    await page.locator(".intake-review__reanalyze button[type=submit]").click();
+    await awaitIntakeAnalysis(page);
+    await expect(page.locator(".intake-case-review-actions")).toBeVisible();
+    await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
+    // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
+    // itself on the evidence register instead of leaking that implementation detail into the UI.
+    await expect(page.locator(".intake-field.is-confirmed")).toHaveCount(dataRoomExpectations.acceptedAfterBulkAccept);
+
     // Review the actual extracted candidate through the same form available to the borrower.
     // The synthetic source files and their extraction expectations remain unchanged.
     const evidence = page.locator(".intake-review__evidence");
@@ -294,14 +302,6 @@ test.describe("Document-first intake (company journey)", () => {
     await sector.locator('button[name="decision"][value="edit"]').click();
     await expect(sector).toHaveClass(/is-confirmed/);
     await expect(sector.locator('input[name="normalized_value"]')).toHaveValue("varejo");
-
-    await page.locator(".intake-review__reanalyze button[type=submit]").click();
-    await awaitIntakeAnalysis(page);
-    await expect(page.locator(".intake-case-review-actions")).toBeVisible();
-    await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
-    // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
-    // itself on the evidence register instead of leaking that implementation detail into the UI.
-    await expect(page.locator(".intake-field.is-confirmed")).toHaveCount(dataRoomExpectations.acceptedAfterBulkAccept);
 
     await page.locator('.intake-confirm input[name="confirmation"]').check();
     await page.locator(".intake-confirm button[type=submit]").click();
@@ -584,25 +584,27 @@ test.describe("Document-first intake (company journey)", () => {
     if (!["127.0.0.1", "localhost", "[::1]"].includes(databaseAddress.hostname) || databaseAddress.port !== "54322" || databaseAddress.pathname !== "/postgres") throw new Error("Sector planning setup is restricted to the local test database on port 54322.");
     const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session");
     if (!sessionId || !/^[0-9a-f-]{36}$/i.test(sessionId)) throw new Error("Missing synthetic intake session.");
-    const localSetup = (mode: "prepare" | "enqueue") => execFileSync("psql", [databaseUrl, "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `mode=${mode}`, "-f", join(__dirname, "support", "sector-planning-local.sql")], {stdio: "pipe"});
-    localSetup("prepare");
-    await page.goto(`${primaryProjectUrl}&step=documents`);
-    await expect(page.locator(".intake-review")).toBeVisible();
-    const evidence = page.locator(".intake-review__evidence");
-    if (await evidence.getAttribute("open") === null) await evidence.locator(":scope > summary").click();
-    const sector = page.locator(".intake-field").filter({has: page.locator("label > span", {hasText: /^Setor$/})});
-    await expect(sector).toHaveCount(1);
-    const group = page.locator(".intake-group").filter({has: sector});
-    if (await group.getAttribute("open") === null) await group.locator(":scope > summary").click();
-    await sector.locator('input[name="normalized_value"]').fill("varejo");
-    await sector.locator('button[name="decision"][value="edit"]').click();
-    await expect(sector).toHaveClass(/is-confirmed/);
-    await expect(sector.locator('input[name="normalized_value"]')).toHaveValue("varejo");
-    localSetup("enqueue");
-    await page.goto(`${primaryProjectUrl}&step=documents`);
-    const approval = page.getByTestId("intake-execution-approval").locator('[data-approval-status="awaiting"]');
-    await expect(approval).toBeVisible({timeout: 120_000});
-    const context = page.getByTestId("intake-execution-approval").getByTestId("execution-brief-planning-context");
+    const output = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-f", join(__dirname, "support", "sector-planning-local.sql")], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]});
+    const {projectId, targetId} = JSON.parse(output.trim().split("\n").at(-1) ?? "{}");
+    if (![projectId, targetId].every((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))) throw new Error("Synthetic setup did not return its project and target identities.");
+    let expectedFingerprint = "";
+    await expect(async () => {
+      const result = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `target_id=${targetId}`], {
+        encoding: "utf8", input: `select jsonb_build_object('status',j.status,'fingerprint',b.visible_snapshot->>'fingerprint','plannerFailed',exists(select 1 from public.processing_jobs p where p.payload->>'approval_target_job_id'=j.id::text and p.status in ('failed','cancelled'))) from public.processing_jobs j left join public.capital_project_execution_brief_dispatches d on d.organization_id=j.organization_id and d.processing_job_id=j.id left join public.capital_project_execution_briefs b on b.organization_id=d.organization_id and b.id=d.execution_brief_id where j.id=:'target_id'::uuid;`,
+      });
+      const state = JSON.parse(result.trim() || "null");
+      expect(state, "The exact synthetic target must exist").not.toBeNull();
+      expect(state.plannerFailed, "The real planner must not fail").toBe(false);
+      expect(state.status).toBe("awaiting_approval");
+      expect(state.fingerprint).toMatch(/^[a-f0-9]{64}$/);
+      expectedFingerprint = state.fingerprint;
+    }).toPass({timeout: 120_000, intervals: [1000, 2000, 5000]});
+    await page.goto(`/pt-BR/app/projects/${projectId}`);
+    const card = page.locator(`[data-testid="execution-brief"][data-brief-fingerprint="${expectedFingerprint}"]`);
+    await expect(card).toBeVisible({timeout: 120_000});
+    const approval = card.locator('[data-approval-status="awaiting"]');
+    await expect(approval).toBeVisible();
+    const context = card.getByTestId("execution-brief-planning-context");
     await expect(context).toBeVisible();
     await expect(context).toContainText("Contexto e pontos a examinar");
     await expect(context).toContainText("Ainda não examinado");

@@ -88,7 +88,7 @@ function compileStandardBrief(
   const plan = capitalPlanSchema.parse(context.activePlan) as unknown as CapitalProjectPlanSnapshot;
   if (plan.job.id !== activation.job) throw new Error("execution brief plan does not match activation");
   const copy = standardCopy(context.locale, activation);
-  const planningContext = context.sessionId ? buildGovernedSectorPlanning({inputs: context.governedSectorContextInputs, sessionId: context.sessionId, companyLabel: activation.company.name, locale: context.locale, objective: context.message}) : undefined;
+  const planningContext = context.sessionId ? buildGovernedSectorPlanning({inputs: context.governedSectorContextInputs, sessionId: context.sessionId, companyLabel: activation.company.name, locale: context.locale, objective: copy.objective}) : undefined;
   return compileCapitalExecutionBrief({
     ...(planningContext ? {planningContext} : {}),
     plan,
