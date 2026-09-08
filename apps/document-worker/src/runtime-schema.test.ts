@@ -24,6 +24,7 @@ describe("worker runtime schema preflight", () => {
           "universal-dispatch-candidate-shadow.v1",
           "explicit-execution-brief-approval.v1",
           "execution-brief-proposal.v1",
+          "governed-sector-planning-context.v1",
         ],
       },
       error: null,
@@ -46,14 +47,14 @@ describe("worker runtime schema preflight", () => {
     }))).rejects.toThrow(`expected ${WORKER_RUNTIME_SCHEMA_VERSION}`);
   });
 
-  it("stops when the version matches but an additive command is missing", async () => {
+  it("stops on the prior production contract even when its version matches", async () => {
     await expect(assertWorkerRuntimeSchema(clientWith({
       data: {
         schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: execution-brief-proposal.v1");
+    }))).rejects.toThrow("missing capabilities: governed-sector-planning-context.v1");
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {

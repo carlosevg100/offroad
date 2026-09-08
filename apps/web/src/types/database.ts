@@ -8950,6 +8950,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_agent_context_v3: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_agent_plan_context_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -8987,6 +8991,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_execution_brief_proposal_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_execution_brief_proposal_v2: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

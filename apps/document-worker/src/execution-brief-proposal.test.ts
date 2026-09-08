@@ -99,3 +99,32 @@ describe("execution brief proposal", () => {
     expect({...first, fingerprint: null}).toEqual({...second, fingerprint: null});
   });
 });
+
+// Synthetic explicitly reviewed company input; no real document or user data.
+function reviewedSectorInputs() {
+  return {schema_version: "governed-sector-context-inputs.v1", as_of: "2026-09-08", sources: [], candidates: [{
+    id: "10000000-0000-4000-8000-000000000080", field_path: "company.revenue_model", normalized_value: "merchant",
+    review_state: "edited", is_primary: true, reviewed_by: "10000000-0000-4000-8000-000000000081", reviewed_at: "2026-09-08T00:00:00Z",
+    entity_name: null, entity_scope: "company", period_start: null, period_end: null,
+    source_anchor: {}, anchor_verified: null, extraction_method: "user_entry", processing_run_id: null,
+    source_document_id: null, extraction_document_version: null, extraction_source_sha256: null,
+  }]};
+}
+
+it("persists reviewed sector planning in both proposal snapshots without changing executable work", async () => {
+  const original = queue(context());
+  const enriched = queue({...context(), governed_sector_context_inputs: reviewedSectorInputs()});
+  expect(await processExecutionBriefProposalJob(job, original)).toEqual({status: "proposed"});
+  expect(await processExecutionBriefProposalJob(job, enriched)).toEqual({status: "proposed"});
+  const [, priorInternal, priorVisible] = original.recordExecutionBriefProposal.mock.calls[0]!;
+  const [, internal, visible, expectedInput] = enriched.recordExecutionBriefProposal.mock.calls[0]!;
+  expect(priorInternal).not.toHaveProperty("planningContext");
+  expect(priorVisible).not.toHaveProperty("planningContext");
+  expect(internal.planningContext).toEqual(visible.planningContext);
+  expect(visible.planningContext).toMatchObject({mode: "planning_only", objects: [{attributes: [{value: "Exposição ao mercado", status: "confirmed", sources: [{basis: "user_review"}]}]}]});
+  expect(visible.planningContext.objects[0].requirements.length).toBeGreaterThan(0);
+  expect(internal.workstreams).toEqual(priorInternal.workstreams);
+  expect(visible.workstreams).toEqual(priorVisible.workstreams);
+  expect(visible.fingerprint).not.toBe(priorVisible.fingerprint);
+  expect(expectedInput).toBe("f".repeat(64));
+});

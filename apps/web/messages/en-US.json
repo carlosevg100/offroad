@@ -3473,7 +3473,8 @@
       "assumption_updated": "Assumption",
       "assumption_removed": "Assumption",
       "source_status_changed": "Source",
-      "checkpoint_changed": "Decision"
+      "checkpoint_changed": "Decision",
+      "planning_context_changed": "Planning context"
     },
     "progress": {
       "waiting": "Waiting",
@@ -3542,6 +3543,30 @@
         "context_changed": "The information or scope has changed. Review the new version before approving.",
         "approval_required": "Review the scope and deliverable. Your approval releases only the work in this version.",
         "approved": "This version was approved. Material changes require a new plan and a new approval."
+      }
+    },
+    "planningContext": {
+      "title": "Context and matters to examine",
+      "description": "These matters guide the analysis. The required evidence and methods still need examination.",
+      "attributes": "Declared context",
+      "requirements": "Matters to examine",
+      "gaps": "What remains to be clarified",
+      "sources": "Context references",
+      "notExamined": "Not yet examined",
+      "evidenceNeeded": "Evidence needed",
+      "unknown": "Not provided",
+      "sourceVersion": "Version {version}",
+      "status": {
+        "confirmed": "Confirmed in context",
+        "proposed": "Proposed",
+        "inferred": "Inferred, to be confirmed",
+        "conflicting": "Conflicting information",
+        "unknown": "Not provided"
+      },
+      "basis": {
+        "reviewed_document": "Reviewed document",
+        "user_review": "User review",
+        "unverified": "Unverified reference"
       }
     }
   },

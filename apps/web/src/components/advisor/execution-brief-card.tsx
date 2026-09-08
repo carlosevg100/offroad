@@ -59,7 +59,7 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
     }
   }
   return (
-    <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-testid="execution-brief">
+    <article className="execution-brief-card" data-execution-mode={brief.executionMode} data-brief-fingerprint={brief.fingerprint} data-testid="execution-brief">
       <header>
         <div>
           <h2>{t("title")}</h2>
@@ -112,6 +112,20 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
           </li>;
         })}
       </ol>
+
+      {brief.planningContext ? <section className="execution-brief-card__assumptions" data-testid="execution-brief-planning-context" aria-label={t("planningContext.title")} style={{minWidth: 0, overflowWrap: "anywhere"}}>
+        <header><strong>{t("planningContext.title")}</strong><small>{t("planningContext.notExamined")}</small></header>
+        <p>{t("planningContext.description")}</p>
+        {brief.planningContext.objects.map((object) => <details key={object.id} style={{minWidth: 0, marginTop: "0.75rem"}}>
+          <summary style={{cursor: "pointer", paddingBlock: "0.5rem"}}>{object.label}</summary>
+          {object.attributes.length ? <div><strong>{t("planningContext.attributes")}</strong><dl>{object.attributes.map((attribute, index) => <div key={`${attribute.dimension}-${index}`}>
+            <dt>{attribute.label}</dt><dd><strong>{attribute.value ?? t("planningContext.unknown")}</strong><span>{t(`planningContext.status.${attribute.status}`)}</span>
+              {attribute.sources.length ? <details><summary>{t("planningContext.sources")}</summary><ul>{attribute.sources.map((source, sourceIndex) => <li key={sourceIndex}>{source.label} · {t("planningContext.sourceVersion", {version: source.version})}<p>{source.anchor}</p><small>{t(`planningContext.basis.${source.basis}`)}</small></li>)}</ul></details> : null}
+            </dd></div>)}</dl></div> : null}
+          {object.requirements.length ? <details><summary>{t("planningContext.requirements")}</summary><ul>{object.requirements.map((requirement) => <li key={requirement.id}><strong>{requirement.label}</strong><p>{t("planningContext.notExamined")}</p><strong>{t("planningContext.evidenceNeeded")}</strong><ul>{requirement.evidenceNeeded.map((evidence, index) => <li key={index}>{evidence}</li>)}</ul></li>)}</ul></details> : null}
+          {object.gaps.length ? <details><summary>{t("planningContext.gaps")}</summary><ul>{object.gaps.map((gap) => <li key={gap.id}>{gap.label}</li>)}</ul></details> : null}
+        </details>)}
+      </section> : null}
 
       {version > 1 && changes.length ? <section className="execution-brief-card__changes" data-testid="execution-brief-changes">
         <header><strong>{t("changesTitle")}</strong><small>{t("changesPreserved")}</small></header>

@@ -86,7 +86,9 @@ describe("execution brief persisted approval", () => {
         expect(html).toContain(messages.ExecutionBriefCard.approval[status].title);
         expect(html.includes("<button")).toBe(status === "awaiting");
         expect(html).not.toContain(messages.ExecutionBriefCard.startsAfterDisplay);
-        expect(html).not.toContain(brief.fingerprint);
+        // The exact opaque identity is machine-readable for version binding, never visible copy.
+        expect(html).toContain(`data-brief-fingerprint="${brief.fingerprint}"`);
+        expect(html.split(brief.fingerprint)).toHaveLength(2);
       });
     }
   }
@@ -128,4 +130,33 @@ it("offers manual refresh after successful submission while authoritative approv
     expect(html).toContain('<button disabled=""');
     expect(html).not.toContain(messages.ExecutionBriefCard.approval.approved.title);
   }
+});
+
+
+describe("sector planning context projection", () => {
+  it.each(["pt-BR", "en-US"] as const)("%s shows planning evidence without inventing executable progress", (locale) => {
+    const messages = locale === "pt-BR" ? pt : en;
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}><ExecutionBriefCard version={2} changes={[{kind: "planning_context_changed", label: "Contexto do ativo"}]} brief={{...brief, locale, planningContext: {
+      schemaVersion: "sector-planning-context.v1", mode: "planning_only", contextFingerprint: "b".repeat(64), planFingerprint: "c".repeat(64), objects: [{id: "asset-1", label: "Ativo Solar <script>", attributes: [{dimension: "revenue_model", label: "Receita", value: "Exposição ao mercado", status: "inferred", sources: [{label: "Relatório sintético", version: "2", anchor: "página 3 / receita", basis: "unverified"}]}], requirements: [{id: "internal-requirement-id", label: "Examinar exposição residual", evidenceNeeded: ["Contrato e perfil de produção"], status: "not_examined", methodStatus: "specified"}], gaps: [{id: "internal-gap", label: "Modelo de receita a confirmar"}]}],
+    }}} /></NextIntlClientProvider>);
+    expect(html).toContain(messages.ExecutionBriefCard.planningContext.title);
+    expect(html).toContain(messages.ExecutionBriefCard.planningContext.notExamined);
+    expect(html).toContain(messages.ExecutionBriefCard.planningContext.basis.unverified);
+    expect(html).toContain(messages.ExecutionBriefCard.change.planning_context_changed);
+    expect(html).toContain("Ativo Solar &lt;script&gt;");
+    expect(html).toContain("página 3 / receita");
+    expect(html).toContain("Contrato e perfil de produção");
+    expect(html).toContain("Modelo de receita a confirmar");
+    expect(html).toContain("<details");
+    expect(html).toContain("<summary");
+    expect(html).not.toContain("internal-requirement-id");
+    expect(html).not.toContain("specified");
+    expect(html).not.toContain("data-progress");
+    expect(html).not.toContain("b".repeat(64));
+    expect(html).not.toContain("c".repeat(64));
+  });
+  it("does not add a planning section to historical briefs", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}><ExecutionBriefCard brief={brief} version={1} /></NextIntlClientProvider>);
+    expect(html).not.toContain("execution-brief-planning-context");
+  });
 });

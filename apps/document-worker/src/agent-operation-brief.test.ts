@@ -1463,3 +1463,46 @@ describe("agent operation brief worker", () => {
     expect(modelInput).not.toContain("full_document_text");
   });
 });
+
+// Synthetic explicitly reviewed company input; no real document or user data.
+function reviewedSectorInputs() {
+  return {schema_version: "governed-sector-context-inputs.v1", as_of: "2026-09-08", sources: [], candidates: [{
+    id: "10000000-0000-4000-8000-000000000080", field_path: "company.revenue_model", normalized_value: "merchant",
+    review_state: "edited", is_primary: true, reviewed_by: "10000000-0000-4000-8000-000000000081", reviewed_at: "2026-09-08T00:00:00Z",
+    entity_name: null, entity_scope: "company", period_start: null, period_end: null,
+    source_anchor: {}, anchor_verified: null, extraction_method: "user_entry", processing_run_id: null,
+    source_document_id: null, extraction_document_version: null, extraction_source_sha256: null,
+  }]};
+}
+
+it("passes reviewed sector inputs through the real agent caller into persisted brief snapshots", async () => {
+  async function run(includeContext: boolean) {
+    let recorded: import("./execution-brief").PreparedExecutionBrief | undefined;
+    const queue = {
+      writeStage: async () => {},
+      loadAgentContext: async () => ({session_id: job.intake_session_id, message_id: job.payload.message_id, locale: "pt-BR",
+        message: "Quero entender os riscos e a capacidade de dívida antes de escolher uma operação.", brief: {},
+        approval_input_fingerprint: "b".repeat(64), snapshot_fingerprint: "a".repeat(64), projection_updated_at: "2026-09-01T12:00:00.000Z", manifest_id: null,
+        project: {id: "ffffffff-ffff-4fff-8fff-ffffffffffff", name: "Synthetic company debt", entryJob: "company_debt_view", accessBasis: "public_information", phase: "understand", status: "active"},
+        active_plan: capitalProjectPlanSnapshot("company_debt_view"), company_profile: {name: "Synthetic Company"}, documents: [], tasks: [], artifacts: [], recent_messages: [],
+        ...(includeContext ? {governed_sector_context_inputs: reviewedSectorInputs()} : {}),
+      }),
+      recordAgentResponse: async (_job: unknown, _id: unknown, _response: unknown, _proposal: unknown, _activation: unknown, executionBrief: unknown) => {recorded = executionBrief as typeof recorded; return {};},
+      complete: async () => {}, recordAgentFailure: async () => {}, recordIntentEnvelope: async () => {}, fail: async () => {throw new Error("must not fail");},
+    } as unknown as QueueClient;
+    const gateway = {complete: async () => {throw new Error("deterministic route must not invoke models");}, spent: () => ({costUsd: 0, calls: 0})} as unknown as ModelGateway;
+    expect((await processAgentOperationBriefJob(job, {queue, gateway, log: () => {}, shadowRouting: false})).status).toBe("succeeded");
+    expect(recorded).toBeDefined();
+    return recorded!;
+  }
+  const legacy = await run(false);
+  const current = await run(true);
+  expect(legacy.visible).not.toHaveProperty("planningContext");
+  expect(current.visible.planningContext).toEqual(current.internal.planningContext);
+  expect(current.visible.planningContext?.objects[0]?.attributes[0]?.value).toBe("Exposição ao mercado");
+  expect(current.visible.planningContext?.objects[0]?.requirements.length).toBeGreaterThan(0);
+  expect(current.visible.workstreams).toEqual(legacy.visible.workstreams);
+  expect(current.internal.workstreams).toEqual(legacy.internal.workstreams);
+  expect(current.visible.fingerprint).not.toBe(legacy.visible.fingerprint);
+  expect(current.expectedInputFingerprint).toBe("b".repeat(64));
+});

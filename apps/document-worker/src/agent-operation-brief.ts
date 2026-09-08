@@ -49,6 +49,7 @@ import {activeWorkObjectBindings, activeWorkSourceManifestMembershipFingerprint,
 import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
+import {governedSectorContextInputsSchema} from "./governed-sector-planning";
 import {applyGovernedReceivablesInformationResponse} from "./receivables-information-response";
 import {buildReceivablesMethodFieldRequestProjection} from "./receivables-information-requests";
 
@@ -81,6 +82,7 @@ const specialistCapabilities = specialistTaskCapabilityRuntimeManifest.map((capa
 ));
 
 const contextSchema = z.object({
+  governed_sector_context_inputs: governedSectorContextInputsSchema.optional(),
   session_id: z.uuid(),
   message_id: z.uuid(),
   approval_input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
@@ -1069,6 +1071,8 @@ async function recordPreviewWorkflowSelection(
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
   return {
+    sessionId: context.session_id,
+    ...(context.governed_sector_context_inputs ? {governedSectorContextInputs: context.governed_sector_context_inputs} : {}),
     locale: context.locale,
     requestId: context.message_id,
     ...(context.approval_input_fingerprint ? { expectedInputFingerprint: context.approval_input_fingerprint } : {}),

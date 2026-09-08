@@ -2,6 +2,8 @@ import {describe, expect, it} from "vitest";
 
 import {capitalProjectPlanSnapshot} from "./capital-jobs";
 import {
+  executionBriefPlanningContextSchema,
+  type ExecutionBriefPlanningContext,
   compileCapitalExecutionBrief,
   compileExecutionBrief,
   diffVisibleExecutionBrief,
@@ -233,4 +235,37 @@ it("keeps a bounded one-task plan proportional without padding or hidden tasks",
   expect(brief.workstreams.flatMap((stream) => stream.sourceTaskIds)).toEqual(["M01"]);
   expect(visibleExecutionBriefSchema.safeParse(visibleExecutionBrief(brief)).success).toBe(true);
   expect(() => compileCapitalExecutionBrief({plan: {...plan, taskSpecs: []}, locale: "en-US", objective: "Confirm company context", companyLabel: "Company", audienceLabel: "Decision owner", proposedDeliverable: "Context", sources, authority})).toThrow("workstream_count_outside_1_to_7");
+});
+
+function planningContext(): ExecutionBriefPlanningContext {
+  return {schemaVersion: "sector-planning-context.v1", contextFingerprint: "a".repeat(64), planFingerprint: "b".repeat(64), mode: "planning_only", objects: [{id: "company", label: "Companhia", attributes: [{dimension: "sector", label: "Setor", value: "energy", status: "confirmed", sources: [{label: "Documento", version: "1", anchor: "p. 3", basis: "reviewed_document"}]}], requirements: [{id: "r1", label: "Contrato", evidenceNeeded: ["Contrato vigente"], status: "not_examined", methodStatus: "specified"}], gaps: []}]};
+}
+describe("execution brief planning context", () => {
+  it("preserves legacy identity when omitted and projects context without execution authority", () => {
+    const base = compileExecutionBrief(minimalInput());
+    expect(visibleExecutionBriefSchema.parse(visibleExecutionBrief(base)).planningContext).toBeUndefined();
+    expect(compileExecutionBrief({...minimalInput()}).fingerprint).toBe(base.fingerprint);
+    const next = compileExecutionBrief({...minimalInput(), planningContext: planningContext()});
+    expect(next.fingerprint).not.toBe(base.fingerprint);
+    expect(visibleExecutionBriefSchema.parse(visibleExecutionBrief(next)).planningContext).toEqual(planningContext());
+    expect(next.executionMode).toBe(base.executionMode);
+    expect(next.workstreams).toEqual(base.workstreams);
+    expect(diffVisibleExecutionBrief(visibleExecutionBrief(base), visibleExecutionBrief(next))).toEqual([{kind: "planning_context_changed", label: "Contexto econômico e requisitos"}]);
+  });
+  it.each(["source", "status", "requirement"])("includes %s change in brief identity and diff", (kind) => {
+    const initial = compileExecutionBrief({...minimalInput(), planningContext: planningContext()});
+    const context = planningContext();
+    if (kind === "source") context.objects[0]!.attributes[0]!.sources[0]!.version = "2";
+    if (kind === "status") context.objects[0]!.attributes[0]!.status = "conflicting";
+    if (kind === "requirement") context.objects[0]!.requirements[0]!.label = "Contrato e aditivos";
+    const next = compileExecutionBrief({...minimalInput(), planningContext: context});
+    expect(next.fingerprint).not.toBe(initial.fingerprint);
+    expect(diffVisibleExecutionBrief(visibleExecutionBrief(initial), visibleExecutionBrief(next)).map((change) => change.kind)).toContain("planning_context_changed");
+  });
+  it("rejects promoted method states and aggregate requirement overflow", () => {
+    const context = planningContext();
+    expect(executionBriefPlanningContextSchema.safeParse({...context, mode: "execute"}).success).toBe(false);
+    context.objects = Array.from({length: 2}, (_, index) => ({...context.objects[0]!, id: `object-${index}`, requirements: Array.from({length: 51}, (_, requirement) => ({...context.objects[0]!.requirements[0]!, id: `r-${requirement}`}))}));
+    expect(executionBriefPlanningContextSchema.safeParse(context).success).toBe(false);
+  });
 });

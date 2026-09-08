@@ -15,6 +15,7 @@ import {
 import {z} from "zod";
 
 import type {PreviewActivation} from "./integration-preview";
+import {buildGovernedSectorPlanning, type GovernedSectorContextInputs} from "./governed-sector-planning";
 
 const capitalPlanSchema = z.object({
   schemaVersion: z.literal("capital-project-plan.v1"),
@@ -36,6 +37,8 @@ const capitalPlanSchema = z.object({
 }).passthrough();
 
 export type ExecutionBriefContext = {
+  sessionId?: string;
+  governedSectorContextInputs?: GovernedSectorContextInputs;
   requestId?: string;
   expectedInputFingerprint?: string;
   locale: "pt-BR" | "en-US";
@@ -85,7 +88,9 @@ function compileStandardBrief(
   const plan = capitalPlanSchema.parse(context.activePlan) as unknown as CapitalProjectPlanSnapshot;
   if (plan.job.id !== activation.job) throw new Error("execution brief plan does not match activation");
   const copy = standardCopy(context.locale, activation);
+  const planningContext = context.sessionId ? buildGovernedSectorPlanning({inputs: context.governedSectorContextInputs, sessionId: context.sessionId, companyLabel: activation.company.name, locale: context.locale, objective: copy.objective}) : undefined;
   return compileCapitalExecutionBrief({
+    ...(planningContext ? {planningContext} : {}),
     plan,
     ...(context.requestId ? {revisionContext: context.requestId} : {}),
     locale: context.locale,
