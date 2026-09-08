@@ -1,5 +1,19 @@
 # Acceptance Evidence
 
+## Carteira e data-base confirmadas: publicação verificada, 08/09/2026
+
+PR #556 integrada em `4633ad777a40bc06457712743a10843a092c8d71`. O usuário confirma documento, aba, cabeçalho, apoios e data-base na conversa; a confirmação conserva revisões das fontes e produz um novo plano para aprovação. O cálculo usa somente a carteira selecionada e mantém referências verificáveis. Mudanças nas fontes invalidam a confirmação; a autorização antiga não é herdada.
+
+Quality `34263010265` e Security `34263010056` passaram no head final `ebf4f65c5e4ede1ea765e9bb57ef26c119262abf`, incluindo banco, aplicação e E2E obrigatório (22 aprovados; 10 dependentes de provedores externos pulados). A prova exige job `succeeded`, data-base 31/08/2026, um título e saldo 1000, excluindo a carteira concorrente de 999999. O log confirma `case.done` do job `76199992-ccd1-498d-b0cc-3ffcf3959c9d`, às 18:31:45Z. A primeira execução revelou um falso positivo: o relatório era gravado antes de uma falha no vínculo do controle operacional. A correção usa o hash do input congelado exigido pelo banco e o teste verifica o término efetivo, sem afrouxar o controle. Evidência local: `/tmp/offroad-confirmed-scope-proof-ebf4f65/worker.log`. Gate local completo aprovado; capturas reais desktop/390px inspecionadas.
+
+Produção web: deployment `6334502750`, Vercel `6kzkCjk5mub6WvTZaT2VnNBsevKH`, sucesso no SHA exato da integração. Página pública HTTP200 e leitura autenticada verificadas sem alterar dados. Após a web compatível, o marcador `20260908183823_worker_runtime_schema_contract` ativou a oitava capability; security advisors zero. Worker `34264036006` concluído com sucesso: PRIMARY exata `offroad-document-worker:284`, capacidade positiva e serviço estável, verificados às 18:42:32Z.
+
+Este follow-up alinha somente o nome do marcador à versão efetivamente aplicada, mantendo o corpo SQL idêntico, e registra a publicação. As sete migrações aditivas anteriores já correspondem à produção. Gate local do follow-up: `/tmp/offroad-confirmed-scope-release-check.log`, 43/43 targets por etapa.
+
+Próxima prioridade: qualificar o período econômico dos documentos complementares. Lançamentos contábeis posteriores à data-base, meses futuros de diluição e cancelamentos fiscais subsequentes precisam ser separados dos saldos históricos, com referência à linha, revisão da fonte, tipo de data e lacunas explícitas para datas ausentes/inválidas. Casos mínimos: base 31/08 com ajuste 01/09; diluição janeiro–agosto 100 e setembro 900; título aberto em 31/08 com cancelamento 02/09. Isso ainda não foi implementado neste corte.
+
+Limites: uma carteira por análise, sem consolidação automática. Confirmar fontes não homologa os períodos de todos os apoios. R01 permanece interno/shadow; expertise universal, matching e entregáveis institucionais completos continuam pendentes. As entradas anteriores abaixo documentam estados históricos e não substituem esta publicação.
+
 ## Carteira e data-base confirmadas: implementação em validação, 08/09/2026
 
 Branch `feat/confirmed-receivables-scope`, sobre `1ae521e` (#555). O próximo corte registra uma tabela principal (documento, aba e linha de cabeçalho), documentos de apoio escolhidos e data-base declarada. A confirmação guarda as revisões e os hashes das fontes, participa da identidade do plano e inicia uma nova proposta aguardando aprovação. A seleção é metadado de autorização e perímetro; não duplica fatos financeiros. Alterações de fontes tornam o escopo desatualizado. Outra carteira não pode ser disfarçada de documento complementar.
