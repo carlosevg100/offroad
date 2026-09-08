@@ -3,6 +3,9 @@
 ## Triagem de segurança e precisão de covenant: 07/09/2026
 
 232 testes dos pacotes afetados passaram, incluindo 56 de case-materials e regressões de limite 10/0/10.00/1.20/negativos, texto longo, nomes de companhia, anchors e paths que antes fabricavam exceção de input. Gate local completo passou: lint, typecheck, 2.472 testes e build, com 43/43 targets em cada etapa. Nova análise CodeQL e gates de release remotos ainda pendentes. Casos candidatos a falso positivo exigem revisão independente; contagem de alertas não é prova de explorabilidade nem de segurança completa.
+## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
+
+Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
 
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
