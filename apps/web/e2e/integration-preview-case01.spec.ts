@@ -205,6 +205,61 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(work).toContainText("O que ainda muda a decisão");
     await expect(work).toContainText("Covenants e headroom ainda condicionais");
     await expect(work.getByRole("link", {name: "Baixar planilha"})).toHaveCount(0);
+    // Inspect an actual claim with the keyboard, follow its source and return to the finding.
+    const sourceRegister = work.locator(".decision-work__source-register");
+    await expect(sourceRegister).not.toHaveAttribute("open", "");
+    const claim = work.locator(".decision-work__metric").first();
+    const trace = claim.locator("details");
+    await trace.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(trace).toHaveAttribute("open", "");
+    const sourceLink = trace.locator('a[href*="-source-"]').first();
+    const sourceTarget = (await sourceLink.getAttribute("href"))!.slice(1);
+    await sourceLink.focus();
+    await page.keyboard.press("Enter");
+    const source = page.locator(`[id="${sourceTarget}"]`);
+    await expect(sourceRegister).toHaveAttribute("open", "");
+    await expect(source).toBeFocused();
+    const returnLink = source.locator(".decision-work__backlinks a").filter({hasText: "Dívida bruta contábil"}).first();
+    await returnLink.focus();
+    await page.keyboard.press("Enter");
+    await expect(claim).toBeFocused();
+    await sourceRegister.locator(":scope > summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(sourceRegister).not.toHaveAttribute("open", "");
+    await expect(work.locator(".decision-work__series table tbody tr")).not.toHaveCount(0);
+    await expect(work.locator(".decision-series-chart")).not.toHaveCount(0);
+    // The executive projection must not hide the full financial methods and meeting brief.
+    const methods = page.getByTestId("decision-method-inspection");
+    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
+    await methods.locator(":scope > summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(methods).toHaveAttribute("open", "");
+    await expect(methods.locator('[data-artifact-type="preview_debt_ledger"]')).toBeVisible();
+    await expect(methods.locator('[data-artifact-type="preview_meeting_brief"]')).toBeVisible();
+    await page.screenshot({path: join(outputDirectory, "03-readout-methods.png"), fullPage: true});
+    await methods.locator(":scope > summary").click();
+    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
+    await page.setViewportSize({width: 390, height: 844});
+    await claim.scrollIntoViewIfNeeded();
+    await expect(trace).toHaveAttribute("open", "");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth + 1)).toBe(true);
+    const headerBounds = await page.locator(".advisor-project__header, .advisor-project__header > div, .advisor-project__header h1, .advisor-project__header > span").evaluateAll((elements) => elements.map((element) => {
+      const {left, right} = element.getBoundingClientRect();
+      return {left, right, viewport: window.innerWidth};
+    }));
+    expect(headerBounds).toHaveLength(4);
+    for (const bounds of headerBounds) {
+      expect(bounds.left).toBeGreaterThanOrEqual(-1);
+      expect(bounds.right).toBeLessThanOrEqual(bounds.viewport + 1);
+    }
+    const mobileScreenshot = await page.screenshot({path: join(outputDirectory, "03-readout-mobile-trace.png"), fullPage: true, scale: "css"});
+    // PNG IHDR stores image width at byte 16; full-page captures expose hidden body overflow.
+    expect(mobileScreenshot.toString("ascii", 12, 16)).toBe("IHDR");
+    expect(mobileScreenshot.readUInt32BE(16)).toBe(390);
+    await page.setViewportSize({width: 1366, height: 900});
+
     const executionBrief = page.getByTestId("execution-brief");
     await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
     await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);

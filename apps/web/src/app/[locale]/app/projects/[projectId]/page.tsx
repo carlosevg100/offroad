@@ -18,8 +18,7 @@ import {PrivateMarketWork} from "@/components/advisor/private-market-work";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
 import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
-import {DecisionArtifactWork} from "@/components/integration-preview/decision-artifact-work";
-import {IntegrationPreviewWork} from "@/components/integration-preview/integration-preview-work";
+import {AdvisorDecisionWork} from "@/components/integration-preview/advisor-decision-work";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
@@ -598,11 +597,12 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{parsedDecisionArtifact.success ? <DecisionArtifactWork
-      contract={parsedDecisionArtifact.data}
+    workProduct={<><AdvisorDecisionWork
+      contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null}
+      artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       materialHref={`/${locale}/app/projects/${project.id}/preview/material`}
-    /> : previewArtifacts.length ? <IntegrationPreviewWork artifacts={previewArtifacts} locale={locale === "en-US" ? "en-US" : "pt-BR"} materialHref={`/${locale}/app/projects/${project.id}/preview/material`} /> : null}{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
+    />{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
       artifact={parsedOrigination.data}
       artifactId={originationArtifact.id}
       decision={originationDecision}

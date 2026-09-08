@@ -18,3 +18,15 @@ export function formatPreviewNumber(value: string | number, locale: Locale): str
   const separator = formatter.number(1.1).replace(/\d/g, "");
   return fraction === undefined ? signed : `${signed}${separator}${fraction}`;
 }
+
+/** Explicit decimal-rate unit only: shift the decimal point exactly, never through Number. */
+export function formatPreviewAnnualPercentage(value: string | number, locale: Locale): string | null {
+  const match = /^(-?)(0|[1-9]\d*)(?:\.(\d+))?$/.exec(String(value));
+  if (!match) return null;
+  const [, sign, integer, fraction = ""] = match;
+  const digits = `${integer}${fraction.padEnd(2, "0")}`;
+  const split = integer!.length + 2;
+  const whole = BigInt(digits.slice(0, split)).toString();
+  const remainder = digits.slice(split).replace(/0+$/, "");
+  return `${formatPreviewNumber(`${sign}${whole}${remainder ? `.${remainder}` : ""}`, locale)}% a.a.`;
+}

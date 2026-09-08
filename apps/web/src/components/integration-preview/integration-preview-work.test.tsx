@@ -3,7 +3,7 @@ import {renderToStaticMarkup} from "react-dom/server";
 import {describe, expect, it} from "vitest";
 import pt from "../../../messages/pt-BR.json";
 import en from "../../../messages/en-US.json";
-import {IntegrationPreviewWork, type PreviewArtifactView} from "./integration-preview-work";
+import {IntegrationPreviewWork, isSupportedPreviewArtifact, type PreviewArtifactView} from "./integration-preview-work";
 
 function artifact(output: unknown, type = "preview_debt_ledger"): PreviewArtifactView {
   return {id: type, type, version: 1, status: "complete", createdAt: "2026-09-07T12:00:00Z", content: {preview: {methodMaturity: "implemented"}, output}};
@@ -69,6 +69,29 @@ describe("integration preview review surface", () => {
     expect(html).toContain("A grounded conclusion.");
     expect(html).toContain('href="/material?format=docx"');
     expect(html).toContain("Download the Word file");
+  });
+  it("localizes known field and table labels while preserving unknown identifiers and source values", () => {
+    const input = artifact({state: "complete", ledger_rows: [{amount: "10.25", state: "blocked", document: "original_source_2026", custom_field: "unknown_state_literal", locator: "000123456789", path: "1234567890123", fingerprint: "1".repeat(64)}]});
+    const html = render([input]);
+    expect(html).toContain("Instrumentos de dívida");
+    expect(html).toContain("Montante");
+    expect(html).toContain("bloqueado");
+    expect(html).toContain("custom_field");
+    expect(html).toContain("original_source_2026");
+    expect(html).toContain("unknown_state_literal");
+    expect(html).toContain("000123456789");
+    expect(html).toContain("1234567890123");
+    expect(html).toContain("1".repeat(64));
+    expect(render([input], "en-US")).toContain("Debt instruments");
+  });
+  it("exposes material paragraph references literally without creating source links", () => {
+    const html = render([artifact({sections: [{id: "thesis", title: "Thesis", paragraphs: [{text: "Supported finding.", references: ["c09:index.value", "https://example.invalid/source?a=1&b=2"]}]}]}, "preview_material")]);
+    expect(html).toContain("Referências deste trecho");
+    expect(html).toContain("c09:index.value");
+    expect(html).toContain("https://example.invalid/source?a=1&amp;b=2");
+    expect(html).not.toContain('href="https://');
+    expect(isSupportedPreviewArtifact("preview_material")).toBe(true);
+    expect(isSupportedPreviewArtifact("preview_decision_artifact")).toBe(false);
   });
   it("escapes untrusted output and keeps missing or primitive rows inspectable", () => {
     const html = render([artifact({ledger_rows: [null, "<script>bad()</script>", {id: "final"}]})]);
