@@ -1655,6 +1655,7 @@ type PublicReceivablesVertical = {
   sourceManifest: ReceivablesEvidenceSourceManifest;
   candidates: ReturnType<typeof identifyReceivablesTapes>;
   supportPeriodAssessment?: ReceivablesRawDetectionReport["supportPeriodAssessment"];
+  balanceSourceAssessment?: ReceivablesRawDetectionReport["balanceSourceAssessment"];
   evidenceScope?: {id: string; fingerprint: string};
   fingerprint: string;
   evidenceCoverage: {
@@ -1837,12 +1838,13 @@ export function buildReceivablesVertical(
     }
   }
   const fingerprint = fingerprintJson({
-    version: "receivables-vertical-support-periods.v1",
+    version: "receivables-vertical-balance-proposals.v1",
     evidenceScope: {id: scope.id, fingerprint: scope.fingerprint},
     datasetHash,
     evidenceHashes,
     detectionVersion: detection.version,
     supportPeriodAssessment: detection.supportPeriodAssessment ?? null,
+    balanceSourceAssessment: detection.balanceSourceAssessment ?? null,
     requestedAmount: raw.session.requested_amount ?? null,
   });
   const common = {
@@ -1850,6 +1852,7 @@ export function buildReceivablesVertical(
     sourceManifest, candidates,
     fingerprint,
     supportPeriodAssessment: detection.supportPeriodAssessment,
+    balanceSourceAssessment: detection.balanceSourceAssessment,
     evidenceScope: {id: scope.id, fingerprint: scope.fingerprint},
     evidenceCoverage: {
       delivered: detection.evidenceCoverage.deliveredEvidenceIds.length,

@@ -82,6 +82,26 @@ function run(evidence: ReceivablesEvidenceEnvelope[], scope: ReceivablesEvidence
 }
 
 describe("receivables worker evidence scope", () => {
+  it("publishes only selected balance-source proposals and binds their source changes to the result", async () => {
+    const tape = await envelope(1);
+    const bank = await envelope(2, false, 1, "tape", "Base 30/06/2026,,\nConta,Saldo anterior,Saldo atual\nSynthetic liability,999999,100");
+    const evidence = [tape, bank];
+    expect(run(evidence, confirmation(evidence)).publicReport.balanceSourceAssessment?.proposals).toEqual([]);
+    const scope = confirmation(evidence);
+    scope.scope!.complementDocumentIds = [id(2)];
+    scope.scope!.sourceRevisions = scope.sourceManifest!.sources;
+    const result = run(evidence, scope).publicReport;
+    expect(result.balanceSourceAssessment?.proposals).toEqual([expect.objectContaining({
+      sourceId: id(2), documentVersion: 1, reviewState: "proposed", calculationUse: "not_permitted",
+    })]);
+    expect(result.methodReadiness.methodExecutionAllowed).toBe(false);
+    const changed = await envelope(2, false, 1, "tape", "Base 31/07/2026,,\nConta,Saldo anterior,Saldo atual\nSynthetic liability,999999,100");
+    const newScope = confirmation([tape, changed]);
+    newScope.scope!.complementDocumentIds = [id(2)];
+    newScope.scope!.sourceRevisions = newScope.sourceManifest!.sources;
+    expect(run([tape, changed], newScope).publicReport.fingerprint).not.toBe(result.fingerprint);
+    expect(run([tape, changed], scope).publicReport.balanceSourceAssessment).toBeUndefined();
+  });
   it.each(["documents", "sheets"])("blocks competing tapes across %s before assembly or execution", async (kind) => {
     const evidence = kind === "documents"
       ? [await envelope(1), await envelope(2)]

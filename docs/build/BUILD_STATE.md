@@ -1,5 +1,20 @@
 # Build State
 
+## Fontes de saldos: propostas ancoradas, 08/09/2026, em validação
+
+Branch `feat/balance-source-binding`, base `168b956` (#558). Este corte entrega a primeira etapa do vínculo de saldos: o parser PDF `pdf-1.1.0` preserva a geometria de cada célula sem alterar agrupamento, IDs ou textos; campos opcionais mantêm compatibilidade com fragmentos antigos. `balance-source-proposals.v1` conserva cabeçalhos, declarações de período, emissão, entidade/perímetro/unidade e uma amostra de linhas com âncoras, versão e hash da fonte. Não escolhe a última coluna, não usa filename como contexto e não transforma emissão em data econômica.
+
+Toda proposta é `reviewState=proposed`, `calculationUse=not_permitted`. Não existe valor normalizado, soma, autorização de revisão ou promoção de R01 neste contrato. Propostas são geradas apenas das fontes selecionadas no escopo confirmado; integram o fingerprint e a projeção persistida do worker. A mesma leitura autenticada do relatório temporal restringe a exibição à execução atual concluída e às fontes atuais. A interface PT/EN apresenta cabeçalhos e declarações literais com referências, sem valores de linhas nem ação de aprovação fictícia. Os saldos brutos continuam qualitativos e sujeitos aos bloqueios anteriores.
+
+Limites explícitos: até 16 propostas, 32 declarações por proposta, 12 linhas e 16 células por linha; trechos até 512 caracteres e orçamento agregado de propostas de 250 KB. Toda omissão aparece como limitação. O scan de contexto também é limitado para impedir crescimento quadrático com cabeçalhos repetidos. Fonte sem versão/geometria e referências concorrentes continuam pendentes. O vínculo entre célula e cabeçalho ainda precisa de revisão governada; propostas não substituem esse ato.
+
+Provas requeridas: PDF/XLSX originais do corpus Vertentes, geometria resolvível no layer, datas e colunas distintas, gabarito congelado intacto, fontes não selecionadas excluídas, revisão alterada invalidando relatório, reordenação e limites adversariais. E2E amplia o cenário sintético isolado com documento de saldos, processamento real, persistência `proposed/not_permitted` e exibição PT/EN desktop/mobile. Check local, CI, capturas e publicação serão registrados no PR e no relatório de entrega após conclusão; nenhum sucesso futuro é presumido.
+
+Segurança: AI-05/AI-08; nenhuma nova permissão, tabela, migração, provedor, transmissão externa ou telemetria. Revisão independente apontou amplificação de payload e referências numéricas não seguras; limites e regressões foram adicionados. Rollout exige web compatível e worker PRIMARY exato com capacidade positiva estável. Nenhuma fixture em produção. Reverter a exibição preserva fontes, hashes e aprovações; não restaurar soma sem qualificação.
+
+Próxima dependência material: FactKey/indexFacts/consumidores podem misturar escopos individual/consolidado/segmento e períodos. Não corrigir somente a chave: preservar dimensões e projetar seleção econômica explícita em TODOS os consumidores, incluindo adapters web/worker, antes de promover a reconciliação. Depois implementar revisão atômica de binding com fonte atual e invalidar dependências. A pergunta que expõe `historical_financials.{ano}.cash` também segue registrada e ainda não foi corrigida. Endgame e vertical completa não concluídos.
+
+
 ## Períodos dos apoios de recebíveis, 08/09/2026: implementação em validação
 
 Branch `fix/receivables-support-periods`, sobre `14b0360` (#557). A análise agora distingue data-base da carteira, data do lançamento, intervalo mensal e instante fiscal. O resultado versionado `receivables-support-periods.v1` conserva fonte/hash/âncora, datas originais, qualificação e política explícita de comparação pelo dia local da fonte. Eventos posteriores ficam separados; mês que atravessa o corte não é rateado. Datas ausentes, inválidas e bases sobrepostas permanecem visíveis. Ausência de valor não vira zero; linhas TOTAL não entram novamente na soma. Novos fingerprints incorporam a versão e a avaliação temporal.
