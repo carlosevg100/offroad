@@ -587,18 +587,30 @@ test.describe("Document-first intake (company journey)", () => {
     const output = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-f", join(__dirname, "support", "sector-planning-local.sql")], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]});
     const {projectId, targetId} = JSON.parse(output.trim().split("\n").at(-1) ?? "{}");
     if (![projectId, targetId].every((id) => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id))) throw new Error("Synthetic setup did not return its project and target identities.");
-    let expectedFingerprint = "";
-    await expect(async () => {
-      const result = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `target_id=${targetId}`], {
-        encoding: "utf8", input: `select jsonb_build_object('status',j.status,'fingerprint',b.visible_snapshot->>'fingerprint','plannerFailed',exists(select 1 from public.processing_jobs p where p.payload->>'approval_target_job_id'=j.id::text and p.status in ('failed','cancelled'))) from public.processing_jobs j left join public.capital_project_execution_brief_dispatches d on d.organization_id=j.organization_id and d.processing_job_id=j.id left join public.capital_project_execution_briefs b on b.organization_id=d.organization_id and b.id=d.execution_brief_id where j.id=:'target_id'::uuid;`,
-      });
-      const state = JSON.parse(result.trim() || "null");
-      expect(state, "The exact synthetic target must exist").not.toBeNull();
-      expect(state.plannerFailed, "The real planner must not fail").toBe(false);
-      expect(state.status).toBe("awaiting_approval");
-      expect(state.fingerprint).toMatch(/^[a-f0-9]{64}$/);
-      expectedFingerprint = state.fingerprint;
-    }).toPass({timeout: 120_000, intervals: [1000, 2000, 5000]});
+    type ProposalDiagnostic = {status: string; fingerprint: string | null; lastError: unknown; planners: {id: string; status: string; lastError: unknown}[]};
+    let diagnostic: ProposalDiagnostic | null = null;
+    try {
+      await expect.poll(() => {
+        const result = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `target_id=${targetId}`], {
+          encoding: "utf8", input: `select jsonb_build_object('status',j.status,'lastError',j.last_error,'fingerprint',b.visible_snapshot->>'fingerprint','planners',coalesce((select jsonb_agg(jsonb_build_object('id',p.id,'status',p.status,'lastError',p.last_error)) from public.processing_jobs p where p.organization_id=j.organization_id and p.intake_session_id=j.intake_session_id and p.kind='execution_brief_proposal' and p.payload->>'approval_target_job_id'=j.id::text),'[]'::jsonb)) from public.processing_jobs j left join public.capital_project_execution_brief_dispatches d on d.organization_id=j.organization_id and d.processing_job_id=j.id left join public.capital_project_execution_briefs b on b.organization_id=d.organization_id and b.id=d.execution_brief_id where j.id=:'target_id'::uuid;`,
+        });
+        diagnostic = JSON.parse(result.trim() || "null") as ProposalDiagnostic | null;
+        // Stop waiting as soon as a terminal error exists; assertions below preserve failure.
+        return diagnostic === null || Boolean(diagnostic.fingerprint)
+          || ["failed", "cancelled"].includes(diagnostic.status)
+          || diagnostic.planners.some((planner) => ["failed", "cancelled"].includes(planner.status));
+      }, {timeout: 120_000, intervals: [1000, 2000, 5000]}).toBe(true);
+    } finally {
+      // Only this loopback synthetic target and its own planner jobs are included.
+      await testInfo.attach("sector-planner-diagnostic", {body: JSON.stringify({projectId, targetId, diagnostic}, null, 2), contentType: "application/json"});
+    }
+    const state = diagnostic as ProposalDiagnostic | null;
+    expect(state, "The exact synthetic target must exist").not.toBeNull();
+    const failureDetail = JSON.stringify(state);
+    expect(state!.planners.some((planner) => ["failed", "cancelled"].includes(planner.status)), `The real planner failed: ${failureDetail}`).toBe(false);
+    expect(state!.status, failureDetail).toBe("awaiting_approval");
+    expect(state!.fingerprint, failureDetail).toMatch(/^[a-f0-9]{64}$/);
+    const expectedFingerprint = state!.fingerprint;
     await page.goto(`/pt-BR/app/projects/${projectId}`);
     const card = page.locator(`[data-testid="execution-brief"][data-brief-fingerprint="${expectedFingerprint}"]`);
     await expect(card).toBeVisible({timeout: 120_000});
