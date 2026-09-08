@@ -432,6 +432,35 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".advisor-thread")).toContainText(request);
     await expect(page.locator(".advisor-project__context")).toContainText("Plano de trabalho");
 
+    // Simulate a lost action response without touching the database. The draft survives both
+    // attempts and the exact retry carries the same server idempotency key.
+    const commandBodies: string[] = [];
+    const failCommand = async (route: import("@playwright/test").Route) => {
+      const request = route.request();
+      if (request.method() === "POST" && request.headers()["next-action"]) {
+        commandBodies.push(request.postData() ?? "");
+        await route.abort("connectionfailed");
+      } else {
+        await route.continue();
+      }
+    };
+    await page.route("**/app/projects/**", failCommand);
+    const draft = "Preservar este pedido após falha de conexão";
+    const followUp = page.locator(".advisor-composer textarea");
+    const send = page.locator(".advisor-composer .advisor-composer__send");
+    await followUp.fill(draft);
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      await send.click();
+      await expect(page.locator(".form-notice--error")).toContainText("Seu texto foi preservado");
+      await expect(followUp).toHaveValue(draft);
+      await expect(send).toBeEnabled();
+    }
+    expect(commandBodies).toHaveLength(2);
+    const messageIds = commandBodies.map((body) => /"messageId":"([0-9a-f-]+)"/.exec(body)?.[1]);
+    expect(messageIds[0]).toMatch(/^[0-9a-f-]{36}$/);
+    expect(messageIds[1]).toBe(messageIds[0]);
+    await page.unroute("**/app/projects/**", failCommand);
+
     const projectUrl = page.url();
     await page.goto("/pt-BR/app");
     const folder = await openFolder(page, renamedWorkspaceGroupName);

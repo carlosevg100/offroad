@@ -1207,6 +1207,9 @@
       "continueLabel": "Continuar"
     },
     "advisorProject": {
+      "recovery": {
+        "uncertain": "Não foi possível confirmar o recebimento. Seu texto foi preservado. Tente enviar novamente para confirmar o mesmo pedido."
+      },
       "advisor": "Agente Offroad",
       "context": "Contexto do projeto",
       "conversation": "Projeto",

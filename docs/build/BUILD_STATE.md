@@ -1,5 +1,9 @@
 # Build State
 
+## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
+
+Envio, edição de plano e resposta a pergunta compartilham proteção síncrona contra duplicação. Falha retornada ou exceção libera pending e conserva o conteúdo; retry idêntico reutiliza a identidade de comando já suportada pelo banco. O composer limpa somente o texto enviado após confirmação. Texto bilíngue informa aceitação incerta sem afirmar rejeição. Nenhuma alteração de schema ou regra de edição de versão obsoleta. Estado de retry e rascunho vive somente em memória do componente: reload/remount não tem recuperação durável.
+
 ## RT-01: contrato e gate canônico de intenção, candidate, 07/09/2026
 
 - O gate v3 recompõe de forma independente a cadeia `raw classifier + raw extractor -> compiler ->
