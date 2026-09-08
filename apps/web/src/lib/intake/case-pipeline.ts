@@ -1,3 +1,4 @@
+import type {ReceivablesSupportPeriodAssessment, ReceivablesEvidenceSourceManifest} from "@offroad/receivables-analysis";
 import {
   caseEngineVersion,
   executeCaseEngine,
@@ -34,6 +35,9 @@ export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
   receivablesVertical?: {
     version: "2026.08.28-v1";
     status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
+    supportPeriodAssessment?: ReceivablesSupportPeriodAssessment;
+    evidenceScope?: {id: string; fingerprint: string};
+    sourceManifest?: ReceivablesEvidenceSourceManifest;
     scopeIssue?: {code: "multiple_receivables_tapes" | "scope_confirmation_required" | "scope_stale" | "reporting_date_conflict"; candidates: readonly {documentId: string; fileName: string; sheet: string; headerRow: number}[]};
     fingerprint: string;
     evidenceCoverage: {delivered: number; searched: number; complete: boolean; warnings: readonly string[]};

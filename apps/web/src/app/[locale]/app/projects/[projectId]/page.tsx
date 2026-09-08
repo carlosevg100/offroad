@@ -1,3 +1,6 @@
+import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
+import {loadReceivablesTemporalReport} from "@/lib/receivables/temporal-report";
+import {ReceivablesProjectSupportPeriods} from "@/components/intake/receivables-project-support-periods";
 import {loadReceivablesScope} from "@/lib/receivables/scope";
 import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
@@ -461,6 +464,7 @@ async function ConversationalCapitalProject({
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
   const receivablesScope = await loadReceivablesScope(supabase, session.id);
+  const receivablesTemporalReport = await loadReceivablesTemporalReport(supabase, organization.id, session.id, receivablesScope);
   const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
@@ -602,7 +606,7 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}<AdvisorDecisionWork
+    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}<AdvisorDecisionWork
       contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null}
       artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}

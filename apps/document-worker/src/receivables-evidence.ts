@@ -48,6 +48,8 @@ export const receivablesFiscalArchiveEvidenceSchema = z.object({
     accessKey: z.string().min(1),
     accessKeyValid: z.boolean(),
     registrationStatus: z.string().nullable(),
+    // Historical fragments have no event date; omission must remain unknown.
+    occurredAt: z.string().nullable().optional(),
   })),
 });
 
@@ -175,6 +177,7 @@ export function fiscalArchiveEvidence(parsed: NfeArchiveParseResult): Receivable
       accessKey: event.accessKey,
       accessKeyValid: event.accessKeyValid,
       registrationStatus: event.registrationStatus,
+      occurredAt: event.occurredAt,
     })),
   };
 }

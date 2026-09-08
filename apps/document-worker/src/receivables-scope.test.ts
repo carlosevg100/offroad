@@ -7,9 +7,9 @@ import {documentEvidence, encodeReceivablesEvidence, type ReceivablesEvidenceEnv
 import {buildReceivablesMethodEvidenceRequestProjection} from "./receivables-information-requests";
 
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-async function envelope(n: number, twoSheets = false, version = 1, mode: "tape" | "blocks" | "support" = "tape"): Promise<ReceivablesEvidenceEnvelope> {
+async function envelope(n: number, twoSheets = false, version = 1, mode: "tape" | "blocks" | "support" = "tape", csv?: string): Promise<ReceivablesEvidenceEnvelope> {
   const parsed = await parseDocument({
-    bytes: new TextEncoder().encode("NUM_TITULO,CNPJ_SACADO,NOME_SACADO,DT_EMISSAO,DT_VENCIMENTO,VLR_TITULO,SITUACAO,DT_PAGAMENTO,VLR_PAGO\nNF-1,11222333000144,Synthetic buyer,2026-06-01,2026-07-01,1000,ABERTO,,"),
+    bytes: new TextEncoder().encode(csv ?? "NUM_TITULO,CNPJ_SACADO,NOME_SACADO,DT_EMISSAO,DT_VENCIMENTO,VLR_TITULO,SITUACAO,DT_PAGAMENTO,VLR_PAGO\nNF-1,11222333000144,Synthetic buyer,2026-06-01,2026-07-01,1000,ABERTO,,"),
     documentId: id(n),
     documentVersion: version,
     fileName: "synthetic.csv",
@@ -196,4 +196,31 @@ it("admits fiscal evidence only when its archive is explicitly selected", async 
   if (selected.state !== "current") throw new Error("Expected selection");
   expect(selected.fiscalArchives.map((archive) => archive.archiveId)).toEqual([id(2)]);
   expect(selected.documents).toHaveLength(1);
+});
+
+
+it("carries scoped ledger periods into the report, readiness and reproducible identity", async () => {
+  const ledger = "DATA,HISTORICO,DOCUMENTO,DEBITO,CREDITO,SALDO\n2026-08-31,Ajuste de conciliacao,ADJ-1,100,0,100\n2026-09-01,Reclassificacao,ADJ-2,900,0,1000\n,Ajuste de conciliacao,ADJ-3,50,0,1050";
+  const evidence = [await envelope(1), await envelope(2, false, 1, "tape", ledger)];
+  const scope = confirmation(evidence, 0, "2026-08-31");
+  scope.scope!.complementDocumentIds = [id(2)];
+  scope.scope!.sourceRevisions = scope.sourceManifest!.sources;
+  const result = run(evidence, scope).publicReport;
+  expect(result.evidenceScope).toEqual({id: scope.scope!.id, fingerprint: scope.scope!.fingerprint});
+  const reconfirmed = structuredClone(scope);
+  reconfirmed.scope!.id = id(82);
+  expect(run(evidence, reconfirmed).publicReport.fingerprint).not.toBe(result.fingerprint);
+  expect(result.supportPeriodAssessment).toMatchObject({schemaVersion: "receivables-support-periods.v1", reportingDate: "2026-08-31"});
+  expect(result.supportPeriodAssessment?.entries).toEqual(expect.arrayContaining([
+    expect.objectContaining({sourceId: id(2), rawDate: "2026-08-31", qualification: "included", anchor: expect.objectContaining({row: 2})}),
+    expect.objectContaining({sourceId: id(2), rawDate: "2026-09-01", qualification: "subsequent", anchor: expect.objectContaining({row: 3})}),
+    expect.objectContaining({sourceId: id(2), rawDate: null, qualification: "missing", anchor: expect.objectContaining({row: 4})}),
+  ]));
+  expect(result.evidenceCoverage.complete).toBe(false);
+  expect(result.methodReadiness.methodExecutionAllowed).toBe(false);
+  const projection = buildReceivablesMethodEvidenceRequestProjection({projectId: id(91), processingRunId: id(92), locale: "en-US", readiness: result.methodReadiness, idFactory: () => id(93)});
+  expect(projection.requests.length).toBeGreaterThan(0);
+  expect(run([...evidence].reverse(), scope).publicReport.fingerprint).toBe(result.fingerprint);
+  const revised = [evidence[0]!, await envelope(2, false, 2, "tape", ledger.replace("2026-09-01", "2026-08-30"))];
+  expect(run(revised, scope).publicReport.scopeIssue?.code).toBe("scope_stale");
 });

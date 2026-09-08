@@ -13749,3 +13749,18 @@ button[disabled].workspace-search,
 .receivables-scope-card input:focus-visible,.receivables-scope-card button:focus-visible {outline:2px solid #536438;outline-offset:3px;}
 .receivables-scope-card > .button {margin-top:12px;}
 @media(max-width:600px){.receivables-scope-card{padding:18px;}.receivables-scope-card .button{width:100%;white-space:normal;}}
+
+.receivables-support-periods{margin-block:20px;padding:18px;border:1px solid #d9ded6;border-radius:8px;min-width:0;overflow-wrap:anywhere}
+.receivables-support-periods h4{margin:0 0 10px;font-size:14px}.receivables-support-periods p{font-size:12px;line-height:1.6;color:#616b71}
+.receivables-support-periods details{padding:12px 0;border-top:1px solid #e7eae5}.receivables-support-periods summary{cursor:pointer;font-size:12px;line-height:1.6}.receivables-support-periods summary span{display:block;color:#616b71;margin-top:4px}
+.receivables-support-periods dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.receivables-support-periods dt{font-size:10px;color:#616b71}.receivables-support-periods dd{margin:4px 0;font-size:12px}.receivables-support-periods summary:focus-visible{outline:2px solid #536438;outline-offset:3px}
+@media(max-width:600px){.receivables-support-periods{padding:14px}.receivables-support-periods dl{grid-template-columns:1fr}}
+
+.receivables-support-periods {background:#fff;scroll-margin-top:100px;}
+.receivables-support-periods > nav {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid #e7eae5;}
+.receivables-support-periods > nav > p {flex:1 0 100%;margin:0 0 2px;}
+.receivables-support-periods > nav > button {min-height:44px;min-width:100px;padding:10px 16px;border:1px solid #cbd3c4;border-radius:6px;background:#f7f9f4;color:#263224;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.receivables-support-periods > nav > button:hover:not(:disabled) {background:#eaf0e2;border-color:#7d9455;}
+.receivables-support-periods > nav > button:focus-visible {outline:2px solid #536438;outline-offset:3px;}
+.receivables-support-periods > nav > button:disabled {opacity:.45;cursor:default;}
+@media(max-width:600px){.receivables-support-periods > nav > button{flex:1;}.receivables-support-periods{scroll-margin-top:90px;}}

@@ -1,3 +1,4 @@
+import {supportPeriodBlocks} from "./support-periods";
 import Decimal from "decimal.js";
 import {z} from "zod";
 
@@ -261,6 +262,25 @@ export function assessReceivablesPoolMethodReadiness(input: ReadinessInput): Rec
     gaps = assemblyConflicts(input.phaseOne, input.detection, parsed.data);
     if (gaps.length === 0) validatedInput = parsed.data.input;
   }
+  const periodGroups = new Map<string, Set<string>>();
+  for (const entry of input.detection.supportPeriodAssessment?.entries ?? []) {
+    if (!supportPeriodBlocks(entry)) continue;
+    const sources = periodGroups.get(entry.detectorId) ?? new Set<string>();
+    sources.add(entry.sourceId);
+    periodGroups.set(entry.detectorId, sources);
+  }
+  const periodGaps = [...periodGroups].sort(([a], [b]) => a.localeCompare(b)).map(([detectorId, sources]) => {
+    const reviewOnly = input.detection.supportPeriodAssessment?.entries
+      .filter((entry) => entry.detectorId === detectorId && supportPeriodBlocks(entry))
+      .every((entry) => entry.requiresSourceReview === true);
+    return gap(`support_period:${detectorId}`, detectorId === "cancelled_invoice_open" ? "title_legal_controls" : "accounting_reconciliation", "evidence",
+      reviewOnly ? "Data e coluna de saldo dos documentos recebidos ainda precisam ser conferidas." : "O período ou valor da evidência de apoio não está qualificado para a data de corte.",
+      reviewOnly ? "The dates and balance columns in the received documents still require review." : "The supporting evidence period or amount is not qualified for the reporting cutoff.",
+      reviewOnly ? "Conferir data e coluna de saldo nos documentos recebidos." : "Confirme períodos e valores na fonte e forneça evidência compatível com a data de corte.",
+      reviewOnly ? "Review dates and balance columns in the received documents." : "Confirm source periods and amounts and provide evidence compatible with the reporting cutoff.", [...sources]);
+  });
+  gaps = [...periodGaps, ...gaps];
+  if (gaps.length > 0) validatedInput = null;
   const reason = primaryReason(gaps);
   const dimensions = dimensionOrder.map((id) => {
     const dimensionGaps = gaps.filter((item) => item.dimensionId === id);

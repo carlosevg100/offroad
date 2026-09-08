@@ -175,27 +175,46 @@ describe("Vertentes Phase 3 raw-document replay", () => {
   it("detects the planted control failures from delivered evidence without reading reserved truth", () => {
     expect(rawDetection.defects.map((item) => item.id)).toEqual(gold.defectIds);
     expect(Object.fromEntries(rawDetection.defects.map((item) => [item.id, item.measured?.value]))).toMatchObject({
-      accounting_reconciliation_difference: "1900000",
-      cancelled_invoice_open: "41",
+      cancelled_invoice_open: "34",
       dilution_misclassification: "3059552.71",
       economic_group_split: "1",
       related_party_obligor: "1",
       triangular_revenue_spike: "2025-11",
-      undeclared_recourse_and_debt: "9760000",
       unmarked_extensions: "340",
     });
+    // Independent XML/CSV replay finds seven events in July, after the June cutoff.
+    const subsequentCancellations = rawDetection.supportPeriodAssessment?.entries.filter((entry) => entry.detectorId === "cancelled_invoice_open" && entry.qualification === "subsequent");
+    expect(subsequentCancellations?.map((entry) => entry.startDate).sort()).toEqual([
+      "2026-07-01", "2026-07-02", "2026-07-04", "2026-07-05", "2026-07-07", "2026-07-09", "2026-07-16",
+    ]);
+    // The frozen target remains unchanged. The raw layer has not bound the stock-date
+    // and balance column; detecting the exposure is not proof of its historical amount.
+    const adjustmentObservation = rawDetection.defects.find((item) => item.id === "accounting_reconciliation_difference");
+    expect(adjustmentObservation?.measured).toBeUndefined();
+    const amountGaps = rawDetection.supportPeriodAssessment?.entries.filter((entry) => entry.detectorId === "accounting_reconciliation_difference" && entry.amountStatus === "missing");
+    expect(amountGaps?.length).toBeGreaterThan(0);
+    const debtObservation = rawDetection.defects.find((item) => item.id === "undeclared_recourse_and_debt");
+    expect(debtObservation).toBeDefined();
+    expect(debtObservation?.measured).toBeUndefined();
+    const debtPeriods = rawDetection.supportPeriodAssessment?.entries.filter((entry) => entry.detectorId === "undeclared_recourse_and_debt");
+    expect(debtPeriods).toHaveLength(4);
+    expect(debtPeriods?.every((entry) => entry.qualification === "missing" && entry.dateKind === "stock_as_of" && entry.anchor.kind === "document")).toBe(true);
+    expect(rawDetection.evidenceCoverage.complete).toBe(false);
     expect(rawDetection.questions.map((item) => item.id)).toEqual(gold.questionIds);
     expect(rawDetection.evidenceCoverage.deliveredEvidenceIds.some((id) => /gold|source|expected|LEIA-ME|_estilo|\.html$/.test(id))).toBe(false);
     expect(rawDetection.evidenceCoverage.searchedEvidenceIds).toEqual(rawDetection.evidenceCoverage.deliveredEvidenceIds);
-    expect(rawDetection.evidenceCoverage.warnings).toEqual([
+    expect(rawDetection.evidenceCoverage.warnings).toEqual(expect.arrayContaining([
       "archive:documentos/recebiveis/NFs amostra.zip:invalid_nfe_access_key_length",
-    ]);
+      ...debtPeriods!.map((entry) => `support_period:${entry.id}:missing`),
+    ]));
+    expect(rawDetection.evidenceCoverage.warnings).toEqual(expect.arrayContaining(amountGaps!.map((entry) => `support_period:${entry.id}:${entry.qualification}`)));
+    expect(rawDetection.evidenceCoverage.warnings).toHaveLength(5 + amountGaps!.length);
     expect(rawDetection.routeFacts.find((fact) => fact.id === "cedent_ownership_confirmed")?.state).toBe("unknown");
     expect(rawDetection.routeFacts.find((fact) => fact.id === "unresolved_prior_assignment_or_lien")?.state).toBe("unknown");
     expect(rawDetection.routeFacts.find((fact) => fact.id === "title_control_and_duplicate_check_available")?.state).toBe("unknown");
   });
 
-  it("proves exact deterministic math and leaves only unresolved route and live-program gates", () => {
+  it("proves normalized deterministic math while retaining raw support and live-program gaps", () => {
     const factoring = structure.rateScenarios.primeFactoring;
     const advance = structure.advanceRateScenario;
     const factIds = new Set(canonicalReceivablesRouteCatalogue.flatMap((route) => route.criteria.map((criterion) => criterion.factId)));
@@ -248,9 +267,10 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     expect(pipeline.evidenceCollection.operation.currentBatch.length).toBeLessThanOrEqual(5);
     expect(pipeline.evidenceCollection.operation.completedFactIds).toEqual(expect.arrayContaining([
       "claim_existence_evidenced",
-      "company_credit_package_available",
     ]));
+    expect(pipeline.evidenceCollection.operation.completedFactIds).not.toContain("company_credit_package_available");
     expect(requestedFactIds).toEqual(expect.arrayContaining([
+      "company_credit_package_available",
       "cedent_ownership_confirmed",
       "unresolved_prior_assignment_or_lien",
       "title_control_and_duplicate_check_available",

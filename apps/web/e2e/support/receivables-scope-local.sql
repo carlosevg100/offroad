@@ -16,7 +16,7 @@ begin
   insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,processing_status,scan_result,created_by)
   values((item->>'id')::uuid,s.organization_id,s.id,s.organization_id||'/'||s.id||'/'||(item->>'id'),item->>'name',item->>'sourceHash','ready','{"verdict":"clean"}',s.started_by);
   insert into private.receivables_evidence_fragments(organization_id,intake_session_id,source_document_id,document_version,processing_run_id,content_kind,schema_version,source_sha256,content_sha256,payload_sha256,uncompressed_bytes,compressed_payload)
-  values(s.organization_id,s.id,(item->>'id')::uuid,1,s.current_run_id,'document_layer','2026.08.28-v1',item->>'sourceHash',item->>'contentHash',item->>'payloadHash',(item->>'bytes')::integer,decode(item->>'payload','base64'));
+  values(s.organization_id,s.id,(item->>'id')::uuid,1,s.current_run_id,item->>'contentKind','2026.08.28-v1',item->>'sourceHash',item->>'contentHash',item->>'payloadHash',(item->>'bytes')::integer,decode(item->>'payload','base64'));
  end loop;
  update public.document_intake_sessions set status='review_ready',
  result_summary=jsonb_set(coalesce(result_summary,'{}'),'{case_state}',coalesce(result_summary->'case_state','{}')||jsonb_build_object('receivablesVertical',fixture->'report')) where id=s.id;

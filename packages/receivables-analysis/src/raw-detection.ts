@@ -1,3 +1,4 @@
+import {qualifySupportPeriod, supportCalendarDate, supportPeriodBlocks, type ReceivablesSupportPeriodAssessment, type ReceivablesSupportPeriodEntry} from "./support-periods";
 import Decimal from "decimal.js";
 import {z} from "zod";
 import type {
@@ -10,7 +11,7 @@ import type {
 import type {ReceivablesEligibilityFact} from "./phase-two";
 import type {ReceivablesPhaseOneInput} from "./phase-one";
 
-export const receivablesRawDetectionVersion = "2026.08.28-v1";
+export const receivablesRawDetectionVersion = "2026.09.08-v2";
 
 /**
  * Structural boundary consumed by the detector. The parser owns the richer document
@@ -64,6 +65,7 @@ export type ReceivablesFiscalArchiveEvidence = {
     accessKey: string;
     accessKeyValid: boolean;
     registrationStatus: string | null;
+    occurredAt?: string | null | undefined;
   }[];
 };
 
@@ -91,7 +93,8 @@ export type ReceivablesRawClientQuestion = {
 };
 
 export type ReceivablesRawDetectionReport = {
-  version: typeof receivablesRawDetectionVersion;
+  version: typeof receivablesRawDetectionVersion | "2026.08.28-v1";
+  supportPeriodAssessment?: ReceivablesSupportPeriodAssessment | undefined;
   defects: readonly ReceivablesRawDetectedDefect[];
   questions: readonly ReceivablesRawClientQuestion[];
   routeFacts: readonly ReceivablesEligibilityFact[];
@@ -631,12 +634,15 @@ function balanceRows(documents: readonly ReceivablesEvidenceDocument[]): {docume
   return documents.flatMap((document) => (document.layer.pages ?? []).flatMap((page) => page.tables.flatMap((table) => table.rows.map((row) => ({document, row})))));
 }
 
-function lastMoney(row: LayerTableRow): Decimal | null {
-  for (const cell of [...row.cells].reverse()) {
-    const parsed = decimal(cell.text);
-    if (parsed) return parsed;
-  }
-  return null;
+function assessRow(input: DetectionContext, row: SheetRow, detectorId: string, rawDate: string, dateKind: ReceivablesSupportPeriodEntry["dateKind"]) {
+  const entry: ReceivablesSupportPeriodEntry = {
+    id: `${detectorId}:${row.document.id}:${row.sheet}:${row.row}`,
+    detectorId, sourceId: row.document.id, sourceLabel: row.document.fileName,
+    sourceHash: row.document.fileHash, anchor: rowAnchor(row), dateKind,
+    ...qualifySupportPeriod(rawDate, dateKind, input.reportingDate),
+  };
+  input.periods.push(entry);
+  return entry;
 }
 
 function detectUndeclaredDebt(input: DetectionContext): ReceivablesRawDetectedDefect | null {
@@ -650,50 +656,113 @@ function detectUndeclaredDebt(input: DetectionContext): ReceivablesRawDetectedDe
   ];
   const matched = balanceRows(input.documents).filter(({row}) => patterns.some((pattern) => pattern.test(fold(row.cells.map((cell) => cell.text).join(" ")))));
   if (matched.length !== patterns.length) return null;
-  const amount = matched.reduce((sum, {row}) => sum.plus(lastMoney(row) ?? 0), new Decimal(0));
+  // The current layer exposes amounts but no reviewed stock-date/column binding.
+  // Keep the limitation visible instead of treating the last money cell as current debt.
+  for (const {document, row} of matched) input.periods.push({
+    id: `undeclared_recourse_and_debt:${document.id}:${row.id}`,
+    detectorId: "undeclared_recourse_and_debt", sourceId: document.id,
+    sourceLabel: document.fileName, sourceHash: document.fileHash,
+    anchor: tableRowAnchor(document, row), dateKind: "stock_as_of", requiresSourceReview: true,
+    ...qualifySupportPeriod(null, "stock_as_of", input.reportingDate),
+  });
   const anchors = [fileAnchor(bankPosition), ...matched.map(({document, row}) => tableRowAnchor(document, row))];
-  const provenance = input.provenance(anchors, "adjusted_debt_omitted_accounts", ["liability balances omitted from the declared bank position"], [], "sum of omitted liability account balances", undefined, "BRL");
-  return defect("undeclared_recourse_and_debt", "A posição bancária declarada exclui exposições que permanecem no balancete e devem integrar a ponte de dívida ajustada.", provenance, amount.toFixed(0), "BRL");
+  const provenance = input.provenance(anchors, "potential_omitted_liability_accounts",
+    ["liability account labels and explicit bank-position exclusion observed"],
+    ["no reconciled debt amount: stock date and balance column are not bound"]);
+  return defect("undeclared_recourse_and_debt", "Há contas de passivo potencialmente omitidas da posição bancária; datas e saldos ainda precisam ser conciliados.", provenance);
+}
+
+function supportDataset(input: DetectionContext, headers: string[], detectorId: string): SheetDataset | null {
+  const matches = input.documents.flatMap((document) => sheetRows(document).filter((row) => {
+    const labels = new Set([...row.cells.values()].map((cell) => fold(String(cell.v ?? ""))));
+    return headers.every((header) => labels.has(fold(header)));
+  }));
+  if (matches.length > 1) {
+    for (const row of matches) {
+      const period = assessRow(input, row, detectorId, "", "flow_interval");
+      period.scopeAmbiguous = true;
+    }
+    return null;
+  }
+  return findDataset(input.documents, headers);
+}
+
+function amountStatus(values: string[]): "provided" | "missing" | "invalid" {
+  return values.some((item) => item === "") ? "missing"
+    : values.some((item) => decimal(item) === null) ? "invalid" : "provided";
+}
+
+function temporalBasis(input: DetectionContext, detectorId: string) {
+  const entries = input.periods.filter((entry) => entry.detectorId === detectorId);
+  const describe = (entry: ReceivablesSupportPeriodEntry) => `${entry.id}: ${entry.startDate ?? "unknown"}/${entry.endDate ?? "unknown"}; ${entry.qualification}`;
+  return {
+    included: entries.filter((entry) => entry.qualification === "included").map(describe),
+    excluded: entries.filter((entry) => entry.qualification !== "included").map(describe),
+  };
 }
 
 function detectAccountingDifference(input: DetectionContext): ReceivablesRawDetectedDefect | null {
-  const ledger = findDataset(input.documents, ["DATA", "HISTORICO", "DOCUMENTO", "DEBITO", "CREDITO", "SALDO"]);
+  const ledger = supportDataset(input, ["DATA", "HISTORICO", "DOCUMENTO", "DEBITO", "CREDITO", "SALDO"], "accounting_reconciliation_difference");
   if (!ledger) return null;
   const debitColumn = ledger.headers.get("debito");
   const creditColumn = ledger.headers.get("credito");
-  const rows = ledger.rows.filter((row) => /ajuste de conciliacao|reclassificacao/.test(fold(rowText(row))));
+  const relevantRows = ledger.rows.filter((row) => /ajuste de conciliacao|reclassificacao/.test(fold(rowText(row))));
+  const assessed = relevantRows.map((row) => ({row, period: assessRow(input, row, "accounting_reconciliation_difference", value(row, ledger.headers.get("data")), "event_date")}));
+  for (const {row, period} of assessed) period.amountStatus = amountStatus([value(row, debitColumn), value(row, creditColumn)]);
+  if (assessed.some(({period}) => period.qualification !== "included" && period.qualification !== "subsequent")) return null;
+  const rows = assessed.filter(({period}) => period.qualification === "included").map(({row}) => row);
   if (rows.length === 0) return null;
+  if (assessed.some(({period}) => period.qualification === "included" && period.amountStatus !== "provided")) {
+    const provenance = input.provenance(rows.map((row) => rowAnchor(row)), "accounting_adjustment_requires_review",
+      ["manual entries explicitly labelled reconciliation or reclassification", ...temporalBasis(input, "accounting_reconciliation_difference").included],
+      ["no adjustment amount: debit or credit is missing or invalid; blanks are not zero", ...temporalBasis(input, "accounting_reconciliation_difference").excluded]);
+    return defect("accounting_reconciliation_difference", "O razão contém lançamentos de conciliação ou reclassificação; débitos e créditos ainda precisam ser conferidos antes de quantificar o ajuste.", provenance);
+  }
   const amount = rows.reduce((sum, row) => sum.plus((decimal(value(row, debitColumn)) ?? new Decimal(0)).minus(decimal(value(row, creditColumn)) ?? 0).abs()), new Decimal(0));
-  const provenance = input.provenance(rows.map((row) => rowAnchor(row)), "accounting_reconciliation_adjustment", ["manual entries explicitly labelled reconciliation or reclassification"], [], "absolute debit less credit of identified entries", undefined, "BRL");
+  const provenance = input.provenance(rows.map((row) => rowAnchor(row)), "accounting_reconciliation_adjustment", ["manual entries explicitly labelled reconciliation or reclassification", ...temporalBasis(input, "accounting_reconciliation_difference").included], temporalBasis(input, "accounting_reconciliation_difference").excluded, "absolute debit less credit of identified entries", undefined, "BRL");
   return defect("accounting_reconciliation_difference", "O razão contém lançamento manual de conciliação ou reclassificação que precisa ser explicado para reconciliar carteira e contabilidade.", provenance, amount.toFixed(0), "BRL");
 }
 
 function detectCancelledOpenInvoices(input: DetectionContext, tape: readonly TapeRow[]): ReceivablesRawDetectedDefect | null {
   const cancellations = new Map<string, {archive: ReceivablesFiscalArchiveEvidence; entryName: string}>();
+  const openInvoiceKeys = new Set(tape.filter((title) => title.status === "aberto").map((title) => title.invoiceKey));
   for (const archive of input.fiscalArchives) {
-    for (const event of archive.cancellations) {
+    for (const event of [...archive.cancellations].sort((a, b) => a.entryName.localeCompare(b.entryName) || (a.occurredAt ?? "").localeCompare(b.occurredAt ?? "") || a.accessKey.localeCompare(b.accessKey))) {
       if (event.registrationStatus && !["135", "136"].includes(event.registrationStatus)) continue;
-      cancellations.set(event.accessKey, {archive, entryName: event.entryName});
+      if (!openInvoiceKeys.has(event.accessKey)) continue;
+      const period: ReceivablesSupportPeriodEntry = {
+        id: `cancelled_invoice_open:${archive.archiveId}:${event.entryName}`,
+        detectorId: "cancelled_invoice_open", sourceId: archive.archiveId,
+        sourceLabel: archive.archiveId, sourceHash: archive.fileHash,
+        anchor: {kind: "file", fileId: archive.archiveId, fileHash: archive.fileHash, sheet: event.entryName},
+        dateKind: "event_timestamp", ...qualifySupportPeriod(event.occurredAt, "event_timestamp", input.reportingDate),
+      };
+      input.periods.push(period);
+      if (period.qualification === "included") cancellations.set(event.accessKey, {archive, entryName: event.entryName});
     }
   }
+  if (input.periods.some((entry) => entry.detectorId === "cancelled_invoice_open" && supportPeriodBlocks(entry))) return null;
   const matched = tape.filter((title) => title.status === "aberto" && cancellations.has(title.invoiceKey));
   if (matched.length === 0) return null;
   const anchors = matched.flatMap((title) => {
     const event = cancellations.get(title.invoiceKey)!;
     return [rowAnchor(title.row), {kind: "file" as const, fileId: event.archive.archiveId, fileHash: event.archive.fileHash, sheet: event.entryName}];
   });
-  const provenance = input.provenance(anchors, "open_title_cancelled_nfe_reconciliation", ["open tape titles matched to registered cancellation XMLs present in the NF-e sample"], ["no extrapolation beyond the delivered NF-e sample"]);
+  const provenance = input.provenance(anchors, "open_title_cancelled_nfe_reconciliation", ["open tape titles matched to registered cancellation XMLs present in the NF-e sample", ...temporalBasis(input, "cancelled_invoice_open").included], ["no extrapolation beyond the delivered NF-e sample", ...temporalBasis(input, "cancelled_invoice_open").excluded]);
   return defect("cancelled_invoice_open", "A amostra fiscal contém eventos de cancelamento vinculados a títulos ainda marcados como abertos na carteira.", provenance, String(matched.length), "count");
 }
 
 function detectDilutionMisclassification(input: DetectionContext): ReceivablesRawDetectedDefect | null {
-  const dataset = findDataset(input.documents, ["MES", "DEVOLUCAO DE VENDA", "BONIFICACAO", "ABATIMENTO COMERCIAL", "TOTAL", "CONTA CONTABIL"]);
+  const dataset = supportDataset(input, ["MES", "DEVOLUCAO DE VENDA", "BONIFICACAO", "ABATIMENTO COMERCIAL", "TOTAL", "CONTA CONTABIL"], "dilution_misclassification");
   if (!dataset || !/despesas comerciais diversas/.test(fold(allText(dataset.document)))) return null;
   const totalColumn = dataset.headers.get("total");
-  const rows = dataset.rows.filter((row) => /^\d{2}\/\d{4}$/.test(value(row, dataset.headers.get("mes"))));
+  const assessed = dataset.rows.filter((row) => fold(value(row, dataset.headers.get("mes"))) !== "total" && rowText(row).trim() !== "").map((row) => ({row, period: assessRow(input, row, "dilution_misclassification", value(row, dataset.headers.get("mes")), "flow_interval")}));
+  for (const {row, period} of assessed) period.amountStatus = amountStatus([value(row, totalColumn)]);
+  if (assessed.some(({period}) => supportPeriodBlocks(period))) return null;
+  const rows = assessed.filter(({period}) => period.qualification === "included").map(({row}) => row);
   if (rows.length === 0) return null;
   const amount = rows.reduce((sum, row) => sum.plus(decimal(value(row, totalColumn)) ?? 0), new Decimal(0));
-  const provenance = input.provenance([fileAnchor(dataset.document, {sheet: dataset.sheet}), ...rows.map((row) => rowAnchor(row, totalColumn))], "dilution_control_sum", ["returns, bonuses and commercial allowances recorded in a generic commercial-expense account"], [], "sum of monthly dilution totals", undefined, "BRL");
+  const provenance = input.provenance([fileAnchor(dataset.document, {sheet: dataset.sheet}), ...rows.map((row) => rowAnchor(row, totalColumn))], "dilution_control_sum", ["returns, bonuses and commercial allowances recorded in a generic commercial-expense account", ...temporalBasis(input, "dilution_misclassification").included], ["summary rows explicitly labelled TOTAL excluded to avoid double counting", ...temporalBasis(input, "dilution_misclassification").excluded], "sum of monthly dilution totals", undefined, "BRL");
   return defect("dilution_misclassification", "Devoluções, bonificações e abatimentos estão controlados fora das contas redutoras de receita, distorcendo a leitura de receita líquida e diluição.", provenance, amount.toFixed(2), "BRL");
 }
 
@@ -742,6 +811,8 @@ function question(input: DetectionContext, id: string, text: string, triggerId: 
 }
 
 type DetectionContext = {
+  reportingDate: string;
+  periods: ReceivablesSupportPeriodEntry[];
   documents: readonly ReceivablesEvidenceDocument[];
   fiscalArchives: readonly ReceivablesFiscalArchiveEvidence[];
   evidenceIds: readonly string[];
@@ -768,12 +839,13 @@ export function detectReceivablesRawEvidence(input: {
   documents: readonly ReceivablesEvidenceDocument[];
   fiscalArchives?: readonly ReceivablesFiscalArchiveEvidence[];
 }): ReceivablesRawDetectionReport {
+  if (!supportCalendarDate(input.reportingDate) || input.reportingDate.includes("/")) throw new RangeError("raw evidence requires a real ISO reporting date");
   if (!/^[a-f0-9]{64}$/.test(input.datasetHash)) throw new RangeError("raw evidence dataset hash must be SHA-256");
   for (const document of input.documents) {
     if (!/^[a-f0-9]{64}$/.test(document.fileHash)) throw new RangeError(`document ${document.id} requires a SHA-256 hash`);
     if (document.layer.documentId !== document.id) throw new RangeError(`document layer id mismatch: ${document.id}`);
   }
-  const fiscalArchives = input.fiscalArchives ?? [];
+  const fiscalArchives = [...(input.fiscalArchives ?? [])].sort((a, b) => a.archiveId.localeCompare(b.archiveId));
   const evidenceIds = [...input.documents.map((document) => document.id), ...fiscalArchives.map((archive) => archive.archiveId)].sort();
   if (new Set(evidenceIds).size !== evidenceIds.length) throw new RangeError("duplicate raw evidence id");
   if (identifyReceivablesTapes(input.documents).length > 1) {
@@ -810,7 +882,7 @@ export function detectReceivablesRawEvidence(input: {
     ...(unit ? {unit} : {}),
     ...(rounding ? {rounding} : {}),
   });
-  const context: DetectionContext = {documents: input.documents, fiscalArchives, evidenceIds, provenance};
+  const context: DetectionContext = {reportingDate: input.reportingDate, periods: [], documents: [...input.documents].sort((a, b) => a.id.localeCompare(b.id)), fiscalArchives, evidenceIds, provenance};
   const tapeDataset = findDataset(input.documents, ["NUM TITULO", "CNPJ SACADO", "CHAVE NFE", "DT EMISSAO", "DT VENCIMENTO", "VLR TITULO", "SITUACAO"]);
   const tape = tapeRows(tapeDataset);
   const defects = [
@@ -849,10 +921,11 @@ export function detectReceivablesRawEvidence(input: {
     {id: "performance_or_delivery_evidenced", state: "unknown", explanation: "NF-e comprova faturamento, mas a evidência de entrega ou aceite não cobre a carteira completa."},
     {id: "title_control_and_duplicate_check_available", state: "unknown", explanation: tape.length > 0 && fiscalArchives.length > 0 ? "O cruzamento com a amostra fiscal não comprova controle completo de titularidade, ônus e duplicidade." : "Falta base suficiente para controle de titularidade, ônus e duplicidade."},
     {id: "debtor_notice_or_acknowledgement_feasible", state: "unknown", explanation: "A viabilidade de notificação e mudança de instrução de pagamento ainda não foi documentada."},
-    {id: "company_credit_package_available", state: companyPackage ? "true" : "unknown", explanation: companyPackage ? "Demonstrações e balancete foram entregues para análise da companhia." : "O pacote de crédito corporativo ainda não está disponível.", ...(companyPackage ? {provenance: provenance(input.documents.filter((document) => /balancete|balanco|demonstracoes financeiras/.test(fold(allText(document)))).map((document) => fileAnchor(document)), "company_package_presence", ["financial statements and trial balance delivered"])} : {})},
+    {id: "company_credit_package_available", state: "unknown", explanation: companyPackage ? "Demonstrações e balancete foram entregues para análise da companhia." : "O pacote de crédito corporativo ainda não está disponível.", ...(companyPackage ? {provenance: provenance(input.documents.filter((document) => /balancete|balanco|demonstracoes financeiras/.test(fold(allText(document)))).map((document) => fileAnchor(document)), "company_package_presence", ["financial statements and trial balance delivered"])} : {})},
   ];
 
   const warnings = [
+    ...context.periods.filter(supportPeriodBlocks).map((entry) => `support_period:${entry.id}:${entry.qualification}`),
     ...(tape.length === 0 ? ["receivables_tape_not_identified"] : []),
     ...fiscalArchives.flatMap((archive) => archive.invoices.filter((invoice) => !invoice.accessKeyValid).map(() => `archive:${archive.archiveId}:invalid_nfe_access_key_length`)),
     ...fiscalArchives.flatMap((archive) => archive.cancellations.filter((event) => !event.accessKeyValid).map(() => `archive:${archive.archiveId}:invalid_nfe_access_key_length`)),
@@ -860,13 +933,14 @@ export function detectReceivablesRawEvidence(input: {
 
   return {
     version: receivablesRawDetectionVersion,
+    supportPeriodAssessment: {schemaVersion: "receivables-support-periods.v1", dateComparisonPolicy: "source_local_calendar_date", reportingDate: input.reportingDate, entries: context.periods.sort((a, b) => a.id.localeCompare(b.id) || (a.rawDate ?? "").localeCompare(b.rawDate ?? ""))},
     defects,
     questions: questions.sort((left, right) => left.id.localeCompare(right.id)),
     routeFacts,
     evidenceCoverage: {
       deliveredEvidenceIds: evidenceIds,
       searchedEvidenceIds: evidenceIds,
-      complete: tape.length > 0 && input.documents.length > 0,
+      complete: tape.length > 0 && input.documents.length > 0 && context.periods.every((entry) => entry.qualification === "included" && !supportPeriodBlocks(entry)),
       warnings: unique(warnings),
     },
   };

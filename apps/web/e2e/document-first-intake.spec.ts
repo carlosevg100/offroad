@@ -670,7 +670,7 @@ test.describe("Document-first intake (company journey)", () => {
     const scope = page.getByTestId("receivables-scope-card");
     await expect(scope).toBeVisible();
     await scope.locator('input[name="primaryTape"]').first().check();
-    await scope.locator(`input[name="complementDocumentIds"][value="${fixture.sources[2]!.id}"]`).check();
+    for (const source of fixture.sources.slice(2)) await scope.locator(`input[name="complementDocumentIds"][value="${source.id}"]`).check();
     await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
     await scope.locator('input[name="scopeConfirmed"]').check();
     const capture = async (label: string) => {
@@ -707,6 +707,46 @@ test.describe("Document-first intake (company journey)", () => {
     // Assert the economic result, not substrings that might also occur inside source hashes.
     expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.titleCount.value)).toBe(1);
     expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
+    const storedScope = JSON.parse(sql("select jsonb_build_object('id', id, 'fingerprint', fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
+    expect(result.evidenceScope).toEqual(storedScope);
+    const periods = result.supportPeriodAssessment;
+    expect(periods.schemaVersion).toBe("receivables-support-periods.v1");
+    expect(periods.entries).toHaveLength(37);
+    expect(periods.reportingDate).toBe("2026-08-31");
+    expect(periods.entries).toEqual(expect.arrayContaining([
+      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-08-31", qualification: "included"}),
+      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-09-01", qualification: "subsequent"}),
+      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: null, qualification: "missing"}),
+      expect.objectContaining({sourceId: fixture.sources[3]!.id, rawDate: "09/2026", qualification: "subsequent"}),
+      expect.objectContaining({sourceId: fixture.sources[4]!.id, rawDate: "2026-09-02T12:00:00-03:00", qualification: "subsequent"}),
+    ]));
+    expect(result.evidenceCoverage.complete).toBe(false);
+    expect(result.methodReadiness.methodExecutionAllowed).toBe(false);
+    expect(result.defects.find((defect: {id: string}) => defect.id === "accounting_reconciliation_difference")?.measured).toBeUndefined();
+    expect(result.defects.some((defect: {id: string}) => defect.id === "cancelled_invoice_open")).toBe(false);
+    expect(result.defects.find((defect: {id: string}) => defect.id === "dilution_misclassification")?.measured.value).toBe("100.00");
+    await page.reload();
+    const assessment = page.getByTestId("receivables-support-periods");
+    await expect(assessment).toBeVisible();
+    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(25);
+    const nextPage = assessment.getByRole("button", {name: "Próxima"});
+    await nextPage.click();
+    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(periods.entries.length - 25);
+    await assessment.getByRole("button", {name: "Anterior"}).click();
+    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(25);
+    await nextPage.click();
+    await assessment.locator('[data-period-qualification="missing"] > summary').first().click();
+    await assessment.scrollIntoViewIfNeeded();
+    await capture("synthetic-support-periods-pt");
+    await page.goto(`/en-US/app/projects/${projectId}`);
+    const englishAssessment = page.getByTestId("receivables-support-periods");
+    await expect(englishAssessment).toBeVisible();
+    await expect(englishAssessment.locator('[data-period-qualification]')).toHaveCount(25);
+    await englishAssessment.getByRole("button", {name: "Next"}).click();
+    await expect(englishAssessment.locator('[data-period-qualification]')).toHaveCount(periods.entries.length - 25);
+    await englishAssessment.locator('[data-period-qualification="missing"] > summary').first().click();
+    await englishAssessment.scrollIntoViewIfNeeded();
+    await capture("synthetic-support-periods-en");
   });
 
 });
