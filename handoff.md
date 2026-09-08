@@ -6,6 +6,13 @@ Respostas a perguntas e decisões registradas deixam de ser consideradas prova d
 
 12 testes focados de estado passaram, cobrindo interação após falha, sucesso posterior, empate/ordem, retry ativo, progresso intermediário e fallback agregado. Sem mudança de layout ou copy. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (204 testes web) e build. Preview e produção não verificados nesta mudança. Sem prova nova de cobertura financeira, aprovação de material ou autorização externa.
 
+## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
+
+Envio, edição de plano e resposta a pergunta compartilham proteção síncrona contra duplicação. Falha retornada ou exceção libera pending e conserva o conteúdo; retry idêntico reutiliza a identidade de comando já suportada pelo banco. O composer limpa somente o texto enviado após confirmação. Texto bilíngue informa aceitação incerta sem afirmar rejeição. Nenhuma alteração de schema ou regra de edição de versão obsoleta. Estado de retry e rascunho vive somente em memória do componente: reload/remount não tem recuperação durável.
+
+Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
+
+
 > Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
