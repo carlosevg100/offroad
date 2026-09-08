@@ -10,8 +10,8 @@ insert into public.organization_memberships (organization_id,user_id,role,status
 values ('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000001','owner','active',now());
 insert into public.capital_projects (id,organization_id,project_name,entry_job,access_basis,created_by)
 values ('a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000002','Synthetic private bridge','structure_from_documents','authorized_private','a8000000-0000-4000-8000-000000000001');
-insert into public.document_intake_sessions (id,organization_id,capital_project_id,started_by,journey,locale,capital_objective)
-values ('a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000001','company','pt-BR','Revisar liquidez e alternativas');
+insert into public.document_intake_sessions (id,organization_id,capital_project_id,started_by,journey,locale,capital_objective,company_profile)
+values ('a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000001','company','pt-BR','Revisar liquidez e alternativas','{"name":"Companhia Sintética Horizonte"}');
 insert into public.processing_runs (id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values ('a8000000-0000-4000-8000-000000000004','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003',1,'manual','queued','planner-bridge-fixture-v1','a8000000-0000-4000-8000-000000000001');
 insert into public.processing_jobs (id,organization_id,intake_session_id,processing_run_id,kind,status,payload)
@@ -35,6 +35,11 @@ begin
     raise exception 'held case did not produce claimable planner: %',claim;
   end if;
   context:=public.worker_load_execution_brief_proposal_v1((claim->>'job_id')::uuid,claim->>'capability_token');
+  if context#>>'{project,name}'<>'Synthetic private bridge'
+    or context#>>'{project,company_name}'<>'Companhia Sintética Horizonte'
+    or context->>'objective'<>'Revisar liquidez e alternativas' then
+    raise exception 'planner confused project title, company identity or objective: %',context;
+  end if;
   if context->'plan' is distinct from 'null'::jsonb or context->>'target_kind'<>'case_analysis' then
     raise exception 'legacy planner loader did not expose missing-plan case: %',context;
   end if;
@@ -56,6 +61,24 @@ begin
   claim:=public.worker_claim_job_v2(repeat('b',64),600);
   if claim->>'job_id'<>'a8000000-0000-4000-8000-000000000006' or claim->>'kind'<>'case_analysis' then
     raise exception 'approved real planner target was not resumed: %',claim;
+  end if;
+end;
+$$;
+reset role;
+do $$
+declare original_fingerprint text;
+begin
+  original_fingerprint:=private.execution_approval_input_fingerprint(
+    'a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003');
+  if not private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then
+    raise exception 'company identity regression lacks a current approved control';
+  end if;
+  update public.document_intake_sessions set company_profile=jsonb_set(company_profile,'{name}','"Outra Companhia Sintética"')
+  where id='a8000000-0000-4000-8000-000000000003';
+  if original_fingerprint=private.execution_approval_input_fingerprint(
+      'a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003')
+    or private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then
+    raise exception 'changed company identity preserved previous approval fingerprint';
   end if;
 end;
 $$;

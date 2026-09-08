@@ -16,7 +16,7 @@ const proposalContextSchema = z.object({
   target_job_id: z.uuid(),
   target_kind: z.enum(["case_analysis", "capital_project_analysis"]),
   input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
-  project: z.object({entry_job: z.enum(["company_debt_view", "origination_thesis", "capital_planning", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"]), id: z.uuid(), name: z.string().min(1), access_basis: z.enum(["public_information", "authorized_private"])}),
+  project: z.object({entry_job: z.enum(["company_debt_view", "origination_thesis", "capital_planning", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"]), id: z.uuid(), name: z.string().min(1), company_name: z.string().min(1).nullish(), access_basis: z.enum(["public_information", "authorized_private"])}),
   objective: z.string().min(1),
   locale: z.enum(["pt-BR", "en-US"]),
   documents: z.array(z.object({id: z.uuid(), name: z.string().min(1)})),
@@ -53,7 +53,7 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
     const internal = compileCapitalExecutionBrief({
       plan: plan as unknown as CapitalProjectPlanSnapshot,
       revisionContext: context.target_job_id,
-      locale: context.locale, objective: context.objective, companyLabel: context.project.name,
+      locale: context.locale, objective: context.objective, companyLabel: context.project.company_name ?? context.project.name,
       audienceLabel: pt ? "responsável pela decisão" : "decision owner",
       proposedDeliverable: deliverables[plan.job.firstWorkProduct as keyof typeof deliverables][context.locale],
       sources, authority: {evidenceRegime: context.project.access_basis === "authorized_private" ? "private" : context.documents.length ? "mixed" : "public", executionAuthority: "analysis_only", establishedBy: "system_policy"},

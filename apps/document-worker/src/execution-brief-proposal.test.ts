@@ -26,6 +26,16 @@ describe("execution brief proposal", () => {
     expect(JSON.stringify(visible)).not.toContain('"informationClass":"public"');
     expect(q.fail).not.toHaveBeenCalled();
   });
+  it("uses the canonical company independently of the project label and preserves the declared objective", async () => {
+    const source = context("public_information");
+    const objective = "Analisar a dívida e a capacidade financeira de Companhia Pública Exemplo";
+    const q = queue({...source, objective, project: {...source.project, entry_job: "company_debt_view", name: "Projeto Dívida 123", company_name: "Companhia Pública Exemplo"}, documents: [], plan: capitalProjectPlanSnapshot("company_debt_view")});
+    expect(await processExecutionBriefProposalJob(job, q)).toEqual({status: "proposed"});
+    const visible = q.recordExecutionBriefProposal.mock.calls[0]![2];
+    expect(visible.objective).toBe(objective);
+    expect(JSON.stringify(visible.workstreams)).toContain("Companhia Pública Exemplo");
+    expect(JSON.stringify(visible.workstreams)).not.toContain("Projeto Dívida 123");
+  });
   it("keeps missing private documents as a request instead of claiming availability", async () => {
     const q = queue({...context(), documents: []});
     expect(await processExecutionBriefProposalJob(job, q)).toEqual({status: "proposed"});
