@@ -25,6 +25,26 @@ const base = {
 };
 
 describe("receivables method question projection", () => {
+  it("keeps source review pending without asking the user to resupply existing balance documents", () => {
+    const readiness = {...base, gaps: [{...base.gaps[0]!, code: "support_period:undeclared_recourse_and_debt"}]};
+    const projection = buildReceivablesMethodInformationRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001", processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "pt-BR", readiness,
+    });
+    expect(projection.requests).toEqual([]);
+    expect(readiness.methodExecutionAllowed).toBe(false);
+    expect(readiness.gaps).toHaveLength(1);
+  });
+
+  it("preserves distinct stable keys for grouped temporal requirements", () => {
+    const projection = buildReceivablesMethodInformationRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001", processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "en-US", readiness: {...base, gaps: ["accounting_reconciliation_difference", "cancelled_invoice_open", "dilution_misclassification"].map((detector) => ({...base.gaps[0]!, code: `support_period:${detector}`}))},
+    });
+    expect(projection.requests).toHaveLength(3);
+    expect(new Set(projection.requests.map((request) => request.requirementKey)).size).toBe(3);
+  });
+
   it("creates an interactive request from the actual blocking gap", () => {
     const projection = buildReceivablesMethodInformationRequestProjection({
       projectId: "10000000-0000-4000-8000-000000000001",

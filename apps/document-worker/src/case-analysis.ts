@@ -81,6 +81,7 @@ import {
   type ReceivablesProviderMetricSet,
   receivablesEvidenceScopeContextSchema,
   type ReceivablesEvidenceSourceManifest,
+  type ReceivablesRawDetectionReport,
 } from "@offroad/receivables-analysis";
 import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
 import Decimal from "decimal.js";
@@ -1653,6 +1654,7 @@ type PublicReceivablesVertical = {
   scopeIssue?: {code: ReceivablesScopeIssueCode; candidates: ReturnType<typeof identifyReceivablesTapes>};
   sourceManifest: ReceivablesEvidenceSourceManifest;
   candidates: ReturnType<typeof identifyReceivablesTapes>;
+  supportPeriodAssessment?: ReceivablesRawDetectionReport["supportPeriodAssessment"];
   fingerprint: string;
   evidenceCoverage: {
     delivered: number;
@@ -1834,15 +1836,18 @@ export function buildReceivablesVertical(
     }
   }
   const fingerprint = fingerprintJson({
-    version: "2026.08.28-v1",
+    version: "receivables-vertical-support-periods.v1",
     datasetHash,
     evidenceHashes,
+    detectionVersion: detection.version,
+    supportPeriodAssessment: detection.supportPeriodAssessment ?? null,
     requestedAmount: raw.session.requested_amount ?? null,
   });
   const common = {
     version: "2026.08.28-v1" as const,
     sourceManifest, candidates,
     fingerprint,
+    supportPeriodAssessment: detection.supportPeriodAssessment,
     evidenceCoverage: {
       delivered: detection.evidenceCoverage.deliveredEvidenceIds.length,
       searched: detection.evidenceCoverage.searchedEvidenceIds.length,

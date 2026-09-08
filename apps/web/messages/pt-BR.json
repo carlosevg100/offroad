@@ -3705,5 +3705,70 @@
     "sheet": "Aba",
     "headerRow": "cabeçalho na linha",
     "version": "Versão"
+  },
+  "ReceivablesSupportPeriods": {
+    "title": "Datas e períodos dos documentos de apoio",
+    "boundary": "Esta qualificação compara as datas encontradas com a data-base da carteira. Não comprova a integridade dos dados nem a ausência de defeitos.",
+    "notAssessed": "A qualificação temporal não foi avaliada nesta versão.",
+    "reportingDate": "Data-base da carteira:",
+    "noEntries": "Nenhuma referência temporal de apoio foi registrada. Isso não comprova cobertura completa.",
+    "unnamedSource": "Documento de apoio sem nome disponível",
+    "dateKind": "Tipo de referência temporal",
+    "sourceDate": "Data ou período como consta na fonte",
+    "missingDate": "Não informado",
+    "start": "Início ou data do evento",
+    "end": "Término do período",
+    "location": "Localização na fonte",
+    "trace": "Rastreabilidade",
+    "sourceId": "Identificador da fonte",
+    "sourceHash": "Identificador do conteúdo",
+    "sheet": "Aba",
+    "row": "Linha",
+    "column": "Coluna",
+    "cell": "Célula",
+    "page": "Página",
+    "clause": "Cláusula",
+    "paragraph": "Parágrafo",
+    "event": "Evento",
+    "system": "Sistema de origem",
+    "timestamp": "Data do evento",
+    "qualification": {
+      "included": "Incluído no corte temporal",
+      "subsequent": "Posterior à data-base",
+      "missing": "Data ausente",
+      "invalid": "Data inválida",
+      "overlaps_cutoff": "Período atravessa a data-base"
+    },
+    "kind": {
+      "stock_as_of": "Saldo em uma data",
+      "flow_interval": "Fluxo em um período",
+      "event_timestamp": "Data de evento",
+      "event_date": "Data do evento"
+    },
+    "meaning": {
+      "included": "A referência temporal está dentro do corte avaliado. A qualidade econômica e documental continua sujeita à análise.",
+      "subsequent": "Esta referência é posterior à data-base e não sustenta o estado da carteira naquela data.",
+      "missing": "Sem data ou período suficiente para qualificar este apoio.",
+      "invalid": "A data encontrada não pôde ser validada. É necessário esclarecer a fonte.",
+      "overlaps_cutoff": "O período contém datas antes e depois do corte. Não trate o período inteiro como posição na data-base."
+    },
+    "datePolicy": "A comparação usa a data de calendário local indicada na fonte, sem convertê-la para outro fuso horário.",
+    "pagination": "Navegação das referências temporais",
+    "entries": "referências",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "limitation": {
+      "ambiguous_support": "Ambiguidade dos documentos de apoio",
+      "missing_amount": "Valor ausente",
+      "invalid_amount": "Valor inválido",
+      "source_review_pending": "Conferência da fonte pendente"
+    },
+    "limitationMeaning": {
+      "ambiguous_support": "Há mais de uma base de apoio aplicável. É necessário delimitar qual deve ser usada; nenhuma soma entre bases foi presumida.",
+      "missing_amount": "A data não supre o valor ausente. Esta evidência não sustenta o cálculo do montante.",
+      "invalid_amount": "O valor encontrado não pôde ser validado. A data permanece exibida, mas o montante não sustenta cálculo.",
+      "source_review_pending": "O documento já foi recebido. Suas datas e colunas ainda precisam ser vinculadas e qualificadas antes do uso nesta análise."
+    },
+    "unqualifiedDate": "Ainda não qualificada"
   }
 }

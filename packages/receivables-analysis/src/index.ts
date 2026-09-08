@@ -15,3 +15,5 @@ export * from "./method-assembly";
 export * from "./method-supplement-draft";
 
 export * from "./evidence-scope";
+
+export * from "./support-periods";

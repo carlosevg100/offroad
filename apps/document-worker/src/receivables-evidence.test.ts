@@ -7,6 +7,7 @@ import {
   decodeReceivablesEvidence,
   encodeReceivablesEvidence,
   fingerprintReceivablesEvidence,
+  fiscalArchiveEvidence,
   receivablesEvidenceEnvelopeSchema,
 } from "./receivables-evidence";
 
@@ -60,6 +61,29 @@ function envelopeFor(value: unknown) {
 }
 
 describe("receivables evidence codec", () => {
+  it("preserves fiscal event dates and their offsets through source-bound decoding", () => {
+    const archive = fiscalArchiveEvidence({archiveId: id, fileHash: sourceHash,
+      parserVersion: "nfe-archive-1.0.0", invoices: [], warnings: [],
+      cancellations: [{entryName: "event.xml", accessKey: "1".repeat(44), accessKeyValid: true,
+        occurredAt: "2026-09-02T23:30:00-03:00", eventCode: "110111", registrationStatus: "135", reason: null}],
+    });
+    const decoded = decodeBoundReceivablesEvidence({...envelopeFor(archive), content_kind: "nfe_archive"});
+    expect(decoded).toEqual({kind: "nfe_archive", evidence: archive});
+    expect(archive.cancellations[0]?.occurredAt).toBe("2026-09-02T23:30:00-03:00");
+    const changed = {...archive, cancellations: archive.cancellations.map((event) => ({...event, occurredAt: "2026-08-31T23:30:00-03:00"}))};
+    expect(envelopeFor(changed).content_sha256).not.toBe(envelopeFor(archive).content_sha256);
+  });
+
+  it("keeps legacy cancellation fragments undated rather than manufacturing a date", () => {
+    const archive = {archiveId: id, fileHash: sourceHash, invoices: [], cancellations: [{
+      entryName: "legacy.xml", accessKey: "1".repeat(44), accessKeyValid: true, registrationStatus: "135",
+    }]};
+    const decoded = decodeBoundReceivablesEvidence({...envelopeFor(archive), content_kind: "nfe_archive"});
+    expect(decoded).toEqual({kind: "nfe_archive", evidence: archive});
+    if (decoded.kind !== "nfe_archive") throw new Error("Expected fiscal archive");
+    expect(decoded.evidence.cancellations[0]?.occurredAt).toBeUndefined();
+  });
+
   it("round-trips an immutable evidence fragment", () => {
     const value = {id, rows: [{title: "NF-1", amount: "100.00"}]};
     expect(decodeReceivablesEvidence(envelopeFor(value))).toEqual(value);

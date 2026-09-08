@@ -3705,5 +3705,70 @@
     "sheet": "Sheet",
     "headerRow": "header at row",
     "version": "Version"
+  },
+  "ReceivablesSupportPeriods": {
+    "title": "Dates and periods of supporting documents",
+    "boundary": "This assessment compares the dates found with the portfolio reporting date. It does not establish data integrity or the absence of defects.",
+    "notAssessed": "Temporal qualification was not assessed in this version.",
+    "reportingDate": "Portfolio reporting date:",
+    "noEntries": "No supporting temporal references were recorded. This does not establish complete coverage.",
+    "unnamedSource": "Supporting document name unavailable",
+    "dateKind": "Temporal reference type",
+    "sourceDate": "Date or period as stated in the source",
+    "missingDate": "Not provided",
+    "start": "Start or event date",
+    "end": "Period end",
+    "location": "Source location",
+    "trace": "Traceability",
+    "sourceId": "Source identifier",
+    "sourceHash": "Content identifier",
+    "sheet": "Sheet",
+    "row": "Row",
+    "column": "Column",
+    "cell": "Cell",
+    "page": "Page",
+    "clause": "Clause",
+    "paragraph": "Paragraph",
+    "event": "Event",
+    "system": "Source system",
+    "timestamp": "Event date",
+    "qualification": {
+      "included": "Within the temporal cutoff",
+      "subsequent": "After the reporting date",
+      "missing": "Date missing",
+      "invalid": "Invalid date",
+      "overlaps_cutoff": "Period crosses the reporting date"
+    },
+    "kind": {
+      "stock_as_of": "Balance as of a date",
+      "flow_interval": "Flow over a period",
+      "event_timestamp": "Event date",
+      "event_date": "Event calendar date"
+    },
+    "meaning": {
+      "included": "The temporal reference is within the assessed cutoff. Economic and documentary quality remain subject to analysis.",
+      "subsequent": "This reference follows the reporting date and does not establish the portfolio position at that date.",
+      "missing": "The date or period is insufficient to qualify this supporting evidence.",
+      "invalid": "The date found could not be validated. The source needs clarification.",
+      "overlaps_cutoff": "The period includes dates before and after the cutoff. Do not treat the entire period as the reporting-date position."
+    },
+    "datePolicy": "Comparison uses the local calendar date stated in the source, without converting it to another time zone.",
+    "pagination": "Temporal reference navigation",
+    "entries": "references",
+    "previous": "Previous",
+    "next": "Next",
+    "limitation": {
+      "ambiguous_support": "Ambiguous supporting documents",
+      "missing_amount": "Amount missing",
+      "invalid_amount": "Invalid amount",
+      "source_review_pending": "Source review pending"
+    },
+    "limitationMeaning": {
+      "ambiguous_support": "More than one supporting dataset applies. Clarify which should be used; no aggregation across datasets was assumed.",
+      "missing_amount": "A date does not supply the missing amount. This evidence does not support calculation of the amount.",
+      "invalid_amount": "The amount found could not be validated. Its date remains displayed, but the amount does not support calculation.",
+      "source_review_pending": "The document has already been received. Its dates and columns still need to be linked and qualified before use in this analysis."
+    },
+    "unqualifiedDate": "Not yet qualified"
   }
 }

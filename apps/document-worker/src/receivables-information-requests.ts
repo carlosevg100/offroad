@@ -133,7 +133,10 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
 }) {
   const english = input.locale === "en-US";
   const idFactory = input.idFactory ?? randomUUID;
-  const evidenceGaps = input.readiness.gaps.filter((gap) => gap.class !== "policy" && gap.class !== "structure");
+  const evidenceGaps = input.readiness.gaps.filter((gap) => gap.class !== "policy" && gap.class !== "structure"
+    // This is a source-reading limitation, not proof that the user omitted a date.
+    // Keep it blocking in readiness without asking for documents already delivered.
+    && gap.code !== "support_period:undeclared_recourse_and_debt");
   return {
     schemaVersion: "project-information-request-projection.v1",
     projectId: input.projectId,

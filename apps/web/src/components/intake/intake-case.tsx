@@ -1,3 +1,4 @@
+import {ReceivablesSupportPeriods} from "./receivables-support-periods";
 import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
@@ -200,6 +201,8 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
           ) : (
             <p className="case-receivables__notice">{t("receivablesAmountBody")}</p>
           )}
+
+          {receivables.supportPeriodAssessment || (receivables.pipeline && receivables.status !== "needs_evidence_scope") ? <ReceivablesSupportPeriods assessment={receivables.supportPeriodAssessment} sources={receivables.sourceManifest} locale={locale} /> : null}
 
           <footer>
             {receivables.status === "needs_evidence_scope"

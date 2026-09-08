@@ -118,6 +118,21 @@ describe("receivables specialist method readiness", () => {
     expect(result.dimensions.every((item) => item.state === "satisfied")).toBe(true);
   });
 
+  it.each(["missing", "invalid", "overlaps_cutoff"] as const)("blocks a complete assembly with %s supporting periods", (qualification) => {
+    const result = assessReceivablesPoolMethodReadiness({phaseOne, assembly, detection: {
+      ...detection, supportPeriodAssessment: {
+        schemaVersion: "receivables-support-periods.v1", dateComparisonPolicy: "source_local_calendar_date",
+        reportingDate: "2026-08-31", entries: [{id: "ledger:2", detectorId: "accounting_reconciliation_difference",
+          sourceId: "ledger", sourceLabel: "ledger.xlsx", sourceHash: fileHash,
+          anchor: {kind: "file", fileId: "ledger", fileHash}, dateKind: "event_date",
+          rawDate: null, startDate: null, endDate: null, qualification}],
+      },
+    }});
+    expect(result.methodExecutionAllowed).toBe(false);
+    expect(result.validatedInput).toBeNull();
+    expect(result.gaps).toContainEqual(expect.objectContaining({code: "support_period:accounting_reconciliation_difference", blocking: true}));
+  });
+
   it("fails closed when a mapped title changes economics", () => {
     const changed = structuredClone(assembly);
     changed.input.case.portfolio[0]!.outstandingBalance = "799.99";
