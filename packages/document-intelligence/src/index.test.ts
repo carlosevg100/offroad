@@ -360,3 +360,18 @@ describe("verifier", () => {
     expect(parsed.candidates[0]?.scale).toBe(1000);
   });
 });
+
+describe("list parsing under document whitespace", () => {
+  it("preserves company names and splits only the final plural enumeration", () => {
+    expect(parseList("Compra e Venda Ltda")).toEqual(["Compra e Venda Ltda"]);
+    expect(parseList("Franca, Araraquara e São Carlos")).toEqual(["Franca", "Araraquara", "São Carlos"]);
+    expect(parseList("Franca; Compra  e  Venda e Serviços")).toEqual(["Franca", "Compra", "Venda e Serviços"]);
+    expect(parseList("Franca; e Serviços")).toEqual(["Franca", "e Serviços"]);
+  });
+
+  it("handles long OCR whitespace with and without a closing conjunction", () => {
+    const whitespace = "\t".repeat(100_000);
+    expect(parseList(`Franca; Araraquara${whitespace}São Carlos`)).toEqual(["Franca", `Araraquara${whitespace}São Carlos`]);
+    expect(parseList(`Franca; Araraquara${whitespace}e${whitespace}São Carlos`)).toEqual(["Franca", "Araraquara", "São Carlos"]);
+  });
+});

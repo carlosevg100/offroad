@@ -1,10 +1,17 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Triagem de segurança e precisão de covenant: 07/09/2026
+
+Corrige normalização linear de listas/chunks, separadores literais de paths de evidência e formatação decimal de limites de covenant. Antes, um limite inteiro 10 podia renderizar 1x; a correção preserva magnitude e precisão. Sete instâncias CodeQL são tratadas nesta fatia; nove permanecem classificadas no relatório docs/security/CODEQL_TRIAGE_2026_09_07.md. Nenhum alerta foi descartado remotamente. A correção não altera auth, tenancy, banco ou grants.
+
+232 testes dos pacotes afetados passaram, incluindo 56 de case-materials e regressões de limite 10/0/10.00/1.20/negativos, texto longo, nomes de companhia, anchors e paths que antes fabricavam exceção de input. Gate local completo passou: lint, typecheck, 2.472 testes e build, com 43/43 targets em cada etapa. Nova análise CodeQL e gates de release remotos ainda pendentes. Casos candidatos a falso positivo exigem revisão independente; contagem de alertas não é prova de explorabilidade nem de segurança completa.
+
 ## Revisão de resultados: precisão e acesso completo: 07/09/2026
 
 Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
 
 17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
+
 
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
