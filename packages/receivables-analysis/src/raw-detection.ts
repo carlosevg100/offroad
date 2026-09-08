@@ -147,7 +147,11 @@ function columnOf(ref: string): string {
 }
 
 function rowOf(ref: string): number {
-  return Number(ref.match(/\d+$/)?.[0] ?? 0);
+  // Anchor both ends: an unanchored digit suffix can backtrack quadratically on
+  // long malformed references. Columns and rows occupy disjoint character sets.
+  const match = /^[A-Z]+([0-9]+)$/.exec(ref);
+  const row = match ? Number(match[1]) : 0;
+  return Number.isSafeInteger(row) && row > 0 ? row : 0;
 }
 
 function sheetRows(document: ReceivablesEvidenceDocument): SheetRow[] {

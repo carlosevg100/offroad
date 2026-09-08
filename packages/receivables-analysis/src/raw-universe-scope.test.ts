@@ -65,6 +65,18 @@ describe("raw receivables universe scope", () => {
     });
   });
 
+  it("ignores malformed and unsafe cell references instead of treating suffixes as rows", () => {
+    const source = document("a");
+    const invalidHeaders = headers.flatMap((v, index) => [
+      {ref: `${String.fromCharCode(65 + index)}${"0".repeat(20_000)}!`, v},
+      {ref: `${String.fromCharCode(65 + index)}9007199254740992`, v},
+      {ref: `${String.fromCharCode(65 + index)}-1`, v},
+    ]);
+    const malformed = {...source, layer: {...source.layer, sheets: [{name: "Titles", cells: invalidHeaders}]}};
+    expect(identifyReceivablesTapes([malformed])).toEqual([]);
+    expect(build([malformed])).toMatchObject({phaseOne: null, warnings: ["receivables_tape_not_identified"]});
+  });
+
   it("reports no identified dataset when no tape is present", () => {
     expect(build([{id: "a", fileName: "synthetic.pdf", fileHash: "a".repeat(64), layer: {documentId: "a"}}]))
       .toMatchObject({phaseOne: null, warnings: ["receivables_tape_not_identified"]});
