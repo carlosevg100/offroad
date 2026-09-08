@@ -31,13 +31,14 @@ export async function receivablesScopeFixture() {
   const envelopes = [];
   const revisions = [];
   const candidates = [];
-  for (const [index, name] of ["Synthetic selected pool.csv", "Synthetic excluded pool.csv", "Synthetic ledger.csv", "Synthetic dilution.csv"].entries()) {
+  for (const [index, name] of ["Synthetic selected pool.csv", "Synthetic excluded pool.csv", "Synthetic ledger.csv", "Synthetic dilution.csv", "Synthetic balance.csv"].entries()) {
     const id = randomUUID();
     const csv = index < 2
       ? `NUM_TITULO,CNPJ_SACADO,NOME_SACADO,DT_EMISSAO,DT_VENCIMENTO,VLR_TITULO,SITUACAO,CHAVE_NFE\nNF-${index},11222333000144,Synthetic buyer,2026-06-01,2026-07-01,${index === 0 ? 1000 : 999999},ABERTO,${invoiceKey}`
       : index === 2
         ? "DATA,HISTORICO,DOCUMENTO,DEBITO,CREDITO,SALDO\n2026-08-31,Ajuste de conciliacao,ADJ-1,100,0,100\n2026-09-01,Reclassificacao,ADJ-2,900,0,1000\n,Ajuste de conciliacao,ADJ-3,50,0,1050" + Array.from({length: 30}, (_, n) => `\n2026-08-01,Ajuste de conciliacao,SYN-${n},1,0,1`).join("")
-        : "MES,DEVOLUCAO DE VENDA,BONIFICACAO,ABATIMENTO COMERCIAL,TOTAL,CONTA CONTABIL\n01/2026,50,0,0,50,Despesas comerciais diversas\n08/2026,50,0,0,50,Despesas comerciais diversas\n09/2026,900,0,0,900,Despesas comerciais diversas";
+        : index === 3 ? "MES,DEVOLUCAO DE VENDA,BONIFICACAO,ABATIMENTO COMERCIAL,TOTAL,CONTA CONTABIL\n01/2026,50,0,0,50,Despesas comerciais diversas\n08/2026,50,0,0,50,Despesas comerciais diversas\n09/2026,900,0,0,900,Despesas comerciais diversas"
+        : "CNPJ 11.222.333/0001-44,,,,\nPeriodo 01/01/2026 a 31/08/2026,,,,\nEmissao 02/09/2026,,,,\nValores em reais,,,,\nIndividual,,,,\nConta,Descricao,Saldo anterior,Saldo atual,Coluna adicional\n1,Saldo sintetico,700,100,999999";
     const bytes = new TextEncoder().encode(csv);
     const sourceHash = createHash("sha256").update(bytes).digest("hex");
     const parsed = await parseCsv({bytes, documentId: id, documentVersion: 1, fileName: name, localeHint: "pt-BR"});

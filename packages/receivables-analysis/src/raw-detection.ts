@@ -1,3 +1,4 @@
+import {proposeBalanceSources, type BalanceSourceAssessment} from "./balance-source-proposals";
 import {qualifySupportPeriod, supportCalendarDate, supportPeriodBlocks, type ReceivablesSupportPeriodAssessment, type ReceivablesSupportPeriodEntry} from "./support-periods";
 import Decimal from "decimal.js";
 import {z} from "zod";
@@ -11,7 +12,7 @@ import type {
 import type {ReceivablesEligibilityFact} from "./phase-two";
 import type {ReceivablesPhaseOneInput} from "./phase-one";
 
-export const receivablesRawDetectionVersion = "2026.09.08-v2";
+export const receivablesRawDetectionVersion = "2026.09.08-v3";
 
 /**
  * Structural boundary consumed by the detector. The parser owns the richer document
@@ -25,14 +26,16 @@ export type ReceivablesEvidenceCell = {
 
 export type ReceivablesEvidenceTableRow = {
   id: string;
-  cells: readonly {id: string; text: string; ref?: string | undefined}[];
+  cells: readonly {id: string; text: string; ref?: string | undefined; bbox?: readonly [number, number, number, number] | null | undefined}[];
 };
 
 export type ReceivablesEvidenceLayer = {
   documentId: string;
+  documentVersion?: number | undefined;
   pages?: readonly {
-    blocks: readonly {text: string}[];
-    tables: readonly {rows: readonly ReceivablesEvidenceTableRow[]}[];
+    n?: number | undefined;
+    blocks: readonly {id?: string | undefined; text: string}[];
+    tables: readonly {id?: string | undefined; rows: readonly ReceivablesEvidenceTableRow[]}[];
   }[] | undefined;
   sheets?: readonly {
     name: string;
@@ -93,8 +96,9 @@ export type ReceivablesRawClientQuestion = {
 };
 
 export type ReceivablesRawDetectionReport = {
-  version: typeof receivablesRawDetectionVersion | "2026.08.28-v1";
+  version: typeof receivablesRawDetectionVersion | "2026.09.08-v2" | "2026.08.28-v1";
   supportPeriodAssessment?: ReceivablesSupportPeriodAssessment | undefined;
+  balanceSourceAssessment?: BalanceSourceAssessment | undefined;
   defects: readonly ReceivablesRawDetectedDefect[];
   questions: readonly ReceivablesRawClientQuestion[];
   routeFacts: readonly ReceivablesEligibilityFact[];
@@ -933,6 +937,7 @@ export function detectReceivablesRawEvidence(input: {
 
   return {
     version: receivablesRawDetectionVersion,
+    balanceSourceAssessment: proposeBalanceSources(context.documents, input.reportingDate),
     supportPeriodAssessment: {schemaVersion: "receivables-support-periods.v1", dateComparisonPolicy: "source_local_calendar_date", reportingDate: input.reportingDate, entries: context.periods.sort((a, b) => a.id.localeCompare(b.id) || (a.rawDate ?? "").localeCompare(b.rawDate ?? ""))},
     defects,
     questions: questions.sort((left, right) => left.id.localeCompare(right.id)),

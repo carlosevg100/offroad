@@ -718,8 +718,20 @@ test.describe("Document-first intake (company journey)", () => {
       expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-09-01", qualification: "subsequent"}),
       expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: null, qualification: "missing"}),
       expect.objectContaining({sourceId: fixture.sources[3]!.id, rawDate: "09/2026", qualification: "subsequent"}),
-      expect.objectContaining({sourceId: fixture.sources[4]!.id, rawDate: "2026-09-02T12:00:00-03:00", qualification: "subsequent"}),
+      expect.objectContaining({sourceId: fixture.sources[5]!.id, rawDate: "2026-09-02T12:00:00-03:00", qualification: "subsequent"}),
     ]));
+    expect(result.balanceSourceAssessment.schemaVersion).toBe("balance-source-proposals.v1");
+    expect(result.balanceSourceAssessment.reportingDate).toBe("2026-08-31");
+    expect(result.balanceSourceAssessment.proposals).toHaveLength(1);
+    const balanceProposal = result.balanceSourceAssessment.proposals[0];
+    expect(balanceProposal).toMatchObject({sourceId: fixture.sources[4]!.id, sourceHash: fixture.sources[4]!.sourceHash, documentVersion: 1, reviewState: "proposed", calculationUse: "not_permitted"});
+    expect(balanceProposal.columns.map((column: {role: string}) => column.role)).toEqual(["opening_balance", "closing_balance"]);
+    expect(balanceProposal.context).toEqual(expect.arrayContaining([
+      expect.objectContaining({kind: "period", anchor: expect.objectContaining({text: "Periodo 01/01/2026 a 31/08/2026"})}),
+      expect.objectContaining({kind: "issued_at", anchor: expect.objectContaining({text: "Emissao 02/09/2026"})}),
+    ]));
+    expect(balanceProposal.rows[0].cells.map((cell: {text: string}) => cell.text)).toEqual(["1", "Saldo sintetico", "700", "100", "999999"]);
+    expect(balanceProposal.amount).toBeUndefined();
     expect(result.evidenceCoverage.complete).toBe(false);
     expect(result.methodReadiness.methodExecutionAllowed).toBe(false);
     expect(result.defects.find((defect: {id: string}) => defect.id === "accounting_reconciliation_difference")?.measured).toBeUndefined();
@@ -738,6 +750,15 @@ test.describe("Document-first intake (company journey)", () => {
     await assessment.locator('[data-period-qualification="missing"] > summary').first().click();
     await assessment.scrollIntoViewIfNeeded();
     await capture("synthetic-support-periods-pt");
+    const balancePanel = page.getByTestId("balance-source-proposals");
+    await expect(balancePanel).toBeVisible();
+    await balancePanel.locator("details > summary").first().click();
+    await expect(balancePanel).toContainText("Synthetic balance.csv");
+    await expect(balancePanel).toContainText("Saldo atual");
+    await expect(balancePanel).toContainText("Emissao 02/09/2026");
+    await expect(balancePanel).not.toContainText("999999");
+    await balancePanel.scrollIntoViewIfNeeded();
+    await capture("synthetic-balance-proposals-pt");
     await page.goto(`/en-US/app/projects/${projectId}`);
     const englishAssessment = page.getByTestId("receivables-support-periods");
     await expect(englishAssessment).toBeVisible();
@@ -747,6 +768,14 @@ test.describe("Document-first intake (company journey)", () => {
     await englishAssessment.locator('[data-period-qualification="missing"] > summary').first().click();
     await englishAssessment.scrollIntoViewIfNeeded();
     await capture("synthetic-support-periods-en");
+    const englishBalances = page.getByTestId("balance-source-proposals");
+    await expect(englishBalances).toBeVisible();
+    await englishBalances.locator("details > summary").first().click();
+    await expect(englishBalances).toContainText("References for reviewing balances");
+    await expect(englishBalances).toContainText("Saldo atual");
+    await expect(englishBalances).not.toContainText("999999");
+    await englishBalances.scrollIntoViewIfNeeded();
+    await capture("synthetic-balance-proposals-en");
   });
 
 });

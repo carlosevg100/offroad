@@ -1,5 +1,6 @@
+import {BalanceSourceProposals} from "./balance-source-proposals";
 import {z} from "zod";
-import {receivablesEvidenceSourceManifestSchema, receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
+import {balanceSourceAssessmentSchema, receivablesEvidenceSourceManifestSchema, receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
 import {ReceivablesSupportPeriods} from "./receivables-support-periods";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -25,10 +26,12 @@ export function isReceivablesReportCurrent(context: unknown, snapshotCreatedAt: 
 
 /** Read the persisted public diagnostic projection; never infer a temporal result from scope confirmation. */
 export async function ReceivablesProjectSupportPeriods({understanding, locale, current}: {understanding: unknown; locale: string; current: boolean}) {
-  const value = z.object({receivablesVertical: z.object({supportPeriodAssessment: z.unknown().optional(), sourceManifest: z.unknown().optional(), pipeline: z.unknown().optional()}).passthrough().nullable().optional()}).safeParse(understanding);
+  const value = z.object({receivablesVertical: z.object({balanceSourceAssessment: z.unknown().optional(), supportPeriodAssessment: z.unknown().optional(), sourceManifest: z.unknown().optional(), pipeline: z.unknown().optional()}).passthrough().nullable().optional()}).safeParse(understanding);
   const vertical = value.success ? value.data.receivablesVertical : null;
-  if (!vertical || (!vertical.pipeline && vertical.supportPeriodAssessment === undefined)) return null;
+  if (!vertical || (!vertical.pipeline && vertical.supportPeriodAssessment === undefined && vertical.balanceSourceAssessment === undefined)) return null;
   const assessment = assessmentSchema.safeParse(vertical.supportPeriodAssessment);
   const sources = receivablesEvidenceSourceManifestSchema.safeParse(vertical.sourceManifest);
-  return ReceivablesSupportPeriods({locale, assessment: current && assessment.success ? assessment.data : undefined, sources: sources.success ? sources.data : undefined});
+  const balances = balanceSourceAssessmentSchema.safeParse(vertical.balanceSourceAssessment);
+  const periods = await ReceivablesSupportPeriods({locale, assessment: current && assessment.success ? assessment.data : undefined, sources: sources.success ? sources.data : undefined});
+  return <>{periods}{current && balances.success ? await BalanceSourceProposals({assessment: balances.data, locale}) : null}</>;
 }

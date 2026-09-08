@@ -37,6 +37,8 @@ export const layerTableCellSchema = z.object({
   /** e.g. `p12.t1.r4.c3` or `sERP.t1.r4.c2` */
   id: z.string().min(1),
   text: z.string(),
+  /** Native PDF coordinates; null means an empty clustered slot, not measured geometry. */
+  bbox: bboxSchema.nullable().optional(),
   /** Spreadsheet cell reference when the table comes from a sheet (`B14`). */
   ref: z.string().optional(),
 });

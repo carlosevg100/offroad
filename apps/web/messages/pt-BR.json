@@ -3770,5 +3770,56 @@
       "source_review_pending": "O documento já foi recebido. Suas datas e colunas ainda precisam ser vinculadas e qualificadas antes do uso nesta análise."
     },
     "unqualifiedDate": "Ainda não qualificada"
+  },
+  "BalanceSourceProposals": {
+    "title": "Referências para conferir os saldos",
+    "boundary": "Colunas e declarações encontradas nos documentos. Ainda não autorizam cálculo; os valores das linhas não são somados nesta leitura.",
+    "reportingDate": "Data-base da análise",
+    "sheet": "Aba",
+    "page": "Página",
+    "sourceContainer": "Tabela de origem",
+    "pending": "Conferência pendente",
+    "headers": "Cabeçalhos encontrados",
+    "context": "Declarações da fonte",
+    "anchor": "Âncora",
+    "noContext": "Nenhuma declaração de contexto ancorada nesta proposta.",
+    "trace": "Rastreabilidade",
+    "version": "Versão do documento",
+    "unknown": "Não identificada",
+    "sourceId": "Identificação da fonte",
+    "sourceHash": "Impressão digital da fonte",
+    "role": {
+      "closing_balance": "Saldo final",
+      "opening_balance": "Saldo inicial",
+      "debit": "Débito",
+      "credit": "Crédito",
+      "outstanding_balance": "Saldo devedor"
+    },
+    "kind": {
+      "period": "Período declarado",
+      "as_of": "Data-base declarada",
+      "issued_at": "Emissão declarada",
+      "entity": "Entidade declarada",
+      "perimeter": "Perímetro declarado",
+      "unit": "Unidade declarada"
+    },
+    "issue": {
+      "review_required": "As referências precisam de conferência antes do uso em cálculos.",
+      "source_version_missing": "Versão da fonte não identificada.",
+      "entity_not_identified": "Entidade não identificada nas declarações ancoradas.",
+      "perimeter_not_identified": "Perímetro não identificado nas declarações ancoradas.",
+      "unit_not_identified": "Unidade não identificada nas declarações ancoradas.",
+      "economic_date_not_identified": "Data econômica não identificada; emissão não substitui data-base.",
+      "multiple_economic_date_references": "Há múltiplas referências de data econômica a conferir.",
+      "multiple_balance_columns": "Há múltiplas colunas de saldo a distinguir.",
+      "column_geometry_unavailable": "Posição da coluna na página não disponível.",
+      "source_context_unanchored": "Parte do contexto não possui âncora verificável.",
+      "source_rows_truncated": "A proposta contém apenas parte das linhas da fonte.",
+      "assessment_limit_reached": "O limite desta leitura foi atingido. Pode haver outras referências nas fontes que ainda precisam ser examinadas.",
+      "source_context_truncated": "O contexto da fonte foi apresentado parcialmente.",
+      "source_cells_truncated": "Nem todas as células da fonte foram incluídas na proposta.",
+      "source_text_truncated": "Há trechos de texto apresentados parcialmente."
+    },
+    "truncated": "Trecho parcial"
   }
 }

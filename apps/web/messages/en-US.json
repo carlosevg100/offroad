@@ -3770,5 +3770,56 @@
       "source_review_pending": "The document has already been received. Its dates and columns still need to be linked and qualified before use in this analysis."
     },
     "unqualifiedDate": "Not yet qualified"
+  },
+  "BalanceSourceProposals": {
+    "title": "References for reviewing balances",
+    "boundary": "Columns and declarations found in the documents. These do not yet authorize calculation; row values are not summed in this reading.",
+    "reportingDate": "Analysis reporting date",
+    "sheet": "Sheet",
+    "page": "Page",
+    "sourceContainer": "Source table",
+    "pending": "Review pending",
+    "headers": "Observed headers",
+    "context": "Source declarations",
+    "anchor": "Anchor",
+    "noContext": "No anchored context declaration in this proposal.",
+    "trace": "Traceability",
+    "version": "Document version",
+    "unknown": "Not identified",
+    "sourceId": "Source identifier",
+    "sourceHash": "Source fingerprint",
+    "role": {
+      "closing_balance": "Closing balance",
+      "opening_balance": "Opening balance",
+      "debit": "Debit",
+      "credit": "Credit",
+      "outstanding_balance": "Outstanding balance"
+    },
+    "kind": {
+      "period": "Declared period",
+      "as_of": "Declared as-of date",
+      "issued_at": "Declared issue date",
+      "entity": "Declared entity",
+      "perimeter": "Declared perimeter",
+      "unit": "Declared unit"
+    },
+    "issue": {
+      "review_required": "References require review before use in calculations.",
+      "source_version_missing": "Source version not identified.",
+      "entity_not_identified": "Entity not identified in anchored declarations.",
+      "perimeter_not_identified": "Perimeter not identified in anchored declarations.",
+      "unit_not_identified": "Unit not identified in anchored declarations.",
+      "economic_date_not_identified": "Economic date not identified; issue date does not replace the reporting date.",
+      "multiple_economic_date_references": "Multiple economic date references require review.",
+      "multiple_balance_columns": "Multiple balance columns need to be distinguished.",
+      "column_geometry_unavailable": "Column position on the page is unavailable.",
+      "source_context_unanchored": "Some context lacks a verifiable anchor.",
+      "source_rows_truncated": "The proposal contains only part of the source rows.",
+      "assessment_limit_reached": "This reading reached its limit. Other references in the sources may still require examination.",
+      "source_context_truncated": "Source context is only partially represented.",
+      "source_cells_truncated": "Not all source cells were included in the proposal.",
+      "source_text_truncated": "Some text excerpts are only partially represented."
+    },
+    "truncated": "Partial excerpt"
   }
 }

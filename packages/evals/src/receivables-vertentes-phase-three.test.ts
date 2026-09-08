@@ -1,3 +1,4 @@
+import {indexLayer, documentLayerSchema} from "@offroad/document-intelligence";
 import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {basename, dirname, join} from "node:path";
@@ -19,6 +20,7 @@ import type {
 import {
   buildReceivablesRawUniverse,
   detectReceivablesRawEvidence,
+  proposeBalanceSources,
   type ReceivablesEvidenceDocument,
   type ReceivablesRawDetectionReport,
 } from "@offroad/receivables-analysis";
@@ -151,6 +153,47 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     rawDocuments = loaded.documents;
     rawDatasetHash = loaded.datasetHash;
   }, 60_000);
+
+  it("proposes source-bound balance headers from real documents without approving or changing their economics", () => {
+    const before = JSON.stringify(rawDocuments);
+    const goldBefore = readFileSync(join(goldRoot, "expected", "phase-three.json"));
+    const assessment = rawDetection.balanceSourceAssessment!;
+    expect(assessment).toEqual(proposeBalanceSources(rawDocuments, manifest.dates.reportingDate));
+    const pdf = assessment.proposals.find((proposal) => proposal.sourceId.endsWith("BALANCETE JUN26.pdf") && proposal.page === 1)!;
+    const secondPage = assessment.proposals.find((proposal) => proposal.sourceId.endsWith("BALANCETE JUN26.pdf") && proposal.page === 2)!;
+    const bank = assessment.proposals.find((proposal) => proposal.sourceId.endsWith("posicao bancaria.xlsx"))!;
+    expect(pdf.columns.map((column) => column.role)).toEqual(["opening_balance", "debit", "credit", "closing_balance"]);
+    expect(pdf.columns.find((column) => column.role === "closing_balance")?.header.text).toBe("Saldo atual");
+    expect(pdf.columns.find((column) => column.role === "opening_balance")?.header.text).toBe("Saldo anterior");
+    expect(pdf.context.find((context) => context.kind === "period")?.anchor.text).toContain("Periodo: 01/01/2026 a 30/06/2026");
+    expect(pdf.context.find((context) => context.kind === "issued_at")?.anchor.text).toContain("Emitido em 08/07/2026");
+    expect(secondPage.issues).toContain("economic_date_not_identified");
+    expect(bank.columns).toContainEqual(expect.objectContaining({role: "outstanding_balance", header: expect.objectContaining({id: "sPosicao!D4", text: "Saldo devedor"})}));
+    expect(bank.context).toContainEqual(expect.objectContaining({kind: "as_of", anchor: expect.objectContaining({id: "sPosicao!A2", text: "Base: 30/06/2026 - elaborado pelo financeiro"})}));
+    expect(bank.context.some((context) => context.kind === "entity")).toBe(false);
+    expect(bank.issues).toContain("entity_not_identified");
+    for (const proposal of assessment.proposals) {
+      const source = rawDocuments.find((document) => document.id === proposal.sourceId)!;
+      expect(proposal.sourceHash).toBe(source.fileHash);
+      expect(proposal.sourceHash).toBe(manifest.rawFiles.find((entry) => entry.path === source.id)!.sha256);
+      expect(proposal.documentVersion).toBe(1);
+      expect(proposal.reviewState).toBe("proposed");
+      expect(proposal.calculationUse).toBe("not_permitted");
+      const sourceIndex = indexLayer(documentLayerSchema.parse(source.layer));
+      for (const anchor of [...proposal.columns.map((column) => column.header), ...proposal.context.map((context) => context.anchor), ...proposal.rows.flatMap((row) => row.cells)]) {
+        expect(sourceIndex.byId.get(anchor.id)?.text).toBe(anchor.text);
+      }
+      if (proposal.page) for (const column of proposal.columns) {
+        expect(column.header.bbox).toHaveLength(4);
+        expect(column.header.bbox![2]).toBeGreaterThan(column.header.bbox![0]);
+        expect(column.header.bbox![3]).toBeGreaterThan(column.header.bbox![1]);
+      }
+      expect(createHash("sha256").update(readFileSync(join(rawRoot, source.id))).digest("hex")).toBe(source.fileHash);
+    }
+    expect(JSON.stringify(rawDocuments)).toBe(before);
+    expect(readFileSync(join(goldRoot, "expected", "phase-three.json"))).toEqual(goldBefore);
+    expect(rawDetection.defects.find((defect) => defect.id === "undeclared_recourse_and_debt")?.measured).toBeUndefined();
+  });
 
   it("reconstructs the governed universe directly from the delivered tape", () => {
     const built = buildReceivablesRawUniverse({

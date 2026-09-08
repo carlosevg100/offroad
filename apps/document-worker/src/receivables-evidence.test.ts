@@ -61,6 +61,19 @@ function envelopeFor(value: unknown) {
 }
 
 describe("receivables evidence codec", () => {
+  it("retains PDF cell geometry through the immutable source-bound codec", () => {
+    const value = {id, fileName: "synthetic.pdf", fileHash: sourceHash, layer: {
+      documentId: id, documentVersion: 1, kind: "pdf", pages: [{n: 1, blocks: [], scanned: false,
+        tables: [{id: "p1.t1", rows: [{id: "p1.t1.r1", cells: [
+          {id: "p1.t1.r1.c1", text: "Saldo atual", bbox: [10, 20, 90, 30]},
+          {id: "p1.t1.r1.c2", text: "", bbox: null},
+        ]}]}]}], scaleDeclarations: [], stats: {},
+    }};
+    expect(decodeBoundReceivablesEvidence(envelopeFor(value))).toEqual({kind: "document_layer", evidence: value});
+    const moved = structuredClone(value);
+    moved.layer.pages[0]!.tables[0]!.rows[0]!.cells[0]!.bbox = [20, 20, 100, 30];
+    expect(envelopeFor(moved).content_sha256).not.toBe(envelopeFor(value).content_sha256);
+  });
   it("preserves fiscal event dates and their offsets through source-bound decoding", () => {
     const archive = fiscalArchiveEvidence({archiveId: id, fileHash: sourceHash,
       parserVersion: "nfe-archive-1.0.0", invoices: [], warnings: [],

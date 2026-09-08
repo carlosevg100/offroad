@@ -2,7 +2,7 @@ import type {LayerBlock, LayerPage, LayerTable} from "@offroad/document-intellig
 import {ParserError, createBudget, parserLimits, type ParseInput, type ParseResult, type ParserWarning} from "./types";
 import {collectScaleDeclarations} from "./scale";
 
-export const pdfParserVersion = "pdf-1.0.0";
+export const pdfParserVersion = "pdf-1.1.0";
 
 type TextItem = {
   str: string;
@@ -251,13 +251,21 @@ function buildTable(run: Line[], tableId: string): LayerTable {
   const rows = run.slice(0, parserLimits.maxRowsPerTable).map((line, rowIndex) => {
     const rowId = `${tableId}.r${rowIndex + 1}`;
     const texts = new Array<string>(columns.length).fill("");
+    const boxes = new Array<[number, number, number, number] | null>(columns.length).fill(null);
     for (const segment of line.segments) {
       const columnIndex = nearestColumn(columns, segment.x0);
       texts[columnIndex] = texts[columnIndex] ? `${texts[columnIndex]} ${segment.text}` : segment.text;
+      const previous = boxes[columnIndex];
+      boxes[columnIndex] = [
+        Math.min(previous?.[0] ?? segment.x0, segment.x0),
+        line.y,
+        Math.max(previous?.[2] ?? segment.x1, segment.x1),
+        line.y + line.height,
+      ];
     }
     return {
       id: rowId,
-      cells: texts.map((text, columnIndex) => ({id: `${rowId}.c${columnIndex + 1}`, text})),
+      cells: texts.map((text, columnIndex) => ({id: `${rowId}.c${columnIndex + 1}`, text, bbox: boxes[columnIndex] ?? null})),
     };
   });
 
