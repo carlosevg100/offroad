@@ -1,5 +1,15 @@
 # Build State
 
+## Contexto econômico e especialização setorial por objeto, 08/09/2026
+
+Fundação de planejamento sobre main `ea6d233`: contrato `economic-context.v1` com objetos/alvos explícitos, evidência declarada, estados e períodos econômicos; catálogo canônico de nove módulos especificados; compositor determinístico integrado como entrada opcional de `compileObjectiveSpecialization`. O contexto produz requisitos, cenários propostos, critérios de mandato e lacunas por objeto/período. Não herda atributos ou caixa de holdings, não mistura períodos incompatíveis e não usa suporte explicitamente contestado em período sobreposto. A ausência do novo campo preserva o payload e o fingerprint anteriores.
+
+Os módulos são solar, receita contratada, exposição de mercado, construção, operação, varejo, carteira de recebíveis, pedágio e disponibilidade. São especificações de investigação, não executores financeiros homologados. Pergunta factual não recebe métodos financeiros, cenários ou matching. Inferências, propostas e conflitos ficam como lacunas. Referências declaradas não são verificadas contra o data room por esta biblioteca e não satisfazem evidência.
+
+Integração nesta fatia: consumidor de domínio e testes, opt-in, `planning_only`, sem chamada nova no worker, persistência ou interface. `selectedPackIds`, perfil de execução e cobertura de tarefas existentes permanecem iguais. Sem migração, mudança de grants, providers, telemetria ou cálculo financeiro. Limites agregados de contexto e limite de combinações evitam expansão silenciosa. Blueprint e Atlas incorporam a arquitetura e dez famílias planejadas, sem promoção no Program Board.
+
+Pendente para uso real: binding autorizado de objetos/fontes e confirmação; projeção localizada no plano do usuário; ligação de cada requisito a método executável e evidência; casos de referência, revisão técnica nomeada e promoção específica por capacidade. Gate completo local e CI são registrados em Acceptance Evidence; esta fundação não conclui o endgame.
+
 ## Leitura executiva e conferência completa, 08/09/2026
 
 Em implementação sobre main `900e9e37b9223fe08f483beaad9d32607509bf86` (PR #550). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. O produtor inclui explicitamente a série de vencimentos na visão de conversa dos contratos novos, preservando valores e apresentação. Snapshots existentes não são reescritos. A publicação requer web e worker, sem migração. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.

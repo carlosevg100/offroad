@@ -518,3 +518,5 @@ function containsNumber(value: unknown): boolean {
   if (value && typeof value === "object") return Object.values(value).some(containsNumber);
   return false;
 }
+
+export * from "./economic-context";

@@ -4,11 +4,13 @@ import {
   depthPackManifestSchema,
   type CompiledSpecializationProfile,
   type DepthPackManifest,
+  economicContextCompileRequestSchema,
 } from "@offroad/agent-contracts";
 import {createHash} from "node:crypto";
 import {dcmDepthPacks, institutionalHouseProcedureIdSet} from "@offroad/credit-playbook";
 import {financialCalculationRegistry} from "@offroad/financial-core";
 import {z} from "zod";
+import {compileEconomicContext, economicContextPlanSchema} from "./economic-context";
 
 export const validatedDcmDepthPacks: readonly DepthPackManifest[] = dcmDepthPacks.map((candidate) =>
   depthPackManifestSchema.parse(candidate),
@@ -47,6 +49,7 @@ export const objectiveSpecializationSchema = z.object({
     unmappedRequirementKeys: z.array(z.string().regex(/^[a-z0-9_.-]{3,120}$/)),
   }).strict(),
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  economicContextPlan: economicContextPlanSchema.optional(),
 }).superRefine((value, context) => {
   const selected = [...value.selectedPackIds].sort();
   const profile = [...value.profile.packIds].sort();
@@ -86,6 +89,8 @@ export const objectiveSpecializationInputSchema = z.object({
   explicitActivationKeys: z.array(z.string().trim().min(2).max(160)).max(100).default([]),
   explicitPackIds: z.array(z.string().trim().min(3).max(120)).max(50).default([]),
   taskIds: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).max(80).default([]),
+  /** Optional planning context; never expands released tasks or asserts evidence satisfaction. */
+  economicContext: economicContextCompileRequestSchema.optional(),
 }).strict();
 export type ObjectiveSpecializationInput = z.input<typeof objectiveSpecializationInputSchema>;
 
@@ -196,6 +201,7 @@ export function compileObjectiveSpecialization(rawInput: ObjectiveSpecialization
         .filter((key) => !mappedRequirementKeys.has(key))
         .sort(),
     },
+    ...(input.economicContext ? {economicContextPlan: compileEconomicContext(input.economicContext)} : {}),
   };
   return objectiveSpecializationSchema.parse({
     ...payload,
@@ -319,3 +325,4 @@ export function assessDepthPackPromotion(rawPack: DepthPackManifest, rawEvidence
 export * from "./method-binding";
 export * from "./workflow-selection";
 export * from "./dispatch-candidate";
+export * from "./economic-context";

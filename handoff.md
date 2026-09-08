@@ -1,5 +1,11 @@
 # Offroad Capital: Product and Engineering Handoff
 
+## Fundação setorial por objeto, 08/09/2026
+
+Branch `feat/sector-context-composition`, baseada em main `ea6d233`. Novo contrato econômico por objeto/período e compositor de nove módulos de investigação, conectado opcionalmente à especialização de objetivo. Blueprint e Atlas atualizados. Estado: planejamento de domínio implementado, catálogo/métodos `specified`, evidência `not_examined`, sem execução automática, fontes privadas vinculadas, persistência ou UI nova. Não chamar de expertise setorial liberada. O uso antigo sem contexto preserva identidade e tarefas.
+
+Arquivos e casos de aceite em `docs/build/ACCEPTANCE_EVIDENCE.md`. Próximo corte: consumir contexto de objetos/fontes autorizados sob o binding vigente e expor requisitos/lacunas por intenção no plano; depois ligar métodos e homologar os pares econômicos. Não ler `confirmed` de conteúdo arbitrário como permissão nem usar hashes locais como verificação de fonte. Não promover `specified` a executor nem ampliar despacho shadow. Revisões técnicas reais e casos de referência ainda são necessários para afirmar expertise.
+
 ## Leitura executiva e conferência completa, 08/09/2026
 
 Em implementação sobre main `900e9e37b9223fe08f483beaad9d32607509bf86` (PR #550). A projeção de decisão respeita os blocos ordenados do contrato e oferece navegação de cada achado às fontes, premissas e lacunas, com retorno ao achado. Séries usam os pontos do contrato em gráficos e tabelas completas; ausências não viram zero. O produtor inclui explicitamente a série de vencimentos na visão de conversa dos contratos novos, preservando valores e apresentação. Snapshots existentes não são reescritos. A publicação requer web e worker, sem migração. Valores exatos, identificadores, localização da fonte e fingerprints permanecem disponíveis. Estados de análise e de divulgação são distintos e vêm do contrato.
