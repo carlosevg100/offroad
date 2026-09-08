@@ -1,5 +1,9 @@
 # Acceptance Evidence
 
+## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
+
+Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
+
 ## Acceptance Evidence trust boundary, candidate, 07/09/2026
 
 | Evidência | Verificação | Resultado |
