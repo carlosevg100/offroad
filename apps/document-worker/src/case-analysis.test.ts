@@ -705,14 +705,19 @@ describe("worker case analysis", () => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
-      recordOperatingControlSnapshot: async () => ({
+      recordOperatingControlSnapshot: async (_job, input) => {
+        // Mirrors the SQL frozen-input binding; artifact/economic hashes are separate identities.
+        expect(input.inputFingerprint).toBe(raw._execution.input_fingerprint);
+        expect(input.inputFingerprint).toBe("e".repeat(64));
+        return {
         id: "f3000000-0000-4000-8000-000000000001",
         allowed: false,
         blockers: ["capability_not_accredited_for_recommend"],
         warnings: [],
         decisionFingerprint: "f".repeat(64),
         replayed: false,
-      }),
+        };
+      },
       recordControlledExecution: async () => "execution-1",
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),

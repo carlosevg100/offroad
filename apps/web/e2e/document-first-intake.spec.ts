@@ -698,10 +698,15 @@ test.describe("Document-first intake (company journey)", () => {
     await brief.getByRole("button", {name: /aprovar|approve/i}).click();
     await expect.poll(() => sql("select count(*) from public.capital_project_execution_brief_events e where e.capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and e.event_type='accepted' and e.event_payload->>'processingJobId' in (select id::text from public.processing_jobs where processing_run_id=(select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid));").trim(), {timeout: 30_000}).not.toBe("0");
     await expect.poll(() => sql("select result_summary#>>'{case_state,receivablesVertical,status}' from public.document_intake_sessions where id=:'session_id'::uuid;").trim(), {timeout: 120_000}).toBe("analyzed");
+    // A persisted report is not proof of completion: the operating-control write follows it.
+    await expect.poll(() => sql("select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;").trim(), {timeout: 120_000}).toBe("succeeded");
     const report = sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;");
-    expect(report).toContain("2026-08-31");
-    // The manifest retains discovery inventory; the scoped calculation must not use the excluded balance.
-    expect(report).not.toContain("999999");
+    const result = JSON.parse(report);
+    expect(result.pipeline.phaseOne.universe.reportingDate).toBe("2026-08-31");
+    expect(result.pipeline.phaseOne.universe.id).toContain(fixture.sources[0]!.id);
+    // Assert the economic result, not substrings that might also occur inside source hashes.
+    expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.titleCount.value)).toBe(1);
+    expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
   });
 
 });

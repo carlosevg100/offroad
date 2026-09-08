@@ -1286,7 +1286,8 @@ export async function processCaseAnalysisJob(
       ? await dependencies.queue.recordOperatingControlSnapshot(job, {
           scopeId: caseAnalysisCapabilityScope,
           requestedUse: "internal_decision",
-          inputFingerprint,
+          // SQL binds operating controls to the immutable worker input, not the derived artifact hash.
+          inputFingerprint: raw._execution.input_fingerprint,
           binding: {
             caseFingerprint: fingerprintJson({
               operationTruth: result.state.operationTruth,
