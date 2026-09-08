@@ -168,7 +168,8 @@ test.describe("integration_preview: Case 01 end to end", () => {
     // the product agreement, not a generic activity list and not the internal TaskSpec graph.
     const executionBrief = page.getByTestId("execution-brief");
     await expect(executionBrief).toBeVisible();
-    await expect(executionBrief.locator("h2")).toContainText("Camil");
+    await expect(executionBrief.locator("h2")).toHaveText("Plano deste trabalho");
+    await expect(executionBrief.locator(".execution-brief-card__objective")).toContainText("Camil");
     await expect(executionBrief.locator(".execution-brief-card__workstreams > li")).toHaveCount(4);
     await expect(executionBrief).toContainText("Conferir balanço, caixa e dívida da Camil");
     await expect(executionBrief).toContainText("Testar serviço da dívida, covenants e downside");
