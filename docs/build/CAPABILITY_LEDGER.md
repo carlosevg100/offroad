@@ -1,8 +1,8 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v15
+Versão: 2026.09.07-v17
 
-Baseline inspecionada: commit `f352d65`
+Baseline inspecionada: commit `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 
 Status: primeira classificação executável do produto atual
 
@@ -31,6 +31,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | --- | --- | --- | --- | --- |
 | Project workspace e memória | live | universal | tested | continuidade econômica G1-G8 não provada |
 | Intake de formatos conhecidos | live | universal | implemented | data room arbitrário e corpus hostil não provados |
+| Portaria governada de quarentena | shadow | internal | implemented | scanner-first e receipt limpo estão implementados; persistência append-only/CAS, object version, attestation do scanner, sandbox/egress e corpus adversarial em staging continuam abertos |
 | Entendimento de data room arbitrário | specified | none | specified | sem E2E representativo |
 | Intent Envelope semântico | shadow | internal | implemented | não decide a rota universal de produção |
 | Resolução semântica de objetivo | shadow | internal | implemented | traduz composição em objetivo e mede divergência; não governa execução |
@@ -44,7 +45,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Kernels financeiros determinísticos | live | internal | implemented | não formam modelo institucional integrado |
 | Modelo institucional integrado | specified | none | specified | sem fechamento completo e drivers setoriais promovidos |
 | DOCX básico do preview | live | allowlisted | tested | a planilha ad hoc foi bloqueada; DOCX não passou gate top-tier ou template fidelity |
-| Fundação Office nativa governada | live | allowlisted | unsupported | A implementação fonte de PPTX e decision workbook está presente, mas a transição continua não registrada até existirem CI, merge e gate real; ambos permanecem internal-only e o workbook não é o modelo integrado |
+| Fundação Office nativa governada | live | allowlisted | implemented | implementação e determinismo estão em main, mas não há receipt de deploy, geração real e revisão visual para promoção; permanece internal-only e não é o modelo integrado nem a suite template-faithful |
 | Suite de artifacts template-faithful | specified | none | specified | referências ainda não aprovadas |
 | Verifier universal | specified | none | specified | gates atuais são estreitos |
 | Matching com mandatos sintéticos | mocked | internal | implemented | sem base live suficiente |
@@ -53,6 +54,7 @@ apresentar especificação como runtime, fixture como live, shadow como customer
 | Fechamento governado e refresh R01 | live | internal | implemented | executa o case rail atual; o especialista R01 continua em sombra e sem uso externo |
 | Continuidade longitudinal do projeto | specified | none | specified | não conecta análise, estrutura, materiais e capital |
 | Gates de trust e assurance | live | internal | tested | current state e evidence population pendentes |
+| Inventário validado de segurança | live | internal | tested | snapshot de repositório em `b2e3897`, com 18 gaps; não prova configuração live, operação de controles, pentest, SOC 2 ou ISO 27001 |
 | Compatibilidade banco-worker no boot | live | internal | tested | primeiro rollout protegido estabilizado; mudança incompatível exige versão nova e mudança aditiva exige capacidade nominal |
 | Assurance enterprise externa | absent | none | unsupported | sem pentest, SOC 2 ou ISO emitidos |
 | Execution Brief específico | live | universal | implemented | compiler, histórico imutável e card estão ligados; somente G1 possui gate E2E |
@@ -75,7 +77,7 @@ internos. Os maiores gaps que impedem uso sério amplo são:
 6. continuidade longitudinal;
 7. capital network com mandatos reais;
 8. experiência de Execution Brief, Live Work e Workbench;
-9. current state e evidência operacional dos controles de trust.
+9. atualização contínua do current state e evidência operacional dos controles de trust.
 
 ## Regra de atualização
 

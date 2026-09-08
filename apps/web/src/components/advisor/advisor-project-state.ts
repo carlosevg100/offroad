@@ -24,7 +24,9 @@ export function canShowAdvisorInformationRequests(preliminaryStatus: string | nu
   return preliminaryStatus !== "pending_confirmation";
 }
 
-const SUCCESS_EVENTS = new Set(["work_completed", "decision_recorded", "question_answered"]);
+// An answer queues new work; a decision records an assessment for review. Neither proves that
+// execution recovered. Only the existing succeeded-work projection can clear a work failure.
+const SUCCESS_EVENTS = new Set(["work_completed"]);
 const FAILURE_EVENTS = new Set(["work_failed", "quality_gate_failed"]);
 const TERMINAL_STAGES = new Set([
   "preliminary_understanding",
@@ -87,7 +89,7 @@ export function latestSuccessfulOutcomeAt(events: readonly AdvisorOutcomeEvent[]
 }
 
 /**
- * A recovered retry is not an outstanding failure. The most recent terminal work outcome wins;
+ * A recovered retry is not an outstanding failure. Only a strictly later work success recovers it;
  * aggregate session/task flags remain a fallback for older projects that have no event trail.
  */
 export function advisorNeedsAttention(input: {
@@ -100,7 +102,9 @@ export function advisorNeedsAttention(input: {
   if (input.active) return false;
   const outcomes = input.events
     .filter((event) => SUCCESS_EVENTS.has(event.type) || FAILURE_EVENTS.has(event.type))
-    .sort((left, right) => timestamp(left.createdAt) - timestamp(right.createdAt));
+    .sort((left, right) => timestamp(left.createdAt) - timestamp(right.createdAt)
+      // Database timestamps can tie. Do not infer recovery from arrival/array order.
+      || Number(FAILURE_EVENTS.has(left.type)) - Number(FAILURE_EVENTS.has(right.type)));
   const latest = outcomes.at(-1);
   if (latest) return FAILURE_EVENTS.has(latest.type);
   return input.sessionStatus === "failed"
@@ -109,5 +113,5 @@ export function advisorNeedsAttention(input: {
 }
 
 export function failureWasRecovered(createdAt: string, successfulOutcomeAt: number | null): boolean {
-  return successfulOutcomeAt !== null && timestamp(createdAt) <= successfulOutcomeAt;
+  return successfulOutcomeAt !== null && timestamp(createdAt) < successfulOutcomeAt;
 }

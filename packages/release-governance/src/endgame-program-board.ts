@@ -79,6 +79,7 @@ export const programTaskSchema = z.object({
   subtasks: z.array(programSubtaskSchema).min(1),
   acceptance: z.array(programAcceptanceSchema).min(1),
   evidenceRefs: z.array(evidenceRefSchema),
+  capabilityRefs: z.array(z.string().regex(/^[a-z][a-z0-9.-]+$/)),
   blockers: z.array(programBlockerSchema),
   securityControlIds: z.array(z.string().regex(/^TRUST-[A-Z0-9-]+$/)),
   blueprintRefs: z.array(z.string().min(1)).min(1),
@@ -104,7 +105,7 @@ export const endgameProgramBoardSchema = z.object({
     branch: z.literal("main"),
     commit: z.string().regex(/^[a-f0-9]{7,40}$/),
     capabilityLedgerVersion: z.string().min(1),
-    capabilityLedgerCommit: z.string().regex(/^[a-f0-9]{7,40}$/),
+    capabilityLedgerBaselineCommit: z.string().regex(/^[a-f0-9]{7,40}$/),
   }),
   releaseSequence: z.array(programReleaseIdSchema).length(8),
   evidenceIndex: z.array(programEvidenceSchema).min(1),
@@ -152,6 +153,14 @@ export function evaluateEndgameProgramBoard(
   const trustControlIds = new Set(trustControlCatalogue.controls.map((control) => control.controlId));
   const taskCounts = Object.fromEntries(programTaskStateSchema.options.map((state) => [state, 0])) as Record<ProgramTaskState, number>;
 
+  if (parsed.baseline.capabilityLedgerVersion !== capabilityLedger.ledgerVersion) {
+    blockers.push({code: "capability_ledger_version_mismatch", taskId: null});
+  }
+
+  if (parsed.baseline.capabilityLedgerBaselineCommit !== capabilityLedger.baselineCommit) {
+    blockers.push({code: "capability_ledger_baseline_mismatch", taskId: null});
+  }
+
   if (new Set(parsed.releaseSequence).size !== programReleaseIdSchema.options.length
     || parsed.releaseSequence.some((release, index) => release !== programReleaseIdSchema.options[index])) {
     blockers.push({code: "release_sequence_must_be_complete_and_ordered", taskId: null});
@@ -187,6 +196,10 @@ export function evaluateEndgameProgramBoard(
 
   for (const task of parsed.tasks) {
     validateEvidenceRefs(task.evidenceRefs, evidenceById, now, blockers, task.taskId, "task_evidence_missing");
+    if (new Set(task.capabilityRefs).size !== task.capabilityRefs.length) blockers.push({code: "duplicate_capability_ref", taskId: task.taskId});
+    for (const capabilityId of task.capabilityRefs) {
+      if (!capabilityById.has(capabilityId)) blockers.push({code: `unknown_capability_ref:${capabilityId}`, taskId: task.taskId});
+    }
     for (const controlId of task.securityControlIds) {
       if (!trustControlIds.has(controlId)) blockers.push({code: `unknown_security_control:${controlId}`, taskId: task.taskId});
     }

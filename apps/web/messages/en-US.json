@@ -3361,7 +3361,7 @@
     "premises": "Premises applied in this run",
     "artifact": "Artifact",
     "details": "View details",
-    "allRows": "View complete table: {count} rows, {columns} columns",
+    "allRows": "View complete table: {count, plural, one {# row} other {# rows}}, {columns, plural, one {# column} other {# columns}}",
     "allGaps": "View {count, plural, one {# more gap} other {# more gaps}}",
     "missing": "Not provided",
     "yes": "Yes",

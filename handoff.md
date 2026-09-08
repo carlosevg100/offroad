@@ -20,6 +20,12 @@ Envio, edição de plano e resposta a pergunta compartilham proteção síncrona
 Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
 
 
+## Estado de execução: recuperação comprovada, 07/09/2026
+
+Respostas a perguntas e decisões registradas deixam de ser consideradas prova de recuperação da execução. Somente work_completed posterior elimina a indicação de uma falha anterior; empate temporal conserva falha independentemente da ordem do array. A prioridade visual de trabalho ativo e o fallback de projetos sem trilha de eventos são preservados. Não muda schema, critérios econômicos nem autorização. Trata um defeito delimitado de UX-01; correlação completa de tarefas paralelas e prontidão por dimensão continuam fora desta fatia.
+
+12 testes focados de estado passaram, cobrindo interação após falha, sucesso posterior, empate/ordem, retry ativo, progresso intermediário e fallback agregado. Sem mudança de layout ou copy. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (204 testes web) e build. Preview e produção não verificados nesta mudança. Sem prova nova de cobertura financeira, aprovação de material ou autorização externa.
+
 > Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
 > workspace are live on `main`. Economic depth packs and the institutional financial model are
@@ -30,6 +36,10 @@ Seis testes focados de recuperação passaram. Adicionada regressão de navegado
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+## Execução estratégica do endgame, 07/09/2026
+
+Retomada autorizada pelo fundador com três frentes paralelas e integração central. Fonte da primeira onda: `docs/build/ENDGAME_WAVE1_EXECUTION.md`. Preservar o diretório original em branch antiga e os arquivos não rastreados; trabalho novo parte de b6da287 em worktrees isoladas. Todos os públicos permanecem no escopo. O board inclui UX-01/02/03/04/05; nenhuma conclusão de UX, runtime universal ou assurance é inferida desta reconciliação.
 
 ### Engineering update: Acceptance Evidence trust boundary, 7 September 2026
 

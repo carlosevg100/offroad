@@ -19,7 +19,8 @@ export function renderEndgameProgramBoard(board: EndgameProgramBoard, fingerprin
     "",
     `Atualizado em: ${board.generatedAt}`,
     `Baseline: \`${board.baseline.branch}@${board.baseline.commit}\``,
-    `Capability Ledger: \`${board.baseline.capabilityLedgerVersion}@${board.baseline.capabilityLedgerCommit}\``,
+    `Capability Ledger: \`${board.baseline.capabilityLedgerVersion}\``,
+    `Baseline de código inspecionada pelo ledger: \`${board.baseline.capabilityLedgerBaselineCommit}\``,
     `Fingerprint do board: \`${fingerprint}\``,
     "",
     "## Leitura executiva",
@@ -39,10 +40,10 @@ export function renderEndgameProgramBoard(board: EndgameProgramBoard, fingerprin
     const tasks = board.tasks.filter((task) => task.releaseId === releaseId);
     lines.push(`### ${releaseId}`);
     lines.push("");
-    lines.push("| ID | Estado | Resultado | Dependências | Bloqueadores abertos |");
-    lines.push("|---|---|---|---|---|");
+    lines.push("| ID | Estado | Resultado | Capabilities vinculadas | Dependências | Bloqueadores abertos |");
+    lines.push("|---|---|---|---|---|---|");
     for (const task of tasks) {
-      lines.push(`| ${task.taskId} | ${stateLabel[task.state]} | ${task.outcome} | ${task.dependsOn.join(", ") || "sem dependência"} | ${task.blockers.filter((blocker) => blocker.status === "open").map((blocker) => blocker.blockerId).join(", ") || "sem blocker"} |`);
+      lines.push(`| ${task.taskId} | ${stateLabel[task.state]} | ${task.outcome} | ${task.capabilityRefs.join(", ") || "sem vínculo"} | ${task.dependsOn.join(", ") || "sem dependência"} | ${task.blockers.filter((blocker) => blocker.status === "open").map((blocker) => blocker.blockerId).join(", ") || "sem blocker"} |`);
     }
     lines.push("");
   }
@@ -59,6 +60,7 @@ function renderTask(lines: string[], task: ProgramTask) {
   for (const subtask of task.subtasks) lines.push(`- [${subtask.state === "done" ? "x" : " "}] ${subtask.subtaskId}: ${subtask.title} (${subtask.state})`);
   lines.push("", "Critérios de aceite:", "");
   for (const criterion of task.acceptance) lines.push(`- ${criterion.criterionId}: ${criterion.description} · **${criterion.status}**${criterion.evidenceRefs.length ? ` · ${criterion.evidenceRefs.join(", ")}` : ""}`);
+  if (task.capabilityRefs.length) lines.push("", `Capabilities relacionadas: ${task.capabilityRefs.map((capabilityId) => `\`${capabilityId}\``).join(", ")}.`);
   if (task.capabilityTransition) lines.push("", `Transição planejada: \`${task.capabilityTransition.capabilityId}\` · ${task.capabilityTransition.from} → ${task.capabilityTransition.to} (${task.capabilityTransition.status}).`);
   lines.push("");
 }
