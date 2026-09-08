@@ -3,6 +3,9 @@
 ## Primeira onda do endgame: controle e experiência, 07/09/2026
 
 Reconciliado o draft #536 com main b6da287. O board mantém o novo RT-01 como candidate, registra fundações delimitadas de segurança, quarentena e Office e acrescenta UX-01 a UX-05. Vínculos de capabilities são validados sem conceder customer work ou uso externo. O plano de execução está em `docs/build/ENDGAME_WAVE1_EXECUTION.md`; correções de interface e segurança são entregas separadas, ainda não comprovadas por este PR.
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
+
+Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
 Envio, edição de plano e resposta a pergunta compartilham proteção síncrona contra duplicação. Falha retornada ou exceção libera pending e conserva o conteúdo; retry idêntico reutiliza a identidade de comando já suportada pelo banco. O composer limpa somente o texto enviado após confirmação. Texto bilíngue informa aceitação incerta sem afirmar rejeição. Nenhuma alteração de schema ou regra de edição de versão obsoleta. Estado de retry e rascunho vive somente em memória do componente: reload/remount não tem recuperação durável.

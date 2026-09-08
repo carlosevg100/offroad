@@ -1,8 +1,11 @@
 # Offroad Capital: Product and Engineering Handoff
 
-## Execução estratégica do endgame, 07/09/2026
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
 
-Retomada autorizada pelo fundador com três frentes paralelas e integração central. Fonte da primeira onda: `docs/build/ENDGAME_WAVE1_EXECUTION.md`. Preservar o diretório original em branch antiga e os arquivos não rastreados; trabalho novo parte de b6da287 em worktrees isoladas. Todos os públicos permanecem no escopo. O board inclui UX-01/02/03/04/05; nenhuma conclusão de UX, runtime universal ou assurance é inferida desta reconciliação.
+Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
+
+17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
+
 
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
@@ -21,6 +24,10 @@ Seis testes focados de recuperação passaram. Adicionada regressão de navegado
 > engineering, data, credit, security, or AI session. It describes both the
 > intended product and the code that actually exists today. When it conflicts
 > with an older build note, this file and the current code take precedence.
+
+## Execução estratégica do endgame, 07/09/2026
+
+Retomada autorizada pelo fundador com três frentes paralelas e integração central. Fonte da primeira onda: `docs/build/ENDGAME_WAVE1_EXECUTION.md`. Preservar o diretório original em branch antiga e os arquivos não rastreados; trabalho novo parte de b6da287 em worktrees isoladas. Todos os públicos permanecem no escopo. O board inclui UX-01/02/03/04/05; nenhuma conclusão de UX, runtime universal ou assurance é inferida desta reconciliação.
 
 ### Engineering update: Acceptance Evidence trust boundary, 7 September 2026
 

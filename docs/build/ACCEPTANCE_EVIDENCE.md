@@ -3,6 +3,9 @@
 ## Reconciliação do programa e pacotes UX, 07/09/2026
 
 Baseline de inspeção: b6da287. O gate do board valida referências de capabilities inexistentes/duplicadas e mantém promoção bloqueada por evidências operacionais ausentes. Foram preservados os bloqueios de VLT-02, SEC-01 e materiais; o run histórico 34096964058 continua invalidado. UX-03/04 têm implementação em branches separadas; os demais pacotes UX permanecem backlog. Esse estado não é evidência de interface homologada. Gate local completo aprovado após revisão cruzada: lint, typecheck, 177 testes release-governance e build; 43/43 targets em cada etapa. CI desta reconciliação ainda pendente. Versão do ledger e baseline inspecionado são distintos; CTRL-01.AC01 permanece pendente por ausência de evidência suficiente de ambientes.
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
+
+17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
 Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
