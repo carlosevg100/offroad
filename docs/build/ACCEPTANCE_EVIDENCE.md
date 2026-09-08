@@ -3,6 +3,9 @@
 ## Estado de execução: recuperação comprovada, 07/09/2026
 
 12 testes focados de estado passaram, cobrindo interação após falha, sucesso posterior, empate/ordem, retry ativo, progresso intermediário e fallback agregado. Sem mudança de layout ou copy. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (204 testes web) e build. Preview e produção não verificados nesta mudança. Sem prova nova de cobertura financeira, aprovação de material ou autorização externa.
+## Triagem de segurança e precisão de covenant: 07/09/2026
+
+232 testes dos pacotes afetados passaram, incluindo 56 de case-materials e regressões de limite 10/0/10.00/1.20/negativos, texto longo, nomes de companhia, anchors e paths que antes fabricavam exceção de input. Gate local completo passou: lint, typecheck, 2.472 testes e build, com 43/43 targets em cada etapa. Nova análise CodeQL e gates de release remotos ainda pendentes. Casos candidatos a falso positivo exigem revisão independente; contagem de alertas não é prova de explorabilidade nem de segurança completa.
 ## Revisão de resultados: precisão e acesso completo: 07/09/2026
 
 17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.

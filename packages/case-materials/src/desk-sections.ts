@@ -23,6 +23,15 @@ const pct = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
 const turns = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
   `${new Decimal(value).toNumber().toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
 
+/** Preserve the exact threshold: only Decimal normalizes insignificant fractional zeroes. */
+function covenantTurns(value: string): string {
+  const decimal = new Decimal(value);
+  if (!decimal.isFinite()) throw new Error("Covenant maximum must be finite");
+  const [coefficient, exponent] = decimal.toString().split("e");
+  const localized = coefficient!.includes(".") ? coefficient!.replace(".", ",") : `${coefficient},0`;
+  return `${localized}${exponent === undefined ? "" : `e${exponent}`}x`;
+}
+
 /**
  * Sources and uses. The single table that states what the transaction is.
  *
@@ -77,7 +86,7 @@ export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | nu
     money(line.balance, "pt-BR"),
     line.effectiveAnnual ? pct(line.effectiveAnnual, "pt-BR") : "não normalizável",
     line.maturity ?? "não informado",
-    line.covenant ? `Dív.líq./EBITDA ≤ ${line.covenant.maximum.replace(/0+$/, "").replace(/\.$/, ",0")}x` : "sem covenant",
+    line.covenant ? `Dív.líq./EBITDA ≤ ${covenantTurns(line.covenant.maximum)}` : "sem covenant",
     takenOut.has(line.lender) ? "quitada na operação" : "mantida",
   ]);
 

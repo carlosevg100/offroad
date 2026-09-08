@@ -320,3 +320,20 @@ function mandate(id: string, min: string, max: string): Mandate {
     active: sourced(true),
   };
 }
+
+it("normalizes long document whitespace without losing internal text or anchors", () => {
+  const whitespace = "\t".repeat(100_000);
+  const content = `First document paragraph.${whitespace}\nSecond${"\t".repeat(5_000)}paragraph.\u0000`;
+  const chunks = buildCaseChunks({
+    organizationId: orgA, intakeSessionId: sessionA, sourceDocumentId: "doc-a",
+    documentVersion: 1, sourceLabel: "Whitespace document",
+    layer: {
+      documentId: "doc-a", documentVersion: 1, kind: "pdf",
+      pages: [{n: 1, scanned: false, blocks: [{id: "p1.b1", kind: "text", text: content}], tables: []}],
+      scaleDeclarations: [], stats: {pageCount: 1},
+    },
+  });
+  expect(chunks).toHaveLength(1);
+  expect(chunks[0]?.content).toBe(`First document paragraph.\nSecond${"\t".repeat(5_000)}paragraph.`);
+  expect(chunks[0]?.citation.anchor).toMatchObject({id: "p1", page: 1});
+});

@@ -183,8 +183,13 @@ export function parseList(raw: string): string[] {
   // that happens to contain "e" ("Compra e Venda Ltda") is never torn apart.
   if (parts.length >= 2) {
     const last = parts[parts.length - 1] ?? "";
-    const closing = /^(.+?)\s+e\s+(.+)$/.exec(last);
-    if (closing) parts.splice(parts.length - 1, 1, closing[1]!.trim(), closing[2]!.trim());
+    // Tokenize once: overlapping wildcard/whitespace groups backtrack quadratically
+    // on long OCR whitespace. Keep the original spacing inside each resulting name.
+    for (const token of last.matchAll(/\S+/g)) {
+      if (token[0] !== "e" || token.index === 0 || token.index + 1 === last.length) continue;
+      parts.splice(parts.length - 1, 1, last.slice(0, token.index).trim(), last.slice(token.index + 1).trim());
+      break;
+    }
   }
   return parts;
 }

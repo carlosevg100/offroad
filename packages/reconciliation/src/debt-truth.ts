@@ -190,7 +190,7 @@ export function buildDebtTruthSet(facts: readonly ReconciledFact[], referenceDat
     ...(instrument.lender ? {lender: instrument.lender} : {}), ...(instrument.maturity ? {maturity: instrument.maturity} : {}),
   }));
 
-  const rowIndexes = (prefix: string) => [...new Set(facts.map((fact) => fact.key.fieldPath.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\.(\\d+)\.`))?.[1]).filter(Boolean))] as string[];
+  const rowIndexes = (prefix: string) => [...new Set(facts.map((fact) => fact.key.fieldPath.match(new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\.(\\d+)\\.`))?.[1]).filter(Boolean))] as string[];
   const paymentIndexes = rowIndexes("debt.payments");
   const payments = paymentIndexes.flatMap((index) => {
     const prefix = `debt.payments.${index}`;
