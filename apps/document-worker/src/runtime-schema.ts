@@ -11,6 +11,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "universal-dispatch-candidate-shadow.v1",
   "explicit-execution-brief-approval.v1",
   "execution-brief-proposal.v1",
+  "governed-sector-planning-context.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

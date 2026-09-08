@@ -76,7 +76,36 @@ export type ExecutionBriefWorkstreamDraft = {
   inclusionReasons: readonly ExecutionBriefInclusionReason[];
 };
 
+const planningLabel = z.string().trim().min(1).max(500);
+export const executionBriefPlanningContextSchema = z.object({
+  schemaVersion: z.literal("sector-planning-context.v1"),
+  contextFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  planFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  mode: z.literal("planning_only"),
+  objects: z.array(z.object({
+    id: planningLabel, label: planningLabel,
+    attributes: z.array(z.object({
+      dimension: planningLabel, label: planningLabel, value: z.string().trim().max(500).nullable(),
+      status: z.enum(["confirmed", "proposed", "inferred", "conflicting", "unknown"]),
+      sources: z.array(z.object({label: planningLabel, version: planningLabel, anchor: z.string().trim().min(1).max(2_000), basis: z.enum(["reviewed_document", "user_review", "unverified"])}).strict()).max(20),
+    }).strict()).max(100),
+    requirements: z.array(z.object({id: planningLabel, label: planningLabel, evidenceNeeded: z.array(planningLabel).max(30), status: z.literal("not_examined"), methodStatus: z.literal("specified")}).strict()).max(100),
+    gaps: z.array(z.object({id: planningLabel, label: planningLabel}).strict()).max(100),
+  }).strict()).max(50),
+}).strict().superRefine((value, context) => {
+  let attributes = 0; let requirements = 0; let references = 0; let characters = 0; let gaps = 0;
+  const ids = new Set<string>();
+  value.objects.forEach((object, index) => {
+    if (ids.has(object.id)) context.addIssue({code: "custom", path: ["objects", index, "id"], message: "Duplicate planning object."});
+    ids.add(object.id); attributes += object.attributes.length; requirements += object.requirements.length; gaps += object.gaps.length;
+    for (const attribute of object.attributes) for (const source of attribute.sources) {references++; characters += source.anchor.length;}
+  });
+  if (attributes > 500 || requirements > 100 || gaps > 100 || references > 2_000 || characters > 200_000) context.addIssue({code: "custom", path: ["objects"], message: "Planning context exceeds aggregate limits."});
+});
+export type ExecutionBriefPlanningContext = z.infer<typeof executionBriefPlanningContextSchema>;
+
 export type ExecutionBriefCompilerInput = {
+  planningContext?: ExecutionBriefPlanningContext | undefined;
   planVersion: string;
   locale: ExecutionBriefLocale;
   objective: string;
@@ -97,6 +126,7 @@ export type CompiledExecutionBriefWorkstream = Omit<ExecutionBriefWorkstreamDraf
 };
 
 export type CompiledExecutionBrief = {
+  planningContext?: ExecutionBriefPlanningContext | undefined;
   schemaVersion: "execution-brief.v1";
   planVersion: string;
   fingerprint: string;
@@ -185,6 +215,7 @@ export const executionBriefChangeKindSchema = z.enum([
   "assumption_removed",
   "source_status_changed",
   "checkpoint_changed",
+  "planning_context_changed",
 ]);
 export const executionBriefChangeSchema = z.object({
   kind: executionBriefChangeKindSchema,
@@ -196,6 +227,7 @@ export type ExecutionBriefChange = z.infer<typeof executionBriefChangeSchema>;
 
 /** Runtime contract for the customer projection read back from durable storage. */
 export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.object({
+  planningContext: executionBriefPlanningContextSchema.optional(),
   schemaVersion: z.literal("execution-brief.v1"),
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   locale: executionBriefLocaleSchema,
@@ -242,6 +274,7 @@ export function diffVisibleExecutionBrief(
   current: VisibleExecutionBrief,
 ): ExecutionBriefChange[] {
   const changes: ExecutionBriefChange[] = [];
+  if (fingerprint(previous.planningContext ?? null) !== fingerprint(current.planningContext ?? null)) changes.push({kind: "planning_context_changed", label: current.locale === "pt-BR" ? "Contexto econômico e requisitos" : "Economic context and requirements"});
   if (previous.objective !== current.objective) changes.push({
     kind: "objective_changed",
     label: current.locale === "pt-BR" ? "Objetivo do trabalho" : "Work objective",
@@ -374,6 +407,7 @@ export function compileExecutionBrief(input: ExecutionBriefCompilerInput): Compi
     checkpoints: input.checkpoints.map((checkpoint) => ({...checkpoint})),
     executionMode,
     authority: {...input.authority},
+    ...(input.planningContext ? {planningContext: executionBriefPlanningContextSchema.parse(input.planningContext)} : {}),
   };
   return {...unsigned, fingerprint: fingerprint(unsigned)};
 }
@@ -399,6 +433,7 @@ export function visibleExecutionBrief(brief: CompiledExecutionBrief): VisibleExe
     assumptions: brief.assumptions,
     checkpoints: brief.checkpoints,
     executionMode: brief.executionMode,
+    ...(brief.planningContext ? {planningContext: executionBriefPlanningContextSchema.parse(brief.planningContext)} : {}),
   };
 }
 
@@ -662,6 +697,7 @@ const jobCopyOverrides: Partial<Record<CapitalProjectJob, Partial<Record<keyof t
 };
 
 export function compileCapitalExecutionBrief(input: {
+  planningContext?: ExecutionBriefPlanningContext | undefined;
   plan: CapitalProjectPlanSnapshot;
   /** Distinguishes an immutable held dispatch from a previous identical plan. */
   revisionContext?: string;
@@ -718,5 +754,6 @@ export function compileCapitalExecutionBrief(input: {
     checkpoints,
     authority: input.authority,
     expensiveWork: input.expensiveWork ?? false,
+    ...(input.planningContext ? {planningContext: input.planningContext} : {}),
   });
 }

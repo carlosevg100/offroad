@@ -30,7 +30,7 @@ async function expectNoErrorNotice(page: Page) {
 }
 
 /** The default local fixture has no worker. Worker-backed runs must explicitly require consent. */
-async function awaitIntakeAnalysis(page: Page) {
+async function awaitIntakeAnalysis(page: Page, inspectPlan?: (approval: Locator) => Promise<void>) {
   const panel = page.getByTestId("intake-execution-approval");
   const review = page.locator(".intake-review");
   if (process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL === "1") {
@@ -42,6 +42,7 @@ async function awaitIntakeAnalysis(page: Page) {
     const approval = panel.locator('[data-approval-status="awaiting"]');
     await expect(approval).toBeVisible({timeout: 120_000});
     await expect(review).toHaveCount(0);
+    if (inspectPlan) await inspectPlan(approval);
     await approval.getByRole("button", {name: /aprovar|approve/i}).click();
   }
   await expect(review).toBeVisible({timeout: 120_000});
@@ -258,7 +259,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-issues__list")).toContainText(/49 milhões/);
   });
 
-  test("accepts high-confidence suggestions and confirms the case", async () => {
+  test("accepts high-confidence suggestions and confirms the case", async ({}, testInfo) => {
     await page.goto(`${primaryProjectUrl}&step=documents`);
     await expect(page.locator(".intake-review")).toBeVisible();
 
@@ -280,8 +281,58 @@ test.describe("Document-first intake (company journey)", () => {
       await expect(form).toHaveCount(0);
     }
 
+    // Review the actual extracted candidate through the same form available to the borrower.
+    // The synthetic source files and their extraction expectations remain unchanged.
+    const evidence = page.locator(".intake-review__evidence");
+    if (await evidence.getAttribute("open") === null) await evidence.locator(":scope > summary").click();
+    const sector = page.locator(".intake-field").filter({has: page.locator("label > span", {hasText: /^Setor$/})});
+    await expect(sector).toHaveCount(1);
+    const sectorGroup = page.locator(".intake-group").filter({has: sector});
+    if (await sectorGroup.getAttribute("open") === null) await sectorGroup.locator(":scope > summary").click();
+    await sector.locator('input[name="normalized_value"]').fill("varejo");
+    await sector.locator('button[name="decision"][value="edit"]').click();
+    await expect(sector).toHaveClass(/is-confirmed/);
+    await expect(sector.locator('input[name="normalized_value"]')).toHaveValue("varejo");
+
     await page.locator(".intake-review__reanalyze button[type=submit]").click();
-    await awaitIntakeAnalysis(page);
+    await awaitIntakeAnalysis(page, async (approval) => {
+      // Worker-backed CI must reach a newly proposed plan before substantive analysis.
+      // Local runs without a worker retain the existing fixture route in the helper above.
+      const context = page.getByTestId("intake-execution-approval").getByTestId("execution-brief-planning-context");
+      await expect(context).toBeVisible();
+      await expect(context).toContainText("Contexto e pontos a examinar");
+      await expect(context).toContainText("Ainda não examinado");
+      const object = context.locator(":scope > details").first();
+      await object.locator(":scope > summary").click();
+      const attribute = object.locator("dl > div").filter({has: page.locator("dt", {hasText: /^Setor$/})});
+      await expect(attribute).toContainText("Varejo");
+      await expect(attribute).toContainText("Confirmado no contexto");
+      await attribute.getByText("Referências do contexto", {exact: true}).click();
+      await expect(attribute.getByText("Informação revisada pelo usuário", {exact: false})).toBeVisible();
+      await expect(attribute.getByText("Revisão do usuário", {exact: true})).toBeVisible();
+      await expect(attribute).toContainText("reviewed_at:");
+      const desktopViewport = page.viewportSize();
+      if (!desktopViewport) throw new Error("The planning context visual check requires a configured viewport.");
+      await context.scrollIntoViewIfNeeded();
+      await page.screenshot({path: testInfo.outputPath("sector-context-desktop.png"), fullPage: true, scale: "css"});
+      try {
+        await page.setViewportSize({width: 390, height: 844});
+        await context.scrollIntoViewIfNeeded();
+        await expect.poll(() => page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth + 1)).toBe(true);
+        const bounds = await context.boundingBox();
+        expect(bounds).not.toBeNull();
+        expect(bounds!.x).toBeGreaterThanOrEqual(0);
+        expect(bounds!.width).toBeLessThanOrEqual(390);
+        expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(391);
+        const screenshot = await page.screenshot({path: testInfo.outputPath("sector-context-mobile.png"), fullPage: true, scale: "css"});
+        // PNG IHDR width also catches painted overflow outside an otherwise narrow root box.
+        expect(screenshot.readUInt32BE(16)).toBe(390);
+      } finally {
+        await page.setViewportSize(desktopViewport);
+      }
+      await expect(approval.getByRole("button", {name: /aprovar|approve/i})).toBeEnabled();
+      await expect(page.locator(".intake-review")).toHaveCount(0);
+    });
     await expect(page.locator(".intake-case-review-actions")).toBeVisible();
     await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
     // Confirmation copy is about the decision, not an internal field count. Prove the bulk action

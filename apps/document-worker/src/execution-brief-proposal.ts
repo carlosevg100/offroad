@@ -2,6 +2,7 @@ import {z} from "zod";
 import {capitalProjectPlanSnapshot, compileCapitalExecutionBrief, offroadTaskEffectSchema, visibleExecutionBrief, type CapitalProjectPlanSnapshot, type ExecutionBriefSource} from "@offroad/work-plan";
 import type {ExecutionBriefProposalJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
+import {buildGovernedSectorPlanning, governedSectorContextInputsSchema} from "./governed-sector-planning";
 
 const deliverables = {
   preview_meeting_brief: {"pt-BR": "Devolutiva da análise em validação, com evidências e lacunas", "en-US": "Readout of the analysis under validation, with evidence and gaps"},
@@ -13,6 +14,7 @@ const deliverables = {
   production_plan: {"pt-BR": "Plano de produção dos materiais e dependências", "en-US": "Materials production plan and dependencies"},
 } as const;
 const proposalContextSchema = z.object({
+  governed_sector_context_inputs: governedSectorContextInputsSchema.optional(),
   target_job_id: z.uuid(),
   target_kind: z.enum(["case_analysis", "capital_project_analysis"]),
   input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
@@ -51,6 +53,7 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
       sources.push({key: "public-market", label: pt ? "Referências públicas de mercado a pesquisar" : "Public market references to research", role: "public_market", status: "to_research", informationClass: "public", authorized: true});
     }
     const internal = compileCapitalExecutionBrief({
+      planningContext: buildGovernedSectorPlanning({inputs: context.governed_sector_context_inputs, sessionId: job.intake_session_id, companyLabel: context.project.company_name ?? context.project.name, locale: context.locale, objective: context.objective}),
       plan: plan as unknown as CapitalProjectPlanSnapshot,
       revisionContext: context.target_job_id,
       locale: context.locale, objective: context.objective, companyLabel: context.project.company_name ?? context.project.name,

@@ -3473,7 +3473,8 @@
       "assumption_updated": "Premissa",
       "assumption_removed": "Premissa",
       "source_status_changed": "Fonte",
-      "checkpoint_changed": "Decisão"
+      "checkpoint_changed": "Decisão",
+      "planning_context_changed": "Contexto de planejamento"
     },
     "progress": {
       "waiting": "Aguardando",
@@ -3542,6 +3543,30 @@
         "context_changed": "As informações ou o escopo mudaram. Revise a nova versão antes de aprovar.",
         "approval_required": "Revise o escopo e a entrega. Sua aprovação libera somente o trabalho desta versão.",
         "approved": "Esta versão foi aprovada. Alterações materiais exigem um novo plano e uma nova aprovação."
+      }
+    },
+    "planningContext": {
+      "title": "Contexto e pontos a examinar",
+      "description": "Estes pontos orientam a análise. As evidências e os métodos necessários ainda precisam ser examinados.",
+      "attributes": "Contexto informado",
+      "requirements": "Pontos a examinar",
+      "gaps": "O que falta esclarecer",
+      "sources": "Referências do contexto",
+      "notExamined": "Ainda não examinado",
+      "evidenceNeeded": "Evidências necessárias",
+      "unknown": "Não informado",
+      "sourceVersion": "Versão {version}",
+      "status": {
+        "confirmed": "Confirmado no contexto",
+        "proposed": "Proposto",
+        "inferred": "Inferido, a confirmar",
+        "conflicting": "Informações conflitantes",
+        "unknown": "Não informado"
+      },
+      "basis": {
+        "reviewed_document": "Documento revisado",
+        "user_review": "Revisão do usuário",
+        "unverified": "Referência não verificada"
       }
     }
   },
