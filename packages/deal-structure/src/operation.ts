@@ -11,7 +11,7 @@ import Decimal from "decimal.js";
 
 import type {CapacityAssessment} from "./capacity";
 
-export const operationTruthVersion = "2026.08.25-v1";
+export const operationTruthVersion = "2026.09.08-v2";
 type Status = "completed" | "partial" | "blocked" | "not_computable" | "not_applicable";
 type EvidenceLink = {fieldPath: string; sourceDocument: string; anchor?: unknown};
 type Line = {
@@ -156,7 +156,20 @@ export function buildOperationTruthSet(input: {
   const latestAdjustedEbitda = [...input.financialTruth.statements]
     .filter((statement) => statement.adjustedEbitda !== null)
     .sort((left, right) => right.period.localeCompare(left.period))[0]?.adjustedEbitda ?? undefined;
-  const proForma = requested ? calculateProFormaPosition({
+  const proFormaMissing = new Set<string>();
+  if (!requested) proFormaMissing.add("transaction.requested_amount");
+  if (input.debtTruth.views.balanceBasis !== "reported_instruments") proFormaMissing.add("debt.balance_provenance");
+  if (input.debtTruth.views.cashBasis !== "reported") proFormaMissing.add("debt.unrestricted_cash");
+  if (!input.debtTruth.instruments?.length) proFormaMissing.add("debt.instruments");
+  for (const instrument of input.debtTruth.instruments ?? []) {
+    if (instrument.principalBasis !== "reported_principal") proFormaMissing.add(`${instrument.id}.principal`);
+  }
+  if (input.debtTruth.status === "blocked" || input.debtTruth.exceptions?.some((exception) => exception.blocksExternalOutputs)) {
+    for (const field of input.debtTruth.missingInputs ?? []) proFormaMissing.add(field);
+    proFormaMissing.add("debt.unblocked_snapshot");
+  }
+  for (const field of proFormaMissing) missing.add(field);
+  const proForma = requested && proFormaMissing.size === 0 ? calculateProFormaPosition({
     grossDebt: input.debtTruth.views.grossFinancialDebt,
     unrestrictedCash: input.debtTruth.views.unrestrictedCash,
     newDebt: requested,
@@ -270,7 +283,7 @@ export function buildOperationTruthSet(input: {
   const coverageSpec: Array<[`OP-${string}`, Status, number, string[]]> = [
     ["OP-01", calculatedNeed?.status ?? "not_computable", calculatedNeed ? 1 : 0, calculatedNeed ? [] : ["complete calculated need"]],
     ["OP-02", sourcesAndUses.status === "pass" ? "completed" : sourcesAndUses.status === "fail" ? "blocked" : "not_computable", lines.length, sourceLines.length && useLines.length ? [] : ["complete sources and uses"]],
-    ["OP-03", proFormaWithCovenant ? covenantConflict ? "blocked" : "completed" : "not_computable", proFormaWithCovenant ? 1 : 0, proFormaWithCovenant ? [] : ["requested amount"]],
+    ["OP-03", proFormaWithCovenant ? covenantConflict ? "blocked" : "completed" : "not_computable", proFormaWithCovenant ? 1 : 0, proFormaWithCovenant ? [] : [...proFormaMissing].sort()],
     ["OP-04", scenarioCapacity.length ? scenarioCapacity.some((item) => item.status === "fail") ? "blocked" : scenarioCapacity.every((item) => item.status === "pass") ? "completed" : "partial" : "not_computable", scenarioCapacity.length, scenarioCapacity.length ? [] : ["scenario liquidity coverage"]],
     ["OP-05", Object.values(effects).every((items) => items.length) ? "completed" : "partial", Object.values(effects).flat().length, Object.values(effects).every((items) => items.length) ? [] : ["three explicit effect lists"]],
     ["OP-06", incrementalWorkingCapital ? "completed" : "not_computable", incrementalWorkingCapital?.periods.length ?? 0, incrementalWorkingCapital ? [] : ["period working capital drivers"]],

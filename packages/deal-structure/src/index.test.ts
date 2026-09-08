@@ -12,6 +12,23 @@ describe("capacity is three walls, and the lowest one is the answer", () => {
     annualDebtServiceFactor: "0.28",
   };
 
+  it("does not replace missing net debt with zero in leverage capacity", () => {
+    const missing = assessCapacity({archetypeId: "growth_expansion", requested: "100", adjustedEbitda: "30", cfads: "20", annualDebtServiceFactor: "0.25", collateralCapacity: "50"});
+    expect(missing.walls.find((wall) => wall.id === "market")?.amount).toBeNull();
+    expect(missing.calculations.some((calculation) => calculation.id === "capacity_market")).toBe(false);
+    expect(missing.gaps).toContain("Dívida líquida existente");
+    expect(missing.recommended).toBeNull();
+    expect(missing.bindingConstraint).toBeNull();
+    expect(missing.walls.find((wall) => wall.id === "cash_flow")?.amount).not.toBeNull();
+    expect(missing.walls.find((wall) => wall.id === "collateral")?.amount).toBe("50");
+    const sheet = buildTermSheet({archetypeId: "growth_expansion", capacity: missing});
+    expect(sheet.terms.find((term) => term.id === "amount")?.value).toEqual({pt: "a definir", en: "to be determined"});
+    const zero = assessCapacity({archetypeId: "growth_expansion", requested: "100", adjustedEbitda: "30", existingNetDebt: "0"});
+    expect(zero.walls.find((wall) => wall.id === "market")?.amount).not.toBeNull();
+    expect(zero.calculations.find((calculation) => calculation.id === "capacity_market")?.trace).toContainEqual({label: "existing_net_debt", value: "0"});
+    expect(zero.gaps).not.toContain("Dívida líquida existente");
+  });
+
   it("names the binding constraint, which is what turns a rejection into a conversation", () => {
     const assessment = assessCapacity({...base, collateralCapacity: "28000000"});
     expect(assessment.bindingConstraint).toBe("collateral");
@@ -177,6 +194,7 @@ describe("what the market does, and how we know", () => {
     requested: "45000000",
     cfads: "30000000",
     adjustedEbitda: "31000000",
+    existingNetDebt: "0",
     collateralCapacity: "60000000",
     annualDebtServiceFactor: "0.25",
   });
