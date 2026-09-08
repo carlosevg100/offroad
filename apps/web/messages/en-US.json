@@ -3075,7 +3075,12 @@
       "netFinancialDebt": "Net financial debt",
       "covenantDebt": "Covenant debt",
       "capacityObligations": "Capacity obligations",
-      "notInformed": "Not informed"
+      "notInformed": "Not informed",
+      "receivablesNeedsScope": "Portfolio scope needed",
+      "receivablesScopeBody": "Multiple receivables tables were identified. No portfolio has been selected and calculations have not run.",
+      "receivablesScopeTable": "Sheet {sheet} · header at row {row}",
+      "receivablesScopeGuidance": "Before analysis, define one portfolio and provide its reporting date, clarifying which files and tables belong to that scope.",
+      "receivablesScopeCoverage": "{count, plural, one {# source received} other {# sources received}}; portfolio scope pending."
     },
     "brief": {
       "kicker": "The transaction",

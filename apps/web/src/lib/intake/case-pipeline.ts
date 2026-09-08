@@ -33,7 +33,8 @@ export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
   manifestFingerprint?: string;
   receivablesVertical?: {
     version: "2026.08.28-v1";
-    status: "needs_requested_amount" | "analyzed";
+    status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
+    scopeIssue?: {code: "multiple_receivables_tapes"; candidates: readonly {documentId: string; fileName: string; sheet: string; headerRow: number}[]};
     fingerprint: string;
     evidenceCoverage: {delivered: number; searched: number; complete: boolean; warnings: readonly string[]};
     classification: {categoryIds: readonly string[]; cellIds: readonly string[]};

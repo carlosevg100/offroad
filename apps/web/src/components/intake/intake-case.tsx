@@ -109,12 +109,22 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
               <h3>{t("receivablesTitle")}</h3>
             </div>
             <span className={`case-truth__status ${receivables.status === "analyzed" ? "is-complete" : "is-blocked"}`}>
-              {receivables.status === "analyzed" ? t("receivablesAnalyzed") : t("receivablesNeedsAmount")}
+              {receivables.status === "analyzed" ? t("receivablesAnalyzed") : receivables.status === "needs_evidence_scope" ? t("receivablesNeedsScope") : t("receivablesNeedsAmount")}
             </span>
           </header>
-          <p>{t("receivablesBody")}</p>
+          <p>{t(receivables.status === "needs_evidence_scope" ? "receivablesScopeBody" : "receivablesBody")}</p>
 
-          {receivables.pipeline ? (
+          {receivables.status === "needs_evidence_scope" ? (
+            <section className="case-receivables__notice" aria-label={t("receivablesNeedsScope")}>
+              {receivables.scopeIssue?.candidates.length ? <ul>
+                {receivables.scopeIssue.candidates.map((candidate) => <li key={`${candidate.documentId}:${candidate.sheet}:${candidate.headerRow}`} style={{overflowWrap: "anywhere"}}>
+                  <strong>{candidate.fileName}</strong>
+                  <span> · {t("receivablesScopeTable", {sheet: candidate.sheet, row: candidate.headerRow})}</span>
+                </li>)}
+              </ul> : null}
+              <p>{t("receivablesScopeGuidance")}</p>
+            </section>
+          ) : receivables.pipeline ? (
             <>
               <dl className="case-receivables__metrics">
                 <div>
@@ -192,10 +202,12 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
           )}
 
           <footer>
-            {t("receivablesCoverage", {
-              delivered: receivables.evidenceCoverage.delivered,
-              searched: receivables.evidenceCoverage.searched,
-            })}
+            {receivables.status === "needs_evidence_scope"
+              ? t("receivablesScopeCoverage", {count: receivables.evidenceCoverage.delivered})
+              : t("receivablesCoverage", {
+                delivered: receivables.evidenceCoverage.delivered,
+                searched: receivables.evidenceCoverage.searched,
+              })}
           </footer>
         </section>
       ) : null}

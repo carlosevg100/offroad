@@ -1,0 +1,72 @@
+import {describe, expect, it} from "vitest";
+import {buildReceivablesRawUniverse, detectReceivablesRawEvidence, identifyReceivablesTapes, type ReceivablesEvidenceDocument} from "./raw-detection";
+
+const headers = ["NUM TITULO", "CNPJ SACADO", "DT EMISSAO", "DT VENCIMENTO", "VLR TITULO", "SITUACAO"];
+function cells(values: readonly string[], row: number) {
+  return values.map((v, index) => ({ref: `${String.fromCharCode(65 + index)}${row}`, v}));
+}
+function document(id: string, sheets = ["Titles"]): ReceivablesEvidenceDocument {
+  return {id, fileName: `synthetic-${id}.xlsx`, fileHash: "a".repeat(64), layer: {documentId: id,
+    sheets: sheets.map((name) => ({name, cells: [...cells(headers, 1),
+      ...cells(["T-1", "12345678000190", "2026-01-01", "2026-02-01", "100", "aberto"], 2)]})),
+  }};
+}
+const build = (documents: ReceivablesEvidenceDocument[]) => buildReceivablesRawUniverse({
+  universeId: "synthetic-scope", datasetHash: "b".repeat(64), documents,
+});
+
+describe("raw receivables universe scope", () => {
+  it("discovers all document, sheet and header matches independently of input order", () => {
+    const first = document("a", ["Zulu", "Alpha"]);
+    const second = document("b");
+    const repeated = {...second, layer: {...second.layer, sheets: [{name: "Titles", cells: [
+      ...second.layer.sheets![0]!.cells, ...cells(headers, 5),
+    ]}]}};
+    const expected = [
+      {documentId: "a", fileName: first.fileName, sheet: "Alpha", headerRow: 1},
+      {documentId: "a", fileName: first.fileName, sheet: "Zulu", headerRow: 1},
+      {documentId: "b", fileName: second.fileName, sheet: "Titles", headerRow: 1},
+      {documentId: "b", fileName: second.fileName, sheet: "Titles", headerRow: 5},
+    ];
+    expect(identifyReceivablesTapes([first, repeated])).toEqual(expected);
+    expect(identifyReceivablesTapes([repeated, {...first, layer: {...first.layer, sheets: [...first.layer.sheets!].reverse()}}])).toEqual(expected);
+  });
+
+  it.each([
+    [document("a"), document("b")],
+    [document("a", ["Current", "Prior"])],
+  ])("does not silently select a tape from multiple documents or sheets", (...documents) => {
+    expect(build(documents)).toMatchObject({phaseOne: null, warnings: ["multiple_receivables_tapes"]});
+  });
+
+  it("rejects repeated header blocks within one sheet", () => {
+    const source = document("a");
+    const repeated = {...source, layer: {...source.layer, sheets: [{name: "Titles", cells: [
+      ...source.layer.sheets![0]!.cells, ...cells(headers, 5),
+    ]}]}};
+    expect(build([repeated])).toMatchObject({phaseOne: null, warnings: ["multiple_receivables_tapes"]});
+  });
+
+  it("builds one valid tape without claiming missing supporting evidence", () => {
+    const result = build([document("a")]);
+    expect(result.phaseOne).not.toBeNull();
+    expect(result.warnings).not.toContain("multiple_receivables_tapes");
+    expect(result.warnings).not.toContain("receivables_tape_not_identified");
+  });
+
+  it("withholds defect and eligibility assertions for an ambiguous raw universe", () => {
+    const result = detectReceivablesRawEvidence({
+      universeId: "synthetic-scope", datasetHash: "b".repeat(64), reportingDate: "2026-02-01",
+      documents: [document("a"), document("b")],
+    });
+    expect(result).toMatchObject({
+      defects: [], questions: [], routeFacts: [],
+      evidenceCoverage: {complete: false, warnings: ["multiple_receivables_tapes"]},
+    });
+  });
+
+  it("reports no identified dataset when no tape is present", () => {
+    expect(build([{id: "a", fileName: "synthetic.pdf", fileHash: "a".repeat(64), layer: {documentId: "a"}}]))
+      .toMatchObject({phaseOne: null, warnings: ["receivables_tape_not_identified"]});
+  });
+});

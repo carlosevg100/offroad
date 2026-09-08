@@ -1,5 +1,16 @@
 # Build State
 
+## Recebíveis: identidade das fontes e ambiguidade de carteiras, 08/09/2026, em validação
+
+Corte `fix/receivables-evidence-scope`, a partir de `8b64e9e`. A análise detecta todas as tabelas de títulos antes de construir o universo. Mais de uma tabela (inclusive abas ou cabeçalhos distintos no mesmo arquivo) produz uma pendência explícita `needs_evidence_scope`, lista as fontes na interface PT/EN e não executa a análise de carteira, matching setorial ou R01. A pendência também alimenta o canal existente de requisitos de informação. O restante do diagnóstico do projeto mantém seu próprio escopo; não é uma suspensão global do caso.
+
+Para uma tabela única, a identidade do universo inclui sessão, documento, aba e cabeçalho. O manifesto SHA-256 passa a incluir identidade, revisão, tipo e hashes das fontes; sua ordem de chegada não altera a identidade. Duplicações e conteúdo que não corresponda à fonte autorizada são rejeitados. Assemblies e suplementos associados ao hash antigo ficam desatualizados e precisam de nova validação. Não há migração ou backfill; nenhuma nova permissão, integração externa ou saída de dados.
+
+Limites explícitos: este corte não oferece ainda seleção e confirmação persistida de uma carteira entre várias. A data-base ainda é inferida no caminho legado de tabela única; a confirmação de data-base e a vinculação dos documentos complementares a cada carteira são a próxima dependência. R01 continua interno/shadow. Não se homologa aqui expertise setorial universal ou a jornada completa de análise por objeto.
+
+Segurança: controles AI-05/AI-08 (origem e integridade dos resultados). Fluxo restrito aos documentos já autorizados do projeto; nomes de arquivos aparecem somente no relatório privado existente. Sem novos dados em telemetria. Provas negativas cobrem troca de fonte, hash, revisão e duplicação; provas de domínio cobrem carteiras concorrentes e abas distintas. Gate local completo aprovado (43/43 targets de lint, tipos, testes e build; worker 340 testes, web 322, receivables-analysis 85). A compilação local usou o trust store TLS do sistema para acessar Google Fonts, sem desativar validação de certificados. Revisão visual do componente real com estado sintético e CSS existente em 1440px/390px, PT/EN, concluída; não é uma prova de seleção persistida nem uma sessão real de data room. Capturas locais: /tmp/offroad-receivables-scope-desktop.png, /tmp/offroad-receivables-scope-mobile.png e /tmp/offroad-receivables-scope-en-mobile.png. Revisão independente sem bloqueio alto novo. CI e publicação ainda pendentes. Rollback: reverter o PR e publicar web/worker; relatórios históricos permanecem registrados, sem reatribuir sua origem.
+
+
 ## Contexto setorial revisado publicado, 08/09/2026
 
 PR #553 integrada em `d30a9ebc374ba78048210818514b492023d59e30`. Contexto revisado da companhia, atribuição de fontes, requisitos e lacunas chegam ao plano apresentado para aprovação. Novas propostas preservam a cadeia de versões; aprovação antiga não é herdada. O escopo permanece `planning_only`: requisitos não examinados e métodos especificados, sem ativação automática de métodos financeiros por setor.

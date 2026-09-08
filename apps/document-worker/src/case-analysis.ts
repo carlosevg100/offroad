@@ -72,6 +72,7 @@ import {
   analyzeReceivablesPhaseOne,
   assessReceivablesPoolMethodReadiness,
   buildReceivablesRawUniverse,
+  identifyReceivablesTapes,
   detectReceivablesRawEvidence,
   receivablesCaseSchema,
   receivablesPoolInputAssemblySchema,
@@ -92,10 +93,9 @@ import type {
   QueueClient,
 } from "./queue";
 import {
-  decodeReceivablesEvidence,
-  receivablesEvidenceDocumentSchema,
+  decodeBoundReceivablesEvidence,
+  fingerprintReceivablesEvidence,
   receivablesEvidenceEnvelopeSchema,
-  receivablesFiscalArchiveEvidenceSchema,
 } from "./receivables-evidence";
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
@@ -1648,7 +1648,8 @@ async function persistDealStateObjects(input: {
 
 type PublicReceivablesVertical = {
   version: "2026.08.28-v1";
-  status: "needs_requested_amount" | "analyzed";
+  status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
+  scopeIssue?: {code: "multiple_receivables_tapes"; candidates: ReturnType<typeof identifyReceivablesTapes>};
   fingerprint: string;
   evidenceCoverage: {
     delivered: number;
@@ -1693,8 +1694,8 @@ type PublicReceivablesVertical = {
  * This is intentionally a parallel, borrower-safe vertical report. Provider identities,
  * mandate collection tasks and the internal shortlist never cross this boundary.
  */
-function buildReceivablesVertical(
-  raw: z.infer<typeof rawCaseInputSchema>,
+export function buildReceivablesVertical(
+  raw: Pick<z.infer<typeof rawCaseInputSchema>, "session" | "_execution" | "receivables_evidence" | "receivables_method_input_assembly" | "receivables_method_supplement_draft" | "receivables_provider_context">,
   asOf: string,
   includeProviderFit: boolean,
 ): {
@@ -1709,23 +1710,55 @@ function buildReceivablesVertical(
 
   const documents: ReceivablesEvidenceDocument[] = [];
   const fiscalArchives: ReceivablesFiscalArchiveEvidence[] = [];
+  const datasetHash = fingerprintReceivablesEvidence(raw.receivables_evidence);
   for (const envelope of raw.receivables_evidence) {
-    const decoded = decodeReceivablesEvidence(envelope);
-    if (envelope.content_kind === "document_layer") {
-      documents.push(receivablesEvidenceDocumentSchema.parse(decoded));
-    } else {
-      fiscalArchives.push(receivablesFiscalArchiveEvidenceSchema.parse(decoded));
-    }
+    const decoded = decodeBoundReceivablesEvidence(envelope);
+    if (decoded.kind === "document_layer") documents.push(decoded.evidence);
+    else fiscalArchives.push(decoded.evidence);
   }
   const evidenceHashes = raw.receivables_evidence.map((entry) => entry.content_sha256).sort();
-  const datasetHash = sha256(evidenceHashes.join(":"));
   const caseId = String(raw.session.id ?? raw._execution.id);
-  const built = buildReceivablesRawUniverse({universeId: caseId, datasetHash, documents});
+  const candidates = identifyReceivablesTapes(documents);
+  if (candidates.length > 1) {
+    const code = "multiple_receivables_tapes";
+    const evidenceIds = [...new Set(candidates.map((candidate) => candidate.documentId))];
+    const question = {
+      pt: "Há mais de uma tabela de recebíveis. Delimite uma carteira e sua data-base antes da análise.",
+      en: "More than one receivables table was found. Define one pool and its reporting date before analysis.",
+    };
+    return {
+      publicReport: {
+        version: "2026.08.28-v1", status: "needs_evidence_scope",
+        fingerprint: fingerprintJson({version: "receivables-scope.v1", datasetHash, candidates}),
+        scopeIssue: {code, candidates},
+        evidenceCoverage: {delivered: raw.receivables_evidence.length, searched: documents.length, complete: false, warnings: [code]},
+        classification: {categoryIds: [], cellIds: []}, defects: [], questions: [],
+        methodReadiness: {
+          version: "2026.09.07-v1", state: "blocked", primaryReason: "conflicting",
+          methodExecutionAllowed: false, sourceDatasetHash: datasetHash,
+          dimensions: [{id: "source_universe", state: "conflicting", gapCodes: [code]}],
+          gaps: [{code, dimensionId: "source_universe", class: "conflict", blocking: true,
+            message: question, question, evidenceIds}],
+          nextQuestions: [{id: code, dimensionId: "source_universe", text: question, evidenceIds}],
+        },
+        methodExecution: {mode: "internal_shadow", taskId: "R01", status: "not_ready", externalEffectAllowed: false,
+          inputFingerprint: null, outputFingerprint: null, qualityResults: [], failureCode: null},
+        pipeline: null,
+      },
+      privateReport: null, specialistShadow: null, inputAssemblyId: null, inputAssembly: null,
+      inputResolution: {assembly: null, origin: "none", draftState: "conflicted", missingSections: [], openConflictIds: [code]},
+    };
+  }
+  const candidate = candidates[0];
+  const universeId = candidate
+    ? `${caseId}:pool:${candidate.documentId}:${encodeURIComponent(candidate.sheet)}:${candidate.headerRow}`
+    : caseId;
+  const built = buildReceivablesRawUniverse({universeId, datasetHash, documents});
   if (!built.phaseOne) return null;
 
   const reportingDate = built.phaseOne.universe.dates.reportingDate;
   const detection = detectReceivablesRawEvidence({
-    universeId: caseId,
+    universeId,
     reportingDate,
     datasetHash,
     documents,
@@ -1849,7 +1882,7 @@ function buildReceivablesVertical(
       sourceSystem: "offroad_intake",
       occurredAt: reportingDate,
     }],
-    universe: caseId,
+    universe: universeId,
     reportingDate,
     inclusions: ["requested amount declared in the governed intake"],
     exclusions: [],

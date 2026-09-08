@@ -61,6 +61,30 @@ type EncodedEvidence = {
 
 const hash = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
 
+/** Fingerprints the current source manifest, independently of transport encoding/order. */
+export function fingerprintReceivablesEvidence(envelopes: readonly ReceivablesEvidenceEnvelope[]): string {
+  const seen = new Set<string>();
+  const sources = envelopes.map((input) => {
+    const envelope = receivablesEvidenceEnvelopeSchema.parse(input);
+    const sourceId = envelope.source_document_id.toLowerCase();
+    if (seen.has(sourceId)) {
+      throw Object.assign(new Error("receivables evidence contains a repeated source document"), {
+        code: "receivables_evidence_duplicate_source",
+      });
+    }
+    seen.add(sourceId);
+    return {
+      source_document_id: sourceId,
+      document_version: envelope.document_version,
+      content_kind: envelope.content_kind,
+      source_sha256: envelope.source_sha256,
+      content_sha256: envelope.content_sha256,
+      schema_version: envelope.schema_version,
+    };
+  }).sort((a, b) => a.source_document_id < b.source_document_id ? -1 : a.source_document_id > b.source_document_id ? 1 : 0);
+  return hash(Buffer.from(JSON.stringify({schemaVersion: "receivables-evidence-manifest.v1", sources}), "utf8"));
+}
+
 export function encodeReceivablesEvidence(value: unknown): EncodedEvidence {
   const content = Buffer.from(JSON.stringify(value), "utf8");
   if (content.byteLength > maxUncompressedBytes) {
@@ -97,6 +121,29 @@ export function decodeReceivablesEvidence(envelope: ReceivablesEvidenceEnvelope)
     });
   }
   return JSON.parse(content.toString("utf8")) as unknown;
+}
+
+export type BoundReceivablesEvidence =
+  | {kind: "document_layer"; evidence: ReceivablesEvidenceDocument}
+  | {kind: "nfe_archive"; evidence: ReceivablesFiscalArchiveEvidence};
+
+/** Content integrity alone does not bind a fragment to the authorized source. */
+export function decodeBoundReceivablesEvidence(envelope: ReceivablesEvidenceEnvelope): BoundReceivablesEvidence {
+  const source = receivablesEvidenceEnvelopeSchema.parse(envelope);
+  const decoded = decodeReceivablesEvidence(source);
+  const mismatch = () => Object.assign(new Error("receivables evidence does not match its source"), {
+    code: "receivables_evidence_source_mismatch",
+  });
+  if (source.content_kind === "nfe_archive") {
+    const evidence = receivablesFiscalArchiveEvidenceSchema.parse(decoded);
+    if (evidence.archiveId !== source.source_document_id || evidence.fileHash !== source.source_sha256) throw mismatch();
+    return {kind: "nfe_archive", evidence};
+  }
+  const evidence = receivablesEvidenceDocumentSchema.parse(decoded);
+  if (evidence.id !== source.source_document_id || evidence.layer.documentId !== source.source_document_id
+    || evidence.layer.documentVersion !== source.document_version
+    || evidence.fileHash !== source.source_sha256) throw mismatch();
+  return {kind: "document_layer", evidence};
 }
 
 export function documentEvidence(input: {
