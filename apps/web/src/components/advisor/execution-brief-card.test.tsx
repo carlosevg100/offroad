@@ -88,7 +88,7 @@ describe("execution brief persisted approval", () => {
         expect(html).not.toContain(messages.ExecutionBriefCard.startsAfterDisplay);
         // The exact opaque identity is machine-readable for version binding, never visible copy.
         expect(html).toContain(`data-brief-fingerprint="${brief.fingerprint}"`);
-        expect(html.replace(/<[^>]*>/g, "")).not.toContain(brief.fingerprint);
+        expect(html.split(brief.fingerprint)).toHaveLength(2);
       });
     }
   }
