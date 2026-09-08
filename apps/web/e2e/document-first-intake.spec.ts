@@ -707,6 +707,8 @@ test.describe("Document-first intake (company journey)", () => {
     // Assert the economic result, not substrings that might also occur inside source hashes.
     expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.titleCount.value)).toBe(1);
     expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
+    const storedScope = JSON.parse(sql("select jsonb_build_object('id', id, 'fingerprint', fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
+    expect(result.evidenceScope).toEqual(storedScope);
     const periods = result.supportPeriodAssessment;
     expect(periods.schemaVersion).toBe("receivables-support-periods.v1");
     expect(periods.entries).toHaveLength(37);

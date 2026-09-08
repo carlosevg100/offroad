@@ -1,4 +1,6 @@
-import {ReceivablesProjectSupportPeriods, isReceivablesReportCurrent} from "@/components/intake/receivables-project-support-periods";
+import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
+import {loadReceivablesTemporalReport} from "@/lib/receivables/temporal-report";
+import {ReceivablesProjectSupportPeriods} from "@/components/intake/receivables-project-support-periods";
 import {loadReceivablesScope} from "@/lib/receivables/scope";
 import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
@@ -462,6 +464,7 @@ async function ConversationalCapitalProject({
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
   const receivablesScope = await loadReceivablesScope(supabase, session.id);
+  const receivablesTemporalReport = await loadReceivablesTemporalReport(supabase, organization.id, session.id, receivablesScope);
   const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
@@ -624,7 +627,7 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
       canRetry={session.status === "failed"}
       shouldStart={session.status === "collecting"}
-    />{privateWorkbench?.understanding ? <ReceivablesProjectSupportPeriods understanding={privateWorkbench.understanding.value} locale={locale} current={isReceivablesReportCurrent(receivablesScope, privateWorkbench.understanding.row.created_at, privateWorkbench.isProcessing)} /> : null}{privateWorkbench ? <PrivateDiagnosticWork
+    />{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{privateWorkbench ? <PrivateDiagnosticWork
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       projectId={project.id}

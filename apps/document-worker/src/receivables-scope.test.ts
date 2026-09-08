@@ -206,6 +206,10 @@ it("carries scoped ledger periods into the report, readiness and reproducible id
   scope.scope!.complementDocumentIds = [id(2)];
   scope.scope!.sourceRevisions = scope.sourceManifest!.sources;
   const result = run(evidence, scope).publicReport;
+  expect(result.evidenceScope).toEqual({id: scope.scope!.id, fingerprint: scope.scope!.fingerprint});
+  const reconfirmed = structuredClone(scope);
+  reconfirmed.scope!.id = id(82);
+  expect(run(evidence, reconfirmed).publicReport.fingerprint).not.toBe(result.fingerprint);
   expect(result.supportPeriodAssessment).toMatchObject({schemaVersion: "receivables-support-periods.v1", reportingDate: "2026-08-31"});
   expect(result.supportPeriodAssessment?.entries).toEqual(expect.arrayContaining([
     expect.objectContaining({sourceId: id(2), rawDate: "2026-08-31", qualification: "included", anchor: expect.objectContaining({row: 2})}),
