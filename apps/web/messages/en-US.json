@@ -1207,6 +1207,9 @@
       "continueLabel": "Continue"
     },
     "advisorProject": {
+      "recovery": {
+        "uncertain": "Receipt could not be confirmed. Your text has been preserved. Send it again to confirm the same request."
+      },
       "advisor": "Offroad Agent",
       "context": "Project context",
       "conversation": "Project",
