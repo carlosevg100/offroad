@@ -34,7 +34,7 @@ export type CaseState = Omit<PublicCaseEngineState, "modelInvocations"> & {
   receivablesVertical?: {
     version: "2026.08.28-v1";
     status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
-    scopeIssue?: {code: "multiple_receivables_tapes"; candidates: readonly {documentId: string; fileName: string; sheet: string; headerRow: number}[]};
+    scopeIssue?: {code: "multiple_receivables_tapes" | "scope_confirmation_required" | "scope_stale" | "reporting_date_conflict"; candidates: readonly {documentId: string; fileName: string; sheet: string; headerRow: number}[]};
     fingerprint: string;
     evidenceCoverage: {delivered: number; searched: number; complete: boolean; warnings: readonly string[]};
     classification: {categoryIds: readonly string[]; cellIds: readonly string[]};

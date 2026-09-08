@@ -3080,7 +3080,10 @@
       "receivablesScopeBody": "Foram identificadas várias tabelas de recebíveis. Nenhuma carteira foi selecionada e os cálculos não foram executados.",
       "receivablesScopeTable": "Aba {sheet} · cabeçalho na linha {row}",
       "receivablesScopeGuidance": "Antes da análise, delimite uma única carteira e informe sua data-base, esclarecendo quais arquivos e tabelas pertencem a esse perímetro.",
-      "receivablesScopeCoverage": "{count, plural, one {# fonte recebida} other {# fontes recebidas}}; delimitação da carteira pendente."
+      "receivablesScopeCoverage": "{count, plural, one {# fonte recebida} other {# fontes recebidas}}; delimitação da carteira pendente.",
+      "receivablesScopeConfirmation": "Confirme a carteira, os documentos de apoio e a data-base antes da análise.",
+      "receivablesScopeStale": "As fontes mudaram. Revise e confirme novamente o escopo.",
+      "receivablesScopeDateConflict": "Há eventos posteriores à data-base informada. Revise as fontes e a data antes da análise."
     },
     "brief": {
       "kicker": "A operação",
@@ -3573,7 +3576,11 @@
         "user_review": "Revisão do usuário",
         "unverified": "Referência não verificada"
       }
-    }
+    },
+    "scopeBasis": "Versão {version} · {count, plural, one {# fonte selecionada} other {# fontes selecionadas}} · data-base {date}",
+    "scopeTrace": "Rastreabilidade do escopo",
+    "scopeFingerprint": "Identificador do escopo",
+    "scopeSourceHash": "Identificador do arquivo"
   },
   "AdvisorEvidenceInventory": {
     "title": "Base de informação",
@@ -3674,5 +3681,29 @@
     "evidenceLabel": "Base da informação",
     "editable": "Premissa revisável",
     "fixed": "Não editável nesta versão"
+  },
+  "ReceivablesScope": {
+    "title": "Delimitar a carteira de recebíveis",
+    "body": "Escolha uma tabela e os documentos de apoio. Na análise desta carteira, serão usados somente essa tabela e os apoios selecionados; outras abas de carteira ficam excluídas.",
+    "primary": "Tabela da carteira",
+    "support": "Documentos de apoio",
+    "date": "Data-base da carteira",
+    "declaration": "Confirmo este perímetro e a data-base informada.",
+    "confirm": "Confirmar escopo e revisar plano",
+    "pending": "Registrando escopo…",
+    "saved": "Escopo registrado. Revise e aprove o novo plano antes da análise.",
+    "current": "Carteira e data-base confirmadas",
+    "stale": "As fontes mudaram. Revise e confirme novamente o escopo.",
+    "unavailable": "As tabelas ainda não estão disponíveis para delimitação. Atualize após o processamento dos documentos.",
+    "refresh": "Atualizar estado",
+    "noSupport": "Nenhum documento de apoio elegível.",
+    "invalid": "Confira tabela, data e confirmação.",
+    "denied": "Você não tem acesso para confirmar este escopo.",
+    "processing": "Este caso não pode ser reprocessado neste estado. Retome o fluxo de revisão existente antes de confirmar.",
+    "save": "Não foi possível registrar o escopo. Tente novamente.",
+    "unnamedSource": "Arquivo sem nome disponível",
+    "sheet": "Aba",
+    "headerRow": "cabeçalho na linha",
+    "version": "Versão"
   }
 }

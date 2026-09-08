@@ -3080,7 +3080,10 @@
       "receivablesScopeBody": "Multiple receivables tables were identified. No portfolio has been selected and calculations have not run.",
       "receivablesScopeTable": "Sheet {sheet} · header at row {row}",
       "receivablesScopeGuidance": "Before analysis, define one portfolio and provide its reporting date, clarifying which files and tables belong to that scope.",
-      "receivablesScopeCoverage": "{count, plural, one {# source received} other {# sources received}}; portfolio scope pending."
+      "receivablesScopeCoverage": "{count, plural, one {# source received} other {# sources received}}; portfolio scope pending.",
+      "receivablesScopeConfirmation": "Confirm the portfolio, supporting documents and reporting date before analysis.",
+      "receivablesScopeStale": "Sources have changed. Review and confirm the scope again.",
+      "receivablesScopeDateConflict": "Some events occur after the reporting date. Review the sources and date before analysis."
     },
     "brief": {
       "kicker": "The transaction",
@@ -3573,7 +3576,11 @@
         "user_review": "User review",
         "unverified": "Unverified reference"
       }
-    }
+    },
+    "scopeBasis": "Version {version} · {count, plural, one {# selected source} other {# selected sources}} · reporting date {date}",
+    "scopeTrace": "Scope traceability",
+    "scopeFingerprint": "Scope fingerprint",
+    "scopeSourceHash": "File fingerprint"
   },
   "AdvisorEvidenceInventory": {
     "title": "Information base",
@@ -3674,5 +3681,29 @@
     "evidenceLabel": "Evidence basis",
     "editable": "Revisable assumption",
     "fixed": "Not editable in this version"
+  },
+  "ReceivablesScope": {
+    "title": "Define the receivables pool",
+    "body": "Choose one table and supporting documents. Only that table and selected supporting documents will be used for this receivables analysis; other portfolio sheets are excluded.",
+    "primary": "Portfolio table",
+    "support": "Supporting documents",
+    "date": "Portfolio reporting date",
+    "declaration": "I confirm this scope and the reporting date provided.",
+    "confirm": "Confirm scope and review plan",
+    "pending": "Recording scope…",
+    "saved": "Scope recorded. Review and approve the new plan before analysis.",
+    "current": "Pool and reporting date confirmed",
+    "stale": "Sources have changed. Review and confirm the scope again.",
+    "unavailable": "Tables are not yet available for selection. Refresh after document processing.",
+    "refresh": "Refresh status",
+    "noSupport": "No eligible supporting documents.",
+    "invalid": "Check the table, date and confirmation.",
+    "denied": "You do not have access to confirm this scope.",
+    "processing": "This case cannot be reprocessed in its current state. Return to the existing revision flow before confirming.",
+    "save": "The scope could not be recorded. Please retry.",
+    "unnamedSource": "File name unavailable",
+    "sheet": "Sheet",
+    "headerRow": "header at row",
+    "version": "Version"
   }
 }

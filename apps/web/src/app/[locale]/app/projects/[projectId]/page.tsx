@@ -1,3 +1,5 @@
+import {loadReceivablesScope} from "@/lib/receivables/scope";
+import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {decisionArtifactContractSchema} from "@offroad/case-understanding";
 import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
@@ -234,6 +236,7 @@ async function ConversationalCapitalProject({
   };
 }) {
   const t = await getTranslations({locale, namespace: "App.advisorProject"});
+  const scopeTranslations = await getTranslations({locale, namespace: "ReceivablesScope"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: session} = await supabase.from("document_intake_sessions")
     .select("id, status, representation_status")
@@ -457,6 +460,8 @@ async function ConversationalCapitalProject({
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
+  const receivablesScope = await loadReceivablesScope(supabase, session.id);
+  const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
     ? informationRequests ?? []
@@ -597,7 +602,7 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<><AdvisorDecisionWork
+    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}<AdvisorDecisionWork
       contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null}
       artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}

@@ -51,3 +51,35 @@ it("keeps sector planning tied to the displayed objective across short follow-up
   expect(followup.visible.objective).toBe(initial.visible.objective);
   expect(followup.visible.planningContext).toEqual(initial.visible.planningContext);
 });
+
+it("binds a confirmed pool revision into the exact approved brief", () => {
+  const source = {
+    sourceDocumentId: "10000000-0000-4000-8000-000000000090", documentVersion: 1,
+    contentKind: "document_layer" as const, sourceSha256: "a".repeat(64), contentSha256: "b".repeat(64),
+    schemaVersion: "2026.08.28-v1" as const, fileName: "Synthetic pool.csv",
+  };
+  const primaryTape = {documentId: source.sourceDocumentId, sheet: "Pool", headerRow: 1};
+  const scope: import("@offroad/receivables-analysis").ReceivablesEvidenceScopeContext = {
+    state: "current",
+    sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: "c".repeat(64), sources: [source]},
+    candidates: [{...primaryTape, fileName: source.fileName}],
+    scope: {
+      schemaVersion: "receivables-evidence-scope.v1", id: "10000000-0000-4000-8000-000000000091",
+      fingerprint: "d".repeat(64), sourceManifestFingerprint: "c".repeat(64), primaryTape,
+      complementDocumentIds: [], reportingDate: "2026-08-31", sourceRevisions: [source],
+      confirmedBy: "10000000-0000-4000-8000-000000000092", confirmedAt: "2026-09-08T00:00:00Z",
+    },
+  };
+  const activation = workspaceJobActivationSchema.parse({job: "company_debt_view", company: {name: "Synthetic Company"}, brief: {focus: "Analisar a dívida"}});
+  const base = {locale: "pt-BR" as const, message: "Analisar a dívida", accessBasis: "authorized_private", documents: [], activePlan: capitalProjectPlanSnapshot("company_debt_view")};
+  const before = prepareExecutionBrief(base, activation);
+  const bound = prepareExecutionBrief({...base, confirmedReceivablesScope: scope}, activation);
+  expect(bound.visible.fingerprint).not.toBe(before.visible.fingerprint);
+  expect(bound.visible.assumptions[0]!.value).toContain("Pool:1 · 2026-08-31");
+  expect(JSON.parse(bound.visible.assumptions[0]!.basis)).toMatchObject({scopeFingerprint: "d".repeat(64), documentVersion: 1, primaryDocumentId: primaryTape.documentId, headerRow: primaryTape.headerRow});
+  const revised = structuredClone(scope);
+  revised.scope!.reportingDate = "2026-09-01";
+  revised.scope!.fingerprint = "e".repeat(64);
+  expect(prepareExecutionBrief({...base, confirmedReceivablesScope: revised}, activation).visible.fingerprint).not.toBe(bound.visible.fingerprint);
+  expect(bound.internal.workstreams).toEqual(before.internal.workstreams);
+});

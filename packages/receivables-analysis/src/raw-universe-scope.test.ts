@@ -12,7 +12,7 @@ function document(id: string, sheets = ["Titles"]): ReceivablesEvidenceDocument 
   }};
 }
 const build = (documents: ReceivablesEvidenceDocument[]) => buildReceivablesRawUniverse({
-  universeId: "synthetic-scope", datasetHash: "b".repeat(64), documents,
+  universeId: "synthetic-scope", datasetHash: "b".repeat(64), reportingDate: "2026-02-01", documents,
 });
 
 describe("raw receivables universe scope", () => {
@@ -80,5 +80,33 @@ describe("raw receivables universe scope", () => {
   it("reports no identified dataset when no tape is present", () => {
     expect(build([{id: "a", fileName: "synthetic.pdf", fileHash: "a".repeat(64), layer: {documentId: "a"}}]))
       .toMatchObject({phaseOne: null, warnings: ["receivables_tape_not_identified"]});
+  });
+});
+
+
+describe("declared reporting date and event coverage", () => {
+  it("keeps reporting date separate from the observed source period", () => {
+    const phase = build([document("a")]).phaseOne!;
+    expect(phase.universe.dates).toEqual({reportingDate: "2026-02-01", latestOriginationDate: "2026-01-01", dataStartDate: "2026-01-01", dataEndDate: "2026-01-01"});
+    expect(phase.universe.eventCoverage.settlements.status).toBe("not_provided");
+  });
+  it("refuses to silently reconstruct an earlier snapshot", () => {
+    expect(buildReceivablesRawUniverse({universeId: "synthetic", datasetHash: "b".repeat(64), reportingDate: "2025-12-31", documents: [document("a")]}))
+      .toMatchObject({phaseOne: null, warnings: ["source_events_after_reporting_date"]});
+  });
+  it("rejects impossible calendar dates", () => {
+    expect(() => buildReceivablesRawUniverse({universeId: "synthetic", datasetHash: "b".repeat(64), reportingDate: "2026-02-30", documents: [document("a")]})).toThrow();
+  });
+  it("does not equate observed paid titles with complete settlement history", () => {
+    const source = document("a");
+    source.layer.sheets = [{name: "Titles", cells: [
+      ...cells([...headers, "DT PAGAMENTO", "VLR PAGO"], 1),
+      ...cells(["T-1", "12345678000190", "2026-01-01", "2026-02-01", "100", "liquidado", "2026-01-15", "100"], 2),
+    ]}];
+    const phase = build([source]).phaseOne!;
+    expect(phase.universe.eventCoverage.settlements.status).toBe("partial");
+    expect(phase.universe.dates.dataEndDate).toBe("2026-01-15");
+    expect(buildReceivablesRawUniverse({universeId: "synthetic", datasetHash: "b".repeat(64), reportingDate: "2026-01-10", documents: [source]}))
+      .toMatchObject({phaseOne: null, warnings: ["source_events_after_reporting_date"]});
   });
 });

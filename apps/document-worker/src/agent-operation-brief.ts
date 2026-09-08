@@ -1,3 +1,4 @@
+import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
 import {randomUUID} from "node:crypto";
 
 import {
@@ -82,6 +83,7 @@ const specialistCapabilities = specialistTaskCapabilityRuntimeManifest.map((capa
 ));
 
 const contextSchema = z.object({
+  confirmed_receivables_scope: receivablesEvidenceScopeContextSchema.optional(),
   governed_sector_context_inputs: governedSectorContextInputsSchema.optional(),
   session_id: z.uuid(),
   message_id: z.uuid(),
@@ -1071,6 +1073,7 @@ async function recordPreviewWorkflowSelection(
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {
   return {
+    ...(context.confirmed_receivables_scope ? {confirmedReceivablesScope: context.confirmed_receivables_scope} : {}),
     sessionId: context.session_id,
     ...(context.governed_sector_context_inputs ? {governedSectorContextInputs: context.governed_sector_context_inputs} : {}),
     locale: context.locale,

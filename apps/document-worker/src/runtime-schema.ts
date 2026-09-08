@@ -12,6 +12,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "explicit-execution-brief-approval.v1",
   "execution-brief-proposal.v1",
   "governed-sector-planning-context.v1",
+  "confirmed-receivables-evidence-scope.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

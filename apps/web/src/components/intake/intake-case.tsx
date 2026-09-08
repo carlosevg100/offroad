@@ -112,7 +112,7 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
               {receivables.status === "analyzed" ? t("receivablesAnalyzed") : receivables.status === "needs_evidence_scope" ? t("receivablesNeedsScope") : t("receivablesNeedsAmount")}
             </span>
           </header>
-          <p>{t(receivables.status === "needs_evidence_scope" ? "receivablesScopeBody" : "receivablesBody")}</p>
+          <p>{t(receivables.status === "needs_evidence_scope" ? (receivables.scopeIssue?.code === "scope_confirmation_required" ? "receivablesScopeConfirmation" : receivables.scopeIssue?.code === "scope_stale" ? "receivablesScopeStale" : receivables.scopeIssue?.code === "reporting_date_conflict" ? "receivablesScopeDateConflict" : "receivablesScopeBody") : "receivablesBody")}</p>
 
           {receivables.status === "needs_evidence_scope" ? (
             <section className="case-receivables__notice" aria-label={t("receivablesNeedsScope")}>

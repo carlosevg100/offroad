@@ -13,7 +13,9 @@ import {
   researchSubjectFromDeclaration,
 } from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
-import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
+import {documentEvidence, encodeReceivablesEvidence, receivablesEvidenceEnvelopeSchema} from "./receivables-evidence";
+
+import {discoverReceivablesEvidence} from "./receivables-scope-resolution";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -635,6 +637,20 @@ describe("worker case analysis", () => {
         model_policy_version: "2026.08.24-v1",
       },
     };
+    const discovered = discoverReceivablesEvidence(receivablesEvidenceEnvelopeSchema.array().parse(raw.receivables_evidence));
+    const candidate = discovered.candidates[0]!;
+    Object.assign(raw, {confirmed_receivables_scope: {
+      state: "current", sourceManifest: discovered.sourceManifest, candidates: discovered.candidates,
+      scope: {
+        schemaVersion: "receivables-evidence-scope.v1",
+        id: "12121212-1212-4121-8121-121212121212", fingerprint: "1".repeat(64),
+        sourceManifestFingerprint: discovered.sourceManifest.fingerprint,
+        primaryTape: {documentId: candidate.documentId, sheet: candidate.sheet, headerRow: candidate.headerRow},
+        complementDocumentIds: [], reportingDate: "2026-06-30",
+        sourceRevisions: discovered.sourceManifest.sources,
+        confirmedBy: "13131313-1313-4131-8131-131313131313", confirmedAt: "2026-09-08T12:00:00Z",
+      },
+    }});
     const queue: QueueClient = {
       claim: async () => null,
       heartbeat: async () => {},
@@ -689,14 +705,19 @@ describe("worker case analysis", () => {
         recordedState = state as Record<string, unknown>;
         return "manifest-1";
       },
-      recordOperatingControlSnapshot: async () => ({
+      recordOperatingControlSnapshot: async (_job, input) => {
+        // Mirrors the SQL frozen-input binding; artifact/economic hashes are separate identities.
+        expect(input.inputFingerprint).toBe(raw._execution.input_fingerprint);
+        expect(input.inputFingerprint).toBe("e".repeat(64));
+        return {
         id: "f3000000-0000-4000-8000-000000000001",
         allowed: false,
         blockers: ["capability_not_accredited_for_recommend"],
         warnings: [],
         decisionFingerprint: "f".repeat(64),
         replayed: false,
-      }),
+        };
+      },
       recordControlledExecution: async () => "execution-1",
       loadAgentContext: async () => ({}),
       loadCapitalProjectContext: async () => ({}),

@@ -156,6 +156,7 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     const built = buildReceivablesRawUniverse({
       universeId: manifest.fixtureId,
       datasetHash: rawDatasetHash,
+      reportingDate: manifest.dates.reportingDate,
       documents: rawDocuments,
     });
     expect(built.classification).toMatchObject({

@@ -8018,6 +8018,17 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_receivables_evidence_scope_v1: {
+        Args: {
+          p_command_id: string
+          p_complement_document_ids: string[]
+          p_expected_manifest_fingerprint: string
+          p_primary_tape: Json
+          p_reporting_date: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       create_opportunity_intake: {
         Args: {
           p_currency: string
@@ -8158,6 +8169,10 @@ export type Database = {
           p_processing_run_id?: string
           p_session_id: string
         }
+        Returns: Json
+      }
+      read_receivables_evidence_scope_v1: {
+        Args: { p_session_id: string }
         Returns: Json
       }
       record_agent_change_proposal: {
@@ -8954,6 +8969,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_agent_context_v4: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_agent_plan_context_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -8986,6 +9005,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_case_input_v2: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_claim_decisions: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -8995,6 +9018,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_execution_brief_proposal_v2: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_execution_brief_proposal_v3: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

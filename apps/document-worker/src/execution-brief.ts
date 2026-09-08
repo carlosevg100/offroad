@@ -1,3 +1,4 @@
+import {receivablesEvidenceScopeContextSchema, type ReceivablesEvidenceScopeContext} from "@offroad/receivables-analysis";
 import type {WorkspaceJobActivation} from "@offroad/agent-contracts";
 import {
   compileCapitalExecutionBrief,
@@ -37,6 +38,7 @@ const capitalPlanSchema = z.object({
 }).passthrough();
 
 export type ExecutionBriefContext = {
+  confirmedReceivablesScope?: ReceivablesEvidenceScopeContext | undefined;
   sessionId?: string;
   governedSectorContextInputs?: GovernedSectorContextInputs;
   requestId?: string;
@@ -99,7 +101,7 @@ function compileStandardBrief(
     audienceLabel: copy.audience,
     proposedDeliverable: copy.deliverable,
     sources,
-    assumptions: copy.assumptions,
+    assumptions: [...copy.assumptions, ...receivablesScopeAssumptions(context.confirmedReceivablesScope, context.locale)],
     authority: {
       evidenceRegime: context.documents.length > 0 ? "mixed" : "public",
       executionAuthority: "analysis_only",
@@ -245,4 +247,20 @@ function previewAssumptions(locale: "pt-BR" | "en-US", activation: PreviewActiva
     premises.newDebtTermMonths !== undefined ? {label: pt ? "Prazo da nova dívida" : "New debt term", value: `${premises.newDebtTermMonths} ${pt ? "meses" : "months"}`, basis: pt ? "Informado pelo usuário neste projeto" : "Stated by the user in this project", editable: true as const} : null,
     premises.newDebtGraceMonths !== undefined ? {label: pt ? "Carência da nova dívida" : "New debt grace", value: `${premises.newDebtGraceMonths} ${pt ? "meses" : "months"}`, basis: pt ? "Informada pelo usuário neste projeto" : "Stated by the user in this project", editable: true as const} : null,
   ].filter((item): item is NonNullable<typeof item> => item !== null);
+}
+
+/** Exact confirmed scope participates in the approved snapshot; labels never confer authority. */
+export function receivablesScopeAssumptions(input: ReceivablesEvidenceScopeContext | undefined, locale: "pt-BR" | "en-US") {
+  if (!input) return [];
+  const context = receivablesEvidenceScopeContextSchema.parse(input);
+  if (context.state !== "current" || !context.scope) return [];
+  const scope = context.scope;
+  const source = scope.sourceRevisions.find((revision) => revision.sourceDocumentId === scope.primaryTape.documentId)!;
+  return [{
+    label: locale === "pt-BR" ? "Carteira e data-base confirmadas" : "Confirmed pool and reporting date",
+    value: `${(source.fileName ?? source.sourceDocumentId).slice(0, 200)} · ${scope.primaryTape.sheet.slice(0, 200)}:${scope.primaryTape.headerRow} · ${scope.reportingDate}`,
+    basis: JSON.stringify({scopeFingerprint: scope.fingerprint, reportingDate: scope.reportingDate, primaryDocumentId: scope.primaryTape.documentId, headerRow: scope.primaryTape.headerRow, selectedSourceCount: scope.sourceRevisions.length,
+      documentVersion: source.documentVersion, sourceSha256: source.sourceSha256, contentSha256: source.contentSha256}),
+    editable: true as const,
+  }];
 }
