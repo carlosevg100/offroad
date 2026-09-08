@@ -2,6 +2,7 @@
 
 import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
 import Link from "next/link";
+import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
 import {useRef, useState, type ReactNode} from "react";
 
@@ -22,6 +23,7 @@ import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake
 import {createClient} from "@/lib/supabase/client";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {ExecutionBriefCard} from "./execution-brief-card";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
@@ -103,7 +105,9 @@ type Props = {
 
 export function AdvisorProject(props: Props) {
   const router = useRouter();
+  const recoveryCopy = useTranslations("App.advisorProject.recovery");
   const inputRef = useRef<HTMLInputElement>(null);
+  const [commandRecovery] = useState(() => createAdvisorCommandRecovery());
   const [content, setContent] = useState("");
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -124,7 +128,8 @@ export function AdvisorProject(props: Props) {
   });
   const successfulOutcomeAt = latestSuccessfulOutcomeAt(outcomeEvents);
   const completed = props.tasks.filter((task) => task.status === "succeeded").length;
-  const allMessages = [...props.messages, ...optimistic];
+  const persistedMessageIds = new Set(props.messages.map((message) => message.id));
+  const allMessages = [...props.messages, ...optimistic.filter((message) => !persistedMessageIds.has(message.id))];
   const proposalById = new Map(props.proposals.map((proposal) => [proposal.id, proposal]));
   const timeline = [
     ...allMessages.map((message) => ({kind: "message" as const, id: message.id, createdAt: message.createdAt, message})),
@@ -146,74 +151,77 @@ export function AdvisorProject(props: Props) {
   ].sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const lastActivityId = props.activityEvents.at(-1)?.id;
 
-  async function send() {
-    const message = content.trim();
-    if (!message || pending) return;
-    const messageId = crypto.randomUUID();
-    setContent("");
-    setError("");
-    setPending(true);
-    setOptimistic((current) => [...current, {id: messageId, role: "user", content: message, status: "completed", createdAt: new Date().toISOString()}]);
-    const result = await appendAdvisorMessage({locale: props.locale, projectId: props.projectId, content: message, messageId});
-    if (!result.ok) setError(props.copy.errors[result.error]);
-    setPending(false);
-    setOptimistic([]);
-    router.refresh();
-  }
-
-  async function requestPlanEdit(message: string): Promise<{ok: true} | {ok: false; error: string}> {
-    const executionBrief = props.executionBrief;
-    if (!executionBrief || pending) return {ok: false, error: props.copy.errors.processing};
-    const messageId = crypto.randomUUID();
-    setError("");
-    setPending(true);
-    setOptimistic((current) => [...current, {id: messageId, role: "user", content: message, status: "completed", createdAt: new Date().toISOString()}]);
-    const result = await requestAdvisorExecutionBriefEdit({
-      locale: props.locale,
-      projectId: props.projectId,
-      executionBriefId: executionBrief.briefId,
-      expectedFingerprint: executionBrief.brief.fingerprint,
-      content: message,
-      messageId,
+  async function runCommand(
+    key: readonly string[],
+    message: string,
+    action: (messageId: string) => Promise<AdvisorCommandResult>,
+    onAccepted?: () => void,
+  ): Promise<AdvisorCommandResult> {
+    const result = await commandRecovery.run({
+      key: JSON.stringify([props.projectId, props.locale, ...key]),
+      action,
+      onAccepted,
+      processingError: "processing",
+      unexpectedError: "uncertain",
+      onStart: (messageId) => {
+        setError("");
+        setPending(true);
+        setOptimistic([{id: messageId, role: "user", content: message, status: "queued", createdAt: new Date().toISOString()}]);
+      },
+      onSettled: () => {
+        setPending(false);
+        setOptimistic([]);
+        router.refresh();
+      },
     });
-    setPending(false);
-    setOptimistic([]);
     if (!result.ok) {
-      const error = props.copy.errors[result.error];
-      setError(error);
-      router.refresh();
-      return {ok: false, error};
-    }
-    router.refresh();
-    return {ok: true};
-  }
-
-  async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<{ok: true} | {ok: false; error: string}> {
-    const request = props.pendingRequests?.[0];
-    if (!request || pending) return {ok: false, error: props.copy.errors.processing};
-    const messageId = crypto.randomUUID();
-    setError("");
-    setPending(true);
-    setOptimistic((current) => [...current, {id: messageId, role: "user", content: input.content, status: "completed", createdAt: new Date().toISOString()}]);
-    const result = await answerAdvisorInformationRequest({
-      locale: props.locale,
-      projectId: props.projectId,
-      requestId: request.id,
-      expectedUpdatedAt: request.updatedAt,
-      answerSource: input.source,
-      content: input.content,
-      messageId,
-    });
-    setPending(false);
-    setOptimistic([]);
-    if (!result.ok) {
-      const message = props.copy.errors[result.error];
+      const message = result.error === "uncertain"
+        ? recoveryCopy("uncertain")
+        : props.copy.errors[result.error as keyof AdvisorProjectCopy["errors"]] ?? props.copy.errors.save;
       setError(message);
-      router.refresh();
       return {ok: false, error: message};
     }
-    router.refresh();
-    return {ok: true};
+    setError("");
+    return result;
+  }
+
+  async function send() {
+    const message = content.trim();
+    if (!message || pending || uploading) return;
+    await runCommand(["message", message], message,
+      (messageId) => appendAdvisorMessage({locale: props.locale, projectId: props.projectId, content: message, messageId}),
+      () => setContent((current) => current.trim() === message ? "" : current));
+  }
+
+  async function requestPlanEdit(message: string): Promise<AdvisorCommandResult> {
+    const executionBrief = props.executionBrief;
+    if (!executionBrief || pending) return {ok: false, error: props.copy.errors.processing};
+    const normalized = message.trim();
+    return runCommand(["plan_edit", executionBrief.briefId, executionBrief.brief.fingerprint, normalized], normalized,
+      (messageId) => requestAdvisorExecutionBriefEdit({
+        locale: props.locale,
+        projectId: props.projectId,
+        executionBriefId: executionBrief.briefId,
+        expectedFingerprint: executionBrief.brief.fingerprint,
+        content: normalized,
+        messageId,
+      }));
+  }
+
+  async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<AdvisorCommandResult> {
+    const request = props.pendingRequests?.[0];
+    if (!request || pending) return {ok: false, error: props.copy.errors.processing};
+    const normalized = input.content.trim();
+    return runCommand(["answer", request.id, request.updatedAt, input.source, normalized], normalized,
+      (messageId) => answerAdvisorInformationRequest({
+        locale: props.locale,
+        projectId: props.projectId,
+        requestId: request.id,
+        expectedUpdatedAt: request.updatedAt,
+        answerSource: input.source,
+        content: normalized,
+        messageId,
+      }));
   }
 
   async function upload(selected: FileList | null) {
