@@ -116,6 +116,7 @@ export default async function LocaleLayout({children, params}: Props) {
   const messages = await getMessages({locale});
   const clientMessages = {
     App: {privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
+    IntegrationPreviewWork: messages.IntegrationPreviewWork,
     Errors: messages.Errors,
     Navigation: messages.Navigation,
   };

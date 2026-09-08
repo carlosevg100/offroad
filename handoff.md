@@ -1,10 +1,11 @@
 # Offroad Capital: Product and Engineering Handoff
 
-## Estado de execução: recuperação comprovada, 07/09/2026
+## Revisão de resultados: precisão e acesso completo: 07/09/2026
 
-Respostas a perguntas e decisões registradas deixam de ser consideradas prova de recuperação da execução. Somente work_completed posterior elimina a indicação de uma falha anterior; empate temporal conserva falha independentemente da ordem do array. A prioridade visual de trabalho ativo e o fallback de projetos sem trilha de eventos são preservados. Não muda schema, critérios econômicos nem autorização. Trata um defeito delimitado de UX-01; correlação completa de tarefas paralelas e prontidão por dimensão continuam fora desta fatia.
+Corrige apresentação de decimais sem conversão por ponto flutuante, preserva IDs e anchors e explicita a unidade declarada. Tabelas expõem todas as linhas, colunas e anchors; lacunas deixam de ser truncadas. Síntese e link Word existentes ficam acessíveis independentemente do brief. Nova namespace bilíngue incluída no provider. Escopo somente leitura do payload já autorizado; sem mudança de banco, provider, telemetria ou autorização de download. Não promove o Workbench premium.
 
-12 testes focados de estado passaram, cobrindo interação após falha, sucesso posterior, empate/ordem, retry ativo, progresso intermediário e fallback agregado. Sem mudança de layout ou copy. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (204 testes web) e build. Preview e produção não verificados nesta mudança. Sem prova nova de cobertura financeira, aprovação de material ou autorização externa.
+17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
+
 
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
@@ -12,6 +13,12 @@ Envio, edição de plano e resposta a pergunta compartilham proteção síncrona
 
 Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
 
+
+## Estado de execução: recuperação comprovada, 07/09/2026
+
+Respostas a perguntas e decisões registradas deixam de ser consideradas prova de recuperação da execução. Somente work_completed posterior elimina a indicação de uma falha anterior; empate temporal conserva falha independentemente da ordem do array. A prioridade visual de trabalho ativo e o fallback de projetos sem trilha de eventos são preservados. Não muda schema, critérios econômicos nem autorização. Trata um defeito delimitado de UX-01; correlação completa de tarefas paralelas e prontidão por dimensão continuam fora desta fatia.
+
+12 testes focados de estado passaram, cobrindo interação após falha, sucesso posterior, empate/ordem, retry ativo, progresso intermediário e fallback agregado. Sem mudança de layout ou copy. Gate local `pnpm check` aprovado em Node 24.19.0: lint, typecheck, testes (204 testes web) e build. Preview e produção não verificados nesta mudança. Sem prova nova de cobertura financeira, aprovação de material ou autorização externa.
 
 > Current as of 7 September 2026. The universal advisor foundation, persistent project memory,
 > public/private workflows, governed research, Deal Captain, coverage map and conversational
