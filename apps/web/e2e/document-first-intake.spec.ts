@@ -1,3 +1,4 @@
+import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {join} from "node:path";
 import {expect, test, type BrowserContext, type Locator, type Page} from "@playwright/test";
@@ -656,4 +657,51 @@ test.describe("Document-first intake (company journey)", () => {
     expect(testInfo.attachments.filter((attachment) => attachment.contentType === "image/png")).toHaveLength(2);
     // Leave substantive work held: this test exercises no provider and grants no dispatch.
   });
+  test("confirms a synthetic pool and reporting date before approving its real worker plan", async ({}, testInfo) => {
+    const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    const address = new URL(databaseUrl);
+    if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres") throw new Error("Scope fixture requires the isolated local database.");
+    const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
+    const fixture = await receivablesScopeFixture();
+    const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query});
+    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]});
+    const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;").trim();
+    await page.goto(`/pt-BR/app/projects/${projectId}`);
+    const scope = page.getByTestId("receivables-scope-card");
+    await expect(scope).toBeVisible();
+    await scope.locator('input[name="primaryTape"]').first().check();
+    await scope.locator(`input[name="complementDocumentIds"][value="${fixture.sources[2]!.id}"]`).check();
+    await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
+    await scope.locator('input[name="scopeConfirmed"]').check();
+    const capture = async (label: string) => {
+      const desktop = page.viewportSize();
+      if (!desktop) throw new Error("Scope QA requires a viewport.");
+      await testInfo.attach(`${label}-desktop`, {body: await page.screenshot({fullPage: true, scale: "css"}), contentType: "image/png"});
+      try {
+        await page.setViewportSize({width: 390, height: 844});
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+        await testInfo.attach(`${label}-mobile`, {body: await page.screenshot({fullPage: true, scale: "css"}), contentType: "image/png"});
+      } finally {
+        await page.setViewportSize(desktop);
+      }
+    };
+    await scope.scrollIntoViewIfNeeded();
+    await capture("synthetic-pool-confirmation");
+    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
+    await expect.poll(() => sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;").trim()).toBe("1");
+    await expect.poll(() => sql("select count(*) from public.capital_project_execution_brief_dispatches d join public.processing_jobs j on j.id=d.processing_job_id join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.status='awaiting_approval';").trim(), {timeout: 120_000}).toBe("1");
+    await page.reload();
+    const brief = page.getByTestId("execution-brief");
+    await expect(brief).toContainText("2026-08-31");
+    await brief.scrollIntoViewIfNeeded();
+    await capture("synthetic-approved-scope-plan");
+    await brief.getByRole("button", {name: /aprovar|approve/i}).click();
+    await expect.poll(() => sql("select count(*) from public.capital_project_execution_brief_events e where e.capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and e.event_type='accepted' and e.event_payload->>'processingJobId' in (select id::text from public.processing_jobs where processing_run_id=(select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid));").trim(), {timeout: 30_000}).not.toBe("0");
+    await expect.poll(() => sql("select result_summary#>>'{case_state,receivablesVertical,status}' from public.document_intake_sessions where id=:'session_id'::uuid;").trim(), {timeout: 120_000}).toBe("analyzed");
+    const report = sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;");
+    expect(report).toContain("2026-08-31");
+    // The manifest retains discovery inventory; the scoped calculation must not use the excluded balance.
+    expect(report).not.toContain("999999");
+  });
+
 });

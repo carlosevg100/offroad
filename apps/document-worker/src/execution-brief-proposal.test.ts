@@ -128,3 +128,35 @@ it("persists reviewed sector planning in both proposal snapshots without changin
   expect(visible.fingerprint).not.toBe(priorVisible.fingerprint);
   expect(expectedInput).toBe("f".repeat(64));
 });
+
+it("persists approved scope identity with bounded display for long names and many sources", async () => {
+  const sources = Array.from({length: 40}, (_, index) => ({
+    sourceDocumentId: id(100 + index), documentVersion: 1, contentKind: "document_layer" as const,
+    sourceSha256: "a".repeat(64), contentSha256: "b".repeat(64), schemaVersion: "2026.08.28-v1" as const,
+    fileName: "Synthetic long filename ".repeat(50),
+  }));
+  const primaryTape = {documentId: sources[0]!.sourceDocumentId, sheet: "Synthetic long sheet ".repeat(100), headerRow: 1};
+  const confirmed = {
+    state: "current", sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: "c".repeat(64), sources},
+    candidates: [{...primaryTape, fileName: sources[0]!.fileName}],
+    scope: {
+      schemaVersion: "receivables-evidence-scope.v1", id: id(80), fingerprint: "d".repeat(64), sourceManifestFingerprint: "c".repeat(64),
+      primaryTape, complementDocumentIds: sources.slice(1).map(source => source.sourceDocumentId),
+      reportingDate: "2026-08-31", sourceRevisions: sources, confirmedBy: id(81), confirmedAt: "2026-09-08T00:00:00Z",
+    },
+  };
+  const original = queue(context());
+  await processExecutionBriefProposalJob(job, original);
+  const scoped = queue({...context(), confirmed_receivables_scope: confirmed});
+  expect(await processExecutionBriefProposalJob(job, scoped)).toEqual({status: "proposed"});
+  expect(scoped.fail).not.toHaveBeenCalled();
+  const [, internal, visible] = scoped.recordExecutionBriefProposal.mock.calls[0]!;
+  const [, before] = original.recordExecutionBriefProposal.mock.calls[0]!;
+  expect(internal.fingerprint).not.toBe(before.fingerprint);
+  expect(internal.workstreams).toEqual(before.workstreams);
+  expect(visible.assumptions).toEqual(internal.assumptions);
+  expect(visible.assumptions).toHaveLength(1);
+  expect(visible.assumptions[0].value.length).toBeLessThan(1000);
+  expect(visible.assumptions[0].basis.length).toBeLessThan(1000);
+  expect(JSON.parse(visible.assumptions[0].basis)).toMatchObject({scopeFingerprint: "d".repeat(64), reportingDate: "2026-08-31", selectedSourceCount: 40, primaryDocumentId: primaryTape.documentId});
+});

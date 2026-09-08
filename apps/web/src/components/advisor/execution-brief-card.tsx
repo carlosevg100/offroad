@@ -1,4 +1,5 @@
 "use client";
+import {z} from "zod";
 
 import type {ExecutionBriefChange, ExecutionBriefProgress, ExecutionBriefWorkstreamProgressStatus, VisibleExecutionBrief} from "@offroad/work-plan";
 import {AlertCircle, ArrowDown, ArrowRight, Check, Circle, FileOutput, LoaderCircle, PencilLine, Search, ShieldCheck, X} from "lucide-react";
@@ -14,6 +15,8 @@ export type ExecutionBriefApproval = {
   version: number;
 };
 
+const scopeBasisSchema = z.object({scopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/), reportingDate: z.iso.date(), primaryDocumentId: z.uuid(), headerRow: z.number().int().positive(), selectedSourceCount: z.number().int().positive(), documentVersion: z.number().int().positive(), sourceSha256: z.string().regex(/^[a-f0-9]{64}$/), contentSha256: z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+function parseScopeBasis(value: string) {try {const result = scopeBasisSchema.safeParse(JSON.parse(value)); return result.success ? result.data : null;} catch {return null;}}
 type Props = {
   approval?: ExecutionBriefApproval;
   disabled?: boolean;
@@ -137,7 +140,7 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
 
       {brief.assumptions.length ? <section className="execution-brief-card__assumptions">
         <header><strong>{t("assumptions")}</strong><small>{t("newVersion")}</small></header>
-        <dl>{brief.assumptions.map((assumption) => <div key={assumption.label}><dt>{assumption.label}</dt><dd><strong>{assumption.value}</strong><span>{assumption.basis}</span></dd></div>)}</dl>
+        <dl>{brief.assumptions.map((assumption) => <div key={assumption.label}><dt>{assumption.label}</dt><dd><strong>{assumption.value}</strong>{(() => {const scope = parseScopeBasis(assumption.basis); return scope ? <><span>{t("scopeBasis", {version: scope.documentVersion, count: scope.selectedSourceCount, date: scope.reportingDate})}</span><details><summary>{t("scopeTrace")}</summary><dl><dt>{t("scopeFingerprint")}</dt><dd>{scope.scopeFingerprint}</dd><dt>{t("scopeSourceHash")}</dt><dd>{scope.sourceSha256}</dd></dl></details></> : <span>{assumption.basis}</span>;})()}</dd></div>)}</dl>
       </section> : null}
 
       {onRequestEdit ? <section className="execution-brief-card__edit" data-editing={editing || undefined}>

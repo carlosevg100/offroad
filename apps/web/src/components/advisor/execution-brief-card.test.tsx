@@ -160,3 +160,14 @@ describe("sector planning context projection", () => {
     expect(html).not.toContain("execution-brief-planning-context");
   });
 });
+
+it.each(["pt-BR", "en-US"] as const)("renders scope proof as human copy, retaining trace details in %s", (locale) => {
+  const basis = {scopeFingerprint: "b".repeat(64), reportingDate: "2026-08-31", primaryDocumentId: "10000000-0000-4000-8000-000000000001", headerRow: 2, selectedSourceCount: 3, documentVersion: 4, sourceSha256: "c".repeat(64), contentSha256: "d".repeat(64)};
+  const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={locale === "pt-BR" ? pt : en}><ExecutionBriefCard version={2} brief={{...brief, locale, assumptions: [{label: "Scope", value: "Portfolio.xlsx · Tape:2 · 2026-08-31", basis: JSON.stringify(basis), editable: true}]}} /></NextIntlClientProvider>);
+  expect(html).toContain(locale === "pt-BR" ? "Versão 4" : "Version 4");
+  expect(html).toContain(locale === "pt-BR" ? "3 fontes selecionadas" : "3 selected sources");
+  expect(html).toContain("<details><summary>");
+  expect(html).toContain(basis.scopeFingerprint);
+  expect(html).not.toContain("scopeFingerprint&quot;");
+  expect(html).not.toContain("primaryDocumentId");
+});

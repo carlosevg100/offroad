@@ -79,8 +79,8 @@ import {
   receivablesSupplementDraftSchema,
   type ReceivablesPoolInputAssembly,
   type ReceivablesProviderMetricSet,
-  type ReceivablesEvidenceDocument,
-  type ReceivablesFiscalArchiveEvidence,
+  receivablesEvidenceScopeContextSchema,
+  type ReceivablesEvidenceSourceManifest,
 } from "@offroad/receivables-analysis";
 import {compareCaseExecutions, executionModeSchema} from "@offroad/release-governance";
 import Decimal from "decimal.js";
@@ -93,10 +93,9 @@ import type {
   QueueClient,
 } from "./queue";
 import {
-  decodeBoundReceivablesEvidence,
-  fingerprintReceivablesEvidence,
   receivablesEvidenceEnvelopeSchema,
 } from "./receivables-evidence";
+import {discoverReceivablesEvidence, resolveConfirmedReceivablesScope, type ReceivablesScopeIssueCode} from "./receivables-scope-resolution";
 import {buildStructureDesignInput, STRUCTURE_DESIGN_SYSTEM} from "./structure-design";
 import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
@@ -376,6 +375,7 @@ const rawCaseInputSchema = z.object({
   claim_decisions: z.array(claimDecisionSchema).default([]),
   receivables_case: receivablesCaseSchema.optional(),
   receivables_evidence: z.array(receivablesEvidenceEnvelopeSchema).default([]),
+  confirmed_receivables_scope: receivablesEvidenceScopeContextSchema.nullable().default(null),
   receivables_method_input_assembly: z.object({
     id: z.uuid(),
     source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -1649,7 +1649,9 @@ async function persistDealStateObjects(input: {
 type PublicReceivablesVertical = {
   version: "2026.08.28-v1";
   status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
-  scopeIssue?: {code: "multiple_receivables_tapes"; candidates: ReturnType<typeof identifyReceivablesTapes>};
+  scopeIssue?: {code: ReceivablesScopeIssueCode; candidates: ReturnType<typeof identifyReceivablesTapes>};
+  sourceManifest: ReceivablesEvidenceSourceManifest;
+  candidates: ReturnType<typeof identifyReceivablesTapes>;
   fingerprint: string;
   evidenceCoverage: {
     delivered: number;
@@ -1695,7 +1697,7 @@ type PublicReceivablesVertical = {
  * mandate collection tasks and the internal shortlist never cross this boundary.
  */
 export function buildReceivablesVertical(
-  raw: Pick<z.infer<typeof rawCaseInputSchema>, "session" | "_execution" | "receivables_evidence" | "receivables_method_input_assembly" | "receivables_method_supplement_draft" | "receivables_provider_context">,
+  raw: Pick<z.infer<typeof rawCaseInputSchema>, "session" | "_execution" | "receivables_evidence" | "receivables_method_input_assembly" | "receivables_method_supplement_draft" | "receivables_provider_context" | "confirmed_receivables_scope"> & {documents?: Record<string, unknown>[]},
   asOf: string,
   includeProviderFit: boolean,
 ): {
@@ -1708,36 +1710,36 @@ export function buildReceivablesVertical(
 } | null {
   if (raw.receivables_evidence.length === 0) return null;
 
-  const documents: ReceivablesEvidenceDocument[] = [];
-  const fiscalArchives: ReceivablesFiscalArchiveEvidence[] = [];
-  const datasetHash = fingerprintReceivablesEvidence(raw.receivables_evidence);
-  for (const envelope of raw.receivables_evidence) {
-    const decoded = decodeBoundReceivablesEvidence(envelope);
-    if (decoded.kind === "document_layer") documents.push(decoded.evidence);
-    else fiscalArchives.push(decoded.evidence);
-  }
-  const evidenceHashes = raw.receivables_evidence.map((entry) => entry.content_sha256).sort();
+  const sourceNames = new Map((raw.documents ?? []).flatMap((document) => typeof document.id === "string" && typeof document.original_name === "string" ? [[document.id, document.original_name] as const] : []));
+  const discovery = discoverReceivablesEvidence(raw.receivables_evidence, sourceNames);
+  const {sourceManifest, candidates} = discovery;
+  if (candidates.length === 0) return null;
   const caseId = String(raw.session.id ?? raw._execution.id);
-  const candidates = identifyReceivablesTapes(documents);
-  if (candidates.length > 1) {
-    const code = "multiple_receivables_tapes";
+  const pending = (code: ReceivablesScopeIssueCode): NonNullable<ReturnType<typeof buildReceivablesVertical>> => {
     const evidenceIds = [...new Set(candidates.map((candidate) => candidate.documentId))];
-    const question = {
-      pt: "Há mais de uma tabela de recebíveis. Delimite uma carteira e sua data-base antes da análise.",
-      en: "More than one receivables table was found. Define one pool and its reporting date before analysis.",
+    const question = code === "reporting_date_conflict" ? {
+      pt: "A base contém emissões ou pagamentos posteriores à data-base confirmada. Revise a data-base ou forneça a carteira correspondente ao período.",
+      en: "The source contains originations or payments after the confirmed reporting date. Review the date or provide the pool snapshot for that period.",
+    } : code === "scope_stale" ? {
+      pt: "As fontes mudaram desde a confirmação. Confira a carteira, os documentos de apoio e a data-base novamente.",
+      en: "Sources changed after confirmation. Review the pool, supporting documents and reporting date again.",
+    } : {
+      pt: "Confirme uma tabela de recebíveis, seus documentos de apoio e a data-base antes da análise.",
+      en: "Confirm one receivables table, its supporting documents and the reporting date before analysis.",
     };
     return {
       publicReport: {
-        version: "2026.08.28-v1", status: "needs_evidence_scope",
-        fingerprint: fingerprintJson({version: "receivables-scope.v1", datasetHash, candidates}),
+        version: "2026.08.28-v1", status: "needs_evidence_scope", sourceManifest, candidates,
+        fingerprint: fingerprintJson({version: "receivables-scope.v2", code, sourceManifestFingerprint: sourceManifest.fingerprint,
+          scopeFingerprint: raw.confirmed_receivables_scope?.scope?.fingerprint ?? null, candidates}),
         scopeIssue: {code, candidates},
-        evidenceCoverage: {delivered: raw.receivables_evidence.length, searched: documents.length, complete: false, warnings: [code]},
+        evidenceCoverage: {delivered: raw.receivables_evidence.length, searched: discovery.documents.length, complete: false, warnings: [code]},
         classification: {categoryIds: [], cellIds: []}, defects: [], questions: [],
         methodReadiness: {
-          version: "2026.09.07-v1", state: "blocked", primaryReason: "conflicting",
-          methodExecutionAllowed: false, sourceDatasetHash: datasetHash,
-          dimensions: [{id: "source_universe", state: "conflicting", gapCodes: [code]}],
-          gaps: [{code, dimensionId: "source_universe", class: "conflict", blocking: true,
+          version: "2026.09.07-v1", state: "blocked", primaryReason: "needs_evidence",
+          methodExecutionAllowed: false, sourceDatasetHash: sourceManifest.fingerprint,
+          dimensions: [{id: "source_universe", state: "missing", gapCodes: [code]}],
+          gaps: [{code, dimensionId: "source_universe", class: "evidence", blocking: true,
             message: question, question, evidenceIds}],
           nextQuestions: [{id: code, dimensionId: "source_universe", text: question, evidenceIds}],
         },
@@ -1746,15 +1748,17 @@ export function buildReceivablesVertical(
         pipeline: null,
       },
       privateReport: null, specialistShadow: null, inputAssemblyId: null, inputAssembly: null,
-      inputResolution: {assembly: null, origin: "none", draftState: "conflicted", missingSections: [], openConflictIds: [code]},
+      inputResolution: {assembly: null, origin: "none", draftState: "missing", missingSections: [], openConflictIds: []},
     };
-  }
-  const candidate = candidates[0];
-  const universeId = candidate
-    ? `${caseId}:pool:${candidate.documentId}:${encodeURIComponent(candidate.sheet)}:${candidate.headerRow}`
-    : caseId;
-  const built = buildReceivablesRawUniverse({universeId, datasetHash, documents});
-  if (!built.phaseOne) return null;
+  };
+  const selected = resolveConfirmedReceivablesScope(discovery, raw.confirmed_receivables_scope);
+  if (selected.state !== "current") return pending(selected.code);
+  const {documents, fiscalArchives, datasetHash, scope} = selected;
+  const candidate = scope.primaryTape;
+  const universeId = `${caseId}:pool:${candidate.documentId}:${encodeURIComponent(candidate.sheet)}:${candidate.headerRow}`;
+  const built = buildReceivablesRawUniverse({universeId, datasetHash, reportingDate: scope.reportingDate, documents});
+  if (!built.phaseOne) return pending(built.warnings.includes("source_events_after_reporting_date") ? "reporting_date_conflict" : "scope_stale");
+  const evidenceHashes = scope.sourceRevisions.map((entry) => entry.contentSha256).sort();
 
   const reportingDate = built.phaseOne.universe.dates.reportingDate;
   const detection = detectReceivablesRawEvidence({
@@ -1836,6 +1840,7 @@ export function buildReceivablesVertical(
   });
   const common = {
     version: "2026.08.28-v1" as const,
+    sourceManifest, candidates,
     fingerprint,
     evidenceCoverage: {
       delivered: detection.evidenceCoverage.deliveredEvidenceIds.length,

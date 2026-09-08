@@ -13,7 +13,9 @@ import {
   researchSubjectFromDeclaration,
 } from "./case-analysis";
 import type {CaseAnalysisJob, QueueClient} from "./queue";
-import {documentEvidence, encodeReceivablesEvidence} from "./receivables-evidence";
+import {documentEvidence, encodeReceivablesEvidence, receivablesEvidenceEnvelopeSchema} from "./receivables-evidence";
+
+import {discoverReceivablesEvidence} from "./receivables-scope-resolution";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -635,6 +637,20 @@ describe("worker case analysis", () => {
         model_policy_version: "2026.08.24-v1",
       },
     };
+    const discovered = discoverReceivablesEvidence(receivablesEvidenceEnvelopeSchema.array().parse(raw.receivables_evidence));
+    const candidate = discovered.candidates[0]!;
+    Object.assign(raw, {confirmed_receivables_scope: {
+      state: "current", sourceManifest: discovered.sourceManifest, candidates: discovered.candidates,
+      scope: {
+        schemaVersion: "receivables-evidence-scope.v1",
+        id: "12121212-1212-4121-8121-121212121212", fingerprint: "1".repeat(64),
+        sourceManifestFingerprint: discovered.sourceManifest.fingerprint,
+        primaryTape: {documentId: candidate.documentId, sheet: candidate.sheet, headerRow: candidate.headerRow},
+        complementDocumentIds: [], reportingDate: "2026-06-30",
+        sourceRevisions: discovered.sourceManifest.sources,
+        confirmedBy: "13131313-1313-4131-8131-131313131313", confirmedAt: "2026-09-08T12:00:00Z",
+      },
+    }});
     const queue: QueueClient = {
       claim: async () => null,
       heartbeat: async () => {},

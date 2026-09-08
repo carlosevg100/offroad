@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {z} from "zod";
 import type {
   AssertionProvenance,
   IsoDate,
@@ -372,6 +373,7 @@ export type ReceivablesRawUniverseBuild = {
 export function buildReceivablesRawUniverse(input: {
   universeId: string;
   datasetHash: string;
+  reportingDate: string;
   documents: readonly ReceivablesEvidenceDocument[];
 }): ReceivablesRawUniverseBuild {
   if (!/^[a-f0-9]{64}$/.test(input.datasetHash)) throw new RangeError("raw universe dataset hash must be SHA-256");
@@ -395,7 +397,15 @@ export function buildReceivablesRawUniverse(input: {
   const latestOriginationDate = tape.map((title) => title.issueDate).sort().at(-1)!;
   const dataStartDate = tape.map((title) => title.issueDate).sort()[0]!;
   const observedDates = tape.flatMap((title) => [title.issueDate, ...(title.paymentDate ? [title.paymentDate] : [])]);
-  const reportingDate = observedDates.sort().at(-1)!;
+  const reportingDate = z.iso.date().parse(input.reportingDate) as IsoDate;
+  const dataEndDate = observedDates.sort().at(-1)!;
+  if (dataEndDate > reportingDate) {
+    return {
+      phaseOne: null,
+      classification: {categoryIds: [], cellIds: [], evidence: []},
+      warnings: ["source_events_after_reporting_date"],
+    };
+  }
   const titleSource = (title: TapeRow): SourceAnchor => rowAnchor(title.row);
   const normalizedStatus = (status: string): ReceivablesUniverse["receivables"][number]["status"] => {
     if (/liquid|pago|baixado/.test(status)) return "settled";
@@ -466,11 +476,12 @@ export function buildReceivablesRawUniverse(input: {
     }));
 
   const settled = tape.filter((title) => normalizedStatus(title.status) === "settled");
-  const settlementsComplete = settled.every((title) => title.paymentDate !== null && title.paidValue.gt(0));
+  const settlementsObserved = settlements.length > 0;
+  const settledRowsComplete = settled.every((title) => title.paymentDate !== null && title.paidValue.gt(0));
   const dilutionObserved = tape.some((title) => title.dilutionValue.gt(0));
   const universe: ReceivablesUniverse = {
     id: input.universeId,
-    dates: {reportingDate, latestOriginationDate, dataStartDate, dataEndDate: reportingDate},
+    dates: {reportingDate, latestOriginationDate, dataStartDate, dataEndDate},
     currency: "BRL",
     receivables,
     settlements,
@@ -482,16 +493,17 @@ export function buildReceivablesRawUniverse(input: {
     economicGroups,
     eventCoverage: {
       settlements: {
-        status: settlementsComplete ? "complete" : "partial",
-        startDate: dataStartDate,
-        endDate: reportingDate,
+        status: settlementsObserved ? "partial" : "not_provided",
+        startDate: settlementsObserved ? dataStartDate : null,
+        endDate: settlementsObserved ? dataEndDate : null,
         basis: "delivered receivables tape payment date and paid amount columns",
-        limitations: settlementsComplete ? [] : ["one or more settled titles lacks payment date or paid amount"],
+        limitations: ["a title tape does not establish complete settlement-event coverage",
+          ...(!settledRowsComplete ? ["one or more settled titles lacks payment date or paid amount"] : [])],
       },
       dilutions: {
         status: dilutionObserved ? "partial" : "not_provided",
         startDate: dilutionObserved ? dataStartDate : null,
-        endDate: dilutionObserved ? reportingDate : null,
+        endDate: dilutionObserved ? dataEndDate : null,
         basis: dilutionObserved ? "delivered title-level allowance amount without reliable event date or cause" : "delivered room",
         limitations: dilutionObserved ? ["dilution event date and cause are not available title by title"] : ["dilution history was not identified"],
       },
