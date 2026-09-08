@@ -1,5 +1,16 @@
 # Acceptance Evidence
 
+## Contexto setorial revisado publicado, 08/09/2026
+
+PR #553 integrada em `d30a9ebc374ba78048210818514b492023d59e30`. Contexto revisado da companhia, atribuição de fontes, requisitos e lacunas chegam ao plano apresentado para aprovação. Novas propostas preservam a cadeia de versões; aprovação antiga não é herdada. O escopo permanece `planning_only`: requisitos não examinados e métodos especificados, sem ativação automática de métodos financeiros por setor.
+
+Quality `34248024449` e Security `34248024441` passaram no head final. São 21 E2E aprovados, incluindo a prova obrigatória com candidato editado pela UI, worker real e brief ligado ao novo alvo; 10 testes dependentes de provedores externos foram pulados. Capturas reais de desktop e 390px foram inspecionadas. Gate local completo passou, 43/43 targets por etapa; o teste de compatibilidade do runtime foi reexecutado diretamente após o alinhamento da migração (5/5).
+
+Produção: Vercel `ChZ7scHjutpzQfCToVJDR6c33miN`, deployment `6331888960`, confirmou o SHA exato da integração. Páginas pública e autenticada foram conferidas sem modificar dados. Após a web compatível, a migração `20260908161137_worker_runtime_schema_contract` ativou a sétima capability; advisors de segurança permaneceram sem alertas. O workflow worker `34249298359` confirmou PRIMARY exata `offroad-document-worker:282`, capacidade positiva e serviço estável. As seis migrações desta entrega correspondem aos registros de produção; este follow-up apenas alinha o nome do marcador aplicado, sem mudar seu corpo.
+
+Próximo avanço de domínio: vincular ativos, contratos e carteiras aos seus próprios dados e ligar requisitos a métodos executáveis, com casos de referência e revisão técnica. Esta publicação conecta o planejamento setorial ao fluxo real; não conclui o endgame nem homologa expertise universal, matching ou entregáveis institucionais completos. Os registros de validação abaixo são históricos.
+
+
 ## Contexto revisado conectado ao plano, 08/09/2026: em validação
 
 A prova obrigatória da segunda proposta revelou uma falha real de versionamento (`execution_brief_parent_mismatch`): o recorder não informava o predecessor ao recalcular o plano. Reproduzida em staging com rollback e corrigida por migração forward, mantendo os locks e a validação canônica da cadeia de versões. A nova versão continua exigindo sua própria aprovação. Quality `34246963443` aprovou banco e E2E obrigatório: segunda proposta produzida pelo worker real, fingerprint ligado ao alvo e capturas desktop/390px. A inspeção confirmou o contexto e sua atribuição no novo plano. A revisão final removeu um padrão de remoção de HTML de um teste sinalizado pelo CodeQL, usando contagem literal do identificador; gate local completo aprovado novamente. CI da revisão final e publicação permanecem pendentes.
