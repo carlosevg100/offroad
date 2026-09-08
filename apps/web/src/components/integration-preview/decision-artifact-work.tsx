@@ -1,3 +1,4 @@
+import {formatPreviewNumber} from "./preview-value-format";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import {ArrowDownToLine, CircleDotDashed, FileSpreadsheet, LockKeyhole, Milestone, Presentation} from "lucide-react";
 
@@ -67,7 +68,7 @@ function displayValue(value: string | number | boolean | null, unit: string | nu
 
 function exactValue(value: string | number | boolean | null, unit: string | null, locale: "pt-BR" | "en-US"): string {
   if (value === null) return "—";
-  if (typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value)) return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 8}).format(Number(value))}${unit ? ` ${unit}` : ""}`;
+  if (typeof value === "string" || typeof value === "number") return `${formatPreviewNumber(value, locale)}${unit ? ` ${unit}` : ""}`;
   return `${String(value)}${unit ? ` ${unit}` : ""}`;
 }
 
@@ -77,8 +78,13 @@ export function DecisionArtifactWork({contract, locale, materialHref}: Props) {
   const assumptions = new Map(contract.assumptions.map((assumption) => [assumption.id, assumption]));
   const gaps = new Map(contract.gaps.map((gap) => [gap.id, gap]));
   const conversation = contract.views.find((view) => view.surface === "conversation");
-  const workbookReady = contract.views.find((view) => view.surface === "workbook")?.artifactFingerprint !== null;
-  const presentationReady = contract.views.find((view) => view.surface === "presentation")?.artifactFingerprint !== null;
+  // Match the canonical contract fingerprint schema; an absent view is not a stored file.
+  const hasStoredArtifact = (surface: "workbook" | "presentation") => {
+    const fingerprint = contract.views.find((view) => view.surface === surface)?.artifactFingerprint;
+    return typeof fingerprint === "string" && /^[a-f0-9]{64}$/.test(fingerprint);
+  };
+  const workbookReady = hasStoredArtifact("workbook");
+  const presentationReady = hasStoredArtifact("presentation");
   const visibleClaimIds = new Set(conversation?.blocks.flatMap((block) => block.claimIds) ?? []);
   const claims = contract.claims.filter((claim) => visibleClaimIds.has(claim.id));
 

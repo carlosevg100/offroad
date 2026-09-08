@@ -121,8 +121,10 @@ function compilePreviewBrief(
     material: tasks.filter((task) => ["A01", "A02"].includes(task.id)),
   };
   const locale = context.locale === "pt-BR" ? "pt" : "en";
-  const audience = activation.brief.request.audience?.primary
-    ?? (locale === "pt" ? "responsável pela decisão" : "decision owner");
+  const requestedAudience = activation.brief.request.audience?.primary;
+  const audience = requestedAudience?.trim().toLowerCase() === "vp"
+    ? (locale === "pt" ? "vice-presidente" : "vice president")
+    : requestedAudience ?? (locale === "pt" ? "responsável pela decisão" : "decision owner");
   const workstreams = [
     {
       key: "evidence",
@@ -166,12 +168,22 @@ function compilePreviewBrief(
     },
   ];
   const instruction = activation.brief.request.sponsorInstruction?.trim() || context.message.trim();
-  const form = activation.brief.request.form ?? "first_deliverable";
+  // These are the canonical briefRequestSchema forms, not promises of an Office format.
+  const formLabels = {
+    first_deliverable: {pt: "primeira devolutiva", en: "initial readout"},
+    internal_briefing: {pt: "briefing interno", en: "internal briefing"},
+    pitch_pages: {pt: "páginas de apresentação", en: "pitch pages"},
+    analysis_with_scenarios: {pt: "análise com cenários", en: "analysis with scenarios"},
+    board_deck: {pt: "apresentação ao conselho", en: "board presentation"},
+  } satisfies Record<NonNullable<PreviewActivation["brief"]["request"]["form"]>, {pt: string; en: string}>;
+  const form = activation.brief.request.form === null
+    ? (locale === "pt" ? "devolutiva com formato a definir" : "readout with format to be agreed")
+    : formLabels[activation.brief.request.form][locale];
   return compileExecutionBrief({
     planVersion: `${activation.plan.schemaVersion}:${activation.plan.compilerVersion}:${activation.plan.registryVersion}${context.requestId ? `:${context.requestId}` : ""}`,
     locale: context.locale,
     objective: instruction,
-    proposedDeliverable: locale === "pt" ? `Análise e ${form} para ${audience}` : `Analysis and ${form} for ${audience}`,
+    proposedDeliverable: `${form.charAt(0).toLocaleUpperCase(context.locale)}${form.slice(1)} ${locale === "pt" ? "para" : "for"} ${audience}`,
     tasks,
     workstreams,
     sources,

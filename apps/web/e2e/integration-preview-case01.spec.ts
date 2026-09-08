@@ -255,8 +255,13 @@ test.describe("integration_preview: Case 01 end to end", () => {
 
   test("plan control: an adjustment is bound to the displayed version and returns as a visible diff", async () => {
     const brief = page.getByTestId("execution-brief");
-    const versionBefore = await brief.locator(":scope > header > small").textContent();
-    if (!versionBefore) throw new Error("the current execution brief has no displayed version");
+    const displayedVersion = async () => {
+      const label = await page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
+      const match = label?.match(/Versão\s+(\d+)/i);
+      if (!match) throw new Error(`the execution brief has no numeric version: ${label}`);
+      return Number(match[1]);
+    };
+    const versionBefore = await displayedVersion();
     await brief.getByRole("button", {name: "Ajustar este plano"}).click();
     await expect(brief.locator(".execution-brief-card__edit form")).toBeVisible();
     const adjustment = "Na comparação, priorize flexibilidade antes de custo e retire qualquer bloco de rating sem evidência.";
@@ -267,8 +272,8 @@ test.describe("integration_preview: Case 01 end to end", () => {
     record("ajuste governado do plano", acknowledgement);
     await expect.poll(async () => {
       await page.reload();
-      return page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
-    }, {timeout: 180_000}).not.toBe(versionBefore);
+      return displayedVersion();
+    }, {timeout: 180_000}).toBeGreaterThan(versionBefore);
     const changes = page.getByTestId("execution-brief-changes");
     await expect(changes).toBeVisible();
     await expect(changes).toContainText("O que mudou nesta versão");

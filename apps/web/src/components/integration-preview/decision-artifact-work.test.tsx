@@ -52,3 +52,52 @@ describe("DecisionArtifactWork", () => {
     expect(html).toContain("Baixar apresentação");
   });
 });
+
+
+describe("decision readout exact values and file availability", () => {
+  for (const locale of ["pt-BR", "en-US"] as const) {
+    it(`${locale}: preserves decimal scale and integers beyond floating-point precision in the trace`, () => {
+      const values = [
+        ["9007199254740993.216893770123", locale === "pt-BR" ? "9.007.199.254.740.993,216893770123" : "9,007,199,254,740,993.216893770123"],
+        ["0.0000000001234500", locale === "pt-BR" ? "0,0000000001234500" : "0.0000000001234500"],
+        ["-0.216893770", locale === "pt-BR" ? "-0,216893770" : "-0.216893770"],
+      ];
+      for (const [value, expected] of values) {
+        const ready = contract();
+        ready.claims[0]!.value = value!;
+        ready.claims[0]!.unit = "declared unit";
+        const html = renderToStaticMarkup(<DecisionArtifactWork contract={ready} locale={locale} />);
+        expect(html).toContain(`<dd>${expected} declared unit</dd>`);
+        expect(ready.claims[0]!.value).toBe(value);
+      }
+    });
+  }
+  it("withholds both downloads when their views do not exist", () => {
+    const ready = contract();
+    ready.views = ready.views.filter((view) => view.surface === "conversation");
+    ready.identityRequirements = [];
+    const validated = buildDecisionArtifactContract(ready);
+    const html = renderToStaticMarkup(<DecisionArtifactWork contract={validated} locale="pt-BR" materialHref="/material" />);
+    expect(html).not.toContain("?format=xlsx");
+    expect(html).not.toContain("?format=pptx");
+    expect(html).not.toContain('class="decision-work__materials"');
+  });
+  it("fails closed on empty or malformed stored fingerprints for either format", () => {
+    for (const invalid of ["", " ", "a".repeat(63), "g".repeat(64)]) {
+      const ready = contract();
+      for (const view of ready.views.filter((item) => item.surface !== "conversation")) view.artifactFingerprint = invalid;
+      const html = renderToStaticMarkup(<DecisionArtifactWork contract={ready} locale="en-US" materialHref="/material" />);
+      expect(html).not.toContain("?format=xlsx");
+      expect(html).not.toContain("?format=pptx");
+    }
+  });
+  it("keeps the valid workbook available when the presentation view is absent", () => {
+    const ready = contract("c".repeat(64));
+    ready.views = ready.views.filter((view) => view.surface !== "presentation");
+    ready.identityRequirements = [{claimId: "gross", surfaces: ["conversation", "workbook"]}];
+    const validated = buildDecisionArtifactContract(ready);
+    const html = renderToStaticMarkup(<DecisionArtifactWork contract={validated} locale="en-US" materialHref="/material" />);
+    expect(html).toContain("?format=xlsx");
+    expect(html).not.toContain("?format=pptx");
+  });
+});
