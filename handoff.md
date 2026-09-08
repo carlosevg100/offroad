@@ -2,6 +2,8 @@
 
 ## Contexto revisado conectado ao plano, 08/09/2026: em validação
 
+A prova obrigatória da segunda proposta revelou uma falha real de versionamento (`execution_brief_parent_mismatch`): o recorder não informava o predecessor ao recalcular o plano. Reproduzida em staging com rollback e corrigida por migração forward, mantendo os locks e a validação canônica da cadeia de versões. A nova versão continua exigindo sua própria aprovação. Validação da jornada completa e publicação ainda pendentes; os resultados anteriores não comprovam a interface nova.
+
 Branch `feat/governed-sector-planning`, sobre main `4c09c8f` (#552). O worker passa a consumir os campos setoriais revisados do intake autorizado e inclui contexto, fontes, requisitos e lacunas no mesmo brief apresentado para aprovação. Os leitores de capability continuam vinculados à organização e à sessão. Não há cadastro paralelo de fatos. Setor, subsetor, modelo de negócio/receita, estágio, recurso e jurisdição usam correspondências explícitas do catálogo canônico.
 
 Uma classificação documental só é confirmada quando revisão primária, entidade, âncora e versão/hash originais da extração são compatíveis com a fonte atual pronta e limpa. Edições e entradas manuais são atribuídas à revisão do usuário. Informação sem suporte, entidade divergente e período incompleto/invertido não ativam contexto confirmado. Períodos e estados permanecem visíveis. O fingerprint econômico é independente do idioma; a aprovação incorpora as dependências relevantes, inclusive elegibilidade e linhagem da fonte. Ausência de candidatos preserva o hash legado.
