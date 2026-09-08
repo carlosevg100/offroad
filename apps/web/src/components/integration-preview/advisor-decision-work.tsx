@@ -1,3 +1,6 @@
+"use client";
+
+import {useState} from "react";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import {useTranslations} from "next-intl";
 import {DecisionArtifactWork} from "./decision-artifact-work";
@@ -12,6 +15,7 @@ type Props = {
 
 /** The readout and the complete method outputs are complementary views of existing evidence. */
 export function AdvisorDecisionWork({contract, artifacts, locale, materialHref}: Props) {
+  const [methodsOpen, setMethodsOpen] = useState(false);
   const t = useTranslations("IntegrationPreviewWork");
   const hasReadout = Boolean(contract?.views.some((view) => view.surface === "conversation"));
   const methods = artifacts.filter((artifact) => isSupportedPreviewArtifact(artifact.type));
@@ -21,9 +25,9 @@ export function AdvisorDecisionWork({contract, artifacts, locale, materialHref}:
       <h2>{t("decisionUnavailable")}</h2>
       <p>{t("availableResults")}</p>
     </section>}
-    {methods.length ? <details className="advisor-decision-work__methods" data-testid="decision-method-inspection">
+    {methods.length ? <details className="advisor-decision-work__methods" data-testid="decision-method-inspection" open={methodsOpen} onToggle={(event) => setMethodsOpen(event.currentTarget.open)}>
       <summary>{t("inspectMethods")}</summary>
-      <IntegrationPreviewWork artifacts={methods} locale={locale} materialHref={materialHref} />
+      {methodsOpen ? <IntegrationPreviewWork artifacts={methods} locale={locale} materialHref={materialHref} /> : null}
     </details> : null}
   </div>;
 }

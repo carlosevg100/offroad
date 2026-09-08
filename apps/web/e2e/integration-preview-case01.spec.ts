@@ -231,6 +231,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(work.locator(".decision-series-chart")).not.toHaveCount(0);
     // The executive projection must not hide the full financial methods and meeting brief.
     const methods = page.getByTestId("decision-method-inspection");
+    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
     await methods.locator(":scope > summary").focus();
     await page.keyboard.press("Enter");
     await expect(methods).toHaveAttribute("open", "");
@@ -238,6 +239,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await expect(methods.locator('[data-artifact-type="preview_meeting_brief"]')).toBeVisible();
     await page.screenshot({path: join(outputDirectory, "03-readout-methods.png"), fullPage: true});
     await methods.locator(":scope > summary").click();
+    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
     await page.setViewportSize({width: 390, height: 844});
     await claim.scrollIntoViewIfNeeded();
     await expect(trace).toHaveAttribute("open", "");
