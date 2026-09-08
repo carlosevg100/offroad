@@ -1077,6 +1077,84 @@ describe("worker case analysis", () => {
       executionPlan: {produceMaterials: false, screenMandates: false, introduce: false},
     });
     expect(completed).not.toHaveProperty("match_details");
+
+    // Exercise the real additional executor through the case runner and encoded source layer.
+    // The fixture gateway supplies model responses only; snapshots still come from the worker.
+    const documentRequest = {
+      projectId: raw.session.capital_project_id, jobId: job.job_id,
+      briefId: "a1111111-1111-4111-8111-111111111111", planId: "b1111111-1111-4111-8111-111111111111",
+      version: 1, objective: "Compare estas propostas de financiamento",
+      proposedDeliverable: "Leitura documental preliminar", inputFingerprint: raw._execution.input_fingerprint,
+      requestFingerprint: "7".repeat(64),
+    };
+    const documentRaw = {...raw, document_work_request: documentRequest,
+      sources: [...raw.sources, {id: receivablesDocumentId, document_version: 1, sha256: receivablesFileHash, processing_status: "ready"}],
+      deal_workflow: {stage: "diagnose", gates: {understandingConfirmed: false, structureOptionCurrent: false, structureConfirmed: false, productionPlanApproved: false, packageApproved: false, matchApproved: false, releaseAuthorized: false}, objectFingerprints: {}},
+    };
+    const requests: Array<{job: string; objective: string}> = [
+      {job: "comparison", objective: "Compare estas propostas de financiamento"},
+      {job: "meeting", objective: "Prepare a reunião sobre a companhia"},
+      {job: "review", objective: "Revise esta oportunidade"},
+    ];
+    const workInputFingerprints = new Set<unknown>();
+    const workEconomicFingerprints = new Set<unknown>();
+    for (const requested of requests) {
+      const logs: GatewayCallLog[] = [];
+      let snapshot: Record<string, unknown> | undefined;
+      let manifest: unknown;
+      let documentCalls = 0;
+      const fixtureGateway = {
+        complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
+          const result = request.schemaName === "document_work_product_narrative_v1" ? (() => {
+            documentCalls++;
+            const input = JSON.parse((request.input[0] as {text: string}).text) as {job: string; approvedRequest: {text: string}; passages: Array<{id: string; text: string}>; sectionKeys: string[]};
+            expect(input.job).toBe(requested.job);
+            expect(input.approvedRequest.text).toBe(requested.objective);
+            const passage = input.passages.find(item => item.text.length >= 12)!;
+            return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", observations: [{text: passage.text, citations: [{passageId: passage.id, quote: passage.text}]}]})), hypotheses: [], gaps: []}};
+          })() : await gateway.complete(request);
+          logs.push({...invocation, invocationId: `document-call-${logs.length}`, task: request.task, schemaName: request.schemaName});
+          return result;
+        },
+        spent: () => ({costUsd: logs.length * 0.1, calls: logs.length}),
+      } as unknown as ModelGateway;
+      const outcome = await processCaseAnalysisJob(job, {
+        queue: {...queue,
+          loadCaseInput: async () => ({...documentRaw, document_work_request: {...documentRequest, objective: requested.objective}}),
+          recordCaseSnapshot: async (_job, value, state) => {manifest = value; snapshot = state as Record<string, unknown>; return "document-manifest";},
+        }, gateway: fixtureGateway, lineage: () => logs, researchProviders: [], now: () => new Date("2026-08-24T13:00:00.000Z"),
+      });
+      expect(outcome).toEqual({status: "succeeded", manifestId: "document-manifest"});
+      expect(documentCalls).toBe(1);
+      expect(snapshot).toMatchObject({documentWorkProduct: {binding: {projectId: raw.session.capital_project_id, jobId: job.job_id}, product: {job: requested.job, requestFingerprint: documentRequest.requestFingerprint, status: "preliminary", calculationStatus: "not_performed", sources: expect.arrayContaining([expect.objectContaining({documentId: receivablesDocumentId, hash: receivablesFileHash})])}}, modelInvocations: logs});
+      expect(manifest).toMatchObject({capture: {models: "complete"}, models: expect.any(Array)});
+      expect((manifest as {models: unknown[]}).models).toHaveLength(logs.length);
+      workInputFingerprints.add(snapshot?.fingerprint);
+      workEconomicFingerprints.add(snapshot?.economicFingerprint);
+    }
+    // Same evidence and economics, different approved work: analytical identity changes
+    // while the economic identity remains stable across comparison, meeting and review.
+    expect(workInputFingerprints.size).toBe(requests.length);
+    expect(workInputFingerprints.has(undefined)).toBe(false);
+    expect(workEconomicFingerprints.size).toBe(1);
+    expect(workEconomicFingerprints.has(undefined)).toBe(false);
+    for (const invalid of [
+      {...documentRaw, document_work_request: {...documentRequest, projectId: "f1111111-1111-4111-8111-111111111111"}},
+      {...documentRaw, document_work_request: {...documentRequest, jobId: "f1111111-1111-4111-8111-111111111111"}},
+      {...documentRaw, sources: documentRaw.sources.map(source => source.id === receivablesDocumentId ? {...source, sha256: "0".repeat(64)} : source)},
+    ]) {
+      let persisted = false;
+      let failed: unknown;
+      const outcome = await processCaseAnalysisJob(job, {
+        queue: {...queue, loadCaseInput: async () => invalid,
+          recordCaseSnapshot: async () => {persisted = true; return "must-not-persist";},
+          fail: async (_job, error) => {failed = error;},
+        }, gateway, lineage: () => [], researchProviders: [], now: () => new Date("2026-08-24T13:00:00.000Z"),
+      });
+      expect(outcome.status).toBe("failed");
+      expect(JSON.stringify(failed)).toMatch(/document_work_request_binding_invalid|document_work_source_not_current/);
+      expect(persisted).toBe(false);
+    }
   }, 20_000);
 });
 

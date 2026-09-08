@@ -1126,6 +1126,25 @@ perform public.approve_advisor_execution_brief_v1((c#>>'{project,id}')::uuid,(r-
 perform set_config('request.jwt.claims','',true);
 if not private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'first approval was not current'; end if;
 
+-- New product reads bind the actual accepted objective, never the initial request.
+if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')->>'requestFingerprint'
+ is distinct from fixture_internal->>'fingerprint' then raise exception 'document work request fingerprint mismatch'; end if;
+begin
+ update public.processing_jobs set status='leased',capability_sha256=extensions.digest(repeat('d',64),'sha256'),lease_expires_at=now()+interval '10 minutes'
+ where id='80000000-0000-4000-8000-000000000901';
+ if public.worker_load_document_work_request_v1('80000000-0000-4000-8000-000000000901',repeat('d',64))->>'objective'
+  is distinct from fixture_internal->>'objective' then raise exception 'document work objective mismatch'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
+ if public.read_advisor_document_work_binding_v1((c#>>'{project,id}')::uuid,'80000000-0000-4000-8000-000000000901') is not null then raise exception 'unfinished product readable'; end if;
+ update public.processing_jobs set status='succeeded' where id='80000000-0000-4000-8000-000000000901';
+ if public.read_advisor_document_work_binding_v1((c#>>'{project,id}')::uuid,'80000000-0000-4000-8000-000000000901') is null then raise exception 'completed product binding missing'; end if;
+ if public.read_advisor_document_work_binding_v1('20000000-0000-4000-8000-000000000999','80000000-0000-4000-8000-000000000901') is not null then raise exception 'wrong project product readable'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000999','role','authenticated')::text,true);
+ if public.read_advisor_document_work_binding_v1((c#>>'{project,id}')::uuid,'80000000-0000-4000-8000-000000000901') is not null then raise exception 'outsider product readable'; end if;
+ raise exception 'rollback bounded product status test' using errcode='ZX001';
+exception when sqlstate 'ZX001' then null;
+end;
+
 update public.intake_field_candidates set normalized_value='"transport"',reviewed_at=clock_timestamp() where id='51000000-0000-4000-8000-000000000901';
 insert into public.processing_jobs(id,organization_id,intake_session_id,processing_run_id,kind,status,payload) values('80000000-0000-4000-8000-000000000902','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','70000000-0000-4000-8000-000000000901','case_analysis','queued','{"analysis_scope":"full_case"}');
 select id into j from public.processing_jobs where payload->>'approval_target_job_id'='80000000-0000-4000-8000-000000000902';
@@ -1147,5 +1166,6 @@ if (select status from public.processing_jobs where id='80000000-0000-4000-8000-
 if not exists(select 1 from public.capital_project_execution_briefs child join public.capital_project_execution_briefs parent on parent.id=child.parent_brief_id where child.organization_id='20000000-0000-4000-8000-000000000901' and child.brief_version=2 and parent.brief_version=1) then raise exception 'revision parent missing'; end if;
 
 if private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) or private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000902',true) then raise exception 'new revision inherited consent'; end if;
+if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') is not null then raise exception 'superseded document work remained readable'; end if;
  end; $diag$;
 select 'two revisions, correct parent, no inherited consent' as result; rollback;

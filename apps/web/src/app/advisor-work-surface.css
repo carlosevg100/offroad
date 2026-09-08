@@ -1,0 +1,27 @@
+/* A result remains beside the conversation, backed by the server's current work. */
+.advisor-work-mobile-nav {display: none;}
+.advisor-project.advisor-project--with-work {grid-template-columns: minmax(340px, .85fr) minmax(420px, 1.15fr); align-items: start;}
+.advisor-project--with-work > .advisor-project__context {grid-column: 1 / -1; border-top: 1px solid #e4e7e1;}
+.advisor-work-surface {min-width: 0; background: #fff; border-left: 1px solid #e4e7e1; min-height: 100vh;}
+.advisor-work-surface__header {padding: 28px 28px 20px; display: flex; gap: 18px; align-items: start; justify-content: space-between;}
+.advisor-work-surface__header h2 {font-size: 11px; line-height: 1.5; margin: 4px 0 0; color: #64705e; overflow-wrap: anywhere;}
+.advisor-work-surface__metadata {display: flex; flex-wrap: wrap; gap: 6px; font-size: 11px; color: #64705e;}
+.advisor-work-surface__metadata span {background: #f3f5ef; padding: 5px 8px; border-radius: 5px;}
+.advisor-work-surface__navigation {display: flex; gap: 7px; padding: 0 28px 18px; overflow-x: auto; border-bottom: 1px solid #e4e7e1;}
+.advisor-work-surface__navigation a {flex: 0 0 auto; border: 1px solid #dce2d5; border-radius: 7px; padding: 9px 12px; font-size: 12px; color: #465040; text-decoration: none;}
+.advisor-work-surface__navigation a[aria-current] {background: #293426; color: white; border-color: #293426;}
+.advisor-work-surface__navigation a:focus-visible, .advisor-work-mobile-nav button:focus-visible {outline: 2px solid #71864f; outline-offset: 3px;}
+.advisor-work-surface__content {padding: 24px; min-width: 0; overflow-wrap: anywhere;}
+.advisor-work-surface__content > * {min-width: 0; max-width: 100%;}
+@media (max-width: 1000px) {
+  .advisor-project.advisor-project--with-work {display: block;}
+  .advisor-work-mobile-nav {display: flex; gap: 6px; padding: 12px 18px; background: #fbfbfa; border-bottom: 1px solid #e4e7e1;}
+  .advisor-work-mobile-nav button {flex: 1; border: 1px solid #dce2d5; background: white; border-radius: 7px; padding: 11px; color: #465040; font: inherit; font-size: 13px;}
+  .advisor-work-mobile-nav button[aria-pressed="true"] {background: #293426; color: white;}
+  .advisor-project--with-work[data-mobile-view="conversation"] > .advisor-work-surface {display: none;}
+  .advisor-project--with-work[data-mobile-view="work"] > .advisor-project__conversation {display: none;}
+  .advisor-work-surface {border-left: 0; min-height: 0;}
+  .advisor-work-surface__header {padding: 22px 18px 16px;}
+  .advisor-work-surface__navigation {padding: 0 18px 16px;}
+  .advisor-work-surface__content {padding: 18px;}
+}

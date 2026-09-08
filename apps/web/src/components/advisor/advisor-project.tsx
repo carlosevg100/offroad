@@ -4,7 +4,7 @@ import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from 
 import Link from "next/link";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
-import {useRef, useState, type ReactNode} from "react";
+import {useEffect, useRef, useState, type ReactNode} from "react";
 
 import {
   answerAdvisorInformationRequest,
@@ -22,6 +22,10 @@ import {
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
+
+import "@/app/advisor-work-surface.css";
+import {workSectionFromHash, workSectionHref} from "./advisor-work-links";
+import {AdvisorWorkSurface, type AdvisorWorkSection} from "./advisor-work-surface";
 
 import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
@@ -102,11 +106,35 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
+  workSections?: AdvisorWorkSection[];
+  initialWorkSectionId?: string;
   executionBrief?: {approval?: ExecutionBriefApproval; brief: VisibleExecutionBrief; briefId: string; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
 };
 
 export function AdvisorProject(props: Props) {
   const router = useRouter();
+  const workCopy = useTranslations("AdvisorWorkSurface");
+  const sections = props.workSections ?? [];
+  const [selectedWorkId, setSelectedWorkId] = useState(props.initialWorkSectionId);
+  const [mobileView, setMobileView] = useState<"conversation" | "work">("conversation");
+  const selectedWork = sections.find((section) => section.id === selectedWorkId) ?? sections[0];
+  useEffect(() => {
+    const applyHash = () => {
+      const id = workSectionFromHash(window.location.hash);
+      if (id && props.workSections?.some((section) => section.id === id)) {
+        setSelectedWorkId(id);
+        setMobileView("work");
+      }
+    };
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, [props.workSections]);
+  function selectWork(id: string) {
+    setSelectedWorkId(id);
+    setMobileView("work");
+    window.location.hash = workSectionHref(id);
+  }
   const recoveryCopy = useTranslations("App.advisorProject.recovery");
   const approvalCopy = useTranslations("ExecutionBriefCard");
   const inventoryCopy = useTranslations("AdvisorEvidenceInventory");
@@ -271,7 +299,11 @@ export function AdvisorProject(props: Props) {
   }
 
   return (
-    <main className="advisor-project">
+    <main className={`advisor-project${sections.length ? " advisor-project--with-work" : ""}`} data-mobile-view={mobileView}>
+      {sections.length ? <nav className="advisor-work-mobile-nav" aria-label={workCopy("navigation")}>
+        <button type="button" aria-pressed={mobileView === "conversation"} onClick={() => setMobileView("conversation")}>{workCopy("conversation")}</button>
+        <button type="button" aria-pressed={mobileView === "work"} onClick={() => setMobileView("work")}>{workCopy("work")} <span>{sections.length}</span></button>
+      </nav> : null}
       <DealStateRefresh active={active || pending || uploading} />
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
@@ -364,6 +396,7 @@ export function AdvisorProject(props: Props) {
         </div>
       </section>
 
+      {selectedWork ? <AdvisorWorkSurface sections={sections} selectedId={selectedWork.id} onSelect={selectWork} /> : null}
       <aside className="advisor-project__context">
         <header><span className="section-kicker">{props.copy.context}</span></header>
         {props.pendingRequests?.length ? <section className="advisor-context-section advisor-context-section--waiting">
@@ -383,9 +416,12 @@ export function AdvisorProject(props: Props) {
           <ol>{props.tasks.map((task) => <li className={`is-${task.status}`} key={task.id}>{task.status === "succeeded" ? <Check aria-hidden="true" size={12} /> : ["running", "queued"].includes(task.status) ? <LoaderCircle aria-hidden="true" className={task.status === "running" ? "spin" : undefined} size={12} /> : <Circle aria-hidden="true" size={12} />}<span>{task.label}</span></li>)}</ol>
         </section>
         <section className="advisor-context-section">
-          <div><strong>{props.copy.artifacts}</strong><small>{props.artifacts.length}</small></div>
+          <div><strong>{props.copy.artifacts}</strong><small>{sections.length || props.artifacts.length}</small></div>
           {props.workHref ? <Link className="advisor-context-section__open" href={props.workHref}>{props.copy.openWork}</Link> : null}
-          {props.artifacts.length ? <ul>{props.artifacts.map((artifact) => <li key={artifact.id}><FileText aria-hidden="true" size={13} /><span><strong>{artifact.label}</strong></span></li>)}</ul> : <p>{props.copy.noArtifacts}</p>}
+          {sections.length ? <ul>{sections.map((section) => <li key={section.id}><FileText aria-hidden="true" size={13} /><a href={workSectionHref(section.id)} onClick={(event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault(); selectWork(section.id);
+          }}><strong>{section.title}</strong></a></li>)}</ul> : props.artifacts.length ? <ul>{props.artifacts.map((artifact) => <li key={artifact.id}><FileText aria-hidden="true" size={13} /><span><strong>{artifact.label}</strong></span></li>)}</ul> : <p>{props.copy.noArtifacts}</p>}
         </section>
       </aside>
     </main>

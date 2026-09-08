@@ -102,6 +102,8 @@ import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
+import {buildDocumentWorkInput, documentWorkRequestSchema} from "./document-work-input";
+import {runDocumentWorkProduct} from "./document-work-product";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
   buildReceivablesMethodEvidenceRequestProjection,
@@ -404,6 +406,7 @@ const rawCaseInputSchema = z.object({
     dependencies: z.array(recordSchema),
   })).default({}),
   prior_case_report: caseRunReportSchema.nullish(),
+  document_work_request: documentWorkRequestSchema.nullish(),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -1134,6 +1137,7 @@ export async function processCaseAnalysisJob(
       versions,
       caseEngine: caseEngineVersion,
       retrieval: privateRetrievalLineage,
+      ...(raw.document_work_request ? {documentWorkRequest: raw.document_work_request} : {}),
     });
     failurePhase = "record_agent_assessment";
     if (dependencies.queue.recordAgentAssessment) {
@@ -1191,6 +1195,20 @@ export async function processCaseAnalysisJob(
       }));
     }
     failurePhase = "compose_case_snapshot";
+    // The request was read through the accepted-dispatch capability and frozen with the
+    // same source bundle. Never infer today's work from the first message in a project.
+    let documentWorkProduct;
+    if (raw._execution.mode === "primary" && raw.document_work_request) {
+      if (raw.document_work_request.projectId !== raw.session.capital_project_id
+        || raw.document_work_request.jobId !== job.job_id) throw new Error("document_work_request_binding_invalid");
+      const documentInput = buildDocumentWorkInput({request: raw.document_work_request,
+        locale: locale === "pt" ? "pt-BR" : "en-US", sources: raw.sources, envelopes: raw.receivables_evidence});
+      if (documentInput) {
+        failurePhase = "document_work_product";
+        const product = await runDocumentWorkProduct(documentInput, {gateway: dependencies.gateway});
+        documentWorkProduct = {binding: raw.document_work_request, product};
+      }
+    }
     const economicFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
@@ -1203,6 +1221,7 @@ export async function processCaseAnalysisJob(
     }));
     const snapshot = {
       ...publicState,
+      ...(documentWorkProduct ? {documentWorkProduct} : {}),
       ...(receivablesVertical ? {receivablesVertical} : {}),
       externalResearch: publicResearch,
       modelInvocations: currentLineage,

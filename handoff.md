@@ -1,3 +1,11 @@
+## Trabalhos documentais e área de resultados: implementação integrada, 08/09/2026
+
+Branch `feat/advisor-work-products`, base `292d26b`. Executor comum para comparação qualitativa de propostas, briefing de reunião e revisão preliminar de oportunidade; objetivo vem do despacho aceito e é congelado com as fontes. Observações extrativas, hipóteses separadas e limites explícitos; sem novos cálculos ou decisão de crédito. Resultado integra snapshot e manifesto atuais e aparece em área de trabalho ao lado da conversa. Download Word da versão persistida usa autorização, fontes e execução atuais, preservando idioma original.
+
+Gate local completo `pnpm check` aprovado (43/43 tarefas por etapa, Node 24). CI e publicação ainda pendentes. Testes do runner cobrem três pedidos e recusas por vínculo/fonte; reader e rota cobrem autorização, fontes, manifesto, corrida e export. Migrações aditivas e regressão SQL com rollback verificadas somente em staging. Sem publicação deste corte em produção. O E2E com modelo real ainda depende de worker autorizado; testes simulados não substituem essa evidência. O caminho usa o case_analysis aprovado existente e ainda não resolve o despacho universal independente. O marco completo, materiais institucionais amplos, expertise setorial universal e endgame permanecem incompletos.
+
+Escopo, aceite e rollout: [DOCUMENT_WORK_PRODUCTS_MILESTONE.md](docs/build/DOCUMENT_WORK_PRODUCTS_MILESTONE.md). Controles: AI-05/AI-08, TRUST-APP-02, TRUST-DATA-02, TRUST-SDLC-01. Nenhuma nova divulgação a terceiros ou alteração de permissões de negócio.
+
 # Offroad Capital: Product and Engineering Handoff
 
 ## Fontes de saldos: propostas ancoradas, 08/09/2026, em validação

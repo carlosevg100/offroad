@@ -11,6 +11,10 @@
     "./synthetic-receivables-case": {
       "types": "./src/synthetic-receivables-case.ts",
       "default": "./src/synthetic-receivables-case.ts"
+    },
+    "./document-work-product": {
+      "types": "./src/document-work-product.ts",
+      "default": "./src/document-work-product.ts"
     }
   },
   "scripts": {

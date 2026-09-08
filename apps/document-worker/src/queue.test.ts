@@ -50,12 +50,14 @@ describe("case input loading", () => {
   it("freezes live case data before attaching the prior report cache", async () => {
     const prior = {schemaVersion: "2026.08.29-v4", reportFingerprint: "prior"};
     const scope = {state: "confirmed", scope: {fingerprint: "a".repeat(64)}};
+    const approvedRequest = {objective: "Current approved request", requestFingerprint: "b".repeat(64)};
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
       if (name === "worker_load_case_input_v2") return {data: {session: {id: "case"}, confirmed_receivables_scope: scope}, error: null};
       if (name === "worker_load_claim_decisions") return {data: [{id: "decision"}], error: null};
+      if (name === "worker_load_document_work_request_v1") return {data: approvedRequest, error: null};
       if (name === "worker_freeze_case_input") {
         const liveInput = args.p_live_input as Record<string, unknown>;
-        expect(liveInput).toEqual({session: {id: "case"}, confirmed_receivables_scope: scope, claim_decisions: [{id: "decision"}]});
+        expect(liveInput).toEqual({session: {id: "case"}, confirmed_receivables_scope: scope, claim_decisions: [{id: "decision"}], document_work_request: approvedRequest});
         expect(liveInput).not.toHaveProperty("prior_case_report");
         return {data: {...liveInput, _execution: {id: "execution"}}, error: null};
       }
@@ -74,6 +76,7 @@ describe("case input loading", () => {
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([
       "worker_load_case_input_v2",
       "worker_load_claim_decisions",
+      "worker_load_document_work_request_v1",
       "worker_freeze_case_input",
       "worker_load_prior_case_report",
     ]);

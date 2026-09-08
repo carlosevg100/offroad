@@ -25,7 +25,8 @@ describe("endgame program board", () => {
     expect(decision.readyForNextPromotion).toBe(false);
     expect(decision.blockers).toEqual([]);
     expect(decision.taskCounts.blocked).toBe(0);
-    expect(currentEndgameProgramBoard.tasks).toHaveLength(69);
+    expect(currentEndgameProgramBoard.tasks).toHaveLength(70);
+    expect(currentEndgameProgramBoard.tasks.find(task => task.taskId === "JOB-01")?.state).toBe("in_progress");
   });
 
   it("rejects a board evaluated against a different ledger version", () => {

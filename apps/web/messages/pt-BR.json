@@ -2445,7 +2445,26 @@
     "account": "Conta e preferências",
     "language": "Idioma",
     "createFolder": "Nova pasta",
-    "createFolderPlaceholder": "Nome da pasta"
+    "createFolderPlaceholder": "Nome da pasta",
+    "documentWorkProduct": {
+      "comparisonTitle": "Comparação documental de propostas",
+      "meetingTitle": "Preparação para a reunião",
+      "reviewTitle": "Revisão preliminar da oportunidade",
+      "preliminary": "Análise documental preliminar",
+      "scope": "Escopo da análise",
+      "scopeBody": "Leitura dos trechos disponíveis. Não inclui cálculos financeiros nem decisão de crédito.",
+      "hypotheses": "Hipóteses a investigar",
+      "gaps": "Informações a esclarecer",
+      "question": "Próxima pergunta",
+      "evidence": "Trechos que sustentam a leitura",
+      "sources": "Fontes consultadas",
+      "coverage": "Cobertura",
+      "documents": "Documentos considerados",
+      "omitted": "Trechos não incluídos",
+      "download": "Baixar Word",
+      "version": "Versão",
+      "insufficientEvidence": "Informações insuficientes para concluir a análise"
+    }
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",
@@ -3821,5 +3840,12 @@
       "source_text_truncated": "Há trechos de texto apresentados parcialmente."
     },
     "truncated": "Trecho parcial"
+  },
+  "AdvisorWorkSurface": {
+    "navigation": "Navegação do projeto",
+    "conversation": "Conversa",
+    "work": "Trabalho",
+    "results": "Resultados do projeto",
+    "version": "Versão {version}"
   }
 }

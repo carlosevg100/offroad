@@ -2445,7 +2445,26 @@
     "account": "Account and preferences",
     "language": "Language",
     "createFolder": "New folder",
-    "createFolderPlaceholder": "Folder name"
+    "createFolderPlaceholder": "Folder name",
+    "documentWorkProduct": {
+      "comparisonTitle": "Document review of financing proposals",
+      "meetingTitle": "Meeting preparation",
+      "reviewTitle": "Preliminary opportunity review",
+      "preliminary": "Preliminary document review",
+      "scope": "Review scope",
+      "scopeBody": "Review of the available passages. Does not include financial calculations or a credit decision.",
+      "hypotheses": "Hypotheses to investigate",
+      "gaps": "Information to clarify",
+      "question": "Next question",
+      "evidence": "Supporting passages",
+      "sources": "Sources consulted",
+      "coverage": "Coverage",
+      "documents": "Documents considered",
+      "omitted": "Passages not included",
+      "download": "Download Word",
+      "version": "Version",
+      "insufficientEvidence": "Insufficient evidence to complete the review"
+    }
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",
@@ -3821,5 +3840,12 @@
       "source_text_truncated": "Some text excerpts are only partially represented."
     },
     "truncated": "Partial excerpt"
+  },
+  "AdvisorWorkSurface": {
+    "navigation": "Project navigation",
+    "conversation": "Conversation",
+    "work": "Work",
+    "results": "Project results",
+    "version": "Version {version}"
   }
 }

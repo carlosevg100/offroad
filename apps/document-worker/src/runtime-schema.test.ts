@@ -26,6 +26,7 @@ describe("worker runtime schema preflight", () => {
           "execution-brief-proposal.v1",
           "governed-sector-planning-context.v1",
           "confirmed-receivables-evidence-scope.v1",
+  "document-work-product-request-binding.v1",
         ],
       },
       error: null,
@@ -55,7 +56,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: confirmed-receivables-evidence-scope.v1");
+    }))).rejects.toThrow("missing capabilities: document-work-product-request-binding.v1");
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {

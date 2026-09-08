@@ -743,12 +743,13 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       };
-      const [input, decisions] = await Promise.all([
+      const [input, decisions, documentWorkRequest] = await Promise.all([
         call("worker_load_case_input_v2", args),
         call("worker_load_claim_decisions", args),
+        call("worker_load_document_work_request_v1", args),
       ]);
       if (!input || typeof input !== "object" || Array.isArray(input)) return input;
-      const liveInput = {...input, claim_decisions: decisions};
+      const liveInput = {...input, claim_decisions: decisions, document_work_request: documentWorkRequest};
       const frozen = await call("worker_freeze_case_input", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
