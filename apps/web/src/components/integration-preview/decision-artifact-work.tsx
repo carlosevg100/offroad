@@ -1,9 +1,9 @@
 "use client";
 
-import {useId} from "react";
+import {useId, type MouseEvent} from "react";
 import {useTranslations} from "next-intl";
 import {DecisionSeriesChart} from "./decision-series-chart";
-import {formatPreviewNumber} from "./preview-value-format";
+import {formatPreviewAnnualPercentage, formatPreviewNumber} from "./preview-value-format";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import {ArrowDownToLine, CircleDotDashed, FileSpreadsheet, LockKeyhole, Milestone, Presentation} from "lucide-react";
 
@@ -16,6 +16,7 @@ type Props = {
 function displayValue(value: string | number | boolean | null, unit: string | null, locale: "pt-BR" | "en-US", t: ReturnType<typeof useTranslations>): string {
   if (value === null) return t("notComputable");
   if (typeof value === "boolean") return t(value ? "yes" : "no");
+  if (unit === "decimal a.a.") return formatPreviewAnnualPercentage(value, locale) ?? String(value);
   const number = typeof value === "number" ? value : /^-?\d+(\.\d+)?$/.test(value) ? Number(value) : null;
   if (number === null) return String(value);
   if (unit === "BRL thousand") {
@@ -24,7 +25,6 @@ function displayValue(value: string | number | boolean | null, unit: string | nu
     return `${formatter.format(number / 1_000)} mi`;
   }
   if (unit === "x") return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(number)}x`;
-  if (unit === "decimal a.a.") return `${new Intl.NumberFormat(locale, {style: "percent", maximumFractionDigits: 2}).format(number)} a.a.`;
   return `${new Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(number)}${unit ? ` ${unit}` : ""}`;
 }
 
@@ -59,13 +59,22 @@ export function DecisionArtifactWork({contract, locale, materialHref}: Props) {
       series.get(id)?.points.forEach((point, index) => origins.push({id: anchor("point", block.id, id, String(index)), label: `${series.get(id)!.label} · ${point.label}`, refs: point}));
     }
   }
+  const revealTarget = (id: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    // Reveal the addressed evidence before native fragment navigation moves focus.
+    let parent = document.getElementById(id)?.parentElement;
+    while (parent) {
+      if (parent instanceof HTMLDetailsElement) parent.open = true;
+      parent = parent.parentElement;
+    }
+  };
   const references = (refs: References) => <nav className="decision-work__block-links" aria-label={t("references")}>
     {([['source', refs.sourceIds, contract.sources], ['assumption', refs.assumptionIds, contract.assumptions], ['gap', refs.gapIds, contract.gaps]] as const).flatMap(([kind, ids, items]) => [...new Set(ids)].map((id) => {
       const item = items.find((entry) => entry.id === id);
-      return item ? <a key={`${kind}:${id}`} href={`#${anchor(kind, id)}`}>{"title" in item ? item.title : item.label}</a> : null;
+      return item ? <a key={`${kind}:${id}`} href={`#${anchor(kind, id)}`} onClick={revealTarget(anchor(kind, id))}>{"title" in item ? item.title : item.label}</a> : null;
     }))}
   </nav>;
-  const backlinks = (kind: "sourceIds" | "assumptionIds" | "gapIds", id: string) => <nav className="decision-work__backlinks">{origins.filter((origin) => origin.refs[kind].includes(id)).map((origin) => <a key={origin.id} href={`#${origin.id}`}>{t("back", {label: origin.label})}</a>)}</nav>;
+  const backlinks = (kind: "sourceIds" | "assumptionIds" | "gapIds", id: string) => <nav className="decision-work__backlinks">{origins.filter((origin) => origin.refs[kind].includes(id)).map((origin) => <a key={origin.id} href={`#${origin.id}`} onClick={revealTarget(origin.id)}>{t("back", {label: origin.label})}</a>)}</nav>;
   const date = (value: string) => new Intl.DateTimeFormat(locale, {dateStyle: "medium", timeZone: "UTC"}).format(new Date(`${value}T00:00:00Z`));
   return <article className="decision-work" data-testid="preview-decision-artifact">
     <header className="decision-work__header">
@@ -94,9 +103,9 @@ export function DecisionArtifactWork({contract, locale, materialHref}: Props) {
         {references(block)}
       </section>)}
     </div>
-    {contract.assumptions.length ? <section className="decision-work__section"><h3>{t("assumptions")}</h3><div className="decision-work__rows">{contract.assumptions.map((item) => <div className="decision-work__row" key={item.id} id={anchor("assumption", item.id)} tabIndex={-1}><div><strong>{item.label}</strong><p>{exactValue(item.value, item.unit, locale)}</p><small>{item.basis}</small><small>{t(item.editable ? "editable" : "fixed")}</small>{references({sourceIds: item.sourceIds, assumptionIds: [], gapIds: []})}{backlinks("assumptionIds", item.id)}</div></div>)}</div></section> : null}
+    {contract.assumptions.length ? <section className="decision-work__section"><h3>{t("assumptions")}</h3><div className="decision-work__rows">{contract.assumptions.map((item) => <div className="decision-work__row" key={item.id} id={anchor("assumption", item.id)} tabIndex={-1}><div><strong>{item.label}</strong><p>{item.unit === "decimal a.a." ? displayValue(item.value, item.unit, locale, t) : exactValue(item.value, item.unit, locale)}</p>{item.unit === "decimal a.a." ? <small>{t("exact")}: {exactValue(item.value, item.unit, locale)}</small> : null}<small>{item.basis}</small><small>{t(item.editable ? "editable" : "fixed")}</small>{references({sourceIds: item.sourceIds, assumptionIds: [], gapIds: []})}{backlinks("assumptionIds", item.id)}</div></div>)}</div></section> : null}
     {contract.gaps.length ? <section className="decision-work__section decision-work__section--gaps"><h3>{t("gaps")}</h3><div className="decision-work__gaps">{contract.gaps.map((item) => <article key={item.id} id={anchor("gap", item.id)} tabIndex={-1}><div><span data-materiality={item.materiality}>{t(`materiality.${item.materiality}`)}</span><h4>{item.label}</h4></div><p><b>{t("impact")}.</b> {item.impact}</p><p><b>{t("needed")}.</b> {item.requestedInput}</p>{backlinks("gapIds", item.id)}</article>)}</div></section> : null}
-    {contract.sources.length ? <section className="decision-work__section"><h3>{t("sources")}</h3>{contract.sources.map((item) => <div className="decision-work__source" key={item.id} id={anchor("source", item.id)} tabIndex={-1}><h4>{item.title}</h4><p>{t(`classification.${item.classification}`)} · {t("asOf")} {date(item.asOf)}</p><p>{item.locator}</p>{backlinks("sourceIds", item.id)}</div>)}</section> : null}
+    {contract.sources.length ? <section className="decision-work__section"><details className="decision-work__source-register"><summary><h3>{t("sources")} <span>({contract.sources.length})</span></h3></summary>{contract.sources.map((item) => <div className="decision-work__source" key={item.id} id={anchor("source", item.id)} tabIndex={-1}><h4>{item.title}</h4><p>{t(`classification.${item.classification}`)} · {t("asOf")} {date(item.asOf)}</p><p>{item.locator}</p>{backlinks("sourceIds", item.id)}</div>)}</details></section> : null}
     {materialHref && (workbookReady || presentationReady) ? <footer className="decision-work__materials"><div><ArrowDownToLine aria-hidden="true" size={16} /><span>{t("materials")}</span></div><nav>{workbookReady ? <a href={`${materialHref}?format=xlsx`}><FileSpreadsheet aria-hidden="true" size={15} /> {t("workbook")}</a> : null}{presentationReady ? <a href={`${materialHref}?format=pptx`}><Presentation aria-hidden="true" size={15} /> {t("presentation")}</a> : null}</nav></footer> : null}
   </article>;
 }

@@ -58,6 +58,7 @@
 
 .advisor-project__header {
   align-items: center;
+  gap: 12px;
   background: rgba(251, 251, 250, .94);
   border-bottom: 1px solid #e3e5e3;
   display: flex;
@@ -69,19 +70,23 @@
   z-index: 5;
 }
 
+.advisor-project__header > div {flex: 1 1 auto; min-width: 0;}
+
 .advisor-project__header h1 {
   color: #1b2025;
   font-size: 18px;
   font-weight: 590;
   letter-spacing: -.02em;
   margin: 4px 0 0;
-  max-width: 560px;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .advisor-project__header > span {
+  flex: 0 1 auto;
+  min-width: 0;
   align-items: center;
   color: #778087;
   display: inline-flex;
@@ -1232,6 +1237,13 @@
 
 @media (max-width: 1080px) {
   .advisor-project {grid-template-columns: minmax(0, 1fr) 300px;}
+}
+
+@media (max-width: 600px) {
+  .advisor-project__header {align-items: flex-start; flex-direction: column; gap: 8px; padding-inline: 20px;}
+  .advisor-project__header > div {width: 100%;}
+  .advisor-project__header > span {max-width: 100%; white-space: normal; overflow-wrap: anywhere;}
+  .advisor-project__header > span > svg {flex-shrink: 0;}
 }
 
 @media (max-width: 860px) {
@@ -13663,6 +13675,10 @@ button[disabled].workspace-search,
 .decision-work__series > details p { font-size: 0.76rem; line-height: 1.6; margin: 0.7rem 0; }
 .decision-work__section { padding-top: 1.7rem; }
 .decision-work__section > h3 { margin: 0 0 0.25rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--decision-line); font-size: 0.95rem; font-weight: 650; line-height: 1.4; }
+.decision-work__source-register > summary { cursor: pointer; padding: 0.65rem 0; border-bottom: 1px solid var(--decision-line); color: var(--decision-ink); }
+.decision-work__source-register > summary h3 { display: inline; margin: 0; font-size: 0.95rem; font-weight: 650; line-height: 1.4; }
+.decision-work__source-register > summary h3 span { color: var(--decision-muted); font-weight: 450; }
+.decision-work__source-register > summary:focus-visible { outline: 2px solid var(--decision-accent); outline-offset: 4px; }
 .decision-work__rows, .decision-work__gaps { display: grid; }
 .decision-work__row, .decision-work__source { padding: 1rem 0; border-bottom: 1px solid var(--decision-line); }
 .decision-work__row strong, .decision-work__source h4 { display: block; margin: 0; font-size: 0.85rem; font-weight: 600; line-height: 1.45; }

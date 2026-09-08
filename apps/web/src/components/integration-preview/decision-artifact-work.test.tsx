@@ -44,8 +44,22 @@ describe("DecisionArtifactWork", () => {
     expect(html).toContain("R$ 5,67 bi");
     expect(html).toContain("Como chegamos aqui");
     expect(html).toContain("ITR · p. 39");
+    expect(html).toContain('<details class="decision-work__source-register"><summary>');
+    expect(html).not.toContain('class="decision-work__source-register" open');
     expect(html).toContain("CFADS aberto");
     expect(html).not.toContain("href=\"/material?format=xlsx\"");
+  });
+
+  it.each(["pt-BR", "en-US"] as const)("shows annual assumption as exact percentage and preserves raw decimal in %s", (locale) => {
+    const value = contract();
+    value.assumptions[0]!.value = "0.15500000000000000001";
+    const html = render(<DecisionArtifactWork contract={value} locale={locale} materialHref="/material" />);
+    expect(html).toContain(locale === "pt-BR" ? "15,500000000000000001% a.a." : "15.500000000000000001% a.a.");
+    expect(html).toContain(locale === "pt-BR" ? "0,15500000000000000001 decimal a.a." : "0.15500000000000000001 decimal a.a.");
+    value.assumptions[0]!.value = "0.1550";
+    const normal = render(<DecisionArtifactWork contract={value} locale={locale} materialHref="/material" />);
+    expect(normal).toContain(locale === "pt-BR" ? "15,5% a.a." : "15.5% a.a.");
+    expect(normal).toContain(locale === "pt-BR" ? "0,1550 decimal a.a." : "0.1550 decimal a.a.");
   });
 
   it("offers the workbook only after the contract carries its immutable fingerprint", () => {
