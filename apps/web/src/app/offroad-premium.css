@@ -13621,6 +13621,7 @@ button[disabled].workspace-search,
 .decision-work__metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 0.85rem; }
 .decision-work__metrics:empty { display: none; }
 .decision-work__metric { min-width: 0; padding: 1rem; border: 1px solid var(--decision-line); border-radius: 0.4rem; }
+.decision-work__metric:has(details[open]) { grid-column: 1 / -1; }
 .decision-work__metric > span { display: block; color: var(--decision-muted); font-size: 0.78rem; font-weight: 600; line-height: 1.4; }
 .decision-work__metric > strong { display: block; margin-top: 0.5rem; font-size: clamp(1.25rem, 4cqi, 1.8rem); font-variant-numeric: tabular-nums; font-weight: 560; letter-spacing: -0.025em; line-height: 1.2; }
 .decision-work__metric > small { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem; color: #4f6a2d; font-size: 0.72rem; line-height: 1.4; }
@@ -13681,6 +13682,7 @@ button[disabled].workspace-search,
 .decision-work__materials a { min-height: 2.75rem; padding: 0.6rem 0.9rem; border: 1px solid #cfd4cd; border-radius: 0.3rem; color: var(--decision-ink); font-size: 0.78rem; text-decoration: none; }
 .decision-work__materials a:hover { border-color: var(--decision-accent); background: #f6f8f3; }
 @container decision-readout (min-width: 42rem) {
+  .decision-work__metric details[open] dl > div { grid-template-columns: 10rem minmax(0, 1fr); gap: 1rem; }
   .decision-work__header { flex-direction: row; justify-content: space-between; gap: 1.5rem; }
   .decision-work__status { flex: 0 0 10rem; flex-direction: column; align-items: flex-end; text-align: right; }
   .decision-work__gaps article { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
