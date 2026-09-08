@@ -2,11 +2,11 @@
 
 > Vista gerada de `current-endgame-program.ts`. Não editar manualmente. O objeto TypeScript é a fonte canônica machine-readable.
 
-Atualizado em: 2026-09-07T21:11:19.000-03:00
+Atualizado em: 2026-09-07T21:40:23.000-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 Capability Ledger: `2026.09.07-v17`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `6e58c204b4ac862b5f166c237d6c7bd393bf06eac0eb9fe726b06bd40298281f`
+Fingerprint do board: `4a22806c03551ff054f4ad18012e559aa298999b1361c37194bcd19b7b9da836`
 
 ## Leitura executiva
 
@@ -47,7 +47,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | RT-07 | Backlog | Grafo mínimo executa tarefas allowlisted, idempotentes, observáveis e fail-closed. | workflow.universal-dispatch-candidate-shadow, execution.general-specialist-runtime | RT-06 | sem blocker |
 | RT-08 | Backlog | Gaps materiais guiam perguntas, respostas atualizam objetos e só descendentes inválidos são recalculados. | sem vínculo | RT-02, RT-07 | sem blocker |
 | RT-09 | Backlog | Seis pedidos estruturalmente distintos percorrem o runtime sem identidade Case 01. | sem vínculo | RT-07, RT-08 | sem blocker |
-| UX-01 | Backlog | A interface distingue execução concluída, cobertura parcial, revisão, bloqueio e entrega utilizável com uma próxima ação real. | experience.live-work | sem dependência | sem blocker |
+| UX-01 | Em implementação | A interface distingue execução concluída, cobertura parcial, revisão, bloqueio e entrega utilizável com uma próxima ação real. | experience.live-work | sem dependência | sem blocker |
 | UX-02 | Backlog | Conversa, trabalho e objetos compartilham uma shell progressiva com inspeção de fonte sem perder o contexto. | experience.premium-workbench | UX-01 | sem blocker |
 | UX-03 | Em implementação | Valores mantêm precisão, unidade declarada e locale; todas as linhas, colunas e lacunas ficam acessíveis. | experience.premium-workbench | sem dependência | sem blocker |
 | UX-04 | Em implementação | Falha de comando preserva conteúdo e permite retry com identidade estável sem duplicar efeitos. | experience.execution-brief | sem dependência | sem blocker |
@@ -150,6 +150,24 @@ Critérios de aceite:
 - CTRL-01.AC01: Commit, ledger, PRs e ambientes têm referências verificáveis · **pending**
 - CTRL-01.AC02: Toda divergência material aparece como finding com owner · **passed** · EV-CAPABILITY-LEDGER
 - CTRL-01.AC03: Reconciliação não concede uso de cliente ou autorização externa · **passed** · EV-CAPABILITY-LEDGER
+
+### UX-01: Estados de trabalho e prontidão econômica
+
+Estado: **Em implementação** · owner: Product interaction engineer
+
+Subtarefas:
+
+- [ ] UX-01.01: Mapear estados persistidos e condições reais (in_progress)
+- [ ] UX-01.02: Definir prioridade entre falha, lacuna e entrega (pending)
+- [ ] UX-01.03: Aplicar rótulos e próxima ação em pt-BR e en-US (pending)
+
+Critérios de aceite:
+
+- UX-01.AC01: Concluir tarefas não declara cobertura ou entrega aprovadas · **pending**
+- UX-01.AC02: Falha recuperável mantém contexto e ação segura · **pending**
+- UX-01.AC03: Toda transição corresponde a estado verificável · **pending**
+
+Capabilities relacionadas: `experience.live-work`.
 
 ### UX-03: Precisão numérica e revisão completa
 

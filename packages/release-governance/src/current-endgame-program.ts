@@ -9,7 +9,7 @@ import type {
   ProgramReleaseId,
 } from "./endgame-program-board";
 
-const generatedAt = "2026-09-07T21:11:19.000-03:00";
+const generatedAt = "2026-09-07T21:40:23.000-03:00";
 
 type TaskInput = {
   taskId: string;
@@ -149,6 +149,7 @@ const tasks: ProgramTask[] = [
 
   task({
     "taskId": "UX-01",
+    "state": "in_progress",
     "releaseId": "R1",
     "title": "Estados de trabalho e prontidão econômica",
     "outcome": "A interface distingue execução concluída, cobertura parcial, revisão, bloqueio e entrega utilizável com uma próxima ação real.",
