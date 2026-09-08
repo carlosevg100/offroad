@@ -606,7 +606,7 @@ async function ConversationalCapitalProject({
     sessionStatus={session.status}
     tasks={visibleActivities}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}<AdvisorDecisionWork
+    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}<AdvisorDecisionWork
       contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null}
       artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
@@ -627,7 +627,7 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
       canRetry={session.status === "failed"}
       shouldStart={session.status === "collecting"}
-    />{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{privateWorkbench ? <PrivateDiagnosticWork
+    />{privateWorkbench ? <PrivateDiagnosticWork
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       projectId={project.id}
