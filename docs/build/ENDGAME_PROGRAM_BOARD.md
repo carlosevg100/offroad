@@ -2,11 +2,11 @@
 
 > Vista gerada de `current-endgame-program.ts`. Não editar manualmente. O objeto TypeScript é a fonte canônica machine-readable.
 
-Atualizado em: 2026-09-08T20:52:00.000-03:00
+Atualizado em: 2026-09-09T07:20:19.652-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 Capability Ledger: `2026.09.09-v18-candidate`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `de25820cebae4bad2d42803e7ab0d7ab3a0e8b42ff14f69a4ad5b703d7cefbe3`
+Fingerprint do board: `21f3fbcbd7269f03c251b19f3ee9325abfb3a3cf3cb4aed77e34808334d2960b`
 
 ## Leitura executiva
 
@@ -42,7 +42,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | RT-01 | Code complete | Intenção, objeto, trabalho, entrega, audiência e continuidade resolvidos sem cargo como regra. | intent.semantic-envelope-shadow, gold.intent-router-stability-gate | CTRL-02 | sem blocker |
 | RT-02 | Backlog | Contexto autorizado e objetos existentes são recuperados, classificados e reaproveitados somente quando relevantes. | sem vínculo | RT-01 | sem blocker |
 | RT-03 | Backlog | O produto solicitado define o terminal e muda o grafo antes da execução. | workflow.objective-plan-core | RT-01 | sem blocker |
-| RT-04 | Backlog | Necessidade, análise, instrumento, setor e jurisdição compõem profundidade sem soluções fragmentadas. | workflow.composable-specialization-shadow, workflow.specialist-method-binding-shadow | RT-01, RT-03 | sem blocker |
+| RT-04 | Em implementação | Intenção e caracterização aberta do negócio compõem núcleo financeiro, mecanismos econômicos e expertise específica por objeto, instrumento e jurisdição. | workflow.composable-specialization-shadow, workflow.specialist-method-binding-shadow | RT-01, RT-03 | sem blocker |
 | RT-05 | Backlog | Cada TaskSpec conhece procedure, executor, schemas, ferramentas, dados, efeitos, maturidade e evidência. | workflow.taskspec-library | CTRL-03 | sem blocker |
 | RT-06 | Backlog | Nenhum plano ativa tarefa sem capability, evidência, autoridade, provider e tool policy compatíveis. | workflow.preflight-capability-gate, workflow.objective-preflight-shadow | RT-02, RT-04, RT-05 | sem blocker |
 | RT-07 | Backlog | Grafo mínimo executa tarefas allowlisted, idempotentes, observáveis e fail-closed. | workflow.universal-dispatch-candidate-shadow, execution.general-specialist-runtime | RT-06 | sem blocker |
@@ -103,8 +103,8 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | WFI-10 | Backlog | Instrumentos Brasil possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | sem vínculo | WFI-01, RT-07 | sem blocker |
 | WFI-11 | Backlog | Instrumentos EUA possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | sem vínculo | WFI-01, RT-07 | sem blocker |
 | WFI-12 | Backlog | Cross-border possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | sem vínculo | WFI-01, RT-07 | sem blocker |
-| WFI-13 | Backlog | Sector packs prioritários possui coverage, procedure, schemas, executor, gold, adversarial, revisão e gate próprios. | sem vínculo | WFI-01, RT-07 | sem blocker |
-| WFI-14 | Backlog | O runtime geral só avança depois que todos os packs Pareto possuem gates próprios e integração conjunta. | sem vínculo | WFI-01, WFI-02, WFI-03, WFI-04, WFI-05, WFI-06, WFI-07, WFI-08, WFI-09, WFI-10, WFI-11, WFI-12, WFI-13 | sem blocker |
+| WFI-13 | Em implementação | Qualquer negócio no mandato da Offroad pode ser caracterizado; a profundidade comprovada é composta por intenção, atividade, mecanismo econômico e objeto, sem lista setorial de elegibilidade. | sem vínculo | WFI-01, RT-07, RT-04 | sem blocker |
+| WFI-14 | Backlog | O runtime só avança no escopo de métodos comprovado após gates individuais e integrados; essa promoção não certifica todos os negócios nem cria lista setorial de elegibilidade. | sem vínculo | WFI-01, WFI-02, WFI-03, WFI-04, WFI-05, WFI-06, WFI-07, WFI-08, WFI-09, WFI-10, WFI-11, WFI-12, WFI-13 | sem blocker |
 
 ### R6
 
@@ -170,6 +170,54 @@ Critérios de aceite:
 - CTRL-01.AC01: Commit, ledger, PRs e ambientes têm referências verificáveis · **pending**
 - CTRL-01.AC02: Toda divergência material aparece como finding com owner · **passed** · EV-CAPABILITY-LEDGER
 - CTRL-01.AC03: Reconciliação não concede uso de cliente ou autorização externa · **passed** · EV-CAPABILITY-LEDGER
+
+### RT-04: Compositor de especializações
+
+Estado: **Em implementação** · owner: DCM specialization engineer
+
+Subtarefas:
+
+- [ ] RT-04.01: Caracterizar atividades e objetos sem exigir setor catalogado (in_progress)
+- [ ] RT-04.02: Compor mecanismos e métodos com precedência e aplicabilidade comprovada (pending)
+- [ ] RT-04.03: Preservar segmentos, entidades e perímetros de consolidação (pending)
+- [ ] RT-04.04: Resolver conflitos e requisitos por tarefa e dependência (pending)
+- [ ] RT-04.05: Bloquear conclusões sem suporte e preservar trabalho independente autorizado (pending)
+
+Critérios de aceite:
+
+- RT-04.AC01: Composição é determinística e vinculada à intenção e às evidências · **pending**
+- RT-04.AC02: Ausência de rótulo setorial não exclui a companhia · **pending**
+- RT-04.AC03: Método não é autorizado por analogia ou narrativa · **pending**
+- RT-04.AC04: Lacunas bloqueiam tarefas e conclusões dependentes sem liberar entregas finais materialmente incompletas · **pending**
+
+Capabilities relacionadas: `workflow.composable-specialization-shadow`, `workflow.specialist-method-binding-shadow`.
+
+### WFI-13: Cobertura aberta de negócios e métodos específicos
+
+Estado: **Em implementação** · owner: Workflow intelligence engineer
+
+Subtarefas:
+
+- [ ] WFI-13.01: Definir caracterização extensível com fontes, atributos confirmados, inferidos e desconhecidos (in_progress)
+- [ ] WFI-13.02: Vincular intenção e resultado a atividades, objetos e perímetros relevantes (pending)
+- [ ] WFI-13.03: Compor núcleo financeiro, mecanismos e métodos específicos com aplicabilidade revisada (pending)
+- [ ] WFI-13.04: Tratar negócios mistos, entidades, segmentos e consolidação (pending)
+- [ ] WFI-13.05: Vincular dados, método, cálculo, executor e prontidão a cada tarefa (pending)
+- [ ] WFI-13.06: Expandir métodos conforme necessidades e riscos materiais observados (pending)
+- [ ] WFI-13.07: Validar negócios não usados no desenvolvimento e combinações inéditas (pending)
+- [ ] WFI-13.08: Verificar tarefas pontuais, jornadas e diferentes perfis no mesmo negócio (pending)
+- [ ] WFI-13.09: Propagar nuances para documentos, reconciliação, cenários, materiais e matching (pending)
+- [ ] WFI-13.10: Submeter novos métodos e correções a revisão e gates antes de promoção (pending)
+
+Critérios de aceite:
+
+- WFI-13.AC01: Negócio não catalogado recebe caracterização e plano sem elegibilidade por lista fechada · **pending**
+- WFI-13.AC02: Mesma companhia recebe profundidade adequada a cada intenção · **pending**
+- WFI-13.AC03: Atividades heterogêneas mantêm perímetros explícitos e consolidação justificada · **pending**
+- WFI-13.AC04: Lacuna específica impede conclusão dependente e mantém trabalho independente autorizado · **pending**
+- WFI-13.AC05: Nenhuma analogia ou correção isolada promove método ou executor · **pending**
+- WFI-13.AC06: Amostras por mecanismos, materialidade e risco se expandem sem virar limite comercial · **pending**
+- WFI-13.AC07: Gold, adversarial, consistency e revisão comprovam apenas o escopo declarado · **pending**
 
 ### UX-01: Estados de trabalho e prontidão econômica
 

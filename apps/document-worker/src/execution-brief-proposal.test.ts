@@ -162,6 +162,36 @@ it("persists reviewed sector planning in both proposal snapshots without changin
   expect(expectedInput).toBe("f".repeat(64));
 });
 
+it("records open reviewed business descriptions in revised proposals without granting new executable work", async () => {
+  const inputs = reviewedSectorInputs();
+  inputs.candidates[0]!.field_path = "company.business_model";
+  inputs.candidates[0]!.normalized_value = "Vehicle leasing and fleet services";
+  const source = {...context(), objective: "Analisar a companhia e seus riscos de crédito"};
+  const baseline = queue(source);
+  const first = queue({...source, governed_sector_context_inputs: inputs});
+  expect(await processExecutionBriefProposalJob(job, baseline)).toEqual({status: "proposed"});
+  expect(await processExecutionBriefProposalJob(job, first)).toEqual({status: "proposed"});
+  const [, original] = baseline.recordExecutionBriefProposal.mock.calls[0]!;
+  const [, internal, visible] = first.recordExecutionBriefProposal.mock.calls[0]!;
+  expect(internal.planningContext).toEqual(visible.planningContext);
+  expect(visible.planningContext).toMatchObject({mode: "planning_only", objects: [{attributes: [{value: "Vehicle leasing and fleet services", status: "confirmed", sources: [{basis: "user_review"}]}]}]});
+  expect(internal.workstreams).toEqual(original.workstreams);
+  expect(internal.authority).toEqual(original.authority);
+  expect(visible.executionMode).toBe("confirm_before_expensive_work");
+  const revisedInputs = structuredClone(inputs);
+  revisedInputs.candidates[0]!.normalized_value = "Vehicle leasing and used fleet sales";
+  const revised = queue({...source, governed_sector_context_inputs: revisedInputs});
+  expect(await processExecutionBriefProposalJob(job, revised)).toEqual({status: "proposed"});
+  const [, nextInternal, nextVisible] = revised.recordExecutionBriefProposal.mock.calls[0]!;
+  expect(nextInternal.planningContext).toEqual(nextVisible.planningContext);
+  expect(nextVisible.planningContext.contextFingerprint).not.toBe(visible.planningContext.contextFingerprint);
+  expect(nextVisible.planningContext.planFingerprint).not.toBe(visible.planningContext.planFingerprint);
+  expect(nextVisible.fingerprint).not.toBe(visible.fingerprint);
+  expect(nextInternal.workstreams).toEqual(internal.workstreams);
+  expect(first.fail).not.toHaveBeenCalled();
+  expect(revised.fail).not.toHaveBeenCalled();
+});
+
 it("persists approved scope identity with bounded display for long names and many sources", async () => {
   const sources = Array.from({length: 40}, (_, index) => ({
     sourceDocumentId: id(100 + index), documentVersion: 1, contentKind: "document_layer" as const,

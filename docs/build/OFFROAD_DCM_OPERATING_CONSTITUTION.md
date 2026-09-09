@@ -1,6 +1,6 @@
 # Offroad Capital: Constituição de Produto e Operação
 
-Versão: 2.5 · 4 de setembro de 2026
+Versão: 2.6 · 9 de setembro de 2026
 
 Status: camada 0, fonte canônica de definição, fronteiras e comportamento do produto
 
@@ -296,6 +296,34 @@ mercado, disconfirmers, quality gates, dependências, conflitos, owner, versão 
 só pode chegar a `production` depois de implementação, testes, pelo menos dois gold cases, caso
 adversarial, benchmark contra o melhor modelo generalista e revisão especialista registrada. O
 nome de um instrumento no chat nunca é prova de expertise.
+
+### 5.2.1 Cobertura aberta de negócios e profundidade por objeto
+
+Decisão do fundador, 9 de setembro de 2026: o universo de negócios atendidos é aberto. Qualquer
+negócio pode originar um pedido dentro do mandato da Offroad. Setores e empresas usados em exemplos,
+casos de referência ou ondas de validação não constituem lista de elegibilidade nem fronteira do
+produto. A ausência de um rótulo no catálogo não é motivo suficiente para recusar a companhia.
+
+A expertise combina três camadas: base financeira comum; mecanismos econômicos reutilizáveis;
+e conhecimento específico de negócio, instrumento e jurisdição. O sistema caracteriza atividades,
+receitas, custos, ativos, capital de giro, contratos, obrigações, riscos e estágio por objeto e
+período, a partir de evidências. Setor é um contexto extensível, não uma enumeração fechada capaz de
+substituir essa caracterização.
+
+Uma companhia pode conter atividades e mecanismos diferentes. O plano deve preservar suas
+particularidades, relações entre entidades e efeitos de consolidação, em vez de atribuir um único
+modelo setorial ao grupo inteiro. A mesma companhia também pode demandar trabalhos pontuais ou
+jornadas completas; a intenção determina quais características são materiais.
+
+Cobertura comercial aberta não implica alegação de método universal já homologado. A prontidão é
+avaliada por tarefa, método, dado e conclusão: uma lacuna bloqueia a afirmação ou entrega dependente,
+e permite trabalho independente autorizado e sustentado por evidência. O sistema explica o limite,
+pede informação material ou encaminha a necessidade de método/revisão, sem inventar cálculo,
+aplicar analogia não validada ou promover automaticamente conhecimento adquirido em um caso.
+
+A validação exige negócios fora dos exemplos de desenvolvimento, atividades combinadas e mudanças
+de intenção sobre o mesmo negócio. Amostras são escolhidas por mecanismos, materialidade e risco,
+com expansão contínua; não definem os únicos setores permitidos na plataforma.
 
 ### 5.3 Coverage map obrigatório: o sistema precisa saber o que não examinou
 

@@ -1,6 +1,6 @@
 # Offroad Endgame Execution Blueprint
 
-Versão: 1.2 · 6 de setembro de 2026
+Versão: 1.3 · 9 de setembro de 2026
 Status: fonte canônica proposta para execução do programa; não é evidência de implementação  
 Subordinado a: `OFFROAD_DCM_OPERATING_CONSTITUTION.md` e `CANONICAL_INTENT_WORKFLOW_ATLAS.md`  
 Substitui, para planejamento futuro: a sequência linear e histórica de `MASTER_PLAN.md`
@@ -742,6 +742,32 @@ Precedência:
 
 Conflito não resolvível entre packs bloqueia o claim afetado e gera review. O compiler nunca escolhe
 silenciosamente a instrução mais recente.
+
+### 8.3.1 Arquitetura para qualquer negócio
+
+A cobertura de negócios é aberta, conforme a Constituição §5.2.1 e o Atlas §6.2.1. Exemplos
+setoriais e gold journeys são instrumentos de desenvolvimento e validação, nunca uma allowlist
+comercial. O produto mantém seu mandato de dívida e crédito; qualquer negócio pode demandar esse
+trabalho, respeitadas autorização, disponibilidade de evidência e capacidade específica executável.
+
+Implementar caracterização extensível por companhia, unidade, ativo, contrato, projeto ou carteira:
+atividades; mecanismos de receita e custo; capital de giro; ativos e utilização; investimentos;
+obrigações; regulação; estágio; períodos; e relações de consolidação. Campos ainda não classificados
+no catálogo permanecem representáveis com descrição, evidência e estado de revisão.
+
+Compor base financeira comum, mecanismos reutilizáveis e métodos específicos. Resolver precedência
+e conflitos por objeto, sem impor o mesmo modelo a negócios diferentes ou a todas as unidades de um
+grupo. A intenção escolhe a profundidade e o output; classificação setorial não obriga uma jornada
+inteira. Novos métodos entram por contratos versionados, casos e revisão, sem bifurcar a interface.
+
+Prontidão é local à tarefa e à dependência. Um método ausente bloqueia o cálculo/conclusão afetado,
+com explicação e próximo passo; trabalho independente autorizado pode prosseguir. Caracterização
+aberta nunca permite inventar executor, ultrapassar permissões ou usar analogia financeira sem
+validação. A revisão de um caso não promove automaticamente uma especialidade inteira.
+
+O plano de validação deve ampliar continuamente a amostra por mecanismos, materialidade e risco,
+incluindo negócios não usados no desenvolvimento, atividades heterogêneas e relações entre objetos.
+Não usar uma lista fixa de setores como critério de conclusão ou elegibilidade do produto.
 
 ### 8.4 Capital Markets Engineering
 
@@ -2045,7 +2071,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
 - variantes pública, privada e híbrida;
 - responsabilidades producer/reviewer/decision-maker/recipient;
 - Brasil, EUA e bridge cross-border nos escopos priorizados;
-- sector packs exigidos pelas jornadas;
+- caracterização aberta de negócios e composição por mecanismos, objetos e métodos específicos;
+- especialidades exigidas por pedidos e riscos materiais, sem restringir elegibilidade aos setores dos gold cases;
 - policy de precedence e conflitos entre packs.
 - threat model e data/provider policy de cada novo pack, jurisdição, fonte e ferramenta;
 - abuse cases e negative cases específicos de estruturas, contratos e cálculos ativados.
@@ -2056,7 +2083,8 @@ Cada release precisa atravessar os streams aplicáveis. Nenhum stream pode decla
   primitives;
 - nenhuma jornada é convertida em reunião de companhia pública;
 - mesma verdade econômica atravessa responsabilidades e idiomas;
-- abstenção ocorre fora dos packs homologados;
+- métodos não homologados bloqueiam a conclusão afetada e seus dependentes; trabalhos independentes preservam seus próprios gates;
+- negócios fora da amostra, atividades combinadas e mudança de intenção são testados sem criar uma lista fechada de setores;
 - novo pack entra sem bifurcar interface, objetos ou planner.
 - nenhum pack amplia tools, dados, provider ou efeito por herança silenciosa;
 - variantes BR, EUA e cross-border mantêm residência, transferência e obrigações mapeadas.

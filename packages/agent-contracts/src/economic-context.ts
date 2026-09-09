@@ -5,11 +5,16 @@ const date = z.iso.date().refine((value) => {
   const parsed = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }, "A real calendar date is required.");
-export const economicContextDimensionSchema = z.enum(["sector", "subsector", "business_model", "revenue_model", "lifecycle", "recourse", "jurisdiction"]);
+// Structural dimensions organize declarations; their values are not an industry
+// allowlist. A dimension does not itself register an executable financial method.
+export const economicContextDimensionSchema = z.enum([
+  "sector", "subsector", "business_model", "revenue_model", "lifecycle", "recourse", "jurisdiction",
+  "cost_model", "working_capital", "asset_model", "capital_expenditure", "regulation", "operating_driver",
+]);
 export const economicContextAttributeSchema = z.object({
   dimension: economicContextDimensionSchema,
   // Deliberately open vocabulary: the canonical catalog owns supported values.
-  value: identifier.nullable(),
+  value: z.string().trim().min(1).max(500).nullable(),
   status: z.enum(["confirmed", "proposed", "inferred", "conflicting", "unknown"]),
   evidenceRefs: z.array(z.object({sourceId: identifier, sourceVersion: identifier, anchor: z.string().trim().min(1).max(2_000)}).strict()).max(50),
   // Economic validity period, which may be future relative to knowledge asOf.
@@ -28,7 +33,7 @@ export const economicContextAttributeSchema = z.object({
 });
 export const economicContextObjectSchema = z.object({
   id: identifier,
-  type: z.enum(["company", "group", "spv", "asset", "receivables_pool", "contract"]),
+  type: z.enum(["company", "group", "spv", "asset", "receivables_pool", "contract", "segment", "business_unit", "project"]),
   parentObjectId: identifier.optional(),
   attributes: z.array(economicContextAttributeSchema).max(100),
 }).strict().superRefine((object, context) => {

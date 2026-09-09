@@ -1,6 +1,6 @@
 # Atlas Canônico de Intenções e Workflows da Offroad
 
-Versão: 0.9 · 4 de setembro de 2026  
+Versão: 0.10 · 9 de setembro de 2026
 Status: canônico para desenho e implementação; famílias e casos permanecem sujeitos à homologação  
 Owner: Produto, DCM e Credit Quality  
 
@@ -283,6 +283,27 @@ revisar tese de refinance
 + base pública + modelo interno
 + briefing executivo + páginas de pitch
 ```
+
+### 6.2.1 Negócios novos, atividades combinadas e limites locais
+
+O universo de negócios é aberto conforme a Constituição §5.2.1. A lista de setores, exemplos ou
+composições deste Atlas nunca decide elegibilidade da companhia. A caracterização econômica deve
+aceitar descrição aberta e objetos ainda sem classificação no catálogo, preservando a distinção
+entre atributo confirmado, inferência e informação desconhecida.
+
+O compilador deve: resolver a intenção e o resultado; caracterizar somente os objetos materiais;
+compor núcleo financeiro, mecanismos e especialidades aplicáveis; identificar requisitos sem
+método/dado suficiente; e avaliar prontidão por tarefa e dependência. Um setor novo pode reutilizar
+um mecanismo conhecido quando a aplicabilidade for sustentada e revisada. Sem essa sustentação,
+registra-se a lacuna específica, sem afirmar expertise por semelhança de nome ou liberar execução.
+
+Atividades de uma mesma companhia são analisadas nos seus perímetros e depois consolidadas quando
+o pedido exigir. Ausência de especialidade bloqueia somente o trabalho afetado e seus dependentes;
+a segurança, as permissões e os requisitos materiais da entrega final continuam obrigatórios.
+
+Casos de homologação incluem negócio fora da amostra de desenvolvimento, grupo com atividades
+heterogêneas, mesmo mecanismo em setores diferentes e perguntas diferentes sobre a mesma companhia.
+Passar esses casos comprova somente o escopo observado, não promove todos os negócios de uma vez.
 
 ### 6.3 Branches
 

@@ -16,6 +16,30 @@ describe("economic context v1", () => {
     attributes.push({...attributes[0]!, period: {start: "2031-01-01", end: "2032-12-31"}});
     expect(economicContextSchema.parse(value)).toEqual(value);
   });
+  it.each(["segment", "business_unit", "project"] as const)("preserves an explicit %s perimeter without inheriting parent facts", (type) => {
+    const value = example(); value.objects[1]!.type = type;
+    expect(economicContextSchema.parse(value).objects[1]).toEqual(value.objects[1]);
+  });
+  it("accepts bounded business descriptions beyond catalog identifiers", () => {
+    const value = example(); const attribute = value.objects[1]!.attributes[0]!;
+    attribute.dimension = "business_model";
+    attribute.value = "x".repeat(500);
+    expect(economicContextSchema.safeParse(value).success).toBe(true);
+    attribute.value += "x";
+    expect(economicContextSchema.safeParse(value).success).toBe(false);
+    attribute.value = " ";
+    expect(economicContextSchema.safeParse(value).success).toBe(false);
+  });
+  it.each(["cost_model", "working_capital", "asset_model", "capital_expenditure", "regulation", "operating_driver"] as const)("preserves %s declarations with evidence and review state", (dimension) => {
+    const value = example(); const attribute = value.objects[1]!.attributes[0]!;
+    attribute.dimension = dimension;
+    attribute.value = "synthetic-business-specific-description";
+    expect(economicContextSchema.parse(value)).toEqual(value);
+    attribute.evidenceRefs = [];
+    expect(economicContextSchema.safeParse(value).success).toBe(false);
+    attribute.status = "inferred";
+    expect(economicContextSchema.safeParse(value).success).toBe(true);
+  });
   it("requires confirmed evidence and does not give unknown values activation meaning", () => {
     const value = example(); const attribute = value.objects[1]!.attributes[0]!;
     attribute.evidenceRefs = [];
@@ -56,7 +80,7 @@ describe("economic context v1", () => {
   });
   it("rejects unknown properties and oversized values", () => {
     expect(economicContextSchema.safeParse({...example(), activateAll: true}).success).toBe(false);
-    const value = example(); value.objects[1]!.attributes[0]!.value = "x".repeat(121);
+    const value = example(); value.objects[1]!.attributes[0]!.value = "x".repeat(501);
     expect(economicContextSchema.safeParse(value).success).toBe(false);
   });
   it.each(["attributes", "references", "anchors"] as const)("rejects aggregate %s excess with individually valid entries", (kind) => {

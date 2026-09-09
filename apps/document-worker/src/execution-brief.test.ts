@@ -52,6 +52,32 @@ it("keeps sector planning tied to the displayed objective across short follow-up
   expect(followup.visible.planningContext).toEqual(initial.visible.planningContext);
 });
 
+it("preserves a reviewed uncatalogued business through the initial brief and a continuation", () => {
+  const activation = workspaceJobActivationSchema.parse({job: "company_debt_view", company: {name: "Synthetic Fleet Company"}, brief: {focus: "Analisar a companhia e seus riscos de crédito"}});
+  const governedSectorContextInputs = governedSectorContextInputsSchema.parse({schema_version: "governed-sector-context-inputs.v1", as_of: "2026-09-08", sources: [], candidates: [{
+    id: "10000000-0000-4000-8000-000000000180", field_path: "company.business_model", normalized_value: "Vehicle leasing and fleet services", review_state: "edited", is_primary: true,
+    reviewed_by: "10000000-0000-4000-8000-000000000181", reviewed_at: "2026-09-08T00:00:00Z", entity_name: null, entity_scope: "company", period_start: null, period_end: null,
+    source_anchor: {}, anchor_verified: null, extraction_method: "user_entry", processing_run_id: null, source_document_id: null, extraction_document_version: null, extraction_source_sha256: null,
+  }]});
+  const base = {locale: "en-US" as const, sessionId: "10000000-0000-4000-8000-000000000182", accessBasis: "authorized_private", documents: [], activePlan: capitalProjectPlanSnapshot("company_debt_view")};
+  const original = prepareExecutionBrief({...base, message: "Analisar a companhia e seus riscos de crédito"}, activation);
+  const initial = prepareExecutionBrief({...base, governedSectorContextInputs, message: "Analisar a companhia e seus riscos de crédito"}, activation);
+  const continuation = prepareExecutionBrief({...base, governedSectorContextInputs, message: "Keep going"}, activation);
+  expect(initial.visible.planningContext?.objects[0]?.attributes).toEqual(expect.arrayContaining([expect.objectContaining({value: "Vehicle leasing and fleet services", status: "confirmed", sources: [expect.objectContaining({basis: "user_review"})]})]));
+  expect(initial.visible.planningContext?.mode).toBe("planning_only");
+  expect(initial.visible.planningContext?.objects[0]?.gaps).toEqual(expect.arrayContaining([expect.objectContaining({id: "coverage:attribute_uncovered"})]));
+  expect(initial.internal.workstreams).toEqual(original.internal.workstreams);
+  expect(initial.visible.fingerprint).not.toBe(original.visible.fingerprint);
+  expect(continuation.visible.planningContext).toEqual(initial.visible.planningContext);
+  const revised = structuredClone(governedSectorContextInputs);
+  revised.candidates[0]!.normalized_value = "Vehicle leasing and used fleet sales";
+  const updated = prepareExecutionBrief({...base, governedSectorContextInputs: revised, message: "Keep going"}, activation);
+  expect(updated.visible.planningContext?.contextFingerprint).not.toBe(initial.visible.planningContext?.contextFingerprint);
+  expect(updated.visible.planningContext?.planFingerprint).not.toBe(initial.visible.planningContext?.planFingerprint);
+  expect(updated.visible.fingerprint).not.toBe(initial.visible.fingerprint);
+  expect(updated.internal.workstreams).toEqual(initial.internal.workstreams);
+});
+
 it("binds a confirmed pool revision into the exact approved brief", () => {
   const source = {
     sourceDocumentId: "10000000-0000-4000-8000-000000000090", documentVersion: 1,
