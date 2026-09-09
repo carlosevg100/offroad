@@ -7,6 +7,8 @@ import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter, default
 import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-work-product-live";
 import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, type LiveProduct} from "../src/document-work-product-live";
 
+import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
+
 async function main() {
   assertDocumentWorkLiveEnvironment(process.env);
   if (!process.env.ANTHROPIC_API_KEY || !process.env.OPENAI_API_KEY) throw new Error("protected_provider_credentials_required");
@@ -17,7 +19,7 @@ async function main() {
   // Dynamic path loads the exact production executor without copying its prompt or relaxing its validation.
   const workerModule = pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)), "../../../apps/document-worker/src/document-work-product.ts")).href;
   const {runDocumentWorkProduct} = await import(workerModule) as {runDocumentWorkProduct:(input:unknown,dependencies:{gateway:ReturnType<typeof createModelGateway>})=>Promise<LiveProduct>};
-  const runs: Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
+  const runs: Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;diagnostics:ReturnType<typeof documentWorkFailureDiagnostics>|null;providerCallRange:{start:number;end:number}}> = [];
   const repeats: Array<{caseId:string;comparison:ReturnType<typeof compareDocumentWorkRepeats>|null}> = [];
   const persist = () => {
     const passed = runs.length === 6 && runs.every(run=>run.score?.passed) && repeats.length === 3 && repeats.every(repeat=>repeat.comparison?.passed) && gateway.spent().calls === 6 && gateway.spent().unknownCostCalls === 0;
@@ -31,13 +33,21 @@ async function main() {
     const outputs: LiveProduct[] = [];
     for (const repeat of [1,2]) {
       const callStart = calls.length;
+      let capturedSyntheticOutput: unknown;
+      // Observe the real response without altering request, policy, retries, validation or budget.
+      const observedGateway: typeof gateway = {spent:gateway.spent, async complete(request) {
+        const response = await gateway.complete(request);
+        capturedSyntheticOutput = response.output;
+        return response;
+      }};
       try {
-        const product = await runDocumentWorkProduct(input,{gateway});
+        const product = await runDocumentWorkProduct(input,{gateway:observedGateway});
         outputs.push(product);
-        runs.push({caseId:sample.id,repeat,product,score:scoreDocumentWorkLive(product,sample),failure:null,providerCallRange:{start:callStart,end:calls.length}});
-      } catch {
-        // Do not serialize provider exceptions: record the real failure through content-free gateway logs.
-        runs.push({caseId:sample.id,repeat,product:null,score:null,failure:"executor_or_provider_rejected",providerCallRange:{start:callStart,end:calls.length}});
+        runs.push({caseId:sample.id,repeat,product,score:scoreDocumentWorkLive(product,sample),failure:null,diagnostics:null,providerCallRange:{start:callStart,end:calls.length}});
+      } catch (error) {
+        // Only fixed synthetic narrative belongs in this private eval artifact, never general telemetry.
+        const diagnostics = documentWorkFailureDiagnostics(error,capturedSyntheticOutput,capturedSyntheticOutput === undefined ? null : calls.length - 1);
+        runs.push({caseId:sample.id,repeat,product:null,score:null,failure:diagnostics.code,diagnostics,providerCallRange:{start:callStart,end:calls.length}});
       }
       persist();
     }

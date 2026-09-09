@@ -1,6 +1,22 @@
+## Alinhamento das instruções documentais ao validador existente
+
+Procedimento canônico atualizado para `2026.09.08-v2`: observações preservam o idioma original e igualam a citação; títulos, hipóteses, lacunas e perguntas usam o idioma solicitado e não contêm dígitos. Citações têm de 12 a 2000 caracteres e conservam a sentença completa com pontuação terminal reconhecida, linha/registro completo ou trecho integral; quando não couber, registrar a limitação. Nenhuma regra determinística foi afrouxada.
+
+Esses desalinhamentos foram identificados por revisão estática. Eles **não diagnosticam** a rejeição original de review repeat 1 no gate `34297931569`: o código e a narrativa rejeitada não foram preservados naquela execução. O resultado original continua FAIL 5/6. Os novos diagnósticos registram somente código allowlisted e narrativa sintética rejeitada, distinta de produto, para uma futura rodada completa; não houve repetição seletiva nem nova evidência de provedor neste corte.
+
+Segurança de dependências integrada ao ramo em `546f076`; procedimentos continuam candidate, tarefas Q01–Q03 specified e `DOCUMENTARY_WORK_PLANNING_ENABLED=false`. Sem promoção, alteração de orçamento, banco ou política de divulgação. Validação combinada final: `pnpm check` em Node 24 passou lint, typecheck, testes e build, com 43/43 tarefas em cada etapa, após a alteração canônica. CI e novas rodadas reais ainda pendentes.
+
 ## Dependency security patch, 9 September 2026
 
 Five advisory fixes prepared in an isolated branch: Next 16.3.3, sharp 0.35.4, js-yaml 4.3.2, Vitest/mocker 4.1.11. Registry audit reports zero vulnerabilities; full Node 24 local gate passed (43/43 tasks in each stage). CI and publication pending. No feature flags or database changes. [Scope, evidence and rollback](docs/security/DEPENDENCY_PATCH_2026_09_09.md).
+
+## Validação real após publicação de PR560
+
+A versão `4e61637` foi publicada com autorização explícita do fundador e planejamento documental desativado. Web Production 6340360894 e worker 34297910422 (revisão 287, PRIMARY estável e capacidade positiva) verificados.
+
+O gate de executor 34297931569 registrou cinco sucessos em seis chamadas reais (US$ 0.126386); uma resposta de revisão foi rejeitada após o provedor responder com schema válido. Essa falha permanece registrada. O gate de jornada 34297937112 parou antes das análises porque a preparação esperava shadow, mas o bootstrap produz canary.
+
+A correção seguinte se limita ao harness: registrar código allowlisted e narrativa sintética rejeitada separadamente de produto; preservar a política canary criada pelo bootstrap, com pipeline habilitado e saída externa desativada, sem promover políticas ou criar evidência de liberação. Regras do executor, seis repetições, orçamento e ativação de produção não mudam. Uma nova rodada real ainda é necessária.
 
 ## Publicação autorizada: banco preparado, aplicação pendente
 
