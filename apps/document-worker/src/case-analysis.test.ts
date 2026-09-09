@@ -1078,7 +1078,7 @@ describe("worker case analysis", () => {
     });
     expect(completed).not.toHaveProperty("match_details");
 
-    // Exercise the real additional executor through the case runner and encoded source layer.
+    // Exercise the explicitly authorized documentary executor through the case runner.
     // The fixture gateway supplies model responses only; snapshots still come from the worker.
     const documentRequest = {
       projectId: raw.session.capital_project_id, jobId: job.job_id,
@@ -1097,7 +1097,6 @@ describe("worker case analysis", () => {
       {job: "review", objective: "Revise esta oportunidade"},
     ];
     const workInputFingerprints = new Set<unknown>();
-    const workEconomicFingerprints = new Set<unknown>();
     for (const requested of requests) {
       const logs: GatewayCallLog[] = [];
       let snapshot: Record<string, unknown> | undefined;
@@ -1120,7 +1119,7 @@ describe("worker case analysis", () => {
       } as unknown as ModelGateway;
       const outcome = await processCaseAnalysisJob(job, {
         queue: {...queue,
-          loadCaseInput: async () => ({...documentRaw, document_work_request: {...documentRequest, objective: requested.objective}}),
+          loadCaseInput: async () => ({...documentRaw, document_work_request: {...documentRequest, objective: requested.objective, executionScope:"documentary_only"}}),
           recordCaseSnapshot: async (_job, value, state) => {manifest = value; snapshot = state as Record<string, unknown>; return "document-manifest";},
         }, gateway: fixtureGateway, lineage: () => logs, researchProviders: [], now: () => new Date("2026-08-24T13:00:00.000Z"),
       });
@@ -1130,18 +1129,65 @@ describe("worker case analysis", () => {
       expect(manifest).toMatchObject({capture: {models: "complete"}, models: expect.any(Array)});
       expect((manifest as {models: unknown[]}).models).toHaveLength(logs.length);
       workInputFingerprints.add(snapshot?.fingerprint);
-      workEconomicFingerprints.add(snapshot?.economicFingerprint);
+      expect(snapshot).not.toHaveProperty("economicFingerprint");
     }
-    // Same evidence and economics, different approved work: analytical identity changes
-    // while the economic identity remains stable across comparison, meeting and review.
+    // Each approved documentary request has its own identity and asserts no economic analysis.
     expect(workInputFingerprints.size).toBe(requests.length);
     expect(workInputFingerprints.has(undefined)).toBe(false);
-    expect(workEconomicFingerprints.size).toBe(1);
-    expect(workEconomicFingerprints.has(undefined)).toBe(false);
+
+    // Matching prose without the approved documentary scope retains the financial path.
+    const legacyInputs = new Set<unknown>(), legacyEconomics = new Set<unknown>();
+    for (const objective of ["Compare estas propostas de financiamento","Revise esta oportunidade"]) {
+      let legacySnapshot:Record<string,unknown>|undefined;
+      const legacyOutcome = await processCaseAnalysisJob(job,{
+        queue:{...queue,loadCaseInput:async()=>({...documentRaw,document_work_request:{...documentRequest,objective,proposedDeliverable:"Análise financeira das alternativas"}}),
+          recordCaseSnapshot:async(_job,_manifest,state)=>{legacySnapshot=state as Record<string,unknown>;return "legacy-manifest";}},
+        gateway:{...gateway,complete:async(request)=>{
+          expect(request.schemaName).not.toBe("document_work_product_narrative_v1");
+          return gateway.complete(request);
+        }},lineage:()=>[],researchProviders:[],now:()=>new Date("2026-08-24T13:00:00.000Z"),
+      });
+      expect(legacyOutcome).toEqual({status:"succeeded",manifestId:"legacy-manifest"});
+      expect(legacySnapshot).not.toHaveProperty("documentWorkProduct");
+      expect(legacySnapshot).toHaveProperty("economicFingerprint");
+      legacyInputs.add(legacySnapshot?.fingerprint);legacyEconomics.add(legacySnapshot?.economicFingerprint);
+    }
+    expect(legacyInputs.size).toBe(2);expect(legacyEconomics.size).toBe(1);
+    // Signed documentary scope completes without invoking financial or research steps.
+    let standaloneSnapshot: Record<string, unknown> | undefined;
+    let standaloneReport: unknown;
+    const standaloneLogs: GatewayCallLog[] = [];
+    const standaloneGateway = {
+      complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
+        expect(request.schemaName).toBe("document_work_product_narrative_v1");
+        const input = JSON.parse((request.input[0] as {text:string}).text) as {passages:Array<{id:string;text:string}>;sectionKeys:string[]};
+        const passage = input.passages.find(item=>item.text.length>=12)!;
+        standaloneLogs.push({...invocation,task:request.task,schemaName:request.schemaName});
+        return {output:{sections:input.sectionKeys.map(key=>({key,title:"Leitura documental",observations:[{text:passage.text,citations:[{passageId:passage.id,quote:passage.text}]}]})),hypotheses:[],gaps:[]}};
+      }, spent:()=>({costUsd:0.1,calls:standaloneLogs.length}),
+    } as unknown as ModelGateway;
+    const standaloneOutcome=await processCaseAnalysisJob(job,{
+      queue:{...queue,
+        loadCaseInput:async()=>({...documentRaw,document_work_request:{...documentRequest,executionScope:"documentary_only"}}),
+        loadRetrievalContext:async()=>{throw new Error("financial retrieval must not run");},
+        recordDealStateObject:async()=>{throw new Error("financial state must not be promoted");},
+        recordOperatingControlSnapshot:async()=>{throw new Error("financial controls must not be approved");},
+        recordControlledExecution:async(_job,report)=>{standaloneReport=report;return "document-execution";},
+        recordCaseSnapshot:async(_job,_manifest,state)=>{standaloneSnapshot=state as Record<string,unknown>;return "standalone-manifest";},
+      },gateway:standaloneGateway,lineage:()=>standaloneLogs,researchProviders:[],now:()=>new Date("2026-08-24T13:00:00.000Z"),
+    });
+    expect(standaloneOutcome).toEqual({status:"succeeded",manifestId:"standalone-manifest"});
+    expect(standaloneLogs).toHaveLength(1);
+    expect(standaloneReport).toMatchObject({schemaVersion:"document-work-execution.v1",executionScope:"documentary_only",financialAnalysisStatus:"not_performed"});
+    expect(standaloneSnapshot).toMatchObject({executionScope:"documentary_only",documentWorkProduct:{binding:{executionScope:"documentary_only"}},executionPlan:{produceMaterials:false,screenMandates:false,introduce:false}});
+    expect(standaloneSnapshot).not.toHaveProperty("economicFingerprint");
+    expect(standaloneSnapshot).not.toHaveProperty("operationTruth");
     for (const invalid of [
+      {...documentRaw},
+      {...documentRaw, document_work_request: {...documentRequest, executionScope: "documentary_only", objective: "Compare proposals and calculate effective cost"}},
       {...documentRaw, document_work_request: {...documentRequest, projectId: "f1111111-1111-4111-8111-111111111111"}},
       {...documentRaw, document_work_request: {...documentRequest, jobId: "f1111111-1111-4111-8111-111111111111"}},
-      {...documentRaw, sources: documentRaw.sources.map(source => source.id === receivablesDocumentId ? {...source, sha256: "0".repeat(64)} : source)},
+      {...documentRaw, document_work_request:{...documentRequest,executionScope:"documentary_only"}, sources: documentRaw.sources.map(source => source.id === receivablesDocumentId ? {...source, sha256: "0".repeat(64)} : source)},
     ]) {
       let persisted = false;
       let failed: unknown;
@@ -1152,7 +1198,7 @@ describe("worker case analysis", () => {
         }, gateway, lineage: () => [], researchProviders: [], now: () => new Date("2026-08-24T13:00:00.000Z"),
       });
       expect(outcome.status).toBe("failed");
-      expect(JSON.stringify(failed)).toMatch(/document_work_request_binding_invalid|document_work_source_not_current/);
+      expect(JSON.stringify(failed)).toMatch(/document_work_request_binding_invalid|document_work_source_not_current|document_work_approved_scope_incompatible|document_work_authoritative_scope_missing/);
       expect(persisted).toBe(false);
     }
   }, 20_000);

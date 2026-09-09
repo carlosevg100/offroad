@@ -166,3 +166,5 @@ function eventUnit(event: ProcessingStageEvent): string {
 function numeric(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(0, value) : 0;
 }
+
+export * from "./document-work-plan";

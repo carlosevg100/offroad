@@ -6,6 +6,7 @@ export const documentWorkRequestBindingSchema = z.object({
   projectId: z.uuid(), jobId: z.uuid(), briefId: z.uuid(), planId: z.uuid(), version: z.number().int().positive(),
   objective: z.string().min(3).max(2000), proposedDeliverable: z.string().min(3).max(2000),
   inputFingerprint: fingerprint, requestFingerprint: fingerprint,
+  executionScope: z.enum(["documentary_only"]).optional(),
 }).strict();
 export type DocumentWorkRequestBinding = z.infer<typeof documentWorkRequestBindingSchema>;
 export const documentWorkProductJobSchema = z.enum(["comparison", "meeting", "review"]);

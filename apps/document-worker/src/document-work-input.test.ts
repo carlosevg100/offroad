@@ -1,6 +1,6 @@
 import {describe,it,expect} from "vitest";
 import {documentWorkProductInputSchema} from "@offroad/domain-contracts";
-import {buildDocumentWorkInput,documentWorkJob,type DocumentWorkRequest} from "./document-work-input";
+import {buildDocumentWorkInput,documentWorkJob,isStandaloneDocumentWorkRequest,canCompileStandaloneDocumentWorkRequest,type DocumentWorkRequest} from "./document-work-input";
 import {encodeReceivablesEvidence,receivablesEvidenceEnvelopeSchema} from "./receivables-evidence";
 
 const id=(n:number)=>`10000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
@@ -11,6 +11,13 @@ function document(n:number,texts:string[]){
   return {source:{id:documentId,sha256:hash,document_version:1,processing_status:"ready",original_name:`Proposal ${n}.pdf`},envelope:receivablesEvidenceEnvelopeSchema.parse({source_document_id:documentId,document_version:1,content_kind:"document_layer",schema_version:encoded.schemaVersion,source_sha256:hash,content_sha256:encoded.contentSha256,payload_sha256:encoded.payloadSha256,codec:"gzip-json-v1",uncompressed_bytes:encoded.uncompressedBytes,payload_base64:encoded.payloadBase64})};
 }
 describe("bounded document work input",()=>{
+  it("requires the authoritative approved documentary scope, not matching prose alone",()=>{
+    const documentary={...request,proposedDeliverable:"Leitura documental preliminar"};
+    expect(canCompileStandaloneDocumentWorkRequest(documentary)).toBe(true);
+    expect(isStandaloneDocumentWorkRequest(documentary)).toBe(false);
+    expect(isStandaloneDocumentWorkRequest({...documentary,executionScope:"documentary_only"})).toBe(true);
+    expect(isStandaloneDocumentWorkRequest({...documentary,executionScope:"documentary_only",objective:"Compare proposals and calculate effective cost"})).toBe(false);
+  });
   it.each([["Compare these proposals","comparison"],["Prepare a meeting briefing","meeting"],["Revisar esta oportunidade","review"],["Não quero comparar propostas",null],["Do not compare proposals",null],["Calculate EBITDA",null],["Não preciso comparar as propostas",null],["Don’t compare these proposals",null],["Briefing da companhia para amanhã","meeting"]] as const)("routes only explicit request %s",(text,job)=>expect(documentWorkJob(text)).toBe(job));
   it("preserves both proposals within the character budget",()=>{
     const docs=[document(11,Array.from({length:20},()=>"First proposal "+"a".repeat(11900))),document(12,["Second proposal requires a guarantee. "+"b".repeat(2000)])];

@@ -1126,6 +1126,30 @@ perform public.approve_advisor_execution_brief_v1((c#>>'{project,id}')::uuid,(r-
 perform set_config('request.jwt.claims','',true);
 if not private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'first approval was not current'; end if;
 
+-- Documentary authorization needs signed marker AND exact snapshot, targets and persisted tasks.
+if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'ordinary plan gained documentary scope'; end if;
+begin
+ update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{planVersion}','"document-work-plan.v1:synthetic"')
+ where id=(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'marker alone authorized documentary scope'; end if;
+ update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{workstreams}','[{"sourceTaskIds":["Q01"]},{"sourceTaskIds":["Q02"]},{"sourceTaskIds":["Q03"]}]')
+ where id=(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ update public.capital_project_plans set snapshot=jsonb_set(snapshot,'{taskSpecs}','[{"id":"Q01"},{"id":"Q02"},{"id":"Q03"}]'),target_task_ids=array['Q03']
+ where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'snapshot without persisted task set authorized documentary scope'; end if;
+ insert into public.capital_project_plan_tasks (organization_id,capital_project_id,plan_id,task_id,ordinal,batch_no,label,graph,dependencies,execution_class,effect,maturity_at_compile)
+ select original.organization_id,original.capital_project_id,original.plan_id,q.task,70+q.ord,q.ord,'Synthetic documentary task','case','{}'::text[],'compilation','propose_state','specified'
+ from (select * from public.capital_project_plan_tasks where plan_id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') order by ordinal limit 1) original
+ cross join (values ('Q01',1),('Q02',2),('Q03',3))q(task,ord);
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'mixed financial/documentary tasks authorized documentary scope'; end if;
+ delete from public.capital_project_plan_tasks where plan_id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') and task_id not in ('Q01','Q02','Q03');
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')->>'executionScope' is distinct from 'documentary_only' then raise exception 'exact documentary plan missing scope'; end if;
+ update public.capital_project_plans set target_task_ids=array['S11'] where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'financial target authorized documentary scope'; end if;
+ raise exception 'rollback documentary authorization fixture' using errcode='ZX002';
+exception when sqlstate 'ZX002' then null;
+end;
+
 -- New product reads bind the actual accepted objective, never the initial request.
 if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')->>'requestFingerprint'
  is distinct from fixture_internal->>'fingerprint' then raise exception 'document work request fingerprint mismatch'; end if;

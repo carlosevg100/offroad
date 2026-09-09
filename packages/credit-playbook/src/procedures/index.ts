@@ -8,3 +8,5 @@ export * from "./materials";
 export * from "./market-distribution";
 export * from "./red-flags";
 export * from "./registry";
+
+export * from "./documentary-work";

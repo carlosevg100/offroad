@@ -2483,3 +2483,11 @@ reconhecido com fonte e permite correção. Não exige selecionar especialista, 
 packs ou todas as dimensões antes de uma tarefa simples. O contrato de interação e a
 separação entre contexto, intenção e audiência seguem o complemento correspondente do
 [Intent Atlas](../product/CANONICAL_INTENT_WORKFLOW_ATLAS.md).
+
+## Extensão de execução documental proporcional: 9 de setembro de 2026
+
+O marco JOB-01 admite três intenções documentais privadas: comparação qualitativa de propostas recebidas, preparação de reunião e revisão preliminar de oportunidade. Um plano novo pode selecionar o grafo fechado Q01 (validar fontes e cobertura), Q02 (observações, hipóteses e lacunas) e Q03 (resultado privado e Word editável), mediante entendimento confirmado e aceite do plano. Esses tasks são distintos das referências de house procedure Q-01, Q-02 e Q-03.
+
+Os métodos canônicos documentais permanecem candidatos. A execução documental não roda cálculos, não emite decisão de crédito e não promove matching ou material externo. Scope é propriedade do plano aceito e de suas tarefas persistidas; texto livre ou classificação de intenção isolados não autorizam atalhos. Planos financeiros existentes não são reduzidos automaticamente. Pedidos quantitativos mantêm o caminho financeiro e seus requisitos.
+
+Homologação exige executor real, fontes e versões atuais, UI e Word coerentes, cenários adversariais e jornada autenticada. O gate documental protegido de seis tentativas/USD 3 é evidência de executor, não certificação de domínio nem substituto do E2E. A ampliação para pedidos avulsos em projetos com plano anterior exige revisão explícita de plano e continua pendente.

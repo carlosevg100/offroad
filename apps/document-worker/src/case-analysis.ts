@@ -102,8 +102,8 @@ import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
-import {buildDocumentWorkInput, documentWorkRequestSchema} from "./document-work-input";
-import {runDocumentWorkProduct} from "./document-work-product";
+import {buildDocumentWorkInput, documentWorkRequestSchema, isStandaloneDocumentWorkRequest, canCompileStandaloneDocumentWorkRequest} from "./document-work-input";
+import {processStandaloneDocumentWork} from "./document-work-standalone";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
   buildReceivablesMethodEvidenceRequestProjection,
@@ -791,6 +791,20 @@ export async function processCaseAnalysisJob(
     }
     failurePhase = "load_case_input";
     const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
+    if (raw.document_work_request && (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id)) throw new Error("document_work_request_binding_invalid");
+    if (raw.document_work_request && canCompileStandaloneDocumentWorkRequest(raw.document_work_request) && raw.document_work_request.executionScope !== "documentary_only") throw new Error("document_work_authoritative_scope_missing");
+    if (raw.document_work_request?.executionScope === "documentary_only"
+      && (raw._execution.mode !== "primary" || !isStandaloneDocumentWorkRequest(raw.document_work_request))) {
+      throw new Error("document_work_approved_scope_incompatible");
+    }
+    if (raw._execution.mode === "primary" && raw.document_work_request && isStandaloneDocumentWorkRequest(raw.document_work_request)) {
+      failurePhase = "document_work_product";
+      if (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id) throw new Error("document_work_request_binding_invalid");
+      const documentInput = buildDocumentWorkInput({request:raw.document_work_request,locale:raw.session.locale === "en-US" ? "en-US":"pt-BR",sources:raw.sources,envelopes:raw.receivables_evidence});
+      if (!documentInput) throw new Error("document_work_no_readable_evidence");
+      const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
+      return await processStandaloneDocumentWork({job,binding:raw.document_work_request,documentInput,economics:economicInput(raw),extractionVersion:stringOr(raw.session.extraction_version,"unknown"),priorModelLineage:priorLineage.success ? priorLineage.data.map(call => call as GatewayCallLog) : [],expectedPriorModelCalls:raw.expected_model_calls},dependencies);
+    }
     const executionPlan = caseAnalysisExecutionPlan(raw.deal_workflow);
     const useShadow = raw._execution.mode === "shadow";
     const locale = raw.session.locale === "en-US" ? "en" : "pt";
@@ -1195,20 +1209,6 @@ export async function processCaseAnalysisJob(
       }));
     }
     failurePhase = "compose_case_snapshot";
-    // The request was read through the accepted-dispatch capability and frozen with the
-    // same source bundle. Never infer today's work from the first message in a project.
-    let documentWorkProduct;
-    if (raw._execution.mode === "primary" && raw.document_work_request) {
-      if (raw.document_work_request.projectId !== raw.session.capital_project_id
-        || raw.document_work_request.jobId !== job.job_id) throw new Error("document_work_request_binding_invalid");
-      const documentInput = buildDocumentWorkInput({request: raw.document_work_request,
-        locale: locale === "pt" ? "pt-BR" : "en-US", sources: raw.sources, envelopes: raw.receivables_evidence});
-      if (documentInput) {
-        failurePhase = "document_work_product";
-        const product = await runDocumentWorkProduct(documentInput, {gateway: dependencies.gateway});
-        documentWorkProduct = {binding: raw.document_work_request, product};
-      }
-    }
     const economicFingerprint = fingerprintJson({economics: economic, versions, caseEngine: caseEngineVersion});
     const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
     const currentLineage = dependencies.lineage();
@@ -1221,7 +1221,6 @@ export async function processCaseAnalysisJob(
     }));
     const snapshot = {
       ...publicState,
-      ...(documentWorkProduct ? {documentWorkProduct} : {}),
       ...(receivablesVertical ? {receivablesVertical} : {}),
       externalResearch: publicResearch,
       modelInvocations: currentLineage,

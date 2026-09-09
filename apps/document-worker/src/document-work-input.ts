@@ -6,6 +6,24 @@ import {decodeBoundReceivablesEvidence, type ReceivablesEvidenceEnvelope} from "
 export const documentWorkRequestSchema = documentWorkRequestBindingSchema;
 export type DocumentWorkRequest = ReturnType<typeof documentWorkRequestSchema.parse>;
 
+/** The approved deliverable must explicitly limit execution to documentary work.
+ * An ordinary request to compare funding alternatives still follows the financial engine. */
+export function isStandaloneDocumentWorkRequest(request: DocumentWorkRequest): boolean {
+  return request.executionScope === "documentary_only" && canCompileStandaloneDocumentWorkRequest(request);
+}
+
+/** Planning hint only. Runtime authority additionally requires the signed SQL scope marker. */
+export function canCompileStandaloneDocumentWorkRequest(request: Pick<DocumentWorkRequest,"objective"|"proposedDeliverable">): boolean {
+  if (!documentWorkJob(request.objective)) return false;
+  const normalize = (text: string) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+  const deliverable = normalize(request.proposedDeliverable);
+  if (!/\b(?:documental|documentary|document[- ]only)\b/.test(deliverable)
+    || !/\b(?:preliminar|preliminary|qualitativ\w*|only|somente|apenas)\b/.test(deliverable)) return false;
+  const work = normalize(`${request.objective} ${request.proposedDeliverable}`)
+    .replace(/\b(?:sem|without|no)\s+(?:calculos?|calculations?|financial calculations?)\b/g, "");
+  return !/\b(?:calcul\w*|recalcul\w*|reconcili\w*|concili\w*|model\w*|custo efetivo|effective cost|cet|tir|irr|npv|vpl|dscr|ebitda|stress|sensibil\w*|sensitivity|amortization schedule|cronograma de amortizacao)\b/.test(work);
+}
+
 /** Only explicit bounded requests activate this additional document reading. */
 export function documentWorkJob(request: string): DocumentWorkProductInput["job"] | null {
   const text = request.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();

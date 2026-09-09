@@ -31,6 +31,31 @@ describe("uploaded document work products",()=>{
     const out=narrative();out.sections[0]!.observations[0]!.text="Proposal Alpha has a maturity of 36 months and does not require a parent guarantee.";
     expect(()=>validateDocumentWorkProductNarrative(input,out)).toThrow("non_extractive_observation");
   });
+  it.each([
+    ["The financing is unsecured and has no guarantees.", "secured and has no guarantees."],
+    ["No parent guarantee exists for this financing.", "parent guarantee exists for this financing."],
+    ["The lender requires consent unless waived in writing.", "The lender requires consent"],
+    ["Collateral | None | Guarantee | Not provided", "Guarantee | Not provided"],
+  ])("rejects truncated meaning from %s", (source, quote) => {
+    const out = narrative();
+    out.sections[0]!.observations[0] = {text: quote, citations: [{passageId: "p1", quote}]};
+    expect(() => validateDocumentWorkProductNarrative({...input, passages: [{...input.passages[0]!, text: source}]}, out)).toThrow("invalid_citation");
+  });
+  it("requires observation to equal its complete quote instead of a substring", () => {
+    const out = narrative();
+    out.sections[0]!.observations[0]!.text = "requires a parent guarantee.";
+    expect(() => validateDocumentWorkProductNarrative(input, out)).toThrow("non_extractive_observation");
+  });
+  it.each([
+    ["The financing is unsecured. No parent guarantee exists.", "No parent guarantee exists."],
+    ["Company overview\nCollateral | None | Guarantee | Not provided\nAdditional terms", "Collateral | None | Guarantee | Not provided"],
+    ["A operação não possui garantia. O prazo depende de confirmação.", "A operação não possui garantia."],
+    ["  Collateral | None | Guarantee | Not provided  ", "Collateral | None | Guarantee | Not provided"],
+  ])("preserves complete sentence or record %s", (source, quote) => {
+    const out = narrative();
+    out.sections[0]!.observations[0] = {text: quote, citations: [{passageId: "p1", quote}]};
+    expect(() => validateDocumentWorkProductNarrative({...input, passages: [{...input.passages[0]!, text: source}]}, out)).not.toThrow();
+  });
   it("rejects an empty answer without a specific evidence gap",async()=>{
     const out=narrative();out.sections.forEach(section=>section.observations=[]);out.gaps=[];
     const complete=vi.fn().mockResolvedValue({output:out});

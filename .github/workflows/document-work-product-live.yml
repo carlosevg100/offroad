@@ -1,0 +1,74 @@
+name: Document work product executor live gate
+
+# Synthetic actual-executor evaluation only; does not promote or mutate production.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: document-work-product-live
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Evaluate three intents with independent repeats
+    if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
+    environment: intent-router-gold-main
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC, no stored key)
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
+          aws-region: sa-east-1
+
+      - name: Run the real document work executor
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+          set +e
+          pnpm --filter @offroad/evals exec tsx scripts/run-document-work-product-live.ts
+          gate_status=$?
+          set -e
+          if [[ -f "$RUNNER_TEMP/document-work-product-live/summary.md" ]]; then
+            cat "$RUNNER_TEMP/document-work-product-live/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$gate_status"
+
+      - name: Upload compact evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: document-work-product-live
+          path: ${{ runner.temp }}/document-work-product-live
+          if-no-files-found: warn
+          retention-days: 90

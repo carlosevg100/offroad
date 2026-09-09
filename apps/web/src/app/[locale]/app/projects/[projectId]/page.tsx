@@ -1,3 +1,4 @@
+import {isDocumentWorkBrief, documentWorkPlanPrefix} from "@offroad/work-plan";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
 import {loadReceivablesTemporalReport} from "@/lib/receivables/temporal-report";
 import {ReceivablesProjectSupportPeriods} from "@/components/intake/receivables-project-support-periods";
@@ -262,7 +263,7 @@ async function ConversationalCapitalProject({
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
     supabase.from("capital_project_execution_briefs")
-      .select("id, brief_version, visible_snapshot, change_summary, created_at")
+      .select("id, brief_version, internal_snapshot, visible_snapshot, change_summary, created_at")
       .eq("organization_id", organization.id)
       .eq("capital_project_id", project.id)
       .order("brief_version", {ascending: false})
@@ -447,6 +448,11 @@ async function ConversationalCapitalProject({
   const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
     ? projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
     : null;
+  const briefScope = executionBriefRow?.internal_snapshot;
+  const briefJob = isDocumentWorkBrief(briefScope) && briefScope && typeof briefScope === "object" && !Array.isArray(briefScope)
+    ? String(briefScope.planVersion).slice(documentWorkPlanPrefix.length).split(":")[0] : null;
+  const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
+    && (briefJob === "comparison" || briefJob === "meeting" || briefJob === "review") ? {job:briefJob} as const : undefined;
   const emptyConversationCopy = displayedApproval?.status === "awaiting"
     ? "awaitingPlanFallback"
     : artifacts?.length ? "existingProject"
@@ -632,6 +638,7 @@ async function ConversationalCapitalProject({
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
     workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
       checklist={checklist}
+      documentaryWork={documentResult?.binding.executionScope === "documentary_only" ? {job:documentResult.product.job,gaps:documentResult.product.gaps} : plannedDocumentaryWork}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       preliminary={preliminary}
       projectId={project.id}

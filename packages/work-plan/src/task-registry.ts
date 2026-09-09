@@ -126,6 +126,9 @@ const task = (
  * case, E2E and measured cost exist. Registry presence never implies production readiness.
  */
 export const offroadTaskRegistry = [
+  task("Q01", "Verificar fontes autorizadas e cobertura documental", "case", [], "deterministic", "none"),
+  task("Q02", "Organizar observações documentais, hipóteses e lacunas", "case", ["Q01"], "judgment", "none"),
+  task("Q03", "Publicar leitura documental preliminar privada", "case", ["Q02"], "compilation", "commit"),
   task("M01", "Resolver companhia, grupo, jurisdição e regime de evidência", "case", [], "extraction"),
   task("M02", "Normalizar objetivo", "case", [], "extraction"),
   task("M03", "Registrar restrições", "case", ["M02"], "extraction"),

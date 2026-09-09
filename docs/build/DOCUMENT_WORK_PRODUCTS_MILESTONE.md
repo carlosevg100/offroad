@@ -19,7 +19,7 @@ Um mesmo ambiente permite comparar propostas recebidas, preparar reunião e revi
 
 ## Limites que impedem declarar o marco completo
 
-O caminho novo ainda entra pelo `case_analysis` aprovado existente. Não é despacho universal de tarefas independentes, nem elimina as etapas privadas anteriores. Comparação qualitativa não é comparação financeira calculada. Pesquisa pública e matching não são executados por este módulo. Não entrega PPTX/XLSX/PDF nem homologação setorial ampla.
+Pedidos documentais compatíveis com documentos disponíveis podem agora receber um plano próprio Q01/Q02/Q03 quando ainda não existe plano financeiro. O usuário confirma o entendimento e aprova esse plano; o worker executa somente o trabalho documental, antes do motor financeiro, usando o transporte `case_analysis` existente. O escopo depende do plano aceito, dos tasks persistidos e do vínculo SQL, nunca apenas de palavras no pedido. Planos financeiros existentes não são substituídos automaticamente. Isso ainda não é despacho universal nem elimina a confirmação inicial. Comparação qualitativa não é comparação financeira calculada. Pesquisa pública e matching não são executados por este módulo. Não entrega PPTX/XLSX/PDF nem homologação setorial ampla.
 
 O gateway usa a política existente para informação restrita e o orçamento do job; não cria um provedor nem aumenta o teto de gasto. Nova chamada e sua latência precisam de validação com modelo real. O E2E específico depende de worker com provedor autorizado; um teste pulado não comprova a jornada.
 
@@ -43,4 +43,14 @@ O gateway usa a política existente para informação restrita e o orçamento do
 
 Aplicar primeiro a migração aditiva de leitura; publicar web compatível; ativar o marcador e verificar worker exato. O boot novo exige `document-work-product-request-binding.v1`. Até o rollout verificado, este corte não está disponível em produção. Rollback preserva snapshots e fontes; não concede permissão de download sem vínculo atual. Controles afetados: AI-05/AI-08, TRUST-APP-02, TRUST-DATA-02, TRUST-SDLC-01.
 
-Próxima integração após este corte: despacho proporcional do trabalho documental e perguntas/revisões específicas, sem obrigar um processo de estruturação completo. Cálculos financeiros continuam dependendo da seleção econômica já planejada. A homologação com modelo real e os arquivos institucionais seguintes pertencem ao mesmo marco de produto.
+Próxima integração: homologar o caminho documental proporcional já implementado com provedor real e expandir revisão de escopo e perguntas antes do primeiro plano. Cálculos financeiros continuam dependendo da seleção econômica já planejada. A homologação com modelo real e os arquivos institucionais seguintes pertencem ao mesmo marco de produto.
+
+## Continuação: execução documental independente
+
+Registro Q01/Q02/Q03 especificado e métodos documentais canônicos candidatos em credit-playbook; presença no registro não promove qualidade. O plano visível tem três etapas reais e declara ausência de cálculo e divulgação. Snapshot documental não fabrica demonstrações financeiras, matching ou aprovação de crédito. O painel usa o escopo do plano atual e as perguntas do resultado vinculado.
+
+Migração `20260909001238_documentary_execution_scope_binding.sql` aplicada somente em staging. Regressão confirma marker isolado, snapshot isolado, tarefas financeiras misturadas e target financeiro recusados; plano documental exato aceito. Rollback limpo e advisors de segurança sem achados.
+
+Gate manual `.github/workflows/document-work-product-live.yml` preparado para três intenções repetidas com executor real, seis tentativas e teto compartilhado de USD 3. Mantém ambiente protegido e execução somente em main. Ainda não executado; não equivale a E2E autenticado, homologação de domínio ou liberação de produto. A validação exige integrar código para tornar esse workflow disponível em main; não alterar a fronteira OIDC para executar código de branch com segredos.
+
+Gate local final da continuação: `pnpm check` aprovado, 43/43 tarefas por etapa; 397 testes do worker e 413 testes web. Log `/private/tmp/offroad-standalone-check-release.log`. Worker exige também `documentary-execution-scope.v1`, introduzido pela migração aditiva `20260909001714_worker_runtime_schema_contract.sql`, aplicada somente em staging. O caminho financeiro não gera produto documental adicional. Proposta documental sem escopo SQL válido falha sem executar análise financeira. CI deste novo head, provedor real e produção ainda devem ser verificados.

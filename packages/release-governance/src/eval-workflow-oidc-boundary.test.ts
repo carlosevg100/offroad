@@ -10,6 +10,7 @@ const evaluationRole =
 
 const expectedConsumers = [
   "codex-review.yml",
+  "document-work-product-live.yml",
   "gold-baseline.yml",
   "intent-router-gold.yml",
   "live-preview-gate.yml",

@@ -15,6 +15,10 @@
     "./document-work-product": {
       "types": "./src/document-work-product.ts",
       "default": "./src/document-work-product.ts"
+    },
+    "./document-work-product-live": {
+      "types": "./src/document-work-product-live.ts",
+      "default": "./src/document-work-product-live.ts"
     }
   },
   "scripts": {
