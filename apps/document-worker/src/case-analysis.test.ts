@@ -1104,14 +1104,14 @@ describe("worker case analysis", () => {
       let documentCalls = 0;
       const fixtureGateway = {
         complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
-          const result = request.schemaName === "document_work_product_narrative_v1" ? (() => {
+          const result = request.schemaName === "document_work_selection_v1" ? (() => {
             documentCalls++;
-            const input = JSON.parse((request.input[0] as {text: string}).text) as {job: string; approvedRequest: {text: string}; passages: Array<{id: string; text: string}>; sectionKeys: string[]};
+            const input = JSON.parse((request.input[0] as {text: string}).text) as {job: string; approvedRequest: {text: string}; sources: Array<{id: string; text: string; availableQuotes: Array<{id:string}>}>; sectionKeys: string[]};
             expect(input.job).toBe(requested.job);
             expect(input.approvedRequest.text).toBe(requested.objective);
-            const passage = input.passages.find(item => item.text.length >= 12)!;
-            return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", observations: [{text: passage.text, citations: [{passageId: passage.id, quote: passage.text}]}]})), hypotheses: [], gaps: []}};
-          })() : request.schemaName === "document_work_source_review_v2" ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : await gateway.complete(request);
+            const passage = input.sources.find(item => item.availableQuotes.length > 0)!;
+            return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", quoteIds: [passage.availableQuotes[0]!.id]})), hypotheses: [], gaps: []}};
+          })() : request.schemaName === "document_work_source_review_v3" ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : await gateway.complete(request);
           logs.push({...invocation, invocationId: `document-call-${logs.length}`, task: request.task, schemaName: request.schemaName});
           return result;
         },
@@ -1144,7 +1144,7 @@ describe("worker case analysis", () => {
         queue:{...queue,loadCaseInput:async()=>({...documentRaw,document_work_request:{...documentRequest,objective,proposedDeliverable:"Análise financeira das alternativas"}}),
           recordCaseSnapshot:async(_job,_manifest,state)=>{legacySnapshot=state as Record<string,unknown>;return "legacy-manifest";}},
         gateway:{...gateway,complete:async(request)=>{
-          expect(request.schemaName).not.toBe("document_work_product_narrative_v1");
+          expect(request.schemaName).not.toBe("document_work_selection_v1");
           return gateway.complete(request);
         }},lineage:()=>[],researchProviders:[],now:()=>new Date("2026-08-24T13:00:00.000Z"),
       });
@@ -1160,16 +1160,16 @@ describe("worker case analysis", () => {
     const standaloneLogs: GatewayCallLog[] = [];
     const standaloneGateway = {
       complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
-        if(request.schemaName === "document_work_source_review_v2") {
+        if(request.schemaName === "document_work_source_review_v3") {
           standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
           const reviewInput=JSON.parse((request.input[0] as {text:string}).text) as {authoredFields:Array<{id:string}>};
           return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),issues:[]}};
         }
-        expect(request.schemaName).toBe("document_work_product_narrative_v1");
-        const input = JSON.parse((request.input[0] as {text:string}).text) as {passages:Array<{id:string;text:string}>;sectionKeys:string[]};
-        const passage = input.passages.find(item=>item.text.length>=12)!;
+        expect(request.schemaName).toBe("document_work_selection_v1");
+        const input = JSON.parse((request.input[0] as {text:string}).text) as {sources:Array<{id:string;text:string;availableQuotes:Array<{id:string}>}>;sectionKeys:string[]};
+        const passage = input.sources.find(item=>item.availableQuotes.length>0)!;
         standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
-        return {output:{sections:input.sectionKeys.map(key=>({key,title:"Leitura documental",observations:[{text:passage.text,citations:[{passageId:passage.id,quote:passage.text}]}]})),hypotheses:[],gaps:[]}};
+        return {output:{sections:input.sectionKeys.map(key=>({key,title:"Leitura documental",quoteIds:[passage.availableQuotes[0]!.id]})),hypotheses:[],gaps:[]}};
       }, spent:()=>({costUsd:0.1,calls:standaloneLogs.length}),
     } as unknown as ModelGateway;
     const standaloneOutcome=await processCaseAnalysisJob(job,{

@@ -170,7 +170,7 @@ export type CompiledTaskGraph = Omit<CompiledCapitalJobPlan, "job"> & {
 
 export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
 export const capitalProjectPlanCompilerVersion = "2026.09.01-v3";
-export const offroadTaskRegistryVersion = "2026.09.09-v9";
+export const offroadTaskRegistryVersion = "2026.09.09-v10";
 
 export type CapitalProjectPlanSnapshot = {
   schemaVersion: typeof capitalProjectPlanSchemaVersion;

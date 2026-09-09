@@ -14,6 +14,6 @@ describe("synthetic executor diagnostics",()=>{
     expect(JSON.stringify(result)).not.toContain("secret-token");
   });
   it("captures each allowlisted guard and handles absent provider output",()=>{
-    for(const code of ["document_work_product_wrong_sections","document_work_product_unbound_number","document_work_product_invalid_citation","document_work_product_empty_without_gap"])expect(documentWorkFailureDiagnostics(new Error(code),undefined,null)).toEqual({code,rejectedOutput:null});
+    for(const code of ["document_work_product_wrong_sections","document_work_product_unbound_number","document_work_product_invalid_citation","document_work_product_empty_without_gap","document_work_product_duplicate_selection","document_work_product_quote_budget_exceeded"])expect(documentWorkFailureDiagnostics(new Error(code),undefined,null)).toEqual({code,rejectedOutput:null});
   });
 });

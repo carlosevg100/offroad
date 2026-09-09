@@ -8,31 +8,11 @@ import {
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 import {verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
 
+import {buildDocumentWorkSelectionContext, completeSourceQuote, documentWorkSelectionSchema, hydrateDocumentWorkSelection} from "./document-work-selection";
+
 
 
 function numbers(text: string): string[] {return text.match(/\d+(?:[.,]\d+)*/g) ?? [];}
-
-/** Conservative source boundaries, not a claim of semantic or domain verification. */
-function completeSourceQuote(source: string, quote: string, locale: "pt-BR" | "en-US"): boolean {
-  if (source.trim() === quote) return true;
-  // A whole line is a complete record, including all columns of a parsed table row.
-  if (source.split(/\r?\n/).some(line => line.trim() === quote)) return true;
-  const starts = new Set<number>();
-  const ends = new Set<number>();
-  for (const segment of new Intl.Segmenter(locale, {granularity: "sentence"}).segment(source)) {
-    const text = segment.segment;
-    const trimmed = text.trim();
-    if (!trimmed || !/[.!?]["'”’)]*$/.test(trimmed)) continue;
-    starts.add(segment.index + text.length - text.trimStart().length);
-    ends.add(segment.index + text.trimEnd().length);
-  }
-  let index = source.indexOf(quote);
-  while (index !== -1) {
-    if (starts.has(index) && ends.has(index + quote.length)) return true;
-    index = source.indexOf(quote, index + 1);
-  }
-  return false;
-}
 
 export function validateDocumentWorkProductNarrative(input: DocumentWorkProductInput, raw: unknown): DocumentWorkProductNarrative {
   const narrative = documentWorkProductNarrativeSchema.parse(raw);
@@ -64,7 +44,7 @@ export function validateDocumentWorkProductNarrative(input: DocumentWorkProductI
 const correctableValidationCodes = new Set([
   "document_work_product_wrong_sections", "document_work_product_unbound_number",
   "document_work_product_invalid_citation", "document_work_product_non_extractive_observation",
-  "document_work_product_empty_without_gap",
+  "document_work_product_empty_without_gap", "document_work_product_duplicate_selection",
 ]);
 
 /** Caller must authenticate, scope sources and verify current approval; this is not an authorization API. */
@@ -75,8 +55,8 @@ export async function runDocumentWorkProduct(raw: DocumentWorkProductInput, depe
     // only a known local output-validation failure can trigger one corrective pass.
     const result = await dependencies.gateway.complete({
       task: "preliminary_understanding", system: code ? `${documentWorkProductSystemInstructions}\n${documentWorkProductRepairInstructions}` : documentWorkProductSystemInstructions,
-      input: [{type: "text", text: JSON.stringify({...input, sectionKeys: documentWorkProductSectionKeys[input.job], ...(code ? {validationFeedback: {code}} : {})})}],
-      schema: documentWorkProductNarrativeSchema, schemaName: "document_work_product_narrative_v1",
+      input: [{type: "text", text: JSON.stringify({job: input.job, locale: input.locale, approvedRequest: input.approvedRequest, coverage: input.coverage, sources: buildDocumentWorkSelectionContext(input).sources, sectionKeys: documentWorkProductSectionKeys[input.job], ...(code ? {validationFeedback: {code}} : {})})}],
+      schema: documentWorkSelectionSchema, schemaName: "document_work_selection_v1",
       dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
       maxOutputTokens: 10000,
     });
@@ -84,12 +64,12 @@ export async function runDocumentWorkProduct(raw: DocumentWorkProductInput, depe
   };
   const first = await propose();
   let narrative: DocumentWorkProductNarrative;
-  try { narrative = validateDocumentWorkProductNarrative(input, first); }
+  try { narrative = validateDocumentWorkProductNarrative(input, hydrateDocumentWorkSelection(input, first)); }
   catch (error) {
     if (!(error instanceof Error) || !correctableValidationCodes.has(error.message)) throw error;
     // Never publish, patch or feed back the rejected narrative. Validate a fresh complete
     // response against the original corpus, with no third attempt if it is still invalid.
-    narrative = validateDocumentWorkProductNarrative(input, await propose(error.message));
+    narrative = validateDocumentWorkProductNarrative(input, hydrateDocumentWorkSelection(input, await propose(error.message)));
   }
   await verifyDocumentWorkSourceFidelity(input, narrative, {gateway: dependencies.gateway});
   const hasObservations = narrative.sections.some(section => section.observations.length > 0);

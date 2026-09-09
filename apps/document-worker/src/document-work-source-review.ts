@@ -26,15 +26,29 @@ const failed = () => new Error("document_work_product_source_review_failed");
 type Dependencies = {gateway: Pick<ModelGateway,"complete">};
 /** Independent model review; structural coverage is deterministic, semantic judgment is not certification. */
 export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, {gateway}: Dependencies): Promise<DocumentWorkSourceReview> {
-  const fields = documentWorkAuthoredFields(narrative);
+  const fields = documentWorkAuthoredFields(narrative).map(field=>{
+    const match=/^hypotheses\.(\d+)\./.exec(field.id);
+    return match ? {...field,basisSourceIds:narrative.hypotheses[Number(match[1])]!.basisPassageIds.map(id=>`p${input.passages.findIndex(p=>p.id===id)+1}`)} : field;
+  });
   const response = await gateway.complete({
     task:"preliminary_understanding", system:documentWorkSourceReviewInstructions,
-    input:[{type:"text",text:JSON.stringify({passages:input.passages,coverage:input.coverage,approvedRequest:input.approvedRequest,locale:input.locale,narrative,authoredFields:fields})}],
-    schema:sourceReviewSchema, schemaName:"document_work_source_review_v2",
+    input:[{type:"text",text:JSON.stringify({passages:input.passages.map((passage,index)=>({id:`p${index+1}`,documentId:passage.documentId,documentName:passage.documentName,text:passage.text})),coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:fields})}],
+    schema:sourceReviewSchema, schemaName:"document_work_source_review_v3",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},
     maxOutputTokens:4000,
   });
-  return validateDocumentWorkSourceReview(input, narrative, response.output);
+  const parsed = sourceReviewSchema.safeParse(response.output);
+  if (!parsed.success) throw failed();
+  const wire = parsed.data;
+  const review = expandDocumentWorkSourceReview(input, wire);
+  return validateDocumentWorkSourceReview(input, narrative, review);
+}
+/** Source aliases are local to one request; unknown aliases never become trusted citations. */
+export function expandDocumentWorkSourceReview(input: DocumentWorkProductInput, wire: DocumentWorkSourceReview): DocumentWorkSourceReview {
+  const sourceIds = new Map(input.passages.map((passage,index)=>[`p${index+1}`,passage.id]));
+  return {...wire, issues:wire.issues.map(issue=>({...issue,sourceIds:issue.sourceIds.map(id=>{
+    const sourceId=sourceIds.get(id); if(!sourceId)throw failed(); return sourceId;
+  })}))};
 }
 /** Checks coverage and reference identities; it cannot establish semantic correctness. */
 export function validateDocumentWorkSourceReview(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, raw: unknown): DocumentWorkSourceReview {

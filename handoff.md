@@ -1,3 +1,29 @@
+## 9 September: compact documentary evidence, validation in progress
+
+The next correction addresses real journey 34372018947: the approved plan now executes,
+but generation exhausted its output allowance and another attempt failed semantic review.
+The model selects complete quotation IDs; code restores exact original text and citations.
+Review receives full sources once and all authored fields with their related questions and
+hypothesis bases. Semantic rejection, provider budgets, financial boundaries and persisted
+product format remain unchanged. No maturity or production flag is promoted.
+
+Method v7 / registry v10 use an exact new SQL contract while preserving exact prior v9
+snapshots. Migration `20260909160815_compact_documentary_plan_contract` was applied only
+to isolated staging. Initial SQL persistence/tenant regression passed; security advisors
+reported zero lints, generated types were unchanged, performance findings remain INFO.
+Focused worker/compiler tests: 65 passed. Full `pnpm check` passed all four stages
+(43/43 tasks each). SQL also confirmed exact prior snapshots and rejected mixed versions.
+CI, provider-backed executor and complete user journey remain pending.
+No successful Word delivery is claimed.
+
+Security impact: restricted document text still goes only to the approved model gateway;
+request-local aliases are rebuilt from authorized input, never model-provided identities.
+Unknown or repeated selections fail closed; more than 500 complete quote candidates fails
+without silently omitting evidence. No grants, RLS, disclosure or execution authority changes.
+Rollback: revert code and keep the documentary flag false; prior exact SQL snapshots remain
+admitted. Independent agent review remains unavailable because its usage allowance was
+exhausted; root inspection is not an independent review.
+
 ## Documentary persistence and interpretation correction, 9 September 2026
 
 ## 9 September: documentary request continuity correction
