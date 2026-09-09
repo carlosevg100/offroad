@@ -22,6 +22,8 @@ import {
   buildCaseArtifactManifest,
   buildSemanticAuditInput,
   briefAuthoringSchema,
+  briefReviewWithRevisionSchema,
+  buildBriefEvidenceCatalog,
   compileAuthoredBrief,
   deskEvidence,
   diagnosticConfirmationReady,
@@ -33,6 +35,7 @@ import {
 } from "@offroad/case-understanding";
 import {caseRunReportSchema, taskCacheFromReport, type CaseStageEvent} from "@offroad/case-runner";
 import {
+  executiveSynthesisRevisionInstructions,
   archetypeIdSchema,
   specialistTaskCapabilityRuntimeManifest,
   type InformationAnswers,
@@ -889,7 +892,7 @@ export async function processCaseAnalysisJob(
         pipeline: raw._execution.pipeline_version,
         modelPolicy: raw._execution.model_policy_version,
         briefPrompt: fingerprintJson(BRIEF_SYSTEM),
-        semanticAuditPrompt: fingerprintJson(SEMANTIC_AUDIT_SYSTEM),
+        semanticAuditPrompt: fingerprintJson({audit: SEMANTIC_AUDIT_SYSTEM, revision: executiveSynthesisRevisionInstructions}),
       },
       onStage: (event) => persistCaseStage(dependencies.queue, job, event),
       claimDecisions: raw.claim_decisions as ClaimDecision[],
@@ -1023,24 +1026,34 @@ export async function processCaseAnalysisJob(
           modelInvocations: dependencies.lineage().slice(callStart),
         };
       },
-      verifyBrief: async ({brief, facts, calculations, gaps, exceptions}) => {
+      verifyBrief: async ({brief, facts, calculations, gaps, exceptions, allowRevision}) => {
         const callStart = dependencies.lineage().length;
         const before = dependencies.gateway.spent();
+        const evidence = {facts, calculations, gaps, exceptions};
+        const mayRevise = allowRevision === true && brief.sections.some(section => section.claims.some(claim => claim.material));
+        const revisionSchema = mayRevise ? briefReviewWithRevisionSchema(brief, evidence) : null;
+        const reviewInput = JSON.parse(buildSemanticAuditInput({brief, ...evidence}));
         const generated = await dependencies.gateway.complete({
           task: "audit_evidence",
-          system: SEMANTIC_AUDIT_SYSTEM,
-          input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations, gaps, exceptions})}],
-          schema: semanticAuditSchema,
-          schemaName: "semantic_claim_audit",
+          system: SEMANTIC_AUDIT_SYSTEM + (mayRevise ? "\n\n" + executiveSynthesisRevisionInstructions : ""),
+          input: [{type: "text", text: JSON.stringify({...reviewInput, ...(mayRevise ? {revisionEvidence: [...buildBriefEvidenceCatalog(evidence).values()]} : {})})}],
+          schema: revisionSchema ?? semanticAuditSchema,
+          schemaName: mayRevise ? "semantic_claim_audit_revision" : "semantic_claim_audit",
+          // Fallback must not route the review back to the candidate's author.
+          allowFallback: false,
           dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},
           // The evidence review must not be performed by the provider that wrote the case.
           model: writerProvider === "openai"
             ? {provider: "anthropic", model: "claude-opus-5", effort: "high"}
             : {provider: "openai", model: "gpt-5.6-sol", effort: "high"},
         });
+        const revisions = revisionSchema?.parse(generated.output).revisions ?? [];
+        // A patch's author becomes the excluded provider for the separate fresh review.
+        if (revisions.length) writerProvider = generated.provider;
         const after = dependencies.gateway.spent();
         return {
-          audit: generated.output,
+          audit: semanticAuditSchema.parse(generated.output),
+          revisions,
           usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
           modelInvocations: dependencies.lineage().slice(callStart),
         };

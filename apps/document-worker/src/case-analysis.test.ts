@@ -736,7 +736,7 @@ describe("worker case analysis", () => {
       return "f1000000-0000-4000-8000-000000000001";
     };
     const gateway = {
-      complete: async (request: {task: string; model?: {provider?: string}; input?: Array<{type: string; text?: string}>}) => {
+      complete: async (request: {task: string; allowFallback?: boolean; model?: {provider?: string}; input?: Array<{type: string; text?: string}>}) => {
         modelCalls.push({task: request.task, ...(request.model?.provider ? {provider: request.model.provider} : {})});
         if (request.task === "structure_design") {
           spent = {costUsd: 0.1, calls: 1};
@@ -756,7 +756,8 @@ describe("worker case analysis", () => {
           };
         }
         if (request.task === "audit_evidence") {
-          spent = {costUsd: 0.15, calls: 2};
+          expect(request.allowFallback).toBe(false);
+          spent = {costUsd: spent.costUsd + 0.05, calls: spent.calls + 1};
           return {
             output: {reviews: []},
             provider: "openai",
@@ -898,6 +899,7 @@ describe("worker case analysis", () => {
     ]);
     const persisted = recordedState as unknown as Record<string, unknown>;
     const privateResult = completed as unknown as Record<string, unknown>;
+    expect(persisted.briefReviewHistory).toHaveLength(2);
     const publicMatching = persisted.matching as Record<string, unknown>;
     expect(publicMatching).toMatchObject({screened: true, counts: {fits: 1, possible: 0, excluded: 0}});
     expect(JSON.stringify(persisted)).not.toContain("Fundo Confidencial");
@@ -998,7 +1000,7 @@ describe("worker case analysis", () => {
       externalOutputsAllowed:false,
     });
     expect(persistedRedFlags).not.toHaveProperty("findings");
-    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
+    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}, {task: "audit_evidence", provider: "openai"}]);
     expect(dealStateWrites).toEqual([
       {objectType: "match_screen", status: "pending_confirmation"},
     ]);
@@ -1049,8 +1051,8 @@ describe("worker case analysis", () => {
       now: () => new Date("2026-08-24T13:00:00.000Z"),
     });
     expect(diagnosticOutcome).toEqual({status: "succeeded", manifestId: "manifest-1"});
-    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}]);
-    expect(spent).toEqual({costUsd: 0.15, calls: 2});
+    expect(modelCalls).toEqual([{task: "case_brief"}, {task: "audit_evidence", provider: "openai"}, {task: "audit_evidence", provider: "openai"}]);
+    expect(spent).toEqual({costUsd: 0.2, calls: 3});
     expect(retrievalRequests).toHaveLength(1);
     expect(stages.some((event) => event.stage === "mandate_retrieval")).toBe(false);
     expect(dealStateWrites).toEqual([

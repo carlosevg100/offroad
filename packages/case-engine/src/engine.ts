@@ -11,7 +11,7 @@ import {
 } from "@offroad/case-runner";
 import {
   assessReadiness,
-  auditBrief,
+  reviewBriefWithOneRevision,
   buildClaimRegistry,
   buildRedFlagTruthSet,
   caseBriefSchema,
@@ -21,7 +21,8 @@ import {
   deriveCaseOutcome,
   deskEvidence,
   fingerprintJson,
-  normalizeSemanticAudit,
+  type BriefClaimRevision,
+  type BriefReviewAttempt,
   type AuditReport,
   type CaseBrief,
   type ClaimDecision,
@@ -149,6 +150,7 @@ export type BriefWriterResult = {
 
 export type BriefVerifierResult = {
   audit: SemanticAudit;
+  revisions?: readonly BriefClaimRevision[];
   usage?: {costUsd: number; modelCalls: number};
   modelInvocations?: unknown[];
 };
@@ -276,6 +278,7 @@ export type CaseEngineInput = {
   }) => Promise<BriefWriterResult>;
   verifyBrief?: (input: {
     brief: CaseBrief;
+    allowRevision?: boolean;
     facts: ReconciliationReport["facts"];
     calculations: ReconciliationReport["calculations"];
     gaps: ReconciliationReport["gaps"];
@@ -307,6 +310,7 @@ export type CaseEngineState = {
   collateral: CollateralPackage | null;
   price: IndicativePrice | null;
   verdict: OperationVerdict | null;
+  briefReviewHistory?: BriefReviewAttempt[];
   brief: CaseBrief | null;
   briefBlockedBy: string[];
   claimRegistry: ClaimRegistry | null;
@@ -560,6 +564,7 @@ const claimsOutputSchema = z.object({
   briefBlockedBy: z.array(z.string()),
   numericAudit: z.unknown().nullable(),
   semanticAudit: z.unknown().nullable(),
+  reviewHistory: z.array(z.unknown()).max(2).default([]),
   modelInvocations: z.array(z.unknown()),
   usage: z.object({costUsd: z.number().nonnegative(), modelCalls: z.number().int().nonnegative()}),
 });
@@ -608,6 +613,7 @@ type ClaimsOutput = Pick<CaseEngineState, "brief" | "briefBlockedBy" | "modelInv
   proposedBrief: CaseBrief | null;
   numericAudit: AuditReport | null;
   semanticAudit: NormalizedSemanticAudit | null;
+  reviewHistory: BriefReviewAttempt[];
   usage: {costUsd: number; modelCalls: number};
 };
 type MaterialsOutput = Pick<CaseEngineState, "materials" | "financialModel" | "materialsBlockedBy" | "materialTruth" | "dataRoom" | "claimRegistry"> & {
@@ -918,6 +924,7 @@ export async function executeCaseEngine(
               ]),
               numericAudit: null,
               semanticAudit: null,
+              reviewHistory: [],
               modelInvocations: [],
               usage: {costUsd: 0, modelCalls: 0},
             };
@@ -930,6 +937,7 @@ export async function executeCaseEngine(
               briefBlockedBy: ["brief_writer_unavailable"],
               numericAudit: null,
               semanticAudit: null,
+              reviewHistory: [],
               modelInvocations: [],
               usage: {costUsd: 0, modelCalls: 0},
             };
@@ -943,51 +951,31 @@ export async function executeCaseEngine(
             trajectory: metrics.trajectory,
             receivables: metrics.receivables,
           });
-          const proposedBrief = written.brief;
+          let proposedBrief = written.brief;
           let brief = proposedBrief;
           const blockedBy = [...written.blockedBy];
           let numericAudit: AuditReport | null = null;
           let semanticAudit: NormalizedSemanticAudit | null = null;
-          let verifierUsage = {costUsd: 0, modelCalls: 0};
-          let verifierInvocations: unknown[] = [];
-          if (brief) {
-            const evidence = deskEvidence(metrics.desk, metrics.trajectory);
-            const approvedJudgmentIds = currentApprovedJudgments(brief, input.claimDecisions ?? []);
-            const audited = auditBrief({
-              brief,
-              facts: reconciliation.facts,
-              gaps: reconciliation.gaps,
-              exceptions: reconciliation.exceptions,
-              calculations: [...reconciliation.calculations, ...evidence.calculations],
-              approvedJudgmentIds,
-              requireJudgmentApproval: false,
-            });
-            numericAudit = audited.audit;
-            if (!audited.ok) {
-              brief = null;
-              blockedBy.push(...audited.audit.findings.map((finding) => `${finding.claimId}: ${finding.reason}`));
-            } else if (!input.verifyBrief) {
-              semanticAudit = normalizeSemanticAudit(audited.brief, {reviews: []});
-              brief = null;
-              blockedBy.push("semantic_verifier_unavailable");
-            } else {
-              const verified = await input.verifyBrief({
-                brief: audited.brief,
-                facts: reconciliation.facts,
-                gaps: reconciliation.gaps,
-                exceptions: reconciliation.exceptions,
-                calculations: [...reconciliation.calculations, ...evidence.calculations],
-              });
-              semanticAudit = normalizeSemanticAudit(audited.brief, verified.audit);
-              verifierUsage = verified.usage ?? verifierUsage;
-              verifierInvocations = verified.modelInvocations ?? [];
-              if (semanticAudit.status === "blocked") {
-                brief = null;
-                blockedBy.push(...semanticAudit.findings.map((finding) => `${finding.claimId}: semantic:${finding.reason}`));
-              }
-            }
+          let reviewHistory: BriefReviewAttempt[] = [];
+          const verifierUsage = {costUsd: 0, modelCalls: 0};
+          const verifierInvocations: unknown[] = [];
+          if (proposedBrief) {
+            const evidence = {...reconciliation, calculations: [...reconciliation.calculations, ...deskEvidence(metrics.desk, metrics.trajectory).calculations]};
+            const reviewed = await reviewBriefWithOneRevision({brief: proposedBrief, evidence, verify: async (candidate, allowRevision) => {
+              if (!input.verifyBrief) return {audit: {reviews: []}};
+              const verified = await input.verifyBrief({brief: candidate, allowRevision, facts: evidence.facts, calculations: evidence.calculations, gaps: evidence.gaps, exceptions: evidence.exceptions});
+              verifierUsage.costUsd += verified.usage?.costUsd ?? 0;
+              verifierUsage.modelCalls += verified.usage?.modelCalls ?? 0;
+              verifierInvocations.push(...(verified.modelInvocations ?? []));
+              return verified;
+            }});
+            proposedBrief = reviewed.proposedBrief;
+            brief = input.verifyBrief ? reviewed.brief : null;
+            numericAudit = reviewed.numericAudit;
+            semanticAudit = reviewed.semanticAudit;
+            reviewHistory = reviewed.attempts;
+            blockedBy.push(...reviewed.blockedBy, ...(!input.verifyBrief ? ["semantic_verifier_unavailable"] : []));
           }
-          if (proposedBrief && numericAudit && !semanticAudit) semanticAudit = normalizeSemanticAudit(proposedBrief, {reviews: []});
           const writerUsage = written.usage ?? {costUsd: 0, modelCalls: 0};
           const usage = {costUsd: writerUsage.costUsd + verifierUsage.costUsd, modelCalls: writerUsage.modelCalls + verifierUsage.modelCalls};
           const output: ClaimsOutput = {
@@ -996,6 +984,7 @@ export async function executeCaseEngine(
             briefBlockedBy: [...new Set(blockedBy)],
             numericAudit,
             semanticAudit,
+            reviewHistory,
             modelInvocations: [...(written.modelInvocations ?? []), ...verifierInvocations],
             usage,
           };
@@ -1150,6 +1139,7 @@ export async function executeCaseEngine(
       ...structure,
       redFlagTruth:redFlags,
       brief: claims.brief,
+      briefReviewHistory: claims.reviewHistory,
       briefBlockedBy: claims.briefBlockedBy,
       modelInvocations: [...structure.structureModelInvocations, ...claims.modelInvocations],
       claimRegistry: materials.claimRegistry,
