@@ -1,6 +1,6 @@
 # Offroad Capability Ledger
 
-Versão: 2026.09.07-v17
+Versão: 2026.09.09-v18-candidate
 
 Baseline inspecionada: commit `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 
@@ -84,3 +84,9 @@ internos. Os maiores gaps que impedem uso sério amplo são:
 Cada PR que muda uma capacidade deve atualizar o entry correspondente. A promoção exige evidência
 no escopo exato. Se o runtime, a evidência ou a limitação mudarem, o fingerprint do ledger muda e o
 release precisa reavaliar os gates aplicáveis.
+
+## Candidato documental delimitado, 9 de setembro de 2026
+
+`execution.preliminary-documentary-work` permanece `specified`, exposição `none`, sem uso promovido. Q01, Q02 e Q03 são etapas sequenciais do mesmo método `documentary-work-pipeline@2026.09.09-v3`, ainda `candidate`. O prompt v3 foi corrigido após o P1 de desconhecido versus ausente; novos gates reais são necessários. Esta alteração não registra aprovação de domínio, run aprovado ou autorização de uso por clientes.
+
+Para promoção: anexar runs reais imutáveis do executor e da jornada autenticada, revisão dos outputs/Word, custos, consistência e casos adversariais; registrar implementação e revisão independente do método; vincular autorização já concedida pelo fundador como autorização de release, nunca como revisão técnica humana. O integrador fecha o aceite e as dependências do JOB-01 no board canônico. Após rollout exato verificado, registrar disponibilidade, exposição e maturidade somente para esta leitura preliminar privada. Demais capacidades permanecem no estado anterior.

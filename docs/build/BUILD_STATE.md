@@ -1,3 +1,25 @@
+## Local integration gate verified, 9 September 2026
+
+Node 24 `pnpm check` passed lint, typecheck, tests and production build (43/43 tasks per stage) for the combined uncertainty correction, semantic reference regression, shared candidate method and real-scanner workflow setup. `git diff --check` passed. CI and both protected live gates remain required; production planning is still disabled.
+
+## Documentary release evidence update, 9 September 2026
+
+Authenticated journey `34302837186` finished FAIL: one signup test passed, the comparison test failed in both attempts, and two later tests did not run. The worker reported `scanner_disabled` / `scanner_unavailable` because the workflow disabled scanning; no model calls occurred and no Word result was produced. This is an environment setup failure before preliminary analysis, not evidence of a completed product journey.
+
+The candidate protected workflow now provisions real Ubuntu ClamAV, requires a successful definition update, binds its daemon to loopback and checks PING/version plus clean and EICAR INSTREAM controls before starting the documentary worker. Syntax checks passed; actual Linux scanner readiness and the full journey still require the protected workflow. No runtime scanner guard was relaxed, and no receipt was seeded. Planning remains disabled in production.
+
+PR 564 merged as `d1c4e281fbd8c9eec4bba8f30f6e93196703e0c1`. Web deployment `6341163404` and worker workflow `34302822687` succeeded; worker revision 289 was verified at 02:27:35 UTC. Documentary planning remains disabled.
+
+Real executor run `34302835300` passed its original automated checks in 6/6 attempts at USD 0.170177. Independent semantic inspection found a P1: missing covenant or amortization information became assertions or presuppositions that those terms did not exist. The separate offline authored-reference review passed 4/6; it was not a new provider run. Automated success does not establish release acceptance. The original evidence is unchanged.
+
+The candidate v3 prompt now distinguishes unknown/not supplied from absent and forbids questions that presuppose an unverified absence. It is no longer byte-identical to the deployed v2 prompt and requires new real executor and authenticated journey gates. Twenty-three authored regression checks support this bounded correction, not universal semantic verification. Canonical maturity, customer availability and founder technical-review fields remain unpromoted. The journey has now finished; the integrator will run the full local gate after batching its scanner setup correction.
+
+## Scoped documentary release candidate, 9 September 2026
+
+The three sequential Q tasks now bind to one canonical candidate method, `documentary-work-pipeline@2026.09.09-v3`. Task registry version is `2026.09.09-v6`; existing persisted plans remain immutable. SQL authorization checks the accepted marker, exact task IDs and target rather than registry version, procedure metadata or maturity, so this metadata change requires no migration and does not revoke existing plans. All tasks remain specified; the capability has no exposure or promoted use.
+
+The initial metadata-only candidate preserved the v2 prompt, but the subsequent P1 semantic correction changes it; fresh live evidence is required. Focused tests passed: work-plan 123, release-governance 178, credit-playbook 331; all three typechecks passed. Full integration gate and real-provider release evidence remain pending. No feature flag, production configuration, or database changed. Founder authorization is not a human domain-review attestation. Promotion evidence and operational rollout remain the integrator's responsibility.
+
 ## Alinhamento das instruções documentais ao validador existente
 
 Procedimento canônico atualizado para `2026.09.08-v2`: observações preservam o idioma original e igualam a citação; títulos, hipóteses, lacunas e perguntas usam o idioma solicitado e não contêm dígitos. Citações têm de 12 a 2000 caracteres e conservam a sentença completa com pontuação terminal reconhecida, linha/registro completo ou trecho integral; quando não couber, registrar a limitação. Nenhuma regra determinística foi afrouxada.

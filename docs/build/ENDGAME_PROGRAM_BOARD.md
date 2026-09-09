@@ -4,9 +4,9 @@
 
 Atualizado em: 2026-09-08T20:52:00.000-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Capability Ledger: `2026.09.07-v17`
+Capability Ledger: `2026.09.09-v18-candidate`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `66269abfc4f29bcbe3703d5e671c0a13e3da45f138f91cab691d00ee0a84fea5`
+Fingerprint do board: `de25820cebae4bad2d42803e7ab0d7ab3a0e8b42ff14f69a4ad5b703d7cefbe3`
 
 ## Leitura executiva
 

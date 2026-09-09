@@ -25,8 +25,8 @@ describe("task promotion needs a production method", () => {
     expect(() => assertTaskPromotable(bound, "production", production)).not.toThrow();
   });
 
-  it("keeps the registry honest: nothing is bound yet, nothing is above specified", () => {
-    expect(offroadTaskRegistry.filter((task) => task.procedure).length).toBe(0);
+  it("binds only documentary stages while every task remains specified", () => {
+    expect(offroadTaskRegistry.filter((task) => task.procedure).map(task => task.id)).toEqual(["Q01", "Q02", "Q03"]);
     expect(new Set(offroadTaskRegistry.map((task) => task.maturity))).toEqual(new Set(["specified"]));
   });
 });

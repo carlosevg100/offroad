@@ -64,6 +64,28 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Provision and verify documentary antivirus scanner
+        if: inputs.journey == 'documentary-work-products'
+        timeout-minutes: 8
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends clamav clamav-daemon
+          sudo systemctl stop clamav-freshclam clamav-daemon clamav-daemon.socket || true
+          # Definitions must update successfully; never continue with an unavailable scanner.
+          sudo timeout 180 freshclam --stdout
+          printf '%s\n' 'TCPSocket 3310' 'TCPAddr 127.0.0.1' 'User clamav' \
+            'DatabaseDirectory /var/lib/clamav' 'StreamMaxLength 128M' \
+            'MaxFileSize 128M' 'MaxScanSize 512M' 'Foreground false' \
+            'PidFile /run/clamav/documentary-ci.pid' 'LogSyslog false' \
+            | sudo tee /etc/clamav/documentary-ci.conf >/dev/null
+          sudo install -d -o clamav -g clamav /run/clamav
+          sudo clamd --config-file=/etc/clamav/documentary-ci.conf
+          timeout 90 node scripts/ci/documentary-scanner-preflight.mjs
+          echo 'REQUIRE_VIRUS_SCAN=true' >> "$GITHUB_ENV"
+          echo 'CLAMD_HOST=127.0.0.1' >> "$GITHUB_ENV"
+          echo 'CLAMD_PORT=3310' >> "$GITHUB_ENV"
+
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
         with:
@@ -135,7 +157,12 @@ jobs:
           export WORKER_ACCOUNT_EMAIL="local-worker@offroad.invalid"
           export WORKER_ACCOUNT_PASSWORD="local-worker-password-2026"
           export OFFROAD_WORKER_TOKEN="e2e-worker-token-e2e-worker-token-e2e-worker-token-e2e-worker-token-"
-          export REQUIRE_VIRUS_SCAN=false
+          # Non-documentary journeys retain their existing diagnostic policy.
+          export REQUIRE_VIRUS_SCAN="${REQUIRE_VIRUS_SCAN:-false}"
+          if [ "$DOCUMENTARY_WORK_PLANNING_ENABLED" = "true" ]; then
+            test "$REQUIRE_VIRUS_SCAN" = "true"
+            timeout 90 node scripts/ci/documentary-scanner-preflight.mjs
+          fi
           export IDLE_POLL_SECONDS=2
           export LOG_LEVEL=info
           export MODEL_MAX_COST_USD_PER_JOB="$MAX_COST"
@@ -226,6 +253,13 @@ jobs:
         if: always()
         run: |
           if [ -f worker.pid ]; then kill "$(cat worker.pid)" 2>/dev/null || true; fi
+
+      - name: Stop documentary antivirus scanner
+        if: always() && inputs.journey == 'documentary-work-products'
+        run: |
+          if sudo test -f /run/clamav/documentary-ci.pid; then
+            sudo kill "$(sudo cat /run/clamav/documentary-ci.pid)" || true
+          fi
 
       - name: Stop local Supabase
         if: always()
