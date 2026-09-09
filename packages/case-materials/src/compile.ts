@@ -81,6 +81,7 @@ export type CompileInput = {
   facts: readonly ReconciledFact[];
   calculations: readonly TracedCalculation[];
   exceptions: readonly ReconciliationException[];
+  gaps?: Parameters<typeof auditBrief>[0]["gaps"];
   termSheet?: IndicativeTermSheet;
   readiness: ReadinessReport;
   /** Redacted until the company authorises disclosure (AGENTS.md §2.6). */
@@ -196,6 +197,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
 
   const audit = auditBrief({
     brief: input.brief,
+    ...(input.gaps ? {gaps: input.gaps} : {}),
+    exceptions: input.exceptions,
     facts: input.facts,
     calculations: input.calculations,
     ...(input.approvedJudgmentIds ? {approvedJudgmentIds: input.approvedJudgmentIds} : {}),

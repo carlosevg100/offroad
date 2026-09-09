@@ -8,11 +8,12 @@
  * any that does not appear in the facts or calculations it cites — which is what stops a
  * citation from being decoration.
  */
-export const caseUnderstandingVersion = "2026.09.09-v4";
+export const caseUnderstandingVersion = "2026.09.09-v5";
 
 export * from "./readiness";
 export * from "./audit";
 export * from "./brief";
+export * from "./brief-evidence";
 export * from "./desk-evidence";
 export * from "./outcome";
 export * from "./manifest";

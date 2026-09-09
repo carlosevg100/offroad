@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import type {CaseBrief, ReadinessReport} from "@offroad/case-understanding";
+import {compileAuthoredBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
 import {compileMaterials, isStale} from "./index";
@@ -58,6 +58,16 @@ const exception = (severity: ReconciliationException["severity"], blocks: boolea
 });
 
 describe("materials are compiled, and refused when they should be", () => {
+  it("preserves current gap evidence into materials and refuses a stale gap", () => {
+    const gap = {id: "missing_field:forecast", reference: "forecast", severity: "medium" as const, title: "Projeções", description: "Solicitar projeções.", ownerRole: "company" as const};
+    const sourced = compileAuthoredBrief({sections: [{id: "risks", heading: "Pendências", claims: [{id: "gap-claim", text: "As projeções ainda precisam ser verificadas nesta análise.", material: true, kind: "fact", supportIds: [`gap:${gap.id}`]}]}], executiveSummaryClaimIds: ["gap-claim"]});
+    const accepted = compileMaterials({brief: sourced, facts, calculations, exceptions: [], gaps: [gap], readiness});
+    expect(accepted.ok).toBe(true);
+    if (accepted.ok) expect(accepted.materials[0]!.blocks).toContainEqual(expect.objectContaining({claimId: "gap-claim", supportIds: [`gap:${gap.id}`]}));
+    const stale = compileMaterials({brief: sourced, facts, calculations, exceptions: [], gaps: [], readiness});
+    expect(stale.ok).toBe(false);
+    if (!stale.ok) expect(stale.detail.join(" ")).toContain("support_not_found");
+  });
   it("preserves executive claim identity, materiality and support in the teaser", () => {
     const outcome = compileMaterials({brief, facts, calculations, exceptions: [], readiness});
     expect(outcome.ok).toBe(true);
