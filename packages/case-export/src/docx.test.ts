@@ -27,7 +27,10 @@ describe("materialToDocx", () => {
     const xml = materialDocumentXml({material, lang: "pt", meta: {issuedOn: "2026-08-21", companyName: "Aurora"}});
     expect(xml).toContain("Term Sheet indicativo");
     expect(xml).toContain("&lt;condicionado&gt;");
-    expect(xml).toContain("[transaction.requested_amount]");
+    expect(xml).toContain("transaction.requested_amount");
+    expect(xml).toContain('w:anchor="offroad_ref_1"');
+    expect(xml).toContain('w:name="offroad_ref_1"');
+    expect(xml.indexOf("transaction.requested_amount")).toBeGreaterThan(xml.indexOf("Cronograma"));
     expect(xml.indexOf("Termos")).toBeLessThan(xml.indexOf("Definições"));
     expect(xml.indexOf("Definições")).toBeLessThan(xml.indexOf("Cronograma"));
     expect(xml).toContain("<w:tblHeader/>");
@@ -50,6 +53,21 @@ describe("materialToDocx", () => {
     const footer = execFileSync("unzip", ["-p", file, "word/footer1.xml"]).toString();
     expect(footer).toContain('w:instr="PAGE"');
     expect(footer).toContain('w:instr="NUMPAGES"');
+    expect(execFileSync("unzip", ["-p", file, "word/styles.xml"]).toString()).toContain('w:lang w:val="en-US"');
+  });
+
+  it("deduplicates references and makes metrics and terms navigate to their exact evidence", () => {
+    const referenced: Material = {...material, blocks: [...material.blocks,
+      {type: "metrics", items: [{label: {pt: "Caixa", en: "Cash"}, value: "25", formatted: {pt: "R$ 25", en: "R$ 25"}, supportIds: ["cash", "cash"]}]},
+      {type: "kv", rows: [{label: {pt: "Termo", en: "Term"}, value: {pt: "Condição", en: "Condition"}, supportIds: ["cash"]}]},
+      {type: "callout", title: {pt: "Decisão", en: "Decision"}, items: [{label: {pt: "Base", en: "Basis"}, value: {pt: "Pendente", en: "Pending"}, supportIds: ["source:<exact>&reference"]}]},
+    ]};
+    const xml = materialDocumentXml({material: referenced, lang: "en", meta: {issuedOn: "2026-09-09"}});
+    expect(xml.match(/<w:bookmarkStart /g)).toHaveLength(3);
+    expect(xml.match(/w:anchor="offroad_ref_2"/g)).toHaveLength(2);
+    expect(xml).toContain("source:&lt;exact&gt;&amp;reference");
+    expect(xml).toContain("Analysis references");
+    expect(xml).toContain("R$ 25");
   });
 
   it("computes CRC-32 as the zip standard does", () => {

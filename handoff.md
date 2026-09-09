@@ -1,3 +1,28 @@
+## 9 September: readable evidence references in Word materials
+
+Word paragraphs and financial metrics now use short clickable reference markers.
+Exact support ids appear once in a reference index at the end, preserving every
+financial value and claim while removing long technical ids from the reading flow.
+Key-value and callout blocks also retain their support metadata. The generated
+archive uses internal bookmarks only; it adds no external URLs or network calls.
+Proofing language follows Portuguese or English output; tables still repeat headers,
+keep rows together and preserve existing pagination.
+
+Seven focused export tests passed, including deduplication, XML escaping, bookmark
+binding and value preservation. Full local check passed all 43 packages in lint,
+typecheck, tests and production build after incorporating main fe86b35. Two synthetic
+materials were rendered with the product exporter and both pages visually inspected.
+The fixture prose remains synthetic and is not an approved institutional example.
+This change is renderer readability, not certification of editorial quality, native
+charts, company templates or the complete Office delivery journey.
+
+Controls APP-04/10 and AI-07: no schema, permissions, private download authorization,
+model policy, external effects, telemetry or retention changed. Existing download
+routes consume this renderer. Root code review is not an independent agent review.
+Rollback is the previous renderer; no persisted source or result is rewritten.
+PR576 is integrated; its actual executive-synthesis evaluation is still in progress.
+Documentary activation remains subject to its separate evidence and release controls.
+
 ## 9 September: one evidence contract from author to material
 
 PR575 is integrated at a24deac. Live evaluation34388571845 failed both languages before
