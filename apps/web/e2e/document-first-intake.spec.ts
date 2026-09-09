@@ -1,5 +1,6 @@
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
+import {randomBytes} from "node:crypto";
 import {join} from "node:path";
 import {expect, test, type BrowserContext, type Locator, type Page} from "@playwright/test";
 
@@ -14,7 +15,7 @@ import {waitForOneTimeCode} from "./support/mail";
  *
  * Every step is one test in a serial group so a failure names the exact step.
  */
-const runId = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
+const runId = `${Date.now().toString(36)}${randomBytes(8).toString("hex")}`;
 const initialProjectName = `Projeto Horizonte ${runId}`;
 const secondaryProjectName = `Projeto Desconhecido ${runId}`;
 const companyDebtProjectName = `Projeto Dívida ${runId}`;

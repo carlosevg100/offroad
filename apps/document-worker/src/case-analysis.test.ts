@@ -1111,7 +1111,7 @@ describe("worker case analysis", () => {
             expect(input.approvedRequest.text).toBe(requested.objective);
             const passage = input.passages.find(item => item.text.length >= 12)!;
             return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", observations: [{text: passage.text, citations: [{passageId: passage.id, quote: passage.text}]}]})), hypotheses: [], gaps: []}};
-          })() : await gateway.complete(request);
+          })() : request.schemaName === "document_work_source_review_v1" ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : await gateway.complete(request);
           logs.push({...invocation, invocationId: `document-call-${logs.length}`, task: request.task, schemaName: request.schemaName});
           return result;
         },
@@ -1160,10 +1160,15 @@ describe("worker case analysis", () => {
     const standaloneLogs: GatewayCallLog[] = [];
     const standaloneGateway = {
       complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
+        if(request.schemaName === "document_work_source_review_v1") {
+          standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
+          const reviewInput=JSON.parse((request.input[0] as {text:string}).text) as {authoredFields:Array<{id:string}>};
+          return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),issues:[]}};
+        }
         expect(request.schemaName).toBe("document_work_product_narrative_v1");
         const input = JSON.parse((request.input[0] as {text:string}).text) as {passages:Array<{id:string;text:string}>;sectionKeys:string[]};
         const passage = input.passages.find(item=>item.text.length>=12)!;
-        standaloneLogs.push({...invocation,task:request.task,schemaName:request.schemaName});
+        standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
         return {output:{sections:input.sectionKeys.map(key=>({key,title:"Leitura documental",observations:[{text:passage.text,citations:[{passageId:passage.id,quote:passage.text}]}]})),hypotheses:[],gaps:[]}};
       }, spent:()=>({costUsd:0.1,calls:standaloneLogs.length}),
     } as unknown as ModelGateway;
@@ -1180,7 +1185,7 @@ describe("worker case analysis", () => {
       },gateway:standaloneGateway,lineage:()=>standaloneLogs,researchProviders:[],now:()=>new Date("2026-08-24T13:00:00.000Z"),
     });
     expect(standaloneOutcome).toEqual({status:"succeeded",manifestId:"standalone-manifest"});
-    expect(standaloneLogs).toHaveLength(1);
+    expect(standaloneLogs).toHaveLength(2);
     expect(standaloneReport).toMatchObject({schemaVersion:"document-work-execution.v1",executionScope:"documentary_only",financialAnalysisStatus:"not_performed"});
     expect(standaloneSnapshot).toMatchObject({executionScope:"documentary_only",documentWorkProduct:{binding:{executionScope:"documentary_only"}},executionPlan:{produceMaterials:false,screenMandates:false,introduce:false}});
     expect(standaloneSnapshot).not.toHaveProperty("economicFingerprint");

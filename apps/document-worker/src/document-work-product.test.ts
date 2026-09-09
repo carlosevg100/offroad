@@ -5,9 +5,19 @@ import {runDocumentWorkProduct,validateDocumentWorkProductNarrative} from "./doc
 
 const input: DocumentWorkProductInput = {job:"comparison",locale:"en-US",approvedRequest:{text:"Compare the supplied proposals",fingerprint:"a".repeat(64)},passages:[{id:"p1",documentId:"d1",documentName:"Proposal Alpha.pdf",version:"v1",hash:"b".repeat(64),anchor:"page 1",text:"Proposal Alpha has a maturity of 36 months and requires a parent guarantee."}],coverage:{documentsConsidered:1,omittedPassages:0,limitations:["Only one proposal supplied."]}};
 const narrative = (job: DocumentWorkProductInput["job"] = "comparison") => ({sections:documentWorkProductSectionKeys[job].map((key,index)=>({key,title:String(key),observations:index===0?[{text:input.passages[0]!.text,citations:[{passageId:"p1",quote:input.passages[0]!.text}]}]:[]})),hypotheses:[],gaps:[{text:"Another proposal is needed for comparison.",question:"Can you provide the other proposal?"}]});
+const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v1"
+  ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : undefined;
 describe("uploaded document work products",()=>{
+  it("rejects a semantically unsupported result before producing a product, without regeneration",async()=>{
+    const complete=vi.fn().mockImplementation(async request=>{
+      const review=sourceReviewResponse(request);
+      return review ? {output:{...review.output,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:["p1"]}]}} : {output:narrative()};
+    });
+    await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("document_work_product_source_review_failed");
+    expect(complete).toHaveBeenCalledTimes(2);
+  });
   it.each(["comparison","meeting","review"] as const)("executes %s with restricted policy and preserves source coverage",async job=>{
-    const complete=vi.fn().mockResolvedValue({output:narrative(job)});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:narrative(job)});
     const result=await runDocumentWorkProduct({...input,job},{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
     expect(result.job).toBe(job);
     expect(result.coverage).toEqual(input.coverage);
@@ -15,7 +25,7 @@ describe("uploaded document work products",()=>{
     expect(result.calculationStatus).toBe("not_performed");
     expect(complete.mock.calls[0]![0]).toMatchObject({task:"preliminary_understanding",dataHandling:{classification:"restricted",purpose:"case_analysis"}});
     expect(result.fingerprint).toMatch(/^[a-f0-9]{64}$/);
-    expect(complete).toHaveBeenCalledTimes(1);
+    expect(complete).toHaveBeenCalledTimes(2);
   });
   it("rejects invented sources and non-contiguous quotes",()=>{
     const out=narrative();out.sections[0]!.observations[0]!.citations[0]!.passageId="other";
@@ -59,7 +69,7 @@ describe("uploaded document work products",()=>{
   });
   it("rejects an empty answer without a specific evidence gap",async()=>{
     const out=narrative();out.sections.forEach(section=>section.observations=[]);out.gaps=[];
-    const complete=vi.fn().mockResolvedValue({output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("empty_without_gap");
   });
   it("rejects duplicate source ids and excessive aggregate input",()=>{
@@ -68,7 +78,7 @@ describe("uploaded document work products",()=>{
   });
   it("preserves honest gaps without inventing an observation",async()=>{
     const out=narrative();out.sections.forEach(section=>section.observations=[]);
-    const complete=vi.fn().mockResolvedValue({output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
     const result=await runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
     expect(result.sections.every(section=>section.observations.length===0)).toBe(true);
     expect(result.gaps).toHaveLength(1);
@@ -76,9 +86,9 @@ describe("uploaded document work products",()=>{
   });
   it("corrects one rejected numeric hypothesis with the same sources and policy",async()=>{
     const invalid={...narrative(),hypotheses:[{text:"The 24-month term may require refinancing.",question:"Can you confirm the terms?",basisPassageIds:["p1"]}]};
-    const complete=vi.fn().mockResolvedValueOnce({output:invalid}).mockResolvedValueOnce({output:narrative()});
+    const complete=vi.fn().mockResolvedValueOnce({output:invalid}).mockResolvedValueOnce({output:narrative()}).mockImplementation(async request=>sourceReviewResponse(request));
     const product=await runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
-    expect(complete).toHaveBeenCalledTimes(2);
+    expect(complete).toHaveBeenCalledTimes(3);
     const first=complete.mock.calls[0]![0], second=complete.mock.calls[1]![0];
     const originalInput=JSON.parse(first.input[0].text), correctionInput=JSON.parse(second.input[0].text);
     expect(correctionInput).toEqual({...originalInput,validationFeedback:{code:"document_work_product_unbound_number"}});
@@ -96,7 +106,7 @@ describe("uploaded document work products",()=>{
     if(code==="wrong_sections") out.sections=narrative("meeting").sections;
     if(code==="non_extractive_observation") out.sections[0]!.observations[0]!.text="The terms are favorable.";
     if(code==="empty_without_gap") {out.sections.forEach(section=>section.observations=[]);out.gaps=[];}
-    const complete=vi.fn().mockResolvedValue({output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow(`document_work_product_${code}`);
     expect(complete).toHaveBeenCalledTimes(2);
   });
