@@ -1,3 +1,9 @@
+## Publicação autorizada: banco preparado, aplicação pendente
+
+O fundador autorizou explicitamente as nove migrações em produção e a publicação com planejamento documental desativado. Migrações aplicadas em `ifnogpksgdadruooqydi` em 09/09/2026 UTC, versões de `20260909005407` a `20260909005540`; SQL idêntico ao validado em staging, arquivos alinhados ao registro de produção. Advisor de segurança: zero achados. Advisor de performance registra 27 chaves estrangeiras sem índice, 176 índices sem uso e configuração de conexões Auth; este corte não altera tabelas ou índices. Nenhuma fixture em produção.
+
+Head anterior `2bac369` passou Quality34296075458/Security34296075518/Vercel: E2E22PASS,0falhas,0flaky,15provider-skips. A alteração seguinte apenas alinha nomes das migrações e registra a publicação. Aplicação/worker e modelo real ainda pendentes. `DOCUMENTARY_WORK_PLANNING_ENABLED` permanece false.
+
 # Marco de produto: documentos, trabalho e entrega
 
 Baseline: main `292d26b26ad4eccb676d085adead3d80e4ccc839`, 8 de setembro de 2026.

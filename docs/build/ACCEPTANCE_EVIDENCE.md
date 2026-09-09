@@ -1,3 +1,9 @@
+## Publicação autorizada: banco preparado, aplicação pendente
+
+O fundador autorizou explicitamente as nove migrações em produção e a publicação com planejamento documental desativado. Migrações aplicadas em `ifnogpksgdadruooqydi` em 09/09/2026 UTC, versões de `20260909005407` a `20260909005540`; SQL idêntico ao validado em staging, arquivos alinhados ao registro de produção. Advisor de segurança: zero achados. Advisor de performance registra 27 chaves estrangeiras sem índice, 176 índices sem uso e configuração de conexões Auth; este corte não altera tabelas ou índices. Nenhuma fixture em produção.
+
+Head anterior `2bac369` passou Quality34296075458/Security34296075518/Vercel: E2E22PASS,0falhas,0flaky,15provider-skips. A alteração seguinte apenas alinha nomes das migrações e registra a publicação. Aplicação/worker e modelo real ainda pendentes. `DOCUMENTARY_WORK_PLANNING_ENABLED` permanece false.
+
 ## Trabalhos documentais e área de resultados: implementação integrada, 08/09/2026
 
 Branch `feat/advisor-work-products`, base `292d26b`. Executor comum para comparação qualitativa de propostas, briefing de reunião e revisão preliminar de oportunidade; objetivo vem do despacho aceito e é congelado com as fontes. Observações extrativas, hipóteses separadas e limites explícitos; sem novos cálculos ou decisão de crédito. Resultado integra snapshot e manifesto atuais e aparece em área de trabalho ao lado da conversa. Download Word da versão persistida usa autorização, fontes e execução atuais, preservando idioma original.
