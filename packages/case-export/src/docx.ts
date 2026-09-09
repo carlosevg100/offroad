@@ -26,6 +26,7 @@ const copy = {
   issued: {pt: "Emitido em", en: "Issued on"},
   confidential: {pt: "Confidencial", en: "Confidential"},
   prepared: {pt: "Preparado por", en: "Prepared by"},
+  references: {pt: "Referências da análise", en: "Analysis references"},
 };
 
 export function escapeXml(value: string): string {
@@ -62,16 +63,34 @@ const table = (rows: string[], columns: number) => {
 
 const row = (cells: string[], header = false) => `<w:tr><w:trPr><w:cantSplit/>${header ? "<w:tblHeader/>" : ""}</w:trPr>${cells.join("")}</w:tr>`;
 
-function blockXml(block: MaterialBlock, lang: DocxLang): string {
+/** Short internal links preserve readable prose while retaining every exact evidence id. */
+function referenceIndex(material: Material): Map<string, number> {
+  const ids = material.blocks.flatMap(block => {
+    if (block.type === "paragraph") return block.supportIds ?? [];
+    if (block.type === "metrics" || block.type === "callout") return block.items.flatMap(item => item.supportIds ?? []);
+    if (block.type === "kv") return block.rows.flatMap(item => item.supportIds ?? []);
+    return [];
+  });
+  return new Map([...new Set(ids)].map((id, index) => [id, index + 1]));
+}
+
+const citationLinks = (ids: readonly string[] | undefined, references: Map<string, number>) =>
+  [...new Set(ids ?? [])].map(id => {
+    const index = references.get(id);
+    if (!index) return "";
+    return `<w:hyperlink w:anchor="offroad_ref_${index}" w:history="1"><w:r><w:rPr><w:color w:val="5C713C"/><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve"> [${index}]</w:t></w:r></w:hyperlink>`;
+  }).join("");
+
+function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, number>): string {
   switch (block.type) {
     case "heading":
       return paragraph(run(block.text[lang]), {style: "Heading2", keepNext: true});
     case "paragraph":
-      return paragraph(run(block.text[lang]) + (block.supportIds?.length ? run(` [${block.supportIds.join(", ")}]`, {size: 16, color: "6B7780"}) : ""), {spacingAfter: 160});
+      return paragraph(run(block.text[lang]) + citationLinks(block.supportIds, references), {spacingAfter: 160});
     case "metrics":
       return table(
-        block.items.map((item) => row([cell(paragraph(run(item.label[lang]))), cell(paragraph(run(item.formatted[lang], {bold: true}))), cell(paragraph(run(item.supportIds.join(", "), {size: 16, color: "6B7780"})))])),
-        3,
+        block.items.map((item) => row([cell(paragraph(run(item.label[lang]))), cell(paragraph(run(item.formatted[lang], {bold: true}) + citationLinks(item.supportIds, references)))])),
+        2,
       );
     case "table": {
       const columns = Math.max(block.head.length, ...block.rows.map((cells) => cells.length));
@@ -97,7 +116,7 @@ function blockXml(block: MaterialBlock, lang: DocxLang): string {
           block.rows.map((entry) =>
             row([
               cell(paragraph(run(entry.label[lang], {bold: true, size: 20})), {shade: true, width: 2800}),
-              cell(paragraph(run(entry.value[lang], {size: 20})) + (entry.note ? paragraph(run(entry.note[lang], {size: 16, color: "6B7780"})) : ""), {width: 6200}),
+              cell(paragraph(run(entry.value[lang], {size: 20}) + citationLinks(entry.supportIds, references)) + (entry.note ? paragraph(run(entry.note[lang], {size: 16, color: "6B7780"})) : ""), {width: 6200}),
             ]),
           ),
           2,
@@ -107,7 +126,7 @@ function blockXml(block: MaterialBlock, lang: DocxLang): string {
       return (
         paragraph(run(block.title[lang], {bold: true}), {keepNext: true, spacingAfter: 60}) +
         table(
-          block.items.map((item) => row([cell(paragraph(run(item.label[lang], {size: 20})), {shade: true, width: 3600}), cell(paragraph(run(item.value[lang], {bold: true, size: 20})), {width: 5400})])),
+          block.items.map((item) => row([cell(paragraph(run(item.label[lang], {size: 20})), {shade: true, width: 3600}), cell(paragraph(run(item.value[lang], {bold: true, size: 20}) + citationLinks(item.supportIds, references)), {width: 5400})])),
           2,
         )
       );
@@ -123,8 +142,8 @@ const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 const documentRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
 
-const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:color w:val="253743"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:color w:val="253743"/></w:rPr></w:style></w:styles>`;
+const styles = (lang: DocxLang) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/><w:lang w:val="${lang === "pt" ? "pt-BR" : "en-US"}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:color w:val="000000"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:color w:val="253743"/></w:rPr></w:style></w:styles>`;
 
 const footer = (text: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${run(text, {size: 16, color: "6B7780"})}${run(" · ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="PAGE">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple>${run(" / ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="NUMPAGES">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple></w:p></w:ftr>`;
@@ -142,10 +161,14 @@ export function materialDocumentXml(input: {material: Material; lang: DocxLang; 
       {spacingAfter: 240},
     ),
   ].join("");
-  const body = material.blocks.map((block) => blockXml(block, lang)).join("");
+  const references = referenceIndex(material);
+  const body = material.blocks.map((block) => blockXml(block, lang, references)).join("");
+  const appendix = references.size ? paragraph(run(copy.references[lang]), {style: "Heading2", keepNext: true}) + [...references].map(([id, index]) =>
+    paragraph(`<w:bookmarkStart w:id="${index}" w:name="offroad_ref_${index}"/>${run(`[${index}] `, {bold: true, size: 17})}${run(id, {size: 17, color: "52616C"})}<w:bookmarkEnd w:id="${index}"/>`, {spacingAfter: 70})
+  ).join("") : "";
   const sectionProps = `<w:sectPr><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708"/></w:sectPr>`;
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${head}${body}${sectionProps}</w:body></w:document>`;
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>${head}${body}${appendix}${sectionProps}</w:body></w:document>`;
 }
 
 export function materialToDocx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Uint8Array {
@@ -156,7 +179,7 @@ export function materialToDocx(input: {material: Material; lang: DocxLang; meta:
     {name: "_rels/.rels", data: rootRels},
     {name: "word/_rels/document.xml.rels", data: documentRels},
     {name: "word/document.xml", data: materialDocumentXml(input)},
-    {name: "word/styles.xml", data: styles},
+    {name: "word/styles.xml", data: styles(lang)},
     {name: "word/footer1.xml", data: footer(footerText)},
     {name: "docProps/core.xml", data: core(material.title[lang], meta.issuedOn)},
   ]);
