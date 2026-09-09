@@ -66,6 +66,15 @@ const documentedIdentityNarrative = narrative(
   "Are Gamma and Delta alternative versions of the same proposed facility?",
 );
 documentedIdentityNarrative.hypotheses[0]!.basisPassageIds=["issuer"];
+const diligenceSource={id:"diligence",text:"Financial statements are still required for diligence. No leverage covenant has been provided. No information about a parent guarantee or a delivery commitment has been supplied."};
+const diligencePassage={...diligenceSource,documentId:diligenceSource.id,documentName:"Synthetic diligence.txt",version:"1",hash:sha(diligenceSource.text),anchor:"paragraph 1"};
+const diligenceNarrative={...narrative("Management has committed to supply the statements.","When will the committed delivery occur?"),hypotheses:[
+  {text:"Management has committed to supply the statements.",question:"When will the committed delivery occur?",basisPassageIds:["diligence"]},
+  {text:"A parent guarantee is available for this transaction.",question:"When will the parent guarantee be released?",basisPassageIds:["diligence"]},
+],gaps:[
+  {text:"Financial statements are required for diligence.",question:"When will the borrower's financial statements be made available for review?"},
+  {text:"It is not stated whether a leverage covenant exists, only that one has not been provided.",question:"If the agreement has no leverage covenant, what other protections apply to monitor borrower indebtedness?"},
+]};
 export const documentWorkSourceReviewCases=[...extendedDocumentWorkSourceReviewCases,
   {id:"source-review-unestablished-counterparties",scope:"mixed_locale_review_controls" as const,input,
     narrative:narrative("If reporting frequency differs, this may reflect different monitoring expectations by each counterparty.","Are the proposals from the same issuer or different issuers?"),
@@ -73,4 +82,9 @@ export const documentWorkSourceReviewCases=[...extendedDocumentWorkSourceReviewC
   {id:"source-review-documented-common-issuer",scope:"mixed_locale_review_controls" as const,
     input:{...input,passages:[...input.passages,identityPassage],coverage:{...input.coverage,documentsConsidered:4}},
     narrative:documentedIdentityNarrative,expectedIssueFieldId:null,expectedIssueFieldIds:[],expectedCleanFieldIds:["hypotheses.0.text","hypotheses.0.question"]},
+  {id:"source-review-diligence-request-versus-commitment",scope:"mixed_locale_review_controls" as const,
+    input:{...input,passages:[...input.passages,diligencePassage],coverage:{...input.coverage,documentsConsidered:4}},
+    narrative:diligenceNarrative,expectedIssueFieldId:"hypotheses.0.text",
+    expectedIssueFieldIds:["hypotheses.0.text","hypotheses.0.question","hypotheses.1.text","hypotheses.1.question"],
+    expectedCleanFieldIds:["gaps.0.text","gaps.0.question","gaps.1.text","gaps.1.question"]},
 ];

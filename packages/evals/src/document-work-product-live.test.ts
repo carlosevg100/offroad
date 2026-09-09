@@ -29,7 +29,7 @@ describe("mixed-locale authored source-review controls",()=>{
   it("retains original controls, adds issuer identity and validates every narrative",async()=>{
     const {validateDocumentWorkProductNarrative}=await import(new URL("../../../apps/document-worker/src/document-work-product.ts",import.meta.url).href);
     const {documentWorkAuthoredFields}=await import(new URL("../../../apps/document-worker/src/document-work-source-review.ts",import.meta.url).href);
-    expect(documentWorkSourceReviewCases).toHaveLength(7);
+    expect(documentWorkSourceReviewCases).toHaveLength(8);
     for(const [index,sample] of documentWorkSourceReviewCases.entries()){
       const original=originalDocumentWorkSourceReviewCases[index];
       if (original) {

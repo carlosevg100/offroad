@@ -41,6 +41,10 @@ For example, "No leverage covenant has been provided" supports asking "Can you p
 covenant terms or confirm whether the agreement includes one?" It does not support asking what
 compensates for the absence of a covenant. A further question may ask "If the agreement has no leverage
 covenant, what other protections apply?" without assuming that this is the case.
+Document requests may ask when information can be made available; this asks about availability,
+not for confirmation of a promise already made. Prefer clear, practical questions. Where existence
+is unknown, allow an answer of none: "What other protections, if any, apply?" Do not invent a
+management commitment or an existing protection in order to ask about its timing or terms.
 Name missing information rather than fill it. Do not give a final investment recommendation,
 funding assurance, legal conclusion or suitability determination.
 Do not calculate, estimate or derive any financial metric. Only observations and quotes may reproduce
@@ -54,7 +58,7 @@ content. The coverage limitations constrain all conclusions. Output only the req
 
 /** Task ids Q01–Q03 are documentary tasks, not the separate house IDs Q-01–Q-03. */
 export const documentaryWorkTaskIds = ["Q01", "Q02", "Q03"] as const;
-export const documentaryWorkMethod = {id: "documentary-work-pipeline", version: "2026.09.09-v9"} as const;
+export const documentaryWorkMethod = {id: "documentary-work-pipeline", version: "2026.09.09-v10"} as const;
 export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
   ...documentaryWorkMethod, maturity: "candidate",
   title: {pt: "Leitura documental preliminar privada", en: "Private preliminary documentary reading"},
@@ -90,6 +94,7 @@ export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
       "An IF or conditional opening does not excuse another unconditional unsupported premise in the same hypothesis or its question. Legitimately conditional exploratory questions are valid when they clearly seek confirmation and do not assert that the unverified condition holds.",
       "Separate the logical roles within each field: asserted facts, explicitly unconfirmed conditions, and claimed implications. Evaluate the hypothesis together with its confirmation question. A condition need not be established as fact: that is why it is conditional. Do not flag a clearly hypothetical absence as unknown_as_absent when neither the consequence nor question asserts that the absence actually holds. Still reject a contradicted premise or an unconditional unsupported assertion embedded after IF.",
       "Neutral requests asking whether a term exists, what options are being considered, or for missing documents do not assert an answer. General exploratory possibilities are not claims that those options were selected. An implication that asserts an unsupported causal link, risk ordering, exclusive dependency or comparison remains unsupported even when its antecedent is conditional. Prefer a local issue on that implication, not a blanket rejection of conditional language.",
+      "Distinguish an ordinary diligence request from a factual assertion or promise. Asking when required financial statements can or will be made available seeks availability; it does not assert management has committed to supply them. Asking what other protections apply under an explicitly unconfirmed condition permits the answer none and does not alone establish their existence. Do not invent a promise or a nonempty answer in order to reject a neutral request. Still reject questions that assert a specific undocumented protection, committed action, chosen option, counterparty identity or financial relationship, such as asking when an unestablished parent guarantee will be released.",
       "For every issue return exactExcerpt copied verbatim from the affected field, premiseRole identifying its logical role, and a short rationale explaining the specific contradiction or unsupported assertion. Keep exactExcerpt and rationale each at most 160 characters; do not provide extended deliberation. A field may contain different roles: locate the failing clause, not merely its IF opening. Reference only supplied passage IDs in sourceIds; use an empty array when no supplied passage addresses the assertion. Do not invent evidence.",
       "When an actual assertion cannot be supported, report other_unsupported. Uncertainty about an explicitly unconfirmed condition is not alone a defect. These distinctions never authorize invented facts or approval of an unsupported consequence.",
       "Fields with the same hypothesis or gap index belong together; evaluate their text and question together. The quoted observations have already passed deterministic validation and are not repeated in this review input. Use only the short passage IDs in this review request. Return issues for all contradicted or unsupported fields. An empty issues array means no issue found by this review, not human review, domain certification or a credit decision.",
