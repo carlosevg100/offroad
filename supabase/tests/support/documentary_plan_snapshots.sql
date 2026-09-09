@@ -5,7 +5,7 @@ language sql immutable set search_path='' as $fixture_function$
   "structure_from_documents": {
     "schemaVersion": "capital-project-plan.v1",
     "compilerVersion": "2026.09.01-v3",
-    "registryVersion": "2026.09.09-v11",
+    "registryVersion": "2026.09.09-v12",
     "job": {
       "id": "structure_from_documents",
       "targetTaskIds": [
@@ -33,7 +33,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query"
@@ -53,7 +53,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query",
@@ -74,7 +74,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query"
@@ -98,7 +98,7 @@ language sql immutable set search_path='' as $fixture_function$
   "review_existing_operation": {
     "schemaVersion": "capital-project-plan.v1",
     "compilerVersion": "2026.09.01-v3",
-    "registryVersion": "2026.09.09-v11",
+    "registryVersion": "2026.09.09-v12",
     "job": {
       "id": "review_existing_operation",
       "targetTaskIds": [
@@ -126,7 +126,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query"
@@ -146,7 +146,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query",
@@ -167,7 +167,7 @@ language sql immutable set search_path='' as $fixture_function$
         "maturity": "specified",
         "procedure": {
           "id": "documentary-work-pipeline",
-          "version": "2026.09.09-v8"
+          "version": "2026.09.09-v9"
         },
         "readingStrategies": [
           "structured_query"
