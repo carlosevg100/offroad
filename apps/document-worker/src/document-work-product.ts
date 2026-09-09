@@ -6,6 +6,7 @@ import {
   type DocumentWorkProductNarrative,
 } from "@offroad/domain-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
+import {verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
 
 
 
@@ -90,6 +91,7 @@ export async function runDocumentWorkProduct(raw: DocumentWorkProductInput, depe
     // response against the original corpus, with no third attempt if it is still invalid.
     narrative = validateDocumentWorkProductNarrative(input, await propose(error.message));
   }
+  await verifyDocumentWorkSourceFidelity(input, narrative, {gateway: dependencies.gateway});
   const hasObservations = narrative.sections.some(section => section.observations.length > 0);
   const payload = {
     ...narrative, schemaVersion: "document-work-product.v1" as const, job: input.job, locale: input.locale,
