@@ -72,11 +72,15 @@ export function financialNumbersIn(text: string): string[] {
     if (text.slice(end, end + 2).trimStart().startsWith("%")) continue;
 
     const hasSeparator = /[.,]/.test(raw);
+    const before = text.slice(0, match.index ?? 0);
+    const after = text.slice(end);
+    const explicitCurrency = /(?:R\$|US\$|\$|€|£|BRL|USD|EUR|GBP)\s*$/i.test(before)
+      || /^\s*(?:reais|dollars|euros|pounds|BRL|USD|EUR|GBP)\b/i.test(after);
     // "três lojas" is prose and "R$ 71 milhões" is a figure: a bare small integer only counts
-    // when a magnitude word makes it one.
-    if (!magnitude && !hasSeparator && raw.length < 4) continue;
+    // when a magnitude word or an explicit currency makes it one.
+    if (!explicitCurrency && !magnitude && !hasSeparator && raw.length < 4) continue;
     // A bare four-digit year is not a financial figure.
-    if (!magnitude && !hasSeparator && /^(19|20)\d{2}$/.test(raw)) continue;
+    if (!explicitCurrency && !magnitude && !hasSeparator && /^(19|20)\d{2}$/.test(raw)) continue;
 
     found.push(normalizeNumber(raw, magnitude));
   }

@@ -118,8 +118,9 @@ Rules:
 2. **Label a judgement as a judgement.** "Leverage is comfortable for this sector" is an
    opinion. Mark it \`judgment\`; it stays unapproved until a person approves it. Do not smuggle
    opinion into a \`fact\` claim by writing it as description.
-3. **Gaps are content.** What the data room does not say is often the most useful paragraph in
-   the brief. Write the absence plainly; never fill it with a plausible figure.
+3. **Gaps are content.** State which requirement remains unsatisfied in the current analysis.
+   An unsatisfied requirement does not prove that the data room contains no such information.
+   Ask for verification within that scope; never fill the gap with a plausible figure.
 4. **Exceptions are open questions, not defects.** Where two documents disagree, say so, say
    which was adopted and why, and leave the question open. Never resolve it yourself.
 5. **No promise of outcome.** You never imply approval, funding, pricing that will be

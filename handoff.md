@@ -1,3 +1,44 @@
+## 9 September: one verified revision before executive synthesis delivery
+
+PR576 actual run 34392141566 removed the numeric/reference contract failures, but
+rejected three Portuguese and thirteen English assertions in semantic review. Both
+languages remained failed; four provider attempts cost USD0.820586. That evidence is
+retained. Production Word readability is integrated separately in PR577.
+
+The analysis now has one bounded critique/revision followed by a fresh support-only
+review. The critique must review the original claims and may patch exactly the rejected
+ids using the current evidence catalog. Code preserves supported claims, original ids,
+materiality and summary selection; it recomposes the summary and reruns numeric checks.
+A final review receives only each claim's own support and uses a different provider
+from the author of the candidate text. Provider fallback is disabled for reviews so it
+cannot return to that author. Even a clean critique requires that final review.
+Missing/duplicate reviews, unsolicited patches, changed supported claims, invented
+support/amounts and a second rejection cannot produce an accepted brief.
+
+Both attempts are retained with their phase in private case state. Human judgment
+approval and external circulation remain separate gates. The existing three-call claims
+budget and aggregate case budget are unchanged; actual additional calls and costs are
+counted. Understanding v6 invalidates caches; the database-pinned engine scope is unchanged.
+The live synthesis evaluation uses this same control flow and additionally enforces the
+per-case claims ceiling. No retries are added outside the bounded flow.
+
+The prior base prompt incorrectly equated a gap with documentary absence; it now uses
+the scoped requirement contract. Explicit small currency values (including values that
+look like years) now enter numerical auditing instead of being discarded as ordinals.
+This does not certify every percentage, rate, quantity or materiality classification.
+
+Focused validation passed 604 tests (109 understanding, 33 engine, 462 worker), including
+repair boundaries, fresh review, rejected-draft retention, invented numbers, currency
+recognition and human approval. Full local check passed 43/43 in all four stages.
+Actual model execution must still be accepted after integration; no release promotion
+or complete product acceptance is claimed from these tests.
+
+Controls APP-03/04/10/11 and AI-05/07/08: same private evidence and provider boundary,
+no schema, RLS, grant, production flag, external action or telemetry change. Root review
+performed; independent agent review is unavailable. Rollback restores the prior code;
+no persisted source is rewritten. This change does not complete E2-E9 of the delivery plan.
+
+
 ## 9 September: ordinary documentary requests and issuer attribution
 
 A person can request a comparison, meeting preparation or opportunity review in ordinary

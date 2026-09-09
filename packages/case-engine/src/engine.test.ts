@@ -329,9 +329,9 @@ describe("the governed case engine", () => {
     expect(result.report.taskRuns.find((task) => task.taskId === "claims")?.cacheHit).toBe(true);
     expect(result.report.usage).toEqual({costUsd: 0, modelCalls: 0});
     expect(result.state.brief?.executiveSummary).toBe("Empresa Teste Ltda");
-    expect(result.state.modelInvocations).toHaveLength(2);
+    expect(result.state.modelInvocations).toHaveLength(3);
     expect(result.state.claimRegistry?.publication.allowed).toBe(true);
-    expect({writerCalls, verifierCalls}).toEqual({writerCalls: 1, verifierCalls: 1});
+    expect({writerCalls, verifierCalls}).toEqual({writerCalls: 1, verifierCalls: 2});
   });
 
   it("cannot compile any material after structure confirmation until the production plan is approved", async () => {
