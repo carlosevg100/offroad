@@ -134,6 +134,32 @@ it("offers manual refresh after successful submission while authoritative approv
 
 
 describe("sector planning context projection", () => {
+  it.each(["pt-BR", "en-US"] as const)("%s keeps open business descriptions and review gaps within their named scopes", (locale) => {
+    const messages = locale === "pt-BR" ? pt : en;
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}><ExecutionBriefCard version={2} brief={{...brief, locale, planningContext: {
+      schemaVersion: "sector-planning-context.v1", mode: "planning_only", contextFingerprint: "b".repeat(64), planFingerprint: "c".repeat(64), objects: [
+        {id: "synthetic-fleet", label: "Synthetic Fleet Segment", attributes: [{dimension: "business_model", label: "Business model", value: "Vehicle leasing and fleet services", status: "confirmed", sources: [{label: "Synthetic reviewed information", version: "1", anchor: "Review 1", basis: "user_review"}]}], requirements: [], gaps: [{id: "fleet-review", label: "Review fleet-specific method applicability"}]},
+        {id: "synthetic-franchise", label: "Synthetic Franchise Segment", attributes: [{dimension: "business_model", label: "Business model", value: "Franchise royalties and services", status: "proposed", sources: [{label: "Synthetic source", version: "1", anchor: "Section 2", basis: "unverified"}]}], requirements: [], gaps: [{id: "franchise-review", label: "Confirm franchise evidence and perimeter"}]},
+      ],
+    }}} /></NextIntlClientProvider>);
+    const fleetStart = html.indexOf("Synthetic Fleet Segment");
+    const franchiseStart = html.indexOf("Synthetic Franchise Segment");
+    expect(fleetStart).toBeGreaterThan(-1);
+    expect(franchiseStart).toBeGreaterThan(fleetStart);
+    const fleet = html.slice(fleetStart, franchiseStart);
+    const franchise = html.slice(franchiseStart);
+    expect(fleet).toContain("Vehicle leasing and fleet services");
+    expect(fleet).toContain("Review fleet-specific method applicability");
+    expect(fleet).toContain(messages.ExecutionBriefCard.planningContext.status.confirmed);
+    expect(fleet).not.toContain("Confirm franchise evidence and perimeter");
+    expect(franchise).toContain("Franchise royalties and services");
+    expect(franchise).toContain("Confirm franchise evidence and perimeter");
+    expect(franchise).toContain(messages.ExecutionBriefCard.planningContext.status.proposed);
+    expect(franchise).not.toContain("Review fleet-specific method applicability");
+    expect(html).not.toContain("data-progress");
+    expect(html).not.toContain("fleet-review");
+    expect(html).not.toContain("franchise-review");
+  });
   it.each(["pt-BR", "en-US"] as const)("%s shows planning evidence without inventing executable progress", (locale) => {
     const messages = locale === "pt-BR" ? pt : en;
     const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}><ExecutionBriefCard version={2} changes={[{kind: "planning_context_changed", label: "Contexto do ativo"}]} brief={{...brief, locale, planningContext: {

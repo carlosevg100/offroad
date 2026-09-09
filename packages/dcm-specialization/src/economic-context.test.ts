@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import type {EconomicContextAttribute, EconomicContextCompileRequest} from "@offroad/agent-contracts";
-import {compileEconomicContext} from "./economic-context";
+import {compileEconomicContext, economicContextPlanSchema} from "./economic-context";
 
 function attr(dimension: EconomicContextAttribute["dimension"], value: string, period?: EconomicContextAttribute["period"]): EconomicContextAttribute {
   return {dimension, value, status: "confirmed", evidenceRefs: [{sourceId: "synthetic-source", sourceVersion: "1", anchor: "section-1"}], ...(period ? {period} : {})};
@@ -131,5 +131,78 @@ describe("object-scoped economic planning", () => {
     const result = compileEconomicContext(request(attributes));
     expect(result.activations).toEqual([]);
     expect(result.gaps).toEqual(expect.arrayContaining([expect.objectContaining({code: "composition_limit"})]));
+  });
+});
+
+describe("open business characterization", () => {
+  it("accepts stored v1 plans without the additive characterization fields", () => {
+    const legacy = {...compileEconomicContext(request([]))};
+    delete legacy.coveragePolicy;
+    delete legacy.characterizedObjects;
+    delete legacy.planningNeeds;
+    expect(economicContextPlanSchema.safeParse(legacy).success).toBe(true);
+  });
+  it("preserves new business mechanisms without turning descriptions into methods", () => {
+    const input = request([
+      attr("cost_model", "synthetic-variable-cost-description"),
+      attr("working_capital", "synthetic-seasonal-cycle"),
+      attr("asset_model", "synthetic-leased-fleet"),
+      attr("capital_expenditure", "synthetic-renewal-profile"),
+      attr("regulation", "synthetic-regulatory-obligation"),
+      attr("operating_driver", "synthetic-utilization-driver"),
+    ]);
+    input.context.objects[0]!.type = "segment";
+    const result = compileEconomicContext(input);
+    expect(result.characterizedObjects?.[0]?.type).toBe("segment");
+    expect(result.characterizedObjects?.[0]?.attributes).toHaveLength(6);
+    expect(result.planningNeeds).toHaveLength(6);
+    expect(result.planningNeeds?.every((need) => need.kind === "applicability_review")).toBe(true);
+    expect(result.activations).toEqual([]);
+    expect(result.requirements).toEqual([]);
+    input.context.objects[0]!.attributes.reverse();
+    expect(compileEconomicContext(input)).toEqual(result);
+  });
+  it("retains an uncataloged business and composes only its explicitly supported mechanism", () => {
+    const result = compileEconomicContext(request([
+      attr("business_model", "synthetic-modular-equipment-leasing"),
+      attr("revenue_model", "contracted"),
+    ]));
+    expect(result.coveragePolicy).toBe("open_business_universe");
+    expect(result.characterizedObjects?.[0]?.attributes).toEqual(expect.arrayContaining([
+      expect.objectContaining({value: "synthetic-modular-equipment-leasing", status: "confirmed"}),
+    ]));
+    expect(result.activations.map((item) => item.moduleId)).toEqual(["revenue.contracted"]);
+    expect(result.planningNeeds).toEqual([expect.objectContaining({
+      objectId: "synthetic-asset", intent: "financial_analysis", kind: "applicability_review",
+      value: "synthetic-modular-equipment-leasing", scope: "affected_work_and_dependents",
+      methodAuthority: "not_granted",
+    })]);
+    expect(result.willExecute).toBe(false);
+  });
+  it("keeps heterogeneous business needs separate and does not inherit parent mechanisms", () => {
+    const input = request([attr("business_model", "synthetic-franchise-network")]);
+    input.context.objects[0]!.parentObjectId = "synthetic-group";
+    input.context.objects.push({id: "synthetic-group", type: "group", attributes: [attr("revenue_model", "merchant")]});
+    input.context.objects.push({id: "synthetic-contract", type: "contract", parentObjectId: "synthetic-group", attributes: [attr("revenue_model", "contracted")]});
+    input.targetObjectIds.push("synthetic-contract");
+    const result = compileEconomicContext(input);
+    expect(result.characterizedObjects?.map((item) => item.id)).toEqual(["synthetic-asset", "synthetic-contract"]);
+    expect(result.activations).toEqual([expect.objectContaining({objectId: "synthetic-contract", moduleId: "revenue.contracted"})]);
+    expect(result.planningNeeds?.every((need) => need.objectId === "synthetic-asset")).toBe(true);
+    const before = result.fingerprint;
+    input.context.objects[0]!.parentObjectId = "synthetic-contract";
+    expect(compileEconomicContext(input).fingerprint).not.toBe(before);
+  });
+  it("requests applicability review without inventing financial work for factual questions", () => {
+    const result = compileEconomicContext(request([attr("business_model", "synthetic-unknown-business")], "factual_answer"));
+    expect(result.requirements).toEqual([]);
+    expect(result.planningNeeds).toEqual([expect.objectContaining({intent: "factual_answer", kind: "applicability_review", methodAuthority: "not_granted"})]);
+  });
+  it("keeps declaration evidence and periods in the scoped plan and invalidates source changes", () => {
+    const input = request([attr("business_model", "synthetic-new-business", {start: "2026-01-01", end: "2026-12-31"})]);
+    const before = compileEconomicContext(input);
+    expect(before.characterizedObjects?.[0]?.attributes[0]?.period).toEqual({start: "2026-01-01", end: "2026-12-31"});
+    input.context.objects[0]!.attributes[0]!.evidenceRefs[0]!.anchor = "revised-section";
+    expect(compileEconomicContext(input).contextFingerprint).not.toBe(before.contextFingerprint);
   });
 });

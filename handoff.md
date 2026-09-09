@@ -1,3 +1,33 @@
+## Open business planning implementation candidate, 9 September 2026
+
+Local candidate implements reviewed open business descriptions in the actual initial/revised
+planning producer and separate named segment contexts. Contract extensions and additive compiler
+characterization preserve evidence, periods and local applicability needs without new method
+execution. Oversized views request explicit perimeter refinement, binding the full source packet.
+See [implementation record](docs/build/OPEN_BUSINESS_PLANNING_IMPLEMENTATION.md) for paths, validation and limits.
+RT-04 and WFI-13 are in progress; no acceptance gate or capability is promoted. No migration,
+permission change or production activation is included. Remote main was revalidated at `75ec631`.
+Full Node 24 `pnpm check` PASS: 43/43 tasks in lint, typecheck, test and build; contracts 218,
+specialization 59, worker 421, web 415 tests. Log: `/private/tmp/offroad-open-business-check-final.log`.
+Independent review found no remaining blocker in this change.
+
+## Open business coverage planning correction, 9 September 2026
+
+The founder clarified that Offroad must address any business within its debt and finance mandate.
+Constitution 5.2.1, Intent Atlas 6.2.1 and Execution Blueprint 8.3.1 / R5 now specify open economic
+characterization, composable financial foundations, mechanisms and object-specific expertise.
+Sector examples and evaluation samples are not company eligibility lists. Mixed activities retain
+segments, entities and consolidation perimeters; depth depends on the request. Missing methods or
+evidence block the affected task, conclusion and dependencies, while independent authorized work
+may proceed. Material gaps still block dependent final deliverables; no method is authorized by analogy.
+
+Program tasks RT-04, WFI-13 and WFI-14 reflect this architecture, including held-out businesses,
+heterogeneous activities and multiple intentions. Task IDs, existing dependencies, maturity states,
+capability transitions and historical evidence remain preserved; WFI-13 explicitly depends on RT-04.
+This is a local planning correction, not implementation, runtime activation or production verification.
+Local validation: release-governance typecheck and 178 tests passed; the four house-style tests passed.
+The generated board preserves the recorded evidence baseline; its new timestamp records planning only.
+
 ## Reliability correction local gate passed
 
 Full Node 24 `pnpm check` passed all four stages, 43/43 tasks per stage; worker 408, web 413 and eval 125 tests passed. Shell/Node syntax and diff checks passed. Independent review found no concrete blocker in the bounded correction or shared scanner setup. Linux scanner smoke and both protected live gates are still required; planning remains false.

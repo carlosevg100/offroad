@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import {
   economicContextCompileRequestSchema,
+  economicContextObjectSchema,
   type EconomicContextAttribute,
   type EconomicContextCompileRequest,
 } from "@offroad/agent-contracts";
@@ -21,6 +22,8 @@ const requirementSchema = z.object({
   marketCriteriaIds: z.array(z.string()), outputSuggestions: z.array(z.string()),
   evidenceStatus: z.literal("not_examined"),
 }).strict();
+const gapCodeSchema = z.enum(["context_missing", "attribute_unresolved", "attribute_uncovered", "module_context_incomplete", "non_overlapping_periods", "composition_limit"]);
+
 export const economicContextPlanSchema = z.object({
   schemaVersion: z.literal("economic-context-plan.v1"),
   mode: z.literal("planning_only"),
@@ -28,11 +31,25 @@ export const economicContextPlanSchema = z.object({
   contextFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   catalogFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   targetObjectIds: z.array(z.string()),
+  // Optional for persisted v1 plans; new compilations preserve characterization even
+  // when no catalog module applies. This is not a company eligibility decision.
+  coveragePolicy: z.literal("open_business_universe").optional(),
+  characterizedObjects: z.array(economicContextObjectSchema).optional(),
+  planningNeeds: z.array(z.object({
+    objectId: z.string(), intent: economicContextCompileRequestSchema.shape.intent,
+    reason: gapCodeSchema,
+    dimension: z.string().nullable(), value: z.string().nullable(),
+    attributeFingerprint: z.string().nullable(), moduleId: z.string().nullable(),
+    kind: z.enum(["context_resolution", "applicability_review"]),
+    status: z.literal("unresolved"),
+    scope: z.literal("affected_work_and_dependents"),
+    methodAuthority: z.literal("not_granted"),
+  }).strict()).optional(),
   activations: z.array(activationSchema),
   requirements: z.array(requirementSchema),
   gaps: z.array(z.object({
     objectId: z.string(),
-    code: z.enum(["context_missing", "attribute_unresolved", "attribute_uncovered", "module_context_incomplete", "non_overlapping_periods", "composition_limit"]),
+    code: gapCodeSchema,
     dimension: z.string().nullable(), value: z.string().nullable(),
     attributeFingerprint: z.string().nullable(), moduleId: z.string().nullable(),
   }).strict()),
@@ -118,11 +135,21 @@ export function compileEconomicContext(rawRequest: EconomicContextCompileRequest
       }
     }
   }
+  // Uncataloged declarations need an applicability decision, not an invented method
+  // or a blanket rejection. A context gap is local to this intent/object; downstream
+  // task dependencies still determine which conclusions are safe to produce.
+  const planningNeeds = sorted(gaps.map(({code, ...gap}) => ({
+    ...gap, intent: request.intent, reason: code,
+    kind: code === "attribute_uncovered" ? "applicability_review" as const : "context_resolution" as const,
+    status: "unresolved" as const, scope: "affected_work_and_dependents" as const,
+    methodAuthority: "not_granted" as const,
+  })));
   const payload = {
     schemaVersion: "economic-context-plan.v1" as const, mode: "planning_only" as const,
     intent: request.intent,
     contextFingerprint: hash({asOf: request.context.asOf, objects}),
     catalogFingerprint: hash(sectorContextCatalog), targetObjectIds,
+    coveragePolicy: "open_business_universe" as const, characterizedObjects: objects, planningNeeds,
     activations: sorted(activations), requirements: sorted(requirements), gaps: sorted(gaps),
     willExecute: false as const, externalEffectAllowed: false as const,
   };
