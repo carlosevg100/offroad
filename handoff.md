@@ -1,3 +1,7 @@
+## Dependency security patch, 9 September 2026
+
+Five advisory fixes prepared in an isolated branch: Next 16.3.3, sharp 0.35.4, js-yaml 4.3.2, Vitest/mocker 4.1.11. Registry audit reports zero vulnerabilities; full Node 24 local gate passed (43/43 tasks in each stage). CI and publication pending. No feature flags or database changes. [Scope, evidence and rollback](docs/security/DEPENDENCY_PATCH_2026_09_09.md).
+
 ## Validação real após publicação de PR560
 
 A versão `4e61637` foi publicada com autorização explícita do fundador e planejamento documental desativado. Web Production 6340360894 e worker 34297910422 (revisão 287, PRIMARY estável e capacidade positiva) verificados.

@@ -5,6 +5,9 @@ A versão `4e61637` foi publicada com autorização explícita do fundador e pla
 O gate de executor 34297931569 registrou cinco sucessos em seis chamadas reais (US$ 0.126386); uma resposta de revisão foi rejeitada após o provedor responder com schema válido. Essa falha permanece registrada. O gate de jornada 34297937112 parou antes das análises porque a preparação esperava shadow, mas o bootstrap produz canary.
 
 A correção seguinte se limita ao harness: registrar código allowlisted e narrativa sintética rejeitada separadamente de produto; preservar a política canary criada pelo bootstrap, com pipeline habilitado e saída externa desativada, sem promover políticas ou criar evidência de liberação. Regras do executor, seis repetições, orçamento e ativação de produção não mudam. Uma nova rodada real ainda é necessária.
+## Dependency security patch, 9 September 2026
+
+Five advisory fixes prepared in an isolated branch: Next 16.3.3, sharp 0.35.4, js-yaml 4.3.2, Vitest/mocker 4.1.11. Registry audit reports zero vulnerabilities; full Node 24 local gate passed (43/43 tasks in each stage). CI and publication pending. No feature flags or database changes. [Scope, evidence and rollback](../security/DEPENDENCY_PATCH_2026_09_09.md).
 
 ## Publicação autorizada: banco preparado, aplicação pendente
 
