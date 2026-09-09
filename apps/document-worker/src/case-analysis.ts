@@ -28,7 +28,8 @@ import {
   deskEvidence,
   diagnosticConfirmationReady,
   fingerprintJson,
-  semanticAuditSchema,
+  boundSemanticAuditSchema,
+  expandBoundSemanticAudit,
   type ClaimDecision,
   type RedFlagPolicy,
   type RedFlagReview,
@@ -1037,8 +1038,8 @@ export async function processCaseAnalysisJob(
           task: "audit_evidence",
           system: SEMANTIC_AUDIT_SYSTEM + (mayRevise ? "\n\n" + executiveSynthesisRevisionInstructions : ""),
           input: [{type: "text", text: JSON.stringify({...reviewInput, ...(mayRevise ? {revisionEvidence: [...buildBriefEvidenceCatalog(evidence).values()]} : {})})}],
-          schema: revisionSchema ?? semanticAuditSchema,
-          schemaName: mayRevise ? "semantic_claim_audit_revision" : "semantic_claim_audit",
+          schema: revisionSchema ?? boundSemanticAuditSchema(brief),
+          schemaName: mayRevise ? "semantic_claim_audit_revision_v2" : "semantic_claim_audit_v2",
           // Fallback must not route the review back to the candidate's author.
           allowFallback: false,
           dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},
@@ -1052,7 +1053,7 @@ export async function processCaseAnalysisJob(
         if (revisions.length) writerProvider = generated.provider;
         const after = dependencies.gateway.spent();
         return {
-          audit: semanticAuditSchema.parse(generated.output),
+          audit: expandBoundSemanticAudit(brief, generated.output),
           revisions,
           usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
           modelInvocations: dependencies.lineage().slice(callStart),

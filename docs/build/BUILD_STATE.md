@@ -1,3 +1,24 @@
+## 9 September: require complete claim coverage in the provider response
+
+Actual synthesis run34396953333 accepted English but rejected Portuguese because the fresh
+review omitted proj_gap_schedule. No numeric failure was reported in either language.
+The run used six attempts/USD1.415086. Both drafts and review phases remain retained.
+
+The provider response now requires a verdict under each material claim’s exact key.
+A strict object rejects omitted or foreign identities before expansion to the unchanged
+canonical audit array. Duplicate source claim ids fail before provider invocation. Both
+critique/revision and fresh support-only review use this contract in the worker and live
+evaluation. The model never supplies or changes the identity binding itself. Downstream
+semantic rejection, numeric checks, independent provider, three-call claims budget, one
+revision limit, judgment approval and disclosure boundaries are unchanged.
+
+Understanding version v7 invalidates earlier cached results. No schema migration, grant,
+new provider, production fixture or telemetry payload. Controls APP-03/10 and AI-05/07/08.
+Rollback restores prior code; persisted audit/history shapes remain compatible. Focused
+understanding tests111 passed, including exact provider-schema required keys, omission,
+foreign keys and duplicate source identities. Full local lint, typecheck, tests and
+build passed43/43 packages in each stage. Actual provider execution remains required. Root review performed; no independent agent available.
+This is a correction of a reproduced execution failure, not full product acceptance.
 ## 9 September: restore ordinary advisor response execution
 
 The founder's existing public-company meeting request was resumed through the production UI.

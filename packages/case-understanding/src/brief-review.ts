@@ -1,7 +1,7 @@
 import {z} from "zod";
 import {buildBriefEvidenceCatalog, type BriefEvidenceInput} from "./brief-evidence";
 import {auditBrief, briefClaimSchema, compileAuthoredBrief, resolveExecutiveSummaryClaims, type CaseBrief} from "./brief";
-import {normalizeSemanticAudit, semanticAuditSchema, type NormalizedSemanticAudit, type SemanticAudit} from "./semantic-audit";
+import {boundSemanticAuditSchema, normalizeSemanticAudit, type NormalizedSemanticAudit, type SemanticAudit} from "./semantic-audit";
 import type {AuditReport} from "./audit";
 
 const claimRevisionSchema = briefClaimSchema.pick({text:true,kind:true,supportIds:true}).extend({claimId:z.string().min(1)});
@@ -18,7 +18,7 @@ export function briefReviewWithRevisionSchema(brief:CaseBrief,evidence:BriefEvid
   const ids=brief.sections.flatMap(section=>section.claims.filter(claim=>claim.material).map(claim=>claim.id));
   const support=[...buildBriefEvidenceCatalog(evidence).keys()];
   if(!ids.length||!support.length)throw new Error("brief_review_evidence_required");
-  return semanticAuditSchema.extend({revisions:z.array(claimRevisionSchema.extend({
+  return boundSemanticAuditSchema(brief).extend({revisions:z.array(claimRevisionSchema.extend({
     claimId:z.enum(ids as [string,...string[]]),
     supportIds:z.array(z.enum(support as [string,...string[]])).min(1),
   })).max(ids.length)});

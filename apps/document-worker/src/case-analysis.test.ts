@@ -759,7 +759,7 @@ describe("worker case analysis", () => {
           expect(request.allowFallback).toBe(false);
           spent = {costUsd: spent.costUsd + 0.05, calls: spent.calls + 1};
           return {
-            output: {reviews: []},
+            output: {reviewsByClaim: {}},
             provider: "openai",
             model: "gpt-5.6-sol",
             effort: "high",
