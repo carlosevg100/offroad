@@ -13,7 +13,9 @@ export function compileAdvisorStartingPlan(input: {
   const inferred = inferCapitalProjectJob(input).job;
   const privateHint = !input.explicitHint || ["structure_from_documents","review_existing_operation"].includes(input.explicitHint);
   const documentary = input.documentaryEnabled && input.hasAttachments && privateHint
-    && canCompileStandaloneDocumentWorkRequest({objective:input.message,proposedDeliverable:input.message});
+    // The compiler proposes its scope; people need not know its internal terminology.
+    // Approval still binds the original objective and the visible documentary limits.
+    && canCompileStandaloneDocumentWorkRequest({objective:input.message,proposedDeliverable:"Preliminary documentary reading"});
   const entryJob = documentary
     ? input.explicitHint ?? (documentWorkJob(input.message) === "meeting" ? "structure_from_documents" : "review_existing_operation")
     : inferred;

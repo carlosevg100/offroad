@@ -34,9 +34,9 @@ function assertLocalPipeline() {
 }
 
 const cases = [
-  {job: "comparison", request: "Compare estas propostas de financiamento. Quero uma leitura documental preliminar das condições e lacunas, sem cálculos financeiros nem recomendação de crédito.", title: "Comparação documental de propostas"},
-  {job: "meeting", request: "Prepare a reunião com esta companhia usando os documentos enviados. Quero uma leitura documental preliminar e perguntas para a conversa, sem cálculos financeiros nem recomendação de crédito.", title: "Preparação para a reunião"},
-  {job: "review", request: "Revise esta oportunidade a partir dos documentos enviados. Quero uma leitura documental preliminar das condições e lacunas, sem cálculos financeiros nem recomendação de crédito.", title: "Revisão preliminar da oportunidade"},
+  {job: "comparison", request: "Compare estas propostas de financiamento.", title: "Comparação documental de propostas"},
+  {job: "meeting", request: "Prepare a reunião com esta companhia usando os documentos enviados.", title: "Preparação para a reunião"},
+  {job: "review", request: "Revise esta oportunidade a partir dos documentos enviados.", title: "Revisão preliminar da oportunidade"},
 ] as const;
 
 const files = [
@@ -97,6 +97,8 @@ test.describe("documentary work products with actual provider execution", () => 
     const brief = page.getByTestId("execution-brief");
     await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible({timeout: 180_000});
     await expect(brief.locator(".execution-brief-card__workstreams > li")).toHaveCount(3);
+    await expect(brief).toContainText(scenario.request);
+    await expect(brief).toContainText("não inclui cálculos financeiros");
     for (const label of ["Conferir os documentos", "Preparar a leitura", "Entregar e revisar"]) await expect(brief).toContainText(label);
     await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
     const work = page.locator(".advisor-work-surface");

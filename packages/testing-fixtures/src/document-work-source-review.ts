@@ -48,7 +48,7 @@ const extensions = [
     {text:"If inspection records are available, reviewing them could clarify which inspections have occurred.",question:"Can you provide the inspection records or confirm whether records are available?",basisPassageIds:["inspection"]},
   ],issues:[],clean:["hypotheses.1.text","hypotheses.1.question","hypotheses.2.text","hypotheses.2.question"]},
 ];
-export const documentWorkSourceReviewCases=originalDocumentWorkSourceReviewCases.map((sample,index)=>{
+const extendedDocumentWorkSourceReviewCases=originalDocumentWorkSourceReviewCases.map((sample,index)=>{
   const extension=extensions[index]!;
   return {...sample,scope:"mixed_locale_review_controls" as const,
     input:{...sample.input,passages:[...sample.input.passages,...additionalSources],coverage:{...sample.input.coverage,documentsConsidered:sample.input.passages.length+additionalSources.length,limitations:[...sample.input.coverage.limitations,"Mixed-locale authored review controls; not a translation evaluation."]}},
@@ -57,3 +57,20 @@ export const documentWorkSourceReviewCases=originalDocumentWorkSourceReviewCases
     expectedCleanFieldIds:extension.clean,
   };
 });
+
+// Identity controls distinguish an unsupported attribution from an explicit common issuer.
+const identitySource = {id:"issuer",text:"Offer Gamma and revised offer Delta are issued by Meridian Bank."};
+const identityPassage = {...identitySource,documentId:identitySource.id,documentName:"Synthetic issuer.txt",version:"1",hash:sha(identitySource.text),anchor:"paragraph 1"};
+const documentedIdentityNarrative = narrative(
+  "If Gamma and Delta remain under consideration, both offers identify Meridian Bank as their issuer.",
+  "Are Gamma and Delta alternative versions of the same proposed facility?",
+);
+documentedIdentityNarrative.hypotheses[0]!.basisPassageIds=["issuer"];
+export const documentWorkSourceReviewCases=[...extendedDocumentWorkSourceReviewCases,
+  {id:"source-review-unestablished-counterparties",scope:"mixed_locale_review_controls" as const,input,
+    narrative:narrative("If reporting frequency differs, this may reflect different monitoring expectations by each counterparty.","Are the proposals from the same issuer or different issuers?"),
+    expectedIssueFieldId:"hypotheses.0.text",expectedIssueFieldIds:["hypotheses.0.text"],expectedCleanFieldIds:["hypotheses.0.question"]},
+  {id:"source-review-documented-common-issuer",scope:"mixed_locale_review_controls" as const,
+    input:{...input,passages:[...input.passages,identityPassage],coverage:{...input.coverage,documentsConsidered:4}},
+    narrative:documentedIdentityNarrative,expectedIssueFieldId:null,expectedIssueFieldIds:[],expectedCleanFieldIds:["hypotheses.0.text","hypotheses.0.question"]},
+];

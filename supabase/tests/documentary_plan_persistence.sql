@@ -1,15 +1,22 @@
 -- Real compiler snapshots; every synthetic fixture and write rolls back.
 begin;
 \ir support/documentary_plan_snapshots.sql
+create function pg_temp.documentary_plan_with_versions(p jsonb, registry text, method text) returns jsonb
+language sql immutable set search_path='' as $versions$
+  select jsonb_set(jsonb_set(p,'{registryVersion}',to_jsonb(registry)), '{taskSpecs}',
+    (select jsonb_agg(jsonb_set(value,'{procedure,version}',to_jsonb(method)) order by ordinal)
+      from jsonb_array_elements(p->'taskSpecs') with ordinality as t(value,ordinal)));
+$versions$;
 do $$
 declare entry text; current_plan jsonb; prior_plan jsonb;
 begin
   foreach entry in array array['structure_from_documents','review_existing_operation'] loop
     current_plan := pg_temp.documentary_plan_fixture(entry);
-    prior_plan := replace(replace(current_plan::text,'2026.09.09-v11','2026.09.09-v9'),'2026.09.09-v8','2026.09.09-v6')::jsonb;
+    prior_plan := pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v9','2026.09.09-v6');
     if not private.is_released_documentary_plan_v1(current_plan,entry)
       or not private.is_released_documentary_plan_v1(prior_plan,entry)
-      or not private.is_released_documentary_plan_v1(replace(replace(current_plan::text,'2026.09.09-v11','2026.09.09-v10'),'2026.09.09-v8','2026.09.09-v7')::jsonb,entry) then
+      or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v10','2026.09.09-v7'),entry)
+      or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v11','2026.09.09-v8'),entry) then
       raise exception 'current or previously approved documentary contract rejected';
     end if;
     if private.is_released_documentary_plan_v1(jsonb_set(current_plan,'{registryVersion}','"2026.09.09-v9"'),entry)

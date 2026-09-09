@@ -1,3 +1,34 @@
+## 9 September: ordinary documentary requests and issuer attribution
+
+A person can request a comparison, meeting preparation or opportunity review in ordinary
+language. The starting compiler proposes its own documentary scope instead of requiring
+the person to type internal terms such as preliminary documentary reading. The original
+request remains in the persisted brief and its limitations remain visible before approval.
+Explicit calculations and negated requests continue on their prior route; no existing plan
+is replaced. The provider-backed journey now uses ordinary requests and checks the visible
+scope and original objective before approval.
+
+Documentary method v9 distinguishes proposals/versions from their issuers and prohibits
+invented counterparty intentions. The existing six executor requests and five mixed review
+controls are retained. Two additional reviewer controls cover unsupported distinct-party
+attribution and a documented common issuer. Gold remains 18 calls/USD2.50; reviewer controls
+become seven calls within the existing USD0.50 partition. Aggregate dollars stay USD3.
+
+Migration 20260909190702 was applied only to the data-less staging branch. Exact registry
+v12/method v9 is added while v11/v10/v9 snapshots remain accepted. The persistence, replay,
+compatibility and authorization SQL test passed with all writes rolled back. Security:
+zero lints; performance advisories are INFO. Generated API types retain the same signatures
+with only generator ordering changes. Focused validation passed 612 tests; full local check
+passed all 43 packages in all four stages before incorporating the independent Word change.
+The post-integration check is recorded with the PR evidence.
+
+Controls APP-03/04/10/11 and AI-05/07/08 retain private access, approval binding and review
+limits. No production migration or activation flag changed. Previous executor 34380089624
+remains FAIL 5/6; do not promote on this code change alone. New actual executor and complete
+interface journey evidence are required after integration. Rollback disables new documentary
+planning and restores prior code; earlier approved snapshots remain valid. Root review was
+performed; no independent agent review is claimed.
+
 ## 9 September: readable evidence references in Word materials
 
 Word paragraphs and financial metrics now use short clickable reference markers.
