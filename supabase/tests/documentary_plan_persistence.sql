@@ -6,9 +6,10 @@ declare entry text; current_plan jsonb; prior_plan jsonb;
 begin
   foreach entry in array array['structure_from_documents','review_existing_operation'] loop
     current_plan := pg_temp.documentary_plan_fixture(entry);
-    prior_plan := replace(replace(current_plan::text,'2026.09.09-v10','2026.09.09-v9'),'2026.09.09-v7','2026.09.09-v6')::jsonb;
+    prior_plan := replace(replace(current_plan::text,'2026.09.09-v11','2026.09.09-v9'),'2026.09.09-v8','2026.09.09-v6')::jsonb;
     if not private.is_released_documentary_plan_v1(current_plan,entry)
-      or not private.is_released_documentary_plan_v1(prior_plan,entry) then
+      or not private.is_released_documentary_plan_v1(prior_plan,entry)
+      or not private.is_released_documentary_plan_v1(replace(replace(current_plan::text,'2026.09.09-v11','2026.09.09-v10'),'2026.09.09-v8','2026.09.09-v7')::jsonb,entry) then
       raise exception 'current or previously approved documentary contract rejected';
     end if;
     if private.is_released_documentary_plan_v1(jsonb_set(current_plan,'{registryVersion}','"2026.09.09-v9"'),entry)

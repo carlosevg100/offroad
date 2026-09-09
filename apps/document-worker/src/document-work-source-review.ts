@@ -1,6 +1,7 @@
 import {z} from "zod";
-import {documentWorkSourceReviewInstructions} from "@offroad/credit-playbook";
+import {documentWorkSourceReviewInstructions, documentWorkProductRevisionInstructions} from "@offroad/credit-playbook";
 import type {DocumentWorkProductInput, DocumentWorkProductNarrative} from "@offroad/domain-contracts";
+import {buildDocumentWorkSelectionContext, documentWorkSelectionSchema, type DocumentWorkSelection} from "./document-work-selection";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
 
 export const sourceReviewSchema = z.object({
@@ -42,6 +43,22 @@ export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProduc
   const wire = parsed.data;
   const review = expandDocumentWorkSourceReview(input, wire);
   return validateDocumentWorkSourceReview(input, narrative, review);
+}
+/** The critic may propose a replacement, but cannot approve that replacement itself. */
+export async function reviewAndProposeDocumentWorkRevision(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, selection: unknown, {gateway}: Dependencies): Promise<{review: DocumentWorkSourceReview; revisedSelection: DocumentWorkSelection | null}> {
+  const schema=sourceReviewSchema.extend({revisedSelection:documentWorkSelectionSchema.nullable()});
+  const context=buildDocumentWorkSelectionContext(input);
+  const response=await gateway.complete({
+    task:"preliminary_understanding",system:`${documentWorkSourceReviewInstructions}\n${documentWorkProductRevisionInstructions}`,
+    input:[{type:"text",text:JSON.stringify({passages:context.sources,coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:documentWorkAuthoredFields(narrative),selection:documentWorkSelectionSchema.parse(selection)})}],
+    schema,schemaName:"document_work_source_review_revision_v1",
+    dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},maxOutputTokens:4000,
+  });
+  const parsed=schema.safeParse(response.output);if(!parsed.success)throw failed();
+  const {revisedSelection,...wire}=parsed.data;
+  const review=validateDocumentWorkSourceReview(input,narrative,expandDocumentWorkSourceReview(input,wire));
+  if(review.issues.length===0 && revisedSelection!==null)throw failed();
+  return {review,revisedSelection};
 }
 /** Source aliases are local to one request; unknown aliases never become trusted citations. */
 export function expandDocumentWorkSourceReview(input: DocumentWorkProductInput, wire: DocumentWorkSourceReview): DocumentWorkSourceReview {

@@ -102,13 +102,26 @@ test.describe("documentary work products with actual provider execution", () => 
     const work = page.locator(".advisor-work-surface");
     await expect(work.getByRole("heading", {name: scenario.title, exact: true})).toBeVisible({timeout: 180_000});
     for (const file of files) await expect(work).toContainText(file.name);
+    if (scenario.job === "comparison") {
+      for (const term of ["prazo | 36 meses", "prazo | 48 meses", "garantia | Alienacao fiduciaria de equipamentos", "garantia | Fianca corporativa"]) {
+        await expect(work.getByText(term, {exact: true}).first()).toBeVisible();
+      }
+    }
     await expect(work).toContainText("Análise documental preliminar");
     await expect(brief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(3, {timeout: 120_000});
     const result = await work.locator(".advisor-work-surface__content").innerText();
+    const completeText = await work.locator(".advisor-work-surface__content").textContent();
+    expect(completeText).not.toBeNull();
+    const materialHref = await work.getByRole("link", {name: "Baixar Word", exact: true}).getAttribute("href");
+    expect(materialHref).not.toBeNull();
     await work.locator('.advisor-work-surface__navigation a[href="#work-document-review"]').click();
     await expect(page).toHaveURL(/#work-document-review$/);
     await page.reload();
-    await expect(work.locator(".advisor-work-surface__content")).toHaveText(result);
+    // Match like-for-like: collapsed source details are excluded from innerText,
+    // but included in textContent. Both representations and product identity persist.
+    await expect(work.locator(".advisor-work-surface__content")).toHaveText(result, {useInnerText: true});
+    await expect(work.locator(".advisor-work-surface__content")).toHaveText(completeText!);
+    await expect(work.getByRole("link", {name: "Baixar Word", exact: true})).toHaveAttribute("href", materialHref!);
     const downloaded = page.waitForEvent("download");
     await work.getByRole("link", {name: "Baixar Word", exact: true}).click();
     const download = await downloaded;

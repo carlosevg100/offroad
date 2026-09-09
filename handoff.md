@@ -1,3 +1,42 @@
+## 9 September: one independently checked documentary revision
+
+Real executor 34376495901 completed all 12 model calls without truncation or fallback,
+but passed only four of six requests. Both meeting attempts failed semantic review;
+all five authored review controls passed. Compact selections fixed the observed output
+transport problem in this run, not semantic consistency or the complete user journey.
+
+The critic may now propose one complete replacement when it reports issues against the
+original fields. Code validates the replacement and a separate fresh review must be clean
+before delivery. The critic cannot approve its own replacement. A deterministic correction
+uses the same single revision allowance; malformed review, provider errors, invented sources,
+unsolicited replacements and a second rejection fail closed. No fourth call is permitted.
+The existing three-call per-request ceiling and gold/control aggregate budgets are unchanged.
+Evidence accounting retains the first rejection and distinguishes revised from first-pass
+success. No provider, production flag, task maturity or output format is promoted.
+
+Spreadsheet evidence without parsed tables now preserves full rows, empty column positions
+and source ranges. This retains short values such as a tenor together with their field
+names; it does not calculate formulas or infer missing data. Duplicate cell references fail.
+
+Method v8 / registry v11 are pinned by staging-only migration
+`20260909163653_reviewed_documentary_plan_contract`. Exact v9 and v10 snapshots remain
+admitted; mixed versions are rejected. SQL persistence and tenant regression passed with
+rollback. Security advisors: zero lints; regenerated types unchanged; performance INFO.
+Focused tests initially passed 73 cases. Full local `pnpm check` passed all four
+stages (43/43 tasks each), including added adversarial replacement tests. Remote checks
+and new live gates remain pending. Independent agent review remains unavailable due usage allowance exhaustion.
+
+Journey 34376498910 displayed a completed result and retained it after reload on the
+first attempt, but the test compared innerText with textContent, including collapsed
+source details only on one side. The test now compares each representation with itself
+and also checks the unchanged fingerprinted download URL. Comparison must visibly show
+both documented tenors and guarantees, not merely a heading. The retry independently failed
+semantic review. No Word was downloaded because the assertion stopped the first attempt.
+
+Security controls: APP-03/04/10/11 and AI-05/07/08. Restricted sources stay in the existing
+gateway; critic text is untrusted, source identity is reconstructed and no RLS/grant changes
+are made. Rollback code and keep the documentary flag false; prior exact snapshots persist.
+
 ## 9 September: compact documentary evidence, validation in progress
 
 The next correction addresses real journey 34372018947: the approved plan now executes,
