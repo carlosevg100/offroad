@@ -1,6 +1,22 @@
 -- Real compiler snapshots; every synthetic fixture and write rolls back.
 begin;
 \ir support/documentary_plan_snapshots.sql
+do $$
+declare entry text; current_plan jsonb; prior_plan jsonb;
+begin
+  foreach entry in array array['structure_from_documents','review_existing_operation'] loop
+    current_plan := pg_temp.documentary_plan_fixture(entry);
+    prior_plan := replace(replace(current_plan::text,'2026.09.09-v10','2026.09.09-v9'),'2026.09.09-v7','2026.09.09-v6')::jsonb;
+    if not private.is_released_documentary_plan_v1(current_plan,entry)
+      or not private.is_released_documentary_plan_v1(prior_plan,entry) then
+      raise exception 'current or previously approved documentary contract rejected';
+    end if;
+    if private.is_released_documentary_plan_v1(jsonb_set(current_plan,'{registryVersion}','"2026.09.09-v9"'),entry)
+      or private.is_released_documentary_plan_v1(prior_plan,'review_market') then
+      raise exception 'mixed or unrelated documentary contract accepted';
+    end if;
+  end loop;
+end $$;
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values
 ('10000000-0000-4000-8000-000000000971','authenticated','authenticated','document-plan-a@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false),
 ('10000000-0000-4000-8000-000000000972','authenticated','authenticated','document-plan-b@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false);

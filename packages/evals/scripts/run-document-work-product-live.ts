@@ -22,6 +22,8 @@ async function main() {
   const gateway=createModelGateway({adapters,budget:{maxCostUsd:2.5,maxCalls:18},onCall:call=>calls.push(call)});
   const controlGateway=createModelGateway({adapters,budget:{maxCostUsd:0.5,maxCalls:5},onCall:call=>controlCalls.push(call)});
   const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;
+  const {hydrateDocumentWorkSelection}=await import(workerPath("document-work-selection")) as {hydrateDocumentWorkSelection:(input:unknown,raw:unknown)=>unknown};
+  const {expandDocumentWorkSourceReview}=await import(workerPath("document-work-source-review")) as {expandDocumentWorkSourceReview:(input:unknown,raw:Review)=>Review};
   const {runDocumentWorkProduct,validateDocumentWorkProductNarrative}=await import(workerPath("document-work-product")) as {
     runDocumentWorkProduct:(input:unknown,dependencies:{gateway:typeof gateway})=>Promise<LiveProduct>;
     validateDocumentWorkProductNarrative:(input:unknown,raw:unknown)=>unknown;
@@ -53,20 +55,20 @@ async function main() {
       const responses:(typeof runs)[number]["responses"]=[];
       const observedGateway:typeof gateway={spent:gateway.spent,async complete(request){
         completeCalls++;
-        const isNarrative=request.schemaName==="document_work_product_narrative_v1";
+        const isNarrative=request.schemaName==="document_work_selection_v1";
         if(isNarrative)narrativeCalls++; else reviewCalls++;
         const response=await gateway.complete(request);
         if(isNarrative){
           capturedNarrative=response.output;narrativeProviderIndex=calls.length-1;
           let validationFailure:unknown;
-          try{validateDocumentWorkProductNarrative(input,response.output);}catch(error){validationFailure=error;}
-          const diagnostic=documentWorkFailureDiagnostics(validationFailure,response.output,calls.length-1);
+          try{capturedNarrative=hydrateDocumentWorkSelection(input,response.output);validateDocumentWorkProductNarrative(input,capturedNarrative);}catch(error){validationFailure=error;}
+          const diagnostic=documentWorkFailureDiagnostics(validationFailure,capturedNarrative,calls.length-1);
           responses.push({kind:"narrative",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:validationFailure===undefined,diagnostics:validationFailure===undefined?null:diagnostic,syntheticNarrative:diagnostic.rejectedOutput,syntheticReview:null});
         }else{
           const parsed=sourceReviewSchema.safeParse(response.output);
-          let reviewAccepted=false;
-          try{reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,response.output).issues.length===0;}catch{}
-          responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:parsed.success?parsed.data!:null});
+          let reviewAccepted=false; let expanded:Review|null=null;
+          try{if(parsed.success){expanded=expandDocumentWorkSourceReview(input,parsed.data!);reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,expanded).issues.length===0;}}catch{}
+          responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:expanded ?? (parsed.success?parsed.data!:null)});
         }
         return response;
       }};

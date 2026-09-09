@@ -15,8 +15,8 @@ describe("canonical documentary procedures", () => {
   });
   it("keeps financial math outside the documentary instruction and requires complete evidence", () => {
     expect(documentWorkProductSystemInstructions).toContain("Do not calculate");
-    expect(documentWorkProductSystemInstructions).toContain("must equal one of its cited quotes exactly");
-    expect(documentWorkProductSystemInstructions).toContain("complete passage");
+    expect(documentWorkProductSystemInstructions).toContain("Return quoteIds, never quote text or citation objects");
+    expect(documentWorkProductSystemInstructions).toContain("complete source passage, line or sentence");
     expect(documentWorkProductSystemInstructions).toContain("hypotheses");
   });
 });

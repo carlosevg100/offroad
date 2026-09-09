@@ -5,19 +5,23 @@ import {runDocumentWorkProduct,validateDocumentWorkProductNarrative} from "./doc
 
 const input: DocumentWorkProductInput = {job:"comparison",locale:"en-US",approvedRequest:{text:"Compare the supplied proposals",fingerprint:"a".repeat(64)},passages:[{id:"p1",documentId:"d1",documentName:"Proposal Alpha.pdf",version:"v1",hash:"b".repeat(64),anchor:"page 1",text:"Proposal Alpha has a maturity of 36 months and requires a parent guarantee."}],coverage:{documentsConsidered:1,omittedPassages:0,limitations:["Only one proposal supplied."]}};
 const narrative = (job: DocumentWorkProductInput["job"] = "comparison") => ({sections:documentWorkProductSectionKeys[job].map((key,index)=>({key,title:String(key),observations:index===0?[{text:input.passages[0]!.text,citations:[{passageId:"p1",quote:input.passages[0]!.text}]}]:[]})),hypotheses:[],gaps:[{text:"Another proposal is needed for comparison.",question:"Can you provide the other proposal?"}]});
-const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v2"
+const selection = (value: {sections: ReturnType<typeof narrative>["sections"]; hypotheses: Array<{text:string;question:string;basisPassageIds:string[]}>; gaps: ReturnType<typeof narrative>["gaps"]}) => ({
+  sections:value.sections.map(section=>({key:section.key,title:section.title,quoteIds:section.observations.map(observation=>observation.citations[0]?.passageId === "p1" && observation.citations[0]?.quote === input.passages[0]!.text ? "q1" : "q999")})),
+  hypotheses:value.hypotheses.map((item: {text:string;question:string;basisPassageIds:string[]})=>({text:item.text,question:item.question,basisSourceIds:item.basisPassageIds})),gaps:value.gaps,
+});
+const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v3"
   ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : undefined;
 describe("uploaded document work products",()=>{
   it("rejects a semantically unsupported result before producing a product, without regeneration",async()=>{
     const complete=vi.fn().mockImplementation(async request=>{
       const review=sourceReviewResponse(request);
-      return review ? {output:{...review.output,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:["p1"]}]}} : {output:narrative()};
+      return review ? {output:{...review.output,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:["p1"]}]}} : {output:selection(narrative())};
     });
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("document_work_product_source_review_failed");
     expect(complete).toHaveBeenCalledTimes(2);
   });
   it.each(["comparison","meeting","review"] as const)("executes %s with restricted policy and preserves source coverage",async job=>{
-    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:narrative(job)});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:selection(narrative(job))});
     const result=await runDocumentWorkProduct({...input,job},{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
     expect(result.job).toBe(job);
     expect(result.coverage).toEqual(input.coverage);
@@ -69,7 +73,7 @@ describe("uploaded document work products",()=>{
   });
   it("rejects an empty answer without a specific evidence gap",async()=>{
     const out=narrative();out.sections.forEach(section=>section.observations=[]);out.gaps=[];
-    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:selection(out)});
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("empty_without_gap");
   });
   it("rejects duplicate source ids and excessive aggregate input",()=>{
@@ -78,7 +82,7 @@ describe("uploaded document work products",()=>{
   });
   it("preserves honest gaps without inventing an observation",async()=>{
     const out=narrative();out.sections.forEach(section=>section.observations=[]);
-    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:selection(out)});
     const result=await runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
     expect(result.sections.every(section=>section.observations.length===0)).toBe(true);
     expect(result.gaps).toHaveLength(1);
@@ -86,7 +90,7 @@ describe("uploaded document work products",()=>{
   });
   it("corrects one rejected numeric hypothesis with the same sources and policy",async()=>{
     const invalid={...narrative(),hypotheses:[{text:"The 24-month term may require refinancing.",question:"Can you confirm the terms?",basisPassageIds:["p1"]}]};
-    const complete=vi.fn().mockResolvedValueOnce({output:invalid}).mockResolvedValueOnce({output:narrative()}).mockImplementation(async request=>sourceReviewResponse(request));
+    const complete=vi.fn().mockResolvedValueOnce({output:selection(invalid)}).mockResolvedValueOnce({output:selection(narrative())}).mockImplementation(async request=>sourceReviewResponse(request));
     const product=await runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
     expect(complete).toHaveBeenCalledTimes(3);
     const first=complete.mock.calls[0]![0], second=complete.mock.calls[1]![0];
@@ -99,14 +103,13 @@ describe("uploaded document work products",()=>{
     expect(product.hypotheses).toEqual([]);
     expect(product.sources).toEqual(input.passages);
   });
-  it.each(["unbound_number","invalid_citation","wrong_sections","non_extractive_observation","empty_without_gap"])("stops after one unsuccessful correction of %s",async code=>{
+  it.each(["unbound_number","invalid_citation","wrong_sections","empty_without_gap"])("stops after one unsuccessful correction of %s",async code=>{
     const out=narrative();
     if(code==="unbound_number") out.sections[0]!.title="Terms 2";
     if(code==="invalid_citation") out.sections[0]!.observations[0]!.citations[0]!.passageId="invented";
     if(code==="wrong_sections") out.sections=narrative("meeting").sections;
-    if(code==="non_extractive_observation") out.sections[0]!.observations[0]!.text="The terms are favorable.";
     if(code==="empty_without_gap") {out.sections.forEach(section=>section.observations=[]);out.gaps=[];}
-    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:out});
+    const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:selection(out)});
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow(`document_work_product_${code}`);
     expect(complete).toHaveBeenCalledTimes(2);
   });
@@ -122,7 +125,7 @@ describe("uploaded document work products",()=>{
   it("propagates the existing gateway budget rejection without resetting it",async()=>{
     const out=narrative();out.sections[0]!.title="Terms 2";
     const budgetError=new Error("budget_exceeded");
-    const complete=vi.fn().mockResolvedValueOnce({output:out}).mockRejectedValueOnce(budgetError);
+    const complete=vi.fn().mockResolvedValueOnce({output:selection(out)}).mockRejectedValueOnce(budgetError);
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toBe(budgetError);
     expect(complete).toHaveBeenCalledTimes(2);
   });
