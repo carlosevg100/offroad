@@ -9,8 +9,13 @@ describe("live validation and source-review accounting",()=>{
     const corrected=runs.map(item=>({...item,completeCalls:3,narrativeCalls:2,providerCalls:3,firstResponseValid:false}));
     expect(score(corrected,[true,true,true],{...spent,calls:18,costUsd:2.5})).toMatchObject({passed:true,firstPassSuccessCount:0,firstPassSuccessRate:0});
   });
+  it("accounts for one semantic revision with a second review, inside the same global ceiling",()=>{
+    const revised={...run,completeCalls:3,narrativeCalls:1,reviewCalls:2,providerCalls:3};
+    expect(score([revised,...runs.slice(1)],[true,true,true],{...spent,calls:13})).toMatchObject({passed:true,firstPassSuccessCount:5});
+    expect(score(runs.map(()=>revised),[true,true,true],{...spent,calls:18}).passed).toBe(true);
+  });
   it.each([{calls:11},{calls:19},{costUsd:2.51},{costUsd:NaN},{unknownCostCalls:1}])("rejects invalid global spend %j",change=>{expect(score(runs,[true,true,true],{...spent,...change}).passed).toBe(false);});
-  it("counts provider retries and refuses a fourth executor completion",()=>{
+  it("counts provider retries and refuses unreviewed extra generations",()=>{
     expect(score([{...run,providerCalls:3},...runs.slice(1)],[true,true,true],{...spent,calls:13}).passed).toBe(true);
     expect(score([{...run,completeCalls:4,narrativeCalls:3,providerCalls:4},...runs.slice(1)],[true,true,true],{...spent,calls:14}).passed).toBe(false);
   });

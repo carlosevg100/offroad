@@ -6,7 +6,7 @@ import {
   type DocumentWorkProductNarrative,
 } from "@offroad/domain-contracts";
 import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gateway";
-import {verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
+import {reviewAndProposeDocumentWorkRevision, verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
 
 import {buildDocumentWorkSelectionContext, completeSourceQuote, documentWorkSelectionSchema, hydrateDocumentWorkSelection} from "./document-work-selection";
 
@@ -64,14 +64,26 @@ export async function runDocumentWorkProduct(raw: DocumentWorkProductInput, depe
   };
   const first = await propose();
   let narrative: DocumentWorkProductNarrative;
+  let repaired = false;
   try { narrative = validateDocumentWorkProductNarrative(input, hydrateDocumentWorkSelection(input, first)); }
   catch (error) {
     if (!(error instanceof Error) || !correctableValidationCodes.has(error.message)) throw error;
     // Never publish, patch or feed back the rejected narrative. Validate a fresh complete
     // response against the original corpus, with no third attempt if it is still invalid.
+    repaired = true;
     narrative = validateDocumentWorkProductNarrative(input, hydrateDocumentWorkSelection(input, await propose(error.message)));
   }
-  await verifyDocumentWorkSourceFidelity(input, narrative, {gateway: dependencies.gateway});
+  if (repaired) {
+    await verifyDocumentWorkSourceFidelity(input, narrative, {gateway: dependencies.gateway});
+  } else {
+    const {review,revisedSelection}=await reviewAndProposeDocumentWorkRevision(input,narrative,first,{gateway:dependencies.gateway});
+    if(review.issues.length){
+      if(!revisedSelection)throw new Error("document_work_product_source_review_failed");
+      narrative=validateDocumentWorkProductNarrative(input,hydrateDocumentWorkSelection(input,revisedSelection));
+      // The critic's replacement is untrusted until a separate fresh review passes.
+      await verifyDocumentWorkSourceFidelity(input,narrative,{gateway:dependencies.gateway});
+    }
+  }
   const hasObservations = narrative.sections.some(section => section.observations.length > 0);
   const payload = {
     ...narrative, schemaVersion: "document-work-product.v1" as const, job: input.job, locale: input.locale,

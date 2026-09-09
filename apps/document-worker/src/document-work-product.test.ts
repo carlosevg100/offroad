@@ -9,16 +9,66 @@ const selection = (value: {sections: ReturnType<typeof narrative>["sections"]; h
   sections:value.sections.map(section=>({key:section.key,title:section.title,quoteIds:section.observations.map(observation=>observation.citations[0]?.passageId === "p1" && observation.citations[0]?.quote === input.passages[0]!.text ? "q1" : "q999")})),
   hypotheses:value.hypotheses.map((item: {text:string;question:string;basisPassageIds:string[]})=>({text:item.text,question:item.question,basisSourceIds:item.basisPassageIds})),gaps:value.gaps,
 });
-const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v3"
-  ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : undefined;
+const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => ["document_work_source_review_v3","document_work_source_review_revision_v1"].includes(request.schemaName)
+  ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:null}:{})}} : undefined;
 describe("uploaded document work products",()=>{
-  it("rejects a semantically unsupported result before producing a product, without regeneration",async()=>{
+  it("rejects malformed semantic review before producing a product, without regeneration",async()=>{
     const complete=vi.fn().mockImplementation(async request=>{
       const review=sourceReviewResponse(request);
       return review ? {output:{...review.output,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:["p1"]}]}} : {output:selection(narrative())};
     });
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("document_work_product_source_review_failed");
     expect(complete).toHaveBeenCalledTimes(2);
+  });
+  it("revises one semantically rejected selection and requires a fresh clean review",async()=>{
+    const original=selection(narrative());
+    const revised={...original,gaps:[{text:"Only one proposal was supplied.",question:"Can you provide another proposal, if available?"}]};
+    let count=0;
+    const complete=vi.fn().mockImplementation(async request=>{
+      count++;
+      if(count===1)return {output:original};
+      const review=sourceReviewResponse(request)!;
+      return count===2 ? {output:{...review.output,revisedSelection:revised,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:["p1"],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Confirm whether another proposal exists."}]}} : review;
+    });
+    const result=await runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">});
+    expect(result.gaps).toEqual(revised.gaps);
+    expect(complete).toHaveBeenCalledTimes(3);
+    const first=JSON.parse(complete.mock.calls[0]![0].input[0].text);
+    const reviewInput=JSON.parse(complete.mock.calls[1]![0].input[0].text);
+    expect(reviewInput.selection).toEqual(original);
+    expect(reviewInput.approvedRequest).toBe(first.approvedRequest.text);
+    expect(JSON.parse(complete.mock.calls[2]![0].input[0].text).authoredFields).toContainEqual({id:"gaps.0.text",text:revised.gaps[0]!.text});
+    expect(complete.mock.calls.every(call=>call[0].dataHandling.classification==="restricted")).toBe(true);
+  });
+  it("never publishes a revised response that fails the second source review",async()=>{
+    const complete=vi.fn().mockImplementation(async request=>{
+      const review=sourceReviewResponse(request);
+      return review ? {output:{...review.output,...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:selection(narrative())}:{}),issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Unconfirmed."}]}} : {output:selection(narrative())};
+    });
+    await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("source_review_failed");
+    expect(complete).toHaveBeenCalledTimes(3);
+  });
+  it.each(["invented_source","numeric_title","unrequested_revision"])("rejects an unsafe critic replacement: %s",async kind=>{
+    const revised=selection(narrative());
+    if(kind==="invented_source")revised.sections[0]!.quoteIds=["q999"];
+    if(kind==="numeric_title")revised.sections[0]!.title="Terms 42";
+    const complete=vi.fn().mockImplementation(async request=>{
+      const review=sourceReviewResponse(request);
+      return review ? {output:{...review.output,revisedSelection:revised,issues:kind==="unrequested_revision"?[]:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Unconfirmed."}]}} : {output:selection(narrative())};
+    });
+    await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow();
+    expect(complete).toHaveBeenCalledTimes(2);
+  });
+  it("does not add semantic revision after a deterministic correction",async()=>{
+    const invalid=selection(narrative());invalid.sections[0]!.title="Invalid 42";
+    let count=0;
+    const complete=vi.fn().mockImplementation(async request=>{
+      count++;if(count===1)return {output:invalid};
+      const review=sourceReviewResponse(request);
+      return review ? {output:{...review.output,issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Unconfirmed."}]}} : {output:selection(narrative())};
+    });
+    await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("source_review_failed");
+    expect(complete).toHaveBeenCalledTimes(3);
   });
   it.each(["comparison","meeting","review"] as const)("executes %s with restricted policy and preserves source coverage",async job=>{
     const complete=vi.fn().mockImplementation(async request=>sourceReviewResponse(request) ?? {output:selection(narrative(job))});
