@@ -35,7 +35,7 @@ export * from "./procedure-markdown";
 export * from "./method-runtime-manifest";
 export * from "./workflow-recipe";
 export * from "./review-record";
-export {executiveSynthesisInstructions,executiveSynthesisRevisionInstructions} from "./procedures/executive-synthesis";
+export {executiveSynthesisOpeningEvidence,executiveSynthesisInstructions,executiveSynthesisRevisionInstructions} from "./procedures/executive-synthesis";
 
 export * as executors from "./executors";
 /** The frozen evidence of the gold cases, as the executors consume it; Case 01 first. */

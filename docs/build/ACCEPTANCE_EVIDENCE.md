@@ -1,3 +1,25 @@
+## 9 September: retain company and request context in executive summaries
+
+Actual run34400372257 passed semantic/numeric review in Portuguese but its summary
+omitted the company identity already present in the body. The gate correctly rejected
+that omission. The canonical synthesis contract now identifies opening anchors, and the
+compiler prepends only existing material factual claims from identity/request sections
+when their support is absent from the selected summary. All body claims, numbers, sources
+and selected conclusions remain unchanged. Missing facts are not generated; judgments and
+non-material claims cannot be promoted into factual opening context. Text/id limits still
+fail closed instead of silently dropping conclusions. Author schema requires a factual
+context claim when the corresponding evidence is supplied. Understanding version v8.
+
+Offline replay of both persisted synthetic outputs from34400372257 now passes the
+existing summary coverage predicate: PT gains identity; EN stays unchanged. Both are
+idempotent with byte-equivalent sections. Zero model calls; this is not new live acceptance.
+117 understanding tests passed including missing/duplicated context, non-material and
+judgment refusal, supplied evidence and overflow. Complete local lint, typecheck, tests and build passed43/43 packages each.
+Worker464 tests include a material sourced brief and both independent review stages. Controls APP-03/10, AI-05/07/08 unchanged; no provider, budget, permissions,
+database or disclosure changes. Numerical and independent semantic reviews still execute
+on all material claims. Root review; rollback code/version. Documentary activation and
+full endgame remain unaccepted.
+
 ## 9 September: route an initial public analytical draft into the released plan
 
 A real public-company meeting request completed its advisor response but remained idle:
