@@ -1421,12 +1421,14 @@ describe("agent operation brief worker", () => {
       complete: async (request: {
         input: Array<{type: string; text?: string}>;
         maxOutputTokens: number;
+        outputMode: string;
         metadata: Record<string, string>;
       }) => {
         calls += 1;
         modelInput = request.input[0]?.text ?? "";
         metadata = request.metadata;
-        expect(request.maxOutputTokens).toBe(2_000);
+        expect(request.maxOutputTokens).toBe(6_000);
+        expect(request.outputMode).toBe("prompted_json");
         return {
           output: {
             state: "idle",
@@ -1505,4 +1507,19 @@ it("passes reviewed sector inputs through the real agent caller into persisted b
   expect(current.internal.workstreams).toEqual(legacy.internal.workstreams);
   expect(current.visible.fingerprint).not.toBe(legacy.visible.fingerprint);
   expect(current.expectedInputFingerprint).toBe("b".repeat(64));
+});
+
+it("retains closed provider diagnostics when the ordinary advisor response fails",async()=>{
+  let recorded:unknown;
+  const queue={
+    loadAgentContext:async()=>({session_id:job.intake_session_id,message_id:job.payload.message_id,locale:"pt-BR",message:"O que significa dívida líquida?",brief:{},snapshot_fingerprint:"a".repeat(64),projection_updated_at:"2026-09-09T12:00:00.000Z",manifest_id:null,recent_messages:[]}),
+    writeStage:async()=>{},recordAgentFailure:async()=>{},recordIntentEnvelope:async()=>{},
+    fail:async(_job:unknown,failure:unknown)=>{recorded=failure;},
+  } as unknown as QueueClient;
+  const gateway={complete:async()=>{throw new ModelGatewayError("all model attempts failed for task agent_operation_brief","all_attempts_failed");},spent:()=>({calls:1,costUsd:0,unknownCostCalls:1,budgetExposureUsd:0.1})} as unknown as ModelGateway;
+  const call={invocationId:"10000000-0000-4000-8000-000000000001",task:"agent_operation_brief",provider:"anthropic",model:"claude-sonnet-5",effort:"medium",outcome:"error",promptFingerprint:"a".repeat(64),inputFingerprint:"b".repeat(64),usage:{inputTokens:0,outputTokens:0,cachedInputTokens:0},costUsd:0,costStatus:"unknown",latencyMs:10,stopReason:"other",usedFallback:false,fromCassette:false,schemaName:"agent_operation_brief_response_v2",providerError:{name:"Error",status:400,type:"invalid_request_error",message:"private-customer-content"}} as unknown as GatewayCallLog;
+  const result=await processAgentOperationBriefJob(job,{queue,gateway,shadowRouting:false,modelLineage:()=>[call],log:()=>{}});
+  expect(result.status).toBe("failed");
+  expect(recorded).toMatchObject({cause:{class:"model_exhausted"},retryable:false,modelDiagnostics:[{provider:"anthropic",providerHttpStatus:400,outcome:"error"}]});
+  expect(JSON.stringify(recorded)).not.toContain("private-customer-content");
 });
