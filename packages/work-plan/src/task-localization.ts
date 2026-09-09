@@ -3,6 +3,9 @@ import {offroadTaskRegistry} from "./task-registry";
 export type WorkPlanLocale = "pt-BR" | "en-US";
 
 const englishLabels: Record<(typeof offroadTaskRegistry)[number]["id"], string> = {
+  Q01: "Verify authorized sources and documentary coverage",
+  Q02: "Organize documentary observations, hypotheses and gaps",
+  Q03: "Publish a private preliminary documentary reading",
   M01: "Resolve company, group, jurisdiction and evidence regime",
   M02: "Normalize objective",
   M03: "Record constraints",

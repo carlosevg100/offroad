@@ -1,3 +1,4 @@
+import {documentaryWorkProcedureRegistry, documentaryWorkProcedures} from "./documentary-work";
 import {createHash} from "node:crypto";
 
 import {financialDebtTruthProcedureRegistry, financialDebtTruthProcedures} from "./financial-debt-truth";
@@ -12,6 +13,7 @@ import {redFlagProcedureRegistry, redFlagProcedures} from "./red-flags";
 
 export const institutionalProcedureRegistryHash = createHash("sha256")
   .update(JSON.stringify({
+    documentaryWork: documentaryWorkProcedureRegistry.registryHash,
     financialDebtTruth: financialDebtTruthProcedureRegistry.registryHash,
     growthCapex: growthCapexProcedureRegistry.registryHash,
     languageConduct: languageConductProcedureRegistry.registryHash,
@@ -25,6 +27,7 @@ export const institutionalProcedureRegistryHash = createHash("sha256")
   .digest("hex");
 
 export const institutionalHouseProcedureIds = [...new Set([
+  ...documentaryWorkProcedures,
   ...financialDebtTruthProcedures,
   ...growthCapexProcedures,
   ...languageConductProcedures,

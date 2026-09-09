@@ -2,11 +2,11 @@
 
 > Vista gerada de `current-endgame-program.ts`. Não editar manualmente. O objeto TypeScript é a fonte canônica machine-readable.
 
-Atualizado em: 2026-09-07T21:40:23.000-03:00
+Atualizado em: 2026-09-08T20:52:00.000-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 Capability Ledger: `2026.09.07-v17`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `4a22806c03551ff054f4ad18012e559aa298999b1361c37194bcd19b7b9da836`
+Fingerprint do board: `66269abfc4f29bcbe3703d5e671c0a13e3da45f138f91cab691d00ee0a84fea5`
 
 ## Leitura executiva
 
@@ -38,6 +38,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 
 | ID | Estado | Resultado | Capabilities vinculadas | Dependências | Bloqueadores abertos |
 |---|---|---|---|---|---|
+| JOB-01 | Em implementação | Comparação, briefing e revisão de oportunidade chegam a resultado persistido e Word no mesmo workspace. | sem vínculo | UX-02 | sem blocker |
 | RT-01 | Code complete | Intenção, objeto, trabalho, entrega, audiência e continuidade resolvidos sem cargo como regra. | intent.semantic-envelope-shadow, gold.intent-router-stability-gate | CTRL-02 | sem blocker |
 | RT-02 | Backlog | Contexto autorizado e objetos existentes são recuperados, classificados e reaproveitados somente quando relevantes. | sem vínculo | RT-01 | sem blocker |
 | RT-03 | Backlog | O produto solicitado define o terminal e muda o grafo antes da execução. | workflow.objective-plan-core | RT-01 | sem blocker |
@@ -48,7 +49,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | RT-08 | Backlog | Gaps materiais guiam perguntas, respostas atualizam objetos e só descendentes inválidos são recalculados. | sem vínculo | RT-02, RT-07 | sem blocker |
 | RT-09 | Backlog | Seis pedidos estruturalmente distintos percorrem o runtime sem identidade Case 01. | sem vínculo | RT-07, RT-08 | sem blocker |
 | UX-01 | Em implementação | A interface distingue execução concluída, cobertura parcial, revisão, bloqueio e entrega utilizável com uma próxima ação real. | experience.live-work | sem dependência | sem blocker |
-| UX-02 | Backlog | Conversa, trabalho e objetos compartilham uma shell progressiva com inspeção de fonte sem perder o contexto. | experience.premium-workbench | UX-01 | sem blocker |
+| UX-02 | Em implementação | Conversa, trabalho e objetos compartilham uma shell progressiva com inspeção de fonte sem perder o contexto. | experience.premium-workbench | UX-01 | sem blocker |
 | UX-03 | Em implementação | Valores mantêm precisão, unidade declarada e locale; todas as linhas, colunas e lacunas ficam acessíveis. | experience.premium-workbench | sem dependência | sem blocker |
 | UX-04 | Em implementação | Falha de comando preserva conteúdo e permite retry com identidade estável sem duplicar efeitos. | experience.execution-brief | sem dependência | sem blocker |
 | UX-05 | Backlog | A mesma experiência atende todos os públicos com revisão visual e tarefas completas verificadas. | experience.premium-workbench | UX-01, UX-02, UX-03, UX-04 | sem blocker |
@@ -134,6 +135,25 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 
 ## Próxima onda controlada
 
+### JOB-01: Pedido documental até entrega revisável
+
+Estado: **Em implementação** · owner: Program integrator
+
+Subtarefas:
+
+- [x] JOB-01.01: Conectar objetivo aprovado, fontes e executor documental (done)
+- [x] JOB-01.02: Integrar leitura corrente, interface e Word (done)
+- [ ] JOB-01.03: Verificar isolamento, invalidação e recuperação (in_progress)
+- [ ] JOB-01.04: Executar três jornadas com provedor real e revisão de domínio (pending)
+- [ ] JOB-01.05: Publicar por escopo comprovado (pending)
+
+Critérios de aceite:
+
+- JOB-01.AC01: Três pedidos produzem trabalhos distintos a partir dos documentos enviados · **pending**
+- JOB-01.AC02: Resultado e arquivo persistidos correspondem ao plano e às fontes atuais · **pending**
+- JOB-01.AC03: Modelo real, qualidade de domínio, custo e latência são comprovados · **pending**
+- JOB-01.AC04: Tarefa pontual não obriga jornada completa de estruturação · **pending**
+
 ### CTRL-01: Reconciliar o estado real
 
 Estado: **Em implementação** · owner: Program integrator
@@ -168,6 +188,24 @@ Critérios de aceite:
 - UX-01.AC03: Toda transição corresponde a estado verificável · **pending**
 
 Capabilities relacionadas: `experience.live-work`.
+
+### UX-02: Workspace persistente e inspector de evidências
+
+Estado: **Em implementação** · owner: Product design and frontend engineer
+
+Subtarefas:
+
+- [ ] UX-02.01: Consolidar tokens, hierarquia e navegação (in_progress)
+- [ ] UX-02.02: Integrar inspector de documento, versão e anchor (pending)
+- [ ] UX-02.03: Mostrar superfícies somente quando relevantes (pending)
+
+Critérios de aceite:
+
+- UX-02.AC01: CFO, assessor e investidor usam o mesmo workspace por intenção · **pending**
+- UX-02.AC02: Abertura e fechamento da fonte preservam seleção e posição · **pending**
+- UX-02.AC03: Não há abas vazias, fontes simuladas ou export sem artefato real · **pending**
+
+Capabilities relacionadas: `experience.premium-workbench`.
 
 ### UX-03: Precisão numérica e revisão completa
 

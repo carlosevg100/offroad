@@ -1602,6 +1602,18 @@
         "stale": "This understanding has changed. Reload the project before deciding.",
         "save": "Your decision could not be recorded.",
         "processing": "The correction was recorded, but the revised analysis needs to be started again."
+      },
+      "documentaryWork": {
+        "kicker": "WORK SCOPE",
+        "jobs": {
+          "comparison": "Compare the supplied proposals",
+          "meeting": "Prepare the meeting",
+          "review": "Review the opportunity"
+        },
+        "body": "This stage focuses on reading the documents for the request defined in the plan. Additional information will be requested when it changes that review.",
+        "gapsTitle": "Questions from this review",
+        "nextStep": "Follow the plan and its execution in the conversation. The work panel holds the result and the questions identified.",
+        "footer": "You can add documents or clarify points in the conversation. To expand the analysis, we will adjust the plan before proceeding."
       }
     },
     "companyDebt": {
@@ -2445,7 +2457,26 @@
     "account": "Account and preferences",
     "language": "Language",
     "createFolder": "New folder",
-    "createFolderPlaceholder": "Folder name"
+    "createFolderPlaceholder": "Folder name",
+    "documentWorkProduct": {
+      "comparisonTitle": "Document review of financing proposals",
+      "meetingTitle": "Meeting preparation",
+      "reviewTitle": "Preliminary opportunity review",
+      "preliminary": "Preliminary document review",
+      "scope": "Review scope",
+      "scopeBody": "Review of the available passages. Does not include financial calculations or a credit decision.",
+      "hypotheses": "Hypotheses to investigate",
+      "gaps": "Information to clarify",
+      "question": "Next question",
+      "evidence": "Supporting passages",
+      "sources": "Sources consulted",
+      "coverage": "Coverage",
+      "documents": "Documents considered",
+      "omitted": "Passages not included",
+      "download": "Download Word",
+      "version": "Version",
+      "insufficientEvidence": "Insufficient evidence to complete the review"
+    }
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",
@@ -3821,5 +3852,12 @@
       "source_text_truncated": "Some text excerpts are only partially represented."
     },
     "truncated": "Partial excerpt"
+  },
+  "AdvisorWorkSurface": {
+    "navigation": "Project navigation",
+    "conversation": "Conversation",
+    "work": "Work",
+    "results": "Project results",
+    "version": "Version {version}"
   }
 }

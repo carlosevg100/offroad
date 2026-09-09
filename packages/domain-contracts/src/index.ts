@@ -762,3 +762,5 @@ export type CapitalProviderKind = z.infer<typeof capitalProviderKindSchema>;
 export type MatchCriterion = z.infer<typeof matchCriterionSchema>;
 export type MatchCandidate = z.infer<typeof matchCandidateSchema>;
 export type MatchScreen = z.infer<typeof matchScreenSchema>;
+
+export * from "./document-work-product";

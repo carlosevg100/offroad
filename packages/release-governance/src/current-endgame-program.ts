@@ -69,6 +69,8 @@ const B = "docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md";
 const S = "docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md";
 
 const tasks: ProgramTask[] = [
+  task({taskId: "JOB-01", releaseId: "R1", title: "Pedido documental até entrega revisável", outcome: "Comparação, briefing e revisão de oportunidade chegam a resultado persistido e Word no mesmo workspace.", state: "in_progress", ownerRole: "Program integrator", dependsOn: ["UX-02"], steps: ["Conectar objetivo aprovado, fontes e executor documental", "Integrar leitura corrente, interface e Word", "Verificar isolamento, invalidação e recuperação", "Executar três jornadas com provedor real e revisão de domínio", "Publicar por escopo comprovado"], subtaskState: [{index: 0, state: "done"}, {index: 1, state: "done"}, {index: 2, state: "in_progress"}], acceptance: ["Três pedidos produzem trabalhos distintos a partir dos documentos enviados", "Resultado e arquivo persistidos correspondem ao plano e às fontes atuais", "Modelo real, qualidade de domínio, custo e latência são comprovados", "Tarefa pontual não obriga jornada completa de estruturação"], blueprintRefs: ["docs/build/DOCUMENT_WORK_PRODUCTS_MILESTONE.md", `${B}#20.3-release-1---objective-to-plan-universal`], securityControlIds: ["TRUST-APP-02", "TRUST-DATA-02", "TRUST-SDLC-01"]}),
+
   task({taskId: "CTRL-01", releaseId: "R0", title: "Reconciliar o estado real", outcome: "Baseline único de código, PRs, deploy, banco, ledger e documentos, sem claims conflitantes.", state: "in_progress", ownerRole: "Program integrator", steps: ["Fixar origin/main e inventariar PRs/deploys", "Comparar ledger, Build State, blueprint e evidências", "Registrar divergências e corrigir claims", "Congelar o baseline reconciliado"], subtaskState: [{index: 0, state: "done"}, {index: 1, state: "done"}, {index: 2, state: "done"}], acceptance: ["Commit, ledger, PRs e ambientes têm referências verificáveis", "Toda divergência material aparece como finding com owner", "Reconciliação não concede uso de cliente ou autorização externa"], evidenceRefs: ["EV-MAIN-B6DA", "EV-LEDGER-V17", "EV-CAPABILITY-LEDGER"], acceptanceState: [{index: 0, status: "pending", evidenceRefs: []}, {index: 1, status: "passed", evidenceRefs: ["EV-CAPABILITY-LEDGER"]}, {index: 2, status: "passed", evidenceRefs: ["EV-CAPABILITY-LEDGER"]}], blueprintRefs: [`${B}#20.2-release-0---program-reset-e-referência-de-qualidade`, "docs/build/BUILD_STATE.md"], securityControlIds: ["TRUST-GOV-01", "TRUST-SDLC-01"]}),
   task({taskId: "CTRL-02", releaseId: "R0", title: "Endgame Program Board executável", outcome: "Fonte machine-readable com tarefas, dependências, owners, aceite, evidência, bloqueadores e transições de maturidade.", state: "code_complete", ownerRole: "Program control engineer", dependsOn: [], steps: ["Definir schema e fonte canônica", "Validar dependências, evidências e transições", "Gerar vista Markdown", "Integrar o gate ao CI"], subtaskState: [{index: 0, state: "done"}, {index: 1, state: "done"}, {index: 2, state: "done"}], acceptance: ["Board inválido falha fechado", "Gate passed e promovido são impossíveis sem evidência", "Vista humana tem paridade byte a byte com a fonte"], evidenceRefs: ["EV-CTRL02-LOCAL-GATE"], acceptanceState: [{index: 0, status: "passed", evidenceRefs: ["EV-CTRL02-LOCAL-GATE"]}, {index: 1, status: "passed", evidenceRefs: ["EV-CTRL02-LOCAL-GATE"]}, {index: 2, status: "passed", evidenceRefs: ["EV-CTRL02-LOCAL-GATE"]}], blueprintRefs: [`${B}#20.2-release-0---program-reset-e-referência-de-qualidade`], securityControlIds: ["TRUST-GOV-01", "TRUST-SDLC-01"]}),
   task({taskId: "CTRL-03", releaseId: "R0", title: "Acceptance Evidence Index", outcome: "Cada claim de capacidade resolve a evidência vigente, ambiente, gate e validade.", ownerRole: "Quality and assurance owner", dependsOn: ["CTRL-01", "CTRL-02"], steps: ["Definir taxonomia de evidências", "Vincular capabilities e tarefas", "Adicionar validade e expiração", "Publicar relatório de lacunas"], acceptance: ["Toda evidência referenciada existe", "Evidência expirada não promove capability", "Relatório diferencia teste, runtime e assessment externo"], blueprintRefs: [`${B}#18-trust-security-privacy-and-assurance-program`, "docs/build/ACCEPTANCE_EVIDENCE.md"], securityControlIds: ["TRUST-GOV-01", "TRUST-OPS-01"]}),
@@ -175,6 +177,7 @@ const tasks: ProgramTask[] = [
   }),
   task({
     "taskId": "UX-02",
+    "state": "in_progress",
     "releaseId": "R1",
     "title": "Workspace persistente e inspector de evidências",
     "outcome": "Conversa, trabalho e objetos compartilham uma shell progressiva com inspeção de fonte sem perder o contexto.",
@@ -293,8 +296,8 @@ const tasks: ProgramTask[] = [
 ];
 
 export const currentEndgameProgramBoard: EndgameProgramBoard = {
-  boardVersion: "2026.09.07-v3",
-  generatedAt,
+  boardVersion: "2026.09.08-v4",
+  generatedAt: "2026-09-08T20:52:00.000-03:00",
   baseline: {
     repository: "carlosevg100/offroad",
     branch: "main",

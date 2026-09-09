@@ -69,6 +69,7 @@ const schema = z.object({
    */
   MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(1),
   /** The same bound expressed in calls, which catches a loop before the cost does. */
+  DOCUMENTARY_WORK_PLANNING_ENABLED: z.enum(["true", "false"]).default("false").transform(value => value === "true"),
   MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(8),
   SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   /** Dedicated service account that belongs to no organization. */
@@ -182,5 +183,6 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     ocrLanguages: config.OCR_LANGUAGES,
     maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,
+    documentaryWorkPlanningEnabled: config.DOCUMENTARY_WORK_PLANNING_ENABLED,
   };
 }

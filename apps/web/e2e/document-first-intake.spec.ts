@@ -562,6 +562,66 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".advisor-private-work__understanding h2")).toHaveText("O que entendemos até aqui");
   });
 
+  test("compares uploaded proposals through the worker and preserves the work product after reload", async ({}, testInfo) => {
+    test.skip(process.env.OFFROAD_E2E_DOCUMENT_WORK_PRODUCT !== "1", "Requires a worker with an authorized narrative provider; no generated result is seeded.");
+    await page.goto("/pt-BR/app");
+    const composer = page.locator(".advisor-composer--start");
+    await composer.locator("textarea").fill("Compare estas propostas de financiamento. Prepare uma comparação documental preliminar das condições e das informações que faltam. Documentos sintéticos para teste.");
+    await composer.locator('input[type="file"]').setInputFiles([
+      {name: "proposta-alfa-sintetica.csv", mimeType: "text/csv", buffer: Buffer.from("campo,condicao\nidentificacao,Proposta Alfa - documento sintetico\ncompanhia,Companhia Teste\ninstrumento,Emprestimo corporativo\nprazo,36 meses\ngarantia,Alienacao fiduciaria de equipamentos\namortizacao,Mensal\n")},
+      {name: "proposta-beta-sintetica.csv", mimeType: "text/csv", buffer: Buffer.from("campo,condicao\nidentificacao,Proposta Beta - documento sintetico\ncompanhia,Companhia Teste\ninstrumento,Emprestimo corporativo\nprazo,48 meses\ngarantia,Fianca corporativa\namortizacao,Trimestral\n")},
+    ]);
+    await expect(composer.locator(".advisor-composer__files > span")).toHaveCount(2);
+    await composer.locator(".advisor-composer__send").click();
+    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+    const projectUrl = page.url();
+    // Private uploads first produce an understanding for the user to confirm. The
+    // confirmation action invokes processIntakeSession again; only then may the
+    // governed analysis dispatch become available for approval. Do not bypass this
+    // gate by treating the initial upload as approval of a full analysis.
+    const preliminary = page.locator(".advisor-private-work__understanding");
+    await expect(preliminary).toBeVisible({timeout: 180_000});
+    await expect(preliminary.locator("h2")).toHaveText("O que entendemos até aqui");
+    await preliminary.locator('form:has(input[name="decision"][value="confirmed"]) button[type="submit"]').click();
+    await expectNoErrorNotice(page);
+    await expect(page.locator(".advisor-private-work__request")).toBeVisible({timeout: 120_000});
+    const approval = page.getByTestId("execution-brief").locator('[data-approval-status="awaiting"]');
+    await expect(approval).toBeVisible({timeout: 120_000});
+    await approval.getByRole("button", {name: /aprovar|approve/i}).click();
+    const work = page.locator(".advisor-work-surface");
+    await expect(work).toBeVisible({timeout: 180_000});
+    await expect(work.getByRole("heading", {name: "Comparação documental de propostas", exact: true}).last()).toBeVisible();
+    await expect(work).toContainText("proposta-alfa-sintetica.csv");
+    await expect(work).toContainText("proposta-beta-sintetica.csv");
+    await expect(work).toContainText("Análise documental preliminar");
+    const rendered = await work.locator(".advisor-work-surface__content").innerText();
+    await work.locator(".advisor-work-surface__navigation a").first().click();
+    await expect(page).toHaveURL(/#work-/);
+    const linkedUrl = page.url();
+    await page.reload();
+    await expect(work.locator(".advisor-work-surface__content")).toHaveText(rendered);
+    const downloadPromise = page.waitForEvent("download");
+    await work.getByRole("link", {name: "Baixar Word", exact: true}).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/\.docx$/);
+    expect(await download.failure()).toBeNull();
+    await download.saveAs(testInfo.outputPath("comparison.docx"));
+    await page.screenshot({path: testInfo.outputPath("comparison-desktop.png"), fullPage: true});
+    await page.setViewportSize({width: 390, height: 844});
+    await page.goto(linkedUrl);
+    await expect(work).toBeVisible();
+    await page.locator(".advisor-work-mobile-nav").getByRole("button", {name: "Conversa", exact: true}).click();
+    await expect(page.locator(".advisor-composer textarea")).toBeVisible();
+    await page.locator(".advisor-composer textarea").fill("Rascunho preservado");
+    await page.locator(".advisor-work-mobile-nav").getByRole("button", {name: /Trabalho/}).click();
+    await expect(work).toBeVisible();
+    await page.screenshot({path: testInfo.outputPath("comparison-mobile.png"), fullPage: true});
+    await page.locator(".advisor-work-mobile-nav").getByRole("button", {name: "Conversa", exact: true}).click();
+    await expect(page.locator(".advisor-composer textarea")).toHaveValue("Rascunho preservado");
+    await page.setViewportSize({width: 1280, height: 720});
+    expect(projectUrl).toContain("/app/projects/");
+  });
+
   test("signs out and logs back in with the password", async () => {
     await page.goto("/pt-BR/app");
     // Signing out moved into the account menu at the foot of the rail.

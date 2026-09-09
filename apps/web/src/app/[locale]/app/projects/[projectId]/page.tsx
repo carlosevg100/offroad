@@ -15,6 +15,11 @@ import {notFound, redirect} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
+import type {AdvisorWorkSection} from "@/components/advisor/advisor-work-surface";
+import {workSectionHref} from "@/components/advisor/advisor-work-links";
+import {DocumentWorkProduct} from "@/components/advisor/document-work-product";
+import {loadDocumentWorkProduct} from "@/lib/advisor/document-work-product-reader";
+import {documentWorkProductLabels} from "@/lib/advisor/document-work-product-labels";
 import type {AdvisorChangeProposal} from "@/components/advisor/advisor-change-proposal";
 import {OriginationConversationWork} from "@/components/advisor/origination-conversation-work";
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
@@ -270,13 +275,14 @@ async function ConversationalCapitalProject({
   const parsedExecutionBriefChanges = executionBriefRow
     ? executionBriefChangeSchema.array().max(20).safeParse(executionBriefRow.change_summary)
     : null;
-  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}, {data: executionBriefApprovalRaw}] = executionBriefRow
+  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}, {data: executionBriefApprovalRaw}, {data: documentaryPlanJob}] = executionBriefRow
     ? await Promise.all([
         supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id}),
         supabase.rpc("read_capital_project_execution_brief_narrative_v1", {p_execution_brief_id: executionBriefRow.id}),
         supabase.rpc("read_advisor_execution_brief_approval_v1", {p_project_id: project.id, p_execution_brief_id: executionBriefRow.id}),
+        supabase.rpc("read_documentary_plan_job_v1", {p_project_id: project.id, p_execution_brief_id: executionBriefRow.id}),
       ])
-    : [{data: null}, {data: null}, {data: null}];
+    : [{data: null}, {data: null}, {data: null}, {data: null}];
   const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
   const parsedExecutionBriefNarrative = executionBriefNarrativeSchema.safeParse(executionBriefNarrativeRaw);
   const executionBriefProgress = parsedExecutionBrief?.success
@@ -442,6 +448,9 @@ async function ConversationalCapitalProject({
   const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
     ? projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
     : null;
+  const briefJob = documentaryPlanJob;
+  const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
+    && (briefJob === "comparison" || briefJob === "meeting" || briefJob === "review") ? {job:briefJob} as const : undefined;
   const emptyConversationCopy = displayedApproval?.status === "awaiting"
     ? "awaitingPlanFallback"
     : artifacts?.length ? "existingProject"
@@ -456,8 +465,9 @@ async function ConversationalCapitalProject({
           status: message.status,
           errorCode: message.error_code,
           createdAt: message.created_at,
-          artifactHref: project.entry_job !== "origination_thesis" && artifactId && artifactIds.has(artifactId)
-            ? `/${locale}/app/projects/${project.id}?view=work`
+          artifactHref: artifactId && artifactIds.has(artifactId)
+            ? project.entry_job === "origination_thesis" && parsedOrigination?.success && artifactId === originationArtifact?.id
+              ? workSectionHref("meeting-brief") : project.entry_job !== "origination_thesis" ? `/${locale}/app/projects/${project.id}?view=work` : undefined
             : undefined,
           proposalId: message.proposal_id,
         };
@@ -501,7 +511,10 @@ async function ConversationalCapitalProject({
     label: task.label,
     status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
   }));
-  const visibleActivities = previewPlan
+  const documentaryActivities = plannedDocumentaryWork && executionBriefProgress
+    ? executionBriefProgress.workstreams.map(stream=>({id:`documentary-${stream.position}`,label:stream.label,
+      status:advisorWorkStatus(stream.status === "completed" ? "succeeded" : stream.status === "needs_attention" ? "failed" : stream.status)})) : null;
+  const visibleActivities = documentaryActivities ?? (previewPlan
     ? previewTasks
     : project.entry_job === "origination_thesis"
     ? compiledActivities
@@ -511,7 +524,7 @@ async function ConversationalCapitalProject({
         label: item.title,
         status: advisorWorkStatus(item.status),
       }))
-    : compiledActivities;
+    : compiledActivities);
   const activityEvents = currentActivityCycle([...(agentEventsDescending ?? [])].map((event) => ({
     id: event.id,
     type: event.event_type,
@@ -567,9 +580,26 @@ async function ConversationalCapitalProject({
   const totalCoverage = expectedRequirements.length
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
+  const workSections: AdvisorWorkSection[] = [];
+  const documentResult = await loadDocumentWorkProduct(supabase, organization.id, project.id);
+  if (documentResult) {
+    const labels = await documentWorkProductLabels(documentResult.product.locale);
+    workSections.push({id: "document-review", title: labels[`${documentResult.product.job}Title`], version: documentResult.binding.version,
+      status: documentResult.product.status === "insufficient_evidence" ? labels.insufficientEvidence : labels.preliminary,
+      content: <DocumentWorkProduct product={documentResult.product} labels={labels}
+        downloadHref={`/${locale}/app/projects/${project.id}/work-products/${documentResult.product.fingerprint}/docx`} />});
+  }
+  if (parsedOrigination?.success && originationArtifact) workSections.push({id: "meeting-brief", artifactId: originationArtifact.id,
+    title: customerArtifactLabel("meeting_brief", locale)!, version: originationArtifact.artifact_version,
+    content: <OriginationConversationWork artifact={parsedOrigination.data} artifactId={originationArtifact.id} decision={originationDecision}
+      fingerprint={originationArtifact.artifact_fingerprint} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} status={originationArtifact.status} />});
+  if (parsedDecisionArtifact.success || previewArtifacts.length) workSections.push({id: "decision-work", title: t("openWork"),
+    content: <AdvisorDecisionWork contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null} artifacts={previewArtifacts}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"} materialHref={`/${locale}/app/projects/${project.id}/preview/material`} />});
+
   return <AdvisorProject
     accessBasis={project.access_basis}
-    artifacts={(artifacts ?? []).filter((artifact) => customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
+    artifacts={(artifacts ?? []).filter((artifact) => artifact.status !== "superseded" && customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
       id: artifact.id,
       label: `${customerArtifactLabel(artifact.artifact_type, locale)!} · v${artifact.artifact_version}`,
       status: artifact.status,
@@ -605,22 +635,11 @@ async function ConversationalCapitalProject({
     sessionId={session.id}
     sessionStatus={session.status}
     tasks={visibleActivities}
+    workSections={workSections}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}<AdvisorDecisionWork
-      contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null}
-      artifacts={previewArtifacts}
-      locale={locale === "en-US" ? "en-US" : "pt-BR"}
-      materialHref={`/${locale}/app/projects/${project.id}/preview/material`}
-    />{parsedOrigination?.success && originationArtifact ? <OriginationConversationWork
-      artifact={parsedOrigination.data}
-      artifactId={originationArtifact.id}
-      decision={originationDecision}
-      fingerprint={originationArtifact.artifact_fingerprint}
-      locale={locale === "en-US" ? "en-US" : "pt-BR"}
-      projectId={project.id}
-      status={originationArtifact.status}
-    /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
+    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
       checklist={checklist}
+      documentaryWork={documentResult?.binding.executionScope === "documentary_only" ? {job:documentResult.product.job,gaps:documentResult.product.gaps} : plannedDocumentaryWork}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       preliminary={preliminary}
       projectId={project.id}
@@ -672,8 +691,8 @@ function advisorWorkStatus(status: string): "waiting" | "queued" | "running" | "
   if (status === "review") return "running";
   if (status === "waiting_user") return "blocked";
   if (status === "superseded") return "cancelled";
-  if (["running", "succeeded", "failed", "blocked"].includes(status)) {
-    return status as "running" | "succeeded" | "failed" | "blocked";
+  if (["queued", "running", "succeeded", "failed", "blocked"].includes(status)) {
+    return status as "queued" | "running" | "succeeded" | "failed" | "blocked";
   }
   return "waiting";
 }

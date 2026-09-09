@@ -9,6 +9,7 @@ import {beginAdvisorProjectProcessing} from "@/app/[locale]/app/advisor-actions"
 import type {IntakeChecklist} from "@/lib/intake/checklist";
 import type {PreliminaryUnderstandingState} from "@/lib/intake/preliminary-understanding";
 import {decidePrivateProjectPreliminary, type PrivatePreliminaryDecisionState} from "@/app/[locale]/app/projects/[projectId]/actions";
+import {DocumentaryWorkNextStep, type DocumentaryWorkContext} from "./documentary-work-next-step";
 import {IntakeActionSubmit} from "@/components/intake/intake-action-submit";
 
 type Props = {
@@ -19,11 +20,13 @@ type Props = {
   sessionId: string;
   canRetry: boolean;
   shouldStart: boolean;
+  /** Supplied only after the server validates the current documentary plan scope. */
+  documentaryWork?: DocumentaryWorkContext;
 };
 
 const initialState: PrivatePreliminaryDecisionState = {ok: false};
 
-export function PrivateCaseWork({canRetry, checklist, locale, preliminary, projectId, sessionId, shouldStart}: Props) {
+export function PrivateCaseWork({canRetry, checklist, locale, preliminary, projectId, sessionId, shouldStart, documentaryWork}: Props) {
   const t = useTranslations("App.privateCase");
   const router = useRouter();
   const attemptedStart = useRef(false);
@@ -90,7 +93,7 @@ export function PrivateCaseWork({canRetry, checklist, locale, preliminary, proje
 
       {current ? (
         current.row.status === "confirmed"
-          ? <ConfirmedRequest checklist={checklist} />
+          ? documentaryWork ? <DocumentaryWorkNextStep context={documentaryWork} /> : <ConfirmedRequest checklist={checklist} />
           : current.row.status === "pending_confirmation"
             ? (
                 <section className="advisor-private-work__understanding">

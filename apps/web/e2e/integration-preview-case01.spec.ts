@@ -241,10 +241,11 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await methods.locator(":scope > summary").click();
     await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
     await page.setViewportSize({width: 390, height: 844});
-    await claim.scrollIntoViewIfNeeded();
-    await expect(trace).toHaveAttribute("open", "");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-    expect(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth + 1)).toBe(true);
+    // Mobile presents conversation and results as separate views. Inspect the visible
+    // conversation header first, then use the actual work control to inspect the trace.
+    const mobileNavigation = page.locator(".advisor-work-mobile-nav");
+    await mobileNavigation.getByRole("button", {name: "Conversa", exact: true}).click();
+    await expect(page.locator(".advisor-project__header")).toBeVisible();
     const headerBounds = await page.locator(".advisor-project__header, .advisor-project__header > div, .advisor-project__header h1, .advisor-project__header > span").evaluateAll((elements) => elements.map((element) => {
       const {left, right} = element.getBoundingClientRect();
       return {left, right, viewport: window.innerWidth};
@@ -254,6 +255,15 @@ test.describe("integration_preview: Case 01 end to end", () => {
       expect(bounds.left).toBeGreaterThanOrEqual(-1);
       expect(bounds.right).toBeLessThanOrEqual(bounds.viewport + 1);
     }
+    const openWork = mobileNavigation.getByRole("button", {name: /^Trabalho/});
+    await openWork.focus();
+    await page.keyboard.press("Enter");
+    await expect(openWork).toHaveAttribute("aria-pressed", "true");
+    await expect(work).toBeVisible();
+    await claim.scrollIntoViewIfNeeded();
+    await expect(trace).toHaveAttribute("open", "");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    expect(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth + 1)).toBe(true);
     const mobileScreenshot = await page.screenshot({path: join(outputDirectory, "03-readout-mobile-trace.png"), fullPage: true, scale: "css"});
     // PNG IHDR stores image width at byte 16; full-page captures expose hidden body overflow.
     expect(mobileScreenshot.toString("ascii", 12, 16)).toBe("IHDR");

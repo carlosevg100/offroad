@@ -1,3 +1,5 @@
+import {compileDocumentWorkBrief, documentWorkPlanSnapshot} from "@offroad/work-plan";
+import {canCompileStandaloneDocumentWorkRequest, documentWorkJob} from "./document-work-input";
 import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
 import {receivablesScopeAssumptions} from "./execution-brief";
 import {z} from "zod";
@@ -33,13 +35,18 @@ const proposalContextSchema = z.object({
 });
 
 /** Deterministic planning only. The atomic recording RPC binds the held job; it never releases it. */
-export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail">) {
+export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail">, options: {documentaryWorkEnabled: boolean} = {documentaryWorkEnabled:false}) {
   try {
     if (!queue.loadExecutionBriefProposal || !queue.recordExecutionBriefProposal) throw new Error("execution_brief_proposal_commands_unavailable");
     const context = proposalContextSchema.parse(await queue.loadExecutionBriefProposal(job));
     if (context.target_job_id !== job.payload.approval_target_job_id || context.locale !== job.payload.locale) throw new Error("execution_brief_proposal_context_mismatch");
     if (!context.plan && context.target_kind !== "case_analysis") throw new Error("execution_brief_proposal_plan_required");
-    const bootstrappedPlan = context.plan ? null : capitalProjectPlanSnapshot(context.project.entry_job);
+    const documentaryHint = options.documentaryWorkEnabled && context.target_kind === "case_analysis" && context.project.access_basis === "authorized_private"
+      && context.documents.length > 0
+      && canCompileStandaloneDocumentWorkRequest({objective:context.objective,proposedDeliverable:"Preliminary documentary reading"});
+    const existingDocumentary = context.plan?.taskSpecs.map(task=>task.id).sort().join(",") === "Q01,Q02,Q03";
+    const documentary = documentaryHint && (!context.plan || existingDocumentary);
+    const bootstrappedPlan = context.plan ? null : documentary ? documentWorkPlanSnapshot(context.project.entry_job) : capitalProjectPlanSnapshot(context.project.entry_job);
     const plan = context.plan ?? bootstrappedPlan!;
     const pt = context.locale === "pt-BR";
     const sources: ExecutionBriefSource[] = [
@@ -55,7 +62,7 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
     if (plan.taskSpecs.some((task) => task.id.startsWith("K"))) {
       sources.push({key: "public-market", label: pt ? "Referências públicas de mercado a pesquisar" : "Public market references to research", role: "public_market", status: "to_research", informationClass: "public", authorized: true});
     }
-    const internal = compileCapitalExecutionBrief({
+    const internal = documentary ? compileDocumentWorkBrief({job:documentWorkJob(context.objective)!,plan:plan as unknown as CapitalProjectPlanSnapshot,revisionContext:context.target_job_id,locale:context.locale,objective:context.objective,sources}) : compileCapitalExecutionBrief({
       assumptions: receivablesScopeAssumptions(context.confirmed_receivables_scope, context.locale),
       planningContext: buildGovernedSectorPlanning({inputs: context.governed_sector_context_inputs, sessionId: job.intake_session_id, companyLabel: context.project.company_name ?? context.project.name, locale: context.locale, objective: context.objective}),
       plan: plan as unknown as CapitalProjectPlanSnapshot,

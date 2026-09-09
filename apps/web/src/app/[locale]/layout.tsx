@@ -121,6 +121,7 @@ export default async function LocaleLayout({children, params}: Props) {
     decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,
     AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
+    AdvisorWorkSurface: messages.AdvisorWorkSurface,
     Intake: {executionApproval: messages.Intake.executionApproval},
     Errors: messages.Errors,
     Navigation: messages.Navigation,

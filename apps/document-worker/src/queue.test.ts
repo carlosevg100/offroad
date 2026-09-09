@@ -47,15 +47,24 @@ describe("claimed job parsing", () => {
 });
 
 describe("case input loading", () => {
-  it("freezes live case data before attaching the prior report cache", async () => {
-    const prior = {schemaVersion: "2026.08.29-v4", reportFingerprint: "prior"};
+  it("commits the documentary report, snapshot and completion through one transaction",async()=>{
+    const rpc=vi.fn().mockResolvedValue({data:"10000000-0000-4000-8000-000000000001",error:null});
+    const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+    await expect(queue.commitDocumentaryExecution!(job,{schemaVersion:"document-work-execution.v1"},{},{},{spend:{costUsd:0,calls:0}})).resolves.toBe("10000000-0000-4000-8000-000000000001");
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("worker_commit_documentary_execution_v1",expect.objectContaining({p_job_id:job.job_id,p_capability_token:job.capability_token}));
+  });
+
+  it.each([{schemaVersion:"2026.08.29-v4",reportFingerprint:"prior"},{schemaVersion:"document-work-execution.v1",reportFingerprint:"prior-documentary"}])("freezes live data and excludes documentary reports from financial cache: $schemaVersion", async (prior) => {
     const scope = {state: "confirmed", scope: {fingerprint: "a".repeat(64)}};
+    const approvedRequest = {objective: "Current approved request", requestFingerprint: "b".repeat(64)};
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
       if (name === "worker_load_case_input_v2") return {data: {session: {id: "case"}, confirmed_receivables_scope: scope}, error: null};
       if (name === "worker_load_claim_decisions") return {data: [{id: "decision"}], error: null};
+      if (name === "worker_load_document_work_request_v1") return {data: approvedRequest, error: null};
       if (name === "worker_freeze_case_input") {
         const liveInput = args.p_live_input as Record<string, unknown>;
-        expect(liveInput).toEqual({session: {id: "case"}, confirmed_receivables_scope: scope, claim_decisions: [{id: "decision"}]});
+        expect(liveInput).toEqual({session: {id: "case"}, confirmed_receivables_scope: scope, claim_decisions: [{id: "decision"}], document_work_request: approvedRequest});
         expect(liveInput).not.toHaveProperty("prior_case_report");
         return {data: {...liveInput, _execution: {id: "execution"}}, error: null};
       }
@@ -68,12 +77,13 @@ describe("case input loading", () => {
 
     expect(result).toMatchObject({
       session: {id: "case"},
-      prior_case_report: prior,
+      prior_case_report: prior.schemaVersion === "document-work-execution.v1" ? null : prior,
       confirmed_receivables_scope: scope,
     });
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([
       "worker_load_case_input_v2",
       "worker_load_claim_decisions",
+      "worker_load_document_work_request_v1",
       "worker_freeze_case_input",
       "worker_load_prior_case_report",
     ]);

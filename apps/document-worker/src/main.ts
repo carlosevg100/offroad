@@ -315,7 +315,7 @@ async function main(): Promise<void> {
     );
 
     if (job.kind === "execution_brief_proposal") {
-      current = processExecutionBriefProposalJob(job, queue)
+      current = processExecutionBriefProposalJob(job, queue, {documentaryWorkEnabled:config.DOCUMENTARY_WORK_PLANNING_ENABLED})
         .then((outcome) => { log("job.finished", {job: job.job_id, status: outcome.status, ms: Date.now() - startedAt, modelCalls: 0, costUsd: 0}); })
         .catch(() => { log("job.unreported_failure", {job: job.job_id}); })
         .finally(() => stopHeartbeat());

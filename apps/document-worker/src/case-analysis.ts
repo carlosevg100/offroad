@@ -102,6 +102,8 @@ import {buildGovernedMatchScreen} from "./match-screen";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
+import {buildDocumentWorkInput, documentWorkRequestSchema, isStandaloneDocumentWorkRequest, canCompileStandaloneDocumentWorkRequest} from "./document-work-input";
+import {processStandaloneDocumentWork} from "./document-work-standalone";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
   buildReceivablesMethodEvidenceRequestProjection,
@@ -404,6 +406,7 @@ const rawCaseInputSchema = z.object({
     dependencies: z.array(recordSchema),
   })).default({}),
   prior_case_report: caseRunReportSchema.nullish(),
+  document_work_request: documentWorkRequestSchema.nullish(),
   _execution: z.object({
     id: z.uuid(),
     mode: executionModeSchema,
@@ -788,6 +791,22 @@ export async function processCaseAnalysisJob(
     }
     failurePhase = "load_case_input";
     const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
+    if (raw.document_work_request && (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id)) throw new Error("document_work_request_binding_invalid");
+    if (raw.document_work_request && canCompileStandaloneDocumentWorkRequest(raw.document_work_request) && raw.document_work_request.executionScope !== "documentary_only") throw new Error("document_work_authoritative_scope_missing");
+    if (raw.document_work_request?.executionScope === "documentary_only"
+      && (raw._execution.mode !== "primary" || !isStandaloneDocumentWorkRequest(raw.document_work_request))) {
+      throw new Error("document_work_approved_scope_incompatible");
+    }
+    if (raw._execution.mode === "primary" && raw.document_work_request && isStandaloneDocumentWorkRequest(raw.document_work_request)) {
+      failurePhase = "document_work_product";
+      if (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id) throw new Error("document_work_request_binding_invalid");
+      await dependencies.queue.writeStage(job,"documentary_Q01","started",{attempt:job.attempt});
+      const documentInput = buildDocumentWorkInput({request:raw.document_work_request,locale:raw.session.locale === "en-US" ? "en-US":"pt-BR",sources:raw.sources,envelopes:raw.receivables_evidence});
+      if (!documentInput) throw new Error("document_work_no_readable_evidence");
+      await dependencies.queue.writeStage(job,"documentary_Q01","succeeded",{attempt:job.attempt});
+      const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
+      return await processStandaloneDocumentWork({job,binding:raw.document_work_request,documentInput,economics:economicInput(raw),extractionVersion:stringOr(raw.session.extraction_version,"unknown"),priorModelLineage:priorLineage.success ? priorLineage.data.map(call => call as GatewayCallLog) : [],expectedPriorModelCalls:raw.expected_model_calls},dependencies);
+    }
     const executionPlan = caseAnalysisExecutionPlan(raw.deal_workflow);
     const useShadow = raw._execution.mode === "shadow";
     const locale = raw.session.locale === "en-US" ? "en" : "pt";
@@ -1134,6 +1153,7 @@ export async function processCaseAnalysisJob(
       versions,
       caseEngine: caseEngineVersion,
       retrieval: privateRetrievalLineage,
+      ...(raw.document_work_request ? {documentWorkRequest: raw.document_work_request} : {}),
     });
     failurePhase = "record_agent_assessment";
     if (dependencies.queue.recordAgentAssessment) {
