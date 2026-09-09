@@ -75,3 +75,27 @@ describe("materialToDocx", () => {
     expect(zipStored([]).length).toBe(22);
   });
 });
+
+
+describe("source-table reference navigation",()=>{
+  const referenced:Material={...material,blocks:[
+    {type:"paragraph",text:{pt:"Primeira leitura.",en:"First reading."},supportIds:["3"]},
+    {type:"paragraph",text:{pt:"Segunda leitura.",en:"Second reading."},supportIds:["1"]},
+    {type:"table",caption:{pt:"Documento",en:"Document"},head:[{pt:"Fonte",en:"Source"}],rows:[["[1] Page 1"],["[3] Page 3"]]},
+  ]};
+  const targets=[{id:"1",number:1,blockIndex:2,rowIndex:0},{id:"3",number:3,blockIndex:2,rowIndex:1}];
+  it("links directly to source rows without renumbering or producing a duplicate appendix",()=>{
+    const xml=materialDocumentXml({material:referenced,lang:"en",meta:{issuedOn:"2026-09-09",referenceTargets:targets}});
+    expect(xml).toContain('w:anchor="offroad_ref_3"');
+    expect(xml).toContain('w:name="offroad_ref_3"');
+    expect(xml.indexOf('w:anchor="offroad_ref_3"')).toBeLessThan(xml.indexOf("Second reading."));
+    expect(xml).not.toContain("Analysis references");
+    expect(xml.match(/<w:bookmarkStart /g)).toHaveLength(2);
+    expect(xml).toContain("[3] Page 3");
+  });
+  it("rejects missing, ambiguous and non-table targets",()=>{
+    for(const referenceTargets of [targets.slice(1),[...targets,targets[0]!],[{...targets[0]!,blockIndex:0},targets[1]!],[{...targets[0]!,rowIndex:99},targets[1]!]]){
+      expect(()=>materialDocumentXml({material:referenced,lang:"en",meta:{issuedOn:"2026-09-09",referenceTargets}})).toThrow();
+    }
+  });
+});

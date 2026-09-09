@@ -1,4 +1,4 @@
-import {materialToDocx} from "@offroad/case-export";
+import {materialToDocx, type DocxMeta} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 import {documentWorkProductSchema, type DocumentWorkProduct} from "@offroad/domain-contracts";
 
@@ -6,7 +6,7 @@ export type DocumentWorkProductLabels = Record<"comparisonTitle" | "meetingTitle
 const localized = (value: string) => ({pt: value, en: value});
 
 /** Pure projection of an already authorized persisted result. It performs no analysis or translation. */
-export function documentWorkProductMaterial(product: DocumentWorkProduct, labels: DocumentWorkProductLabels): Material {
+function compileDocumentWorkProductMaterial(product: DocumentWorkProduct, labels: DocumentWorkProductLabels): {material: Material; referenceTargets: NonNullable<DocxMeta["referenceTargets"]>} {
   const value = documentWorkProductSchema.parse(product);
   const heading = (text: string): MaterialBlock => ({type: "heading", text: localized(text)});
   const paragraph = (text: string, supportIds?: string[]): MaterialBlock => ({type: "paragraph", text: localized(text), ...(supportIds ? {supportIds} : {})});
@@ -38,17 +38,27 @@ export function documentWorkProductMaterial(product: DocumentWorkProduct, labels
     ...(value.gaps.length ? [heading(labels.gaps), {type: "table" as const, caption: localized(""), head: [localized(labels.gaps), localized(labels.question)], rows: value.gaps.map(gap => [gap.text, gap.question])}] : []),
     heading(labels.coverage), paragraph(`${labels.documents}: ${value.coverage.documentsConsidered}`), paragraph(`${labels.omitted}: ${value.coverage.omittedPassages}`),
     ...value.coverage.limitations.map(item => paragraph(item)), heading(labels.sources),
-    ...Array.from(sourceGroups.values()).flatMap(group => [
-      {type: "table" as const, caption: localized(`${group[0].documentName} · ${labels.version} ${group[0].version}`),
+  ];
+  const referenceTargets: Array<NonNullable<DocxMeta["referenceTargets"]>[number]> = [];
+  for (const group of sourceGroups.values()) {
+    const blockIndex = blocks.length;
+    group.forEach((source, rowIndex) => referenceTargets.push({id: sourceLabel(source.id), number: Number(sourceLabel(source.id)), blockIndex, rowIndex}));
+    blocks.push(
+      {type: "table", caption: localized(`${group[0].documentName} · ${labels.version} ${group[0].version}`),
         head: [localized(labels.sources), localized(labels.evidence)],
         rows: group.map(source => [`[${sourceLabel(source.id)}] ${source.anchor}`, source.text])},
-      {type: "disclaimer" as const, text: localized(`SHA-256: ${group[0].hash}`)},
-    ]),
-  ];
-  return {kind: "credit_memo", title: localized(labels[`${value.job}Title`]), blocks, dependsOn: [value.fingerprint]};
+      {type: "disclaimer", text: localized(`SHA-256: ${group[0].hash}`)},
+    );
+  }
+  return {material: {kind: "credit_memo", title: localized(labels[`${value.job}Title`]), blocks, dependsOn: [value.fingerprint]}, referenceTargets};
+}
+
+export function documentWorkProductMaterial(product: DocumentWorkProduct, labels: DocumentWorkProductLabels): Material {
+  return compileDocumentWorkProductMaterial(product, labels).material;
 }
 
 export function documentWorkProductToDocx(input: {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string}): Uint8Array {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issuedOn)) throw new Error("Invalid document issue date");
-  return materialToDocx({material: documentWorkProductMaterial(input.product, input.labels), lang: input.product.locale === "pt-BR" ? "pt" : "en", meta: {issuedOn: input.issuedOn}});
+  const {material, referenceTargets} = compileDocumentWorkProductMaterial(input.product, input.labels);
+  return materialToDocx({material, lang: input.product.locale === "pt-BR" ? "pt" : "en", meta: {issuedOn: input.issuedOn, referenceTargets}});
 }
