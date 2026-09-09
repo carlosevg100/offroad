@@ -17,7 +17,7 @@ describe("execution brief proposal", () => {
   ])("continues the graph already created by the advisor for %s",async objective=>{
     const initial=compileAdvisorStartingPlan({message:objective,hasAttachments:true,documentaryEnabled:true});
     const base=context();
-    const q=queue({...base,objective,project:{...base.project,entry_job:initial.entryJob},plan:initial.plan});
+    const q=queue({...base,objective,initial_work_request:{message_id:id(90),text:objective},project:{...base.project,entry_job:initial.entryJob},plan:initial.plan});
     expect(await processExecutionBriefProposalJob(job,q,{documentaryWorkEnabled:true})).toEqual({status:"proposed"});
     const [,internal]=q.recordExecutionBriefProposal.mock.calls[0]!;
     expect(internal.workstreams.flatMap((stream:{sourceTaskIds:string[]})=>stream.sourceTaskIds)).toEqual(["Q01","Q02","Q03"]);
@@ -222,4 +222,37 @@ it("persists approved scope identity with bounded display for long names and man
   expect(visible.assumptions[0].value.length).toBeLessThan(1000);
   expect(visible.assumptions[0].basis.length).toBeLessThan(1000);
   expect(JSON.parse(visible.assumptions[0].basis)).toMatchObject({scopeFingerprint: "d".repeat(64), reportingDate: "2026-08-31", selectedSourceCount: 40, primaryDocumentId: primaryTape.documentId});
+});
+
+
+it("preserves the durable documentary request after confirmation replaces the economic description", async () => {
+  const objective = "Compare estas propostas de financiamento. Quero uma leitura documental preliminar, sem cálculos financeiros.";
+  const initial = compileAdvisorStartingPlan({message: objective, hasAttachments: true, documentaryEnabled: true});
+  const base = context();
+  const value = {...base, objective: "Os documentos descrevem duas propostas, com prazos e garantias distintos. Não há destinação do capital informada.",
+    initial_work_request: {message_id: id(90), text: objective}, plan: initial.plan};
+  for (const documentaryWorkEnabled of [true, false]) {
+    const q = queue(value);
+    expect(await processExecutionBriefProposalJob(job, q, {documentaryWorkEnabled})).toEqual({status: "proposed"});
+    const [, internal, visible, inputFingerprint, replacement] = q.recordExecutionBriefProposal.mock.calls[0]!;
+    expect(internal.objective).toBe(objective);
+    expect(visible.objective).toBe(objective);
+    expect(internal.workstreams.flatMap((stream: {sourceTaskIds: string[]}) => stream.sourceTaskIds)).toEqual(["Q01", "Q02", "Q03"]);
+    expect(internal.executionMode).toBe("confirm_before_expensive_work");
+    expect(inputFingerprint).toBe(value.input_fingerprint);
+    expect(replacement).toBeNull();
+  }
+  for (const initial_work_request of [null, {message_id: id(90), text: "Calcule o CET destas propostas"}]) {
+    const q = queue({...value, initial_work_request});
+    expect(await processExecutionBriefProposalJob(job, q, {documentaryWorkEnabled: true})).toEqual({status: "failed"});
+    expect(q.recordExecutionBriefProposal).not.toHaveBeenCalled();
+  }
+});
+
+it("does not replace a financial plan's economic objective with the initial documentary request", async () => {
+  const value = {...context(), initial_work_request: {message_id: id(90), text: "Compare propostas em leitura documental preliminar"}};
+  const q = queue(value);
+  expect(await processExecutionBriefProposalJob(job, q, {documentaryWorkEnabled: true})).toEqual({status: "proposed"});
+  expect(q.recordExecutionBriefProposal.mock.calls[0]![1].objective).toBe(value.objective);
+  expect(q.recordExecutionBriefProposal.mock.calls[0]![1].planVersion).not.toMatch(/^document-work-plan.v1:/);
 });
