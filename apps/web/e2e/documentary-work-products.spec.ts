@@ -21,23 +21,16 @@ function assertLocalDocumentaryEnvironment(): string {
   return databaseUrl;
 }
 
-function enableLocalPipeline() {
+function assertLocalPipeline() {
   const databaseUrl = assertLocalDocumentaryEnvironment();
-  // Only the freshly registered account's workspace. Existing rollout command keeps its
-  // audit trail; shadow permits internal processing and does not authorize external release.
+  // Verify the fresh synthetic workspace's real bootstrap state without changing it.
+  // Canary runs the primary job; shadow would enqueue an additional comparison run.
   const proof = execFileSync("psql", [databaseUrl, "-At", "-v", "ON_ERROR_STOP=1", "-v", `email=${account.email}`, "-q"], {input: `
-    begin;
-    update public.organizations o set pipeline_enabled=true from auth.users u where u.id=o.created_by and u.email=:'email';
-    select private.promote_organization_rollout(o.id,'shadow',u.id,'Synthetic local documentary provider journey')
-      from public.organizations o join auth.users u on u.id=o.created_by
-      join public.organization_rollout_policies p on p.organization_id=o.id
-      where u.email=:'email' and p.state='off';
     select count(*) from public.organizations o join auth.users u on u.id=o.created_by
       join public.organization_rollout_policies p on p.organization_id=o.id
-      where u.email=:'email' and o.pipeline_enabled and p.state='shadow' and not p.external_release_enabled;
-    commit;
+      where u.email=:'email' and o.pipeline_enabled and p.state='canary' and not p.external_release_enabled;
   `, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"]});
-  expect(proof.trim().split("\n").at(-1)).toBe("1");
+  expect(proof.trim()).toBe("1");
 }
 
 const cases = [
@@ -86,7 +79,7 @@ test.describe("documentary work products with actual provider execution", () => 
     await page.locator('input[name="project_name"]').fill("Onboarding (validação interna)");
     await page.locator('.private-project-gate__form button[type="submit"]').click();
     await expect(page.locator(".intake-collect")).toBeVisible();
-    enableLocalPipeline();
+    assertLocalPipeline();
   });
 
   for (const scenario of cases) test(`${scenario.job}: approved documentary plan to persisted result and Word`, async () => {
