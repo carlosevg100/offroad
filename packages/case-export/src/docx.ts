@@ -20,6 +20,8 @@ export type DocxMeta = {
   issuedOn: string;
   /** Shown in the footer of every page. */
   preparedBy?: string;
+  /** Exact locations in an existing source table; avoids a second reference index. */
+  referenceTargets?: readonly {id: string; number: number; blockIndex: number; rowIndex: number}[];
 };
 
 const copy = {
@@ -81,7 +83,7 @@ const citationLinks = (ids: readonly string[] | undefined, references: Map<strin
     return `<w:hyperlink w:anchor="offroad_ref_${index}" w:history="1"><w:r><w:rPr><w:color w:val="5C713C"/><w:sz w:val="16"/></w:rPr><w:t xml:space="preserve"> [${index}]</w:t></w:r></w:hyperlink>`;
   }).join("");
 
-function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, number>): string {
+function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, number>, targets = new Map<number, number>()): string {
   switch (block.type) {
     case "heading":
       return paragraph(run(block.text[lang]), {style: "Heading2", keepNext: true});
@@ -99,7 +101,11 @@ function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, 
         table(
           [
             row(block.head.map((head) => cell(paragraph(run(head[lang], {bold: true, size: 18})), {shade: true})), true),
-            ...block.rows.map((cells) => row(cells.map((text) => cell(paragraph(run(text, {size: 18})))))),
+            ...block.rows.map((cells, rowIndex) => row(cells.map((text, cellIndex) => {
+              const target = cellIndex === 0 ? targets.get(rowIndex) : undefined;
+              const content = run(text, {size: 18});
+              return cell(paragraph(target === undefined ? content : `<w:bookmarkStart w:id="${target}" w:name="offroad_ref_${target}"/>${content}<w:bookmarkEnd w:id="${target}"/>`));
+            }))),
           ],
           columns,
         )
@@ -162,8 +168,27 @@ export function materialDocumentXml(input: {material: Material; lang: DocxLang; 
     ),
   ].join("");
   const references = referenceIndex(material);
-  const body = material.blocks.map((block) => blockXml(block, lang, references)).join("");
-  const appendix = references.size ? paragraph(run(copy.references[lang]), {style: "Heading2", keepNext: true}) + [...references].map(([id, index]) =>
+  const embeddedTargets = new Map<number, Map<number, number>>();
+  if (meta.referenceTargets !== undefined) {
+    const bound = new Map<string, number>();
+    const numbers = new Set<number>();
+    for (const target of meta.referenceTargets) {
+      const block = material.blocks[target.blockIndex];
+      const rows = embeddedTargets.get(target.blockIndex) ?? new Map<number, number>();
+      if (!target.id || !Number.isSafeInteger(target.number) || target.number < 1 || bound.has(target.id) || numbers.has(target.number)
+        || !Number.isSafeInteger(target.blockIndex) || !Number.isSafeInteger(target.rowIndex) || target.rowIndex < 0
+        || block?.type !== "table" || !block.rows[target.rowIndex]?.length || rows.has(target.rowIndex)) {
+        throw new Error("invalid_document_reference_target");
+      }
+      bound.set(target.id, target.number); numbers.add(target.number); rows.set(target.rowIndex, target.number);
+      embeddedTargets.set(target.blockIndex, rows);
+    }
+    if ([...references.keys()].some(id => !bound.has(id))) throw new Error("missing_document_reference_target");
+    references.clear();
+    for (const [id, number] of bound) references.set(id, number);
+  }
+  const body = material.blocks.map((block, index) => blockXml(block, lang, references, embeddedTargets.get(index))).join("");
+  const appendix = references.size && meta.referenceTargets === undefined ? paragraph(run(copy.references[lang]), {style: "Heading2", keepNext: true}) + [...references].map(([id, index]) =>
     paragraph(`<w:bookmarkStart w:id="${index}" w:name="offroad_ref_${index}"/>${run(`[${index}] `, {bold: true, size: 17})}${run(id, {size: 17, color: "52616C"})}<w:bookmarkEnd w:id="${index}"/>`, {spacingAfter: 70})
   ).join("") : "";
   const sectionProps = `<w:sectPr><w:footerReference w:type="default" r:id="rId2"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708"/></w:sectPr>`;
