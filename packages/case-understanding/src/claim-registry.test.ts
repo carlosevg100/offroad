@@ -5,7 +5,7 @@ import {affectedBySupportChanges, buildClaimRegistry, claimFingerprint} from "./
 import {normalizeSemanticAudit, supportedSemanticAudit} from "./semantic-audit";
 
 const brief: CaseBrief = {
-  executiveSummary: "A companhia busca crédito privado para financiar seu projeto.",
+  executiveSummary: "O pedido é de R$ 40 milhões.",
   sections: [{
     id: "request",
     heading: "Operação",

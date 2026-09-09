@@ -15,6 +15,16 @@ function stateFor(cashBasis: "reported" | "missing" | undefined): CaseState {
 }
 
 describe("case diagnosis markdown cash provenance", () => {
+  it("binds the exported executive synthesis to complete claims and their sources", () => {
+    const state = stateFor("reported");
+    state.brief = {executiveSummary: "Receita documentada.", sections: [{id: "history", heading: "Histórico", claims: [{id: "revenue", text: "Receita documentada.", kind: "fact", material: true, supportIds: ["revenue-source"]}]}]};
+    expect(caseDiagnosisMarkdown({state, locale: "pt", title: "Test"})).toContain("Receita documentada. [revenue-source]");
+    state.brief.executiveSummary = "Funding garantido.";
+    const markdown = caseDiagnosisMarkdown({state, locale: "pt", title: "Test"});
+    expect(markdown).not.toContain("Funding garantido.");
+    expect(markdown).toContain("O resumo permanece bloqueado");
+    expect(markdown).toContain("Receita documentada. [revenue-source]");
+  });
   it.each(["pt", "en"] as const)("withholds net debt for missing and historical unknown cash in %s", (locale) => {
     const label = locale === "pt" ? "Dívida financeira líquida" : "Net financial debt";
     for (const basis of ["missing", undefined] as const) {

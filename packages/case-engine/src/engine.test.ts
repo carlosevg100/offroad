@@ -1,8 +1,9 @@
+import {caseMaterialsVersion} from "@offroad/case-materials";
 import {resolveMandate, type Mandate, type Sourced} from "@offroad/fund-mandate";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {taskCacheFromReport} from "@offroad/case-runner";
 import {describe, expect, it} from "vitest";
-import {claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
+import {caseUnderstandingVersion, claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
 
 import {executeCaseEngine, publicCaseState, type CaseEngineInput} from "./engine";
@@ -307,7 +308,7 @@ describe("the governed case engine", () => {
       writeBrief: async () => {
         writerCalls += 1;
         return {
-          brief: {sections: [], executiveSummary: "Resumo institucional sem afirmações numéricas."},
+          brief: {sections: [{id: "identity", heading: "Companhia", claims: [{id: "summary-identity", text: "Empresa Teste Ltda", kind: "fact", material: true, supportIds: ["company.legal_name"]}]}], executiveSummary: "Empresa Teste Ltda"},
           blockedBy: [],
           usage: {costUsd: 0.21, modelCalls: 1},
           modelInvocations: [{provider: "test", model: "fixture"}],
@@ -323,10 +324,11 @@ describe("the governed case engine", () => {
       },
     });
 
+    expect(result.report.versions).toMatchObject({caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion});
     expect(result.report.stages.find((stage) => stage.stage === "claims")?.usage).toEqual({costUsd: 0, modelCalls: 0});
     expect(result.report.taskRuns.find((task) => task.taskId === "claims")?.cacheHit).toBe(true);
     expect(result.report.usage).toEqual({costUsd: 0, modelCalls: 0});
-    expect(result.state.brief?.executiveSummary).toContain("Resumo institucional");
+    expect(result.state.brief?.executiveSummary).toBe("Empresa Teste Ltda");
     expect(result.state.modelInvocations).toHaveLength(2);
     expect(result.state.claimRegistry?.publication.allowed).toBe(true);
     expect({writerCalls, verifierCalls}).toEqual({writerCalls: 1, verifierCalls: 1});
@@ -347,13 +349,13 @@ describe("the governed case engine", () => {
       resolvedMandates: [],
       externalReleaseApproved: false,
       writeBrief: async () => ({
-        brief: {sections: [], executiveSummary: "Case diagnóstico aprovado e rastreável."},
+        brief: {sections: [{id: "identity", heading: "Companhia", claims: [{id: "summary-identity", text: "Empresa Teste Ltda", kind: "fact", material: true, supportIds: ["company.legal_name"]}]}], executiveSummary: "Empresa Teste Ltda"},
         blockedBy: [],
       }),
       verifyBrief: async ({brief}) => ({audit: supportedSemanticAudit(brief)}),
     }, false);
 
-    expect(result.state.brief?.executiveSummary).toContain("Case diagnóstico");
+    expect(result.state.brief?.executiveSummary).toBe("Empresa Teste Ltda");
     expect(result.state.structureDecision.materialsPreparationAllowed).toBe(true);
     expect(result.state.materials).toEqual([]);
     expect(result.state.financialModel).toBeNull();
@@ -412,7 +414,7 @@ describe("the governed case engine", () => {
     };
     const caseBrief = {
       sections: [{id: "strengths" as const, heading: "Pontos fortes", claims: [judgment]}],
-      executiveSummary: "Resumo para revisão interna.",
+      executiveSummary: judgment.text,
     };
     const run = (claimDecisions?: ClaimDecision[]) => executeWithConfirmedStructure({
       runId: "run-approval",

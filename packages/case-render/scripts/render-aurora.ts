@@ -125,6 +125,8 @@ const brief: CaseBrief = {
 };
 
 const readiness: ReadinessReport = {state: "in_progress", score: 0.8, components: [], blockers: []};
+// This layout-only fixture uses the same structured claims as the document body.
+brief.executiveSummary = brief.sections.flatMap(section => section.claims).slice(0, 2).map(claim => claim.text).join("\n\n");
 const evidence = deskEvidence(desk, trajectory);
 
 const compiled = compileMaterials({

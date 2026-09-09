@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import {auditBrief, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
+import {auditBrief, resolveExecutiveSummaryClaims, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
 import type {DeskAnalysis, OperationVerdict, Trajectory} from "@offroad/credit-analysis";
 
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
@@ -211,7 +211,11 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
 
   const metrics = metricsFrom(input.calculations, currency);
   const history = historyTable(input.facts, currency);
-  const summary: MaterialBlock = {type: "paragraph", text: {pt: input.brief.executiveSummary, en: input.brief.executiveSummary}, material: false};
+  const summary: MaterialBlock[] = resolveExecutiveSummaryClaims(input.brief)!.map(claim => ({
+    type: "paragraph", text: {pt: claim.text, en: claim.text}, claimId: claim.id,
+    material: claim.material, claimKind: claim.kind === "public_source" ? "fact" : claim.kind,
+    supportIds: [...claim.supportIds],
+  }));
 
   const teaser: Material = {
     kind: "teaser",
@@ -221,7 +225,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
     },
     blocks: [
       {type: "heading", text: {pt: "A oportunidade", en: "The opportunity"}},
-      summary,
+      ...summary,
       ...(metrics ? [metrics] : []),
       DISCLAIMER,
     ],
@@ -232,7 +236,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
 
   const profileBlocks: MaterialBlock[] = [
     {type: "heading", text: {pt: "Resumo executivo", en: "Executive summary"}},
-    summary,
+    ...summary,
   ];
 
   for (const section of input.brief.sections) {

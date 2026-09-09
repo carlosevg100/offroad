@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {archetype, type ArchetypeId} from "@offroad/credit-playbook";
+import {archetype, executiveSynthesisInstructions, type ArchetypeId} from "@offroad/credit-playbook";
 import type {InformationGap, ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
 import {auditClaims, type AuditReport, type AuditableClaim} from "./audit";
@@ -106,7 +106,37 @@ Rules:
    support a figure, resolve a conflict, fill a gap, or appear as a support id.
 9. **Case-review instructions are not case evidence.** A company comment may identify a framing
    problem or tell you where to look. Test it against the reconciled facts; never let it overwrite
-   a source, close an exception or support a number by itself.`;
+   a source, close an exception or support a number by itself.
+
+${executiveSynthesisInstructions}`;
+
+/** Bind a summary to one unambiguous sequence of complete claims; whitespace is presentation. */
+export function resolveExecutiveSummaryClaims(brief: CaseBrief): z.infer<typeof briefClaimSchema>[] | null {
+  const normalize = (text: string) => text.trim().replace(/\s+/g, " ");
+  const text = normalize(brief.executiveSummary);
+  if (!text) return null;
+  const claims = brief.sections.flatMap(section => section.claims).map(claim => ({claim, text: normalize(claim.text)})).filter(item => item.text);
+  type Path = z.infer<typeof briefClaimSchema>[];
+  // At most two alternatives are retained: a second possible attribution is already ambiguous.
+  const paths = new Map<number, Path[]>([[text.length, [[]]]]);
+  for (let start = text.length - 1; start >= 0; start--) {
+    if (start > 0 && text[start - 1] !== " ") continue;
+    const alternatives: Path[] = [];
+    for (const item of claims) {
+      const end = start + item.text.length;
+      if (!text.startsWith(item.text, start) || (end < text.length && text[end] !== " ")) continue;
+      for (const tail of paths.get(end === text.length ? end : end + 1) ?? []) {
+        alternatives.push([item.claim, ...tail]);
+        if (alternatives.length === 2) break;
+      }
+      if (alternatives.length === 2) break;
+    }
+    if (alternatives.length) paths.set(start, alternatives);
+  }
+  const matches = paths.get(0);
+  const selected = matches?.[0];
+  return matches?.length === 1 && selected && new Set(selected.map(claim => claim.id)).size === selected.length ? selected : null;
+}
 
 const money = (value: string) => {
   const parsed = Number(value);
@@ -154,6 +184,7 @@ export function buildBriefInput(input: {
   const gapLines = input.gaps.map((gap) => `[${gap.severity}] ${gap.title}: ${gap.description}`);
 
   return [
+    `Requested output locale: ${input.locale === "pt" ? "pt-BR" : "en-US"}`,
     `## Operação: ${definition.labels[input.locale]}`,
     definition.description[input.locale],
     "",
@@ -225,5 +256,11 @@ export function auditBrief(input: {
     calculations: input.calculations,
     ...(input.requireJudgmentApproval === false ? {requireJudgmentApproval: false} : {}),
   });
+  if (!resolveExecutiveSummaryClaims(input.brief)) {
+    return {ok: false, reason: "audit_failed", brief: input.brief, audit: {...audit, status: "blocked", findings: [
+      ...audit.findings,
+      {claimId: "executive_summary", reason: "executive_summary_unbound", detail: "resumo não corresponde a afirmações completas e únicas do brief"},
+    ]}};
+  }
   return audit.status === "pass" ? {ok: true, brief: input.brief, audit} : {ok: false, reason: "audit_failed", audit, brief: input.brief};
 }

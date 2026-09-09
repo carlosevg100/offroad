@@ -3,6 +3,14 @@ name: Document work product executor live gate
 # Synthetic actual-executor evaluation only; does not promote or mutate production.
 on:
   workflow_dispatch:
+    inputs:
+      suite:
+        description: Contract to evaluate with synthetic inputs
+        type: choice
+        options:
+          - documentary-work-products
+          - executive-synthesis
+        default: documentary-work-products
 
 permissions:
   contents: read
@@ -14,7 +22,7 @@ concurrency:
 
 jobs:
   gate:
-    name: Evaluate three intents with independent repeats
+    name: ${{ inputs.suite == 'executive-synthesis' && 'Evaluate executive synthesis' || 'Evaluate three intents with independent repeats' }}
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
@@ -48,6 +56,7 @@ jobs:
           aws-region: sa-east-1
 
       - name: Run the real document work executor
+        if: inputs.suite != 'executive-synthesis'
         run: |
           set -euo pipefail
           ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
@@ -64,11 +73,31 @@ jobs:
           fi
           exit "$gate_status"
 
+      - name: Evaluate executive synthesis author and reviewer
+        if: inputs.suite == 'executive-synthesis'
+        run: |
+          set -euo pipefail
+          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
+          echo "::add-mask::$ANTHROPIC_API_KEY"
+          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
+          echo "::add-mask::$OPENAI_API_KEY"
+          export ANTHROPIC_API_KEY OPENAI_API_KEY
+          set +e
+          pnpm --filter @offroad/evals exec tsx scripts/run-executive-synthesis-live.ts
+          gate_status=$?
+          set -e
+          if [[ -f "$RUNNER_TEMP/executive-synthesis-live/summary.md" ]]; then
+            cat "$RUNNER_TEMP/executive-synthesis-live/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$gate_status"
+
       - name: Upload compact evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: document-work-product-live
-          path: ${{ runner.temp }}/document-work-product-live
+          name: ${{ inputs.suite == 'executive-synthesis' && 'executive-synthesis-live' || 'document-work-product-live' }}
+          path: |
+            ${{ runner.temp }}/document-work-product-live
+            ${{ runner.temp }}/executive-synthesis-live
           if-no-files-found: warn
           retention-days: 90
