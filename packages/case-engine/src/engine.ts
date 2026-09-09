@@ -1,5 +1,5 @@
 import {createHash} from "node:crypto";
-import {buildLanguageConductTruthSet, buildMaterialTruthSet, compileMaterials, financialModelMaterial, type FinancialModelArtifactEvidence, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
+import {buildLanguageConductTruthSet, buildMaterialTruthSet, caseMaterialsVersion, compileMaterials, financialModelMaterial, type FinancialModelArtifactEvidence, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {
   runCase,
   runSubgraph,
@@ -15,6 +15,7 @@ import {
   buildClaimRegistry,
   buildRedFlagTruthSet,
   caseBriefSchema,
+  caseUnderstandingVersion,
   caseOutcomeSchema,
   claimFingerprint,
   deriveCaseOutcome,
@@ -722,7 +723,7 @@ export async function executeCaseEngine(
     input,
     inputSchema,
     policy,
-    versions: {caseEngine: caseEngineVersion, ...input.runtimeVersions},
+    versions: {caseEngine: caseEngineVersion, ...input.runtimeVersions, caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
     ...(input.onStage ? {onStage: input.onStage} : {}),
     ...(input.taskCache ? {taskCache: input.taskCache} : {}),
     stages: {
@@ -1652,7 +1653,7 @@ async function runStructureSubgraph(
     caseId: caseInput.caseId,
     input: graphInput,
     tasks,
-    versions: {caseEngine: caseEngineVersion, ...(caseInput.runtimeVersions ?? {})},
+    versions: {caseEngine: caseEngineVersion, ...(caseInput.runtimeVersions ?? {}), caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
   });
   return {
     output: result.outputs.assemble as StructureOutput,
@@ -2013,7 +2014,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
     caseId: input.caseId,
     input: graphInput,
     tasks,
-    versions: {caseEngine: caseEngineVersion, governedWorkbookRenderer: governedWorkbookRendererVersion, ...(input.runtimeVersions ?? {})},
+    versions: {caseEngine: caseEngineVersion, governedWorkbookRenderer: governedWorkbookRendererVersion, ...(input.runtimeVersions ?? {}), caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
   });
   return {
     output: result.outputs.assemble as MaterialsOutput,

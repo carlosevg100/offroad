@@ -37,7 +37,7 @@ const capacity = assessCapacity({archetypeId: "growth_expansion", requested: "42
 const termSheet = buildTermSheet({archetypeId: "growth_expansion", capacity, requestedTermMonths: 48, requestedGraceMonths: 6, expectedRate: "CDI + 4,00% a.a.", blockers: []});
 
 const brief: CaseBrief = {
-  executiveSummary: "Distribuidora de materiais de construção busca alongar o ciclo de caixa.",
+  executiveSummary: "Sociedade limitada de 2004.",
   sections: [
     {id: "identity", heading: "Identidade", claims: [{id: "c1", text: "Sociedade limitada de 2004.", material: false, kind: "fact", supportIds: []}]},
     {id: "business", heading: "Negócio", claims: []},

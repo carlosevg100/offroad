@@ -34,7 +34,7 @@ const facts = [
 ];
 
 const brief: CaseBrief = {
-  executiveSummary: "A companhia opera no varejo alimentar e busca capital para expansão.",
+  executiveSummary: "Receita líquida de R$ 184,7 milhões em 2025.",
   sections: [
     {
       id: "history",
@@ -58,6 +58,18 @@ const exception = (severity: ReconciliationException["severity"], blocks: boolea
 });
 
 describe("materials are compiled, and refused when they should be", () => {
+  it("preserves executive claim identity, materiality and support in the teaser", () => {
+    const outcome = compileMaterials({brief, facts, calculations, exceptions: [], readiness});
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const teaser = outcome.materials.find(material => material.kind === "teaser")!;
+    expect(teaser.blocks).toContainEqual(expect.objectContaining({type: "paragraph", claimId: "c1", material: true, claimKind: "fact", supportIds: ["historical_financials.2025.revenue"]}));
+  });
+  it("refuses an unsupported conclusion inserted only in the executive summary", () => {
+    const outcome = compileMaterials({brief: {...brief, executiveSummary: "A operação tem funding garantido."}, facts, calculations, exceptions: [], readiness});
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.detail.join(" ")).toContain("executive_summary_unbound");
+  });
   it("produces the three documents a debt process needs", () => {
     const outcome = compileMaterials({brief, facts, calculations, exceptions: [], readiness});
     expect(outcome.ok).toBe(true);

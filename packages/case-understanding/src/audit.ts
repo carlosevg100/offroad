@@ -32,6 +32,7 @@ export type AuditableClaim = {
 export type AuditFinding = {
   claimId: string;
   reason:
+    | "executive_summary_unbound"
     | "material_claim_without_support"
     | "support_not_found"
     | "support_anchor_unverified"

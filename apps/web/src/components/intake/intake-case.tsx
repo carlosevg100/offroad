@@ -1,6 +1,7 @@
 import {ReceivablesSupportPeriods} from "./receivables-support-periods";
 import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
+import {resolveExecutiveSummaryClaims} from "@offroad/case-understanding";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
 
@@ -94,6 +95,7 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
   }
 
   const {readiness, capacity, termSheet, brief, materials} = state;
+  const summaryClaims = brief ? resolveExecutiveSummaryClaims(brief) : null;
   const receivables = state.receivablesVertical;
   const readinessLabel =
     readiness.state === "blocked" ? t("readinessBlocked") : readiness.state === "ready" ? t("readinessReady") : t("readinessInProgress");
@@ -544,7 +546,12 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
         <h3>{t("briefTitle")}</h3>
         {brief ? (
           <>
-            <p className="case-brief__summary">{brief.executiveSummary}</p>
+            {summaryClaims ? summaryClaims.map(claim => (
+              <p className="case-brief__summary" key={claim.id}>
+                {claim.text}
+                {claim.supportIds.length > 0 ? <span className="case-brief__support">{claim.supportIds.join(" · ")}</span> : null}
+              </p>
+            )) : <p className="form-notice">{t("briefBlocked")}</p>}
             {brief.sections
               .filter((section) => section.id !== "executive_summary")
               .map((section) => (

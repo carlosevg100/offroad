@@ -1,3 +1,42 @@
+## 9 September: bind executive synthesis to structured claims
+
+Executive summaries previously travelled as independent text and were compiled as
+non-material paragraphs. The brief auditor now requires an unambiguous sequence of
+complete structured claims. Added prose, changed numbers, partial claims, duplicate
+selection and ambiguous attribution block the brief. Whitespace differences do not
+change the binding. The claim registry independently blocks an unbound summary.
+
+The material compiler preserves summary claim ids, support ids, materiality and kind.
+The case screen and Markdown export render bound claim paragraphs with their support;
+legacy unbound summaries show the existing blocked message while retaining the sections.
+Existing semantic review and human judgment approval remain separate and unchanged.
+This closes the independent summary-text path, not every possible misclassification of
+an original claim. It does not certify all analysis or promote documentary planning.
+
+The authoring contract lives in canonical procedures/executive-synthesis.ts and is
+projected into the existing brief prompt. Requested output locale is now explicit.
+Synthetic factory, anchor and unit inputs select their actual structured claims instead
+of unreviewed placeholder summaries. No source document or reference numeric value changed.
+
+Full local check passed all43 packages in lint, typecheck, tests and production build.
+Two synthetic Word files were generated through the existing compiler and renderer;
+both pages were visually inspected for source preservation and clipping. This is
+functional renderer evidence, not institutional editorial acceptance. Module versions
+now participate in every engine cache key, so old summaries/materials cannot be reused
+under the updated audit. The database-pinned capability scope remains unchanged.
+Full validation also passed after that cache correction. A protected optional executive-synthesis suite reuses the existing
+main-only workflow and credentials, with a separate fixed USD3/eight-attempt cap. It
+requests Portuguese and English output, runs the existing writer policy and a different
+reviewer provider, records every attempt and pending judgments, and does not approve
+release. The default documentary suite and its budgets are unchanged. Live evidence
+must be recorded after integration; no authenticated full-product journey is claimed.
+
+Controls APP-03/04/10/11 and AI-05/07/08: same private source boundary, no schema, RLS,
+grants or production feature flags changed. Reviewer evidence is synthetic only. Rollback
+restores the previous code; no persisted data is rewritten. Old unbound summaries require
+regeneration before display/export as synthesis. Independent agent review remains
+unavailable due the previously exhausted allowance.
+
 ## 9 September: documentary Word readability
 
 PR573 is integrated at main12b8be2. Actual journey34380092460 passed all four

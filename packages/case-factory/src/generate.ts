@@ -282,7 +282,7 @@ export function generateCase(raw: FactoryScenario): GeneratedCase {
     sha256VerifiedAt: scenario.referenceDate + "T12:00:00.000Z", byteSize: Buffer.byteLength(document.content),
   }));
   const brief: CaseBrief = {
-    executiveSummary: `${scenario.company.legalName} busca ${scenario.request.amount} para ${scenario.request.purpose}.`,
+    executiveSummary: `A companhia é ${scenario.company.legalName}.\n\nO pedido declarado é de R$ ${scenario.request.amount}.`,
     sections: [
       {id: "identity", heading: "Companhia", claims: [{id: "factory-identity", text: `A companhia é ${scenario.company.legalName}.`, material: true, kind: "fact", supportIds: ["company.legal_name"]}]},
       {id: "request", heading: "Necessidade de capital", claims: [{id: "factory-request", text: `O pedido declarado é de R$ ${scenario.request.amount}.`, material: true, kind: "fact", supportIds: ["transaction.requested_amount"]}]},

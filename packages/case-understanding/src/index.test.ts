@@ -398,7 +398,7 @@ describe("the case brief", () => {
   ];
 
   const brief = (claims: Array<Partial<{text: string; material: boolean; kind: string; supportIds: string[]}>>) => ({
-    executiveSummary: "resumo",
+    executiveSummary: claims.map(claim => claim.text ?? "").join("\n\n"),
     sections: [
       {
         id: "history" as const,

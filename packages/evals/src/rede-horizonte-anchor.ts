@@ -156,7 +156,7 @@ export function redeHorizonteMandates(): ResolvedMandate[] {
 export function redeHorizonteBrief(): CaseBrief {
   return {
     executiveSummary:
-      "Rede Horizonte Alimentos busca uma estrutura de crédito privado para financiar a expansão de sua rede e refinanciar obrigações existentes. O caso reúne histórico auditado, posição intermediária revisada, mapa de dívida, garantias e plano detalhado do projeto. A estrutura permanece indicativa e os pontos em aberto continuam visíveis para diligência.",
+      "A tomadora é Rede Horizonte Alimentos S.A.\n\nA companhia solicita R$ 54 milhões para expansão de três novas lojas e refinanciamento de dívida existente.",
     sections: [
       {
         id: "identity",

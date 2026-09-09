@@ -1,5 +1,5 @@
 import type {AuditReport} from "./audit";
-import type {CaseBrief} from "./brief";
+import {resolveExecutiveSummaryClaims, type CaseBrief} from "./brief";
 import {fingerprintJson} from "./manifest";
 import type {NormalizedSemanticAudit} from "./semantic-audit";
 
@@ -129,6 +129,7 @@ export function buildClaimRegistry(input: {
   });
 
   const blockers = [
+    ...(!resolveExecutiveSummaryClaims(input.brief) ? ["executive_summary_unbound"] : []),
     ...claims.filter((claim) => claim.material && claim.status !== "verified").map((claim) => `claim:${claim.id}`),
     ...artifacts.filter((artifact) => artifact.status === "blocked").map((artifact) => `artifact:${artifact.artifactId}`),
   ].sort();

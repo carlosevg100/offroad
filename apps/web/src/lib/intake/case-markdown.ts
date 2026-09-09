@@ -1,4 +1,5 @@
 import type {CaseState} from "./case-pipeline";
+import {resolveExecutiveSummaryClaims} from "@offroad/case-understanding";
 
 type Locale = "pt" | "en";
 
@@ -20,6 +21,7 @@ const lines = (items: readonly string[], locale: Locale) => items.length ? items
 export function caseDiagnosisMarkdown(input: {state: CaseState; locale: Locale; title: string; currency?: string | null}) {
   const {state, locale, title} = input;
   const brief = state.brief;
+  const summaryClaims = brief ? resolveExecutiveSummaryClaims(brief) : null;
   const financial = state.reconciliation.financialTruth;
   const debt = state.reconciliation.debtTruth;
   const operation = state.operationTruth;
@@ -34,7 +36,7 @@ export function caseDiagnosisMarkdown(input: {state: CaseState; locale: Locale; 
     "",
     `## ${text(locale, "1. Resumo executivo", "1. Executive summary")}`,
     "",
-    brief?.executiveSummary ?? text(locale, "O resumo permanece bloqueado até que todas as afirmações materiais estejam suportadas.", "The summary remains blocked until every material statement is supported."),
+    summaryClaims?.map(claim => `${claim.text}${claim.supportIds.length ? ` [${claim.supportIds.join(", ")}]` : ""}`).join("\n\n") ?? text(locale, "O resumo permanece bloqueado até que todas as afirmações materiais estejam suportadas.", "The summary remains blocked until every material statement is supported."),
     "",
   ];
 
