@@ -1,9 +1,9 @@
 import {describe, expect, it} from "vitest";
 import {documentaryWorkProcedures, documentaryWorkProcedureRegistry, documentaryWorkTaskIds, documentWorkProductSystemInstructions} from "./documentary-work";
 describe("canonical documentary procedures", () => {
-  it("registers three bounded candidate procedures without promotion", () => {
-    expect(Object.values(documentaryWorkTaskIds)).toEqual(["Q01","Q02","Q03"]);
-    expect(documentaryWorkProcedureRegistry.skills).toHaveLength(3);
+  it("registers one shared candidate pipeline with three sequential stages", () => {
+    expect(documentaryWorkTaskIds).toEqual(["Q01","Q02","Q03"]);
+    expect(documentaryWorkProcedureRegistry.skills).toHaveLength(1);
     for (const procedure of documentaryWorkProcedures) {
       expect(procedure.maturity).toBe("candidate");
       expect(procedure.runtime.maxModelCalls).toBe(1);

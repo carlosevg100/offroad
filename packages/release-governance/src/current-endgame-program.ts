@@ -302,7 +302,7 @@ export const currentEndgameProgramBoard: EndgameProgramBoard = {
     repository: "carlosevg100/offroad",
     branch: "main",
     commit: "b6da2876d86cf63a6a17bd4bc855b6c4a1e41698",
-    capabilityLedgerVersion: "2026.09.07-v17",
+    capabilityLedgerVersion: "2026.09.09-v18-candidate",
     capabilityLedgerBaselineCommit: "b6da2876d86cf63a6a17bd4bc855b6c4a1e41698",
   },
   releaseSequence: ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7"],

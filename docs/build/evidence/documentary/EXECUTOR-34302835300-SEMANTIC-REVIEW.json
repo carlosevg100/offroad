@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "document-work-product-semantic-review.v1",
+  "originalRunId": "34302835300",
+  "originalEvidenceSha256": "24f9326884a763156054673e6a615c38dcb2a858ef3bb9bc2d213dcd8036e975",
+  "originalAutomatedPassed": true,
+  "originalAutomatedPassCount": 6,
+  "providerRerun": false,
+  "scope": "offline_authored_reference_checks_not_universal_semantic_verification",
+  "semanticPassed": false,
+  "semanticPassCount": 4,
+  "sourceReviewSha256": "3631b4c9d5fd197249eb05206c997ae124a683ba87d568f2570b9b4ba1ed77ee",
+  "runs": [
+    {
+      "caseId": "comparison",
+      "repeat": 1,
+      "semanticReview": {
+        "passed": true,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [],
+        "failures": []
+      }
+    },
+    {
+      "caseId": "comparison",
+      "repeat": 2,
+      "semanticReview": {
+        "passed": true,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [],
+        "failures": []
+      }
+    },
+    {
+      "caseId": "meeting",
+      "repeat": 1,
+      "semanticReview": {
+        "passed": true,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [],
+        "failures": []
+      }
+    },
+    {
+      "caseId": "meeting",
+      "repeat": 2,
+      "semanticReview": {
+        "passed": true,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [],
+        "failures": []
+      }
+    },
+    {
+      "caseId": "review",
+      "repeat": 1,
+      "semanticReview": {
+        "passed": false,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [
+          {
+            "id": "review-unprovided-is-not-absent",
+            "rationale": "The source says covenant/schedule were not provided. It does not establish their inexistence. Explicit unsecured status remains a supported fact. This bounded English gold assertion is not a universal semantic guard."
+          }
+        ],
+        "failures": [
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "asserted-absence",
+            "field": "hypotheses.0.question",
+            "matchedText": "absence of security and a leverage covenant"
+          },
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "presupposed-addition",
+            "field": "hypotheses.2.question",
+            "matchedText": "will an amortization schedule be introduced"
+          },
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "presupposed-addition",
+            "field": "gaps.1.question",
+            "matchedText": "Will a leverage covenant be added"
+          },
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "presupposed-addition",
+            "field": "gaps.2.question",
+            "matchedText": "Will an amortization schedule be defined"
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "review",
+      "repeat": 2,
+      "semanticReview": {
+        "passed": false,
+        "scope": "authored_reference_assertions_only",
+        "assertions": [
+          {
+            "id": "review-unprovided-is-not-absent",
+            "rationale": "The source says covenant/schedule were not provided. It does not establish their inexistence. Explicit unsecured status remains a supported fact. This bounded English gold assertion is not a universal semantic guard."
+          }
+        ],
+        "failures": [
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "asserted-absence",
+            "field": "hypotheses.0.text",
+            "matchedText": "absence of a leverage covenant"
+          },
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "asserted-absence",
+            "field": "hypotheses.0.question",
+            "matchedText": "lack of a leverage covenant"
+          },
+          {
+            "assertionId": "review-unprovided-is-not-absent",
+            "ruleId": "asserted-inexistence",
+            "field": "hypotheses.2.text",
+            "matchedText": "given no leverage covenant exists"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -6,10 +6,17 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(39);
+    expect(decision.entryCount).toBe(40);
     expect(decision.blockers).toEqual([]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
     expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
+  });
+
+  it("keeps preliminary documentary customer work blocked before reviewed release evidence", () => {
+    const candidate = currentCapabilityLedger.entries.find(entry => entry.capabilityId === "execution.preliminary-documentary-work")!;
+    expect(candidate).toMatchObject({availability:"specified",exposure:"none",qualityMaturity:"specified",evidenceRefs:[],allowedUses:[]});
+    const decision = evaluateCapabilityLedger({...currentCapabilityLedger, entries:[{...candidate, allowedUses:["customer_work"]}]});
+    expect(decision.blockers.some(blocker => blocker.code === "customer_reliance_requires_live_production_scope")).toBe(true);
   });
 
   it("keeps the Case 01 compiler live but allowlisted and the universal compiler specified", () => {
