@@ -79,12 +79,6 @@ export function briefAuthoringSchema(input: BriefEvidenceInput) {
     const claimIds = new Set(all.map(item => item.id));
     if (claimIds.size !== all.length) context.addIssue({code: "custom", message: "claim_ids_must_be_unique"});
     if (new Set(draft.executiveSummaryClaimIds).size !== draft.executiveSummaryClaimIds.length || draft.executiveSummaryClaimIds.some(id => !claimIds.has(id))) context.addIssue({code: "custom", message: "summary_claim_selection_invalid"});
-    for (const anchor of executiveSynthesisOpeningEvidence) {
-      if (ids.includes(anchor.supportId) && !draft.sections.some(section => section.id === anchor.section
-        && section.claims.some(item => item.material && item.kind === "fact" && item.supportIds.includes(anchor.supportId)))) {
-        context.addIssue({code: "custom", message: `summary_context_claim_required:${anchor.supportId}`});
-      }
-    }
     if (draft.executiveSummaryClaimIds.some(id => all.find(item => item.id === id)?.material === false)) context.addIssue({code: "custom", message: "summary_claim_must_be_material"});
     const summaryLength = draft.executiveSummaryClaimIds.map(id => all.find(item => item.id === id)?.text ?? "").join("\n\n").length;
     if (summaryLength > 4000) context.addIssue({code: "custom", message: "executive_summary_too_long"});

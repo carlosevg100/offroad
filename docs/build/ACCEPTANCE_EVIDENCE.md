@@ -30,8 +30,9 @@ compiler prepends only existing material factual claims from identity/request se
 when their support is absent from the selected summary. All body claims, numbers, sources
 and selected conclusions remain unchanged. Missing facts are not generated; judgments and
 non-material claims cannot be promoted into factual opening context. Text/id limits still
-fail closed instead of silently dropping conclusions. Author schema requires a factual
-context claim when the corresponding evidence is supplied. Understanding version v8.
+fail closed instead of silently dropping conclusions. The compiler adds context only when
+the provider already authored that factual claim; it never rejects or invents a missing
+opening. Understanding version v8.
 
 Offline replay of both persisted synthetic outputs from34400372257 now passes the
 existing summary coverage predicate: PT gains identity; EN stays unchanged. Both are

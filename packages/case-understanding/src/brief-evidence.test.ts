@@ -91,11 +91,11 @@ describe("executive opening context", () => {
     const long = Array.from({length: 6}, (_, i) => ({...claim, id: `long-${i}`, text: "x".repeat(660)}));
     expect(() => compileAuthoredBrief({sections: [...sections, {id: "risks", heading: "Risks", claims: long}], executiveSummaryClaimIds: long.map(c => c.id)})).toThrow();
   });
-  it("requires supplied opening facts to have a material factual claim", () => {
+  it("does not manufacture opening facts when the provider did not author them", () => {
     const entityFact = {...input.facts[0]!, key: {fieldPath: "company.legal_name"}, value: "Azul S.A.", valueType: "text" as const,
       accepted: {...input.facts[0]!.accepted, fieldPath: "company.legal_name", normalizedValue: "Azul S.A.", valueType: "text" as const}};
     const schema = briefAuthoringSchema({...input, facts: [entityFact]});
-    expect(schema.safeParse(draft).success).toBe(false);
+    expect(schema.safeParse(draft).success).toBe(true);
     expect(schema.safeParse({sections: [sections[0]!, ...draft.sections], executiveSummaryClaimIds: [claim.id]}).success).toBe(true);
   });
 });
