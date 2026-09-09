@@ -4,14 +4,14 @@ import {isGovernedWorkProductRevisionRequest} from "@offroad/agent-contracts";
 import {
   capitalProjectJob,
   capitalProjectJobSchema,
-  inferCapitalProjectJob,
+  compileAdvisorStartingPlan,
   type CapitalProjectJob,
 } from "@offroad/work-plan";
 import {after} from "next/server";
 import {z} from "zod";
 
 import {requireUser, requireWorkspace} from "@/lib/auth/workspace";
-import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
+import type {Json} from "@/types/database";
 import {processIntakeSession} from "@/lib/intake/server";
 
 const localeSchema = z.enum(["pt-BR", "en-US"]);
@@ -82,11 +82,12 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {locale, prompt, entryJobHint, hasAttachments, requestId, groupId} = parsed.data;
-  const entryJob = inferCapitalProjectJob({
+  const {entryJob, plan} = compileAdvisorStartingPlan({
     message: prompt,
     hasAttachments,
     explicitHint: entryJobHint,
-  }).job;
+    documentaryEnabled: process.env.DOCUMENTARY_WORK_PLANNING_ENABLED === "true",
+  });
   const {supabase} = await requireWorkspace(locale);
   const baseName = projectTitle(prompt, entryJob, locale);
   const args = {
@@ -98,7 +99,7 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
     p_access_basis: hasAttachments || ["structure_from_documents", "review_existing_operation"].includes(entryJob)
       ? "authorized_private"
       : "public_information",
-    p_plan: compiledCapitalProjectPlan(entryJob),
+    p_plan: plan as unknown as Json,
   };
   const result = await supabase.rpc("start_advisor_project_in_group_v1", {...args, p_group_id: groupId ?? undefined});
   if (result.error) return {ok: false, error: actionError(result.error)};

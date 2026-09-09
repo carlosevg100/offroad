@@ -4,7 +4,7 @@ import {fingerprintJson} from "@offroad/case-understanding";
 const guardCodes = new Set([
   "document_work_product_wrong_sections", "document_work_product_unbound_number",
   "document_work_product_invalid_citation", "document_work_product_non_extractive_observation",
-  "document_work_product_empty_without_gap",
+  "document_work_product_empty_without_gap", "document_work_product_source_review_failed",
 ]);
 const text = z.string().min(1).max(2000);
 // Allowlisted diagnostic shape only. Provider metadata, arbitrary error text and unknown fields never enter evidence.

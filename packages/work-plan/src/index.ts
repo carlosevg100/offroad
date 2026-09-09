@@ -168,3 +168,6 @@ function numeric(value: unknown): number {
 }
 
 export * from "./document-work-plan";
+
+export * from "./document-work-request";
+export * from "./advisor-starting-plan";

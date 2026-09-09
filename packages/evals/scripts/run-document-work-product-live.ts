@@ -1,72 +1,96 @@
-/** Protected live executor evaluation, not authenticated application E2E or release promotion. */
+/** Protected live executor and source-review controls; never application E2E or promotion. */
 import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve, dirname} from "node:path";
 import {fileURLToPath, pathToFileURL} from "node:url";
 import {fingerprintJson} from "@offroad/case-understanding";
 import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter, defaultTaskPolicies, type GatewayCallLog} from "@offroad/model-gateway";
 import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-work-product-live";
+import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
 import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, type LiveProduct} from "../src/document-work-product-live";
-
-import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
 import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
-
+import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
+type Review={reviewedFieldIds:string[];issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
+type Diagnostic=ReturnType<typeof documentWorkFailureDiagnostics>;
 async function main() {
   assertDocumentWorkLiveEnvironment(process.env);
   if (!process.env.ANTHROPIC_API_KEY || !process.env.OPENAI_API_KEY) throw new Error("protected_provider_credentials_required");
-  const outputDirectory = resolve(process.env.RUNNER_TEMP ?? ".", "document-work-product-live");
-  mkdirSync(outputDirectory,{recursive:true});
-  const calls: GatewayCallLog[] = [];
-  const gateway = createModelGateway({adapters:{anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY})},budget:{maxCostUsd:3,maxCalls:12},onCall:call=>calls.push(call)});
-  // Dynamic path loads the exact production executor without copying its prompt or relaxing its validation.
-  const workerModule = pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)), "../../../apps/document-worker/src/document-work-product.ts")).href;
-  const {runDocumentWorkProduct, validateDocumentWorkProductNarrative} = await import(workerModule) as {runDocumentWorkProduct:(input:unknown,dependencies:{gateway:ReturnType<typeof createModelGateway>})=>Promise<LiveProduct>;validateDocumentWorkProductNarrative:(input:unknown,raw:unknown)=>{sections:Array<{observations:unknown[]}>;gaps:unknown[]}};
-  const runs: Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;diagnostics:ReturnType<typeof documentWorkFailureDiagnostics>|null;providerCallRange:{start:number;end:number};completeCalls:number;responses:Array<{providerCallIndex:number;contentFingerprint:string;syntheticOutput:{classification:"synthetic_executor_response_not_product";content:NonNullable<ReturnType<typeof documentWorkFailureDiagnostics>["rejectedOutput"]>["content"]}|null;validationPassed:boolean;diagnostics:ReturnType<typeof documentWorkFailureDiagnostics>|null}>}> = [];
-  const repeats: Array<{caseId:string;comparison:ReturnType<typeof compareDocumentWorkRepeats>|null}> = [];
-  const persist = () => {
-    const accounting = summarizeDocumentWorkAttempts(runs.map(run=>({passed:run.score?.passed === true,completeCalls:run.completeCalls,firstResponseValid:run.responses[0]?.validationPassed === true,providerCalls:run.providerCallRange.end-run.providerCallRange.start})),repeats.map(repeat=>repeat.comparison?.passed === true),gateway.spent());
-    const passed = accounting.passed;
-    const evidence = {schemaVersion:"document-work-product-executor-eval.v2",synthetic:true,scope:"actual_executor_only_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),policy:defaultTaskPolicies.preliminary_understanding,budget:{maxCostUsd:3,maxCalls:12},spent:gateway.spent(),accounting,passed,runs,repeats,calls};
-    writeFileSync(resolve(outputDirectory,"evidence.json"),JSON.stringify(evidence,null,2));
-    writeFileSync(resolve(outputDirectory,"summary.md"),`# Document work product executor evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic cases; actual production executor and task policy. This is not application E2E, an independent domain review, or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nRepeat comparisons require the same input and complete expected fact coverage. Full prose identity is reported separately, not required.\n\nProvider attempts: ${gateway.spent().calls}; measured USD: ${gateway.spent().costUsd}. First-pass success: ${accounting.firstPassSuccessCount}/${runs.length}; per-request attempts retained in evidence. Hard limits: 12 provider attempts and USD 3; retries/fallback consume this shared budget.\n`);
+  const directory=resolve(process.env.RUNNER_TEMP ?? ".","document-work-product-live");
+  mkdirSync(directory,{recursive:true});
+  const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY})};
+  // Fixed partitions retain an aggregate USD3 ceiling, including the five reviewer controls.
+  const calls:GatewayCallLog[]=[], controlCalls:GatewayCallLog[]=[];
+  const gateway=createModelGateway({adapters,budget:{maxCostUsd:2.5,maxCalls:18},onCall:call=>calls.push(call)});
+  const controlGateway=createModelGateway({adapters,budget:{maxCostUsd:0.5,maxCalls:5},onCall:call=>controlCalls.push(call)});
+  const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;
+  const {runDocumentWorkProduct,validateDocumentWorkProductNarrative}=await import(workerPath("document-work-product")) as {
+    runDocumentWorkProduct:(input:unknown,dependencies:{gateway:typeof gateway})=>Promise<LiveProduct>;
+    validateDocumentWorkProductNarrative:(input:unknown,raw:unknown)=>unknown;
+  };
+  const {reviewDocumentWorkSourceFidelity,validateDocumentWorkSourceReview,sourceReviewSchema}=await import(workerPath("document-work-source-review")) as {
+    reviewDocumentWorkSourceFidelity:(input:unknown,narrative:unknown,dependencies:{gateway:typeof gateway})=>Promise<Review>;
+    validateDocumentWorkSourceReview:(input:unknown,narrative:unknown,raw:unknown)=>Review;
+    sourceReviewSchema:{safeParse:(raw:unknown)=>{success:boolean;data?:Review}};
+  };
+  const runs:Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;diagnostics:Diagnostic|null;providerCallRange:{start:number;end:number};completeCalls:number;narrativeCalls:number;reviewCalls:number;responses:Array<{kind:"narrative"|"source_review";providerCallIndex:number;contentFingerprint:string;validationPassed:boolean;diagnostics:Diagnostic|null;syntheticNarrative:Diagnostic["rejectedOutput"];syntheticReview:Review|null}>}>=[];
+  const repeats:Array<{caseId:string;comparison:ReturnType<typeof compareDocumentWorkRepeats>|null}>=[];
+  const controls:Array<{caseId:string;expectedIssueFieldId:string|null;passed:boolean;review:Review|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
+  const persist=()=>{
+    const accounting=summarizeDocumentWorkAttempts(runs.map(run=>({passed:run.score?.passed===true,completeCalls:run.completeCalls,narrativeCalls:run.narrativeCalls,reviewCalls:run.reviewCalls,firstResponseValid:run.responses.find(response=>response.kind==="narrative")?.validationPassed===true,providerCalls:run.providerCallRange.end-run.providerCallRange.start})),repeats.map(repeat=>repeat.comparison?.passed===true),gateway.spent());
+    const controlSpend=controlGateway.spent();
+    const controlsPassed=controls.length===5 && controls.every(control=>control.passed) && controlSpend.calls===5 && controlSpend.unknownCostCalls===0 && Number.isFinite(controlSpend.costUsd) && controlSpend.costUsd<=0.5;
+    const passed=accounting.passed && controlsPassed;
+    const evidence={schemaVersion:"document-work-product-executor-eval.v3",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budget:{maxCostUsd:3,maxCalls:23,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:5}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
+    writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(evidence,null,2));
+    writeFileSync(resolve(directory,"summary.md"),`# Document work product evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic inputs, actual executor and source reviewer. This is not application E2E, human domain certification or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nSource-review controls: ${controls.filter(control=>control.passed).length}/${controls.length}; five required, including both supported and unsupported claims.\n\nRepeat comparisons require identical input and full expected fact coverage; prose identity is reported separately. First-pass narrative success after review: ${accounting.firstPassSuccessCount}/${runs.length}. All rejected attempts remain in evidence.\n\nGold provider attempts: ${gateway.spent().calls}; source-review control attempts: ${controlSpend.calls}. Measured total USD: ${gateway.spent().costUsd+controlSpend.costUsd}. Fixed ceilings: gold18/USD2.50, controls5/USD0.50; retries and fallback consume those same budgets.\n`);
     return passed;
   };
-  for (const sample of documentWorkProductLiveCases) {
-    const input = {job:sample.job,locale:"en-US",approvedRequest:{text:sample.objective,fingerprint:fingerprintJson({objective:sample.objective})},passages:sample.passages.map(p=>({...p,documentId:p.id,version:"1",hash:fingerprintJson(p.text),anchor:"paragraph 1"})),coverage:{documentsConsidered:sample.passages.length,omittedPassages:0,limitations:["Synthetic document-only case; no financial calculations or independent diligence."]}};
-    const outputs: LiveProduct[] = [];
-    for (const repeat of [1,2]) {
-      const callStart = calls.length;
-      let capturedSyntheticOutput: unknown;
-      let completeCalls = 0;
-      const responses: (typeof runs)[number]["responses"] = [];
-      // Observe the real response without altering request, policy, retries, validation or budget.
-      const observedGateway: typeof gateway = {spent:gateway.spent, async complete(request) {
+  for(const sample of documentWorkProductLiveCases) {
+    const input={job:sample.job,locale:"en-US",approvedRequest:{text:sample.objective,fingerprint:fingerprintJson({objective:sample.objective})},passages:sample.passages.map(p=>({...p,documentId:p.id,version:"1",hash:fingerprintJson(p.text),anchor:"paragraph 1"})),coverage:{documentsConsidered:sample.passages.length,omittedPassages:0,limitations:["Synthetic document-only case; no financial calculations or independent diligence."]}};
+    const outputs:LiveProduct[]=[];
+    for(const repeat of [1,2]) {
+      const start=calls.length;
+      let capturedNarrative:unknown, narrativeProviderIndex:number|null=null, completeCalls=0, narrativeCalls=0, reviewCalls=0;
+      const responses:(typeof runs)[number]["responses"]=[];
+      const observedGateway:typeof gateway={spent:gateway.spent,async complete(request){
         completeCalls++;
-        capturedSyntheticOutput = undefined;
-        const response = await gateway.complete(request);
-        capturedSyntheticOutput = response.output;
-        let validationFailure: unknown;
-        try {
-          const narrative = validateDocumentWorkProductNarrative(input,response.output);
-          if (!narrative.sections.some(section=>section.observations.length > 0) && narrative.gaps.length === 0) throw new Error("document_work_product_empty_without_gap");
-        } catch (error) {validationFailure=error;}
-        const diagnostic = documentWorkFailureDiagnostics(validationFailure,response.output,calls.length-1);
-        responses.push({providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),syntheticOutput:diagnostic.rejectedOutput ? {classification:"synthetic_executor_response_not_product",content:diagnostic.rejectedOutput.content} : null,validationPassed:validationFailure === undefined,diagnostics:validationFailure === undefined ? null : diagnostic});
+        const isNarrative=request.schemaName==="document_work_product_narrative_v1";
+        if(isNarrative)narrativeCalls++; else reviewCalls++;
+        const response=await gateway.complete(request);
+        if(isNarrative){
+          capturedNarrative=response.output;narrativeProviderIndex=calls.length-1;
+          let validationFailure:unknown;
+          try{validateDocumentWorkProductNarrative(input,response.output);}catch(error){validationFailure=error;}
+          const diagnostic=documentWorkFailureDiagnostics(validationFailure,response.output,calls.length-1);
+          responses.push({kind:"narrative",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:validationFailure===undefined,diagnostics:validationFailure===undefined?null:diagnostic,syntheticNarrative:diagnostic.rejectedOutput,syntheticReview:null});
+        }else{
+          const parsed=sourceReviewSchema.safeParse(response.output);
+          let reviewAccepted=false;
+          try{reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,response.output).issues.length===0;}catch{}
+          responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:parsed.success?parsed.data!:null});
+        }
         return response;
       }};
-      try {
-        const product = await runDocumentWorkProduct(input,{gateway:observedGateway});
-        outputs.push(product);
-        runs.push({caseId:sample.id,repeat,product,score:scoreDocumentWorkLive(product,sample),failure:null,diagnostics:null,providerCallRange:{start:callStart,end:calls.length},completeCalls,responses});
-      } catch (error) {
-        // Only fixed synthetic narrative belongs in this private eval artifact, never general telemetry.
-        const diagnostics = documentWorkFailureDiagnostics(error,capturedSyntheticOutput,capturedSyntheticOutput === undefined ? null : calls.length - 1);
-        runs.push({caseId:sample.id,repeat,product:null,score:null,failure:diagnostics.code,diagnostics,providerCallRange:{start:callStart,end:calls.length},completeCalls,responses});
+      try{
+        const product=await runDocumentWorkProduct(input,{gateway:observedGateway});outputs.push(product);
+        runs.push({caseId:sample.id,repeat,product,score:scoreDocumentWorkLive(product,sample),failure:null,diagnostics:null,providerCallRange:{start,end:calls.length},completeCalls,narrativeCalls,reviewCalls,responses});
+      }catch(error){
+        const diagnostics=documentWorkFailureDiagnostics(error,capturedNarrative,narrativeProviderIndex);
+        runs.push({caseId:sample.id,repeat,product:null,score:null,failure:diagnostics.code,diagnostics,providerCallRange:{start,end:calls.length},completeCalls,narrativeCalls,reviewCalls,responses});
       }
       persist();
     }
-    repeats.push({caseId:sample.id,comparison:outputs.length===2?compareDocumentWorkRepeats(outputs[0]!,outputs[1]!,sample):null});
+    repeats.push({caseId:sample.id,comparison:outputs.length===2?compareDocumentWorkRepeats(outputs[0]!,outputs[1]!,sample):null});persist();
+  }
+  for(const sample of documentWorkSourceReviewCases){
+    const start=controlCalls.length;
+    try{
+      validateDocumentWorkProductNarrative(sample.input,sample.narrative);
+      const review=await reviewDocumentWorkSourceFidelity(sample.input,sample.narrative,{gateway:controlGateway});
+      const passed=sample.expectedIssueFieldId===null?review.issues.length===0:review.issues.some(issue=>issue.fieldId===sample.expectedIssueFieldId);
+      controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,passed,review,failure:null,providerCallRange:{start,end:controlCalls.length}});
+    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,passed:false,review:null,failure:documentWorkFailureDiagnostics(error,undefined,null).code,providerCallRange:{start,end:controlCalls.length}});}
     persist();
   }
-  if (!persist()) process.exitCode = 1;
+  if(!persist())process.exitCode=1;
 }
 main().catch(()=>{console.error("document_work_product_live_setup_failed");process.exitCode=1;});

@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from "vitest";
-import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
+import {capitalProjectPlanSnapshot,compileAdvisorStartingPlan} from "@offroad/work-plan";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {claimedJobSchema, type ExecutionBriefProposalJob} from "./queue";
 
@@ -10,6 +10,19 @@ function context(access_basis = "authorized_private") {
 }
 function queue(value: unknown) {return {loadExecutionBriefProposal: vi.fn().mockResolvedValue(value), recordExecutionBriefProposal: vi.fn().mockResolvedValue({status: "proposed"}), fail: vi.fn()};}
 describe("execution brief proposal", () => {
+  it.each([
+    "Compare estas propostas em leitura documental preliminar, sem cálculos financeiros.",
+    "Prepare a reunião com uma leitura documental preliminar dos documentos enviados.",
+    "Revise esta oportunidade em leitura documental preliminar.",
+  ])("continues the graph already created by the advisor for %s",async objective=>{
+    const initial=compileAdvisorStartingPlan({message:objective,hasAttachments:true,documentaryEnabled:true});
+    const base=context();
+    const q=queue({...base,objective,project:{...base.project,entry_job:initial.entryJob},plan:initial.plan});
+    expect(await processExecutionBriefProposalJob(job,q,{documentaryWorkEnabled:true})).toEqual({status:"proposed"});
+    const [,internal]=q.recordExecutionBriefProposal.mock.calls[0]!;
+    expect(internal.workstreams.flatMap((stream:{sourceTaskIds:string[]})=>stream.sourceTaskIds)).toEqual(["Q01","Q02","Q03"]);
+    expect(q.recordExecutionBriefProposal.mock.calls[0]![4]).toBeNull();
+  });
   it("does not activate new documentary planning by default", async()=>{
     const q=queue({...context(),plan:null,objective:"Compare propostas em leitura documental preliminar"});
     expect(await processExecutionBriefProposalJob(job,q)).toEqual({status:"proposed"});

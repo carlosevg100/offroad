@@ -6,10 +6,10 @@ describe("bounded documentary plan",()=>{
     const plan=documentWorkPlanSnapshot("structure_from_documents");
     expect(plan.job.targetTaskIds).toEqual(["Q03"]);
     expect(plan.taskSpecs.map(task=>task.id)).toEqual(["Q01","Q02","Q03"]);
-    expect(plan.registryVersion).toBe("2026.09.09-v7");
+    expect(plan.registryVersion).toBe("2026.09.09-v8");
     for (const task of plan.taskSpecs) {
       expect(task.maturity).toBe("specified");
-      expect(task.procedure).toEqual({id:"documentary-work-pipeline",version:"2026.09.09-v4"});
+      expect(task.procedure).toEqual({id:"documentary-work-pipeline",version:"2026.09.09-v5"});
       expect(() => assertTaskPromotable(task,"production",() => ({maturity:"candidate",hasImplementation:false}))).toThrow();
     }
     for(const locale of ["pt-BR","en-US"] as const){

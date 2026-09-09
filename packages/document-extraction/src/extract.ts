@@ -130,7 +130,26 @@ export function renumberByTable(candidates: RawExtractionCandidate[]): RawExtrac
   // reduce to the container the row sits in. Aurora's debt map measured the cell case: with
   // the cell left in the key, every cell was its own table and the seven instruments came out
   // as fifty-one one-field tuples.
-  const tableOf = (anchorId: string) => anchorId.replace(/\.r\d+(\..*)?$/, "").replace(/![A-Z]{1,3}\d+$/, "");
+  const tableOf = (anchorId: string) => {
+    // Anchors are single-line identifiers. Leave malformed multiline values intact for
+    // verification; retrying a greedy suffix at every .r could otherwise take quadratic time.
+    for (const character of anchorId) {
+      if (character === "\n" || character === "\r" || character === "\u2028" || character === "\u2029") return anchorId;
+    }
+    let table = anchorId;
+    for (let position = 0; position < anchorId.length - 2; position++) {
+      if (anchorId[position] !== "." || anchorId[position + 1] !== "r") continue;
+      let end = position + 2;
+      while (end < anchorId.length && anchorId.charCodeAt(end) >= 48 && anchorId.charCodeAt(end) <= 57) end++;
+      if (end > position + 2 && (end === anchorId.length || anchorId[end] === ".")) {
+        table = anchorId.slice(0, position);
+        break;
+      }
+      // Digit runs contain no possible .r start, so never scan them twice.
+      position = end - 1;
+    }
+    return table.replace(/![A-Z]{1,3}\d+$/, "");
+  };
   const next = new Map<string, number>();
   const assigned = new Map<string, number>();
   return candidates.map((candidate) => {

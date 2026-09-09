@@ -150,13 +150,13 @@ describe("parametric cases on the governed rail", () => {
     expect(english.gold.expectedStructures).toEqual(portuguese.gold.expectedStructures);
   });
 
-  it("runs the receivables vertical inside the governed nine-stage engine", async () => {
+  it("runs the receivables vertical inside the governed eleven-stage engine", async () => {
     const {result} = await runScenario(receivablesScenario);
     expect(result.state.receivables?.metrics.portfolio.totalOutstanding).toBe("48000000.00");
     expect(result.state.receivables?.metrics.portfolio.topDebtorShare).toBe("0.12000000");
     expect(result.state.receivables?.reconciliation.tapeToAccounting.status).toBe("tied");
     expect(result.state.receivables?.decision.externalDirectionAllowed).toBe(false);
-  });
+  }, governedRailTimeoutMs);
 
   it("keeps handcrafted anchors separate from parametric cases", () => {
     expect(generateCase(corporateGrowthScenario).gold.origin).toBe("parametric");

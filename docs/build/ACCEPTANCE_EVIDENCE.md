@@ -27,6 +27,27 @@ capability transitions and historical evidence remain preserved; WFI-13 explicit
 This is a local planning correction, not implementation, runtime activation or production verification.
 Local validation: release-governance typecheck and 178 tests passed; the four house-style tests passed.
 The generated board preserves the recorded evidence baseline; its new timestamp records planning only.
+Final combined Node24 local gate passed: lint, typecheck, tests and build,43/43 tasks per stage (`/private/tmp/offroad-documentary-source-review-check-final3.log`). Worker426,web413,eval126,work-plan135,document-extraction35 tests passed. Earlier local retries found only a test-fixture anchor-kind mismatch and an editorial em-dash violation; both corrected without changing runtime acceptance. Local generator smoke confirmed directory0700/file0600. Three new Auth E2E cases still require CI. No live acceptance or promotion is inferred.
+
+## Security follow-through for the documentary release candidate
+
+The source-review integration passed full Node 24 `pnpm check` (43/43 each stage; worker426, web413, eval126, work-plan135). Independent review found no concrete blocker. Subsequent live security inspection still found eight CodeQL high alerts open; this is not zero-high status. Alert15 was confirmed as a real quadratic-time anchor expression before verification and is now replaced with linear parsing, with valid suffix and long malformed-input regressions (22 focused tests passed). Alerts29/36 receive local-tool hardening: private randomized/exclusive temporary workbook output and cryptographic E2E run identifiers. No production credential generator changed.
+
+Alerts24/23/28 were independently inspected as likely false positives in a fixed-prefix helper or assertions; they are not dismissed. Alerts26/27 select Auth verification operations and still require server success. Three real local-stack E2E checks now exercise invalid code/token/both and require error plus denial of workspace access; these checks await CI. No Auth implementation is changed. Detailed disposition is in `docs/security/CODEQL_TRIAGE_2026_09_09.md`. Full local gate is being rerun for the security delta before publication; scanner statuses require a fresh analysis and are not fabricated.
+
+## Source fidelity and initial documentary planning, 9 September 2026
+
+PR 567 is deployed as `75ec631`: web deployment `6341681265` succeeded at 03:09:47 UTC; worker `34305984891`, revision 291, reached stable PRIMARY with positive capacity at 03:15:18 UTC. Scanner smoke `34305292046` passed clean/EICAR controls. Planning remains false.
+
+Executor `34306010822` passed its automatic checks in six first-pass responses (USD 0.14134), but independent semantic review found a P1: a hypothesis reversed Alpha quarterly versus Beta monthly reporting frequency. The automatic result is preserved and is not release acceptance. Journey `34306013004` failed before plan approval: expected three documentary workstreams, received four financial workstreams; no Word was generated. The advisor created the default financial graph before the worker, whose existing-plan guard correctly refused replacement.
+
+Candidate v5 adds a separate stateless source-fidelity review after deterministic validation and before product construction/persistence. All authored fields require exact review coverage; missing fields, invented references, provider failure or any semantic issue fail closed. Reviewer judgment is probabilistic, not human certification. The existing provider policy, restricted-data purpose and job budget remain; at most two generation completions plus one review are allowed. Registry v8 binds the candidate method; tasks remain specified.
+
+The advisor now selects the Q01–Q03 graph atomically with a new private project only for an explicitly preliminary documentary request with attachments and the server flag enabled. Selection and worker recognition share one pure classifier. The initial compatibility label routes all three documentary intents through private understanding/confirmation; explicit incompatible starters, ordinary financial requests and existing plans retain their current path. There is no database or consent bypass. Activation requires the same server-only flag in web and worker (worker first, web second); rollback disables web first and worker second. Neither flag is enabled by this change.
+
+Protected evaluation v3 requires all six requests, three repeat comparisons and five authored reviewer controls (three unsupported, two legitimate). Evidence preserves every response/rejection and separates generation from review and provider retries. Budgets are fixed partitions: gold 18 attempts/USD 2.50 and controls 5 attempts/USD 0.50, aggregate USD 3. No selective retries or semantic repair loop. The authenticated workflow loads the existing masked OpenAI credential through protected OIDC for documentary runs so document classification uses its actual primary provider.
+
+Security controls: AI-02/03/05/07/08/09/12. Same tenant-bound private sources and authorized providers; no raw production text in telemetry, new external effects, retention change, migrations or new permissions. Negative coverage includes inverted comparisons, unsupported premises, missing-information ambiguity, incomplete reviewer coverage and incompatible planning requests. Full local integration check and fresh protected evidence are pending for this candidate; previous failures remain failures.
 
 ## Reliability correction local gate passed
 
