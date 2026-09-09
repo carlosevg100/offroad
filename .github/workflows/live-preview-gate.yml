@@ -186,7 +186,8 @@ jobs:
 
       - name: Run the documentary work journeys
         if: inputs.journey == 'documentary-work-products'
-        run: pnpm --filter web exec playwright test e2e/documentary-work-products.spec.ts
+        # Paid acceptance must not hide a failed execution behind a fresh whole-journey retry.
+        run: pnpm --filter web exec playwright test e2e/documentary-work-products.spec.ts --retries=0
         env:
           CI: "true"
           OFFROAD_E2E_DOCUMENT_WORK_PRODUCT: "1"

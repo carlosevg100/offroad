@@ -245,6 +245,14 @@ Rules:
 - A proposal is only a preview. The product applies it only after explicit user acceptance.
 - Only use the patch paths allowed by the response schema.`;
 
+/** Shared with the protected provider probe; schema validation and authority stay unchanged. */
+export const advisorResponseContract = {
+  task: "agent_operation_brief", system: SYSTEM,
+  schema: agentOperationBriefResponseSchema, schemaName: "agent_operation_brief_response_v2",
+  outputMode: "prompted_json", maxOutputTokens: 6_000,
+  cacheKey: "advisor-conversation-2026.09.09-v3",
+} as const;
+
 const previewArtifactsSchema = z.array(z.object({
   task_id: z.string(),
   artifact_type: z.string(),
@@ -608,8 +616,7 @@ export async function processAgentOperationBriefJob(
           usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0},
         }
       : await gateway.complete({
-          task: "agent_operation_brief",
-          system: SYSTEM,
+          ...advisorResponseContract,
           input: [{
             type: "text",
             text: JSON.stringify({
@@ -637,10 +644,7 @@ export async function processAgentOperationBriefJob(
               latestUserMessage: context.message,
             }),
           }],
-          schema: agentOperationBriefResponseSchema,
-          schemaName: "agent_operation_brief_response_v2",
           dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
-          maxOutputTokens: 2_000,
           metadata: {
             jobId: job.job_id,
             messageId: context.message_id,
@@ -654,7 +658,6 @@ export async function processAgentOperationBriefJob(
             documentCount: String(context.documents.length),
             artifactCount: String(context.artifacts.length),
           },
-          cacheKey: "advisor-conversation-2026.09.01-v2",
         });
 
     const response = enforceExecutionActivation(
@@ -798,7 +801,7 @@ export async function processAgentOperationBriefJob(
         message: recordError instanceof Error ? recordError.message.slice(0, 300) : "unknown",
       });
     }
-    await queue.fail(job, describeJobFailure(error, {code: "agent_processing_failed", stage: "agent_operation_brief", spend: safeModelSpend(gateway.spent()), retryable: false}), {retryable: false});
+    await queue.fail(job, describeJobFailure(error, {code: "agent_processing_failed", stage: "agent_operation_brief", spend: safeModelSpend(gateway.spent()), modelDiagnostics: safeModelAttemptDiagnostics(dependencies.modelLineage?.() ?? []), retryable: false}), {retryable: false});
     return {status: "failed"};
   }
 }
