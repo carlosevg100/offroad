@@ -109,7 +109,14 @@ export function routeWorkspaceExecution(input: {
     });
   }
 
-  if (input.requestEffect && input.requestEffect !== "none") {
+  // Requesting the first analytical draft is allowed to propose the existing public plan.
+  // Approval, external circulation and changes to an existing product retain their own gates.
+  const initialPublicDraft = input.requestIntent === "compile" && input.requestEffect === "proposal"
+    && input.accessBasis === "public_information" && input.documentCount === 0
+    && ["company_debt_view", "origination_thesis", "capital_planning"].includes(analysisScope.data)
+    && !patterns.approve.test(input.requestText) && !patterns.authorizeExternal.test(input.requestText)
+    && !patterns.simulate.test(input.requestText) && !patterns.negatedGovernedAction.test(input.requestText);
+  if (input.requestEffect && input.requestEffect !== "none" && !initialPublicDraft) {
     return workspaceExecutionRouteSchema.parse({
       action: "conversation_only",
       analysisScope: analysisScope.data,

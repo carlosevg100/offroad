@@ -1,3 +1,18 @@
+## 9 September: route an initial public analytical draft into the released plan
+
+A real public-company meeting request completed its advisor response but remained idle:
+compile/proposal was rejected before the released analysis planner. The first public draft
+now enters the existing planner for company debt, origination thesis or capital planning.
+Private information, existing products, active work, missing context, simulation, approvals
+and external circulation keep their existing boundaries. Plan consent remains required.
+Routing uses zero model calls. No database, provider, budget or permission changes.
+
+Validation: full local lint, typecheck, tests and build passed all43 packages; worker464
+and router227 tests passed, including the reproduced request, PT/EN drafts and negative
+authority/context cases. Root review performed. Production UI completion is not proven:
+subsequent verification was blocked by the session usage limit. No new paid evaluation.
+Rollback is a code revert. Controls APP-03/10 and AI-05/07/08 remain unchanged.
+
 ## 9 September: require complete claim coverage in the provider response
 
 Actual synthesis run34396953333 accepted English but rejected Portuguese because the fresh

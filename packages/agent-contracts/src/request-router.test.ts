@@ -312,3 +312,25 @@ describe("workspace execution router", () => {
     });
   });
 });
+
+
+describe("first public analytical work product requests",()=>{
+  const input={entryJob:"origination_thesis",accessBasis:"public_information",companyName:"Camil",documentCount:0,artifactTypes:[],conversationText:"Primeira reunião com CFO e tesouraria, sem relacionamento. Queremos alternativas de estrutura de capital; podemos emprestar com balanço próprio."};
+  it.each(["Prepare o material para a reunião.","Resume the analysis and prepare the meeting material."])("routes the classified draft request into the existing plan: %s",requestText=>{
+    const classified=routeWorkspaceRequest({message:requestText,surface:"case_workspace"});
+    expect(classified).toMatchObject({intent:"compile",effect:"proposal"});
+    expect(routeWorkspaceExecution({...input,requestText,requestIntent:classified.intent,requestEffect:classified.effect})).toMatchObject({action:"queue_specialized_job",analysisScope:"origination_thesis",modelRoutingCalls:0});
+  });
+  it.each([
+    {artifactTypes:["meeting_brief"],reasonCode:"specialized_work_product_exists"},
+    {specializedWorkActive:true,reasonCode:"specialized_work_in_progress"},
+    {accessBasis:"authorized_private",reasonCode:"governed_action_requires_exact_surface"},
+    {documentCount:1,reasonCode:"governed_action_requires_exact_surface"},
+  ])("preserves existing product, in-progress and private boundaries: $reasonCode",({reasonCode,...overrides})=>{
+    expect(routeWorkspaceExecution({...input,...overrides,requestText:"Prepare o material da reunião.",requestIntent:"compile",requestEffect:"proposal"})).toMatchObject({action:"conversation_only",reasonCode});
+  });
+  it.each(["Prepare e envie o material ao investidor.","Prepare o material e confirmo a aprovação.","Prepare o material para simular um cenário."])("does not interpret governed effects as ordinary draft permission: %s",requestText=>{
+    const classified=routeWorkspaceRequest({message:requestText,surface:"case_workspace"});
+    expect(routeWorkspaceExecution({...input,requestText,requestIntent:classified.intent,requestEffect:classified.effect})).toMatchObject({action:"conversation_only",reasonCode:"governed_action_requires_exact_surface"});
+  });
+});

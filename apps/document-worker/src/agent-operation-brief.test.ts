@@ -1021,7 +1021,10 @@ describe("agent operation brief worker", () => {
     expect(recordedActivation).toMatchObject({job: "origination_thesis", company: {name: "CVC"}});
   });
 
-  it("carries answered meeting context into a retry activation instead of rebuilding the brief from the retry sentence", async () => {
+  it.each([
+    "Retome a análise usando todas as informações que já forneci.",
+    "Retome a preparação desta reunião com a Camil usando o contexto que já forneci. Atualize as fontes públicas e prepare a leitura da companhia, alternativas de estrutura de capital e os pontos para conversar com o CFO e a tesouraria. Preserve o trabalho concluído e indique de forma objetiva o que ainda falta para o material.",
+  ])("carries answered meeting context into deterministic retry activation: %s", async (message) => {
     let recordedActivation: Record<string, unknown> | undefined;
     const queue = {
       writeStage: async () => {},
@@ -1029,7 +1032,7 @@ describe("agent operation brief worker", () => {
         session_id: job.intake_session_id,
         message_id: job.payload.message_id,
         locale: "pt-BR",
-        message: "Retome a análise usando todas as informações que já forneci.",
+        message,
         brief: {}, snapshot_fingerprint: "a".repeat(64),
         projection_updated_at: "2026-09-04T00:55:00.000Z", manifest_id: null,
         project: {
@@ -1069,7 +1072,7 @@ describe("agent operation brief worker", () => {
     expect(meetingContext).toContain("primeira conversa com CFO e tesouraria");
     expect(meetingContext).toContain("Não temos relacionamento nem exposição de crédito");
     expect(meetingContext).toContain("estruturar e distribuir mercado de capitais");
-    expect(meetingContext).toContain("Retome a análise");
+    expect(meetingContext).toContain(message);
   });
 
   it("asks for the institution operating model once research is already active without queueing it again", async () => {
