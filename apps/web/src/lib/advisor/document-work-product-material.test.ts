@@ -1,3 +1,7 @@
+import {execFileSync} from "node:child_process";
+import {mkdtempSync, writeFileSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 import {describe, expect, it} from "vitest";
 import {materialDocumentXml} from "@offroad/case-export";
 import type {DocumentWorkProduct} from "@offroad/domain-contracts";
@@ -53,4 +57,18 @@ describe("document work product material", () => {
     expect(() => documentWorkProductMaterial({...documentWorkProductFixture, assessmentStatus: "approved"} as unknown as DocumentWorkProduct, labels)).toThrow();
     expect(() => documentWorkProductToDocx({...input, issuedOn: "today"})).toThrow();
   });
+});
+
+
+it("uses the source-table numbering in the actual downloadable Word",()=>{
+  const first=documentWorkProductFixture.sources[0];
+  const product=documentWorkProductSchema.parse({...documentWorkProductFixture,sources:[{...first,id:"unquoted-first",anchor:"Page 1"},first]});
+  const file=join(mkdtempSync(join(tmpdir(),"offroad-word-references-")),"meeting.docx");
+  writeFileSync(file,documentWorkProductToDocx({product,labels,issuedOn:"2026-09-09"}));
+  const xml=execFileSync("unzip",["-p",file,"word/document.xml"]).toString();
+  expect(xml).toContain('w:anchor="offroad_ref_2"');
+  expect(xml).toContain('w:name="offroad_ref_2"');
+  expect(xml).toContain(`[2] ${first.anchor}`);
+  expect(xml).not.toContain("Referências da análise");
+  expect(xml.match(/<w:bookmarkStart /g)).toHaveLength(2);
 });

@@ -12,6 +12,31 @@ and router227 tests passed, including the reproduced request, PT/EN drafts and n
 authority/context cases. Root review performed. Production UI completion is not proven:
 subsequent verification was blocked by the session usage limit. No new paid evaluation.
 Rollback is a code revert. Controls APP-03/10 and AI-05/07/08 remain unchanged.
+## 9 September: direct Word navigation to the original source table
+
+Visual inspection of the actual PR578 documentary journey exposed two incompatible
+numbering sequences: the source table kept passage numbers while Word reassigned them
+by first observation. Its appended reference index then contained entries such as [1]3.
+
+Documentary Word exports now bind each citation number to its exact existing source-table
+row. The renderer validates unique identities/numbers/locations, existing table rows and
+complete coverage of cited ids, then emits direct internal bookmarks. It omits the duplicate
+appendix for this explicit mode. Other materials keep the existing general reference index.
+All observations, quotes, hypotheses, gaps, document identities, versions and hashes stay
+unchanged. No model call or new inference. case-export renderer version2026.09.09-v2.
+
+Focused export9 and actual downloadable Word projection5 tests passed. Full local lint,
+typecheck, tests and build passed43/43 packages in each stage. Three persisted synthetic
+executor results were exported and rendered; all six pages were visually inspected, without
+clipping, missing text, empty pages or reference remapping. These are distinct fixtures from
+the Portuguese UI reproduction; no before/after page-count improvement is claimed. Repeated
+observations and section-purpose mismatch remain editorial issues, not resolved by this fix.
+
+APP-03/04/10/11: existing tenant authorization and private download route unchanged. The
+references remain inside the same Word and create no external access. No data migration,
+provider or changed financial values. Rollback restores the renderer/projection. Root review
+performed; no independent agent available. This is navigation QA, not institutional-content
+or endgame acceptance.
 
 ## 9 September: require complete claim coverage in the provider response
 
