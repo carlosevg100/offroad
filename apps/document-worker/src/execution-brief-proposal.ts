@@ -18,6 +18,7 @@ const deliverables = {
   production_plan: {"pt-BR": "Plano de produção dos materiais e dependências", "en-US": "Materials production plan and dependencies"},
 } as const;
 const proposalContextSchema = z.object({
+  initial_work_request: z.object({message_id: z.uuid(), text: z.string().min(1).max(20000)}).strict().nullish(),
   confirmed_receivables_scope: receivablesEvidenceScopeContextSchema.optional(),
   governed_sector_context_inputs: governedSectorContextInputsSchema.optional(),
   target_job_id: z.uuid(),
@@ -41,11 +42,17 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
     const context = proposalContextSchema.parse(await queue.loadExecutionBriefProposal(job));
     if (context.target_job_id !== job.payload.approval_target_job_id || context.locale !== job.payload.locale) throw new Error("execution_brief_proposal_context_mismatch");
     if (!context.plan && context.target_kind !== "case_analysis") throw new Error("execution_brief_proposal_plan_required");
-    const documentaryHint = options.documentaryWorkEnabled && context.target_kind === "case_analysis" && context.project.access_basis === "authorized_private"
-      && context.documents.length > 0
-      && canCompileStandaloneDocumentWorkRequest({objective:context.objective,proposedDeliverable:"Preliminary documentary reading"});
     const existingDocumentary = context.plan?.taskSpecs.map(task=>task.id).sort().join(",") === "Q01,Q02,Q03";
-    const documentary = documentaryHint && (!context.plan || existingDocumentary);
+    // Economic understanding can change without replacing the user's work request.
+    // The durable request is already included in SQL's approval input fingerprint.
+    if (existingDocumentary && !context.initial_work_request) throw new Error("document_work_request_identity_required");
+    const requestedObjective = context.initial_work_request?.text ?? context.objective;
+    const documentaryHint = context.target_kind === "case_analysis" && context.project.access_basis === "authorized_private"
+      && context.documents.length > 0
+      && canCompileStandaloneDocumentWorkRequest({objective:requestedObjective,proposedDeliverable:"Preliminary documentary reading"});
+    if (existingDocumentary && !documentaryHint) throw new Error("document_work_request_scope_mismatch");
+    // A flag prevents new plans; it cannot reinterpret an existing documentary graph.
+    const documentary = existingDocumentary || (options.documentaryWorkEnabled && documentaryHint && !context.plan);
     const bootstrappedPlan = context.plan ? null : documentary ? documentWorkPlanSnapshot(context.project.entry_job) : capitalProjectPlanSnapshot(context.project.entry_job);
     const plan = context.plan ?? bootstrappedPlan!;
     const pt = context.locale === "pt-BR";
@@ -62,7 +69,7 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
     if (plan.taskSpecs.some((task) => task.id.startsWith("K"))) {
       sources.push({key: "public-market", label: pt ? "Referências públicas de mercado a pesquisar" : "Public market references to research", role: "public_market", status: "to_research", informationClass: "public", authorized: true});
     }
-    const internal = documentary ? compileDocumentWorkBrief({job:documentWorkJob(context.objective)!,plan:plan as unknown as CapitalProjectPlanSnapshot,revisionContext:context.target_job_id,locale:context.locale,objective:context.objective,sources}) : compileCapitalExecutionBrief({
+    const internal = documentary ? compileDocumentWorkBrief({job:documentWorkJob(requestedObjective)!,plan:plan as unknown as CapitalProjectPlanSnapshot,revisionContext:context.target_job_id,locale:context.locale,objective:requestedObjective,sources}) : compileCapitalExecutionBrief({
       assumptions: receivablesScopeAssumptions(context.confirmed_receivables_scope, context.locale),
       planningContext: buildGovernedSectorPlanning({inputs: context.governed_sector_context_inputs, sessionId: job.intake_session_id, companyLabel: context.project.company_name ?? context.project.name, locale: context.locale, objective: context.objective}),
       plan: plan as unknown as CapitalProjectPlanSnapshot,

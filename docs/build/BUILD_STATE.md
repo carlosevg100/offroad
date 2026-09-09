@@ -1,5 +1,28 @@
 ## Documentary persistence and interpretation correction, 9 September 2026
 
+## 9 September: documentary request continuity correction
+
+The proposal reader now returns the durable initial request (message ID and text) separately
+from the confirmed economic objective. Existing documentary graphs use that request and reject
+a missing or incompatible identity before recording; the new-plan flag does not reinterpret
+an existing graph. Financial plans retain their economic objective. The existing SQL approval
+fingerprint continues to bind request content, edits and economic context. No new authority,
+provider, financial method or task maturity is introduced.
+
+Staging migration `20260909153028_documentary_work_request_context` applied. The real SQL
+proposal bridge passed request selection, separate economic context, invalid capability rejection,
+held dispatch, approval and request fingerprint invalidation; all synthetic rows roll back.
+Worker proposal tests: 21 passed. Full `pnpm check` passed (43/43 tasks at each stage).
+Staging security advisors: zero lints; regenerated types unchanged from prior staging output.
+The isolated live gate now exports bounded job failure causes, with a loopback database guard,
+without payloads or capabilities. New provider-backed journey is pending.
+This fixes the reproduced initial-confirmation loss; it does not claim arbitrary request revision
+compilation or the full endgame. Documentary flag remains false; production migration pending.
+Security: DATA-03, APP-02/03/11, AI-04/09, SDLC-08/09. Private request remains tenant/job scoped;
+no request text is added to telemetry. Rollback: keep new planning disabled and revert the worker
+change if necessary; additive reader field can remain. Existing explicit approval is preserved.
+
+
 Baseline main `70cd83b` is deployed (Vercel6351986023, worker293). The real executor
 `34363217306` failed: two of six products released, five reviewer controls passed. Independent
 review found unsupported implications and false rejections of legitimate conditional questions.

@@ -12,6 +12,11 @@ insert into public.capital_projects (id,organization_id,project_name,entry_job,a
 values ('a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000002','Synthetic private bridge','structure_from_documents','authorized_private','a8000000-0000-4000-8000-000000000001');
 insert into public.document_intake_sessions (id,organization_id,capital_project_id,started_by,journey,locale,capital_objective,company_profile)
 values ('a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000001','company','pt-BR','Revisar liquidez e alternativas','{"name":"Companhia Sintética Horizonte"}');
+insert into public.agent_conversations(id,organization_id,intake_session_id,state,created_by)
+values ('a8000000-0000-4000-8000-000000000008','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003','asking','a8000000-0000-4000-8000-000000000001');
+insert into public.agent_messages(id,organization_id,conversation_id,intake_session_id,role,status,content,locale,metadata,created_by,created_at) values
+('a8000000-0000-4000-8000-000000000009','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000008','a8000000-0000-4000-8000-000000000003','user','completed','Compare propostas em leitura documental preliminar.','pt-BR','{"kind":"request"}','a8000000-0000-4000-8000-000000000001',now()-interval '1 minute'),
+('a8000000-0000-4000-8000-000000000010','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000008','a8000000-0000-4000-8000-000000000003','user','completed','Obrigado, os documentos são esses.','pt-BR','{"kind":"information_request_response"}','a8000000-0000-4000-8000-000000000001',now());
 insert into public.processing_runs (id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values ('a8000000-0000-4000-8000-000000000004','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003',1,'manual','queued','planner-bridge-fixture-v1','a8000000-0000-4000-8000-000000000001');
 insert into public.processing_jobs (id,organization_id,intake_session_id,processing_run_id,kind,status,payload)
@@ -34,7 +39,16 @@ begin
   if claim->>'kind'<>'execution_brief_proposal' or claim#>>'{payload,approval_target_job_id}'<>'a8000000-0000-4000-8000-000000000006' then
     raise exception 'held case did not produce claimable planner: %',claim;
   end if;
-  context:=public.worker_load_execution_brief_proposal_v1((claim->>'job_id')::uuid,claim->>'capability_token');
+  context:=public.worker_load_execution_brief_proposal_v3((claim->>'job_id')::uuid,claim->>'capability_token');
+  if context#>>'{initial_work_request,message_id}' is distinct from 'a8000000-0000-4000-8000-000000000009'
+    or context#>>'{initial_work_request,text}' is distinct from 'Compare propostas em leitura documental preliminar.'
+    or context->>'objective' is distinct from 'Revisar liquidez e alternativas' then
+    raise exception 'work request was conflated with economic context or later response';
+  end if;
+  begin
+    perform public.worker_load_execution_brief_proposal_v3((claim->>'job_id')::uuid,repeat('x',64));
+    raise exception 'work request leaked without a valid capability';
+  exception when insufficient_privilege then null; end;
   if context#>>'{project,name}'<>'Synthetic private bridge'
     or context#>>'{project,company_name}'<>'Companhia Sintética Horizonte'
     or context->>'objective'<>'Revisar liquidez e alternativas' then
@@ -79,6 +93,16 @@ begin
       'a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003')
     or private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then
     raise exception 'changed company identity preserved previous approval fingerprint';
+  end if;
+end;
+$$;
+do $$
+declare before_hash text;
+begin
+  before_hash:=private.execution_approval_input_fingerprint('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003');
+  update public.agent_messages set content='Pedido revisado: preparar a reunião.' where id='a8000000-0000-4000-8000-000000000009';
+  if before_hash=private.execution_approval_input_fingerprint('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003') then
+    raise exception 'changed work request preserved approval input identity';
   end if;
 end;
 $$;
