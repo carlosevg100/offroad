@@ -12,11 +12,11 @@ describe("documentary source review boundaries",()=>{
     await verifyDocumentWorkSourceFidelity(input,narrative,d);
     expect(d.gateway.complete).toHaveBeenCalledTimes(1);
     const request=vi.mocked(d.gateway.complete).mock.calls[0]![0];
-    expect(request).toMatchObject({schemaName:"document_work_source_review_v1",task:"preliminary_understanding",maxOutputTokens:4000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
+    expect(request).toMatchObject({schemaName:"document_work_source_review_v2",task:"preliminary_understanding",maxOutputTokens:4000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
     expect(JSON.parse((request.input[0] as {text:string}).text)).toMatchObject({passages:input.passages,narrative,authoredFields:documentWorkAuthoredFields(narrative)});
   });
   it.each(["inverse_comparison","unsupported_premise","unknown_as_absent","other_unsupported"])("fails closed for reviewer finding %s without repair",async code=>{
-    const output={reviewedFieldIds:ids,issues:[{fieldId:"hypotheses.0.text",code,sourceIds:["alpha","beta"]}]};
+    const output={reviewedFieldIds:ids,issues:[{fieldId:"hypotheses.0.text",code,sourceIds:["alpha","beta"],exactExcerpt:narrative.hypotheses[0]!.text,premiseRole:"asserted_fact",rationale:"The stated reporting comparison reverses the source frequency."}]};
     expect(await reviewDocumentWorkSourceFidelity(input,narrative,deps(output))).toEqual(output);
     const d=deps(output);await expect(verifyDocumentWorkSourceFidelity(input,narrative,d)).rejects.toThrow("document_work_product_source_review_failed");expect(d.gateway.complete).toHaveBeenCalledTimes(1);
   });
@@ -35,6 +35,26 @@ describe("documentary source review boundaries",()=>{
     const conditional={...narrative,hypotheses:[{text:"If no covenant exists, other protections may matter.",basisPassageIds:["alpha"],question:"Can you confirm whether a covenant exists?"}]};
     const output={reviewedFieldIds:documentWorkAuthoredFields(conditional).map(f=>f.id),issues:[]};
     expect(await verifyDocumentWorkSourceFidelity(input,conditional,deps(output))).toEqual(output);
+  });
+  it.each([
+    {exactExcerpt:"Not present in this field",premiseRole:"asserted_fact",rationale:"Unsupported assertion."},
+    {exactExcerpt:"Alpha",premiseRole:"invented",rationale:"Unsupported assertion."},
+    {exactExcerpt:"Alpha",premiseRole:"asserted_fact",rationale:" "},
+    {exactExcerpt:"Alpha",premiseRole:"asserted_fact",rationale:"x".repeat(161)},
+  ])("rejects unanchored or malformed issue detail %j",async detail=>{
+    const output={reviewedFieldIds:ids,issues:[{fieldId:"hypotheses.0.text",code:"unsupported_premise",sourceIds:["alpha"],...detail}]};
+    await expect(reviewDocumentWorkSourceFidelity(input,narrative,deps(output))).rejects.toThrow("document_work_product_source_review_failed");
+  });
+  it.each([
+    {text:"If operating volumes fluctuate, the borrower has a guaranteed revenue floor.",excerpt:"the borrower has a guaranteed revenue floor",role:"implication",locale:"en-US"},
+    {text:"Se o projeto atrasar, o patrocinador é obrigado a cobrir todo o custo.",excerpt:"o patrocinador é obrigado a cobrir todo o custo",role:"implication",locale:"pt-BR"},
+    {text:"Quais medidas compensam a inexistência de seguro?",excerpt:"a inexistência de seguro",role:"question_presupposition",locale:"pt-BR"},
+  ] as const)("anchors local issue in mixed logical roles: $locale",async sample=>{
+    const candidate={...narrative,hypotheses:[{...narrative.hypotheses[0]!,text:sample.text}]};
+    const review={reviewedFieldIds:documentWorkAuthoredFields(candidate).map(f=>f.id),issues:[{fieldId:"hypotheses.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:sample.excerpt,premiseRole:sample.role,rationale:"The sources do not establish this assertion."}]};
+    const d=deps(review);
+    expect(await reviewDocumentWorkSourceFidelity({...input,locale:sample.locale},candidate,d)).toEqual(review);
+    await expect(verifyDocumentWorkSourceFidelity({...input,locale:sample.locale},candidate,d)).rejects.toThrow("document_work_product_source_review_failed");
   });
   it("does not produce approval if the provider fails",async()=>{
     const d=deps(null);vi.mocked(d.gateway.complete).mockRejectedValue(new Error("provider_unavailable"));

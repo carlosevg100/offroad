@@ -9,6 +9,9 @@ export const sourceReviewSchema = z.object({
     fieldId: z.string().min(1).max(160),
     code: z.enum(["inverse_comparison", "unsupported_premise", "unknown_as_absent", "other_unsupported"]),
     sourceIds: z.array(z.string().min(1).max(160)).max(80),
+    exactExcerpt: z.string().min(1).max(160),
+    premiseRole: z.enum(["asserted_fact", "conditional_assumption", "implication", "question_presupposition", "title_assertion"]),
+    rationale: z.string().trim().min(1).max(160),
   }).strict()).max(172),
 }).strict();
 export type DocumentWorkSourceReview = z.infer<typeof sourceReviewSchema>;
@@ -27,7 +30,7 @@ export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProduc
   const response = await gateway.complete({
     task:"preliminary_understanding", system:documentWorkSourceReviewInstructions,
     input:[{type:"text",text:JSON.stringify({passages:input.passages,coverage:input.coverage,approvedRequest:input.approvedRequest,locale:input.locale,narrative,authoredFields:fields})}],
-    schema:sourceReviewSchema, schemaName:"document_work_source_review_v1",
+    schema:sourceReviewSchema, schemaName:"document_work_source_review_v2",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},
     maxOutputTokens:4000,
   });
@@ -39,13 +42,15 @@ export function validateDocumentWorkSourceReview(input: DocumentWorkProductInput
   const parsed = sourceReviewSchema.safeParse(raw);
   if (!parsed.success) throw failed();
   const review = parsed.data;
-  const expected = new Set(fields.map(field=>field.id));
+  const fieldText = new Map(fields.map(field=>[field.id,field.text]));
+  const expected = new Set(fieldText.keys());
   const covered = new Set(review.reviewedFieldIds);
   const sources = new Set(input.passages.map(source=>source.id));
   if (covered.size !== expected.size || review.reviewedFieldIds.length !== expected.size
     || review.reviewedFieldIds.some(id=>!expected.has(id))
     || review.issues.some(issue=>!expected.has(issue.fieldId) || issue.sourceIds.some(id=>!sources.has(id))
-      || new Set(issue.sourceIds).size !== issue.sourceIds.length)) throw failed();
+      || new Set(issue.sourceIds).size !== issue.sourceIds.length
+      || !fieldText.get(issue.fieldId)?.includes(issue.exactExcerpt))) throw failed();
   return review;
 }
 export async function verifyDocumentWorkSourceFidelity(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, dependencies: Dependencies): Promise<DocumentWorkSourceReview> {

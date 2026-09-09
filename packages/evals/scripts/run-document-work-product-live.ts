@@ -6,7 +6,7 @@ import {fingerprintJson} from "@offroad/case-understanding";
 import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter, defaultTaskPolicies, type GatewayCallLog} from "@offroad/model-gateway";
 import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-work-product-live";
 import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
-import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, type LiveProduct} from "../src/document-work-product-live";
+import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, scoreDocumentWorkSourceReviewControl, type LiveProduct} from "../src/document-work-product-live";
 import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
 import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
 type Review={reviewedFieldIds:string[];issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
@@ -33,7 +33,7 @@ async function main() {
   };
   const runs:Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;diagnostics:Diagnostic|null;providerCallRange:{start:number;end:number};completeCalls:number;narrativeCalls:number;reviewCalls:number;responses:Array<{kind:"narrative"|"source_review";providerCallIndex:number;contentFingerprint:string;validationPassed:boolean;diagnostics:Diagnostic|null;syntheticNarrative:Diagnostic["rejectedOutput"];syntheticReview:Review|null}>}>=[];
   const repeats:Array<{caseId:string;comparison:ReturnType<typeof compareDocumentWorkRepeats>|null}>=[];
-  const controls:Array<{caseId:string;expectedIssueFieldId:string|null;passed:boolean;review:Review|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
+  const controls:Array<{caseId:string;expectedIssueFieldId:string|null;expectedIssueFieldIds:string[];expectedCleanFieldIds:string[];scope:"mixed_locale_review_controls";passed:boolean;review:Review|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
   const persist=()=>{
     const accounting=summarizeDocumentWorkAttempts(runs.map(run=>({passed:run.score?.passed===true,completeCalls:run.completeCalls,narrativeCalls:run.narrativeCalls,reviewCalls:run.reviewCalls,firstResponseValid:run.responses.find(response=>response.kind==="narrative")?.validationPassed===true,providerCalls:run.providerCallRange.end-run.providerCallRange.start})),repeats.map(repeat=>repeat.comparison?.passed===true),gateway.spent());
     const controlSpend=controlGateway.spent();
@@ -86,9 +86,9 @@ async function main() {
     try{
       validateDocumentWorkProductNarrative(sample.input,sample.narrative);
       const review=await reviewDocumentWorkSourceFidelity(sample.input,sample.narrative,{gateway:controlGateway});
-      const passed=sample.expectedIssueFieldId===null?review.issues.length===0:review.issues.some(issue=>issue.fieldId===sample.expectedIssueFieldId);
-      controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,passed,review,failure:null,providerCallRange:{start,end:controlCalls.length}});
-    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,passed:false,review:null,failure:documentWorkFailureDiagnostics(error,undefined,null).code,providerCallRange:{start,end:controlCalls.length}});}
+      const passed=scoreDocumentWorkSourceReviewControl(sample,review);
+      controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed,review,failure:null,providerCallRange:{start,end:controlCalls.length}});
+    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed:false,review:null,failure:documentWorkFailureDiagnostics(error,undefined,null).code,providerCallRange:{start,end:controlCalls.length}});}
     persist();
   }
   if(!persist())process.exitCode=1;

@@ -5,7 +5,7 @@ import {runDocumentWorkProduct,validateDocumentWorkProductNarrative} from "./doc
 
 const input: DocumentWorkProductInput = {job:"comparison",locale:"en-US",approvedRequest:{text:"Compare the supplied proposals",fingerprint:"a".repeat(64)},passages:[{id:"p1",documentId:"d1",documentName:"Proposal Alpha.pdf",version:"v1",hash:"b".repeat(64),anchor:"page 1",text:"Proposal Alpha has a maturity of 36 months and requires a parent guarantee."}],coverage:{documentsConsidered:1,omittedPassages:0,limitations:["Only one proposal supplied."]}};
 const narrative = (job: DocumentWorkProductInput["job"] = "comparison") => ({sections:documentWorkProductSectionKeys[job].map((key,index)=>({key,title:String(key),observations:index===0?[{text:input.passages[0]!.text,citations:[{passageId:"p1",quote:input.passages[0]!.text}]}]:[]})),hypotheses:[],gaps:[{text:"Another proposal is needed for comparison.",question:"Can you provide the other proposal?"}]});
-const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v1"
+const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => request.schemaName === "document_work_source_review_v2"
   ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[]}} : undefined;
 describe("uploaded document work products",()=>{
   it("rejects a semantically unsupported result before producing a product, without regeneration",async()=>{
