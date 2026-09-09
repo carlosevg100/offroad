@@ -1,9 +1,10 @@
+import {z} from "zod";
 import {describe,expect,it,vi} from "vitest";
 import type {InformationGap,TracedCalculation} from "@offroad/reconciliation";
 import {auditBrief,compileAuthoredBrief,type CaseBrief} from "./brief";
 import {financialNumbersIn} from "./audit";
 import {briefReviewWithRevisionSchema,reviewBriefWithOneRevision,type BriefReviewResponse} from "./brief-review";
-import {supportedSemanticAudit,type SemanticAudit} from "./semantic-audit";
+import {boundSemanticAuditSchema,expandBoundSemanticAudit,supportedSemanticAudit,type SemanticAudit} from "./semantic-audit";
 
 const gap:InformationGap={id:"insurance",reference:"insurance",severity:"high",title:"Insurance",description:"Insurance information is not evidenced in the current analysis.",ownerRole:"company"};
 const calculation:TracedCalculation={id:"cash",value:"100",labels:{pt:"Caixa",en:"Cash"},inputs:[],trace:[],warnings:[]};
@@ -16,6 +17,7 @@ const audit:SemanticAudit={reviews:[
   {claimId:"cash",verdict:"supported",reasons:[],explanation:"Matches the calculated value."},
   {claimId:"insurance",verdict:"blocked",reasons:["unsupported_inference"],explanation:"An unsatisfied requirement does not establish absence."},
 ]};
+const boundAudit={reviewsByClaim:Object.fromEntries(audit.reviews.map(({claimId,...review})=>[claimId,review]))};
 const patch={claimId:"insurance",text:"Insurance coverage remains unverified in the current analysis.",kind:"fact" as const,supportIds:["gap:insurance"]};
 
 describe("one reviewed brief revision",()=>{
@@ -67,9 +69,9 @@ describe("one reviewed brief revision",()=>{
   });
   it("bounds patch identities and support to the current case",()=>{
     const schema=briefReviewWithRevisionSchema(brief,evidence);
-    expect(schema.safeParse({...audit,revisions:[patch]}).success).toBe(true);
-    expect(schema.safeParse({...audit,revisions:[{...patch,supportIds:["another-case"]}]}).success).toBe(false);
-    expect(schema.safeParse({...audit,revisions:[{...patch,claimId:"invented"}]}).success).toBe(false);
+    expect(schema.safeParse({...boundAudit,revisions:[patch]}).success).toBe(true);
+    expect(schema.safeParse({...boundAudit,revisions:[{...patch,supportIds:["another-case"]}]}).success).toBe(false);
+    expect(schema.safeParse({...boundAudit,revisions:[{...patch,claimId:"invented"}]}).success).toBe(false);
   });
   it("does not promote a revised judgment to human approval",async()=>{
     const result=await reviewBriefWithOneRevision({brief,evidence,verify:async(candidate,allowRevision)=>allowRevision
@@ -80,5 +82,22 @@ describe("one reviewed brief revision",()=>{
   });
   it("recognizes explicit currency even for small amounts and year-shaped amounts",()=>{
     expect(financialNumbersIn("R$ 999, USD 2026, 25 euros; 3 stores in 2026.")).toEqual(["999","2026","25"]);
+  });
+});
+
+
+describe("complete provider review contract",()=>{
+  it("requires every material claim at the provider schema boundary and preserves the canonical review",()=>{
+    const schema=boundSemanticAuditSchema(brief);
+    const json=z.toJSONSchema(schema);
+    expect((json.properties?.reviewsByClaim as {required:string[]}).required).toEqual(["cash","insurance"]);
+    expect(expandBoundSemanticAudit(brief,boundAudit)).toEqual(audit);
+    expect(schema.safeParse({reviewsByClaim:{cash:boundAudit.reviewsByClaim.cash}}).success).toBe(false);
+    expect(schema.safeParse({reviewsByClaim:{...boundAudit.reviewsByClaim,foreign:boundAudit.reviewsByClaim.cash}}).success).toBe(false);
+    expect(schema.safeParse(audit).success).toBe(false);
+  });
+  it("rejects ambiguous claim identities before provider execution",()=>{
+    const duplicate={...brief,sections:[...brief.sections,brief.sections[0]!]};
+    expect(()=>boundSemanticAuditSchema(duplicate)).toThrow("brief_review_duplicate_claim_id");
   });
 });
