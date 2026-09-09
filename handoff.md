@@ -1,3 +1,26 @@
+## 9 September: connect institutional workbook compilation to download
+
+The case engine generated governed/styled XLSX bytes while the authenticated download
+route regenerated the plain legacy workbook. Even unchanged financial inputs therefore
+failed the approved hash comparison. Engine-to-download PT/EN tests reproduce that mismatch.
+
+New artifacts persist the exact renderer version and localized metadata in their existing
+fingerprinted payload. The authorized material loader preserves/validates this contract.
+Download invokes the same governed renderer and still requires both approved SHA256 and
+byte length. Unknown renderer versions, altered metadata and changed economics are refused.
+Historical plain workbooks retain exact-byte replay; old styled artifacts without metadata
+require recompilation, never an invented rendering date or a replaced approval hash.
+Case engine version v16 invalidates old execution caches. No DB migration or permission change.
+
+Financial-model tests and33 engine tests passed, including compiler-to-download identity
+in both languages and rejection of the original renderer. Loader tests preserve the full
+contract and reject incomplete localization. Existing style/formulas are unchanged, so no
+new layout acceptance is claimed. Root review; controls APP-03/04/10/11 unchanged. Existing
+production-plan/tenant checks remain. Rollback code; legacy payloads remain readable.
+Complete combined local lint, typecheck, tests and build passed43/43 packages each.
+Financial-model38, engine33 and loader3 focused tests passed. This repairs XLSX delivery;
+it does not connect the separate institutional financial calculation engine or finish endgame.
+
 ## 9 September: retain company and request context in executive summaries
 
 Actual run34400372257 passed semantic/numeric review in Portuguese but its summary

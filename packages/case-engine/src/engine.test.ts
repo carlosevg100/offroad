@@ -1,9 +1,11 @@
+import {buildFinancialModel, renderApprovedFinancialWorkbook, toXlsxBuffer} from "@offroad/financial-model";
+import {createHash} from "node:crypto";
 import {caseMaterialsVersion} from "@offroad/case-materials";
 import {resolveMandate, type Mandate, type Sourced} from "@offroad/fund-mandate";
 import type {FactCandidate} from "@offroad/reconciliation";
 import {taskCacheFromReport} from "@offroad/case-runner";
 import {describe, expect, it} from "vitest";
-import {caseUnderstandingVersion, claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
+import {caseUnderstandingVersion, deskEvidence, claimFingerprint, supportedSemanticAudit, type ClaimDecision} from "@offroad/case-understanding";
 import {diversifiedReceivablesCase, receivablesParametricScenarios} from "@offroad/receivables-analysis";
 
 import {executeCaseEngine, publicCaseState, type CaseEngineInput} from "./engine";
@@ -451,6 +453,26 @@ describe("the governed case engine", () => {
       releaseEligible: false,
     });
     expect(pending.state.financialModel?.renderAudits.pt.contentSha256).toBe(pending.state.financialModel?.workbooks.pt.sha256);
+    const workbookArtifact = pending.state.financialModel!;
+    expect(workbookArtifact.rendering?.metadata.pt.asOfDate).toBe("2026-08-24");
+    const modelEvidence = deskEvidence(pending.state.desk, pending.state.trajectory);
+    for (const lang of ["pt", "en"] as const) {
+      const replayedModel = buildFinancialModel({archetypeId: "other", lang,
+        facts: pending.state.reconciliation.facts,
+        calculations: [...pending.state.reconciliation.calculations, ...modelEvidence.calculations],
+        filenames: new Map(), requestedAmount: workbookArtifact.inputs.amount,
+        requestedTermMonths: workbookArtifact.inputs.termMonths, requestedGraceMonths: workbookArtifact.inputs.graceMonths,
+        amortizationFormat: workbookArtifact.inputs.amortization,
+        ...(workbookArtifact.inputs.annualInterestRate ? {annualInterestRate: workbookArtifact.inputs.annualInterestRate} : {}),
+      });
+      // The former download renderer cannot reproduce the compiler's institutional bytes.
+      expect(createHash("sha256").update(toXlsxBuffer(replayedModel, lang)).digest("hex")).not.toBe(workbookArtifact.workbooks[lang].sha256);
+      expect(await renderApprovedFinancialWorkbook(replayedModel, lang, workbookArtifact)).not.toBeNull();
+      expect(await renderApprovedFinancialWorkbook(replayedModel, lang, {...workbookArtifact,
+        rendering: {...workbookArtifact.rendering!, metadata: {...workbookArtifact.rendering!.metadata,
+          [lang]: {...workbookArtifact.rendering!.metadata[lang], asOfDate: "2026-08-25"}}},
+      })).toBeNull();
+    }
     expect(pending.state.dataRoom.releasable).toBe(false);
     expect(pending.state.materialTruth.procedureCoverage).toHaveLength(32);
     expect(pending.state.materialTruth.releaseDecision).toBe("internal_only");

@@ -123,12 +123,13 @@ import {
   governedWorkbookRendererVersion,
   toGovernedXlsxBuffer,
   type GovernedWorkbookAudit,
+  type GovernedWorkbookMetadata,
 } from "@offroad/financial-model";
 import {reconcileCase, type FactCandidate, type ReconciledFact, type ReconciliationReport} from "@offroad/reconciliation";
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.08.29-v15";
+export const caseEngineVersion = "2026.09.09-v16";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -208,6 +209,7 @@ export type FinancialModelArtifact = FinancialModelArtifactEvidence & {
   deskAssumptions: string[];
   supportIds: string[];
   renderAudits: {pt: GovernedWorkbookAudit; en: GovernedWorkbookAudit};
+  rendering?: {rendererVersion: string; metadata: {pt: GovernedWorkbookMetadata; en: GovernedWorkbookMetadata}};
 };
 
 export type CaseEngineInput = {
@@ -1809,9 +1811,16 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         scale: "unidades-base",
         classification: "confidential" as const,
       };
+      const rendering = {
+        rendererVersion: governedWorkbookRendererVersion,
+        metadata: {
+          pt: commonMetadata,
+          en: {...commonMetadata, title: companyName ? `Indicative financial model | ${companyName}` : "Indicative financial model"},
+        },
+      };
       const [renderedPt, renderedEn] = await Promise.all([
-        toGovernedXlsxBuffer(modelPt, "pt", commonMetadata),
-        toGovernedXlsxBuffer(modelEn, "en", {...commonMetadata, title: companyName ? `Indicative financial model | ${companyName}` : "Indicative financial model"}),
+        toGovernedXlsxBuffer(modelPt, "pt", rendering.metadata.pt),
+        toGovernedXlsxBuffer(modelEn, "en", rendering.metadata.en),
       ]);
       const bytesPt = renderedPt.bytes;
       const bytesEn = renderedEn.bytes;
@@ -1849,6 +1858,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
           en: {sha256: sha256Bytes(bytesEn), byteSize: bytesEn.byteLength},
         },
         renderAudits: {pt: renderedPt.audit, en: renderedEn.audit},
+        rendering,
       };
       const fingerprint = fingerprintJson(payload);
       const financialModel: FinancialModelArtifact = {...payload, fingerprint};

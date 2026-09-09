@@ -11,3 +11,5 @@ export * from "./model";
 export * from "./review";
 export * from "./sector-packs";
 export * from "./workbook";
+
+export * from "./approved-download";
