@@ -15,14 +15,17 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
-    "next": "16.3.1",
+    "next": "16.3.3",
     "turbo": "2.10.10",
     "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   },
   "pnpm": {
     "overrides": {
-      "fast-uri": "3.1.7"
+      "fast-uri": "3.1.7",
+      "sharp": "0.35.4",
+      "js-yaml": "4.3.2",
+      "@vitest/mocker": "4.1.11"
     }
   }
 }

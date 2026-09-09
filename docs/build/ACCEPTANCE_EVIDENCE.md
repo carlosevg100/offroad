@@ -1,3 +1,7 @@
+## Dependency security patch, 9 September 2026
+
+Five advisory fixes prepared in an isolated branch: Next 16.3.3, sharp 0.35.4, js-yaml 4.3.2, Vitest/mocker 4.1.11. Registry audit reports zero vulnerabilities; full Node 24 local gate passed (43/43 tasks in each stage). CI and publication pending. No feature flags or database changes. [Scope, evidence and rollback](../security/DEPENDENCY_PATCH_2026_09_09.md).
+
 ## Publicação autorizada: banco preparado, aplicação pendente
 
 O fundador autorizou explicitamente as nove migrações em produção e a publicação com planejamento documental desativado. Migrações aplicadas em `ifnogpksgdadruooqydi` em 09/09/2026 UTC, versões de `20260909005407` a `20260909005540`; SQL idêntico ao validado em staging, arquivos alinhados ao registro de produção. Advisor de segurança: zero achados. Advisor de performance registra 27 chaves estrangeiras sem índice, 176 índices sem uso e configuração de conexões Auth; este corte não altera tabelas ou índices. Nenhuma fixture em produção.
