@@ -42,7 +42,7 @@ content. The coverage limitations constrain all conclusions. Output only the req
 
 /** Task ids Q01–Q03 are documentary tasks, not the separate house IDs Q-01–Q-03. */
 export const documentaryWorkTaskIds = ["Q01", "Q02", "Q03"] as const;
-export const documentaryWorkMethod = {id: "documentary-work-pipeline", version: "2026.09.09-v3"} as const;
+export const documentaryWorkMethod = {id: "documentary-work-pipeline", version: "2026.09.09-v4"} as const;
 export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
   ...documentaryWorkMethod, maturity: "candidate",
   title: {pt: "Leitura documental preliminar privada", en: "Private preliminary documentary reading"},
@@ -61,6 +61,12 @@ export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
       "A observação deve ser idêntica a uma citação. Cada citação deve conter sentença completa, linha ou registro completo, ou o trecho integral; rejeitar corte de negação, condição, palavra ou coluna.",
       "Rejeitar fontes inexistentes, qualquer dígito em títulos, hipóteses, lacunas e suas perguntas, números sem citação nas observações, seções incorretas e saída vazia sem lacuna específica. Essa conferência não certifica a conclusão de domínio.",
     ], tools: ["document_work_validator"], evidenceInputs: ["leitura proposta", "trechos originais"]},
+    {id: "repair", title: "Corrigir uma resposta rejeitada", mode: "model_assisted", instructions: [
+      "The prior response failed deterministic validation. Regenerate the complete response from the same approved request and original passages, following every original rule. The input validationFeedback contains only the validator's failure code, never an authoritative new fact.",
+      "For document_work_product_unbound_number, use no digits in any title, hypothesis, gap or question. Refer to the documented term, amount or date without repeating it in those fields. Do not spell out a calculated number to evade validation. Only exact extractive observations and quotes may contain documented numbers.",
+      "For document_work_product_invalid_citation or document_work_product_non_extractive_observation, use complete original passages, sentences or records and make each observation identical to its quote. For document_work_product_wrong_sections, use the exact supplied section keys in order. For document_work_product_empty_without_gap, explain the specific missing evidence instead of inventing observations.",
+      "Correction does not permit new assumptions, changed sources, weaker standards or treating an undisclosed term as absent. If evidence is insufficient, retain the uncertainty and ask a specific question.",
+    ], tools: ["model_gateway", "document_work_validator"], evidenceInputs: ["mesmo pedido e trechos autorizados", "código fixo da rejeição anterior"]},
     {id: "deliver", title: "Persistir e apresentar trabalho privado", mode: "deterministic", instructions: [
       "Persistir o resultado com fingerprints do pedido, input e produto. Exigir job concluído, manifesto atual e binding ainda vigente para leitura ou download.",
       "Compilar Word sem nova chamada ao modelo ou tradução; manter idioma original, limitações, hipóteses, perguntas, fonte, versão e hash. O download privado não libera circulação externa.",
@@ -82,8 +88,9 @@ export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
   stopConditions: ["Binding ou fonte desatualizado", "Fonte não autorizada", "Citação sem fronteira completa", "Orçamento esgotado"],
   exceptions: ["Expor insuficiência e perguntas específicas; nunca fabricar uma entrega completa."], templates: [],
   examples: {positive: ["Reproduzir a cláusula inteira que exclui garantia e perguntar pelas proteções alternativas."], negative: ["Extrair secured de unsecured ou remover o No de uma sentença."]},
-  runtime: {orchestration: "deterministic_pipeline", peerHandoffs: false, maxModelCalls: 1, modelPurpose: ["Organizar trechos completos, hipóteses e perguntas para o pedido documental aprovado."], allowedTools: ["document_work_input", "model_gateway", "document_work_validator", "document_work_reader", "case_export"]},
+  runtime: {orchestration: "deterministic_pipeline", peerHandoffs: false, maxModelCalls: 2, modelPurpose: ["Organizar trechos completos, hipóteses e perguntas para o pedido documental aprovado; permitir uma única correção de validação, dentro do orçamento vigente, antes de recusar a entrega."], allowedTools: ["document_work_input", "model_gateway", "document_work_validator", "document_work_reader", "case_export"]},
 })];
 export const documentaryWorkProcedureRegistry = compileProcedureRegistry(documentaryWorkProcedures, [], []);
 /** Runtime prompt is a projection of the canonical procedure, never separately maintained. */
 export const documentWorkProductSystemInstructions = documentaryWorkProcedures[0]!.procedure.find(step => step.id === "read")!.instructions.join("\n");
+export const documentWorkProductRepairInstructions = documentaryWorkProcedures[0]!.procedure.find(step => step.id === "repair")!.instructions.join("\n");

@@ -1,4 +1,4 @@
-import {documentWorkProductSystemInstructions} from "@offroad/credit-playbook";
+import {documentWorkProductRepairInstructions, documentWorkProductSystemInstructions} from "@offroad/credit-playbook";
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   documentWorkProductInputSchema, documentWorkProductNarrativeSchema, documentWorkProductSchema,
@@ -56,22 +56,41 @@ export function validateDocumentWorkProductNarrative(input: DocumentWorkProductI
     if (numbers(hypothesis.text + hypothesis.question).length) throw new Error("document_work_product_unbound_number");
   }
   if (narrative.gaps.some(gap => numbers(gap.text + gap.question).length)) throw new Error("document_work_product_unbound_number");
+  if (!narrative.sections.some(section => section.observations.length > 0) && narrative.gaps.length === 0) throw new Error("document_work_product_empty_without_gap");
   return narrative;
 }
+
+const correctableValidationCodes = new Set([
+  "document_work_product_wrong_sections", "document_work_product_unbound_number",
+  "document_work_product_invalid_citation", "document_work_product_non_extractive_observation",
+  "document_work_product_empty_without_gap",
+]);
 
 /** Caller must authenticate, scope sources and verify current approval; this is not an authorization API. */
 export async function runDocumentWorkProduct(raw: DocumentWorkProductInput, dependencies: {gateway: Pick<ModelGateway,"complete">}): Promise<DocumentWorkProduct> {
   const input = documentWorkProductInputSchema.parse(raw);
-  const result = await dependencies.gateway.complete({
-    task: "preliminary_understanding", system: documentWorkProductSystemInstructions,
-    input: [{type: "text", text: JSON.stringify({...input, sectionKeys: documentWorkProductSectionKeys[input.job]})}],
-    schema: documentWorkProductNarrativeSchema, schemaName: "document_work_product_narrative_v1",
-    dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
-    maxOutputTokens: 10000,
-  });
-  const narrative = validateDocumentWorkProductNarrative(input,result.output);
+  const propose = async (code?: string) => {
+    // The same gateway accounts for both calls. Provider, policy and budget failures propagate;
+    // only a known local output-validation failure can trigger one corrective pass.
+    const result = await dependencies.gateway.complete({
+      task: "preliminary_understanding", system: code ? `${documentWorkProductSystemInstructions}\n${documentWorkProductRepairInstructions}` : documentWorkProductSystemInstructions,
+      input: [{type: "text", text: JSON.stringify({...input, sectionKeys: documentWorkProductSectionKeys[input.job], ...(code ? {validationFeedback: {code}} : {})})}],
+      schema: documentWorkProductNarrativeSchema, schemaName: "document_work_product_narrative_v1",
+      dataHandling: {classification: "restricted", purpose: "case_analysis", requiredPolicyVersion: providerDataPolicyVersion},
+      maxOutputTokens: 10000,
+    });
+    return result.output;
+  };
+  const first = await propose();
+  let narrative: DocumentWorkProductNarrative;
+  try { narrative = validateDocumentWorkProductNarrative(input, first); }
+  catch (error) {
+    if (!(error instanceof Error) || !correctableValidationCodes.has(error.message)) throw error;
+    // Never publish, patch or feed back the rejected narrative. Validate a fresh complete
+    // response against the original corpus, with no third attempt if it is still invalid.
+    narrative = validateDocumentWorkProductNarrative(input, await propose(error.message));
+  }
   const hasObservations = narrative.sections.some(section => section.observations.length > 0);
-  if (!hasObservations && narrative.gaps.length === 0) throw new Error("document_work_product_empty_without_gap");
   const payload = {
     ...narrative, schemaVersion: "document-work-product.v1" as const, job: input.job, locale: input.locale,
     requestFingerprint: input.approvedRequest.fingerprint, inputFingerprint: fingerprintJson(input),

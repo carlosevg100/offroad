@@ -11,3 +11,5 @@ Authenticated journey `34302837186` finished FAIL: one signup test passed, the c
 
 The candidate protected workflow now provisions real Ubuntu ClamAV, requires a successful definition update, binds its daemon to loopback and checks PING/version plus clean and EICAR INSTREAM controls before starting the documentary worker. Syntax checks passed; actual Linux scanner readiness and the full journey still require the protected workflow. No runtime scanner guard was relaxed, and no receipt was seeded. Planning remains disabled in production.
 
+
+The independent review continuation in REVIEW-DOCUMENTARY-RELEASE-72f4812.md preserves executor 34304668616 FAIL 5/6 (numeric hypothesis rejection). The v4 corrective pass and scanner compatibility change require fresh evidence; no release promotion follows from these failed runs.
