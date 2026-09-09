@@ -1120,6 +1120,7 @@ describe("worker case analysis", () => {
       const outcome = await processCaseAnalysisJob(job, {
         queue: {...queue,
           loadCaseInput: async () => ({...documentRaw, document_work_request: {...documentRequest, objective: requested.objective, executionScope:"documentary_only"}}),
+          commitDocumentaryExecution: async (_job,_report,value,state)=>{manifest=value;snapshot=state as Record<string,unknown>;return "document-manifest";},
           recordCaseSnapshot: async (_job, value, state) => {manifest = value; snapshot = state as Record<string, unknown>; return "document-manifest";},
         }, gateway: fixtureGateway, lineage: () => logs, researchProviders: [], now: () => new Date("2026-08-24T13:00:00.000Z"),
       });
@@ -1173,6 +1174,7 @@ describe("worker case analysis", () => {
         loadRetrievalContext:async()=>{throw new Error("financial retrieval must not run");},
         recordDealStateObject:async()=>{throw new Error("financial state must not be promoted");},
         recordOperatingControlSnapshot:async()=>{throw new Error("financial controls must not be approved");},
+        commitDocumentaryExecution:async(_job,report,_manifest,state)=>{standaloneReport=report;standaloneSnapshot=state as Record<string,unknown>;return "standalone-manifest";},
         recordControlledExecution:async(_job,report)=>{standaloneReport=report;return "document-execution";},
         recordCaseSnapshot:async(_job,_manifest,state)=>{standaloneSnapshot=state as Record<string,unknown>;return "standalone-manifest";},
       },gateway:standaloneGateway,lineage:()=>standaloneLogs,researchProviders:[],now:()=>new Date("2026-08-24T13:00:00.000Z"),

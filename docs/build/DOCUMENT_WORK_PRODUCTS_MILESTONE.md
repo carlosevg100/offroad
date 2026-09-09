@@ -66,3 +66,11 @@ Jornada autenticada isolada preparada em `apps/web/e2e/documentary-work-products
 ## Fechamento da persistência em staging
 
 A regressão executou freeze, controlled report, snapshot e conclusão pelas RPCs reais. O reader permaneceu disponível após conclusão e Q03 só concluiu após o job. O rollback deixou zero usuários e execuções de fixture. Gate local final: `pnpm check`, 43/43 tarefas por etapa, 398 testes do worker e 413 do web. Modelo real e jornada autenticada específica permanecem pendentes.
+
+## Retomada e compatibilidade
+
+O commit documental agora grava relatório controlado, snapshot, stages finais e conclusão em uma única transação autorizada. Falha após a primeira escrita reverte tudo; perda de confirmação após commit não permite reabrir o job concluído. Relatórios documentais anteriores não são tratados como cache de execução financeira.
+
+A consulta de worker é VOLATILE porque sua autorização bloqueia o job. A interface não lê `internal_snapshot`: recebe apenas o tipo documental por projeção autorizada, com testes de plano pendente, aceito, acesso externo negado e ausência de autoridade de execução. Arrays legados inválidos não causam erro no leitor de escopo.
+
+Migrações adicionais aplicadas somente em staging: `20260909003511_atomic_documentary_execution_commit.sql`, `20260909003630_document_work_request_loader_guards.sql`, `20260909003638_worker_runtime_schema_contract.sql`, `20260909003909_documentary_plan_job_projection.sql`. Regressões SQL passaram com rollback; zero fixtures residuais e zero achados de segurança. E2E mobile usa as abas reais e mantém as verificações de rastreio e largura. Gate completo local aprovado em `/private/tmp/offroad-documentary-recovery-check.log`; CI final e provedor real ainda pendentes.

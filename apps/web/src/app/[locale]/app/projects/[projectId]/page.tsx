@@ -1,4 +1,3 @@
-import {isDocumentWorkBrief, documentWorkPlanPrefix} from "@offroad/work-plan";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
 import {loadReceivablesTemporalReport} from "@/lib/receivables/temporal-report";
 import {ReceivablesProjectSupportPeriods} from "@/components/intake/receivables-project-support-periods";
@@ -263,7 +262,7 @@ async function ConversationalCapitalProject({
     supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
     supabase.from("capital_project_execution_briefs")
-      .select("id, brief_version, internal_snapshot, visible_snapshot, change_summary, created_at")
+      .select("id, brief_version, visible_snapshot, change_summary, created_at")
       .eq("organization_id", organization.id)
       .eq("capital_project_id", project.id)
       .order("brief_version", {ascending: false})
@@ -276,13 +275,14 @@ async function ConversationalCapitalProject({
   const parsedExecutionBriefChanges = executionBriefRow
     ? executionBriefChangeSchema.array().max(20).safeParse(executionBriefRow.change_summary)
     : null;
-  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}, {data: executionBriefApprovalRaw}] = executionBriefRow
+  const [{data: executionBriefProgressRaw}, {data: executionBriefNarrativeRaw}, {data: executionBriefApprovalRaw}, {data: documentaryPlanJob}] = executionBriefRow
     ? await Promise.all([
         supabase.rpc("read_capital_project_execution_brief_progress_v1", {p_execution_brief_id: executionBriefRow.id}),
         supabase.rpc("read_capital_project_execution_brief_narrative_v1", {p_execution_brief_id: executionBriefRow.id}),
         supabase.rpc("read_advisor_execution_brief_approval_v1", {p_project_id: project.id, p_execution_brief_id: executionBriefRow.id}),
+        supabase.rpc("read_documentary_plan_job_v1", {p_project_id: project.id, p_execution_brief_id: executionBriefRow.id}),
       ])
-    : [{data: null}, {data: null}, {data: null}];
+    : [{data: null}, {data: null}, {data: null}, {data: null}];
   const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
   const parsedExecutionBriefNarrative = executionBriefNarrativeSchema.safeParse(executionBriefNarrativeRaw);
   const executionBriefProgress = parsedExecutionBrief?.success
@@ -448,9 +448,7 @@ async function ConversationalCapitalProject({
   const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
     ? projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
     : null;
-  const briefScope = executionBriefRow?.internal_snapshot;
-  const briefJob = isDocumentWorkBrief(briefScope) && briefScope && typeof briefScope === "object" && !Array.isArray(briefScope)
-    ? String(briefScope.planVersion).slice(documentWorkPlanPrefix.length).split(":")[0] : null;
+  const briefJob = documentaryPlanJob;
   const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
     && (briefJob === "comparison" || briefJob === "meeting" || briefJob === "review") ? {job:briefJob} as const : undefined;
   const emptyConversationCopy = displayedApproval?.status === "awaiting"

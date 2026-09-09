@@ -4,6 +4,8 @@ Branch `feat/advisor-work-products`, base `292d26b`. Executor comum para compara
 
 Gate local completo `pnpm check` aprovado (43/43 tarefas por etapa, Node 24). CI e publicação ainda pendentes. Testes do runner cobrem três pedidos e recusas por vínculo/fonte; reader e rota cobrem autorização, fontes, manifesto, corrida e export. Migrações aditivas e regressão SQL com rollback verificadas somente em staging. Sem publicação deste corte em produção. O E2E com modelo real ainda depende de worker autorizado; testes simulados não substituem essa evidência. Continuação implementa plano documental Q01/Q02/Q03 e execução sem motor financeiro para pedidos compatíveis em novos planos. Vínculo SQL exige tarefas e target exatos; planos financeiros existentes são preservados. A jornada com provedor real e o despacho universal seguem pendentes. O marco completo, materiais institucionais amplos, expertise setorial universal e endgame permanecem incompletos.
 
+O planejamento documental nasce desativado por padrão (`DOCUMENTARY_WORK_PLANNING_ENABLED=false`). Progresso segue stages do job e tentativa atuais. A revisão de interrupções exige commit atômico de relatório, snapshot e conclusão; relatórios documentais anteriores não alimentam o cache financeiro. Gate protegido de executor real e jornada autenticada com três projetos estão preparados, mas ainda não executados. Integração de código não equivale à ativação ou homologação.
+
 Escopo, aceite e rollout: [DOCUMENT_WORK_PRODUCTS_MILESTONE.md](DOCUMENT_WORK_PRODUCTS_MILESTONE.md). Controles: AI-05/AI-08, TRUST-APP-02, TRUST-DATA-02, TRUST-SDLC-01. Nenhuma nova divulgação a terceiros ou alteração de permissões de negócio.
 
 # Acceptance Evidence

@@ -15,6 +15,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "confirmed-receivables-evidence-scope.v1",
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
+  "atomic-documentary-commit.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

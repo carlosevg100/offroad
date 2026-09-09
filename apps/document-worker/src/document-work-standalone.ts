@@ -19,6 +19,7 @@ export async function processStandaloneDocumentWork(input: {
   expectedPriorModelCalls: number;
 }, dependencies: CaseAnalysisDependencies): Promise<{status: "succeeded"; manifestId: string}> {
   const {job,binding,documentInput} = input;
+  if (!dependencies.queue.commitDocumentaryExecution) throw new Error("documentary_atomic_commit_unavailable");
   const callsBefore = dependencies.gateway.spent().calls;
   await dependencies.queue.writeStage(job,"document_work_product","started");
   await dependencies.queue.writeStage(job,"documentary_Q02","started",{attempt:job.attempt});
@@ -49,11 +50,7 @@ export async function processStandaloneDocumentWork(input: {
     outputs:[{artifactId:`${job.intake_session_id}:case_state`,kind:"case_state",sha256:fingerprintJson(state)}],
   });
   await dependencies.queue.writeStage(job,"documentary_Q03","started",{attempt:job.attempt});
-  await dependencies.queue.recordControlledExecution(job,report,manifest);
-  const manifestId = await dependencies.queue.recordCaseSnapshot(job,manifest,{...state,manifestFingerprint:manifest.manifestFingerprint});
-  await dependencies.queue.writeStage(job,"documentary_Q03","succeeded",{attempt:job.attempt});
-  await dependencies.queue.writeStage(job,"document_work_product","succeeded",{executionScope:"documentary_only",productStatus:product.status});
-  await dependencies.queue.writeStage(job,"case_analysis","succeeded",{executionScope:"documentary_only",financialAnalysisStatus:"not_performed",manifestFingerprint:manifest.manifestFingerprint});
-  await dependencies.queue.complete(job,{manifest_id:manifestId,report,analysis_scope:"documentary_only",model_lineage:lineage,spend:dependencies.gateway.spent()});
+  const manifestId = await dependencies.queue.commitDocumentaryExecution(job,report,manifest,{...state,manifestFingerprint:manifest.manifestFingerprint},
+    {report,analysis_scope:"documentary_only",model_lineage:lineage,spend:dependencies.gateway.spent()});
   return {status:"succeeded",manifestId};
 }

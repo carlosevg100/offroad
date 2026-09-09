@@ -3,6 +3,9 @@
 -- Synthetic rollback-only consent boundary regression. Legacy metadata setup uses the
 -- shared fixture helper; the owner calls the real public approval RPC directly.
 begin;
+do $$ begin
+ if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='worker_load_document_work_request_v1' and p.provolatile<>'v') then raise exception 'capability loader must be volatile for PostgREST row locks'; end if;
+end $$;
 
 
 insert into auth.users (id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
@@ -32,7 +35,7 @@ where id='51000000-0000-4000-8000-000000000901';
 insert into public.processing_jobs(id,organization_id,intake_session_id,processing_run_id,source_document_id,kind,status,payload)
 values('81000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','70000000-0000-4000-8000-000000000901','50000000-0000-4000-8000-000000000901','document_pipeline','succeeded',jsonb_build_object('document_version',1,'sha256',repeat('a',64)));
 
-do $diag$ declare j uuid; c jsonb; r jsonb; rejected boolean:=false;
+do $diag$ declare j uuid; c jsonb; r jsonb; rejected boolean:=false; document_report jsonb; document_manifest jsonb; document_state jsonb; atomic_failed boolean:=false;
   fixture_internal jsonb := $fixture$
 {
   "schemaVersion": "execution-brief.v1",
@@ -1132,7 +1135,9 @@ if not private.execution_dispatch_is_current('80000000-0000-4000-8000-0000000009
 -- Documentary authorization needs signed marker AND exact snapshot, targets and persisted tasks.
 if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'ordinary plan gained documentary scope'; end if;
 begin
- update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{planVersion}','"document-work-plan.v1:synthetic"')
+ update public.capital_project_plans set snapshot=jsonb_set(snapshot,'{taskSpecs}','null') where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'scalar legacy snapshot granted scope'; end if;
+ update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{planVersion}','"document-work-plan.v1:comparison:synthetic"')
  where id=(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'marker alone authorized documentary scope'; end if;
  update public.capital_project_execution_briefs set workstream_count=3,internal_snapshot=jsonb_set(internal_snapshot,'{workstreams}','[{"label":"Sources","sourceTaskIds":["Q01"]},{"label":"Review","sourceTaskIds":["Q02"]},{"label":"Delivery","sourceTaskIds":["Q03"]}]')
@@ -1147,6 +1152,18 @@ begin
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'mixed financial/documentary tasks authorized documentary scope'; end if;
  delete from public.capital_project_plan_tasks where plan_id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') and task_id not in ('Q01','Q02','Q03');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')->>'executionScope' is distinct from 'documentary_only' then raise exception 'exact documentary plan missing scope'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
+ if public.read_documentary_plan_job_v1((c#>>'{project,id}')::uuid,(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901')) is distinct from 'comparison' then raise exception 'accepted documentary plan projection missing'; end if;
+ begin
+  update public.capital_project_execution_brief_dispatches set accepted_at=null,accepted_by=null,accepted_event_id=null,approval_command_id=null where processing_job_id='80000000-0000-4000-8000-000000000901';
+  update public.processing_jobs set status='awaiting_approval' where id='80000000-0000-4000-8000-000000000901';
+  if public.read_documentary_plan_job_v1((c#>>'{project,id}')::uuid,(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901')) is distinct from 'comparison' then raise exception 'awaiting documentary plan projection missing'; end if;
+  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') is not null then raise exception 'display projection granted execution'; end if;
+  raise exception 'rollback awaiting projection fixture' using errcode='ZX003';
+ exception when sqlstate 'ZX003' then null; end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000999','role','authenticated')::text,true);
+ if public.read_documentary_plan_job_v1((c#>>'{project,id}')::uuid,(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901')) is not null then raise exception 'outsider read plan projection'; end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
  -- Progress is derived only from worker-capability stages for this exact job attempt.
  update public.processing_jobs set status='leased',attempts=1,capability_sha256=extensions.digest(repeat('e',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id='80000000-0000-4000-8000-000000000901';
  perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q01','succeeded','{"attempt":1}');
@@ -1161,13 +1178,30 @@ begin
  -- Prove the actual persistence RPC chain accepts a documentary report, not a financial report.
  update public.processing_jobs set status='leased' where id='80000000-0000-4000-8000-000000000901';
  perform public.worker_freeze_case_input('80000000-0000-4000-8000-000000000901',repeat('e',64),jsonb_build_object('synthetic',true,'document_work_request',private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')));
- perform public.worker_record_controlled_execution('80000000-0000-4000-8000-000000000901',repeat('e',64),
-  jsonb_build_object('schemaVersion','document-work-execution.v1','status','succeeded','executionScope','documentary_only','financialAnalysisStatus','not_performed','reportFingerprint',repeat('8',64)),
-  jsonb_build_object('schemaVersion','case-artifact-manifest.v1','manifestFingerprint',repeat('9',64),'inputFingerprint',repeat('6',64),'caseId','40000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','locale','pt-BR'),null);
- perform public.worker_record_case_snapshot('80000000-0000-4000-8000-000000000901',repeat('e',64),
-  jsonb_build_object('schemaVersion','case-artifact-manifest.v1','manifestFingerprint',repeat('9',64),'inputFingerprint',repeat('6',64),'caseId','40000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','locale','pt-BR'),
-  jsonb_build_object('schemaVersion','document-work-case-state.v1','executionScope','documentary_only','financialAnalysisStatus','not_performed','fingerprint',repeat('6',64),'manifestFingerprint',repeat('9',64)));
- perform public.worker_complete_job('80000000-0000-4000-8000-000000000901',repeat('e',64),jsonb_build_object('analysis_scope','documentary_only','spend',jsonb_build_object('costUsd',0,'calls',0)));
+ document_report:=jsonb_build_object('schemaVersion','document-work-execution.v1','status','succeeded','executionScope','documentary_only','financialAnalysisStatus','not_performed','reportFingerprint',repeat('8',64),'jobId','80000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','inputFingerprint',repeat('6',64),'productFingerprint',repeat('5',64));
+ document_manifest:=jsonb_build_object('schemaVersion','case-artifact-manifest.v1','manifestFingerprint',repeat('9',64),'inputFingerprint',repeat('6',64),'caseId','40000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','locale','pt-BR');
+ document_state:=jsonb_build_object('schemaVersion','document-work-case-state.v1','executionScope','documentary_only','financialAnalysisStatus','not_performed','fingerprint',repeat('6',64),'manifestFingerprint',repeat('9',64),'documentWorkProduct',jsonb_build_object('binding',private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901'),'product',jsonb_build_object('fingerprint',repeat('5',64))));
+ begin
+  perform public.worker_commit_documentary_execution_v1('80000000-0000-4000-8000-000000000901',repeat('z',64),document_report,document_manifest,document_state,'{}');
+  raise exception 'invalid capability committed documentary work';
+ exception when insufficient_privilege then null; end;
+ begin
+  perform public.worker_commit_documentary_execution_v1('80000000-0000-4000-8000-000000000901',repeat('e',64),document_report,document_manifest,jsonb_set(document_state,'{documentWorkProduct,binding,requestFingerprint}',to_jsonb(repeat('0',64))),'{}');
+  raise exception 'stale binding committed documentary work';
+ exception when insufficient_privilege then null; end;
+ begin
+  perform public.worker_commit_documentary_execution_v1('80000000-0000-4000-8000-000000000901',repeat('e',64),document_report,jsonb_set(document_manifest,'{locale}','"en-US"'),document_state,'{}');
+ exception when invalid_parameter_value then atomic_failed:=true; end;
+ if not atomic_failed then raise exception 'invalid snapshot unexpectedly committed'; end if;
+ if exists(select 1 from private.case_execution_results where execution_id='90000000-0000-4000-8000-000000000901') then raise exception 'partial immutable report survived failed commit'; end if;
+ if exists(select 1 from public.case_artifact_manifests where organization_id='20000000-0000-4000-8000-000000000901') then raise exception 'partial manifest survived failed commit'; end if;
+ if (select status from public.processing_jobs where id='80000000-0000-4000-8000-000000000901')<>'leased' then raise exception 'failed commit changed job state'; end if;
+ perform public.worker_commit_documentary_execution_v1('80000000-0000-4000-8000-000000000901',repeat('e',64),document_report,document_manifest,document_state,jsonb_build_object('spend',jsonb_build_object('costUsd',0,'calls',0)));
+ begin
+  perform public.worker_fail_job('80000000-0000-4000-8000-000000000901',repeat('e',64),'{}',true,60);
+  raise exception 'lost acknowledgement reverted a committed job';
+ exception when insufficient_privilege then null; end;
+ if (select status from public.processing_jobs where id='80000000-0000-4000-8000-000000000901')<>'succeeded' then raise exception 'committed job was requeued'; end if;
  if public.read_advisor_document_work_binding_v1((c#>>'{project,id}')::uuid,'80000000-0000-4000-8000-000000000901') is null then raise exception 'real completion hid documentary binding'; end if;
 
  if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' is distinct from 'completed' then raise exception 'completed documentary delivery missing'; end if;

@@ -47,8 +47,15 @@ describe("claimed job parsing", () => {
 });
 
 describe("case input loading", () => {
-  it("freezes live case data before attaching the prior report cache", async () => {
-    const prior = {schemaVersion: "2026.08.29-v4", reportFingerprint: "prior"};
+  it("commits the documentary report, snapshot and completion through one transaction",async()=>{
+    const rpc=vi.fn().mockResolvedValue({data:"10000000-0000-4000-8000-000000000001",error:null});
+    const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+    await expect(queue.commitDocumentaryExecution!(job,{schemaVersion:"document-work-execution.v1"},{},{},{spend:{costUsd:0,calls:0}})).resolves.toBe("10000000-0000-4000-8000-000000000001");
+    expect(rpc).toHaveBeenCalledTimes(1);
+    expect(rpc).toHaveBeenCalledWith("worker_commit_documentary_execution_v1",expect.objectContaining({p_job_id:job.job_id,p_capability_token:job.capability_token}));
+  });
+
+  it.each([{schemaVersion:"2026.08.29-v4",reportFingerprint:"prior"},{schemaVersion:"document-work-execution.v1",reportFingerprint:"prior-documentary"}])("freezes live data and excludes documentary reports from financial cache: $schemaVersion", async (prior) => {
     const scope = {state: "confirmed", scope: {fingerprint: "a".repeat(64)}};
     const approvedRequest = {objective: "Current approved request", requestFingerprint: "b".repeat(64)};
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
@@ -70,7 +77,7 @@ describe("case input loading", () => {
 
     expect(result).toMatchObject({
       session: {id: "case"},
-      prior_case_report: prior,
+      prior_case_report: prior.schemaVersion === "document-work-execution.v1" ? null : prior,
       confirmed_receivables_scope: scope,
     });
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([

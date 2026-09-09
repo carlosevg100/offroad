@@ -28,6 +28,7 @@ describe("worker runtime schema preflight", () => {
           "confirmed-receivables-evidence-scope.v1",
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
+  "atomic-documentary-commit.v1",
         ],
       },
       error: null,
@@ -57,7 +58,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: documentary-execution-scope.v1");
+    }))).rejects.toThrow("missing capabilities: atomic-documentary-commit.v1");
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {

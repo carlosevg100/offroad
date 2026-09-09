@@ -8151,6 +8151,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_documentary_plan_job_v1: {
+        Args: { p_execution_brief_id: string; p_project_id: string }
+        Returns: string
+      }
       read_advisor_document_work_binding_v1: {
         Args: { p_job_id: string; p_project_id: string }
         Returns: Json
@@ -9016,6 +9020,17 @@ export type Database = {
       worker_load_claim_decisions: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
+      }
+      worker_commit_documentary_execution_v1: {
+        Args: {
+          p_capability_token: string
+          p_case_state: Json
+          p_job_id: string
+          p_manifest: Json
+          p_report: Json
+          p_result: Json
+        }
+        Returns: string
       }
       worker_load_document_work_request_v1: {
         Args: { p_capability_token: string; p_job_id: string }
