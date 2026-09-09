@@ -800,8 +800,10 @@ export async function processCaseAnalysisJob(
     if (raw._execution.mode === "primary" && raw.document_work_request && isStandaloneDocumentWorkRequest(raw.document_work_request)) {
       failurePhase = "document_work_product";
       if (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id) throw new Error("document_work_request_binding_invalid");
+      await dependencies.queue.writeStage(job,"documentary_Q01","started",{attempt:job.attempt});
       const documentInput = buildDocumentWorkInput({request:raw.document_work_request,locale:raw.session.locale === "en-US" ? "en-US":"pt-BR",sources:raw.sources,envelopes:raw.receivables_evidence});
       if (!documentInput) throw new Error("document_work_no_readable_evidence");
+      await dependencies.queue.writeStage(job,"documentary_Q01","succeeded",{attempt:job.attempt});
       const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
       return await processStandaloneDocumentWork({job,binding:raw.document_work_request,documentInput,economics:economicInput(raw),extractionVersion:stringOr(raw.session.extraction_version,"unknown"),priorModelLineage:priorLineage.success ? priorLineage.data.map(call => call as GatewayCallLog) : [],expectedPriorModelCalls:raw.expected_model_calls},dependencies);
     }

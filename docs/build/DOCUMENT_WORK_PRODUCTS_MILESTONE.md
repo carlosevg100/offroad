@@ -54,3 +54,15 @@ Migração `20260909001238_documentary_execution_scope_binding.sql` aplicada som
 Gate manual `.github/workflows/document-work-product-live.yml` preparado para três intenções repetidas com executor real, seis tentativas e teto compartilhado de USD 3. Mantém ambiente protegido e execução somente em main. Ainda não executado; não equivale a E2E autenticado, homologação de domínio ou liberação de produto. A validação exige integrar código para tornar esse workflow disponível em main; não alterar a fronteira OIDC para executar código de branch com segredos.
 
 Gate local final da continuação: `pnpm check` aprovado, 43/43 tarefas por etapa; 397 testes do worker e 413 testes web. Log `/private/tmp/offroad-standalone-check-release.log`. Worker exige também `documentary-execution-scope.v1`, introduzido pela migração aditiva `20260909001714_worker_runtime_schema_contract.sql`, aplicada somente em staging. O caminho financeiro não gera produto documental adicional. Proposta documental sem escopo SQL válido falha sem executar análise financeira. CI deste novo head, provedor real e produção ainda devem ser verificados.
+
+## Integração, homologação e ativação
+
+`DOCUMENTARY_WORK_PLANNING_ENABLED` é falso por padrão. O código pode ser integrado para disponibilizar os workflows protegidos sem iniciar novos planos documentais em produção. Ativar somente depois dos gates de executor real e jornada autenticada no ambiente isolado; a ativação não promove expertise setorial universal. Planos já aprovados mantêm a autorização registrada.
+
+Progresso documental deriva das etapas capability-bound do job/tentativa atual. A terceira etapa só fica concluída depois de snapshot persistido e job succeeded. Migração `20260909002226_documentary_execution_progress.sql`, validada somente em staging com regressões de corrida, falha, scope antigo, tentativa anterior e usuário sem acesso.
+
+Jornada autenticada isolada preparada em `apps/web/e2e/documentary-work-products.spec.ts`: cadastro e três projetos independentes, upload, confirmação, aceite, progresso real, resultado, reload e Word. O workflow protegido Live preview gate aceita `journey=documentary-work-products`, habilitando somente nesse job o planejamento documental. Nenhum output de modelo é semeado. Gate local após essa integração aprovado em `/private/tmp/offroad-documentary-final-check.log`, 398 testes worker e 413 web; execução real ainda pendente.
+
+## Fechamento da persistência em staging
+
+A regressão executou freeze, controlled report, snapshot e conclusão pelas RPCs reais. O reader permaneceu disponível após conclusão e Q03 só concluiu após o job. O rollback deixou zero usuários e execuções de fixture. Gate local final: `pnpm check`, 43/43 tarefas por etapa, 398 testes do worker e 413 do web. Modelo real e jornada autenticada específica permanecem pendentes.

@@ -10,9 +10,14 @@ function context(access_basis = "authorized_private") {
 }
 function queue(value: unknown) {return {loadExecutionBriefProposal: vi.fn().mockResolvedValue(value), recordExecutionBriefProposal: vi.fn().mockResolvedValue({status: "proposed"}), fail: vi.fn()};}
 describe("execution brief proposal", () => {
+  it("does not activate new documentary planning by default", async()=>{
+    const q=queue({...context(),plan:null,objective:"Compare propostas em leitura documental preliminar"});
+    expect(await processExecutionBriefProposalJob(job,q)).toEqual({status:"proposed"});
+    expect(q.recordExecutionBriefProposal.mock.calls[0]![1].planVersion).not.toMatch(/^document-work-plan.v1:/);
+  });
   it("compiles a separate approved documentary plan only for explicit bounded new work", async () => {
     const q=queue({...context(),plan:null,objective:"Compare as propostas em uma leitura documental preliminar, sem cálculos."});
-    expect(await processExecutionBriefProposalJob(job,q)).toEqual({status:"proposed"});
+    expect(await processExecutionBriefProposalJob(job,q,{documentaryWorkEnabled:true})).toEqual({status:"proposed"});
     const [,internal,, ,plan]=q.recordExecutionBriefProposal.mock.calls[0]!;
     expect(internal.planVersion).toMatch(/^document-work-plan.v1:/);
     expect(plan.taskSpecs.map((task:{id:string})=>task.id)).toEqual(["Q01","Q02","Q03"]);
@@ -21,7 +26,7 @@ describe("execution brief proposal", () => {
   });
   it("does not replace an existing financial plan or classify a calculation as documentary", async () => {
     for(const value of [{...context(),objective:"Compare propostas em leitura documental preliminar"},{...context(),plan:null,objective:"Compare propostas em leitura documental e calcule o CET"}]) {
-      const q=queue(value);expect(await processExecutionBriefProposalJob(job,q)).toEqual({status:"proposed"});
+      const q=queue(value);expect(await processExecutionBriefProposalJob(job,q,{documentaryWorkEnabled:true})).toEqual({status:"proposed"});
       expect(q.recordExecutionBriefProposal.mock.calls[0]![1].planVersion).not.toMatch(/^document-work-plan.v1:/);
     }
   });

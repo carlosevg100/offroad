@@ -513,7 +513,10 @@ async function ConversationalCapitalProject({
     label: task.label,
     status: (latestRunByTask.get(task.id)?.status ?? "waiting") as "waiting" | "queued" | "running" | "succeeded" | "failed" | "blocked" | "cancelled",
   }));
-  const visibleActivities = previewPlan
+  const documentaryActivities = plannedDocumentaryWork && executionBriefProgress
+    ? executionBriefProgress.workstreams.map(stream=>({id:`documentary-${stream.position}`,label:stream.label,
+      status:advisorWorkStatus(stream.status === "completed" ? "succeeded" : stream.status === "needs_attention" ? "failed" : stream.status)})) : null;
+  const visibleActivities = documentaryActivities ?? (previewPlan
     ? previewTasks
     : project.entry_job === "origination_thesis"
     ? compiledActivities
@@ -523,7 +526,7 @@ async function ConversationalCapitalProject({
         label: item.title,
         status: advisorWorkStatus(item.status),
       }))
-    : compiledActivities;
+    : compiledActivities);
   const activityEvents = currentActivityCycle([...(agentEventsDescending ?? [])].map((event) => ({
     id: event.id,
     type: event.event_type,
@@ -690,8 +693,8 @@ function advisorWorkStatus(status: string): "waiting" | "queued" | "running" | "
   if (status === "review") return "running";
   if (status === "waiting_user") return "blocked";
   if (status === "superseded") return "cancelled";
-  if (["running", "succeeded", "failed", "blocked"].includes(status)) {
-    return status as "running" | "succeeded" | "failed" | "blocked";
+  if (["queued", "running", "succeeded", "failed", "blocked"].includes(status)) {
+    return status as "queued" | "running" | "succeeded" | "failed" | "blocked";
   }
   return "waiting";
 }

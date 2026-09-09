@@ -19,8 +19,11 @@ insert into public.intake_field_candidates (id,organization_id,intake_session_id
 values ('51000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','50000000-0000-4000-8000-000000000901','sector-fact','company.sector','company','Synthetic sector','"energy"','text','company_document',6,'{}',1,'user_entry','10000000-0000-4000-8000-000000000901');
 insert into public.processing_runs (id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values ('70000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901',1,'manual','queued','approval-fixture-v1','10000000-0000-4000-8000-000000000901');
-insert into public.processing_jobs (id,organization_id,intake_session_id,processing_run_id,kind,status,payload)
-values ('80000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','70000000-0000-4000-8000-000000000901','case_analysis','queued','{"analysis_scope":"full_case"}');
+-- Match real enqueue: controlled execution is bound BEFORE the approval freezes job identity.
+insert into public.controlled_case_executions(id,organization_id,intake_session_id,processing_run_id,mode,status,pipeline_version,model_policy_version,created_by)
+values('90000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','70000000-0000-4000-8000-000000000901','primary','queued','approval-fixture-v1','2026.08.24-v1','10000000-0000-4000-8000-000000000901');
+insert into public.processing_jobs (id,organization_id,intake_session_id,processing_run_id,kind,status,payload,controlled_execution_id)
+values ('80000000-0000-4000-8000-000000000901','20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901','70000000-0000-4000-8000-000000000901','case_analysis','queued','{"analysis_scope":"full_case","execution_id":"90000000-0000-4000-8000-000000000901","execution_mode":"primary"}','90000000-0000-4000-8000-000000000901');
 
 -- Synthetic extraction lineage, not customer data. Original source binding stays explicit.
 update public.intake_field_candidates set processing_run_id='70000000-0000-4000-8000-000000000901',
@@ -1132,7 +1135,7 @@ begin
  update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{planVersion}','"document-work-plan.v1:synthetic"')
  where id=(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'marker alone authorized documentary scope'; end if;
- update public.capital_project_execution_briefs set internal_snapshot=jsonb_set(internal_snapshot,'{workstreams}','[{"sourceTaskIds":["Q01"]},{"sourceTaskIds":["Q02"]},{"sourceTaskIds":["Q03"]}]')
+ update public.capital_project_execution_briefs set workstream_count=3,internal_snapshot=jsonb_set(internal_snapshot,'{workstreams}','[{"label":"Sources","sourceTaskIds":["Q01"]},{"label":"Review","sourceTaskIds":["Q02"]},{"label":"Delivery","sourceTaskIds":["Q03"]}]')
  where id=(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
  update public.capital_project_plans set snapshot=jsonb_set(snapshot,'{taskSpecs}','[{"id":"Q01"},{"id":"Q02"},{"id":"Q03"}]'),target_task_ids=array['Q03']
  where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
@@ -1144,8 +1147,43 @@ begin
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'mixed financial/documentary tasks authorized documentary scope'; end if;
  delete from public.capital_project_plan_tasks where plan_id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') and task_id not in ('Q01','Q02','Q03');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')->>'executionScope' is distinct from 'documentary_only' then raise exception 'exact documentary plan missing scope'; end if;
+ -- Progress is derived only from worker-capability stages for this exact job attempt.
+ update public.processing_jobs set status='leased',attempts=1,capability_sha256=extensions.digest(repeat('e',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id='80000000-0000-4000-8000-000000000901';
+ perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q01','succeeded','{"attempt":1}');
+ perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q02','started','{"attempt":1}');
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,1,status}' is distinct from 'running' then raise exception 'documentary running progress missing'; end if;
+ perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q02','succeeded','{"attempt":1}');
+ perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q03','succeeded','{"attempt":1}');
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' = 'completed' then raise exception 'delivery completed before job'; end if;
+ update public.processing_jobs set status='failed' where id='80000000-0000-4000-8000-000000000901';
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' is distinct from 'needs_attention' then raise exception 'failed documentary delivery hidden'; end if;
+ -- Prove the actual persistence RPC chain accepts a documentary report, not a financial report.
+ update public.processing_jobs set status='leased' where id='80000000-0000-4000-8000-000000000901';
+ perform public.worker_freeze_case_input('80000000-0000-4000-8000-000000000901',repeat('e',64),jsonb_build_object('synthetic',true,'document_work_request',private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901')));
+ perform public.worker_record_controlled_execution('80000000-0000-4000-8000-000000000901',repeat('e',64),
+  jsonb_build_object('schemaVersion','document-work-execution.v1','status','succeeded','executionScope','documentary_only','financialAnalysisStatus','not_performed','reportFingerprint',repeat('8',64)),
+  jsonb_build_object('schemaVersion','case-artifact-manifest.v1','manifestFingerprint',repeat('9',64),'inputFingerprint',repeat('6',64),'caseId','40000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','locale','pt-BR'),null);
+ perform public.worker_record_case_snapshot('80000000-0000-4000-8000-000000000901',repeat('e',64),
+  jsonb_build_object('schemaVersion','case-artifact-manifest.v1','manifestFingerprint',repeat('9',64),'inputFingerprint',repeat('6',64),'caseId','40000000-0000-4000-8000-000000000901','runId','70000000-0000-4000-8000-000000000901','locale','pt-BR'),
+  jsonb_build_object('schemaVersion','document-work-case-state.v1','executionScope','documentary_only','financialAnalysisStatus','not_performed','fingerprint',repeat('6',64),'manifestFingerprint',repeat('9',64)));
+ perform public.worker_complete_job('80000000-0000-4000-8000-000000000901',repeat('e',64),jsonb_build_object('analysis_scope','documentary_only','spend',jsonb_build_object('costUsd',0,'calls',0)));
+ if public.read_advisor_document_work_binding_v1((c#>>'{project,id}')::uuid,'80000000-0000-4000-8000-000000000901') is null then raise exception 'real completion hid documentary binding'; end if;
+
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' is distinct from 'completed' then raise exception 'completed documentary delivery missing'; end if;
+ update public.processing_jobs set attempts=2 where id='80000000-0000-4000-8000-000000000901';
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' = 'completed' then raise exception 'prior attempt progress reused'; end if;
+ update public.processing_jobs set attempts=1 where id='80000000-0000-4000-8000-000000000901';
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000999','role','authenticated')::text,true);
+ begin
+  perform public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'));
+  raise exception 'outsider read documentary progress';
+ exception when no_data_found then null;
+ end;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
  update public.capital_project_plans set target_task_ids=array['S11'] where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'financial target authorized documentary scope'; end if;
+ if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' = 'completed' then raise exception 'stale scope exposed completed stages'; end if;
  raise exception 'rollback documentary authorization fixture' using errcode='ZX002';
 exception when sqlstate 'ZX002' then null;
 end;

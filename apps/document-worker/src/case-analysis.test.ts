@@ -1168,6 +1168,7 @@ describe("worker case analysis", () => {
     } as unknown as ModelGateway;
     const standaloneOutcome=await processCaseAnalysisJob(job,{
       queue:{...queue,
+        writeStage:async(_job,stage,status)=>{if(stage==="documentary_Q03" && status==="succeeded") expect(standaloneSnapshot).toBeDefined();},
         loadCaseInput:async()=>({...documentRaw,document_work_request:{...documentRequest,executionScope:"documentary_only"}}),
         loadRetrievalContext:async()=>{throw new Error("financial retrieval must not run");},
         recordDealStateObject:async()=>{throw new Error("financial state must not be promoted");},

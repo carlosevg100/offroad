@@ -7,6 +7,13 @@ name: Live preview gate
 on:
   workflow_dispatch:
     inputs:
+      journey:
+        description: Provider-backed journey to validate
+        type: choice
+        options:
+          - intelligence-preview
+          - documentary-work-products
+        default: intelligence-preview
       max_cost_usd_per_job:
         description: Hard cost cap per worker job
         default: "0.60"
@@ -29,12 +36,18 @@ jobs:
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      DOCUMENTARY_WORK_PLANNING_ENABLED: ${{ inputs.journey == 'documentary-work-products' && 'true' || 'false' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.sha }}
+
+      - name: Verify documentary planning selection
+        if: inputs.journey == 'documentary-work-products'
+        run: test "$DOCUMENTARY_WORK_PLANNING_ENABLED" = "true"
 
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -146,10 +159,19 @@ jobs:
         timeout-minutes: 6
 
       - name: Run the live gate journey
+        if: inputs.journey != 'documentary-work-products'
         run: pnpm --filter web exec playwright test e2e/live-intelligence-preview.spec.ts
         env:
           CI: "true"
           LIVE_PREVIEW: "1"
+
+      - name: Run the documentary work journeys
+        if: inputs.journey == 'documentary-work-products'
+        run: pnpm --filter web exec playwright test e2e/documentary-work-products.spec.ts
+        env:
+          CI: "true"
+          OFFROAD_E2E_DOCUMENT_WORK_PRODUCT: "1"
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Build the gate report from the worker log
         if: always()
@@ -182,6 +204,7 @@ jobs:
           name: live-preview-gate
           path: |
             apps/web/test-results/live-intelligence-preview
+            apps/web/test-results/documentary-work-products
             worker.log
             live-gate-summary.md
             ${{ runner.temp }}/live-gate

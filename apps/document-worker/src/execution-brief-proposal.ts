@@ -35,13 +35,13 @@ const proposalContextSchema = z.object({
 });
 
 /** Deterministic planning only. The atomic recording RPC binds the held job; it never releases it. */
-export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail">) {
+export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail">, options: {documentaryWorkEnabled: boolean} = {documentaryWorkEnabled:false}) {
   try {
     if (!queue.loadExecutionBriefProposal || !queue.recordExecutionBriefProposal) throw new Error("execution_brief_proposal_commands_unavailable");
     const context = proposalContextSchema.parse(await queue.loadExecutionBriefProposal(job));
     if (context.target_job_id !== job.payload.approval_target_job_id || context.locale !== job.payload.locale) throw new Error("execution_brief_proposal_context_mismatch");
     if (!context.plan && context.target_kind !== "case_analysis") throw new Error("execution_brief_proposal_plan_required");
-    const documentaryHint = context.target_kind === "case_analysis" && context.project.access_basis === "authorized_private"
+    const documentaryHint = options.documentaryWorkEnabled && context.target_kind === "case_analysis" && context.project.access_basis === "authorized_private"
       && context.documents.length > 0
       && canCompileStandaloneDocumentWorkRequest({objective:context.objective,proposedDeliverable:"Preliminary documentary reading"});
     const existingDocumentary = context.plan?.taskSpecs.map(task=>task.id).sort().join(",") === "Q01,Q02,Q03";
