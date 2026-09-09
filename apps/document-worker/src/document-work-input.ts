@@ -31,7 +31,26 @@ function* layerPassages(layer: DocumentLayer): Generator<{anchor: string; text: 
     // Preserve row relationships (term, value, unit) from parsed tables when present.
     if (sheet.tables.length) {
       for (const table of sheet.tables) for (const row of table.rows) yield {anchor: `sheet:${sheet.name}/${table.id}/${row.id}`, text: row.cells.map(cell => cell.text).join(" | ")};
-    } else for (const cell of sheet.cells) if (cell.v !== null) yield {anchor: `sheet:${sheet.name}/${cell.ref}`, text: String(cell.v)};
+    } else {
+      const rows=new Map<number,Array<{ref:string;column:number;value:string}>>();
+      const seen=new Set<string>();
+      for(const cell of sheet.cells){
+        if(seen.has(cell.ref))throw new Error("document_work_duplicate_anchor");
+        seen.add(cell.ref);
+        const [,letters,rowNumber]=/^([A-Z]+)([1-9]\d*)$/.exec(cell.ref)!;
+        const column=[...letters!].reduce((value,letter)=>value*26+letter.charCodeAt(0)-64,0);
+        const row=Number(rowNumber);
+        const values=rows.get(row)??[];
+        values.push({ref:cell.ref,column,value:cell.v===null?"":String(cell.v)});rows.set(row,values);
+      }
+      for(const [,cells] of [...rows].sort(([a],[b])=>a-b)){
+        cells.sort((a,b)=>a.column-b.column);
+        const first=cells[0]!,last=cells[cells.length-1]!;
+        const values=Array.from({length:last.column-first.column+1},()=>"");
+        for(const cell of cells)values[cell.column-first.column]=cell.value;
+        yield {anchor:`sheet:${sheet.name}/${first.ref}${first.ref===last.ref?"":`:${last.ref}`}`,text:values.join(" | ")};
+      }
+    }
   }
 }
 

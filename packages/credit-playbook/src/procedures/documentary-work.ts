@@ -60,6 +60,7 @@ export const documentaryWorkProcedures = [canonicalProcedureSchema.parse({
   procedure: [
     {id: "scope", title: "Fixar pedido e fontes", mode: "deterministic", instructions: [
       "Exigir binding vigente do projeto, plano, versão, job e pedido aprovado; rejeitar fonte de outro tenant ou versão desatualizada.",
+      "Em planilhas sem tabelas detectadas, preservar a linha completa, a ordem das colunas e posições vazias; não separar campo, valor e unidade em observações desconectadas. Não inferir células ausentes ou calcular fórmulas.",
       "Limitar a 80 trechos e 120000 caracteres, 12000 por trecho, com orçamento de decodificação de 16 MiB e distribuição por documento; declarar omissões e documentos sem trechos.",
       "Selecionar somente as seções do pedido: comparison usa terms, differences, clarifications; meeting usa company_context, discussion_points, meeting_questions; review usa transaction, protections, risks. Não converter esta tarefa em análise financeira completa.",
     ], tools: ["document_work_input"], evidenceInputs: ["pedido aprovado", "documentos autorizados com hash, versão e localizador"]},

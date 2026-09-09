@@ -43,6 +43,19 @@ describe("bounded document work input",()=>{
     const doc=document(11,["Proposal requires parental guarantee."]);
     expect(()=>buildDocumentWorkInput({request,locale:"en-US",sources:[doc.source],envelopes:[{...doc.envelope,content_sha256:"d".repeat(64)}]})).toThrow();
   });
+  it("preserves complete spreadsheet rows, short terms, empty columns and deterministic ordering",()=>{
+    const doc=document(11,[]);
+    const cells=[{ref:"B7",v:"36 meses",t:"s"},{ref:"A7",v:"prazo",t:"s"},{ref:"C8",v:"Nenhuma",t:"s"},{ref:"A8",v:"garantia",t:"s"}];
+    const envelope=(values:unknown[])=>{
+      const encoded=encodeReceivablesEvidence({id:doc.source.id,fileName:"terms.csv",fileHash:doc.source.sha256,layer:{documentId:doc.source.id,documentVersion:1,kind:"csv",sheets:[{name:"Terms",cells:values,tables:[]}],scaleDeclarations:[],stats:{}}});
+      return {...doc.envelope,content_sha256:encoded.contentSha256,payload_sha256:encoded.payloadSha256,uncompressed_bytes:encoded.uncompressedBytes,payload_base64:encoded.payloadBase64};
+    };
+    const args={request,locale:"pt-BR" as const,sources:[doc.source],envelopes:[envelope(cells)]};
+    const result=buildDocumentWorkInput(args)!;
+    expect(result.passages.map(p=>({anchor:p.anchor,text:p.text}))).toEqual([{anchor:"sheet:Terms/A7:B7",text:"prazo | 36 meses"},{anchor:"sheet:Terms/A8:C8",text:"garantia |  | Nenhuma"}]);
+    expect(buildDocumentWorkInput({...args,envelopes:[envelope([...cells].reverse())]})).toEqual(result);
+    expect(()=>buildDocumentWorkInput({...args,envelopes:[envelope([...cells,cells[0]])]})).toThrow("duplicate_anchor");
+  });
   it("returns no model input for empty document evidence",()=>{
     const doc=document(11,[]);
     expect(buildDocumentWorkInput({request,locale:"en-US",sources:[doc.source],envelopes:[doc.envelope]})).toBeNull();
