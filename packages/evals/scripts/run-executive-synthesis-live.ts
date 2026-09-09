@@ -3,7 +3,7 @@ import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {corporateGrowthScenario, generateCase} from "@offroad/case-factory";
 import {reconcileCase} from "@offroad/reconciliation";
-import {BRIEF_SYSTEM, SEMANTIC_AUDIT_SYSTEM, buildBriefInput, buildSemanticAuditInput, briefAuthoringSchema, briefReviewWithRevisionSchema, buildBriefEvidenceCatalog, reviewBriefWithOneRevision, compileAuthoredBrief, fingerprintJson, resolveExecutiveSummaryClaims, semanticAuditSchema, type CaseBrief, type BriefReviewAttempt, type NormalizedSemanticAudit} from "@offroad/case-understanding";
+import {BRIEF_SYSTEM, SEMANTIC_AUDIT_SYSTEM, buildBriefInput, buildSemanticAuditInput, briefAuthoringSchema, briefReviewWithRevisionSchema, buildBriefEvidenceCatalog, reviewBriefWithOneRevision, compileAuthoredBrief, fingerprintJson, resolveExecutiveSummaryClaims, boundSemanticAuditSchema, expandBoundSemanticAudit, type CaseBrief, type BriefReviewAttempt, type NormalizedSemanticAudit} from "@offroad/case-understanding";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type GatewayCallLog} from "@offroad/model-gateway";
 import {executiveSynthesisRevisionInstructions} from "@offroad/credit-playbook";
 import {assertDocumentWorkLiveEnvironment} from "../src/document-work-product-live";
@@ -39,13 +39,13 @@ async function main() {
         const reviewed = await gateway.complete({task: "audit_evidence",
           system: SEMANTIC_AUDIT_SYSTEM + (allowRevision ? "\n\n" + executiveSynthesisRevisionInstructions : ""),
           input: [{type: "text", text: JSON.stringify({...originalInput, ...(allowRevision ? {revisionEvidence: [...buildBriefEvidenceCatalog(reconciliation).values()]} : {})})}],
-          schema: revisionSchema ?? semanticAuditSchema, schemaName: allowRevision ? "semantic_claim_audit_revision" : "semantic_claim_audit",
+          schema: revisionSchema ?? boundSemanticAuditSchema(candidate), schemaName: allowRevision ? "semantic_claim_audit_revision_v2" : "semantic_claim_audit_v2",
           allowFallback: false,
           model: authorProvider === "openai" ? {provider: "anthropic", model: "claude-opus-5", effort: "high"} : {provider: "openai", model: "gpt-5.6-sol", effort: "high"},
         });
         const revisions = revisionSchema?.parse(reviewed.output).revisions ?? [];
         if (revisions.length) authorProvider = reviewed.provider;
-        return {audit: semanticAuditSchema.parse(reviewed.output), revisions};
+        return {audit: expandBoundSemanticAudit(candidate, reviewed.output), revisions};
       }});
       brief = outcome.proposedBrief;
       const bound = resolveExecutiveSummaryClaims(brief);

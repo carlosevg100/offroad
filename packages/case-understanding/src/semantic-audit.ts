@@ -24,6 +24,20 @@ export const semanticAuditSchema = z.object({
   reviews: z.array(semanticClaimReviewSchema),
 });
 
+/** Required object keys make complete review coverage part of the provider contract. */
+export function boundSemanticAuditSchema(brief: CaseBrief) {
+  const ids = brief.sections.flatMap(section => section.claims.filter(claim => claim.material).map(claim => claim.id));
+  if (new Set(ids).size !== ids.length) throw new Error("brief_review_duplicate_claim_id");
+  const review = semanticClaimReviewSchema.omit({claimId: true}).required({reasons: true}).strict();
+  return z.object({reviewsByClaim: z.strictObject(Object.fromEntries(ids.map(id => [id, review])))});
+}
+
+/** Persist the existing canonical array, only after checking every required key. */
+export function expandBoundSemanticAudit(brief: CaseBrief, raw: unknown): SemanticAudit {
+  const parsed = boundSemanticAuditSchema(brief).parse(raw);
+  return {reviews: Object.entries(parsed.reviewsByClaim).map(([claimId, review]) => ({claimId, ...review}))};
+}
+
 export type SemanticFindingReason = z.infer<typeof semanticFindingReasonSchema>;
 export type SemanticClaimReview = z.infer<typeof semanticClaimReviewSchema>;
 export type SemanticAudit = z.infer<typeof semanticAuditSchema>;
@@ -45,6 +59,7 @@ Block a claim when it contradicts its support, draws a conclusion the support do
 states an indicative or projected item as certain, labels an opinion as a fact, or cites support that
 is unrelated to the sentence. A missing fact is not permission to infer it. Do not perform new
 financial calculations. Do not use outside knowledge. Review every material claim exactly once.
+Return its verdict under the corresponding required key in reviewsByClaim. Never omit a key.
 
 Gap evidence is scoped to an unsatisfied requirement in the current analysis. Block claims that
 turn it into proof that a document does not exist, every page was read, a company fact is false,
