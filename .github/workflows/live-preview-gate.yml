@@ -68,20 +68,7 @@ jobs:
         if: inputs.journey == 'documentary-work-products'
         timeout-minutes: 8
         run: |
-          set -euo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends clamav clamav-daemon
-          sudo systemctl stop clamav-freshclam clamav-daemon clamav-daemon.socket || true
-          # Definitions must update successfully; never continue with an unavailable scanner.
-          sudo timeout 180 freshclam --stdout
-          printf '%s\n' 'TCPSocket 3310' 'TCPAddr 127.0.0.1' 'User clamav' \
-            'DatabaseDirectory /var/lib/clamav' 'StreamMaxLength 128M' \
-            'MaxFileSize 128M' 'MaxScanSize 512M' 'Foreground false' \
-            'PidFile /run/clamav/documentary-ci.pid' 'LogSyslog false' \
-            | sudo tee /etc/clamav/documentary-ci.conf >/dev/null
-          sudo install -d -o clamav -g clamav /run/clamav
-          sudo clamd --config-file=/etc/clamav/documentary-ci.conf
-          timeout 90 node scripts/ci/documentary-scanner-preflight.mjs
+          bash scripts/ci/start-documentary-scanner.sh
           echo 'REQUIRE_VIRUS_SCAN=true' >> "$GITHUB_ENV"
           echo 'CLAMD_HOST=127.0.0.1' >> "$GITHUB_ENV"
           echo 'CLAMD_PORT=3310' >> "$GITHUB_ENV"
@@ -256,10 +243,7 @@ jobs:
 
       - name: Stop documentary antivirus scanner
         if: always() && inputs.journey == 'documentary-work-products'
-        run: |
-          if sudo test -f /run/clamav/documentary-ci.pid; then
-            sudo kill "$(sudo cat /run/clamav/documentary-ci.pid)" || true
-          fi
+        run: bash scripts/ci/start-documentary-scanner.sh stop
 
       - name: Stop local Supabase
         if: always()

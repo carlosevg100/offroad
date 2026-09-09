@@ -1,3 +1,17 @@
+## Reliability correction local gate passed
+
+Full Node 24 `pnpm check` passed all four stages, 43/43 tasks per stage; worker 408, web 413 and eval 125 tests passed. Shell/Node syntax and diff checks passed. Independent review found no concrete blocker in the bounded correction or shared scanner setup. Linux scanner smoke and both protected live gates are still required; planning remains false.
+
+## Bounded documentary correction and scanner compatibility, 9 September 2026
+
+PR 566 published `72f4812`. New executor `34304668616` failed 5/6: one review hypothesis repeated a numeric term and the unchanged validator rejected it. Independent inspection found no categorical recurrence of unknown versus absent in these six narratives. This does not turn the failed gate into acceptance. Journey `34304670357` failed before any model call: official antivirus definitions updated successfully, but Ubuntu AppArmor disallows the custom configuration and PID paths used by the harness.
+
+The next candidate uses the official package paths, `/etc/clamav/clamd.conf` and `/run/clamav/clamd.pid`, with AppArmor preserved. A separate read-only PR workflow proves the same scanner setup and clean/EICAR controls on Linux without model credentials or a database before merge.
+
+Canonical method v4 permits at most one corrective regeneration after a known local output-validation rejection, using the same original sources, approved request, policy and gateway budget. A second rejection fails; provider, schema, authorization and budget failures are not retried by this layer. No rejected narrative is published or used as a source. Existing validation criteria are unchanged. Task registry v7 binds the updated method; maturity remains candidate/specified.
+
+The live evaluation still requires all six requests and all three repeat comparisons. Its shared provider-attempt ceiling changes explicitly from six to twelve to measure the new bounded behavior; the USD 3 ceiling remains. Evidence v2 retains every structured synthetic response and rejection, reports first-pass success separately and accounts for all provider attempts. Production per-job budgets, rollout, database and planning flag are unchanged. New real evidence remains required.
+
 ## Local integration gate verified, 9 September 2026
 
 Node 24 `pnpm check` passed lint, typecheck, tests and production build (43/43 tasks per stage) for the combined uncertainty correction, semantic reference regression, shared candidate method and real-scanner workflow setup. `git diff --check` passed. CI and both protected live gates remain required; production planning is still disabled.
