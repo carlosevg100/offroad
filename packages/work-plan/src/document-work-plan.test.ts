@@ -1,15 +1,28 @@
+import {readFileSync,readdirSync} from "node:fs";
 import {describe,it,expect} from "vitest";
 import {assertTaskPromotable} from "./task-registry";
 import {documentWorkPlanSnapshot,compileDocumentWorkBrief,isDocumentWorkBrief} from "./document-work-plan";
 describe("bounded documentary plan",()=>{
+  it("keeps database admission and SQL regression fixtures equal to the actual compiler",()=>{
+    const directory=new URL("../../../supabase/migrations/",import.meta.url);
+    const file=readdirSync(directory).find(name=>name.endsWith("_strict_documentary_plan_persistence.sql"));
+    expect(file).toBeDefined();
+    const contracts=Object.fromEntries((["structure_from_documents","review_existing_operation"] as const).map(entry=>[entry,documentWorkPlanSnapshot(entry)]));
+    for (const path of [new URL(file!,directory),new URL("../../../supabase/tests/support/documentary_plan_snapshots.sql",import.meta.url)]) {
+      const sql=readFileSync(path,"utf8");
+      const serialized=sql.split("$documentary_contract$")[1];
+      expect(serialized).toBeDefined();
+      expect(JSON.parse(serialized!)).toEqual(contracts);
+    }
+  });
   it("is dependency-closed, approved and distinct from financial tasks",()=>{
     const plan=documentWorkPlanSnapshot("structure_from_documents");
     expect(plan.job.targetTaskIds).toEqual(["Q03"]);
     expect(plan.taskSpecs.map(task=>task.id)).toEqual(["Q01","Q02","Q03"]);
-    expect(plan.registryVersion).toBe("2026.09.09-v8");
+    expect(plan.registryVersion).toBe("2026.09.09-v9");
     for (const task of plan.taskSpecs) {
       expect(task.maturity).toBe("specified");
-      expect(task.procedure).toEqual({id:"documentary-work-pipeline",version:"2026.09.09-v5"});
+      expect(task.procedure).toEqual({id:"documentary-work-pipeline",version:"2026.09.09-v6"});
       expect(() => assertTaskPromotable(task,"production",() => ({maturity:"candidate",hasImplementation:false}))).toThrow();
     }
     for(const locale of ["pt-BR","en-US"] as const){

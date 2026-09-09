@@ -1,3 +1,44 @@
+## Documentary persistence and interpretation correction, 9 September 2026
+
+Baseline main `70cd83b` is deployed (Vercel6351986023, worker293). The real executor
+`34363217306` failed: two of six products released, five reviewer controls passed. Independent
+review found unsupported implications and false rejections of legitimate conditional questions.
+The authenticated journey `34363220943` failed before upload: the initial documentary graph was
+rejected by the legacy SQL task and target checks. No documentary result or Word was produced.
+These failures remain preserved and are not acceptance evidence.
+
+This candidate corrects both boundaries: strict documentary graph validation in user/worker plan
+persistence, and an anchored source-review response that identifies the role, exact text and short
+reason for each issue. The canonical procedure separates asserted facts, exploratory conditions
+and implications; hypotheses are optional when evidence supports only a question. Method v6 and
+registry v9 remain candidate/specified. No new financial methods or sector eligibility limits.
+
+Validation is in progress. Database proof, full local/remote checks, new actual-executor runs,
+authenticated journeys and Word inspection are required before activation. Planning remains false;
+no maturity, capability, organization rollout or external-use permission is promoted.
+
+Security scope: APP-02/03/04/09/11, DATA-03/13, AI-03/05/07/08/09, SDLC-07/08/10. Preserve tenant
+membership, actor authorization, approval binding, exact source versions, private storage and
+provider policy. SQL changes are a new migration, never edits to applied history. Staging validation
+precedes production. Rollback disables web planning first and worker planning second; it does not
+revoke accepted plans or delete stored results. Model budgets and failure-closed behavior remain.
+
+Staging migration `20260909144427_strict_documentary_plan_persistence` applied successfully.
+The transaction-scoped SQL regression passed: both entry jobs persist the compiler graph; replay
+is idempotent; altered tasks, dependencies, effects, versions, targets and authority metadata are
+rejected without partial projects; confidentiality, private access and actor/tenant boundaries remain.
+Synthetic users rolled back (residual count zero). Security advisors returned zero lints; performance
+advisors retain informational index/Auth configuration findings outside this function-only change.
+Regenerated public TypeScript types have identical declaration blocks, differing only in order;
+no public API shape changed. Compiler-to-SQL parity test passes. Production migration is pending.
+
+Full Node24 `pnpm check` passed lint, typecheck, tests and build (43/43 tasks per stage).
+Worker446, eval129, work-plan136 and web415 tests passed. Log:
+`/private/tmp/offroad-documentary-plan-review-check.log`. Compiler/SQL parity and the staging
+transaction test passed. Remote CI and fresh provider/journey evidence remain pending. The parallel
+review agent hit the account usage limit before completing; integrator review is not represented
+as independent approval. No production activation or endgame completion is claimed.
+
 ## Open business planning implementation candidate, 9 September 2026
 
 Local candidate implements reviewed open business descriptions in the actual initial/revised

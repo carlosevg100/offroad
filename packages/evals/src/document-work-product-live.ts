@@ -58,3 +58,14 @@ export function compareDocumentWorkRepeats(first: LiveProduct, second: LiveProdu
     sameInput: first.inputFingerprint === second.inputFingerprint, sameFullOutput: first.fingerprint === second.fingerprint,
     expectedFactCoverageStable: JSON.stringify(a.expectedCoverage) === JSON.stringify(b.expectedCoverage)};
 }
+
+/** Exact authored control expectations; never a general semantic acceptance claim. */
+export function scoreDocumentWorkSourceReviewControl(
+  sample: {expectedIssueFieldId:string|null;expectedIssueFieldIds:readonly string[];expectedCleanFieldIds:readonly string[]},
+  review: {issues:readonly {fieldId:string}[]},
+): boolean {
+  const flagged = new Set(review.issues.map(issue=>issue.fieldId));
+  return (sample.expectedIssueFieldId !== null || review.issues.length === 0)
+    && sample.expectedIssueFieldIds.every(id=>flagged.has(id))
+    && sample.expectedCleanFieldIds.every(id=>!flagged.has(id));
+}
