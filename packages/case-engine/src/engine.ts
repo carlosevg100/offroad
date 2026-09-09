@@ -278,6 +278,8 @@ export type CaseEngineInput = {
     brief: CaseBrief;
     facts: ReconciliationReport["facts"];
     calculations: ReconciliationReport["calculations"];
+    gaps: ReconciliationReport["gaps"];
+    exceptions: ReconciliationReport["exceptions"];
   }) => Promise<BriefVerifierResult>;
 };
 
@@ -954,6 +956,8 @@ export async function executeCaseEngine(
             const audited = auditBrief({
               brief,
               facts: reconciliation.facts,
+              gaps: reconciliation.gaps,
+              exceptions: reconciliation.exceptions,
               calculations: [...reconciliation.calculations, ...evidence.calculations],
               approvedJudgmentIds,
               requireJudgmentApproval: false,
@@ -970,6 +974,8 @@ export async function executeCaseEngine(
               const verified = await input.verifyBrief({
                 brief: audited.brief,
                 facts: reconciliation.facts,
+                gaps: reconciliation.gaps,
+                exceptions: reconciliation.exceptions,
                 calculations: [...reconciliation.calculations, ...evidence.calculations],
               });
               semanticAudit = normalizeSemanticAudit(audited.brief, verified.audit);
@@ -1881,6 +1887,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       const evidence = deskEvidence(metrics.desk, metrics.trajectory);
       const compiled = compileMaterials({
         brief: claims.brief,
+        gaps: reconciliation.gaps,
         facts: reconciliation.facts,
         calculations: [...reconciliation.calculations, ...evidence.calculations],
         exceptions: reconciliation.exceptions,

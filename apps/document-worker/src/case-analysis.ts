@@ -21,7 +21,8 @@ import {
   buildBriefInput,
   buildCaseArtifactManifest,
   buildSemanticAuditInput,
-  caseBriefSchema,
+  briefAuthoringSchema,
+  compileAuthoredBrief,
   deskEvidence,
   diagnosticConfirmationReady,
   fingerprintJson,
@@ -1008,7 +1009,7 @@ export async function processCaseAnalysisJob(
               ...(caseReviewFeedback ? {reviewInstructions: [caseReviewFeedback]} : {}),
             }),
           }],
-          schema: caseBriefSchema,
+          schema: briefAuthoringSchema({facts: reconciliation.facts, calculations: [...reconciliation.calculations, ...evidence.calculations], gaps: reconciliation.gaps, exceptions: reconciliation.exceptions}),
           schemaName: "case_brief",
           dataHandling: {classification: "restricted", purpose: "artifact_generation", requiredPolicyVersion: providerDataPolicyVersion},
           useShadow,
@@ -1016,19 +1017,19 @@ export async function processCaseAnalysisJob(
         writerProvider = generated.provider;
         const after = dependencies.gateway.spent();
         return {
-          brief: generated.output,
+          brief: compileAuthoredBrief(generated.output),
           blockedBy: [],
           usage: {costUsd: after.costUsd - before.costUsd, modelCalls: after.calls - before.calls},
           modelInvocations: dependencies.lineage().slice(callStart),
         };
       },
-      verifyBrief: async ({brief, facts, calculations}) => {
+      verifyBrief: async ({brief, facts, calculations, gaps, exceptions}) => {
         const callStart = dependencies.lineage().length;
         const before = dependencies.gateway.spent();
         const generated = await dependencies.gateway.complete({
           task: "audit_evidence",
           system: SEMANTIC_AUDIT_SYSTEM,
-          input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations})}],
+          input: [{type: "text", text: buildSemanticAuditInput({brief, facts, calculations, gaps, exceptions})}],
           schema: semanticAuditSchema,
           schemaName: "semantic_claim_audit",
           dataHandling: {classification: "restricted", purpose: "evaluation", requiredPolicyVersion: providerDataPolicyVersion},

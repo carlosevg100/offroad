@@ -3,7 +3,7 @@ import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {corporateGrowthScenario, generateCase} from "@offroad/case-factory";
 import {reconcileCase} from "@offroad/reconciliation";
-import {BRIEF_SYSTEM, SEMANTIC_AUDIT_SYSTEM, auditBrief, buildBriefInput, buildSemanticAuditInput, caseBriefSchema, fingerprintJson, normalizeSemanticAudit, resolveExecutiveSummaryClaims, semanticAuditSchema, type CaseBrief, type NormalizedSemanticAudit} from "@offroad/case-understanding";
+import {BRIEF_SYSTEM, SEMANTIC_AUDIT_SYSTEM, auditBrief, buildBriefInput, buildSemanticAuditInput, briefAuthoringSchema, compileAuthoredBrief, fingerprintJson, normalizeSemanticAudit, resolveExecutiveSummaryClaims, semanticAuditSchema, type CaseBrief, type NormalizedSemanticAudit} from "@offroad/case-understanding";
 import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type GatewayCallLog} from "@offroad/model-gateway";
 import {assertDocumentWorkLiveEnvironment} from "../src/document-work-product-live";
 
@@ -28,15 +28,15 @@ async function main() {
     let brief: CaseBrief | null = null;
     try {
       const reconciliation = reconcileCase({archetypeId: sample.scenario.archetypeId, candidates: sample.candidates, documents: sample.classifiedDocuments, referenceDate: sample.scenario.referenceDate, locale});
-      const generated = await gateway.complete({task: "case_brief", system: BRIEF_SYSTEM, input: [{type: "text", text: buildBriefInput({archetypeId: sample.scenario.archetypeId, ...reconciliation, locale})}], schema: caseBriefSchema, schemaName: "case_brief"});
-      brief = generated.output;
+      const generated = await gateway.complete({task: "case_brief", system: BRIEF_SYSTEM, input: [{type: "text", text: buildBriefInput({archetypeId: sample.scenario.archetypeId, ...reconciliation, locale})}], schema: briefAuthoringSchema(reconciliation), schemaName: "case_brief"});
+      brief = compileAuthoredBrief(generated.output);
       // As in the case engine, numerical review is separate from the retained human judgment gate.
-      const numeric = auditBrief({brief, facts: reconciliation.facts, calculations: reconciliation.calculations, requireJudgmentApproval: false});
+      const numeric = auditBrief({brief, facts: reconciliation.facts, calculations: reconciliation.calculations, gaps: reconciliation.gaps, exceptions: reconciliation.exceptions, requireJudgmentApproval: false});
       const bound = resolveExecutiveSummaryClaims(brief);
       if (!numeric.ok || !bound) {
         results.push({locale, passed: false, brief, failure: "brief_audit_failed", summaryClaimIds: bound?.map(claim => claim.id) ?? [], start, end: calls.length, numericIssues: numeric.audit.findings.map(finding => finding.reason), semanticIssues: []});
       } else {
-        const reviewed = await gateway.complete({task: "audit_evidence", system: SEMANTIC_AUDIT_SYSTEM, input: [{type: "text", text: buildSemanticAuditInput({brief, facts: reconciliation.facts, calculations: reconciliation.calculations})}], schema: semanticAuditSchema, schemaName: "semantic_claim_audit", model: generated.provider === "openai" ? {provider: "anthropic", model: "claude-opus-5", effort: "high"} : {provider: "openai", model: "gpt-5.6-sol", effort: "high"}});
+        const reviewed = await gateway.complete({task: "audit_evidence", system: SEMANTIC_AUDIT_SYSTEM, input: [{type: "text", text: buildSemanticAuditInput({brief, facts: reconciliation.facts, calculations: reconciliation.calculations, gaps: reconciliation.gaps, exceptions: reconciliation.exceptions})}], schema: semanticAuditSchema, schemaName: "semantic_claim_audit", model: generated.provider === "openai" ? {provider: "anthropic", model: "claude-opus-5", effort: "high"} : {provider: "openai", model: "gpt-5.6-sol", effort: "high"}});
         const semantic = normalizeSemanticAudit(brief, reviewed.output);
         const summarySupports = new Set(bound.flatMap(claim => claim.supportIds));
         // A formally bound but empty or irrelevant opening does not pass this fixture.

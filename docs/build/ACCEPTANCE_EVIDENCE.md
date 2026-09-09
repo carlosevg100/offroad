@@ -1,3 +1,34 @@
+## 9 September: one evidence contract from author to material
+
+PR575 is integrated at a24deac. Live evaluation34388571845 failed both languages before
+semantic review:20/17 unsupported material claims, seven missing calculation references
+in each output, plus ambiguous repeated summary text in English. Two author calls cost
+USD0.594637. This is retained failure evidence, not an accepted analytical capability.
+
+The author now selects summary claim ids; deterministic code assembles the text. New
+briefs retain these ids and legacy briefs keep exact-text binding. Authoring support ids
+come from the same catalog as numerical and semantic review: facts, calculations, scoped
+unsatisfied requirements and the current reconciliation review. Requirement evidence is
+not evidence of universal documentary absence and cannot support financial magnitudes.
+The semantic reviewer sees those scope restrictions. Unknown ids, repeated/unknown summary
+selections, stale gap references, changed summary text and ambiguous period aliases fail.
+
+Worker, engine verification and material compilation propagate the same current gap and
+exception context. Module versions invalidate cached outputs without changing the SQL
+capability scope. No schema/RLS/grant/production flag change or persisted brief rewrite.
+Existing semantic review, judgment approval and external-release gates remain required.
+This does not certify arbitrary documents, claim materiality classification, integrated
+model production, institutional visual quality or the complete endgame.
+
+Focused validation:651 tests across understanding, materials, engine and worker passed.
+Full pnpm check passed43/43 in lint, typecheck, tests and build. Protected real-provider
+evidence follows integration. New
+negative tests cover citation identity, gap thresholds, stale requirements, period scope,
+summary selection and material propagation. APP-03/04/10/11 and AI-05/07/08 retain the
+same private source boundary and providers. No new telemetry or data retention. Rollback
+is code deployment, with no data migration. Independent agent review remains unavailable
+because the existing account allowance is exhausted; primary review is not independent.
+
 ## 9 September: bind executive synthesis to structured claims
 
 Executive summaries previously travelled as independent text and were compiled as

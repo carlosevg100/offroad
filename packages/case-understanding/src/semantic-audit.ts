@@ -1,3 +1,4 @@
+import {buildBriefEvidenceCatalog, type BriefEvidenceInput} from "./brief-evidence";
 import {z} from "zod";
 import type {ReconciledFact, TracedCalculation} from "@offroad/reconciliation";
 
@@ -44,6 +45,12 @@ states an indicative or projected item as certain, labels an opinion as a fact, 
 is unrelated to the sentence. A missing fact is not permission to infer it. Do not perform new
 financial calculations. Do not use outside knowledge. Review every material claim exactly once.
 
+Gap evidence is scoped to an unsatisfied requirement in the current analysis. Block claims that
+turn it into proof that a document does not exist, every page was read, a company fact is false,
+or a checklist's suggested stress is an established company or market value. A reconciliation
+review covers only executed checks, not universal agreement or completeness. Review kind=judgment
+as a conditional interpretation, not as an approved decision.
+
 Return only the required structured result. Never use an em dash.`;
 
 /**
@@ -54,15 +61,10 @@ export function buildSemanticAuditInput(input: {
   brief: CaseBrief;
   facts: readonly ReconciledFact[];
   calculations: readonly TracedCalculation[];
+  gaps?: BriefEvidenceInput["gaps"];
+  exceptions?: BriefEvidenceInput["exceptions"];
 }): string {
-  const support = new Map<string, string>();
-  for (const fact of input.facts) {
-    support.set(fact.key.fieldPath, `${fact.value} | ${fact.accepted.informationClass} | ${fact.key.periodEnd ?? "sem período"}`);
-    if (fact.key.periodEnd) support.set(`${fact.key.fieldPath}|${fact.key.periodEnd}`, `${fact.value} | ${fact.accepted.informationClass} | ${fact.key.periodEnd}`);
-  }
-  for (const calculation of input.calculations) {
-    support.set(calculation.id, `${calculation.value} | cálculo determinístico | entradas: ${calculation.inputs.join(", ")}`);
-  }
+  const support = buildBriefEvidenceCatalog(input);
 
   const claims = input.brief.sections.flatMap((section) => section.claims
     .filter((claim) => claim.material)
@@ -70,7 +72,7 @@ export function buildSemanticAuditInput(input: {
       claimId: claim.id,
       kind: claim.kind,
       text: claim.text,
-      support: claim.supportIds.map((id) => ({id, value: support.get(id) ?? "SUPORTE NÃO ENCONTRADO"})),
+      support: claim.supportIds.map((id) => ({id, value: support.get(id)?.description ?? "SUPORTE NÃO ENCONTRADO", evidenceKind: support.get(id)?.kind ?? "unknown"})),
     })));
 
   return JSON.stringify({claims}, null, 2);

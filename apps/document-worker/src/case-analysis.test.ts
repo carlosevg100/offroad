@@ -773,7 +773,7 @@ describe("worker case analysis", () => {
         }
         spent = {costUsd: 0.1, calls: 1};
         return {
-          output: {sections: [{id: "executive_summary", heading: "Resumo", claims: [{id: "summary-context", text: "Resumo institucional sem afirmações materiais.", material: false, kind: "fact", supportIds: []}]}], executiveSummary: "Resumo institucional sem afirmações materiais."},
+          output: {sections: [{id: "executive_summary", heading: "Resumo", claims: [{id: "summary-context", text: "Resumo institucional sem afirmações materiais.", material: false, kind: "fact", supportIds: []}]}], executiveSummaryClaimIds: ["summary-context"]},
           provider: "anthropic",
           model: "claude-sonnet-5",
           effort: "high",
@@ -1066,7 +1066,7 @@ describe("worker case analysis", () => {
       expect(diagnosticUnderstanding).toHaveProperty(required);
     }
     expect(diagnosticUnderstanding.brief).toMatchObject({
-      executiveSummary: "Resumo institucional sem afirmações materiais.",
+      executiveSummaryClaimIds: ["summary-context"],
     });
     expect(diagnosticUnderstanding).not.toHaveProperty("structureTruth");
     expect(diagnosticUnderstanding).not.toHaveProperty("pricingTruth");

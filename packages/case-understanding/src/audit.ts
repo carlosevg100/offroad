@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import type {ReconciledFact, TracedCalculation} from "@offroad/reconciliation";
+import {buildBriefEvidenceCatalog, type BriefEvidenceInput} from "./brief-evidence";
 
 /**
  * The rule that makes everything else trustworthy: no number appears that cannot be traced.
@@ -148,23 +148,16 @@ function numericSupport(value: string): string | null {
 
 export function auditClaims(input: {
   claims: readonly AuditableClaim[];
-  facts: readonly ReconciledFact[];
-  calculations: readonly TracedCalculation[];
+  facts: BriefEvidenceInput["facts"];
+  calculations: BriefEvidenceInput["calculations"];
+  gaps?: BriefEvidenceInput["gaps"];
+  exceptions?: BriefEvidenceInput["exceptions"];
   /** Claim registries enforce this separately so the numerical pass can remain independent. */
   requireJudgmentApproval?: boolean;
 }): AuditReport {
-  const factById = new Map<string, string>();
-  const unverifiedSupportIds = new Set<string>();
-  for (const fact of input.facts) {
-    const key = [fact.key.fieldPath, fact.key.periodEnd ?? ""].join("|");
-    factById.set(key, fact.value);
-    factById.set(fact.key.fieldPath, fact.value);
-    if (!fact.accepted.anchorVerified) {
-      unverifiedSupportIds.add(key);
-      unverifiedSupportIds.add(fact.key.fieldPath);
-    }
-  }
-  for (const calculation of input.calculations) factById.set(calculation.id, calculation.value);
+  const catalog = buildBriefEvidenceCatalog(input);
+  const factById = new Map([...catalog.values()].map(item => [item.id, item.numericValue]));
+  const unverifiedSupportIds = new Set([...catalog.values()].filter(item => !item.verified).map(item => item.id));
   const calculationById = new Map(input.calculations.map((calculation) => [calculation.id, calculation]));
   const supportVerified = (id: string, visiting = new Set<string>()): boolean => {
     if (unverifiedSupportIds.has(id)) return false;
@@ -206,7 +199,7 @@ export function auditClaims(input: {
     }
 
     const supported = claim.supportIds
-      .map((id) => numericSupport(factById.get(id)!))
+      .map((id) => {const value = factById.get(id); return value === null || value === undefined ? null : numericSupport(value);})
       .filter((value): value is string => value !== null);
     const written = financialNumbersIn(claim.text);
     const unsupported = written.filter((number) => !supported.some((value) => agrees(number, value)));

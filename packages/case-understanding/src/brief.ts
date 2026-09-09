@@ -2,6 +2,7 @@ import {z} from "zod";
 import {archetype, executiveSynthesisInstructions, type ArchetypeId} from "@offroad/credit-playbook";
 import type {InformationGap, ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
+import {buildBriefEvidenceCatalog, type BriefEvidenceInput} from "./brief-evidence";
 import {auditClaims, type AuditReport, type AuditableClaim} from "./audit";
 
 /**
@@ -53,6 +54,8 @@ export const caseBriefSchema = z.object({
   sections: z.array(briefSectionSchema),
   /** 8–12 lines, the part a busy reader actually reads. */
   executiveSummary: z.string().min(1).max(4000),
+  /** New runs bind by identity; persisted legacy briefs retain exact-text validation. */
+  executiveSummaryClaimIds: z.array(z.string().min(1)).min(1).max(20).optional(),
 }).superRefine((brief, context) => {
   const seen = new Set<string>();
   for (const claim of brief.sections.flatMap((section) => section.claims)) {
@@ -62,6 +65,32 @@ export const caseBriefSchema = z.object({
 });
 
 export type CaseBrief = z.infer<typeof caseBriefSchema>;
+
+/** The author selects claim ids; code, not the model, composes the repeated summary text. */
+export function briefAuthoringSchema(input: BriefEvidenceInput) {
+  const ids = [...buildBriefEvidenceCatalog(input).keys()];
+  if (!ids.length) throw new Error("brief_evidence_required");
+  const claim = briefClaimSchema.extend({supportIds: z.array(z.enum(ids as [string, ...string[]]))});
+  return z.object({
+    sections: z.array(briefSectionSchema.extend({claims: z.array(claim)})),
+    executiveSummaryClaimIds: z.array(z.string().min(1)).min(1).max(20),
+  }).superRefine((draft, context) => {
+    const all = draft.sections.flatMap(section => section.claims);
+    const claimIds = new Set(all.map(item => item.id));
+    if (claimIds.size !== all.length) context.addIssue({code: "custom", message: "claim_ids_must_be_unique"});
+    if (new Set(draft.executiveSummaryClaimIds).size !== draft.executiveSummaryClaimIds.length || draft.executiveSummaryClaimIds.some(id => !claimIds.has(id))) context.addIssue({code: "custom", message: "summary_claim_selection_invalid"});
+    const summaryLength = draft.executiveSummaryClaimIds.map(id => all.find(item => item.id === id)?.text ?? "").join("\n\n").length;
+    if (summaryLength > 4000) context.addIssue({code: "custom", message: "executive_summary_too_long"});
+    if (all.some(item => item.material && !item.supportIds.length)) context.addIssue({code: "custom", message: "material_claim_requires_evidence"});
+  });
+}
+
+export function compileAuthoredBrief(draft: {sections: CaseBrief["sections"]; executiveSummaryClaimIds: string[]}): CaseBrief {
+  const claims = draft.sections.flatMap(section => section.claims);
+  const byId = new Map(claims.map(claim => [claim.id, claim]));
+  if (byId.size !== claims.length || new Set(draft.executiveSummaryClaimIds).size !== draft.executiveSummaryClaimIds.length || draft.executiveSummaryClaimIds.some(id => !byId.has(id))) throw new Error("summary_claim_selection_invalid");
+  return caseBriefSchema.parse({...draft, executiveSummary: draft.executiveSummaryClaimIds.map(id => byId.get(id)!.text).join("\n\n")});
+}
 
 /**
  * What the model is told, once, and never again per case.
@@ -115,6 +144,14 @@ export function resolveExecutiveSummaryClaims(brief: CaseBrief): z.infer<typeof 
   const normalize = (text: string) => text.trim().replace(/\s+/g, " ");
   const text = normalize(brief.executiveSummary);
   if (!text) return null;
+  if (brief.executiveSummaryClaimIds !== undefined) {
+    const all = brief.sections.flatMap(section => section.claims);
+    const byId = new Map(all.map(claim => [claim.id, claim]));
+    const ids = brief.executiveSummaryClaimIds;
+    if (!ids.length || byId.size !== all.length || new Set(ids).size !== ids.length || ids.some(id => !byId.has(id))) return null;
+    const selected = ids.map(id => byId.get(id)!);
+    return normalize(selected.map(claim => claim.text).join("\n\n")) === text ? selected : null;
+  }
   const claims = brief.sections.flatMap(section => section.claims).map(claim => ({claim, text: normalize(claim.text)})).filter(item => item.text);
   type Path = z.infer<typeof briefClaimSchema>[];
   // At most two alternatives are retained: a second possible attribution is already ambiguous.
@@ -137,11 +174,6 @@ export function resolveExecutiveSummaryClaims(brief: CaseBrief): z.infer<typeof 
   const selected = matches?.[0];
   return matches?.length === 1 && selected && new Set(selected.map(claim => claim.id)).size === selected.length ? selected : null;
 }
-
-const money = (value: string) => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed.toLocaleString("pt-BR", {maximumFractionDigits: 2}) : value;
-};
 
 /**
  * The compact payload: everything the model may use, and nothing else.
@@ -166,22 +198,17 @@ export function buildBriefInput(input: {
 }): string {
   const definition = archetype(input.archetypeId);
 
-  const factLines = input.facts.map((fact) => {
-    const key = fact.key.periodEnd ? `${fact.key.fieldPath} (${fact.key.periodEnd})` : fact.key.fieldPath;
-    const disputed = fact.disputed ? ` [DISPUTADO: também consta ${fact.conflicts.map((c) => c.candidate.normalizedValue).join(", ")}]` : "";
-    return `${key} = ${fact.valueType === "number" ? money(fact.value) : fact.value} · fonte: ${fact.accepted.sourceDocument} · rank ${fact.accepted.evidenceRank}${fact.accepted.anchorVerified ? "" : " · âncora não confirmada"}${disputed}`;
-  });
-
-  const calculationLines = input.calculations.map(
-    (calculation) =>
-      `${calculation.id} = ${money(calculation.value)} · calculado de: ${calculation.inputs.join(", ")}${calculation.warnings.length ? ` · atenção: ${calculation.warnings.join("; ")}` : ""}`,
-  );
+  const catalog = buildBriefEvidenceCatalog(input);
+  const entries = [...catalog.values()];
+  const line = (item: (typeof entries)[number]) => `[${item.id}] ${item.description}`;
+  const factLines = entries.filter(item => item.kind === "fact" && !(item.id.includes("|") && catalog.has(item.id.split("|")[0]!))).map(line);
+  const calculationLines = entries.filter(item => item.kind === "calculation").map(line);
+  const gapLines = entries.filter(item => item.kind === "gap" || item.kind === "review").map(line);
 
   const exceptionLines = input.exceptions.map(
     (exception) => `[${exception.severity}] ${exception.ruleId}: ${exception.description}`,
   );
 
-  const gapLines = input.gaps.map((gap) => `[${gap.severity}] ${gap.title}: ${gap.description}`);
 
   return [
     `Requested output locale: ${input.locale === "pt" ? "pt-BR" : "en-US"}`,
@@ -205,7 +232,9 @@ export function buildBriefInput(input: {
         ]
       : []),
     "",
-    "## Fatos conciliados (os únicos números que você pode usar; cite o caminho como id)",
+    "## Fatos conciliados (os únicos números que você pode usar; cite o id exato entre colchetes)",
+    "This is the authoritative citation catalog. Only the bracketed ids are supportIds.",
+    "Calculation dependency paths do not create alternative citation ids or calculated. aliases.",
     ...factLines,
     "",
     "## Cálculos (cite o id)",
@@ -217,6 +246,7 @@ export function buildBriefInput(input: {
     "## Lacunas de informação",
     ...(gapLines.length ? gapLines : ["nenhuma"]),
     ...(input.deskLines ?? []),
+
   ].join("\n");
 }
 
@@ -235,6 +265,8 @@ export function auditBrief(input: {
   brief: CaseBrief;
   facts: readonly ReconciledFact[];
   calculations: readonly TracedCalculation[];
+  gaps?: BriefEvidenceInput["gaps"];
+  exceptions?: BriefEvidenceInput["exceptions"];
   approvedJudgmentIds?: readonly string[];
   requireJudgmentApproval?: boolean;
 }): BriefOutcome {
@@ -252,6 +284,8 @@ export function auditBrief(input: {
 
   const audit = auditClaims({
     claims,
+    ...(input.gaps ? {gaps: input.gaps} : {}),
+    ...(input.exceptions ? {exceptions: input.exceptions} : {}),
     facts: input.facts,
     calculations: input.calculations,
     ...(input.requireJudgmentApproval === false ? {requireJudgmentApproval: false} : {}),
