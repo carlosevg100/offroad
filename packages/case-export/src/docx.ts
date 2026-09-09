@@ -60,7 +60,7 @@ const table = (rows: string[], columns: number) => {
   return `<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="BFC5CA"/><w:bottom w:val="single" w:sz="4" w:color="BFC5CA"/><w:insideH w:val="single" w:sz="4" w:color="D9DDE0"/></w:tblBorders><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join("")}</w:tbl>${paragraph("", {spacingAfter: 120})}`;
 };
 
-const row = (cells: string[], header = false) => `<w:tr>${header ? "<w:trPr><w:tblHeader/></w:trPr>" : ""}${cells.join("")}</w:tr>`;
+const row = (cells: string[], header = false) => `<w:tr><w:trPr><w:cantSplit/>${header ? "<w:tblHeader/>" : ""}</w:trPr>${cells.join("")}</w:tr>`;
 
 function blockXml(block: MaterialBlock, lang: DocxLang): string {
   switch (block.type) {
@@ -76,7 +76,7 @@ function blockXml(block: MaterialBlock, lang: DocxLang): string {
     case "table": {
       const columns = Math.max(block.head.length, ...block.rows.map((cells) => cells.length));
       return (
-        paragraph(run(block.caption[lang], {italic: true, size: 18}), {keepNext: true, spacingAfter: 60}) +
+        (block.caption[lang] ? paragraph(run(block.caption[lang], {italic: true, size: 18}), {keepNext: true, spacingAfter: 60}) : "") +
         table(
           [
             row(block.head.map((head) => cell(paragraph(run(head[lang], {bold: true, size: 18})), {shade: true})), true),
@@ -127,7 +127,7 @@ const styles = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:color w:val="253743"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:color w:val="253743"/></w:rPr></w:style></w:styles>`;
 
 const footer = (text: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${run(text, {size: 16, color: "6B7780"})}</w:p></w:ftr>`;
+<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${run(text, {size: 16, color: "6B7780"})}${run(" · ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="PAGE">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple>${run(" / ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="NUMPAGES">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple></w:p></w:ftr>`;
 
 const core = (title: string, issuedOn: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${escapeXml(title)}</dc:title><dc:creator>Offroad Capital</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:modified></cp:coreProperties>`;

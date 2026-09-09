@@ -1,3 +1,34 @@
+## 9 September: documentary Word readability
+
+PR573 is integrated at main12b8be2. Actual journey34380092460 passed all four
+checks without test retries and downloaded comparison, meeting and review Word files.
+Separate executor34380089624 remains FAIL5/6 with controls5/5: an unsupported inference
+that proposals represent distinct counterparties was blocked. The documentary flag
+remains false and the new database contracts remain staging-only.
+
+The Word projection now uses numbered passage references, groups sources by exact
+document id, name, version and hash, and preserves every source passage in editable
+tables. Hypotheses and missing information remain paired with their questions in
+tables. Empty observation sections are omitted rather than printed as empty headings.
+Word tables repeat their headers, keep ordinary rows together across page breaks,
+and footers contain automatic current and total page fields.
+
+No analysis text, economic value, source quote, permissions, schema, model, task
+maturity or production feature flag changes. APP-03/04/10 and AI-05/07 boundaries remain
+unchanged: export projects an already authorized persisted result. Numeric references
+are passage identifiers, not evidence of separate counterparties. Rollback is the
+previous renderer; retained work products require no migration.
+
+Seven focused tests passed, including same-name document separation, full passage
+preservation, deterministic output and Word pagination fields. Three accepted synthetic
+executor outputs were rendered through the modified product exporter; all six English
+pages were inspected. They were generated locally for renderer QA, not downloaded from
+a new live journey. No clipping or broken rows observed. Full local check passed all
+four stages (43/43 each); remote delivery remains pending. The initial sandbox build
+could not start its child process; a clean authorized build passed. This is a readability improvement, not certification of
+institutional analysis: repeated prose, stronger synthesis, task-specific comparison
+matrices, financial exhibits and the outstanding semantic failure remain open.
+
 ## 9 September: one independently checked documentary revision
 
 Real executor 34376495901 completed all 12 model calls without truncation or fallback,

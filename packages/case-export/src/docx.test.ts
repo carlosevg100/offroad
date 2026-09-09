@@ -31,6 +31,7 @@ describe("materialToDocx", () => {
     expect(xml.indexOf("Termos")).toBeLessThan(xml.indexOf("Definições"));
     expect(xml.indexOf("Definições")).toBeLessThan(xml.indexOf("Cronograma"));
     expect(xml).toContain("<w:tblHeader/>");
+    expect(xml).toContain("<w:cantSplit/>");
     expect(xml).toContain("Aurora · Emitido em 2026-08-21");
   });
 
@@ -46,6 +47,9 @@ describe("materialToDocx", () => {
     const listing = execFileSync("unzip", ["-l", file]).toString();
     for (const part of ["[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml", "word/footer1.xml", "docProps/core.xml", "word/_rels/document.xml.rels"]) expect(listing).toContain(part);
     expect(execFileSync("unzip", ["-t", file]).toString()).toContain("No errors detected");
+    const footer = execFileSync("unzip", ["-p", file, "word/footer1.xml"]).toString();
+    expect(footer).toContain('w:instr="PAGE"');
+    expect(footer).toContain('w:instr="NUMPAGES"');
   });
 
   it("computes CRC-32 as the zip standard does", () => {
