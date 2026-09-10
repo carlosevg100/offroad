@@ -1,3 +1,6 @@
+import ptMessages from "../../../messages/pt-BR.json";
+import enMessages from "../../../messages/en-US.json";
+import {institutionalIssuePresentation} from "./institutional-issue-presentation";
 import {auditCompiledMaterial, institutionalFinancialModelMaterial, type Material} from "@offroad/case-materials";
 import {buildInstitutionalFinancialModel, type InstitutionalWorkbookArtifact} from "@offroad/financial-model";
 
@@ -31,7 +34,10 @@ export function institutionalResultMaterial(artifact: InstitutionalWorkbookArtif
         const anchor = line.anchor && typeof line.anchor === "object" && !Array.isArray(line.anchor) ? line.anchor as Record<string, unknown> : null;
         const locator = anchor && Object.keys(anchor).every(key => key === "sheet" || key === "cell") && typeof anchor.sheet === "string" && typeof anchor.cell === "string"
           ? `${anchor.sheet} · ${anchor.cell}` : JSON.stringify(line.anchor);
-        return [line.targetPath, `${line.entityName} / ${line.entityScope}`, line.periodStart ? `${line.periodStart} - ${line.periodEnd}` : line.periodEnd, line.value, `${source} · ${locator}`];
+        const field = institutionalIssuePresentation("", line.targetPath).field;
+        const vocabulary = (lang === "pt" ? ptMessages : enMessages).InstitutionalSetup.historical;
+        const target = field && field in vocabulary ? vocabulary[field as keyof typeof vocabulary] : line.targetPath;
+        return [target, `${line.entityName} / ${line.entityScope}`, line.periodStart ? `${line.periodStart} - ${line.periodEnd}` : line.periodEnd, line.value, `${source} · ${locator}`];
       }),
     },
     {type: "kv" as const, caption: label("Registro da aprovação", "Approval record"), rows: [

@@ -95,7 +95,9 @@ describe("approved institutional result downloads", () => {
       for (const exact of Object.values(value.values)) expect(content).toContain(exact);
     }
     for (const source of scenario.sourceBindings) {expect(content).toContain(source.hash);expect(content).toContain(source.reviewedBy);expect(content).toContain(source.metadataEvidence.rationale);}
-    for (const line of scenario.lineage) expect(content).toContain(line.targetPath);
+    expect(content).toContain("Unrestricted cash");
+    expect(content).not.toContain("openingBalanceSheet.unrestrictedCash");
+    for (const line of scenario.lineage) expect(content).toContain(line.value);
     expect(JSON.stringify(artifact)).toBe(before);
   });
 });
