@@ -7,9 +7,15 @@ const output:LiveProduct = {job:"comparison",status:"preliminary",fingerprint:"a
 describe("document work executor live scoring",()=>{
  it("accepts supported meaningful work and prose differences while preserving expected facts",()=>{expect(scoreDocumentWorkLive(output,sample).passed).toBe(true);expect(compareDocumentWorkRepeats(output,{...output,fingerprint:"b"},sample)).toEqual({passed:true,sameInput:true,sameFullOutput:false,expectedFactCoverageStable:true});});
  it("rejects empty, unsupported, missing facts and changed inputs",()=>{expect(scoreDocumentWorkLive({...output,sections:[]},sample).passed).toBe(false);expect(scoreDocumentWorkLive({...output,sections:[{key:"terms",observations:[{text:"Approved",citations:[{passageId:"a",quote:"Term is 36 months."}]}]}]},sample).passed).toBe(false);expect(compareDocumentWorkRepeats(output,{...output,inputFingerprint:"changed"},sample).passed).toBe(false);});
- it("allows only exact main workflow before credentials are used",()=>{const env={GITHUB_ACTIONS:"true",GITHUB_REPOSITORY:"carlosevg100/offroad",GITHUB_REF:"refs/heads/main",GITHUB_EVENT_NAME:"workflow_dispatch",GITHUB_WORKFLOW_REF:"carlosevg100/offroad/.github/workflows/document-work-product-live.yml@refs/heads/main",GITHUB_SHA:"a".repeat(40)};expect(()=>assertDocumentWorkLiveEnvironment(env)).not.toThrow();for(const field of Object.keys(env))expect(()=>assertDocumentWorkLiveEnvironment({...env,[field]:"untrusted"})).toThrow();});
+ it("allows only exact main workflow before credentials are used",()=>{const env={GITHUB_ACTIONS:"true",GITHUB_RUN_ATTEMPT:"1",GITHUB_REPOSITORY:"carlosevg100/offroad",GITHUB_REF:"refs/heads/main",GITHUB_EVENT_NAME:"workflow_dispatch",GITHUB_WORKFLOW_REF:"carlosevg100/offroad/.github/workflows/document-work-product-live.yml@refs/heads/main",GITHUB_SHA:"a".repeat(40)};expect(()=>assertDocumentWorkLiveEnvironment(env)).not.toThrow();for(const field of Object.keys(env))expect(()=>assertDocumentWorkLiveEnvironment({...env,[field]:"untrusted"})).toThrow();});
 });
 
+
+describe("single authorized documentary evaluation attempt",()=>{
+ it.each([undefined,"", "0", "2", "10", "01"])("rejects missing, malformed or repeated run attempt %j",attempt=>{
+  expect(()=>assertDocumentWorkLiveEnvironment({GITHUB_ACTIONS:"true",GITHUB_RUN_ATTEMPT:attempt,GITHUB_REPOSITORY:"carlosevg100/offroad",GITHUB_REF:"refs/heads/main",GITHUB_EVENT_NAME:"workflow_dispatch",GITHUB_WORKFLOW_REF:"carlosevg100/offroad/.github/workflows/document-work-product-live.yml@refs/heads/main",GITHUB_SHA:"a".repeat(40)})).toThrow("document_work_live_requires_protected_main_workflow");
+ });
+});
 
 describe("enriched source-review control scoring",()=>{
   it("requires every negative and preserves explicitly clean fields",()=>{

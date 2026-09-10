@@ -22,7 +22,9 @@ export function conservativeTextReservationUsd(provider: Provider, request: Adap
   // An extra 2048-token allowance covers hidden protocol framing; output uses its full cap.
   const inputTokens = Buffer.byteLength(JSON.stringify(payload), "utf8")
     + Buffer.byteLength(JSON.stringify(z.toJSONSchema(request.schema)), "utf8") + 2048;
-  const reservation = estimateCostReservationUsd(request.model, inputTokens, request.maxOutputTokens, prices);
+  // Anthropic's current ephemeral cache may write all input at the 5-minute 1.25x tariff.
+  const reservationPrices = provider === "anthropic" ? {...prices, [request.model]: {...price, input: price.input * 1.25}} : prices;
+  const reservation = estimateCostReservationUsd(request.model, inputTokens, request.maxOutputTokens, reservationPrices);
   if (!Number.isFinite(reservation) || reservation <= 0) throw new ModelGatewayError("invalid conservative reservation", "budget_exceeded");
   return reservation;
 }

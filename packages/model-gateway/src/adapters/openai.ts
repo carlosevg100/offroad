@@ -7,6 +7,8 @@ export type OpenAIAdapterOptions = {
   /** Reads OPENAI_API_KEY when omitted. */
   apiKey?: string;
   client?: OpenAI;
+  /** Evaluation opt-in: only the gateway may own and count retries. */
+  disableSdkRetries?: boolean;
 };
 
 type JsonSchema = Record<string, unknown>;
@@ -143,8 +145,16 @@ export function mapOpenAIStopReason(response: Pick<OpenAI.Responses.Response, "s
   return "other";
 }
 
+export function isOpenAIUsageKnown(usage: OpenAI.Responses.ResponseUsage | undefined): boolean {
+  const count = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0;
+  if (!usage || !count(usage.input_tokens) || !count(usage.output_tokens)) return false;
+  const cached = usage.input_tokens_details?.cached_tokens ?? 0;
+  const reasoning = usage.output_tokens_details?.reasoning_tokens;
+  return count(cached) && cached <= usage.input_tokens && (reasoning === undefined || count(reasoning));
+}
+
 export function mapOpenAIUsage(usage: OpenAI.Responses.ResponseUsage | undefined): Usage {
-  if (!usage) return {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
+  if (!isOpenAIUsageKnown(usage) || !usage) return {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
   const result: Usage = {
     inputTokens: usage.input_tokens,
     outputTokens: usage.output_tokens,
@@ -161,13 +171,14 @@ export function createOpenAIAdapter(options: OpenAIAdapterOptions = {}): Provide
     provider: "openai",
     async complete(request: AdapterRequest): Promise<AdapterResponse> {
       const params = buildOpenAIParams(request);
-      const response = await client.responses.create(params, {timeout: request.timeoutMs});
+      const response = await client.responses.create(params, {timeout: request.timeoutMs, ...(options.disableSdkRetries ? {maxRetries: 0} : {})});
       const rawText = response.output_text ?? "";
       const originalSchema = z.toJSONSchema(request.schema) as JsonSchema;
       const adapterResponse: AdapterResponse = {
         output: stripOpenAIOptionalNulls(safeJsonParse(request.outputMode === "prompted_json" ? extractJsonText(rawText) : rawText), originalSchema),
         rawText,
         usage: mapOpenAIUsage(response.usage),
+        usageKnown: isOpenAIUsageKnown(response.usage),
         model: response.model,
         stopReason: mapOpenAIStopReason(response),
       };

@@ -16,7 +16,7 @@ async function main() {
   if (!process.env.ANTHROPIC_API_KEY || !process.env.OPENAI_API_KEY) throw new Error("protected_provider_credentials_required");
   const directory=resolve(process.env.RUNNER_TEMP ?? ".","document-work-product-live");
   mkdirSync(directory,{recursive:true});
-  const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY})};
+  const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY,disableSdkRetries:true}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY,disableSdkRetries:true})};
   // Fixed partitions retain an aggregate USD3 ceiling, including the eight reviewer controls.
   const calls:GatewayCallLog[]=[], controlCalls:GatewayCallLog[]=[];
   const gateway=createModelGateway({adapters,budget:{maxCostUsd:2.5,maxCalls:18},budgetReservation:"conservative_text_v1",onCall:call=>calls.push(call)});

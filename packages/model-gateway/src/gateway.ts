@@ -63,6 +63,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   // error can happen after tokens were consumed but before usage reaches us; that call keeps
   // its preflight reservation instead of being treated as free.
   let budgetExposureUsd = 0;
+  let inFlightCalls = 0;
 
   const adapterFor = (provider: Provider): ProviderAdapter => {
     const adapter = config.adapters[provider];
@@ -153,7 +154,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           continue;
         }
       }
-      if (config.budget?.maxCalls !== undefined && spent.calls >= config.budget.maxCalls) {
+      if (config.budget?.maxCalls !== undefined && spent.calls + inFlightCalls >= config.budget.maxCalls) {
         // A failed provider attempt followed by an unavailable fallback is not a new budget
         // failure. Preserve the actual provider outcome instead of masking it as
         // `budget_exceeded`; the latter remains reserved for calls that cannot start at all.
@@ -189,6 +190,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         );
       }
       budgetExposureUsd += reservationUsd;
+      inFlightCalls += 1;
 
       const startedAt = now();
       let response: AdapterResponse | undefined;
@@ -211,7 +213,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           }
         }
       } catch (error) {
-        if (error instanceof ModelGatewayError && error.code === "cassette_missing") throw error;
+        if (error instanceof ModelGatewayError && error.code === "cassette_missing") {
+          budgetExposureUsd -= reservationUsd;
+          throw error;
+        }
         const providerError = providerErrorDiagnostic(error);
         attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
         spent.calls += 1;
@@ -235,13 +240,17 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         });
         previousAttemptInvocationId = invocationId;
         continue;
+      } finally {
+        inFlightCalls -= 1;
       }
 
       const latencyMs = now() - startedAt;
-      const costUsd = fromCassette ? 0 : estimateCostUsd(ref.model, response.usage, prices);
+      const usageKnown = response.usageKnown !== false;
+      const costUsd = fromCassette || !usageKnown ? 0 : estimateCostUsd(ref.model, response.usage, prices);
       // Successful usage replaces the conservative reservation with the measured estimate.
       // Cassette calls release it entirely because no provider was invoked.
-      budgetExposureUsd += costUsd - reservationUsd;
+      if (fromCassette || usageKnown) budgetExposureUsd += costUsd - reservationUsd;
+      else spent.unknownCostCalls += 1;
       spent.costUsd += costUsd;
       spent.calls += fromCassette ? 0 : 1;
 
@@ -414,7 +423,7 @@ function emit(
     outputFingerprint: entry.outputFingerprint,
     usage,
     costUsd: entry.costUsd,
-    costStatus: entry.notCalled ? "not_called" : entry.fromCassette ? "cassette" : entry.response ? "measured" : "unknown",
+    costStatus: entry.notCalled ? "not_called" : entry.fromCassette ? "cassette" : entry.response && entry.response.usageKnown !== false ? "measured" : "unknown",
     latencyMs: entry.latencyMs,
     stopReason: entry.response?.stopReason ?? "other",
     usedFallback: entry.usedFallback,
