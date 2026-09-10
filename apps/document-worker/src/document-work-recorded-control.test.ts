@@ -1,6 +1,6 @@
 import {describe,expect,it} from "vitest";
 import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
-import {documentWorkAuthoredFields,documentWorkReviewFields,sourceReviewSchema,validateDocumentWorkSourceReview} from "../../../apps/document-worker/src/document-work-source-review";
+import {documentWorkAuthoredFields,documentWorkReviewFields,sourceReviewSchema,validateDocumentWorkSourceReview} from "./document-work-source-review";
 
 // Exact missed-English assertion and Portuguese findings from actual synthetic run34436558806.
 // This test proves contract coverage, not that a fresh model will classify all assertions correctly.
