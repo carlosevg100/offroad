@@ -1,7 +1,7 @@
 # Project review roles and the common work entry
 
 Status: implemented on branch `feat/task-capability-registry-and-review-roles` (10 September 2026).
-Migration `20260910192032_project_review_roles.sql` applied to the staging branch only, where it was recorded as version `20260910193505`.
+Migration `20260910230211_project_review_roles.sql` applied to the staging branch only, where it was recorded as version `20260910193505`.
 
 ## Why
 
@@ -88,3 +88,5 @@ Deliverable types are the hook for the later format policy and client templates.
 * Playwright (CI): `institutional-setup.spec.ts` uses the entry for a documentary request
   (explained, not started) and a financial request (routed and recorded), then assigns roles and
   proves that self-approval is refused until the setting allows it.
+
+Production (project `ifnogpksgdadruooqydi`) recorded the same statement as version `20260910230211` on 10 September 2026; the local file name follows that stamp, staging keeps its own stamp `20260910193505` with identical SQL.
