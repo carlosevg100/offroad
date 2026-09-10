@@ -4,6 +4,7 @@ import {
   type DeterministicMethodRunCase,
 } from "@offroad/credit-playbook";
 import {
+  receivablesCaseSchema,
   receivablesParametricScenarios,
   receivablesPoolUnderwritingVersion,
   underwriteReceivablesPool,
@@ -121,9 +122,12 @@ function adversarialCases(): DeterministicMethodRunCase[] {
 }
 
 function consistencyCases(): DeterministicMethodRunCase[] {
+  // Both sources are declared in the schema's input form, where fields with defaults are optional.
+  // Parsing yields exactly the canonical case the executor parses, so the permutations compare
+  // like with like and the recorded fingerprints are the executor's own.
   const sources: Array<{label: string; input: ReceivablesCase}> = [
-    {label: "gc03-aurora-2026-07", input: auroraGoldCase()},
-    {label: "r01-clean-diversified", input: receivablesParametricScenarios[0]!.input},
+    {label: "gc03-aurora-2026-07", input: receivablesCaseSchema.parse(auroraGoldCase())},
+    {label: "r01-clean-diversified", input: receivablesCaseSchema.parse(receivablesParametricScenarios[0]!.input)},
   ];
   return sources.flatMap(({label, input}) => {
     const canonical = underwriteReceivablesPool({currency: "BRL", case: input});

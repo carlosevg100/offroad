@@ -20,8 +20,16 @@ const processingRunId = "20000000-0000-4000-8000-000000000001";
 const scopeId = "40000000-0000-4000-8000-000000000001";
 const scopeFingerprint = "b".repeat(64);
 
-/** Builds the real confirmed-scope input the worker sees, with the advance rate already answered. */
+/**
+ * The real confirmed-scope input the worker sees, with the advance rate already answered. Built
+ * once from the real workbook and the real parsers: every case below only shallow-copies it, so
+ * the fixture is never mutated and the suite does not re-parse the workbook for each assertion.
+ */
 function completeCaseInput(): Parameters<typeof buildReceivablesVertical>[0] {
+  return builtCaseInput;
+}
+
+function buildCompleteCaseInput(): Parameters<typeof buildReceivablesVertical>[0] {
   const sourceId = "30000000-0000-4000-8000-000000000001";
   const source = {
     ...workbook, id: sourceId,
@@ -88,6 +96,8 @@ function completeCaseInput(): Parameters<typeof buildReceivablesVertical>[0] {
   };
 }
 
+const builtCaseInput = buildCompleteCaseInput();
+
 describe("released analytical result inside the real case run", () => {
   it("keeps today's behaviour when the organization holds no grant", () => {
     const ungranted = buildReceivablesVertical(completeCaseInput(), "2026-09-10", false)!;
@@ -135,7 +145,7 @@ describe("released analytical result inside the real case run", () => {
     expect(granted.publicReport.methodExecution).toMatchObject({status: "succeeded", mode: "internal_shadow"});
   });
 
-  it("refuses a grant carrying another organization and reports the failure without a result", () => {
+  it("carries only the organization the capability-bound bundle declared", () => {
     const crossTenant = buildReceivablesVertical(
       {
         ...completeCaseInput(),
@@ -143,9 +153,11 @@ describe("released analytical result inside the real case run", () => {
       },
       "2026-09-10", false,
     )!;
-    // The worker holds one organization per job; a grant for a different one is a refusal, not a
-    // fallback. The identity carried by the grant is the one written into the released result.
-    expect(crossTenant.specialistRelease?.release.organizationId).toBe(otherOrganizationId);
+    // The worker never invents a tenant: the identity comes from the grant the database attached to
+    // this job, and it is the identity written into the released result. The database then refuses
+    // a payload whose organization is not the job's own, proven in the SQL contract test.
+    expect(crossTenant.specialistRelease!.release.organizationId).toBe(otherOrganizationId);
+    expect(crossTenant.specialistRelease!.release.organizationId).not.toBe(organizationId);
     expect(crossTenant.specialistShadow).not.toBeNull();
   });
 
