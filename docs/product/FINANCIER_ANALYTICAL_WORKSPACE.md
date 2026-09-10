@@ -46,6 +46,16 @@ nunca substitui membership ativa e permissões no banco.
 | Responder lacunas e continuar | `public.record_intake_information_command`, `submit_advisor_information_response_v1`, `submit_advisor_turn_v1`, `approve_advisor_execution_brief_v1` | guard analítico ou `private.can_access_capital_project` |
 | Processamento determinístico e leitura de linhagem | `begin_intake_processing`, `complete_intake_processing`, `record_document_verification`, `claim_case_brief`, `record_case_model_spend`, `read_processing_model_lineage`, `can_review_intake_claims` | mesma lista de tipos do guard analítico |
 
+O armazenamento privado não precisou de mudança e não recebeu nenhuma. As políticas de
+`storage.objects` para `opportunity-documents`, `document-layers` e `case-artifacts` decidem por
+`private.can_access_document_scope`, que aceita a oportunidade ou a sessão de intake e, no caso da
+sessão, exige apenas membership ativa na organização dona e correspondência entre tenant e sessão.
+Não há restrição por tipo de organização ali, então envio, leitura, atualização e remoção de
+objetos do financiador funcionam dentro do próprio tenant, no caminho `<organização>/<sessão>/`, e
+continuam fechados para qualquer outra organização. Receber uma oportunidade compartilhada não dá
+acesso ao corpus privado do emissor: o `organization_id` do objeto precisa ser o da organização do
+chamador.
+
 ### 2.2 Gestão de mandatos
 
 Políticas `funds_all`, `mandate_versions_all`, `provider_contacts_*`: apenas `capital_provider`
