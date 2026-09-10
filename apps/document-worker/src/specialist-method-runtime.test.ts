@@ -106,6 +106,15 @@ describe("specialist method shadow runtime", () => {
     expect(result.qualityResults.every((check) => check.status === "passed")).toBe(true);
     expect(result.artifact.outputFingerprint).toMatch(/^[a-f0-9]{64}$/);
     expect(result.artifact.evidenceRefs).toHaveLength(7);
+    // Evidence references alone do not establish measured longitudinal performance.
+    expect(result.artifact.content.history_coverage).toMatchObject({
+      aggregatePerformanceBasis: "reported_title_aggregates",
+      families: expect.arrayContaining([
+        expect.objectContaining({id: "roll_rates", status: "not_evaluable"}),
+        expect.objectContaining({id: "vintages", status: "not_evaluable"}),
+      ]),
+    });
+    expect(result.artifact.content.economic_conventions?.concentrationDenominator).toBe("preliminary_eligible_balance");
   });
 
   it("refuses an executor that differs from the governed method binding", () => {

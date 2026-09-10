@@ -3,9 +3,12 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 
 import {analyzeReceivables} from "./analyze";
+import {buildReceivablesHistoryCoverage, receivablesHistoryCoverageSchema, receivablesEconomicConventionsSchema, receivablesEconomicConventions} from "./history-coverage";
 import {receivablesCaseSchema} from "./schema";
 
 export const receivablesPoolUnderwritingVersion = "2026.09.06-v1" as const;
+// Version the additive output projection separately from the unchanged economic method.
+const underwritingProjectionVersion = "receivables-underwriting-coverage.v1" as const;
 
 const currencySchema = z.enum(["BRL", "USD"]);
 
@@ -60,6 +63,9 @@ export const receivablesPoolUnderwritingSchema = z.object({
     netLossRate: metricMoneySchema, recoveryRate: metricMoneySchema, dilutionRate: metricMoneySchema,
     repurchaseRate: metricMoneySchema, substitutionRate: metricMoneySchema,
   }).strict(),
+  // Legacy results omit these fields; absence never asserts complete history.
+  history_coverage: receivablesHistoryCoverageSchema.optional(),
+  economic_conventions: receivablesEconomicConventionsSchema.optional(),
   evidence_coverage: z.object({
     verifiedBalanceShare: metricMoneySchema, anchoredBalanceShare: metricMoneySchema,
     registrationCoverageShare: metricMoneySchema, assignableBalanceShare: metricMoneySchema,
@@ -108,6 +114,7 @@ export const receivablesPoolUnderwritingSchema = z.object({
     refusalCodes: z.array(z.string()), externalDirectionAllowed: z.literal(false),
   }).strict(),
   trace: z.object({
+    projection_version: z.literal(underwritingProjectionVersion).optional(),
     method_version: z.literal(receivablesPoolUnderwritingVersion),
     engine_version: z.literal("2026.08.24-v1"), input_fingerprint: sha256Schema,
     output_fingerprint: sha256Schema, policy: receivablesCaseSchema.shape.policy,
@@ -160,6 +167,8 @@ export function underwriteReceivablesPool(raw: ReceivablesPoolUnderwritingInput)
     eligibility: [...analysis.analyzedReceivables].sort((left, right) => left.receivableId.localeCompare(right.receivableId)),
     aging: analysis.metrics.aging,
     performance: analysis.metrics.performance,
+    history_coverage: buildReceivablesHistoryCoverage(analysis.dynamicMetrics),
+    economic_conventions: receivablesEconomicConventions,
     evidence_coverage: analysis.metrics.evidence,
     reconciliation: analysis.reconciliation,
     borrowing_base: {
@@ -181,6 +190,7 @@ export function underwriteReceivablesPool(raw: ReceivablesPoolUnderwritingInput)
   const inputFingerprint = hash(canonicalInput);
   const outputFingerprint = hash({
     ...resultWithoutTrace,
+    projection_version: underwritingProjectionVersion,
     method_version: receivablesPoolUnderwritingVersion,
     engine_version: analysis.version,
     input_fingerprint: inputFingerprint,
@@ -191,6 +201,7 @@ export function underwriteReceivablesPool(raw: ReceivablesPoolUnderwritingInput)
   return receivablesPoolUnderwritingSchema.parse({
     ...resultWithoutTrace,
     trace: {
+      projection_version: underwritingProjectionVersion,
       method_version: receivablesPoolUnderwritingVersion,
       engine_version: analysis.version,
       input_fingerprint: inputFingerprint,
