@@ -26,3 +26,14 @@ describe("execution brief approval projection", () => {
   });
 
 });
+
+describe("execution brief approval record", () => {
+  it("carries preparer, reviewer, decision, approved revision and the caller's approval permission", () => {
+    const result = projectExecutionBriefApproval({...proposed, status: "approved", accepted_at: "2026-09-10T20:00:00Z", prepared_by: "10000000-0000-4000-8000-000000000001", reviewed_by: "10000000-0000-4000-8000-000000000004", review_decision: "approved", approved_brief_version: 3, review_mode: "assigned", caller_can_approve: false, caller_can_return: true}, expected);
+    expect(result).toEqual({status: "approved", fingerprint: expected.fingerprint, version: 3, reviewMode: "assigned", callerCanApprove: false, record: {preparedBy: "10000000-0000-4000-8000-000000000001", reviewedBy: "10000000-0000-4000-8000-000000000004", decision: "approved", approvedVersion: 3}});
+  });
+  it("never turns a role flag into an approval state", () => {
+    expect(projectExecutionBriefApproval({...proposed, caller_can_approve: true, review_decision: "returned", reviewed_by: "10000000-0000-4000-8000-000000000003"}, expected)).toMatchObject({status: "awaiting", callerCanApprove: true, record: {decision: "returned", preparedBy: null}});
+    expect(projectExecutionBriefApproval({...proposed, review_decision: "signed"}, expected).status).toBe("unavailable");
+  });
+});

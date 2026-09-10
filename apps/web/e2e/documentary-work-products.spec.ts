@@ -138,10 +138,11 @@ test.describe("documentary work products with actual provider execution", () => 
     const projectUrl = page.url().split("#")[0]!;
     const brief = page.getByTestId("execution-brief");
     const priorFingerprint = await brief.getAttribute("data-brief-fingerprint");
-    const request = page.getByTestId("documentary-work-request");
+    const request = page.getByTestId("new-work-request");
     await request.locator("summary").click();
-    await request.locator("textarea").fill("Prepare a reunião com esta companhia usando os documentos enviados.");
-    await request.getByRole("button", {name: "Preparar novo plano", exact: true}).click();
+    await request.locator('textarea[name="objective"]').fill("Prepare a reunião com esta companhia usando os documentos enviados.");
+    await expect(page.getByTestId("new-work-preview")).toHaveAttribute("data-capability", "documentary_reading");
+    await request.getByRole("button", {name: "Enviar para execução", exact: true}).click();
     await expect(brief).not.toHaveAttribute("data-brief-fingerprint", priorFingerprint!, {timeout: 180_000});
     await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible();
     await expect(brief).toContainText("Prepare a reunião com esta companhia usando os documentos enviados.");

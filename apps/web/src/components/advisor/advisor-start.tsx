@@ -128,7 +128,8 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
       groupId: groupId ?? null,
     });
     if (!result.ok) {
-      setError(copy.errors[result.error]);
+      // A review-role denial cannot happen before a project exists; keep the generic denial copy.
+      setError(copy.errors[result.error === "role" ? "denied" : result.error]);
       setStatus("idle");
       return;
     }
@@ -160,7 +161,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
       setStatus("starting");
       const processing = await beginAdvisorProjectProcessing({locale, projectId: result.projectId});
       if (!processing.ok) {
-        setError(copy.errors[processing.error]);
+        setError(copy.errors[processing.error === "role" ? "denied" : processing.error]);
         setStatus("idle");
         return;
       }

@@ -6,13 +6,18 @@ import {AlertCircle, ArrowDown, ArrowRight, Check, Circle, FileOutput, LoaderCir
 import {useRef, useState} from "react";
 import {useFormatter, useTranslations} from "next-intl";
 
-import type {ExecutionBriefApprovalReason} from "@/lib/advisor/execution-brief-approval";
+import type {ExecutionBriefApprovalReason, ExecutionBriefApprovalRecord} from "@/lib/advisor/execution-brief-approval";
 
 export type ExecutionBriefApproval = {
   status: "awaiting" | "approved" | "superseded" | "unavailable";
   reason?: ExecutionBriefApprovalReason;
   fingerprint: string;
   version: number;
+  /** Decided in Postgres from the project review roles; the card only explains it. */
+  reviewMode?: "open" | "assigned";
+  callerCanApprove?: boolean;
+  /** Ids come from the projection; the project page resolves the labels it can show. */
+  record?: ExecutionBriefApprovalRecord & {preparedByLabel?: string | null; reviewedByLabel?: string | null};
 };
 
 const scopeBasisSchema = z.object({scopeFingerprint: z.string().regex(/^[a-f0-9]{64}$/), reportingDate: z.iso.date(), primaryDocumentId: z.uuid(), headerRow: z.number().int().positive(), selectedSourceCount: z.number().int().positive(), documentVersion: z.number().int().positive(), sourceSha256: z.string().regex(/^[a-f0-9]{64}$/), contentSha256: z.string().regex(/^[a-f0-9]{64}$/)}).strict();
@@ -45,8 +50,11 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
     : approval.status;
   const awaitingRefresh = submittedFingerprint === brief.fingerprint && approvalStatus === "awaiting";
   const busy = disabled || submitting || approving || awaitingRefresh;
+  const currentApproval = approval && approval.fingerprint === brief.fingerprint && approval.version === version ? approval : undefined;
+  const roleBlocked = approvalStatus === "awaiting" && currentApproval?.callerCanApprove === false;
+  const unknownPerson = t("approval.record.unknownPerson");
   async function approve() {
-    if (!onApprove || approvalStatus !== "awaiting" || busy || editing || approvalLock.current) return;
+    if (!onApprove || approvalStatus !== "awaiting" || busy || editing || roleBlocked || approvalLock.current) return;
     approvalLock.current = true;
     setApproving(true);
     setApprovalError("");
@@ -80,9 +88,13 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
         <div><small>{t("deliverable")}</small><strong>{brief.proposedDeliverable}</strong></div>
       </section>
 
-      <section className="execution-brief-card__approval" data-approval-status={approvalStatus} aria-busy={approving || awaitingRefresh}>
-        <div role="status"><strong>{t(`approval.${approvalStatus}.title`)}</strong><p>{t(approval?.reason && approval.fingerprint === brief.fingerprint && approval.version === version ? `approval.reason.${approval.reason}` : `approval.${approvalStatus}.description`)}</p></div>
-        {approvalStatus === "awaiting" ? <button disabled={busy || editing || !onApprove} onClick={() => void approve()} type="button">
+      <section className="execution-brief-card__approval" data-approval-status={approvalStatus} data-caller-can-approve={currentApproval?.callerCanApprove === undefined ? undefined : String(currentApproval.callerCanApprove)} aria-busy={approving || awaitingRefresh}>
+        <div role="status"><strong>{t(`approval.${approvalStatus}.title`)}</strong><p>{t(currentApproval?.reason ? `approval.reason.${currentApproval.reason}` : `approval.${approvalStatus}.description`)}</p>
+          {currentApproval?.record?.decision === "approved" && approvalStatus === "approved" ? <p className="execution-brief-card__record" data-testid="execution-brief-approval-record">{t("approval.record.approved", {reviewer: currentApproval.record.reviewedByLabel ?? unknownPerson, preparer: currentApproval.record.preparedByLabel ?? unknownPerson, version: currentApproval.record.approvedVersion ?? version})}</p> : null}
+          {currentApproval?.record?.decision === "returned" ? <p className="execution-brief-card__record" data-testid="execution-brief-approval-record">{t("approval.record.returned", {reviewer: currentApproval.record.reviewedByLabel ?? unknownPerson})}</p> : null}
+          {roleBlocked ? <p className="execution-brief-card__role" data-testid="execution-brief-role-required">{t("approval.roleRequired")}</p> : null}
+        </div>
+        {approvalStatus === "awaiting" ? <button disabled={busy || editing || !onApprove || roleBlocked} onClick={() => void approve()} type="button">
           {approving || awaitingRefresh ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <Check aria-hidden="true" size={14} />}
           {t(approving ? "approval.saving" : awaitingRefresh ? "approval.refreshing" : approvalError ? "approval.retry" : "approval.approve", {version})}
         </button> : null}

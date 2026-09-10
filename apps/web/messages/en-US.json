@@ -1301,7 +1301,8 @@
         "save": "Could not record the message.",
         "processing": "The review could not be started.",
         "stale": "The plan changed after you opened it. Review the latest version before adjusting it.",
-        "upload": "One or more documents could not be received securely."
+        "upload": "One or more documents could not be received securely.",
+        "role": "Your role in this project does not allow this action. See the project's review responsibilities."
       },
       "openRequirements": "What is still open and why it matters",
       "materiality": {
@@ -3585,6 +3586,12 @@
         "context_changed": "The information or scope has changed. Review the new version before approving.",
         "approval_required": "Review the scope and deliverable. Your approval releases only the work in this version.",
         "approved": "This version was approved. Material changes require a new plan and a new approval."
+      },
+      "roleRequired": "Your role in this project does not allow approving this version. A project approver needs to approve it.",
+      "record": {
+        "approved": "Approved by {reviewer} · prepared by {preparer} · version {version}",
+        "returned": "Returned for adjustments by {reviewer}",
+        "unknownPerson": "project member"
       }
     },
     "planningContext": {
@@ -4151,7 +4158,8 @@
       "blocker": "Blocker",
       "warning": "Warning",
       "observation": "Observation"
-    }
+    },
+    "roleRequired": "Your role in this project does not allow approval. A project approver needs to approve and calculate."
   },
   "InstitutionalModelResult": {
     "kicker": "Financial model",
@@ -4246,17 +4254,6 @@
       "netDebtToEbitda": "Net debt / EBITDA",
       "liquidityHeadroom": "Liquidity headroom"
     }
-  },
-  "DocumentaryWorkRequest": {
-    "title": "New work in this project",
-    "description": "Use the documents already provided to compare proposals, prepare a meeting or review an opportunity. Previous work stays in the history. You will review and approve a new plan before execution.",
-    "label": "What would you like to prepare?",
-    "placeholder": "Compare these proposals and highlight the points to clarify.",
-    "scope": "This option prepares a qualitative documentary analysis. Continue in the conversation for calculations, scenarios or other work.",
-    "unsupported": "Describe a proposal comparison, meeting preparation or opportunity review. Requests involving calculations should continue in the conversation.",
-    "submit": "Prepare new plan",
-    "saving": "Preparing plan…",
-    "uncertain": "We could not confirm receipt. Retry to check the same request."
   },
   "PublicCapitalMarket": {
     "kicker": "Market intelligence",
@@ -4402,5 +4399,141 @@
     "readyBody": "The pool and assumptions are reconciled. Calculation execution has not yet been verified in this result.",
     "blocked": "Information to complete",
     "blockedBody": "The pool analysis is available. You can answer assumptions while gathering remaining documents; the specialist conclusion depends on the conditions below."
+  },
+  "NewWorkRequest": {
+    "title": "New work in this project",
+    "description": "Describe the objective and choose the type of work. The request goes to the matching executor and shows the plan, the data used, the expected result and the limits before approval. Previous work stays in the history.",
+    "objective": "What do you want to obtain?",
+    "placeholder": "Compare the refinancing scenarios and calculate debt service.",
+    "capability": "Type of work",
+    "options": {
+      "auto": {
+        "title": "Identify from the objective",
+        "hint": "Offroad recognizes documentary reading, financial result or provider research from the text."
+      },
+      "documentary_reading": {
+        "title": "Documentary reading",
+        "hint": "Compare proposals, prepare a meeting or review an opportunity from the documents provided. No calculations."
+      },
+      "financial_result": {
+        "title": "Financial result",
+        "hint": "Calculations, scenarios and comparisons from reconciled facts and declared assumptions."
+      },
+      "provider_research": {
+        "title": "Provider research",
+        "hint": "Compare the transaction criteria with mandates and records the organization may read."
+      }
+    },
+    "executor": "Executor: {surface}",
+    "surfaces": {
+      "document-review": "documentary reading",
+      "institutional-setup": "financial model configuration",
+      "provider-case-criteria": "transaction criteria and providers"
+    },
+    "plan": "Plan",
+    "dataUsed": "Data used",
+    "expectedResult": "Expected result",
+    "limits": "Limits of the work",
+    "inputTiming": {
+      "dispatch": "needed now",
+      "execution": "entered in the executor"
+    },
+    "approval": {
+      "execution_brief": "A project approver needs to approve this version of the plan before execution.",
+      "institutional_configuration": "A project approver needs to review and approve the configuration before the calculation."
+    },
+    "notes": {
+      "calculation_routed_to_financial": "The request includes a calculation. Documentary reading does not calculate, so it goes to the financial result."
+    },
+    "inputs": {
+      "documentary_activation": "Documentary reading activated for the organization",
+      "private_access": "Project with authorized private access",
+      "ready_documents": "Processed documents",
+      "execution_brief": "Current project plan",
+      "reconciled_facts": "Accepted historical facts from the documents",
+      "declared_assumptions": "Assumptions declared per period",
+      "case_criteria": "Confirmed transaction criteria",
+      "reference_date": "Reference date and currency"
+    },
+    "blocked": {
+      "documentary_not_activated": "Documentary reading not activated",
+      "missing_inputs": "Information is missing for this work",
+      "not_authorized": "Your role does not allow preparing work"
+    },
+    "unsupported": {
+      "title": "Unsupported request"
+    },
+    "nextStep": "Next step: ",
+    "useSuggestion": "Send as {capability}",
+    "submit": "Send for execution",
+    "record": "Record the request to resume later",
+    "saving": "Recording…",
+    "scope": "Nothing runs without approval. A request outside these capabilities receives an explanation and a next step, never a fictitious execution.",
+    "dispatched": {
+      "documentary_reading": "Request recorded. A new plan will be proposed for approval.",
+      "financial_result": "Request recorded. Enter the financial configuration data to continue.",
+      "provider_research": "Request recorded. Enter the transaction criteria to continue."
+    },
+    "recorded": "Request recorded. Resume when the information is available.",
+    "history": "Requests in this project",
+    "status": {
+      "dispatched": "sent",
+      "needs_information": "awaiting information"
+    },
+    "open": "Open executor",
+    "origin": "Back to the originating result",
+    "uncertain": "We could not confirm receipt. Retry to check the same request.",
+    "errors": {
+      "unsupported": "This request is not supported by the available capabilities. See the explanation and next step above.",
+      "blocked": "This request cannot proceed now. See what is missing above."
+    }
+  },
+  "ProjectReviewRoles": {
+    "title": "Review responsibilities",
+    "modeLabel": {
+      "open": "no roles assigned",
+      "assigned": "roles assigned"
+    },
+    "mode": {
+      "open": "No role has been assigned in this project. Any active member may prepare, return and approve, including the person who prepared the version. This is the compatibility policy for one-person teams and earlier projects.",
+      "assigned": "Roles assigned. Preparing requires the preparer role; returning requires reviewer or approver; approving requires approver. Whoever prepared a version approves it only when self-approval is allowed."
+    },
+    "selfApproval": {
+      "effective": "Self-approval in this project: {state}.",
+      "allowed": "allowed",
+      "forbidden": "not allowed",
+      "project": "Self-approval in this project",
+      "organization": "Allow self-approval in the organization (applies to projects that follow the organization)",
+      "options": {
+        "inherit": "Follow the organization",
+        "allowed": "Allowed",
+        "forbidden": "Not allowed"
+      }
+    },
+    "yourRoles": "Your roles in this project: {roles}.",
+    "none": "none",
+    "member": "Member",
+    "roles": {
+      "preparer": "Preparer",
+      "reviewer": "Reviewer",
+      "approver": "Approver"
+    },
+    "membership": {
+      "owner": "organization owner",
+      "admin": "organization administrator",
+      "member": "member",
+      "analyst": "analyst",
+      "relationship_manager": "relationship manager",
+      "compliance": "compliance"
+    },
+    "readOnly": "Only organization owners and administrators change roles and self-approval.",
+    "profileNote": "A commercial or professional profile (CFO, banker, analyst, investor) grants no review role and no data access by itself.",
+    "saving": "Saving…",
+    "errors": {
+      "invalid": "This change is not valid.",
+      "denied": "Your role in the organization does not allow changing responsibilities.",
+      "not_found": "The project is no longer available.",
+      "save": "The change could not be saved."
+    }
   }
 }

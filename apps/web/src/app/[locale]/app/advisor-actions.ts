@@ -14,6 +14,7 @@ import {
 import {after} from "next/server";
 import {z} from "zod";
 
+import {advisorActionError, type AdvisorActionError} from "@/lib/advisor/advisor-action-error";
 import {requireUser, requireWorkspace} from "@/lib/auth/workspace";
 import type {Json} from "@/types/database";
 import {processIntakeSession} from "@/lib/intake/server";
@@ -51,7 +52,7 @@ const executionBriefApprovalSchema = projectSchema.extend({
   commandId: z.uuid(),
 });
 
-export type AdvisorActionError = "invalid" | "denied" | "duplicate" | "not_found" | "save" | "processing" | "stale";
+export type {AdvisorActionError} from "@/lib/advisor/advisor-action-error";
 export type StartAdvisorProjectResult =
   | {ok: true; entryJob: CapitalProjectJob; projectId: string; sessionId: string}
   | {ok: false; error: AdvisorActionError};
@@ -64,16 +65,6 @@ function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
 
-function actionError(error: {code?: string; message?: string} | null): AdvisorActionError {
-  const message = error?.message ?? "";
-  if (error?.code === "40001" || message.includes("stale")) return "stale";
-  if (error?.code === "22023" || message.includes("invalid_")) return "invalid";
-  if (error?.code === "23505" || message.includes("already_in_use")) return "duplicate";
-  if (error?.code === "P0002" || message.includes("not_found")) return "not_found";
-  if (error?.code === "55000" || message.includes("in_progress")) return "processing";
-  if (error?.code === "42501" || message.includes("required")) return "denied";
-  return "save";
-}
 
 function projectTitle(prompt: string, job: CapitalProjectJob, locale: "pt-BR" | "en-US"): string {
   const withoutUrl = prompt.replace(/https?:\/\/\S+/gi, "").replace(/\s+/g, " ").trim();
@@ -112,7 +103,7 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
     ? await startProviderResearchProject(supabase, {p_request_id: requestId, p_locale: locale, p_project_name: baseName,
       p_prompt: prompt, p_plan: plan as unknown as Json, p_group_id: groupId ?? undefined})
     : await supabase.rpc("start_advisor_project_in_group_v1", {...args, p_group_id: groupId ?? undefined});
-  if (result.error) return {ok: false, error: actionError(result.error)};
+  if (result.error) return {ok: false, error: advisorActionError(result.error)};
   const payload = record(result.data);
   const projectId = typeof payload?.capital_project_id === "string" ? payload.capital_project_id : null;
   const sessionId = typeof payload?.intake_session_id === "string" ? payload.intake_session_id : null;
@@ -143,7 +134,7 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
     // No pending governed artifact means this is an ordinary conversational request. The generic
     // turn remains available; authorization, stale-state and validation errors still fail closed.
     if (revision.error.code !== "P0002" || !revision.error.message.includes("advisor_revision_artifact_not_available")) {
-      return {ok: false, error: actionError(revision.error)};
+      return {ok: false, error: advisorActionError(revision.error)};
     }
   }
   const {error} = await supabase.rpc("submit_advisor_turn_v1", {
@@ -152,7 +143,7 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
     p_locale: parsed.data.locale,
     p_content: parsed.data.content,
   });
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }
 
 /** Starts a bounded documentary request in the same project. The atomic command preserves
@@ -174,7 +165,7 @@ export async function requestAdvisorDocumentaryWork(input: unknown): Promise<Adv
     p_locale: parsed.data.locale, p_content: parsed.data.content,
     p_plan: documentWorkPlanSnapshot(entry.data) as unknown as Json,
   });
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }
 
 /** Records a plan adjustment against the exact immutable brief the person reviewed, then queues
@@ -192,7 +183,7 @@ export async function requestAdvisorExecutionBriefEdit(input: unknown): Promise<
     p_locale: parsed.data.locale,
     p_content: parsed.data.content,
   });
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }
 
 /** Records exact-plan consent and releases only the already bound work in one transaction.
@@ -207,7 +198,7 @@ export async function approveAdvisorExecutionBrief(input: unknown): Promise<Advi
     p_expected_fingerprint: parsed.data.expectedFingerprint,
     p_command_id: parsed.data.commandId,
   });
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }
 
 /** Answers the exact contextual question displayed in the workspace. Closing the question,
@@ -225,7 +216,7 @@ export async function answerAdvisorInformationRequest(input: unknown): Promise<A
     p_answer_source: parsed.data.answerSource,
     p_content: parsed.data.content,
   });
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }
 
 /** Returns only the tenant scope derived from the authenticated workspace. Public projects are
@@ -246,7 +237,7 @@ export async function prepareAdvisorDocumentUpload(input: unknown): Promise<Advi
       p_project_id: project.id,
       p_information_rights_declared: true,
     });
-    if (error) return {ok: false, error: actionError(error)};
+    if (error) return {ok: false, error: advisorActionError(error)};
   }
   const {data: session} = await supabase.from("document_intake_sessions")
     .select("id")
@@ -302,5 +293,5 @@ export async function reviewAdvisorInstitutionalConfiguration(input: unknown): P
   const {supabase} = await requireWorkspace(parsed.data.locale);
   const {error} = await reviewInstitutionalConfiguration(supabase, {p_project_id: parsed.data.projectId, p_candidate_id: parsed.data.candidateId,
     p_expected_parent_fingerprint: parsed.data.expectedParentFingerprint, p_expected_candidate_fingerprint: parsed.data.expectedCandidateFingerprint, p_decision: parsed.data.decision, p_request_id: parsed.data.requestId, p_locale: parsed.data.locale});
-  return error ? {ok: false, error: actionError(error)} : {ok: true};
+  return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }

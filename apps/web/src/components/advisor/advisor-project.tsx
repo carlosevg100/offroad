@@ -13,8 +13,9 @@ import {
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
   requestAdvisorExecutionBriefEdit,
-  requestAdvisorDocumentaryWork,
 } from "@/app/[locale]/app/advisor-actions";
+import {requestProjectWork} from "@/app/[locale]/app/projects/[projectId]/work-request-actions";
+import type {ProjectWorkRequestRecord} from "@/lib/advisor/project-work-requests";
 import {
   AdvisorChangeProposalCard,
   type AdvisorChangeProposal,
@@ -33,11 +34,11 @@ import {advisorShouldRefresh, advisorIsActive, advisorNeedsAttention, failureWas
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {createDocumentaryRequestBindings} from "./documentary-request-binding";
-import {DocumentaryWorkRequest} from "./documentary-work-request";
+import {NewWorkRequest, type NewWorkRequestOutcome} from "./new-work-request";
 import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
 import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
-import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, VisibleExecutionBrief} from "@offroad/work-plan";
+import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgress, ProjectCapabilityId, ProjectWorkContext, ProjectWorkDispatch, VisibleExecutionBrief} from "@offroad/work-plan";
 
 export type AdvisorProjectMessage = {
   id: string;
@@ -85,13 +86,14 @@ export type AdvisorProjectCopy = {
   needsAttention: string;
   messageFailed: string;
   informationRequest: InformationRequestCopy;
-  errors: {invalid: string; denied: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
+  errors: {invalid: string; denied: string; role: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
   proposal: AdvisorChangeProposalCopy;
 };
 
 type Props = {
   accessBasis: string;
-  documentaryWorkEnabled?: boolean;
+  /** Registry context decided on the server plus the recent requests of this project. */
+  workEntry?: {context: ProjectWorkContext; requests: readonly ProjectWorkRequestRecord[]};
   artifacts: AdvisorProjectArtifact[];
   copy: AdvisorProjectCopy;
   documents: AdvisorProjectDocument[];
@@ -125,6 +127,7 @@ export function AdvisorProject(props: Props) {
   const {selectedId: selectedWorkId, mobileView, setMobileView, selectSection: selectWork} = useAdvisorWorkNavigation(sections, props.initialWorkSectionId);
   const selectedWork = sections.find((section) => section.id === selectedWorkId) ?? sections[0];
   const recoveryCopy = useTranslations("App.advisorProject.recovery");
+  const newWorkCopy = useTranslations("NewWorkRequest");
   const approvalCopy = useTranslations("ExecutionBriefCard");
   const inventoryCopy = useTranslations("AdvisorEvidenceInventory");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -232,18 +235,35 @@ export function AdvisorProject(props: Props) {
       }));
   }
 
-  async function requestDocumentaryWork(message: string): Promise<AdvisorCommandResult> {
+  /** The common entry: one idempotent command id per objective, the reviewed plan version pinned
+   * for documentary reading, and the same recovery path as every other project command. */
+  async function requestNewWork(input: {objective: string; capability: ProjectCapabilityId | "auto"; dispatch: ProjectWorkDispatch}): Promise<NewWorkRequestOutcome> {
+    if (pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
     const current = props.executionBrief;
-    if (!current || pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
-    const reviewed = documentaryRequests.current.forRequest(message, {briefId: current.briefId, fingerprint: current.brief.fingerprint});
-    return runCommand(["documentary_request", reviewed.briefId, reviewed.fingerprint, message], message,
-      async messageId => {
-        const result = await requestAdvisorDocumentaryWork({locale: props.locale, projectId: props.projectId,
-          executionBriefId: reviewed.briefId, expectedFingerprint: reviewed.fingerprint, messageId, content: message});
-        if (!result.ok) documentaryRequests.current.rejected(message, result.error);
-        return result;
+    const documentary = input.dispatch.kind === "dispatch" && input.dispatch.capability === "documentary_reading";
+    if (documentary && !current) return {ok: false, error: props.copy.errors.processing};
+    const reviewed = documentary && current ? documentaryRequests.current.forRequest(input.objective, {briefId: current.briefId, fingerprint: current.brief.fingerprint}) : null;
+    const outcome: {current: {status: "dispatched" | "needs_information"; surface: string} | null; code: string | null} = {current: null, code: null};
+    const result = await runCommand(["work_request", input.capability, reviewed?.fingerprint ?? "", input.objective], null,
+      async (requestId) => {
+        const response = await requestProjectWork({
+          locale: props.locale, projectId: props.projectId, requestId, capability: input.capability, objective: input.objective,
+          originSection: selectedWork?.id ?? null,
+          ...(reviewed ? {documentary: {executionBriefId: reviewed.briefId, expectedFingerprint: reviewed.fingerprint}} : {}),
+        });
+        if (!response.ok) {
+          outcome.code = response.error;
+          if (reviewed) documentaryRequests.current.rejected(input.objective, response.error);
+          return {ok: false, error: response.error};
+        }
+        outcome.current = {status: response.status, surface: response.surface};
+        return {ok: true};
       },
-      () => documentaryRequests.current.accepted(message), false);
+      () => {if (reviewed) documentaryRequests.current.accepted(input.objective);}, false);
+    if (outcome.code === "unsupported" || outcome.code === "blocked") return {ok: false, error: newWorkCopy(`errors.${outcome.code}`)};
+    if (!result.ok) return result;
+    if (!outcome.current) return {ok: false, error: props.copy.errors.save};
+    return {ok: true, ...outcome.current};
   }
 
   async function approvePlan(input: {expectedFingerprint: string; expectedVersion: number}): Promise<AdvisorCommandResult> {
@@ -380,8 +400,15 @@ export function AdvisorProject(props: Props) {
         </div>
 
         <div className="advisor-project__composer-wrap">
-          {props.documentaryWorkEnabled && props.executionBrief && props.accessBasis === "authorized_private" && props.documents.length > 0
-            ? <DocumentaryWorkRequest disabled={pending || uploading || active} onRequest={requestDocumentaryWork} /> : null}
+          {props.workEntry ? <NewWorkRequest
+            availableSurfaces={sections.map((section) => section.id)}
+            context={props.workEntry.context}
+            disabled={pending || uploading || active}
+            locale={props.locale}
+            onOpenSurface={selectWork}
+            onRequest={requestNewWork}
+            requests={props.workEntry.requests}
+          /> : null}
           <section className="advisor-composer">
             <label><span className="sr-only">{props.copy.placeholder}</span><textarea
               disabled={pending || uploading}

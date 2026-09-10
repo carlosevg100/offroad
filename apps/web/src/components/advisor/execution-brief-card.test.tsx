@@ -228,3 +228,28 @@ it.each(["pt-BR", "en-US"] as const)("keeps the full objective inspectable below
   expect(html).toContain("Complete request\nEarlier project context");
   expect(html).not.toContain('<details class="execution-brief-card__objective-context" open');
 });
+
+describe("execution brief review roles", () => {
+  const approval = {status: "awaiting" as const, fingerprint: brief.fingerprint, version: 1};
+  it("explains a missing approver role and keeps approval unavailable while the plan awaits", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+      <ExecutionBriefCard approval={{...approval, callerCanApprove: false, reviewMode: "assigned"}} brief={brief} onApprove={async () => ({ok: true})} version={1} />
+    </NextIntlClientProvider>);
+    expect(html).toContain('data-caller-can-approve="false"');
+    expect(html).toContain(pt.ExecutionBriefCard.approval.roleRequired);
+    expect(html).toMatch(/<button disabled="" type="button"><svg[^>]*>.*?<\/svg>Aprovar plano · versão 1<\/button>/s);
+  });
+  it("shows who prepared and who approved the approved version", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="en-US" messages={en}>
+      <ExecutionBriefCard approval={{...approval, status: "approved", record: {decision: "approved", approvedVersion: 1, preparedBy: null, reviewedBy: null, preparedByLabel: "Ana Lima", reviewedByLabel: "Bruno Reis"}}} brief={{...brief, locale: "en-US"}} version={1} />
+    </NextIntlClientProvider>);
+    expect(html).toContain("Approved by Bruno Reis · prepared by Ana Lima · version 1");
+    expect(html).not.toContain(en.ExecutionBriefCard.approval.roleRequired);
+  });
+  it("shows a return decision on the awaiting version", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+      <ExecutionBriefCard approval={{...approval, callerCanApprove: true, record: {decision: "returned", approvedVersion: null, preparedBy: null, reviewedBy: null, preparedByLabel: null, reviewedByLabel: "Carla"}}} brief={brief} version={1} />
+    </NextIntlClientProvider>);
+    expect(html).toContain("Devolvido para ajustes por Carla");
+  });
+});

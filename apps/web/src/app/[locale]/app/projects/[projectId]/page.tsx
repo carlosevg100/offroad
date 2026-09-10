@@ -47,6 +47,10 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
 import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
+import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
+import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
+import {ProjectReviewRoles} from "@/components/advisor/project-review-roles";
+import type {ExecutionBriefApproval} from "@/components/advisor/execution-brief-card";
 import {openEvidenceRequirements} from "@/lib/advisor/evidence-inventory";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
@@ -281,6 +285,27 @@ async function ConversationalCapitalProject({
     .limit(1)
     .maybeSingle();
   if (!session) notFound();
+  // Review roles decide what this person may prepare, return or approve; the registry entry and
+  // the approval card only explain the decision the database will enforce again.
+  const [reviewContext, workRequests] = await Promise.all([
+    loadProjectReviewContext(supabase, project.id),
+    loadProjectWorkRequests(supabase, organization.id, project.id),
+  ]);
+  const memberLabels = reviewMemberLabels(reviewContext);
+  const describeApproval = (raw: unknown, expected: {id: string; fingerprint: string; version: number}): ExecutionBriefApproval => {
+    const approval = projectExecutionBriefApproval(raw, expected);
+    return {
+      status: approval.status, fingerprint: approval.fingerprint, version: approval.version,
+      ...(approval.reason ? {reason: approval.reason} : {}),
+      ...(approval.reviewMode ? {reviewMode: approval.reviewMode} : {}),
+      ...(approval.callerCanApprove !== undefined ? {callerCanApprove: approval.callerCanApprove} : {}),
+      ...(approval.record ? {record: {
+        ...approval.record,
+        preparedByLabel: approval.record.preparedBy ? memberLabels[approval.record.preparedBy] ?? null : null,
+        reviewedByLabel: approval.record.reviewedBy ? memberLabels[approval.record.reviewedBy] ?? null : null,
+      }} : {}),
+    };
+  };
 
   // Read the queue before its produced brief: a completion between the two reads
   // may cause one extra refresh, but can never leave the initial page frozen.
@@ -453,7 +478,7 @@ async function ConversationalCapitalProject({
 
   const copy: AdvisorProjectCopy = {
     advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
-    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
+    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), role: t("errors.role"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
     informationRequest: {
       eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), attachEvidence: t("informationRequest.attachEvidence"), attachEvidenceHelp: t("informationRequest.attachEvidenceHelp"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
     },
@@ -484,7 +509,7 @@ async function ConversationalCapitalProject({
     ? artifactDecisions?.find((item) => item.artifact_id === originationArtifact.id)
     : null;
   const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
-    ? projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
+    ? describeApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
     : null;
   const briefJob = documentaryPlanJob;
   const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
@@ -666,7 +691,8 @@ async function ConversationalCapitalProject({
   }
   if (plan && ["company_debt_view", "capital_planning", "origination_thesis", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"].includes(project.entry_job)) {
     const fitCopy = await getTranslations({locale, namespace: "ProviderCaseFitForm"});
-    workSections.push({id: "provider-case-criteria", title: fitCopy("title"), content: <ProviderCaseFitForm projectId={project.id} projectName={project.project_name} expectedPlanFingerprint={plan.plan_fingerprint} />});
+    workSections.push({id: "provider-case-criteria", title: fitCopy("title"), content: <ProviderCaseFitForm projectId={project.id} projectName={project.project_name} expectedPlanFingerprint={plan.plan_fingerprint}
+      initialObjective={workRequests.find((request) => request.capability === "provider_research" && request.status === "dispatched")?.objective} />});
   }
 
   const institutionalSetup = await loadInstitutionalSetupContext(supabase, project.id);
@@ -676,12 +702,29 @@ async function ConversationalCapitalProject({
     const initialReviews = parseInstitutionalSetupReviews(institutionalSetup);
     if (initialReviews.length) {
       const initialReviewCopy = await getTranslations({locale, namespace: "InstitutionalSetupReview"});
-      workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} />});
+      workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} reviewPermissions={reviewContext ? {canApprove: reviewContext.caller.canApprove} : undefined} />});
     }
+  }
+  if (reviewContext) {
+    const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
+    workSections.push({id: "project-review", title: rolesCopy("title"), status: rolesCopy(`modeLabel.${reviewContext.mode}`), content: <ProjectReviewRoles context={reviewContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
   }
 
   return <AdvisorProject
-    documentaryWorkEnabled={process.env.DOCUMENTARY_WORK_PLANNING_ENABLED === "true"}
+    workEntry={{
+      context: {
+        accessBasis: project.access_basis,
+        documentaryPlanningEnabled: process.env.DOCUMENTARY_WORK_PLANNING_ENABLED === "true",
+        readyDocumentCount: (documents ?? []).filter((document) => document.processing_status === "ready").length,
+        executionBriefAvailable: Boolean(executionBriefRow),
+        institutionalSetupAvailable: Boolean(institutionalSetup),
+        providerCaseFitAvailable: workSections.some((section) => section.id === "provider-case-criteria"),
+        callerActions: reviewContext
+          ? {prepare: reviewContext.caller.canPrepare, return: reviewContext.caller.canReturn, approve: reviewContext.caller.canApprove}
+          : {prepare: false, return: false, approve: false},
+      },
+      requests: workRequests,
+    }}
     accessBasis={project.access_basis}
     artifacts={(artifacts ?? []).filter((artifact) => artifact.status !== "superseded" && customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
       id: artifact.id,
@@ -691,7 +734,7 @@ async function ConversationalCapitalProject({
     copy={copy}
     documents={(documents ?? []).map((document) => ({id: document.id, name: document.original_name, size: document.byte_size, status: document.processing_status, version: document.document_version}))}
     executionBrief={parsedExecutionBrief?.success ? {
-      approval: projectExecutionBriefApproval(executionBriefApprovalRaw, {id: executionBriefRow!.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow!.brief_version}),
+      approval: describeApproval(executionBriefApprovalRaw, {id: executionBriefRow!.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow!.brief_version}),
       brief: parsedExecutionBrief.data,
       briefId: executionBriefRow!.id,
       changes: parsedExecutionBriefChanges?.success ? parsedExecutionBriefChanges.data : [],
