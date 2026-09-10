@@ -3707,3 +3707,9 @@ Security advisor returned zero lints. Both institutional tables have enabled and
 RLS, four explicit deny policies each and no new direct tenant grants. No customer fixture,
 backfill, plan approval, model call or documentary feature activation was performed.
 Code publication remains gated on the final PR checks, Vercel and worker deployment.
+
+Browser correction verified in Quality 34433729697, job 102734405573, candidate
+`5175cc4`: 26 passed, 15 skipped, no failing or flaky tests. Provider research
+completed its unmodified composer-to-approved-result-and-reload test in 10.6 seconds.
+Production-history filename alignment changes no migration SQL or application behavior;
+its final exact-head CI still precedes merge and deployment.
