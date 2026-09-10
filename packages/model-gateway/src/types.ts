@@ -92,6 +92,8 @@ export type Usage = {
   inputTokens: number;
   outputTokens: number;
   cachedInputTokens: number;
+  /** Tokens written to the current five-minute ephemeral Anthropic cache. */
+  cacheCreationInputTokens?: number;
   reasoningTokens?: number;
 };
 
@@ -114,6 +116,8 @@ export type AdapterRequest = {
 };
 
 export type AdapterResponse = {
+  /** False when provider usage was absent or invalid; retain reserved exposure. */
+  usageKnown?: boolean;
   /** Parsed JSON output (not yet validated against the zod schema). */
   output: unknown;
   rawText: string;

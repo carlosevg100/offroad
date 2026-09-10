@@ -7,6 +7,8 @@ export type AnthropicAdapterOptions = {
   /** Reads ANTHROPIC_API_KEY (or an `ant auth login` profile) when omitted. */
   apiKey?: string;
   client?: Anthropic;
+  /** Evaluation opt-in: only the gateway may own and count retries. */
+  disableSdkRetries?: boolean;
 };
 
 /**
@@ -50,7 +52,16 @@ export function mapAnthropicStopReason(reason: Anthropic.StopReason | null): Sto
   return "other";
 }
 
-export function mapAnthropicUsage(usage: Anthropic.Usage): Usage {
+export function isAnthropicUsageKnown(usage: Anthropic.Usage | undefined): boolean {
+  const count = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0;
+  if (!usage || !count(usage.input_tokens) || !count(usage.output_tokens)) return false;
+  if (!count(usage.cache_read_input_tokens ?? 0) || !count(usage.cache_creation_input_tokens ?? 0)) return false;
+  const thinking = (usage as {output_tokens_details?: {thinking_tokens?: number} | null}).output_tokens_details?.thinking_tokens;
+  return thinking === undefined || count(thinking);
+}
+
+export function mapAnthropicUsage(usage: Anthropic.Usage | undefined): Usage {
+  if (!isAnthropicUsageKnown(usage) || !usage) return {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
   const cacheRead = usage.cache_read_input_tokens ?? 0;
   const cacheCreation = usage.cache_creation_input_tokens ?? 0;
   const result: Usage = {
@@ -58,6 +69,7 @@ export function mapAnthropicUsage(usage: Anthropic.Usage): Usage {
     outputTokens: usage.output_tokens,
     cachedInputTokens: cacheRead,
   };
+  if (cacheCreation > 0) result.cacheCreationInputTokens = cacheCreation;
   const thinking = (usage as {output_tokens_details?: {thinking_tokens?: number} | null}).output_tokens_details?.thinking_tokens;
   if (typeof thinking === "number") result.reasoningTokens = thinking;
   return result;
@@ -73,14 +85,14 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions = {}): P
       // provider promise and throws away the otherwise valid Message (including usage and
       // request id) when a client-side constraint fails. The gateway owns validation and
       // fallback, so retain the raw structured response and validate it exactly once there.
-      const message = await client.messages.create(params, {timeout: request.timeoutMs});
+      const message = await client.messages.create(params, {timeout: request.timeoutMs, ...(options.disableSdkRetries ? {maxRetries: 0} : {})});
       const rawText = message.content
         .filter((block): block is Anthropic.TextBlock => block.type === "text")
         .map((block) => block.text)
         .join("");
       const stopReason = mapAnthropicStopReason(message.stop_reason);
       const output = safeJsonParse(request.outputMode === "prompted_json" ? extractJsonText(rawText) : rawText);
-      const response: AdapterResponse = {output, rawText, usage: mapAnthropicUsage(message.usage), model: message.model, stopReason};
+      const response: AdapterResponse = {output, rawText, usage: mapAnthropicUsage(message.usage), usageKnown: isAnthropicUsageKnown(message.usage), model: message.model, stopReason};
       const requestId = (message as {_request_id?: string | null})._request_id;
       if (requestId) response.requestId = requestId;
       return response;

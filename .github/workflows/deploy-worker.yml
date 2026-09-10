@@ -42,6 +42,7 @@ on:
       - "packages/testing-fixtures/assets/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/deploy-worker.yml"
+      - "scripts/ci/verify-worker-boot-flag.py"
   workflow_dispatch:
 
 concurrency:
@@ -114,6 +115,16 @@ jobs:
           spec = json.load(open("apps/document-worker/task-definition.json"))
           container = spec["containerDefinitions"][0]
           container["image"] = os.environ["IMAGE_URI"]
+          # Repository variable controls future deployments; missing/empty stays off.
+          # Never accept truthy spellings or silently coerce an invalid release setting.
+          documentary_flag = os.environ.get("DOCUMENTARY_WORK_PLANNING_ENABLED", "false")
+          if documentary_flag not in ("true", "false"):
+              raise ValueError("DOCUMENTARY_WORK_PLANNING_ENABLED must be true or false")
+          flags = [entry for entry in container["environment"] if entry["name"] == "DOCUMENTARY_WORK_PLANNING_ENABLED"]
+          if len(flags) != 1:
+              raise ValueError("Expected exactly one documentary planning environment entry")
+          flags[0]["value"] = documentary_flag
+          print("Documentary work planning enabled: " + documentary_flag)
           arns = dict(line.split() for line in open("/tmp/secret-arns.txt") if line.strip())
           for secret in container["secrets"]:
               secret_arn = arns[secret["valueFrom"]]
@@ -130,6 +141,7 @@ jobs:
           echo "Registered $ARN"
         env:
           IMAGE_URI: ${{ steps.image.outputs.uri }}
+          DOCUMENTARY_WORK_PLANNING_ENABLED: ${{ vars.DOCUMENTARY_WORK_PLANNING_ENABLED || 'false' }}
 
       - name: Roll out to the service
         run: |
@@ -191,3 +203,9 @@ jobs:
           fi
           echo "Verified task definition: $CURRENT_TASK"
           echo "Deployment stable."
+
+      - name: Read safe worker boot flag evidence
+        env:
+          EXPECTED_TASK_DEFINITION: ${{ steps.taskdef.outputs.arn }}
+          DOCUMENTARY_WORK_PLANNING_ENABLED: ${{ vars.DOCUMENTARY_WORK_PLANNING_ENABLED || 'false' }}
+        run: python3 scripts/ci/verify-worker-boot-flag.py

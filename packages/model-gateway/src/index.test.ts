@@ -215,7 +215,7 @@ describe("adapters (pure builders)", () => {
     expect(buildAnthropicParams({...request, model: "claude-fable-5"}).thinking).toBeUndefined();
     expect(mapAnthropicStopReason("refusal")).toBe("refusal");
     expect(mapAnthropicStopReason("end_turn")).toBe("end");
-    expect(mapAnthropicUsage({input_tokens: 100, output_tokens: 20, cache_read_input_tokens: 50, cache_creation_input_tokens: 10, cache_creation: null, server_tool_use: null, service_tier: null} as never)).toEqual({inputTokens: 160, outputTokens: 20, cachedInputTokens: 50});
+    expect(mapAnthropicUsage({input_tokens: 100, output_tokens: 20, cache_read_input_tokens: 50, cache_creation_input_tokens: 10, cache_creation: null, server_tool_use: null, service_tier: null} as never)).toEqual({inputTokens: 160, outputTokens: 20, cachedInputTokens: 50, cacheCreationInputTokens: 10});
   });
 
   it("builds OpenAI Responses params with strict schema, reasoning effort, no storage and data blocks", () => {

@@ -29,8 +29,11 @@ export const COST_RESERVATION_SAFETY_FACTOR = 1.1;
 export function estimateCostUsd(model: string, usage: Usage, prices: Record<string, ModelPrice> = listPrices): number {
   const price = prices[model];
   if (!price) return 0;
-  const uncached = Math.max(0, usage.inputTokens - usage.cachedInputTokens);
-  const cost = (uncached * price.input + usage.cachedInputTokens * price.cachedInput + usage.outputTokens * price.output) / 1_000_000;
+  const cacheCreation = usage.cacheCreationInputTokens ?? 0;
+  const uncached = Math.max(0, usage.inputTokens - usage.cachedInputTokens - cacheCreation);
+  // Current adapter uses only five-minute ephemeral caching (no one-hour TTL).
+  // https://platform.claude.com/docs/en/build-with-claude/prompt-caching
+  const cost = (uncached * price.input + cacheCreation * price.input * 1.25 + usage.cachedInputTokens * price.cachedInput + usage.outputTokens * price.output) / 1_000_000;
   return Math.round(cost * 1_000_000) / 1_000_000;
 }
 
