@@ -32,6 +32,11 @@ test("approved provider research persists an honest empty authorized universe", 
   await page.locator('input[name="information_rights_declared"]').check();
   await page.locator('.private-project-gate__form button[type="submit"]').click();
   await expect(page.locator(".private-project-gate--project")).toBeVisible();
+  // Account onboarding becomes workspace-ready only when its first project is created.
+  // Creating the shell does not start document analysis or seed the research result.
+  await page.locator('input[name="project_name"]').fill(`Onboarding sintético ${id}`);
+  await page.locator('.private-project-gate__form button[type="submit"]').click();
+  await expect(page.locator(".intake-collect")).toBeVisible();
   await page.goto("/pt-BR/app");
   const composer = page.locator(".advisor-composer--start");
   const request = "Pesquise os financiadores e mandatos disponíveis para minha organização.";
