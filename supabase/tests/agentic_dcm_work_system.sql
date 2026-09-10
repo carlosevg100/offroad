@@ -12,6 +12,26 @@ returns void language sql security definer set search_path='' as $$
  and id='82000000-0000-4000-8000-000000000393';
 $$;
 
+-- Seed already-persisted specialist questions in this synthetic project only.
+create function pg_temp.fixture_parallel_questions(p_project_id uuid)
+returns void language plpgsql security definer set search_path='' as $$
+declare namespace text;
+begin
+ if not exists(select 1 from public.capital_projects p where p.id=p_project_id and p.organization_id='20000000-0000-4000-8000-000000000393') then raise exception 'fixture project mismatch'; end if;
+ foreach namespace in array array['receivables_method_r01_evidence','receivables_method_r01_fields','institutional_model_assumptions','future_specialist'] loop
+  insert into public.capital_project_information_requests (
+    organization_id,capital_project_id,requirement_key,question,why_it_matters,decision_impact,
+    acceptable_evidence,answer_kind,choices,priority,information_gain,materiality,answerability,redundancy_penalty,status,source_namespace
+  ) values (
+    '20000000-0000-4000-8000-000000000393',p_project_id,'parallel.'||namespace,
+    'Qual informação falta para esta análise?', 'Esta informação altera a análise especializada.',
+    'A resposta permite completar a próxima etapa.',array['Documento ou confirmação expressa'],
+    'text','{}','blocking',1,1,1,0,'open',namespace
+  );
+ end loop;
+end;
+$$;
+
 do $$
 declare
   table_name text;
@@ -322,6 +342,35 @@ begin
     or (select count(*) from public.capital_project_agent_events where capital_project_id = ids.project_id) <> 3 then
     raise exception 'agent assessment replay or attribution invariant failed: %', replayed;
   end if;
+
+  -- The general assessment must preserve all other producers, including simultaneous
+  -- source diligence and a typed R01 premise, while managing its own old questions.
+  declare
+    foreign_before jsonb;
+    foreign_after jsonb;
+    empty_assessment jsonb := assessment || jsonb_build_object('coverage','[]'::jsonb,'requests','[]'::jsonb,'decisions','[]'::jsonb,'assessmentRef','parallel-producer-check');
+    collision jsonb;
+  begin
+    perform pg_temp.fixture_parallel_questions(ids.project_id);
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_before from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),empty_assessment);
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_after from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    if foreign_before is distinct from foreign_after or jsonb_array_length(foreign_after)<>4
+      or not exists(select 1 from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace='agent_assessment' and r.status='superseded') then
+      raise exception 'general assessment changed specialist questions or failed its own supersession';
+    end if;
+    collision := jsonb_set(empty_assessment,'{requests}',jsonb_build_array((assessment#>'{requests,0}') || jsonb_build_object('requirementKey','parallel.receivables_method_r01_fields')));
+    begin
+      perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),collision);
+      raise exception 'general assessment took another producer question';
+    exception when invalid_parameter_value then
+      if sqlerrm<>'agent_information_request_namespace_conflict' then raise; end if;
+    end;
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_after from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    if foreign_before is distinct from foreign_after then raise exception 'producer collision changed specialist questions'; end if;
+    raise exception 'rollback parallel producer fixture' using errcode='ZX010';
+  exception when sqlstate 'ZX010' then null;
+  end;
 
   -- Reassess an unanswered decision without inventing a recommendation or losing history.
   declare

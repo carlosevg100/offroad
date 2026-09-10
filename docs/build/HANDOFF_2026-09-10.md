@@ -1,3 +1,9 @@
+## Publication correction: preserve simultaneous specialist questions
+
+The authenticated R01 journey reached a successful case run but exposed a producer-ownership defect: the generic case assessment superseded open questions created by specialist workflows. Migration `20260910171808_preserve_specialist_information_requests` limits generic assessment supersession and lookup to `agent_assessment`, and rejects collisions with another producer's requirement key before mutation. No CHECK, RLS policy, grant or index was relaxed.
+
+The complete `agentic_dcm_work_system.sql` passed in staging with four independent producer namespaces preserved byte for byte, normal generic-question supersession intact, and cross-producer collisions rejected. Independent review found no blocker. This is the eleventh migration in the publication batch. The R01 browser journey still requires the next CI run to verify premise response and the final internal result; these SQL checks do not claim that journey has passed.
+
 ## Publication correction: unanswered decision continuity
 
 The authenticated R01 E2E exposed `capital_project_decisions_check`: a repeated assessment tried to supersede an open decision with no recommendation. Migration `20260910164327_preserve_open_decision_history` reuses only an unreviewed open/null placeholder, retaining its identity and original attribution, recording its prior snapshot in the project event history, and preventing old assessment replays from overwriting the successor. Actual recommendations remain revisioned; human-confirmed/rejected decisions remain untouched. No CHECK, RLS policy or grant changed.
