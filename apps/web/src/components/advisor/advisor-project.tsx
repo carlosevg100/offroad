@@ -235,8 +235,12 @@ export function AdvisorProject(props: Props) {
     if (!current || pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
     const reviewed = documentaryRequests.current.forRequest(message, {briefId: current.briefId, fingerprint: current.brief.fingerprint});
     return runCommand(["documentary_request", reviewed.briefId, reviewed.fingerprint, message], message,
-      messageId => requestAdvisorDocumentaryWork({locale: props.locale, projectId: props.projectId,
-        executionBriefId: reviewed.briefId, expectedFingerprint: reviewed.fingerprint, messageId, content: message}),
+      async messageId => {
+        const result = await requestAdvisorDocumentaryWork({locale: props.locale, projectId: props.projectId,
+          executionBriefId: reviewed.briefId, expectedFingerprint: reviewed.fingerprint, messageId, content: message});
+        if (!result.ok) documentaryRequests.current.rejected(message, result.error);
+        return result;
+      },
       () => documentaryRequests.current.accepted(message), false);
   }
 

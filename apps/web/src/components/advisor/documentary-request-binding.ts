@@ -12,6 +12,11 @@ export function createDocumentaryRequestBindings() {
       attempts.set(content, pinned);
       return pinned;
     },
+    rejected(content: string, error: string) {
+      // A returned stale response means the atomic RPC rolled back. Rebind after refresh;
+      // uncertain transport failures must keep the predecessor for idempotent replay.
+      if (error === "stale") attempts.delete(content);
+    },
     accepted(content: string) { attempts.delete(content); },
   };
 }
