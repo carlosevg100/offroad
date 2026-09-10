@@ -1034,6 +1034,8 @@ export type Database = {
           accepted_by: string | null
           accepted_event_id: string | null
           approval_command_id: string | null
+          approved_brief_fingerprint: string | null
+          approved_brief_version: number | null
           capital_project_id: string
           created_at: string
           execution_brief_id: string
@@ -1042,7 +1044,11 @@ export type Database = {
           organization_id: string
           payload_fingerprint: string
           plan_id: string
+          prepared_by: string | null
           processing_job_id: string
+          review_decision: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           updated_at: string
         }
         Insert: {
@@ -1050,6 +1056,8 @@ export type Database = {
           accepted_by?: string | null
           accepted_event_id?: string | null
           approval_command_id?: string | null
+          approved_brief_fingerprint?: string | null
+          approved_brief_version?: number | null
           capital_project_id: string
           created_at?: string
           execution_brief_id: string
@@ -1058,7 +1066,11 @@ export type Database = {
           organization_id: string
           payload_fingerprint: string
           plan_id: string
+          prepared_by?: string | null
           processing_job_id: string
+          review_decision?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           updated_at?: string
         }
         Update: {
@@ -1066,6 +1078,8 @@ export type Database = {
           accepted_by?: string | null
           accepted_event_id?: string | null
           approval_command_id?: string | null
+          approved_brief_fingerprint?: string | null
+          approved_brief_version?: number | null
           capital_project_id?: string
           created_at?: string
           execution_brief_id?: string
@@ -1074,7 +1088,11 @@ export type Database = {
           organization_id?: string
           payload_fingerprint?: string
           plan_id?: string
+          prepared_by?: string | null
           processing_job_id?: string
+          review_decision?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2131,6 +2149,106 @@ export type Database = {
           },
         ]
       }
+      capital_project_review_assignments: {
+        Row: {
+          assigned_by: string
+          capital_project_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          review_role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_by: string
+          capital_project_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          review_role: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_by?: string
+          capital_project_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          review_role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_review_assign_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_review_assignments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capital_project_review_assignments_organization_id_user_id_fkey"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "organization_memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+        ]
+      }
+      capital_project_review_policies: {
+        Row: {
+          capital_project_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          self_approval: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          capital_project_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          self_approval?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          capital_project_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          self_approval?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_review_polici_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: true
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_review_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       capital_project_task_runs: {
         Row: {
           attempt_no: number
@@ -2236,6 +2354,72 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "processing_jobs"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      capital_project_work_requests: {
+        Row: {
+          capability: string
+          capital_project_id: string
+          created_at: string
+          dispatch: Json
+          id: string
+          locale: string
+          objective: string
+          organization_id: string
+          origin_section: string | null
+          outcome: Json
+          registry_version: string
+          requested_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capability: string
+          capital_project_id: string
+          created_at?: string
+          dispatch?: Json
+          id: string
+          locale: string
+          objective: string
+          organization_id: string
+          origin_section?: string | null
+          outcome?: Json
+          registry_version: string
+          requested_by: string
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          capability?: string
+          capital_project_id?: string
+          created_at?: string
+          dispatch?: Json
+          id?: string
+          locale?: string
+          objective?: string
+          organization_id?: string
+          origin_section?: string | null
+          outcome?: Json
+          registry_version?: string
+          requested_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capital_project_work_requests_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "capital_project_work_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5713,6 +5897,38 @@ export type Database = {
           },
         ]
       }
+      organization_review_policies: {
+        Row: {
+          created_at: string
+          organization_id: string
+          self_approval_allowed: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          self_approval_allowed?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          self_approval_allowed?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_review_policies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_rollout_policies: {
         Row: {
           created_at: string
@@ -8179,6 +8395,10 @@ export type Database = {
         Args: { p_execution_brief_id: string }
         Returns: Json
       }
+      read_capital_project_review_context_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       read_documentary_plan_job_v1: {
         Args: { p_execution_brief_id: string; p_project_id: string }
         Returns: string
@@ -8218,6 +8438,21 @@ export type Database = {
           p_session_id: string
         }
         Returns: string
+      }
+      record_capital_project_work_request_v1: {
+        Args: {
+          p_capability: string
+          p_dispatch: Json
+          p_documentary?: Json
+          p_locale: string
+          p_objective: string
+          p_origin_section: string
+          p_project_id: string
+          p_registry_version: string
+          p_request_id: string
+          p_status: string
+        }
+        Returns: Json
       }
       record_case_model_spend: {
         Args: {
@@ -8598,6 +8833,19 @@ export type Database = {
           source_document_id: string
         }[]
       }
+      set_capital_project_review_assignment_v1: {
+        Args: {
+          p_assigned: boolean
+          p_project_id: string
+          p_review_role: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      set_capital_project_review_policy_v1: {
+        Args: { p_project_id: string; p_self_approval: string }
+        Returns: Json
+      }
       set_intake_archetype_command: {
         Args: {
           p_archetype: string
@@ -8641,6 +8889,10 @@ export type Database = {
           p_scope_event_id: string
           p_session_id: string
         }
+        Returns: Json
+      }
+      set_organization_review_policy_v1: {
+        Args: { p_organization_id: string; p_self_approval_allowed: boolean }
         Returns: Json
       }
       set_workspace_project_job: {
