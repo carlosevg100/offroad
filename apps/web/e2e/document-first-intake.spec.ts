@@ -946,12 +946,15 @@ test.describe("Document-first intake (company journey)", () => {
     await testInfo.attach("r01-released-analysis", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
     // A new confirmed selection turns the stored result into history, never into a current answer.
+    // The session may already hold more than one confirmed scope from the steps above, so the
+    // proof is one more row and a newer confirmation, not an absolute count.
+    const scopesBefore = Number(sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;"));
     await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
     for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
     await scope.locator('input[name="reportingDate"]').fill("2026-08-30");
     await scope.locator('input[name="scopeConfirmed"]').check();
     await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
-    await expect.poll(() => sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;"), {timeout: 120_000}).toBe("2");
+    await expect.poll(() => Number(sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;")), {timeout: 120_000}).toBe(scopesBefore + 1);
     // The new run waits for its own approval, so the previous result stays visible as history.
     await waitForCaseStatus(["awaiting_approval"]);
     await page.reload();
