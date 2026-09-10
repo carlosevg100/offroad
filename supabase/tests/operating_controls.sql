@@ -212,9 +212,24 @@ begin
     raise exception 'provider-policy failure did not close the operating gate: %', blocked;
   end if;
 
+  -- v16 may record its result, but must never inherit the v15 accreditation.
+  blocked := public.worker_record_operating_control_snapshot_v1(
+    job_id, capability, 'case-analysis:2026.09.09-v16', 'internal_decision', repeat('a',64),
+    jsonb_build_object(
+      'caseFingerprint',repeat('b',64),
+      'controlledExecutionFingerprint',repeat('c',64),
+      'manifestFingerprint',repeat('d',64)
+    ), base_snapshot
+  );
+  if (blocked ->> 'allowed')::boolean
+    or not ((blocked -> 'blockers') ? 'capability_not_accredited_for_recommend')
+    or nullif(blocked ->> 'capabilityAccreditationId', '') is not null then
+    raise exception 'v16 inherited a capability accreditation from v15: %', blocked;
+  end if;
+
   begin
     perform public.worker_record_operating_control_snapshot_v1(
-      job_id, repeat('x',64), 'case-analysis:2026.08.29-v15', 'internal_decision', repeat('a',64),
+      job_id, repeat('x',64), 'case-analysis:2026.09.09-v16', 'internal_decision', repeat('a',64),
       '{}'::jsonb, base_snapshot
     );
     raise exception 'forged worker capability persisted a control decision';
@@ -297,7 +312,7 @@ select set_config(
 );
 do $$
 begin
-  if (select count(*) from public.operating_control_snapshots) <> 2 then
+  if (select count(*) from public.operating_control_snapshots) <> 3 then
     raise exception 'tenant A cannot read its immutable operating-control evidence';
   end if;
   begin

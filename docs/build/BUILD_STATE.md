@@ -1,3 +1,21 @@
+## 9 September: review v16 operating-control compatibility
+
+PR584 Quality run34405085387 failed the approved receivables-scope journey with
+`operating_control_capability_scope_invalid`, twice, with zero model calls in
+the failing jobs. The v16 engine scope was rejected by the database v15-only
+allowlist. The earlier summary-schema hypothesis was not the cause.
+
+Migration20260910013207 adds the exact v16 scope and rejects null/unknown scopes.
+It preserves capability, tenant, frozen-input, report, time and quality checks;
+it neither grants privileges nor copies v15 accreditation to v16. SQL regression
+coverage records v16 as blocked without accreditation and rejects forged tokens.
+Staging migration applied; transaction-rolled-back operating-controls SQL passed,
+security advisor returned zero lints and regenerated types are byte-equivalent.
+Full local check passed from valid cache (43/43 packages per task).
+Production application and exact-head CI remain pending.
+Controls APP-03/04/10/11: existing guards retained; no new disclosure or external action.
+Rollback worker to v15 remains compatible with the additive scope migration.
+
 ## 9 September: connect institutional workbook compilation to download
 
 The case engine generated governed/styled XLSX bytes while the authenticated download
