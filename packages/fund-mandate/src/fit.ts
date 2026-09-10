@@ -409,8 +409,8 @@ export function assessMandateFit(mandate: ResolvedMandate, request: DealRequest)
               mandate: box,
               request: `${request.leverage}x`,
               explanation: L(
-                "A alavancagem pós-operação passa do teto deste fundo. Diminuir o valor, alongar o prazo ou reforçar garantia move este número.",
-                "Post-transaction leverage exceeds this fund's ceiling. A smaller amount, a longer tenor, or stronger security moves this number.",
+                "A alavancagem pós-operação passa do teto deste fundo. Reduzir a dívida líquida ou aumentar o EBITDA pode alterar o indicador; prazo e garantia, isoladamente, não reduzem essa relação.",
+                "Post-transaction leverage exceeds this fund's ceiling. Lower net debt or higher EBITDA may change the ratio; tenor and collateral alone do not reduce it.",
               ),
             };
       })(),

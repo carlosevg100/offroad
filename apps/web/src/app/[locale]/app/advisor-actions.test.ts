@@ -33,11 +33,11 @@ describe("provider research activation", () => {
 });
 
 describe("institutional premise decision", () => {
-  const review = {locale: "pt-BR", projectId: input.requestId, candidateId: "10000000-0000-4000-8000-000000000002", expectedParentFingerprint: "a".repeat(64), expectedCandidateFingerprint: "b".repeat(64), decision: "approved"};
+  const review = {requestId: input.requestId, locale: "pt-BR", projectId: input.requestId, candidateId: "10000000-0000-4000-8000-000000000002", expectedParentFingerprint: "a".repeat(64), expectedCandidateFingerprint: "b".repeat(64), decision: "approved"};
   beforeEach(() => {vi.clearAllMocks(); rpc.mockResolvedValue({data: {}, error: null});});
   it("sends both fingerprints and never dispatches calculation", async () => {
     expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok: true});
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("review_institutional_configuration_v1", {p_project_id: review.projectId, p_candidate_id: review.candidateId, p_expected_parent_fingerprint: review.expectedParentFingerprint, p_expected_candidate_fingerprint: review.expectedCandidateFingerprint, p_decision: "approved"});
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("review_institutional_configuration_and_calculate_v1", {p_project_id: review.projectId, p_candidate_id: review.candidateId, p_expected_parent_fingerprint: review.expectedParentFingerprint, p_expected_candidate_fingerprint: review.expectedCandidateFingerprint, p_decision: "approved", p_request_id: review.requestId, p_locale: "pt-BR"});
     expect(after).not.toHaveBeenCalled();
   });
   it("rejects malformed decisions and surfaces stale/denied server results", async () => {

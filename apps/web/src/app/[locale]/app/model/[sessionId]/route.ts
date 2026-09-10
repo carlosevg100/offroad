@@ -1,5 +1,5 @@
 import {deskEvidence} from "@offroad/case-understanding";
-import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/financial-model";
+import {buildFinancialModel, renderApprovedFinancialWorkbook, renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -29,6 +29,22 @@ export async function GET(_request: Request, {params}: Params) {
   const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
   const artifact = governed?.plannedArtifacts.includes("financial_model") ? governed.financialModel : null;
   if (!artifact) return new Response(lang === "pt" ? "O modelo aprovado ainda não está disponível." : "The approved model is not available yet.", {status: 409});
+
+  if (artifact.modelKind === "institutional") {
+    const bindings = artifact.institutional.scenarios.flatMap(scenario => scenario.sourceBindings);
+    const documentIds = [...new Set(bindings.map(source => source.sourceDocument))];
+    const {data: documents, error} = await supabase.from("source_documents").select("id, document_version, sha256, sha256_verified_at").eq("organization_id", organization.id).eq("intake_session_id", sessionId).in("id", documentIds);
+    if (error || bindings.some(source => !documents?.some(document => document.id === source.sourceDocument && String(document.document_version) === source.version && document.sha256 === source.hash && document.sha256_verified_at))) {
+      return new Response(lang === "pt" ? "As fontes mudaram; revise o modelo antes de gerar uma nova entrega." : "Sources changed; review the model before preparing a new delivery.", {status: 409});
+    }
+    const bytes = await renderApprovedInstitutionalFinancialWorkbook(artifact, lang);
+    if (!bytes) return new Response(lang === "pt" ? "O modelo precisa ser preparado novamente." : "The model must be prepared again.", {status: 409});
+    return new Response(Buffer.from(bytes), {headers: {
+      "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${governed!.issuedOn.slice(0,10)}.xlsx"`,
+      "cache-control": "private, no-store",
+    }});
+  }
 
   const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
 
@@ -62,7 +78,7 @@ export async function GET(_request: Request, {params}: Params) {
   if (!bytes) {
     return new Response(lang === "pt" ? "O modelo mudou desde a compilação e precisa ser preparado novamente." : "The model changed since compilation and must be prepared again.", {status: 409});
   }
-  const stamp = new Date().toISOString().slice(0, 10);
+  const stamp = governed!.issuedOn.slice(0, 10);
   const filename = `${lang === "pt" ? "Modelo_de_credito" : "Credit_model"}_${stamp}.xlsx`;
 
   return new Response(bytes as unknown as BodyInit, {

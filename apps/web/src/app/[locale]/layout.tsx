@@ -6,6 +6,7 @@ import {notFound} from "next/navigation";
 
 import {brand} from "@/config/brand";
 import {routing} from "@/i18n/routing";
+import {selectClientMessages} from "@/i18n/client-messages";
 
 import "../globals.css";
 import "../offroad-premium.css";
@@ -115,17 +116,7 @@ export default async function LocaleLayout({children, params}: Props) {
   // Keep the client bundle narrow, but include every namespace consumed by client
   // components. Omitting one makes next-intl render the key itself in production.
   const messages = await getMessages({locale});
-  const clientMessages = {
-    App: {privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
-    IntegrationPreviewWork: messages.IntegrationPreviewWork,
-    decisionReadout: messages.decisionReadout,
-    ExecutionBriefCard: messages.ExecutionBriefCard,
-    AdvisorEvidenceInventory: messages.AdvisorEvidenceInventory,
-    AdvisorWorkSurface: messages.AdvisorWorkSurface,
-    Intake: {executionApproval: messages.Intake.executionApproval},
-    Errors: messages.Errors,
-    Navigation: messages.Navigation,
-  };
+  const clientMessages = selectClientMessages(messages as typeof import("../../../messages/pt-BR.json"));
 
   const organizationId = `${brand.url}/#organization`;
   const websiteId = `${brand.url}/#website`;

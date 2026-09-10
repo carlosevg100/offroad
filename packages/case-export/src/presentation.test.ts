@@ -1,4 +1,4 @@
-import {readFile} from "node:fs/promises";
+import {readFile, mkdir, writeFile} from "node:fs/promises";
 
 import {buildDecisionArtifactContract, type DecisionArtifactContractInput} from "@offroad/case-understanding";
 import JSZip from "jszip";
@@ -94,4 +94,22 @@ describe("institutional presentation renderer", () => {
     const archive = await JSZip.loadAsync(result.bytes);
     expect(await archive.file("ppt/slides/slide5.xml")!.async("string")).toContain("PONTOS EM ABERTO · 2/2");
   });
+});
+
+it.each(["column", "bar", "line"] as const)("keeps native %s charts editable and retains every companion claim", async chartKind => {
+  const raw = fixture();
+  raw.series = [{id: "series-cash", label: "Fluxo de caixa", unit: "BRL", chartKind, object: {id: "cash-series", type: "cash_flow", fingerprint: FP, path: "cash"}, points: [120, -45, 0, 90].map((value, index) => ({label: String(2027 + index), value, evidenceState: "calculated" as const, sourceIds: ["source-release"], assumptionIds: [], gapIds: []}))}];
+  raw.views[2]!.blocks[0]!.seriesIds = ["series-cash"];
+  const result = await renderInstitutionalPresentation({contract: buildDecisionArtifactContract(raw), title: "Fluxo de caixa · Amostra sintética", locale: "pt-BR"});
+  const zip = await JSZip.loadAsync(result.bytes);
+  const chart = await zip.file("ppt/charts/chart2.xml")!.async("string");
+  expect(chart).toContain("<c:v>-45</c:v>");
+  expect(chart).toContain("<c:v>0</c:v>");
+  expect(chart).toContain(chartKind === "line" ? "c:lineChart" : `c:barDir val="${chartKind === "bar" ? "bar" : "col"}"`);
+  const workbook = await JSZip.loadAsync(await zip.file("ppt/embeddings/chart2.xlsx")!.async("uint8array"));
+  expect(await workbook.file("xl/worksheets/sheet1.xml")!.async("string")).toContain("<v>-45</v>");
+  const slide = await zip.file("ppt/slides/slide3.xml")!.async("string");
+  expect(slide).toContain("Dívida líquida / EBITDA");
+  expect(slide).toContain("Caixa e equivalentes");
+  if (process.env.OFFROAD_FORMAT_QA_DIR) {await mkdir(process.env.OFFROAD_FORMAT_QA_DIR, {recursive: true}); await writeFile(`${process.env.OFFROAD_FORMAT_QA_DIR}/chart-${chartKind}.pptx`, result.bytes);}
 });

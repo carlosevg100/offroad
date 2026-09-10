@@ -1,7 +1,7 @@
 /**
  * A material as a Word document a lawyer can mark up.
  *
- * The print-ready HTML is how a PDF is produced; the term sheet and the covenant definitions
+ * The term sheet and the covenant definitions
  * are negotiated in tracked changes, and that happens in .docx. The document is built directly
  * from the material's blocks: the same decimal strings, the same order, the same support ids.
  * Nothing is restyled per language beyond the words themselves.
@@ -63,7 +63,22 @@ const table = (rows: string[], columns: number) => {
   return `<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="BFC5CA"/><w:bottom w:val="single" w:sz="4" w:color="BFC5CA"/><w:insideH w:val="single" w:sz="4" w:color="D9DDE0"/></w:tblBorders><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join("")}</w:tbl>${paragraph("", {spacingAfter: 120})}`;
 };
 
-const row = (cells: string[], header = false) => `<w:tr><w:trPr><w:cantSplit/>${header ? "<w:tblHeader/>" : ""}</w:trPr>${cells.join("")}</w:tr>`;
+// Measure generated XML for pagination in a single pass. This does not sanitize
+// content: all user text is escaped by run() before entering a cell.
+function visibleXmlLength(markup: string): number {
+  let length = 0;
+  let insideTag = false;
+  for (const character of markup) {
+    if (character === "<") insideTag = true;
+    else if (character === ">") insideTag = false;
+    else if (!insideTag) length += character.length;
+  }
+  return length;
+}
+const row = (cells: string[], header = false) => {
+  const content = cells.join("");
+  return `<w:tr><w:trPr>${visibleXmlLength(content) > 1200 ? "" : "<w:cantSplit/>"}${header ? "<w:tblHeader/>" : ""}</w:trPr>${content}</w:tr>`;
+};
 
 /** Short internal links preserve readable prose while retaining every exact evidence id. */
 function referenceIndex(material: Material): Map<string, number> {
@@ -116,6 +131,9 @@ function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, 
     case "disclaimer":
       return paragraph(run(block.text[lang], {italic: true, size: 18, color: "6B7780"}), {spacingAfter: 160});
     case "kv":
+      if (block.rows.some(entry => entry.value[lang].length > 600)) {
+        return (block.caption ? paragraph(run(block.caption[lang], {bold: true}), {keepNext: true}) : "") + block.rows.map(entry => paragraph(run(entry.label[lang], {bold: true}), {keepNext: true}) + paragraph(run(entry.value[lang]) + citationLinks(entry.supportIds, references)) + (entry.note ? paragraph(run(entry.note[lang], {size: 18, color: "6B7780"})) : "")).join("");
+      }
       return (
         (block.caption ? paragraph(run(block.caption[lang], {bold: true}), {keepNext: true, spacingAfter: 60}) : "") +
         table(

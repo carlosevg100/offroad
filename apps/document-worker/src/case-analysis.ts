@@ -1,3 +1,4 @@
+import {institutionalModelRuntimeContextSchema} from "@offroad/financial-model";
 import {
   canonicalReceivablesRouteCatalogue,
   caseEngineVersion,
@@ -889,7 +890,12 @@ export async function processCaseAnalysisJob(
     const informationAnswers = informationAnswersFrom(raw.answers);
     const caseReviewFeedback = informationAnswers.case_review_feedback;
     failurePhase = "execute_case_engine";
+    const institutionalContext = !useShadow && executionPlan.produceMaterials
+      && plannedMaterialKindsFrom(raw.deal_state_context, raw.deal_workflow)?.includes("financial_model")
+      && dependencies.queue.loadInstitutionalModelContext
+      ? institutionalModelRuntimeContextSchema.parse(await dependencies.queue.loadInstitutionalModelContext(job)) : null;
     const result = await executeCaseEngine({
+      ...(institutionalContext ? {institutionalModelContext:institutionalContext} : {}),
       runId: job.processing_run_id,
       caseId: job.intake_session_id,
       archetypeId,

@@ -1,4 +1,4 @@
-import {compileProviderResearchBrief} from "@offroad/work-plan";
+import {compileProviderResearchBrief, compileProviderCaseFitBrief} from "@offroad/work-plan";
 import {compileDocumentWorkBrief, documentWorkPlanSnapshot} from "@offroad/work-plan";
 import {canCompileStandaloneDocumentWorkRequest, documentWorkJob} from "./document-work-input";
 import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
@@ -31,7 +31,7 @@ const proposalContextSchema = z.object({
   documents: z.array(z.object({id: z.uuid(), name: z.string().min(1)})),
   plan: z.object({
     schemaVersion: z.literal("capital-project-plan.v1"), compilerVersion: z.string().min(3), registryVersion: z.string().min(3),
-    job: z.object({firstWorkProduct: z.enum(["provider_research", "preview_meeting_brief", "company_debt_diagnostic", "meeting_brief", "alternative_map", "diagnostic_recommendation", "operation_review", "production_plan"]), id: z.enum(["company_debt_view", "origination_thesis", "capital_planning", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"])}).passthrough(),
+    job: z.object({firstWorkProduct: z.enum(["provider_case_fit", "provider_research", "preview_meeting_brief", "company_debt_diagnostic", "meeting_brief", "alternative_map", "diagnostic_recommendation", "operation_review", "production_plan"]), id: z.enum(["company_debt_view", "origination_thesis", "capital_planning", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"])}).passthrough(),
     taskSpecs: z.array(z.object({id: z.string().regex(/^[A-Z][0-9]{2}$/), dependencies: z.array(z.string()), effect: offroadTaskEffectSchema}).passthrough()).min(1).max(80),
   }).passthrough().nullable(),
 });
@@ -43,8 +43,8 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
     const context = proposalContextSchema.parse(await queue.loadExecutionBriefProposal(job));
     if (context.target_job_id !== job.payload.approval_target_job_id || context.locale !== job.payload.locale) throw new Error("execution_brief_proposal_context_mismatch");
     if (!context.plan && context.target_kind !== "case_analysis") throw new Error("execution_brief_proposal_plan_required");
-    if (context.plan?.job.firstWorkProduct === "provider_research") {
-      const internal = compileProviderResearchBrief({plan: context.plan as unknown as CapitalProjectPlanSnapshot, revisionContext: context.target_job_id, locale: context.locale, objective: context.initial_work_request?.text ?? context.objective});
+    if (context.plan?.job.firstWorkProduct === "provider_research" || context.plan?.job.firstWorkProduct === "provider_case_fit") {
+      const internal = (context.plan.job.firstWorkProduct === "provider_case_fit" ? compileProviderCaseFitBrief : compileProviderResearchBrief)({plan: context.plan as unknown as CapitalProjectPlanSnapshot, revisionContext: context.target_job_id, locale: context.locale, objective: context.initial_work_request?.text ?? context.objective});
       await queue.recordExecutionBriefProposal(job, internal, visibleExecutionBrief(internal), context.input_fingerprint, null);
       return {status: "proposed" as const};
     }

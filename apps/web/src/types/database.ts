@@ -8175,6 +8175,14 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_institutional_model_results_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
+      read_institutional_model_setup_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       read_processing_model_lineage: {
         Args: {
           p_organization_id: string
@@ -8452,6 +8460,18 @@ export type Database = {
         }
         Returns: string
       }
+      review_institutional_configuration_and_calculate_v1: {
+        Args: {
+          p_candidate_id: string
+          p_decision: string
+          p_expected_candidate_fingerprint: string
+          p_expected_parent_fingerprint: string
+          p_locale: string
+          p_project_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       review_institutional_configuration_v1: {
         Args: {
           p_candidate_id: string
@@ -8663,6 +8683,20 @@ export type Database = {
         }
         Returns: string
       }
+      start_provider_case_fit_project_v1: {
+        Args: {
+          p_case_criteria?: Json
+          p_expected_plan_fingerprint?: string
+          p_group_id?: string
+          p_locale: string
+          p_plan: Json
+          p_project_id?: string
+          p_project_name: string
+          p_prompt: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       start_provider_research_project_v1: {
         Args: {
           p_group_id?: string
@@ -8828,6 +8862,17 @@ export type Database = {
           p_message_id: string
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      submit_institutional_model_setup_v1: {
+        Args: {
+          p_configuration: Json
+          p_expected_manifest_fingerprint: string
+          p_locale: string
+          p_project_id: string
+          p_source_reviews: Json
+          p_submission_id: string
         }
         Returns: Json
       }
@@ -9085,6 +9130,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_institutional_model_context_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_intake_events: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -9106,6 +9155,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_prior_case_report: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_provider_case_fit_context: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
@@ -9369,6 +9422,19 @@ export type Database = {
           p_plan?: Json
           p_visible_snapshot: Json
         }
+        Returns: Json
+      }
+      worker_record_initial_institutional_candidate_v1: {
+        Args: {
+          p_candidate: Json
+          p_capability_token: string
+          p_job_id: string
+          p_submission_id: string
+        }
+        Returns: Json
+      }
+      worker_record_institutional_model_result_v1: {
+        Args: { p_capability_token: string; p_job_id: string; p_result: Json }
         Returns: Json
       }
       worker_record_intake_request_ladders: {

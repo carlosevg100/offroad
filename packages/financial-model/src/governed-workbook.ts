@@ -24,7 +24,7 @@ export type GovernedWorkbookMetadata = {
   scale: string;
   classification: "internal" | "confidential";
   decisionContractFingerprint?: string;
-  artifactClass?: "credit_model" | "decision_workbook";
+  artifactClass?: "credit_model" | "decision_workbook" | "institutional_snapshot";
 };
 
 export type GovernedWorkbookAudit = {
@@ -78,7 +78,7 @@ function styleComponents(role: CellRole, crossSheet: boolean) {
   return {font: fontIds.body, fill: fillIds.none, border: borderIds.none, align: 0};
 }
 
-function styleCatalogue() {
+function styleCatalogue(wrapText = false) {
   const ids = new Map<StyleKey, number>();
   const xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'];
   for (const role of roles) {
@@ -90,7 +90,7 @@ function styleCatalogue() {
           ? '<alignment horizontal="center" vertical="center" wrapText="1"/>'
           : c.align === 2
             ? '<alignment horizontal="left" vertical="top" wrapText="1"/>'
-            : `<alignment horizontal="${format === "text" ? "left" : "right"}" vertical="center"/>`;
+            : `<alignment horizontal="${format === "text" ? "left" : "right"}" vertical="center"${wrapText ? ' wrapText="1"' : ""}/>`;
         ids.set(key, xfs.length);
         xfs.push(`<xf numFmtId="${numberFormatId(format)}" fontId="${c.font}" fillId="${c.fill}" borderId="${c.border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${alignment}</xf>`);
       }
@@ -248,9 +248,16 @@ export async function toGovernedXlsxBuffer(
     disclaimer: lang === "pt"
       ? "Uso interno. Este workbook não constitui proposta, aprovação, diligência final, opinião jurídica, distribuição ou recomendação executável."
       : "Internal use. This workbook is not an offer, approval, final diligence, legal opinion, distribution or executable recommendation.",
+  } : metadata.artifactClass === "institutional_snapshot" ? {
+    title: metadata.title,
+    description: lang === "pt" ? "Demonstrações integradas calculadas a partir de configurações e fontes revisadas. Exportação dos resultados aprovados, sem recálculo local de premissas." : "Integrated financial statements calculated from reviewed configurations and sources. Approved results export, without local assumption recalculation.",
+    controls: lang === "pt" ? "Edite premissas na plataforma e submeta uma nova revisão para gerar outra versão. Os valores decimais são preservados como texto para evitar perda de precisão no Excel." : "Edit assumptions in the platform and submit a new review to generate another version. Decimal values are preserved as text to prevent Excel precision loss.",
+    sources: lang === "pt" ? "A aba Fontes e conciliação registra documentos, versões, períodos, perímetros e localizadores." : "The Sources and reconciliation sheet records documents, versions, periods, entity scopes and locators.",
+    assumptionHeading: lang === "pt" ? "Premissas aprovadas na plataforma" : "Assumptions approved in the platform",
+    disclaimer: lang === "pt" ? "Uso interno. Cenários não são previsões garantidas, oferta ou compromisso de crédito." : "Internal use. Scenarios are not guaranteed forecasts, an offer or credit commitment.",
   } : undefined);
   const zip = await JSZip.loadAsync(basic);
-  const catalogue = styleCatalogue();
+  const catalogue = styleCatalogue(metadata.artifactClass === "institutional_snapshot");
   zip.file("xl/styles.xml", stylesXml(catalogue.xfs), {date: new Date("1980-01-01T00:00:00.000Z")});
 
   const coverPath = "xl/worksheets/sheet1.xml";
@@ -273,6 +280,14 @@ export async function toGovernedXlsxBuffer(
     if (!source) throw new Error(`generated workbook is missing ${sheet.name[lang]}`);
     const split = sheet.key === "projection" || sheet.key === "debt" || sheet.key === "covenants" ? {x: 1, y: 2} : {x: 0, y: 2};
     let xml = addPageSetup(addSheetProperties(replaceSheetView(source, split), sheet.key === "sources" ? "FF8A939B" : sheet.key === "assumptions" ? "FF7D9455" : "FF101923"), sheet.widths.length > 4 ? "landscape" : "portrait");
+    if (metadata.artifactClass === "institutional_snapshot") {
+      sheet.rows.forEach((row, rowIndex) => {
+        const lines = Math.max(1, ...row.cells.map((cell, column) => String(cell.value ?? "").split("\n").reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / Math.max(8, (sheet.widths[column] ?? 20) * 0.85))), 0)));
+        const rowHeight = Math.min(409, sheet.key.startsWith("institutional_") ? 12 * lines + 2 : 15 * lines + 4);
+        xml = xml.replace(new RegExp(`<row\\s+([^>]*\\br="${rowIndex + 1}"[^>]*)>`), (_match, attributes: string) => `<row ${attributes.replace(/\s+(?:ht|customHeight)="[^"]*"/g, "")} ht="${rowHeight}" customHeight="1">`);
+      });
+      if (sheet.key.startsWith("institutional_") && sheet.rows.length <= 50 && sheet.widths.length <= 7) xml = xml.replace('fitToHeight="0"', 'fitToHeight="1"');
+    }
     sheet.rows.forEach((row, rowIndex) => row.cells.forEach((cell, columnIndex) => {
       if (cell.value === undefined && !cell.formula) return;
       const cross = Boolean(cell.formula?.includes("!"));

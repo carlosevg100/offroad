@@ -1,7 +1,7 @@
 import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
 
 export type PrivateMaterialArtifactId = "teaser" | "financial_model" | "indicative_term_sheet" | "data_room_index";
-export type PrivateMaterialActionKind = "excel" | "open" | "pdf" | "word";
+export type PrivateMaterialActionKind = "excel" | "open" | "pdf" | "word" | "powerpoint";
 
 export type PrivateMaterialArtifact = {
   actions: Array<{href: string; kind: PrivateMaterialActionKind}>;
@@ -44,8 +44,9 @@ export function privateMaterialArtifacts(
       id: "teaser",
       available: has("teaser"),
       actions: [
-        {kind: "pdf", href: `${materialBase}/teaser?print=1`},
+        {kind: "pdf", href: `${materialBase}/teaser/pdf`},
         {kind: "word", href: `${materialBase}/teaser/docx`},
+        {kind: "powerpoint", href: `${materialBase}/teaser/pptx`},
       ],
     },
     {
@@ -57,7 +58,7 @@ export function privateMaterialArtifacts(
       id: "indicative_term_sheet",
       available: has("term_sheet"),
       actions: [
-        {kind: "pdf", href: `${materialBase}/term_sheet?print=1`},
+        {kind: "pdf", href: `${materialBase}/term_sheet/pdf`},
         {kind: "word", href: `${materialBase}/term_sheet/docx`},
       ],
     },

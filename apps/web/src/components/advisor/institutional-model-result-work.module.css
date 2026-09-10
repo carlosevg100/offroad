@@ -1,0 +1,19 @@
+.result {border: 1px solid #e2e6de; border-radius: 14px; background: #fff; color: #20262b; overflow: hidden;}
+.result > header, .result > p, .result > footer, .scenarios, .downloads {padding: 0 24px;}
+.result > header {padding-top: 24px;}
+.result > header > span {font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #63784b;}
+.result h2 {font-family: var(--font-newsreader), Georgia, serif; font-size: 29px; font-weight: 450; line-height: 1.2; margin: 10px 0;}
+.result p {font-size: 13px; line-height: 1.65; color: #65717a;}
+.result small {font-size: 12px; color: #65717a;}
+.scenarios {display: grid; gap: 10px; margin: 20px 0;}
+.scenarios article {border-left: 3px solid #7d9455; padding: 3px 15px;}
+.scenarios h3 {font-size: 15px; margin: 0; overflow-wrap: anywhere;}
+.scenarios p {margin: 5px 0 0;}
+.downloads {display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 22px 0;}
+.downloads a {border: 1px solid #cbd4c2; border-radius: 7px; padding: 12px 8px; text-align: center; text-decoration: none; color: #526842; font-size: 13px; transition: background-color .15s ease;}
+.downloads a:hover {background: #f3f6ef;}
+.downloads a:focus-visible, .result footer a:focus-visible {outline: 2px solid #71884f; outline-offset: 3px;}
+.result > footer {padding-top: 16px; padding-bottom: 20px; border-top: 1px solid #edf0e9; font-size: 13px;}
+.result footer a {color: #526842; text-underline-offset: 3px;}
+@media(max-width: 640px) {.result > header, .result > p, .result > footer, .scenarios, .downloads {padding-left: 16px; padding-right: 16px;} .downloads {grid-template-columns: repeat(2, minmax(0, 1fr));}}
+@media(prefers-reduced-motion: reduce) {.downloads a {transition: none;}}

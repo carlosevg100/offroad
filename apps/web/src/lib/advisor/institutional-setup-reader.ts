@@ -1,0 +1,10 @@
+import {z} from "zod";
+import type {SupabaseClient} from "@supabase/supabase-js";
+import type {Database,Json} from "@/types/database";
+import type {SetupFact,SetupSource} from "./institutional-setup-form";
+const source=z.object({sourceDocument:z.string(),version:z.string(),hash:z.string().regex(/^[a-f0-9]{64}$/),hashVerified:z.boolean(),originalName:z.string()});
+const context=z.object({projectId:z.uuid(),intakeSessionId:z.uuid(),sourceManifestFingerprint:z.string().regex(/^[a-f0-9]{64}$/),currentSources:z.array(source),candidates:z.array(z.object({label:z.string().optional(),id:z.uuid(),field_path:z.string(),normalized_value:z.unknown(),value_type:z.string(),source_document_id:z.string(),period_start:z.string().nullable(),period_end:z.string().nullable(),entity_name:z.string().nullable(),entity_scope:z.string().nullable(),source_anchor:z.unknown(),anchor_verified:z.boolean(),review_state:z.string(),currency:z.string().nullable(),unit:z.string().nullable(),value_scale:z.unknown(),extraction_document_version:z.union([z.string(),z.number()]).nullable(),extraction_source_sha256:z.string().nullable()})),latestSubmission:z.unknown().nullable(),configurationReviews:z.array(z.unknown())});
+export type InstitutionalSetupContext={projectId:string;intakeSessionId:string;sourceManifestFingerprint:string;currentSources:SetupSource[];candidates:SetupFact[];latestSubmission:unknown;configurationReviews:unknown[]};
+export function parseInstitutionalSetupContext(raw:unknown,projectId:string):InstitutionalSetupContext|null{const parsed=context.safeParse(raw);return parsed.success&&parsed.data.projectId===projectId?parsed.data as InstitutionalSetupContext:null;}
+type Client={rpc(name:"read_institutional_model_setup_v1",args:{p_project_id:string}):PromiseLike<{data:Json|null;error:unknown}>};
+export async function loadInstitutionalSetupContext(client:SupabaseClient<Database>,projectId:string){const result=await(client as unknown as Client).rpc("read_institutional_model_setup_v1",{p_project_id:projectId});return result.error?null:parseInstitutionalSetupContext(result.data,projectId);}

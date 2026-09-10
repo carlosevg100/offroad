@@ -41,6 +41,7 @@
   "devDependencies": {
     "@offroad/testing-fixtures": "workspace:*",
     "@types/node": "^20.19.43",
-    "esbuild": "0.28.2"
+    "esbuild": "0.28.2",
+    "@offroad/testing-fixtures": "workspace:*"
   }
 }

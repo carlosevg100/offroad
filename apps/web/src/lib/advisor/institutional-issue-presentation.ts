@@ -1,0 +1,20 @@
+import {z} from "zod";
+/** Presentation vocabulary only. Financial decisions remain in the reviewed domain result. */
+const reasons:Record<string,string>={configuration_required:"configuration",fact_missing:"missingFact",fact_ambiguous:"ambiguousFact",fact_disputed:"disputedFact",fact_invalid:"invalidFact",source_unbound:"source",period_mismatch:"period",unit_mismatch:"unit",configuration_invalid:"configuration",assumption_invalid:"assumption","scenario.mismatch":"scenario","asof.mismatch":"period","balance.opening":"openingBalance","debt.opening":"openingDebt","balance.forecast":"forecastBalance","debt.negative":"negativeDebt","liquidity.shortfall":"liquidity","coverage.no-service":"noService","covenant.dscr":"dscr","covenant.leverage":"leverage","debt.indexation-treatment":"indexation","sector.not-expert":"sector","sector.missing":"sector","model.input_inconsistent":"calculation",institutional_result_approval_or_sources_changed:"stale",institutional_approved_source_stale:"source",institutional_configuration_review_required:"approval",institutional_configuration_fingerprint_mismatch:"configuration",institutional_calculation_input_invalid:"calculation",institutional_result_job_failed:"execution",institutional_result_job_cancelled:"execution",institutional_result_dispatch_missing:"execution",institutional_result_output_missing:"execution",institutional_result_job_poison:"execution"};
+export type InstitutionalIssuePresentation={reason:string;area:"history"|"forecast"|"financing"|"sources";field:string|null;period:string|null;severity?:"blocker"|"warning"|"observation"};
+const historical=new Set(["unrestrictedCash","restrictedCash","receivables","inventory","otherCurrentAssets","netPpe","otherAssets","payables","otherCurrentLiabilities","grossDebt","otherLiabilities","equity","baseRevenue","taxLossCarryforward","disallowedInterestCarryforward"]);
+export function institutionalIssuePresentation(code:string,targetPath="",period?:string):InstitutionalIssuePresentation {
+ const reason=code.startsWith("assumption.")?"assumption":reasons[code]??"unclassified";
+ const last=targetPath.split(".").at(-1)??"";
+ const field=historical.has(last)?last:last==="openingTaxLossCarryforward"?"taxLossCarryforward":last==="openingDisallowedInterestCarryforward"?"disallowedInterestCarryforward":null;
+ const area=field||targetPath.startsWith("openingBalanceSheet")||reason==="openingBalance"?"history":targetPath.startsWith("debt")||targetPath.startsWith("capex")||["openingDebt","negativeDebt","indexation"].includes(reason)?"financing":["source","stale","unit","period","missingFact","ambiguousFact","disputedFact","invalidFact"].includes(reason)?"sources":"forecast";
+ return {reason,area,field,period:period&&/^\d{4}$/.test(period)?period:null};
+}
+export function institutionalResultIssues(blockers:readonly string[]){return blockers.map(value=>{const [code,...target]=value.split(":");return institutionalIssuePresentation(code,target.join(":"));});}
+const submission=z.object({status:z.enum(["queued","missing_inputs","calculation_blocked","review_required"]),assessment:z.object({prepared:z.object({missingInputs:z.array(z.object({code:z.string(),targetPath:z.string()}))}).optional(),review:z.object({findings:z.array(z.object({id:z.string(),period:z.string().optional(),severity:z.enum(["blocker","warning","observation"]).optional()}))}).optional()}).nullable()});
+export function institutionalSetupIssues(value:unknown):InstitutionalIssuePresentation[] {
+ const parsed=submission.safeParse(value);if(!parsed.success||!["missing_inputs","calculation_blocked"].includes(parsed.data.status))return [];
+ const assessment=parsed.data.assessment;
+ const issues=[...(assessment?.prepared?.missingInputs??[]).map(g=>institutionalIssuePresentation(g.code,g.targetPath)),...(assessment?.review?.findings??[]).map(f=>({...institutionalIssuePresentation(f.id,"",f.period),...(f.severity?{severity:f.severity}:{})}))];
+ return issues.length?issues:[institutionalIssuePresentation("unknown")];
+}

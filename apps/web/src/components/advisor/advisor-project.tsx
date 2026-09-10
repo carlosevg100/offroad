@@ -4,7 +4,7 @@ import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from 
 import Link from "next/link";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
-import {useEffect, useRef, useState, type ReactNode} from "react";
+import {useRef, useState, type ReactNode} from "react";
 
 import {
   answerAdvisorInformationRequest,
@@ -24,7 +24,8 @@ import {DOCUMENT_ACCEPT, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
 import "@/app/advisor-work-surface.css";
-import {workSectionFromHash, workSectionHref} from "./advisor-work-links";
+import {workSectionHref} from "./advisor-work-links";
+import {useAdvisorWorkNavigation} from "./use-advisor-work-navigation";
 import {AdvisorWorkSurface, type AdvisorWorkSection} from "./advisor-work-surface";
 
 import {advisorShouldRefresh, advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
@@ -116,26 +117,8 @@ export function AdvisorProject(props: Props) {
   const router = useRouter();
   const workCopy = useTranslations("AdvisorWorkSurface");
   const sections = props.workSections ?? [];
-  const [selectedWorkId, setSelectedWorkId] = useState(props.initialWorkSectionId);
-  const [mobileView, setMobileView] = useState<"conversation" | "work">("conversation");
+  const {selectedId: selectedWorkId, mobileView, setMobileView, selectSection: selectWork} = useAdvisorWorkNavigation(sections, props.initialWorkSectionId);
   const selectedWork = sections.find((section) => section.id === selectedWorkId) ?? sections[0];
-  useEffect(() => {
-    const applyHash = () => {
-      const id = workSectionFromHash(window.location.hash);
-      if (id && props.workSections?.some((section) => section.id === id)) {
-        setSelectedWorkId(id);
-        setMobileView("work");
-      }
-    };
-    applyHash();
-    window.addEventListener("hashchange", applyHash);
-    return () => window.removeEventListener("hashchange", applyHash);
-  }, [props.workSections]);
-  function selectWork(id: string) {
-    setSelectedWorkId(id);
-    setMobileView("work");
-    window.location.hash = workSectionHref(id);
-  }
   const recoveryCopy = useTranslations("App.advisorProject.recovery");
   const approvalCopy = useTranslations("ExecutionBriefCard");
   const inventoryCopy = useTranslations("AdvisorEvidenceInventory");
