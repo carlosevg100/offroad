@@ -1,3 +1,4 @@
+import {processProviderResearchJob} from "./provider-research";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
@@ -206,7 +207,7 @@ async function main(): Promise<void> {
       (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
       0,
     );
-    const researchQueryCount = job.kind === "capital_project_analysis" && !job.payload.revision_of_artifact_id
+    const researchQueryCount = job.kind === "capital_project_analysis" && job.payload.analysis_scope !== "provider_research" && !job.payload.revision_of_artifact_id
       ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
     const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
@@ -356,7 +357,9 @@ async function main(): Promise<void> {
           log,
         })
       : job.kind === "capital_project_analysis"
-        ? job.payload.analysis_scope === "integration_preview"
+        ? job.payload.analysis_scope === "provider_research"
+          ? processProviderResearchJob(job, {queue})
+          : job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true
               ? processIntegrationPreviewRunJob(job, {

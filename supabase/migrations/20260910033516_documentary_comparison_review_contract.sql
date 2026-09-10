@@ -1,0 +1,205 @@
+-- Preserve exact approved v13 and earlier plans; admit reviewed documentary method v11.
+do $migration$
+declare definition text := pg_get_functiondef('private.is_released_documentary_plan_v1(jsonb,text)'::regprocedure);
+begin
+  if to_regprocedure('private.is_released_documentary_plan_v13(jsonb,text)') is null then
+    execute replace(definition, 'FUNCTION private.is_released_documentary_plan_v1(', 'FUNCTION private.is_released_documentary_plan_v13(');
+  end if;
+end;
+$migration$;
+revoke all on function private.is_released_documentary_plan_v13(jsonb,text) from public,anon,authenticated;
+
+create or replace function private.is_released_documentary_plan_v1(p_snapshot jsonb, p_entry text)
+returns boolean language sql immutable security invoker set search_path='' as $function$
+  select private.is_released_documentary_plan_v13(p_snapshot,p_entry) or coalesce(
+    p_entry in ('structure_from_documents','review_existing_operation')
+    and p_snapshot = ($documentary_contract${
+  "structure_from_documents": {
+    "schemaVersion": "capital-project-plan.v1",
+    "compilerVersion": "2026.09.01-v3",
+    "registryVersion": "2026.09.10-v14",
+    "job": {
+      "id": "structure_from_documents",
+      "targetTaskIds": [
+        "Q03"
+      ],
+      "firstWorkProduct": "diagnostic_recommendation",
+      "confirmationGate": "structure",
+      "accessPolicy": "private_required",
+      "inputPolicy": {
+        "company": "inferable",
+        "documents": "required",
+        "capitalIntent": "inferable",
+        "existingTransaction": "optional",
+        "publicResearch": "required"
+      }
+    },
+    "taskSpecs": [
+      {
+        "id": "Q01",
+        "label": "Verificar fontes autorizadas e cobertura documental",
+        "graph": "case",
+        "dependencies": [],
+        "executionClass": "deterministic",
+        "effect": "none",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query"
+        ],
+        "ordinal": 0,
+        "batch": 0
+      },
+      {
+        "id": "Q02",
+        "label": "Organizar observações documentais, hipóteses e lacunas",
+        "graph": "case",
+        "dependencies": [
+          "Q01"
+        ],
+        "executionClass": "judgment",
+        "effect": "none",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query",
+          "semantic_retrieval"
+        ],
+        "ordinal": 1,
+        "batch": 1
+      },
+      {
+        "id": "Q03",
+        "label": "Publicar leitura documental preliminar privada",
+        "graph": "case",
+        "dependencies": [
+          "Q02"
+        ],
+        "executionClass": "compilation",
+        "effect": "commit",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query"
+        ],
+        "ordinal": 2,
+        "batch": 2
+      }
+    ],
+    "parallelBatches": [
+      [
+        "Q01"
+      ],
+      [
+        "Q02"
+      ],
+      [
+        "Q03"
+      ]
+    ]
+  },
+  "review_existing_operation": {
+    "schemaVersion": "capital-project-plan.v1",
+    "compilerVersion": "2026.09.01-v3",
+    "registryVersion": "2026.09.10-v14",
+    "job": {
+      "id": "review_existing_operation",
+      "targetTaskIds": [
+        "Q03"
+      ],
+      "firstWorkProduct": "operation_review",
+      "confirmationGate": "structure",
+      "accessPolicy": "private_required",
+      "inputPolicy": {
+        "company": "inferable",
+        "documents": "required",
+        "capitalIntent": "optional",
+        "existingTransaction": "required",
+        "publicResearch": "allowed"
+      }
+    },
+    "taskSpecs": [
+      {
+        "id": "Q01",
+        "label": "Verificar fontes autorizadas e cobertura documental",
+        "graph": "case",
+        "dependencies": [],
+        "executionClass": "deterministic",
+        "effect": "none",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query"
+        ],
+        "ordinal": 0,
+        "batch": 0
+      },
+      {
+        "id": "Q02",
+        "label": "Organizar observações documentais, hipóteses e lacunas",
+        "graph": "case",
+        "dependencies": [
+          "Q01"
+        ],
+        "executionClass": "judgment",
+        "effect": "none",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query",
+          "semantic_retrieval"
+        ],
+        "ordinal": 1,
+        "batch": 1
+      },
+      {
+        "id": "Q03",
+        "label": "Publicar leitura documental preliminar privada",
+        "graph": "case",
+        "dependencies": [
+          "Q02"
+        ],
+        "executionClass": "compilation",
+        "effect": "commit",
+        "maturity": "specified",
+        "procedure": {
+          "id": "documentary-work-pipeline",
+          "version": "2026.09.10-v11"
+        },
+        "readingStrategies": [
+          "structured_query"
+        ],
+        "ordinal": 2,
+        "batch": 2
+      }
+    ],
+    "parallelBatches": [
+      [
+        "Q01"
+      ],
+      [
+        "Q02"
+      ],
+      [
+        "Q03"
+      ]
+    ]
+  }
+}$documentary_contract$::jsonb -> p_entry),false);
+$function$;
+revoke all on function private.is_released_documentary_plan_v1(jsonb,text) from public,anon,authenticated;

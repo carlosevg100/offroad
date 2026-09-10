@@ -61,7 +61,7 @@ export async function GET(request: Request, {params}: Params) {
     material,
     lang,
     meta: {
-      issuedOn: new Date().toISOString().slice(0, 10),
+      issuedOn: governed.issuedOn,
       sources,
       autoPrint: new URL(request.url).searchParams.get("print") === "1",
       ...(organization.name ? {companyName: organization.name} : {}),

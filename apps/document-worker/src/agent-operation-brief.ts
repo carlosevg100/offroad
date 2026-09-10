@@ -1,3 +1,4 @@
+import {applyInstitutionalAssumptionAnswer,institutionalAssumptionAnswerNamespace} from "@offroad/financial-model";
 import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
 import {randomUUID} from "node:crypto";
 
@@ -101,6 +102,8 @@ const contextSchema = z.object({
     answeredAt: z.string().datetime({offset: true}).optional(),
     answeredBy: z.string().optional(),
     producerBinding: z.unknown().nullable().optional(),
+    messageId: z.uuid().optional(),
+    responseFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   }).nullable().optional(),
   brief: z.record(z.string(), z.unknown()),
   snapshot_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
@@ -274,6 +277,22 @@ export async function processAgentOperationBriefJob(
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
+    if(context.answered_information_request?.sourceNamespace===institutionalAssumptionAnswerNamespace) {
+      if(!queue.loadInstitutionalConfiguration||!queue.applyInstitutionalAssumptionAnswer)throw new Error("institutional_answer_store_unavailable");
+      const current=await queue.loadInstitutionalConfiguration(job);
+      if(!current.configuration)throw new Error("institutional_approved_configuration_required");
+      const application=applyInstitutionalAssumptionAnswer({configuration:current.configuration,answeredRequest:context.answered_information_request,content:context.message,messageId:context.message_id});
+      if(!application)throw new Error("institutional_answer_binding_missing");
+      const candidate=application.status==="review_required"?await queue.applyInstitutionalAssumptionAnswer(job,application):null;
+      const assistantMessageId=randomUUID();
+      const reply=context.locale==="en-US"
+        ?candidate?"I saved this value as a proposed scenario for review. The approved assumptions remain in force until this proposal is reviewed.":"I recorded that this input is unavailable. No financial assumption has been changed."
+        :candidate?"Registrei este valor em uma proposta de cenário para revisão. As premissas aprovadas permanecem em vigor até que esta proposta seja revisada.":"Registrei que este dado está indisponível. Nenhuma premissa financeira foi alterada.";
+      await queue.recordAgentResponse(job,assistantMessageId,{state:"idle",reply});
+      await queue.writeStage(job,"institutional_information_response","succeeded",{candidateId:candidate?.candidateId??null,revision:candidate?.revision??null,reviewRequired:!!candidate,modelCalls:0});
+      await queue.complete(job,{mode:"institutional_information_response",assistantMessageId,candidateId:candidate?.candidateId??null,modelCalls:0});
+      return {status:"succeeded"};
+    }
     if (context.answered_information_request?.sourceNamespace === "receivables_method_r01_fields"
       && context.answered_information_request.answerSource !== "unavailable") {
       if (!queue.loadReceivablesMethodSupplementDraft || !queue.applyReceivablesMethodSupplementPatch) {
@@ -1102,7 +1121,7 @@ function companyProfileString(profile: Record<string, unknown>, ...keys: string[
 function durableUserRequestContext(context: AgentContext, maxCharacters: number): string {
   const turns = [
     ...context.recent_messages
-      .filter((message) => message.role === "user")
+      .filter((message) => message.role === "user" && message.id !== context.message_id)
       .map((message) => message.content.trim()),
     context.message.trim(),
   ].filter(Boolean);

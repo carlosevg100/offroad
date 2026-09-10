@@ -1,5 +1,6 @@
 import {
   aggregateIndexedDebtSchedules,
+  calculateAnnualCapexDepreciation,
   buildIndexedDebtSchedule,
   type IndexedDebtInstrumentInput,
 } from "@offroad/financial-core";
@@ -72,6 +73,7 @@ export type DebtRateLineage = {
 };
 
 export type InstitutionalModelInput = {
+  absenceConfirmations?: {debtInstruments?: {confirmedBy:string;confirmedAt:string;rationale:string};capex?: {confirmedBy:string;confirmedAt:string;rationale:string}};
   modelId: string;
   currency: string;
   assumptionBook: AssumptionBook;
@@ -184,24 +186,28 @@ function depreciationFromNewCapex(
   capexByPeriod: readonly Decimal[],
   currentPeriodIndex: number,
 ): Decimal {
-  const life = d(driver.usefulLifeYears);
-  return capexByPeriod.reduce((total, amount, vintageIndex) => {
-    if (vintageIndex > currentPeriodIndex) return total;
-    if (driver.depreciationConvention === "next_period" && vintageIndex === currentPeriodIndex) return total;
-    const factor = driver.depreciationConvention === "half_year" && vintageIndex === currentPeriodIndex ? d("0.5") : d(1);
-    return total.plus(amount.div(life).mul(factor));
-  }, d(0));
+  return d(calculateAnnualCapexDepreciation({
+    amountsByYear: capexByPeriod.map(amount=>amount.toFixed()),
+    usefulLifeYears: driver.usefulLifeYears,
+    convention: driver.depreciationConvention,
+    yearIndex: currentPeriodIndex,
+  }).value);
 }
 
 export function buildInstitutionalFinancialModel(input: InstitutionalModelInput): InstitutionalFinancialModel {
   if (!input.modelId.trim()) throw new RangeError("model id is required");
   if (input.revenueSegments.length === 0) throw new RangeError("at least one revenue segment is required");
   if (input.operatingCosts.length === 0) throw new RangeError("at least one operating cost line is required");
-  if (input.capex.length === 0) throw new RangeError("at least one capex line is required");
+  const absenceConfirmed=(kind:"capex"|"debtInstruments")=>{const c=input.absenceConfirmations?.[kind];return !!c&&!!c.confirmedBy.trim()&&!!c.rationale.trim()&&Number.isFinite(Date.parse(c.confirmedAt));};
+  if((input.capex.length>0&&input.absenceConfirmations?.capex)||(input.debtInstruments.length>0&&input.absenceConfirmations?.debtInstruments))throw new RangeError("absence confirmation conflicts with supplied capex or debt");
+  if (input.capex.length === 0 && !absenceConfirmed("capex")) throw new RangeError("capex lines or an explicit absence confirmation are required");
   const assumptionBlockers = validateAssumptionBook(input.assumptionBook).filter((issue) => issue.severity === "blocker");
   if (assumptionBlockers.length > 0) throw new RangeError(assumptionBlockers.map((issue) => issue.message).join("; "));
   const periods = [...input.assumptionBook.periods];
-  if (input.debtInstruments.length === 0) throw new RangeError("instrument-level debt schedules are required");
+  if (!/^\d{4}$/.test(input.openingBalanceSheet.period) || periods.some((period,index)=>!/^\d{4}$/.test(period)||Number(period)!==Number(input.openingBalanceSheet.period)+index+1)) {
+    throw new RangeError("institutional model requires consecutive annual periods after the opening year");
+  }
+  if (input.debtInstruments.length === 0 && !absenceConfirmed("debtInstruments")) throw new RangeError("instrument-level debt schedules or an explicit absence confirmation are required");
   for (const debt of input.debtInstruments) {
     if (debt.periods.map((period) => period.period).join("|") !== periods.join("|")) {
       throw new RangeError(`debt periods do not match the model horizon: ${debt.instrumentId}`);
@@ -222,7 +228,7 @@ export function buildInstitutionalFinancialModel(input: InstitutionalModelInput)
   }
 
   const debtSchedules = input.debtInstruments.map(buildIndexedDebtSchedule);
-  const debtRows = aggregateIndexedDebtSchedules(debtSchedules);
+  const debtRows = aggregateIndexedDebtSchedules(debtSchedules, input.debtInstruments.length===0&&absenceConfirmed("debtInstruments")?periods:undefined);
   const debtOpening = sum(input.debtInstruments.map((instrument) => d(instrument.openingPrincipal)));
   const openingBalanceCheck = balanceTotalAssets(input.openingBalanceSheet).minus(balanceTotalLiabilitiesAndEquity(input.openingBalanceSheet));
   const debtOpeningCheck = d(input.openingBalanceSheet.grossDebt).minus(debtOpening);

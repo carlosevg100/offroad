@@ -7,6 +7,7 @@ import {z} from "zod";
 
 import {
   caseAnalysisExecutionPlan,
+  plannedMaterialKindsFrom,
   caseInputValidationDetail,
   isReservedExampleWebsite,
   processCaseAnalysisJob,
@@ -392,6 +393,23 @@ describe("worker case analysis", () => {
     expect(isReservedExampleWebsite("https://www.redehorizonte.example")).toBe(true);
     expect(isReservedExampleWebsite("https://example.com")).toBe(false);
     expect(isReservedExampleWebsite("https://companhia.com.br")).toBe(false);
+  });
+
+  it("compiles only the exact approved production artifact scope and fails closed on invalid scope", () => {
+    const workflow: Parameters<typeof plannedMaterialKindsFrom>[1] = {
+      stage: "prepare", gates: {understandingConfirmed: true, structureOptionCurrent: true, structureConfirmed: true, productionPlanApproved: true, packageApproved: false, matchApproved: false, releaseAuthorized: false},
+      objectFingerprints: {production_plan: "3".repeat(64)},
+    };
+    const plan = {status: "approved", inputFingerprint: "1".repeat(64), fingerprint: "3".repeat(64), payload: {artifacts: ["teaser"]}, dependencies: []};
+    expect(plannedMaterialKindsFrom({production_plan: plan}, workflow)).toEqual(["teaser"]);
+    expect(plannedMaterialKindsFrom({production_plan: {...plan, payload: {artifacts: ["indicative_term_sheet", "financial_model", "data_room_index"]}}}, workflow)).toEqual(["term_sheet", "financial_model", "data_room_index"]);
+    for (const artifacts of [undefined, [], ["teaser", "unknown"], ["teaser", "teaser"], [{kind: "teaser"}]]) {
+      expect(plannedMaterialKindsFrom({production_plan: {...plan, payload: {artifacts}}}, workflow)).toEqual([]);
+    }
+    expect(plannedMaterialKindsFrom({}, workflow)).toEqual([]);
+    expect(plannedMaterialKindsFrom({production_plan: {...plan, status: "draft"}}, workflow)).toEqual([]);
+    expect(plannedMaterialKindsFrom({production_plan: {...plan, fingerprint: "4".repeat(64)}}, workflow)).toEqual([]);
+    expect(plannedMaterialKindsFrom({production_plan: plan}, {...workflow, gates: {...workflow.gates, productionPlanApproved: false}})).toEqual([]);
   });
 
   it("defaults to a zero-model diagnostic plan before governed confirmations", () => {
@@ -1116,7 +1134,7 @@ describe("worker case analysis", () => {
             expect(input.approvedRequest.text).toBe(requested.objective);
             const passage = input.sources.find(item => item.availableQuotes.length > 0)!;
             return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", quoteIds: [passage.availableQuotes[0]!.id]})), hypotheses: [], gaps: []}};
-          })() : ["document_work_source_review_v3","document_work_source_review_revision_v1"].includes(request.schemaName) ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:null}:{})}} : await gateway.complete(request);
+          })() : ["document_work_source_review_v4","document_work_source_review_revision_v2"].includes(request.schemaName) ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:null}:{})}} : await gateway.complete(request);
           logs.push({...invocation, invocationId: `document-call-${logs.length}`, task: request.task, schemaName: request.schemaName});
           return result;
         },
@@ -1165,10 +1183,10 @@ describe("worker case analysis", () => {
     const standaloneLogs: GatewayCallLog[] = [];
     const standaloneGateway = {
       complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
-        if(["document_work_source_review_v3","document_work_source_review_revision_v1"].includes(request.schemaName)) {
+        if(["document_work_source_review_v4","document_work_source_review_revision_v2"].includes(request.schemaName)) {
           standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
           const reviewInput=JSON.parse((request.input[0] as {text:string}).text) as {authoredFields:Array<{id:string}>};
-          return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:null}:{})}};
+          return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:null}:{})}};
         }
         expect(request.schemaName).toBe("document_work_selection_v1");
         const input = JSON.parse((request.input[0] as {text:string}).text) as {sources:Array<{id:string;text:string;availableQuotes:Array<{id:string}>}>;sectionKeys:string[]};

@@ -126,6 +126,7 @@ export type CompiledExecutionBriefWorkstream = Omit<ExecutionBriefWorkstreamDraf
 };
 
 export type CompiledExecutionBrief = {
+  objectiveSummary?: string | undefined;
   planningContext?: ExecutionBriefPlanningContext | undefined;
   schemaVersion: "execution-brief.v1";
   planVersion: string;
@@ -232,6 +233,7 @@ export const visibleExecutionBriefSchema: z.ZodType<VisibleExecutionBrief> = z.o
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   locale: executionBriefLocaleSchema,
   objective: z.string().trim().min(1).max(2_000),
+  objectiveSummary: z.string().trim().min(1).max(281).optional(),
   currentContext: z.array(z.object({
     label: z.string().trim().min(1).max(500),
     role: executionBriefSourceRoleSchema,
@@ -398,6 +400,7 @@ export function compileExecutionBrief(input: ExecutionBriefCompilerInput): Compi
     planVersion: input.planVersion,
     locale: input.locale,
     objective: input.objective.trim(),
+    ...objectiveDisplayProjection(input.objective),
     currentContext: input.sources
       .filter((source) => source.status === "available" && source.authorized)
       .map(({label, role, informationClass}) => ({label, role, informationClass})),
@@ -418,6 +421,7 @@ export function visibleExecutionBrief(brief: CompiledExecutionBrief): VisibleExe
     fingerprint: brief.fingerprint,
     locale: brief.locale,
     objective: brief.objective,
+    ...(brief.objectiveSummary ? {objectiveSummary: brief.objectiveSummary} : {}),
     currentContext: brief.currentContext,
     proposedDeliverable: brief.proposedDeliverable,
     workstreams: brief.workstreams.map((workstream) => ({
@@ -756,4 +760,13 @@ export function compileCapitalExecutionBrief(input: {
     expensiveWork: input.expensiveWork ?? false,
     ...(input.planningContext ? {planningContext: input.planningContext} : {}),
   });
+}
+
+/** Display excerpt only. The complete objective remains the approved execution contract. */
+function objectiveDisplayProjection(objective: string): {objectiveSummary?: string} {
+  const complete = objective.trim();
+  const first = complete.split(/\n\s*\n/, 1)[0]!.replace(/\s+/g, " ").trim();
+  if (first === complete && first.length <= 280) return {};
+  const prefix = first.length > 280 ? first.slice(0, 280).replace(/\s+\S*$/, "").trimEnd() : first;
+  return {objectiveSummary: prefix + "…"};
 }

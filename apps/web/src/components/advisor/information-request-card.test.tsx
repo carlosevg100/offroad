@@ -63,3 +63,13 @@ describe("InformationRequestCard", () => {
     expect(html).not.toContain('placeholder="Escreva aqui"');
   });
 });
+
+it("accepts fractional financial assumptions instead of the browser's integer default", () => {
+  const html = renderToStaticMarkup(<InformationRequestCard copy={copy} onAnswer={vi.fn()} remaining={0} request={{
+    id: "70000000-0000-4000-8000-000000000395", question: "Qual taxa anual deve ser testada?",
+    whyItMatters: "A taxa muda o serviço da dívida.", decisionImpact: "Recalcular a alternativa.",
+    answerKind: "number", choices: [], acceptableEvidence: [], updatedAt: "2026-09-06T19:40:00.000Z",
+  }} />);
+  expect(html).toContain('step="any"');
+  expect(html).toContain('inputMode="decimal"');
+});

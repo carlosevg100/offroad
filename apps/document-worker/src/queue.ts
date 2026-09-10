@@ -1,3 +1,4 @@
+import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
 import {createHash} from "node:crypto";
 
 import {z} from "zod";
@@ -84,7 +85,7 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("capital_project_analysis"),
   payload: z.object({
-    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning", "integration_preview"]),
+    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning", "integration_preview", "provider_research"]),
     locale: z.enum(["pt-BR", "en-US"]),
     capital_project_id: z.uuid(),
     capital_project_plan_id: z.uuid(),
@@ -96,8 +97,8 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
     correction_decision_id: z.uuid().optional(),
     trigger_event: z.record(z.string(), z.unknown()).default({}),
     model_budget: z.object({
-      max_cost_usd: z.number().positive(),
-      max_calls: z.number().int().positive(),
+      max_cost_usd: z.number().nonnegative(),
+      max_calls: z.number().int().nonnegative(),
     }),
     /** integration_preview only: the composition, case and workflow the activation compiled, plus the premises of the turn. */
     preview: z.object({
@@ -110,6 +111,9 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
     message: "revision artifact and decision must be supplied together",
   }).superRefine((payload, ctx) => {
+    if (payload.analysis_scope === "provider_research" ? (payload.model_budget.max_cost_usd !== 0 || payload.model_budget.max_calls !== 0) : (payload.model_budget.max_cost_usd <= 0 || payload.model_budget.max_calls <= 0)) {
+      ctx.addIssue({code: "custom", path: ["model_budget"], message: "provider research requires zero model budget; other scopes require a positive budget"});
+    }
     if (payload.analysis_scope !== "integration_preview" && payload.capital_artifact_required !== true) {
       ctx.addIssue({code: "custom", path: ["capital_artifact_required"], message: "a production capital project run requires an artifact per task run"});
     }
@@ -213,6 +217,9 @@ export type QueueClient = {
     draftFingerprint: string;
     replayed: boolean;
   }>;
+  loadInstitutionalConfiguration?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<{configuration:InstitutionalModelConfiguration|null;configurationFingerprint:string|null;revision:number|null}>;
+  syncInstitutionalInformationRequests?(job: FullCaseAnalysisJob | AgentOperationBriefJob, input:{requests:readonly unknown[]}):Promise<{openCount:number}>;
+  applyInstitutionalAssumptionAnswer?(job:AgentOperationBriefJob, application:unknown):Promise<{candidateId:string;revision:number;replayed:boolean}>;
   loadReceivablesMethodSupplementDraft?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown | null>;
   /** Starts one bounded case refresh for a complete immutable draft. The database deduplicates
    * retries by draft fingerprint, so a replay cannot create duplicate paid analysis runs. */
@@ -281,6 +288,7 @@ export type QueueClient = {
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   commitDocumentaryExecution?(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, state: unknown, result: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
+  loadProviderResearchContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadAgentPlanContext?(job: AgentPlanJob): Promise<unknown>;
   recordAgentPlan?(job: AgentPlanJob, plan: unknown): Promise<string>;
@@ -647,6 +655,17 @@ export function createQueueClient(
       };
     },
 
+    async loadInstitutionalConfiguration(job) {
+      const result=z.object({configuration:z.record(z.string(),z.unknown()).nullable(),configurationFingerprint:z.string().regex(/^[a-f0-9]{64}$/).nullable(),revision:z.number().int().positive().nullable()}).parse(await call("worker_load_institutional_configuration_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token}));
+      return {...result,configuration:result.configuration as InstitutionalModelConfiguration|null};
+    },
+    async syncInstitutionalInformationRequests(job,input) {
+      return z.object({openCount:z.number().int().nonnegative()}).parse(await call("worker_sync_institutional_information_requests_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_requests:input.requests}));
+    },
+    async applyInstitutionalAssumptionAnswer(job,application) {
+      return z.object({candidateId:z.uuid(),revision:z.number().int().positive(),replayed:z.boolean()}).parse(await call("worker_apply_institutional_assumption_answer_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_application:application}));
+    },
+
     async loadReceivablesMethodSupplementDraft(job) {
       return await call("worker_load_receivables_method_supplement_draft_v1", {
         p_job_id: job.job_id,
@@ -892,6 +911,10 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
+    },
+
+    async loadProviderResearchContext(job) {
+      return call("worker_load_provider_research_context", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
 
     async loadCapitalProjectContext(job) {

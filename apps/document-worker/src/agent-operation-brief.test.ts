@@ -1052,6 +1052,11 @@ describe("agent operation brief worker", () => {
           role: "user" as const,
           content: "É uma primeira conversa com CFO e tesouraria. Não temos relacionamento nem exposição de crédito. Podemos usar balanço próprio, estruturar e distribuir mercado de capitais e oferecer hedge.",
           created_at: "2026-09-04T00:11:00.000Z",
+        }, {
+          id: job.payload.message_id,
+          role: "user" as const,
+          content: message,
+          created_at: "2026-09-04T00:12:00.000Z",
         }],
       }),
       recordAgentResponse: async (
@@ -1073,6 +1078,7 @@ describe("agent operation brief worker", () => {
     expect(meetingContext).toContain("Não temos relacionamento nem exposição de crédito");
     expect(meetingContext).toContain("estruturar e distribuir mercado de capitais");
     expect(meetingContext).toContain(message);
+    expect(meetingContext.split(message)).toHaveLength(2);
   });
 
   it("asks for the institution operating model once research is already active without queueing it again", async () => {

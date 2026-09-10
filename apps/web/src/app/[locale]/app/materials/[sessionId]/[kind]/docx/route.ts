@@ -31,7 +31,7 @@ export async function GET(_request: Request, {params}: Params) {
   const bytes = materialToDocx({
     material,
     lang,
-    meta: {issuedOn: new Date().toISOString().slice(0, 10), ...(organization.name ? {companyName: organization.name} : {})},
+    meta: {issuedOn: governed.issuedOn, ...(organization.name ? {companyName: organization.name} : {})},
   });
   const filename = `${kind}-${sessionId.slice(0, 8)}.docx`;
   return new Response(Buffer.from(bytes), {

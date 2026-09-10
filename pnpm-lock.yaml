@@ -68,6 +68,9 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../../packages/document-parsers
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../../packages/financial-model
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../../packages/domain-contracts

@@ -23,7 +23,11 @@ export function advisorSpecializedCompletion(job: CapitalProjectAnalysisJob, art
   if (!semanticTriggerSchema.safeParse(job.payload.trigger_event).success) return null;
   const isRevision = Boolean(job.payload.revision_of_artifact_id && job.payload.correction_decision_id);
 
-  const content = isRevision
+  const content = job.payload.analysis_scope === "provider_research"
+    ? job.payload.locale === "pt-BR"
+      ? "Concluí a pesquisa dos registros de provedores autorizados para esta organização. O resultado apresenta as informações disponíveis e suas lacunas; não confirma interesse nem autoriza contato."
+      : "I completed the research of provider records authorized for this organization. The result shows available information and gaps; it does not confirm appetite or authorize contact."
+    : isRevision
     ? job.payload.locale === "pt-BR"
       ? "Concluí a nova versão da análise. Incorporei o ajuste solicitado, preservei a trilha de evidências e deixei explícito o que mudou, o que continua válido e quais pontos ainda dependem de informação adicional. A versão revisada está abaixo para sua avaliação."
       : "I completed the new version of the analysis. I incorporated the requested adjustment, preserved the evidence trail, and made clear what changed, what remains valid, and which points still depend on additional information. The revised version is below for your review."

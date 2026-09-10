@@ -105,6 +105,8 @@ function dependsOn(row: {dependencies: unknown}, objectType: string, objectFinge
 
 export type GovernedMaterialPackage = {
   artifactFingerprint: string;
+  /** Creation date of this persisted material version, never the download date. */
+  issuedOn: string;
   materials: Material[];
   financialModel: FinancialModelArtifact | null;
   plannedArtifacts: Array<"teaser" | "financial_model" | "indicative_term_sheet" | "data_room_index">;
@@ -129,8 +131,11 @@ export function governedMaterialPackageFromRows(rows: readonly DealStateRow[]): 
   const parsedArtifact = artifactPayloadSchema.safeParse(artifact.payload);
   const parsedPlan = planPayloadSchema.safeParse(plan.payload);
   if (!parsedArtifact.success || !parsedPlan.success) return null;
+  const createdAt = new Date(artifact.created_at);
+  if (!Number.isFinite(createdAt.getTime())) return null;
   return {
     artifactFingerprint: artifact.object_fingerprint,
+    issuedOn: createdAt.toISOString().slice(0, 10),
     materials: parsedArtifact.data.materials as Material[],
     financialModel: parsedArtifact.data.financialModel as FinancialModelArtifact | null,
     plannedArtifacts: parsedPlan.data.artifacts,

@@ -104,6 +104,7 @@ export function InformationRequestCard(props: {
         <input
           disabled={Boolean(pending) || props.disabled}
           inputMode={props.request.answerKind === "number" ? "decimal" : undefined}
+          step={props.request.answerKind === "number" ? "any" : undefined}
           maxLength={8000}
           onChange={(event) => setValue(event.target.value)}
           placeholder={props.copy.placeholder}

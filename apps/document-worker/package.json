@@ -35,7 +35,8 @@
     "@offroad/work-plan": "workspace:*",
     "@supabase/supabase-js": "2.112.3",
     "decimal.js": "10.6.0",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@offroad/financial-model": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

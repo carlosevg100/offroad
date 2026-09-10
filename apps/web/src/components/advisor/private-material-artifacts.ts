@@ -9,6 +9,22 @@ export type PrivateMaterialArtifact = {
   id: PrivateMaterialArtifactId;
 };
 
+/** An approval for an earlier package must never label regenerated materials as approved. */
+export function privateMaterialPackageApproved(
+  review: {status: string; dependencies: unknown; payload: unknown} | null,
+  artifactFingerprint: string,
+): boolean {
+  if (!review || review.status !== "approved" || !Array.isArray(review.dependencies)) return false;
+  const payload = review.payload;
+  if (!payload || typeof payload !== "object" || !("approval" in payload)) return false;
+  const approval = payload.approval;
+  if (!approval || typeof approval !== "object" || !("artifactFingerprint" in approval)
+    || approval.artifactFingerprint !== artifactFingerprint) return false;
+  return review.dependencies.some((item: unknown) => Boolean(item && typeof item === "object"
+    && "objectType" in item && item.objectType === "material_artifact"
+    && "objectFingerprint" in item && item.objectFingerprint === artifactFingerprint));
+}
+
 /**
  * One governed package, several delivery formats. All document links resolve the same immutable
  * material blocks, while the spreadsheet is regenerated and hash-checked by its own route.
@@ -23,11 +39,14 @@ export function privateMaterialArtifacts(
     governed.materials.some((item) => item.kind === kind)
   );
 
-  return [
+  const artifacts: PrivateMaterialArtifact[] = [
     {
       id: "teaser",
       available: has("teaser"),
-      actions: [{kind: "pdf", href: `${materialBase}/teaser?print=1`}],
+      actions: [
+        {kind: "pdf", href: `${materialBase}/teaser?print=1`},
+        {kind: "word", href: `${materialBase}/teaser/docx`},
+      ],
     },
     {
       id: "financial_model",
@@ -51,4 +70,7 @@ export function privateMaterialArtifacts(
       ],
     },
   ];
+  // The package may retain other outputs, but this review concerns only the approved plan.
+  // A deliberately small materials task must not wait for four unrelated deliverables.
+  return artifacts.filter((artifact) => governed.plannedArtifacts.includes(artifact.id));
 }

@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from "vitest";
-import {capitalProjectPlanSnapshot,compileAdvisorStartingPlan} from "@offroad/work-plan";
+import {capitalProjectPlanSnapshot,compileAdvisorStartingPlan,providerResearchPlanSnapshot} from "@offroad/work-plan";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {claimedJobSchema, type ExecutionBriefProposalJob} from "./queue";
 
@@ -10,6 +10,20 @@ function context(access_basis = "authorized_private") {
 }
 function queue(value: unknown) {return {loadExecutionBriefProposal: vi.fn().mockResolvedValue(value), recordExecutionBriefProposal: vi.fn().mockResolvedValue({status: "proposed"}), fail: vi.fn()};}
 describe("execution brief proposal", () => {
+  it("binds standalone provider research to its exact plan without requesting company documents", async () => {
+    const base = context();
+    const q = queue({...base, target_kind: "capital_project_analysis", objective: "Pesquisar mandatos de fundos", documents: [], project: {...base.project, entry_job: "company_debt_view"}, plan: providerResearchPlanSnapshot()});
+    expect(await processExecutionBriefProposalJob(job, q)).toEqual({status: "proposed"});
+    const [, internal, visible] = q.recordExecutionBriefProposal.mock.calls[0]!;
+    expect(internal.workstreams.flatMap((stream: {sourceTaskIds: string[]}) => stream.sourceTaskIds)).toEqual(["M01", "K01", "K02"]);
+    expect(visible.executionMode).toBe("confirm_before_expensive_work");
+    expect(JSON.stringify(visible)).not.toContain("Documentos necessários");
+    const altered = providerResearchPlanSnapshot();
+    altered.taskSpecs[2]!.dependencies = [];
+    const bad = queue({...base, plan: altered});
+    expect(await processExecutionBriefProposalJob(job, bad)).toEqual({status: "failed"});
+    expect(bad.recordExecutionBriefProposal).not.toHaveBeenCalled();
+  });
   it.each([
     "Compare estas propostas em leitura documental preliminar, sem cálculos financeiros.",
     "Prepare a reunião com uma leitura documental preliminar dos documentos enviados.",

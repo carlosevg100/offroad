@@ -69,7 +69,11 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
         </div>
         <small><ShieldCheck aria-hidden="true" size={12} />{t("version", {version})} · {t(`approval.${approvalStatus}.title`)}</small>
       </header>
-      <p className="execution-brief-card__objective">{brief.objective}</p>
+      <p className="execution-brief-card__objective">{brief.objectiveSummary ?? brief.objective}</p>
+      {brief.objectiveSummary && brief.objectiveSummary !== brief.objective ? <details className="execution-brief-card__objective-context">
+        <summary>{t("completeObjective")}</summary>
+        <p style={{whiteSpace: "pre-wrap", overflowWrap: "anywhere"}}>{brief.objective}</p>
+      </details> : null}
 
       <section className="execution-brief-card__deliverable">
         <FileOutput aria-hidden="true" size={16} />
@@ -88,7 +92,15 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
 
       <ol className="execution-brief-card__workstreams">
         {brief.workstreams.map((workstream, index) => {
-          const workstreamProgress = progress?.workstreams[index];
+          // Progress is an independently loaded snapshot. Never borrow a status from an older
+          // plan or from an array slot that now represents a different piece of work.
+          const candidates = progress?.version === version
+            ? progress.workstreams.filter((item) => item.position === index && item.label === workstream.label)
+            : [];
+          const candidate = candidates.length === 1 ? candidates[0] : undefined;
+          const workstreamProgress = candidate && candidate.completed <= candidate.total
+            && (candidate.status !== "completed" || candidate.completed === candidate.total)
+            ? candidate : undefined;
           return <li data-progress={workstreamProgress?.status ?? "waiting"} data-workstream-position={index} key={`${workstream.label}-${index}`}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <div>

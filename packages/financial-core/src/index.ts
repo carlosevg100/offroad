@@ -1,8 +1,10 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.05-v14";
+export const financialCoreVersion = "2026.09.09-v15";
 
 export * from "./financial-truth";
+export * from "./depreciation";
+export * from "./assumption-unit";
 export * from "./indexed-debt";
 export * from "./operation";
 export * from "./receivables/contracts";

@@ -3502,6 +3502,7 @@
     "references": "Referências deste trecho"
   },
   "ExecutionBriefCard": {
+    "completeObjective": "Ver pedido e contexto completos",
     "editVersion": "Seu pedido ficará vinculado à versão {version}.",
     "change": {
       "objective_changed": "Objetivo",
@@ -3859,5 +3860,55 @@
     "work": "Trabalho",
     "results": "Resultados do projeto",
     "version": "Versão {version}"
+  },
+  "ProviderResearchWork": {
+    "kicker": "Pesquisa de capital",
+    "title": "Provedores e mandatos disponíveis",
+    "description": "Explore as informações autorizadas para este projeto e os pontos que ainda precisam ser confirmados.",
+    "asOf": "Retrato em {date}",
+    "coverage": "{count, plural, =0 {Nenhum provedor disponível neste retrato} one {# provedor neste retrato} other {# provedores neste retrato}}",
+    "coverageBoundary": "Esta cobertura reflete apenas os registros acessíveis para esta pesquisa. Não representa todo o mercado.",
+    "search": "Buscar nesta pesquisa",
+    "searchPlaceholder": "Nome, instrumento ou característica",
+    "sourceClass": {
+      "directory": "Registro do diretório",
+      "registered": "Mandato registrado"
+    },
+    "observedAt": "Registrado em {date}",
+    "dateUnknown": "Data de observação não informada",
+    "gaps": "{count, plural, one {# ponto a confirmar} other {# pontos a confirmar}}",
+    "empty": "Ainda não há registros autorizados disponíveis para esta pesquisa. Isso não significa ausência de provedores no mercado.",
+    "noSearchResults": "Nenhum registro deste retrato corresponde à busca.",
+    "limitations": "Cobertura e limitações",
+    "boundary": "Pesquisa informativa. Os registros não comprovam interesse, aderência à operação ou disponibilidade de capital. Nenhuma lista de destinatários foi aprovada e nenhum contato foi autorizado.",
+    "status": "Pesquisa informativa"
+  },
+  "InstitutionalConfigurationReview": {
+    "title": "Premissas para revisão",
+    "introduction": "Revise as alterações propostas a partir das suas respostas antes de incorporá-las ao cenário.",
+    "prior": "Valor anterior",
+    "proposed": "Valor proposto",
+    "unit": "Unidade",
+    "source": "Fonte",
+    "userResponse": "Resposta registrada no projeto",
+    "notProvided": "Não informado",
+    "approve": "Aprovar premissa",
+    "reject": "Rejeitar alteração",
+    "stale": "Esta proposta mudou ou outra versão já foi aprovada. Atualize o projeto antes de revisar.",
+    "error": "Não foi possível registrar sua decisão. Tente novamente.",
+    "boundary": "A aprovação incorpora esta premissa ao cenário. Ela não recalcula o modelo nem valida automaticamente os dados históricos.",
+    "status": {
+      "review_required": "Aguardando revisão",
+      "approved": "Aprovada",
+      "rejected": "Rejeitada"
+    },
+    "units": {
+      "percent": "Percentual",
+      "days": "Dias",
+      "multiple": "Múltiplo",
+      "quantity": "Quantidade",
+      "index": "Índice"
+    },
+    "staleParent": "Outra versão do cenário está em vigor. Esta proposta pode ser rejeitada; uma nova alteração precisa partir do cenário atual."
   }
 }

@@ -5,6 +5,8 @@ import {
   capitalProjectJob,
   capitalProjectJobSchema,
   compileAdvisorStartingPlan,
+  isProviderResearchRequest,
+  providerResearchPlanSnapshot,
   type CapitalProjectJob,
 } from "@offroad/work-plan";
 import {after} from "next/server";
@@ -13,6 +15,8 @@ import {z} from "zod";
 import {requireUser, requireWorkspace} from "@/lib/auth/workspace";
 import type {Json} from "@/types/database";
 import {processIntakeSession} from "@/lib/intake/server";
+import {reviewInstitutionalConfiguration} from "@/lib/advisor/institutional-configuration-review-command";
+import {startProviderResearchProject} from "@/lib/advisor/provider-research-command";
 
 const localeSchema = z.enum(["pt-BR", "en-US"]);
 const startSchema = z.object({
@@ -82,7 +86,8 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
   const parsed = startSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {locale, prompt, entryJobHint, hasAttachments, requestId, groupId} = parsed.data;
-  const {entryJob, plan} = compileAdvisorStartingPlan({
+  const providerResearch = !hasAttachments && !entryJobHint && isProviderResearchRequest(prompt);
+  const {entryJob, plan} = providerResearch ? {entryJob: "company_debt_view" as const, plan: providerResearchPlanSnapshot()} : compileAdvisorStartingPlan({
     message: prompt,
     hasAttachments,
     explicitHint: entryJobHint,
@@ -101,14 +106,17 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
       : "public_information",
     p_plan: plan as unknown as Json,
   };
-  const result = await supabase.rpc("start_advisor_project_in_group_v1", {...args, p_group_id: groupId ?? undefined});
+  const result = providerResearch
+    ? await startProviderResearchProject(supabase, {p_request_id: requestId, p_locale: locale, p_project_name: baseName,
+      p_prompt: prompt, p_plan: plan as unknown as Json, p_group_id: groupId ?? undefined})
+    : await supabase.rpc("start_advisor_project_in_group_v1", {...args, p_group_id: groupId ?? undefined});
   if (result.error) return {ok: false, error: actionError(result.error)};
   const payload = record(result.data);
   const projectId = typeof payload?.capital_project_id === "string" ? payload.capital_project_id : null;
   const sessionId = typeof payload?.intake_session_id === "string" ? payload.intake_session_id : null;
   if (!projectId || !sessionId) return {ok: false, error: "save"};
   const privateCase = ["structure_from_documents", "review_existing_operation"].includes(entryJob);
-  if (!hasAttachments && !privateCase) {
+  if (!hasAttachments && !privateCase && !providerResearch) {
     // The project shell is the user-facing acknowledgement. Queueing is idempotent and runs
     // after that response so worker availability never delays navigation into the workspace.
     after(async () => {
@@ -261,4 +269,14 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
   // route. Private work instead advances through the preliminary evidence gate above.
   const queued = await supabase.rpc("queue_advisor_initial_turn_v1", {p_project_id: parsed.data.projectId});
   return outcome.ok && !queued.error ? {ok: true} : {ok: false, error: "processing"};
+}
+
+/** Reviews one immutable proposed premise; approval does not enqueue calculation. */
+export async function reviewAdvisorInstitutionalConfiguration(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = projectSchema.extend({candidateId: z.uuid(), expectedParentFingerprint: z.string().regex(/^[0-9a-f]{64}$/), expectedCandidateFingerprint: z.string().regex(/^[0-9a-f]{64}$/), decision: z.enum(["approved", "rejected"])}).safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireWorkspace(parsed.data.locale);
+  const {error} = await reviewInstitutionalConfiguration(supabase, {p_project_id: parsed.data.projectId, p_candidate_id: parsed.data.candidateId,
+    p_expected_parent_fingerprint: parsed.data.expectedParentFingerprint, p_expected_candidate_fingerprint: parsed.data.expectedCandidateFingerprint, p_decision: parsed.data.decision});
+  return error ? {ok: false, error: actionError(error)} : {ok: true};
 }
