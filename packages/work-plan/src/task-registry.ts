@@ -117,7 +117,7 @@ const task = (
   effect: OffroadTaskEffect = "propose_state",
 ): OffroadTaskSpec => ({
   id, label, graph, dependencies, executionClass, effect, maturity: "specified",
-  ...(["Q01", "Q02", "Q03"].includes(id) ? {procedure: {id: "documentary-work-pipeline", version: "2026.09.10-v11"}} : {}),
+  ...(["Q01", "Q02", "Q03"].includes(id) ? {procedure: {id: "documentary-work-pipeline", version: "2026.09.10-v12"}} : {}),
   readingStrategies: readingOverrides[id] ?? defaultReadingStrategies(executionClass),
 });
 

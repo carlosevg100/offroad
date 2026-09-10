@@ -6,6 +6,12 @@ import {providerDataPolicyVersion, type ModelGateway} from "@offroad/model-gatew
 
 export const sourceReviewSchema = z.object({
   reviewedFieldIds: z.array(z.string().min(1).max(160)).max(43),
+  fieldAssessments: z.array(z.object({
+    fieldId: z.string().min(1).max(160),
+    verdict: z.enum(["source_supported", "no_factual_assertion", "unsupported"]),
+    exactExcerpt: z.string().trim().min(1).max(160),
+    sourceIds: z.array(z.string().min(1).max(160)).max(80),
+  }).strict()).max(43),
   issues: z.array(z.object({
     fieldId: z.string().min(1).max(160),
     code: z.enum(["inverse_comparison", "unsupported_premise", "unknown_as_absent", "other_unsupported"]),
@@ -48,7 +54,7 @@ export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProduc
   const response = await gateway.complete({
     task:"preliminary_understanding", system:documentWorkSourceReviewInstructions,
     input:[{type:"text",text:JSON.stringify({passages:input.passages.map((passage,index)=>({id:`p${index+1}`,documentId:passage.documentId,documentName:passage.documentName,text:passage.text})),coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:fields})}],
-    schema:sourceReviewSchema, schemaName:"document_work_source_review_v4",
+    schema:sourceReviewSchema, schemaName:"document_work_source_review_v5",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},
     maxOutputTokens:4000,
   });
@@ -65,7 +71,7 @@ export async function reviewAndProposeDocumentWorkRevision(input: DocumentWorkPr
   const response=await gateway.complete({
     task:"preliminary_understanding",system:`${documentWorkSourceReviewInstructions}\n${documentWorkProductRevisionInstructions}`,
     input:[{type:"text",text:JSON.stringify({passages:context.sources,coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:documentWorkReviewFields(input,narrative),selection:documentWorkSelectionSchema.parse(selection)})}],
-    schema,schemaName:"document_work_source_review_revision_v2",
+    schema,schemaName:"document_work_source_review_revision_v3",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},maxOutputTokens:4000,
   });
   const parsed=schema.safeParse(response.output);if(!parsed.success)throw failed();
@@ -77,7 +83,9 @@ export async function reviewAndProposeDocumentWorkRevision(input: DocumentWorkPr
 /** Source aliases are local to one request; unknown aliases never become trusted citations. */
 export function expandDocumentWorkSourceReview(input: DocumentWorkProductInput, wire: DocumentWorkSourceReview): DocumentWorkSourceReview {
   const sourceIds = new Map(input.passages.map((passage,index)=>[`p${index+1}`,passage.id]));
-  return {...wire, issues:wire.issues.map(issue=>({...issue,sourceIds:issue.sourceIds.map(id=>{
+  return {...wire, fieldAssessments:wire.fieldAssessments.map(assessment=>({...assessment,sourceIds:assessment.sourceIds.map(id=>{
+    const sourceId=sourceIds.get(id);if(!sourceId)throw failed();return sourceId;
+  })})), issues:wire.issues.map(issue=>({...issue,sourceIds:issue.sourceIds.map(id=>{
     const sourceId=sourceIds.get(id); if(!sourceId)throw failed(); return sourceId;
   })}))};
 }
@@ -91,6 +99,14 @@ export function validateDocumentWorkSourceReview(input: DocumentWorkProductInput
   const expected = new Set(fieldText.keys());
   const covered = new Set(review.reviewedFieldIds);
   const sources = new Set(input.passages.map(source=>source.id));
+  const assessed = new Set(review.fieldAssessments.map(assessment=>assessment.fieldId));
+  if (assessed.size!==expected.size || review.fieldAssessments.length!==expected.size
+    || review.fieldAssessments.some(assessment=>!expected.has(assessment.fieldId)
+      || !fieldText.get(assessment.fieldId)?.includes(assessment.exactExcerpt)
+      || assessment.sourceIds.some(id=>!sources.has(id))
+      || new Set(assessment.sourceIds).size!==assessment.sourceIds.length
+      || (assessment.verdict==="source_supported" && assessment.sourceIds.length===0)
+      || (assessment.verdict==="unsupported") !== review.issues.some(issue=>issue.fieldId===assessment.fieldId))) throw failed();
   if (covered.size !== expected.size || review.reviewedFieldIds.length !== expected.size
     || review.reviewedFieldIds.some(id=>!expected.has(id))
     || review.issues.some(issue=>!expected.has(issue.fieldId) || issue.sourceIds.some(id=>!sources.has(id))

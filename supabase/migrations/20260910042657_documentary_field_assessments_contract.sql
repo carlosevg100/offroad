@@ -1,7 +1,19 @@
--- Generated from the real documentWorkPlanSnapshot compiler; no case-specific data.
-create function pg_temp.documentary_plan_fixture(p_entry text) returns jsonb
-language sql immutable set search_path='' as $fixture_function$
-  select $documentary_contract${
+-- Preserve exact approved v14 and earlier plans; admit field-assessed documentary method v12.
+do $migration$
+declare definition text := pg_get_functiondef('private.is_released_documentary_plan_v1(jsonb,text)'::regprocedure);
+begin
+  if to_regprocedure('private.is_released_documentary_plan_v14(jsonb,text)') is null then
+    execute replace(definition, 'FUNCTION private.is_released_documentary_plan_v1(', 'FUNCTION private.is_released_documentary_plan_v14(');
+  end if;
+end;
+$migration$;
+revoke all on function private.is_released_documentary_plan_v14(jsonb,text) from public,anon,authenticated;
+
+create or replace function private.is_released_documentary_plan_v1(p_snapshot jsonb, p_entry text)
+returns boolean language sql immutable security invoker set search_path='' as $function$
+  select private.is_released_documentary_plan_v14(p_snapshot,p_entry) or coalesce(
+    p_entry in ('structure_from_documents','review_existing_operation')
+    and p_snapshot = ($documentary_contract${
   "structure_from_documents": {
     "schemaVersion": "capital-project-plan.v1",
     "compilerVersion": "2026.09.01-v3",
@@ -188,5 +200,6 @@ language sql immutable set search_path='' as $fixture_function$
       ]
     ]
   }
-}$documentary_contract$::jsonb -> p_entry;
-$fixture_function$;
+}$documentary_contract$::jsonb -> p_entry),false);
+$function$;
+revoke all on function private.is_released_documentary_plan_v1(jsonb,text) from public,anon,authenticated;

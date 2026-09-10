@@ -1,3 +1,20 @@
+## 10 September: documentary review assesses every authored field
+
+Real-model run34436558806 on31407f6 passed6/6 documentary requests and7/8
+negative controls, consuming USD0.653986 over24 attempts. The reviewer omitted
+an unsupported English claim of covenant absence while reporting two Portuguese
+issues in the same response. This is failed acceptance, not activation evidence.
+
+Method v12 requires one source-bound verdict and exact excerpt per authored
+field, with complete coverage and consistent issues for every unsupported verdict.
+Registry v15 and a forward migration preserve exact approved v14 plans. The
+independent provider-research graph remains pinned to v14.
+
+Local executor488 tests, work-plan151 tests and eval133 tests passed. The new
+migration applied to staging. A second real-model evaluation has been requested;
+it has not been authorized or executed at this checkpoint. Production planning
+remains disabled. This change does not claim semantic perfection from schema checks.
+
 ## 9 September: review v16 operating-control compatibility
 
 PR584 Quality run34405085387 failed the approved receivables-scope journey with

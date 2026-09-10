@@ -170,12 +170,12 @@ export type CompiledTaskGraph = Omit<CompiledCapitalJobPlan, "job"> & {
 
 export const capitalProjectPlanSchemaVersion = "capital-project-plan.v1";
 export const capitalProjectPlanCompilerVersion = "2026.09.01-v3";
-export const offroadTaskRegistryVersion = "2026.09.10-v14";
+export const offroadTaskRegistryVersion = "2026.09.10-v15";
 
 export type CapitalProjectPlanSnapshot = {
   schemaVersion: typeof capitalProjectPlanSchemaVersion;
   compilerVersion: typeof capitalProjectPlanCompilerVersion;
-  registryVersion: typeof offroadTaskRegistryVersion;
+  registryVersion: typeof offroadTaskRegistryVersion | "2026.09.10-v14";
   job: {
     id: CapitalProjectJob;
     targetTaskIds: readonly string[];
