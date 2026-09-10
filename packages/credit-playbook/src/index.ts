@@ -35,6 +35,7 @@ export * from "./procedure-markdown";
 export * from "./method-runtime-manifest";
 export * from "./workflow-recipe";
 export * from "./review-record";
+export * from "./method-run-record";
 export {executiveSynthesisOpeningEvidence,executiveSynthesisInstructions,executiveSynthesisRevisionInstructions} from "./procedures/executive-synthesis";
 
 export * as executors from "./executors";

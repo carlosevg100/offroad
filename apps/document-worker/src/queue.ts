@@ -245,6 +245,18 @@ export type QueueClient = {
     resultFingerprint: string;
     replayed: boolean;
   }>;
+  /** Stores the released R01 result for a granted organization. The database re-checks the grant,
+   * the tenant, the dataset hash and the confirmed evidence scope before anything is written. */
+  recordReceivablesReleasedResult?(job: FullCaseAnalysisJob, input: {
+    inputAssemblyId: string;
+    result: unknown;
+  }): Promise<{
+    id: string;
+    inputFingerprint: string;
+    outputFingerprint: string;
+    resultFingerprint: string;
+    replayed: boolean;
+  }>;
   loadIntakeEvents(job: DocumentJob): Promise<unknown[]>;
   recordIntakeRequestLadders(job: DocumentJob, events: unknown[]): Promise<void>;
   recordAnalysisScopeSuggestions(job: DocumentJob, eventId: string, suggestions: unknown[]): Promise<unknown>;
@@ -711,6 +723,29 @@ export function createQueueClient(
 
     async recordReceivablesSpecialistShadowRun(job, input) {
       const data = await call("worker_record_receivables_specialist_shadow_run_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_input_assembly_id: input.inputAssemblyId,
+        p_result: input.result,
+      });
+      const parsed = z.object({
+        id: z.uuid(),
+        input_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        output_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        result_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).parse(data);
+      return {
+        id: parsed.id,
+        inputFingerprint: parsed.input_fingerprint,
+        outputFingerprint: parsed.output_fingerprint,
+        resultFingerprint: parsed.result_fingerprint,
+        replayed: parsed.replayed,
+      };
+    },
+
+    async recordReceivablesReleasedResult(job, input) {
+      const data = await call("worker_record_receivables_released_result_v1", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_input_assembly_id: input.inputAssemblyId,

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "underwrite-receivables-pool-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "underwrite-receivables-pool",
+    "version": "2026.09.06-v1"
+  },
+  "executor": {
+    "module": "@offroad/receivables-analysis",
+    "exportName": "underwriteReceivablesPool"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/receivables-method-runs.ts",
+    "exportName": "buildReceivablesMethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-10T20:00:10.967Z",
+    "finishedAt": "2026-09-10T20:00:13.604Z",
+    "commit": "6cdaa0c07a8f3a69418860ed6b7578eae2866f6c"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc03-assessor-recebiveis",
+      "expectation": "carteira 51940000.00, base elegivel preliminar 26217914.00, base ajustada 26217914.00, facilidade suportada 19663435.50 abaixo do pedido de 25000000.00, estado needs_remediation",
+      "observed": "carteira 51940000.00, base elegivel preliminar 26217914.00, base ajustada 26217914.00, facilidade suportada 19663435.50 abaixo do pedido de 25000000.00, estado needs_remediation",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "d33a2fd1dbfd1dcf42e8c4349b81a6ecf4baa96f5ed002c817bb3669e44cd39f",
+  "notes": "Gabarito congelado do Caso 03 (Aurora) executado pelo executor publicado. Os valores esperados vem do gabarito, nao do resultado."
+}

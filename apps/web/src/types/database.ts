@@ -8431,6 +8431,10 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      read_receivables_released_result_v1: {
+        Args: { p_session_id: string }
+        Returns: Json
+      }
       record_agent_change_proposal: {
         Args: {
           p_organization_id: string
@@ -9845,6 +9849,15 @@ export type Database = {
       }
       worker_record_receivables_method_input_assembly_v1: {
         Args: { p_assembly: Json; p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_record_receivables_released_result_v1: {
+        Args: {
+          p_capability_token: string
+          p_input_assembly_id: string
+          p_job_id: string
+          p_result: Json
+        }
         Returns: Json
       }
       worker_record_receivables_specialist_shadow_run_v1: {

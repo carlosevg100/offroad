@@ -17,6 +17,27 @@ export type SpecialistShadowQualityResult = {
   detail: string;
 };
 
+/** The two accepted modes. Anything else is a policy change, not a flag. */
+export type SpecialistMethodMode = "internal_shadow" | "analytical_release";
+
+export type ReceivablesSpecialistEvidenceRef = {
+  section: string;
+  sourceClass: string;
+  sourceId: string;
+  anchor: string;
+};
+
+/**
+ * The organization's concession to read its own analytical result, resolved by the database and
+ * carried explicitly. A missing or disabled grant is not a degraded release: it is the shadow mode.
+ */
+export type ReceivablesAnalyticalReleaseGrant = {
+  granted: boolean;
+  organizationId: string;
+  confirmedScope: {id: string; fingerprint: string};
+  sourceDatasetHash: string;
+};
+
 export type ReceivablesSpecialistShadowResult = {
   mode: "internal_shadow";
   taskId: "R01";
@@ -29,12 +50,39 @@ export type ReceivablesSpecialistShadowResult = {
     inputFingerprint: string;
     outputFingerprint: string;
     content: ReceivablesPoolUnderwriting;
-    evidenceRefs: readonly {
-      section: string;
-      sourceClass: string;
-      sourceId: string;
-      anchor: string;
-    }[];
+    evidenceRefs: readonly ReceivablesSpecialistEvidenceRef[];
+  };
+  qualityResults: readonly SpecialistShadowQualityResult[];
+  externalEffectAllowed: false;
+};
+
+/**
+ * The same calculation, released to the organization that owns the session. It carries the method
+ * rung, the confirmed scope it was computed from and the dataset hash, so a result can never be
+ * shown as current for a portfolio selection the organization did not confirm.
+ */
+export type ReceivablesSpecialistReleaseResult = {
+  mode: "analytical_release";
+  taskId: "R01";
+  executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool";
+  executorVersion: string;
+  release: {
+    organizationId: string;
+    procedure: {id: string; version: string; maturity: string};
+    methodMaturity: string;
+    allowedUses: readonly string[];
+    maximumEffect: "none";
+    confirmedScope: {id: string; fingerprint: string};
+    sourceDatasetHash: string;
+  };
+  artifact: {
+    artifactType: "receivables_pool_underwriting";
+    schemaVersion: "method.underwrite-receivables-pool.v1";
+    status: "released";
+    inputFingerprint: string;
+    outputFingerprint: string;
+    content: ReceivablesPoolUnderwriting;
+    evidenceRefs: readonly ReceivablesSpecialistEvidenceRef[];
   };
   qualityResults: readonly SpecialistShadowQualityResult[];
   externalEffectAllowed: false;
@@ -42,6 +90,9 @@ export type ReceivablesSpecialistShadowResult = {
 
 const taskId = "R01" as const;
 const executorKey = "@offroad/receivables-analysis#underwriteReceivablesPool" as const;
+/** A released analytical result needs the recorded review and runs behind it, not a flag. */
+const releasedMaturities = ["tested", "ready_for_founder", "production"] as const;
+const sha256 = /^[a-f0-9]{64}$/;
 
 /**
  * Bundled executor identities available to the universal dispatcher candidate compiler. Presence
@@ -56,10 +107,31 @@ export const specialistCandidateExecutorRuntimeManifest = [{
   resultContract: "method.underwrite-receivables-pool.v1",
 }] as const;
 
-function methodRuntime() {
-  const method = specialistMethodRuntimeManifest.find((entry) => entry.taskIds.includes(taskId));
-  const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === taskId);
-  if (!method || !capability) throw new Error("receivables_specialist_runtime_not_registered");
+type MethodPolicy = {
+  executor: {module: string; exportName: string};
+  procedure: {id: string; version: string; maturity: string};
+};
+type CapabilityPolicy = {
+  executorKey: string;
+  executorVersion: string;
+  procedure: {id: string; version: string};
+  availability: string;
+  exposure: string;
+  allowedUses: readonly string[];
+  maximumEffect: string;
+};
+
+/**
+ * The only place a mode is admitted. Both modes require an effect-free, non-external policy; the
+ * released mode additionally requires an allowlisted customer-work exposure and a method that
+ * carries its recorded independent review and its gold, adversarial and consistency runs. Changing
+ * a flag without changing the recorded evidence therefore cannot open the released path.
+ */
+export function evaluateReceivablesSpecialistPolicy(
+  mode: SpecialistMethodMode,
+  method: MethodPolicy,
+  capability: CapabilityPolicy,
+): string | null {
   if (
     method.executor.module !== "@offroad/receivables-analysis"
     || method.executor.exportName !== "underwriteReceivablesPool"
@@ -67,13 +139,29 @@ function methodRuntime() {
     || capability.executorVersion !== method.procedure.version
     || capability.procedure.id !== method.procedure.id
     || capability.procedure.version !== method.procedure.version
-  ) throw new Error("receivables_specialist_runtime_manifest_mismatch");
+  ) return "receivables_specialist_runtime_manifest_mismatch";
+  // Common to both modes: the method never proposes state, commits or acts outside the product.
   if (
     capability.availability !== "shadow"
-    || capability.exposure !== "internal"
+    || !(capability.exposure === "internal" || capability.exposure === "allowlisted")
     || !capability.allowedUses.includes("internal_validation")
+    || capability.allowedUses.some((use) => use === "external_material" || use === "external_action")
     || capability.maximumEffect !== "none"
-  ) throw new Error("receivables_specialist_shadow_policy_mismatch");
+  ) return "receivables_specialist_shadow_policy_mismatch";
+  if (mode === "analytical_release" && (
+    capability.exposure !== "allowlisted"
+    || !capability.allowedUses.includes("customer_work")
+    || !releasedMaturities.includes(method.procedure.maturity as (typeof releasedMaturities)[number])
+  )) return "receivables_specialist_release_policy_mismatch";
+  return null;
+}
+
+function methodRuntime(mode: SpecialistMethodMode) {
+  const method = specialistMethodRuntimeManifest.find((entry) => entry.taskIds.includes(taskId));
+  const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === taskId);
+  if (!method || !capability) throw new Error("receivables_specialist_runtime_not_registered");
+  const failure = evaluateReceivablesSpecialistPolicy(mode, method, capability);
+  if (failure) throw new Error(failure);
   return {method, capability};
 }
 
@@ -81,7 +169,7 @@ function qualityResults(result: ReceivablesPoolUnderwriting): SpecialistShadowQu
   const checks = [
     {
       id: "trace_output_fingerprint_present",
-      passed: /^[a-f0-9]{64}$/.test(result.trace.output_fingerprint),
+      passed: sha256.test(result.trace.output_fingerprint),
       detail: "The deterministic result carries a SHA-256 output fingerprint.",
     },
     {
@@ -108,20 +196,17 @@ function qualityResults(result: ReceivablesPoolUnderwriting): SpecialistShadowQu
   return checks.map((check) => ({id: check.id, status: check.passed ? "passed" : "failed", detail: check.detail}));
 }
 
-/**
- * Executes the first specialist method only as an internal shadow calculation. This is not the
- * live dispatcher: it accepts no provider, tool, tenant allowlist or external effect and returns
- * a draft artifact for evaluation. Promotion requires a separate capability change and E2E gate.
- */
-export function executeReceivablesSpecialistShadow(input: {
+type SpecialistExecutionInput = {
   taskId: string;
   executorKey: string;
   executorVersion: string;
   phaseOne: ReceivablesPhaseOneInput;
   detection: ReceivablesRawDetectionReport;
   assembly: unknown;
-}): ReceivablesSpecialistShadowResult {
-  const runtime = methodRuntime();
+};
+
+function execute(mode: SpecialistMethodMode, input: SpecialistExecutionInput) {
+  const runtime = methodRuntime(mode);
   if (input.taskId !== taskId) throw new Error("specialist_task_not_supported");
   if (input.executorKey !== executorKey || input.executorVersion !== runtime.method.procedure.version) {
     throw new Error("specialist_executor_binding_mismatch");
@@ -144,6 +229,17 @@ export function executeReceivablesSpecialistShadow(input: {
   const evidenceRefs = Object.entries(assembly.evidence).flatMap(([section, references]) => (
     references.map((reference) => ({section, ...reference}))
   )).sort((left, right) => `${left.section}:${left.sourceId}:${left.anchor}`.localeCompare(`${right.section}:${right.sourceId}:${right.anchor}`));
+  return {runtime, assembly, result, checks, evidenceRefs};
+}
+
+/**
+ * Executes the first specialist method only as an internal shadow calculation. This is not the
+ * live dispatcher: it accepts no provider, tool, tenant allowlist or external effect and returns
+ * a draft artifact for evaluation. Releasing the same calculation to the organization that owns
+ * the session is the separate mode below, and it requires a persisted grant.
+ */
+export function executeReceivablesSpecialistShadow(input: SpecialistExecutionInput): ReceivablesSpecialistShadowResult {
+  const {runtime, result, checks, evidenceRefs} = execute("internal_shadow", input);
   return {
     mode: "internal_shadow",
     taskId,
@@ -153,6 +249,61 @@ export function executeReceivablesSpecialistShadow(input: {
       artifactType: "receivables_pool_underwriting",
       schemaVersion: "method.underwrite-receivables-pool.v1",
       status: "draft",
+      inputFingerprint: result.trace.input_fingerprint,
+      outputFingerprint: result.trace.output_fingerprint,
+      content: result,
+      evidenceRefs,
+    },
+    qualityResults: checks,
+    externalEffectAllowed: false,
+  };
+}
+
+/**
+ * Releases the same deterministic result to the organization that owns the session. It runs only
+ * when the manifest policy allows an allowlisted customer-work exposure with no effect, the method
+ * carries its recorded review and runs, and the database grant for this organization is present.
+ * The confirmed scope and the dataset hash travel with the result: a portfolio selection the
+ * organization did not confirm can never enter a released analysis.
+ */
+export function releaseReceivablesSpecialistAnalysis(
+  input: SpecialistExecutionInput & {organizationId: string; grant: ReceivablesAnalyticalReleaseGrant},
+): ReceivablesSpecialistReleaseResult {
+  const {grant} = input;
+  if (!grant.granted) throw new Error("receivables_analytical_release_not_granted");
+  if (!input.organizationId || grant.organizationId !== input.organizationId) {
+    throw new Error("receivables_analytical_release_tenant_mismatch");
+  }
+  if (!grant.confirmedScope.id) throw new Error("receivables_analytical_release_scope_required");
+  if (!sha256.test(grant.confirmedScope.fingerprint) || !sha256.test(grant.sourceDatasetHash)) {
+    throw new Error("receivables_analytical_release_scope_required");
+  }
+  const {runtime, assembly, result, checks, evidenceRefs} = execute("analytical_release", input);
+  if (assembly.source.datasetHash !== grant.sourceDatasetHash) {
+    throw new Error("receivables_analytical_release_dataset_mismatch");
+  }
+  return {
+    mode: "analytical_release",
+    taskId,
+    executorKey,
+    executorVersion: runtime.method.procedure.version,
+    release: {
+      organizationId: grant.organizationId,
+      procedure: {
+        id: runtime.method.procedure.id,
+        version: runtime.method.procedure.version,
+        maturity: runtime.method.procedure.maturity,
+      },
+      methodMaturity: runtime.method.procedure.maturity,
+      allowedUses: [...runtime.capability.allowedUses],
+      maximumEffect: "none",
+      confirmedScope: {id: grant.confirmedScope.id, fingerprint: grant.confirmedScope.fingerprint},
+      sourceDatasetHash: grant.sourceDatasetHash,
+    },
+    artifact: {
+      artifactType: "receivables_pool_underwriting",
+      schemaVersion: "method.underwrite-receivables-pool.v1",
+      status: "released",
       inputFingerprint: result.trace.input_fingerprint,
       outputFingerprint: result.trace.output_fingerprint,
       content: result,

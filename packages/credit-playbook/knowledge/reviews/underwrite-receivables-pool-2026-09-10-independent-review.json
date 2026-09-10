@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "underwrite-receivables-pool-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "full_economic_review",
+    "tool": "outputs/endgame-nine-2026-09-10/VALIDACAO-RECEBIVEIS.md (sha256 a9985c3793b1394d3740df386da6ea8807ade257dd666172f49652f83e4ae4fc)"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "underwrite-receivables-pool",
+    "version": "2026.09.06-v1",
+    "fingerprint": "2c7911e31f79556ce77bbf197eebe5d5c19e734dc86a5a0e1e83f701331b7ecc"
+  },
+  "run": {
+    "id": "underwrite-receivables-pool-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T18:54:17.902Z",
+    "finishedAt": "2026-09-10T18:54:17.902Z",
+    "commit": "220a37faa0c28d0de08737b3c4480e188492b5db"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Os testes válidos da revisão passaram: underwrite, index, method-readiness e method-assembly (56 testes) e os kernels static-metrics, dynamic-metrics e eligibility-allocation do financial-core (11 testes), 67 no total, sem chamadas a modelos.",
+      "source": "packages/receivables-analysis/src/*.test.ts; packages/financial-core/src/receivables/*.test.ts",
+      "anchor": "HEAD 815ad50, diff zero contra 220a37f nos caminhos revisados",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Base de financiamento da carteira limpa: 6.000.000 x 80% = 4.800.000 e 6.000.000 / 1,25 = 4.800.000; facilidade suportada 4.800.000; pedido de 3.000.000 comparado com a capacidade, nunca usado para inflar a base.",
+      "source": "packages/receivables-analysis/src/analyze.ts",
+      "anchor": "maximumByAdvance, maximumByOc, supportedFacility",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Sem títulos elegíveis a base é zero e o resultado recusa a viabilidade econômica mantendo as causas identificadas.",
+      "source": "packages/receivables-analysis/src/index.test.ts",
+      "anchor": "r19-no-eligible-base",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Concentração: 60 títulos de 100.000 somam 6.000.000; 30 sacados e 10 grupos produzem 3,333333% e 10%, sem haircut na carteira limpa.",
+      "source": "packages/receivables-analysis/src/index.test.ts",
+      "anchor": "topDebtorShare 0.03333333, topGroupShare 0.10000000",
+      "result": "confirmed"
+    },
+    {
+      "claim": "adjustedForConcentration usa a base elegível preliminar como denominador dos tetos, limita cada sacado e depois cada grupo, e não subtrai duas vezes o mesmo excesso.",
+      "source": "packages/receivables-analysis/src/analyze.ts",
+      "anchor": "adjustedForConcentration",
+      "result": "confirmed",
+      "note": "Não é um solucionador iterativo para limites definidos sobre o saldo final após exclusões; a liberação precisa declarar o denominador utilizado."
+    },
+    {
+      "claim": "Waterfall: reserva-alvo 90.000, saldo inicial 30.000, reposição 60.000; caixa de 400.000 paga servicing 10.000, juros sênior 100.000, reserva 60.000, principal sênior 200.000, mezanino 0, residual 30.000; pagamentos somam 400.000 sem criação de caixa; subordinação 20%.",
+      "source": "packages/receivables-analysis/src/index.test.ts",
+      "anchor": "waterfall of the clean diversified pool",
+      "result": "confirmed",
+      "note": "A ordem é fixa: servicing, juros sênior, reposição de reserva, principal sênior, mezanino, residual. A liberação precisa expor essa convenção."
+    },
+    {
+      "claim": "Caixa insuficiente gera shortfall sênior e remediação.",
+      "source": "packages/receivables-analysis/src/scenarios.ts",
+      "anchor": "r24-waterfall-shortfall",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O motor dinâmico mantém not_evaluable quando faltam eventos ou maturidade de safra; roll rates, safras e diluição dinâmica não são avaliáveis na carteira limpa.",
+      "source": "packages/financial-core/src/receivables/dynamic-metrics.ts",
+      "anchor": "dynamic-metrics.test.ts",
+      "result": "confirmed"
+    },
+    {
+      "claim": "analyzeReceivables produzia dynamicMetrics, mas underwriteReceivablesPool não transportava a cobertura para o contrato final; o resultado incluía taxas agregadas informadas sem a cobertura das séries dinâmicas.",
+      "source": "packages/receivables-analysis/src/underwrite.ts",
+      "anchor": "history_coverage e economic_conventions adicionados em fix/receivables-history-coverage (456e6f5)",
+      "result": "corrected",
+      "note": "Corrigido com a projeção receivables-underwriting-coverage.v1: seis famílias com estados medido, parcial e não avaliável, métricas indisponíveis e avisos; agregado informado distinto de histórico medido; ausência nunca vira zero."
+    },
+    {
+      "claim": "Gabarito de concentração sobreposta: base preliminar 6.000.000, teto sacado 1.200.000, teto grupo 1.500.000, grupo A com 2.000.000 + 1.000.000 limitado a 1.500.000, três outros grupos de 1.000.000, base ajustada 4.500.000, capacidade 3.600.000.",
+      "source": "packages/receivables-analysis/src/underwrite.test.ts",
+      "anchor": "caps overlapping debtor and group exposures once on the preliminary base",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O executor de runtime exige capability shadow/internal, devolve draft/internal_shadow e rejeita qualquer política diferente; mudar somente manifest ou flag quebra o runtime.",
+      "source": "apps/document-worker/src/specialist-method-runtime.ts",
+      "anchor": "methodRuntime policy check",
+      "result": "limitation",
+      "note": "Condição de exposição: o caminho de resultado analítico liberado ainda precisava ser criado."
+    },
+    {
+      "claim": "Os cenários de decisão não constituem gabarito numérico exaustivo de toda combinação contratual; o método computa sob convenções declaradas e não pode ser atribuído a uma waterfall ou cláusula de concentração diferente.",
+      "source": "docs/knowledge/recebiveis/CANONICAL-SPEC.md",
+      "anchor": "gates 11 a 14",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "Registrar esta revisão independente e os runs válidos; acrescentar gabaritos monetários de concentração sobreposta se a saída for apresentada como revisão econômica completa dos limites.",
+    "Explicitar cobertura histórica e convenções de concentração e waterfall no contrato e na apresentação do resultado; preservar imutabilidade dos resultados antigos por versão de contrato.",
+    "Criar o caminho de resultado analítico liberado em vez de mudar somente manifest ou flag.",
+    "Provar no navegador a saída publicada vinculada à revisão aprovada, com fontes, lacunas e atualização; resultado obsoleto e carteira não selecionada não podem ser publicados.",
+    "Atualizar evidência canônica do método, manifest, hash e ledger; a aprovação do fundador para production não é inventada por esta revisão."
+  ],
+  "notes": "Revisão matemática favorável no escopo e convenções implementados, com condições de exposição abertas. Não recomenda promover a análise como se ela comprovasse histórico de performance completo ou suportasse qualquer waterfall contratual. Revisão técnica independente por agente, com provas reproduzíveis; não é auditoria humana, validação de todas as classes de recebíveis nem aprovação regulatória ou de crédito. A recomendação é liberar análise da carteira sob premissas declaradas, mantendo direção externa, recomendação de financiador e aprovação de crédito fechadas. Os horários registrados são o instante de gravação do documento de revisão; o início da revisão não foi registrado."
+}
