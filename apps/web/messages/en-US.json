@@ -4151,6 +4151,7 @@
     "kicker": "Financial model",
     "title": "Approved configuration results",
     "prepared": "Prepared on {date}",
+    "editableSnapshot": "The files reflect the approved assumptions. In Excel, you can change assumptions and recalculate scenarios locally. Those changes do not update the project or the other materials; to update them, revise the configuration in Offroad.",
     "snapshot": "These files present results calculated from the approved assumptions. To change assumptions and recalculate, review the configuration in Offroad. The exported Excel contains results without local recalculation.",
     "revision": "Revision {revision} · {currency}",
     "downloads": "Download results",
@@ -4200,5 +4201,55 @@
       "execution": "Processing stopped or did not produce a verifiable result. Resume the request in the conversation; no approved result is available.",
       "unclassified": "An outstanding issue requires configuration review. Resubmit corrected inputs or request help in the conversation."
     }
+  },
+  "InstitutionalScenarioComparison": {
+    "title": "Compare reviewed results",
+    "boundary": "Compare the current configuration with an earlier reviewed calculation using the same documents. An earlier revision is a historical reference; it is not a recommended alternative and does not replace the current result.",
+    "reference": "Choose a comparison reference",
+    "choose": "Select a reviewed result",
+    "empty": "No other reviewed result is available for these documents yet",
+    "incompatible": "Currency, historical base, entity perimeter, as-of date or periods differ. Comparison requires compatible bases; no implicit conversions or adjustments are made.",
+    "revision": "{name} · revision {revision}",
+    "units": "Amounts in {currency} units. DSCR and net debt / EBITDA in multiples. As of: {asOfDate}.",
+    "table": "Financial results side by side",
+    "metric": "Metric",
+    "period": "Projected period",
+    "current": "Current",
+    "previous": "Earlier reference",
+    "notComputable": "Not computable",
+    "evidence": "Assumptions and sources",
+    "reviewed": "Reviewed at {date}",
+    "sourceVersion": "version {version} · as of {date}",
+    "assumptions": "Approved assumptions",
+    "assumptionUnits": {
+      "currency": "currency units",
+      "percent": "decimal fraction; 0.10 = 10%",
+      "days": "days",
+      "multiple": "multiple",
+      "quantity": "quantity",
+      "index": "index"
+    },
+    "metrics": {
+      "revenue": "Revenue",
+      "ebitda": "EBITDA",
+      "cfads": "Cash available for debt service",
+      "debtService": "Debt service",
+      "closingGrossDebt": "Closing gross debt",
+      "unrestrictedCash": "Unrestricted cash",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Net debt / EBITDA",
+      "liquidityHeadroom": "Liquidity headroom"
+    }
+  },
+  "DocumentaryWorkRequest": {
+    "title": "New work in this project",
+    "description": "Use the documents already provided to compare proposals, prepare a meeting or review an opportunity. Previous work stays in the history. You will review and approve a new plan before execution.",
+    "label": "What would you like to prepare?",
+    "placeholder": "Compare these proposals and highlight the points to clarify.",
+    "scope": "This option prepares a qualitative documentary analysis. Continue in the conversation for calculations, scenarios or other work.",
+    "unsupported": "Describe a proposal comparison, meeting preparation or opportunity review. Requests involving calculations should continue in the conversation.",
+    "submit": "Prepare new plan",
+    "saving": "Preparing plan…",
+    "uncertain": "We could not confirm receipt. Retry to check the same request."
   }
 }

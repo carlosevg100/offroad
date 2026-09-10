@@ -24,7 +24,7 @@ export type GovernedWorkbookMetadata = {
   scale: string;
   classification: "internal" | "confidential";
   decisionContractFingerprint?: string;
-  artifactClass?: "credit_model" | "decision_workbook" | "institutional_snapshot";
+  artifactClass?: "credit_model" | "decision_workbook" | "institutional_snapshot" | "institutional_editable";
 };
 
 export type GovernedWorkbookAudit = {
@@ -78,7 +78,7 @@ function styleComponents(role: CellRole, crossSheet: boolean) {
   return {font: fontIds.body, fill: fillIds.none, border: borderIds.none, align: 0};
 }
 
-function styleCatalogue(wrapText = false) {
+function styleCatalogue(wrapText = false, editableModel = false) {
   const ids = new Map<StyleKey, number>();
   const xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'];
   for (const role of roles) {
@@ -92,7 +92,7 @@ function styleCatalogue(wrapText = false) {
             ? '<alignment horizontal="left" vertical="top" wrapText="1"/>'
             : `<alignment horizontal="${format === "text" ? "left" : "right"}" vertical="center"${wrapText ? ' wrapText="1"' : ""}/>`;
         ids.set(key, xfs.length);
-        xfs.push(`<xf numFmtId="${numberFormatId(format)}" fontId="${c.font}" fillId="${c.fill}" borderId="${c.border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${alignment}</xf>`);
+        xfs.push(`<xf numFmtId="${numberFormatId(format)}" fontId="${c.font}" fillId="${c.fill}" borderId="${c.border}" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"${editableModel ? ' applyProtection="1"' : ""}>${alignment}${editableModel && role === "input" ? '<protection locked="0"/>' : ""}</xf>`);
       }
     }
   }
@@ -248,6 +248,13 @@ export async function toGovernedXlsxBuffer(
     disclaimer: lang === "pt"
       ? "Uso interno. Este workbook não constitui proposta, aprovação, diligência final, opinião jurídica, distribuição ou recomendação executável."
       : "Internal use. This workbook is not an offer, approval, final diligence, legal opinion, distribution or executable recommendation.",
+  } : metadata.artifactClass === "institutional_editable" ? {
+    title: metadata.title,
+    description: lang === "pt" ? "Modelo integrado com fórmulas editáveis e registro separado dos resultados aprovados." : "Integrated formula workbook with a separate record of approved results.",
+    controls: lang === "pt" ? "Edite as células azuis nas abas Premissas numeradas. As abas Modelo e Cálculos recalculam localmente. Os cenários aprovados permanecem inalterados. Valores locais seguem a precisão numérica do Excel e não recebem aprovação automática." : "Edit blue cells on the numbered Inputs sheets. Model and Calculations sheets recalculate locally. Approved scenarios remain unchanged. Local values use Excel numeric precision and are not automatically approved.",
+    sources: lang === "pt" ? "Os valores exatos, fontes e aprovações originais permanecem nas abas de registro. Para aprovar alterações, revise-as na plataforma." : "Exact original values, sources and approvals remain on the register sheets. Review changes in the platform for approval.",
+    assumptionHeading: lang === "pt" ? "Premissas locais e registro aprovado" : "Local assumptions and approved record",
+    disclaimer: lang === "pt" ? "Uso interno. Células vazias de indicadores representam denominador não positivo. Erros de entrada exigem correção antes de usar a simulação." : "Internal use. Blank ratios represent nonpositive denominators. Input errors require correction before using the simulation.",
   } : metadata.artifactClass === "institutional_snapshot" ? {
     title: metadata.title,
     description: lang === "pt" ? "Demonstrações integradas calculadas a partir de configurações e fontes revisadas. Exportação dos resultados aprovados, sem recálculo local de premissas." : "Integrated financial statements calculated from reviewed configurations and sources. Approved results export, without local assumption recalculation.",
@@ -257,7 +264,7 @@ export async function toGovernedXlsxBuffer(
     disclaimer: lang === "pt" ? "Uso interno. Cenários não são previsões garantidas, oferta ou compromisso de crédito." : "Internal use. Scenarios are not guaranteed forecasts, an offer or credit commitment.",
   } : undefined);
   const zip = await JSZip.loadAsync(basic);
-  const catalogue = styleCatalogue(metadata.artifactClass === "institutional_snapshot");
+  const catalogue = styleCatalogue(metadata.artifactClass === "institutional_snapshot" || metadata.artifactClass === "institutional_editable", metadata.artifactClass === "institutional_editable");
   zip.file("xl/styles.xml", stylesXml(catalogue.xfs), {date: new Date("1980-01-01T00:00:00.000Z")});
 
   const coverPath = "xl/worksheets/sheet1.xml";
@@ -280,7 +287,7 @@ export async function toGovernedXlsxBuffer(
     if (!source) throw new Error(`generated workbook is missing ${sheet.name[lang]}`);
     const split = sheet.key === "projection" || sheet.key === "debt" || sheet.key === "covenants" ? {x: 1, y: 2} : {x: 0, y: 2};
     let xml = addPageSetup(addSheetProperties(replaceSheetView(source, split), sheet.key === "sources" ? "FF8A939B" : sheet.key === "assumptions" ? "FF7D9455" : "FF101923"), sheet.widths.length > 4 ? "landscape" : "portrait");
-    if (metadata.artifactClass === "institutional_snapshot") {
+    if (metadata.artifactClass === "institutional_snapshot" || metadata.artifactClass === "institutional_editable") {
       sheet.rows.forEach((row, rowIndex) => {
         const lines = Math.max(1, ...row.cells.map((cell, column) => String(cell.value ?? "").split("\n").reduce((sum, line) => sum + Math.max(1, Math.ceil(line.length / Math.max(8, (sheet.widths[column] ?? 20) * 0.85))), 0)));
         const rowHeight = Math.min(409, sheet.key.startsWith("institutional_") ? 12 * lines + 2 : 15 * lines + 4);
@@ -296,6 +303,7 @@ export async function toGovernedXlsxBuffer(
       xml = setCellStyle(xml, cellAddress(columnIndex, rowIndex), styleId);
       styledCellCount += 1;
     }));
+    if (metadata.artifactClass === "institutional_editable") xml = xml.replace("</sheetData>", '</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" formatColumns="0" formatRows="0" selectLockedCells="0" selectUnlockedCells="0"/>');
     zip.file(path, xml, {date: new Date("1980-01-01T00:00:00.000Z")});
   }
 

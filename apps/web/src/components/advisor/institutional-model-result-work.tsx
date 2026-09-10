@@ -6,6 +6,7 @@ import type {InstitutionalModelResult} from "@/lib/advisor/institutional-model-r
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {institutionalResultIssues} from "@/lib/advisor/institutional-issue-presentation";
 import {InstitutionalIssues} from "./institutional-issues";
+import {InstitutionalScenarioComparison} from "./institutional-scenario-comparison";
 import styles from "./institutional-model-result-work.module.css";
 
 export function InstitutionalModelResultWork({projectId, result}: {projectId: string; result: InstitutionalModelResult}) {
@@ -19,13 +20,14 @@ export function InstitutionalModelResultWork({projectId, result}: {projectId: st
       <small>{t("prepared", {date: formatter.dateTime(new Date(result.createdAt), {dateStyle: "medium", timeZone: "UTC"})})}</small>
     </header>
     {result.status === "completed" && result.artifact ? <>
-      <p>{t("snapshot")}</p>
+      <p>{t(result.artifact.version === "institutional-workbook-editable.v2" ? "editableSnapshot" : "snapshot")}</p>
       <div className={styles.scenarios}>
         {result.artifact.institutional.scenarios.map(scenario => <article key={scenario.configurationId}>
           <h3>{scenario.input.assumptionBook.scenarioName}</h3>
           <p>{t("revision", {revision: scenario.revision, currency: scenario.input.currency})}</p>
         </article>)}
       </div>
+      <InstitutionalScenarioComparison key={result.id} currentId={result.id} comparisons={result.comparisons ?? []} />
       <nav className={styles.downloads} aria-label={t("downloads")}>
         {(["xlsx", "pptx", "docx", "pdf"] as const).map(format => <a key={format} href={`/${locale}/app/projects/${projectId}/financial-results/${result.id}/${format}`}>{t(`formats.${format}`)}</a>)}
       </nav>

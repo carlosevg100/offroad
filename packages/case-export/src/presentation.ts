@@ -430,20 +430,39 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
   const {material, lang, meta} = input;
   const title = material.title[lang];
   const slides: SlideSpec[] = [{title, eyebrow: meta.companyName ?? "OFFROAD", kind: "cover", blockId: null, lines: [{label: `${lang === "pt" ? "Emitido em" : "Issued on"}: ${meta.issuedOn}`, traceId: "issued"}]}];
+  // Put the financial decision view before the full statement and evidence appendices.
+  for (const chart of material.presentationCharts ?? []) {
+    if (chart.series.points.some(point => point.value !== null && !Number.isFinite(point.value))) throw new Error("Non-finite material chart value");
+    slides.push({title: chart.title[lang], eyebrow: lang === "pt" ? "CENÁRIO APROVADO" : "APPROVED SCENARIO", kind: "chart", blockId: chart.series.id, lines: [], series: [chart.series]});
+  }
   let section = title;
   material.blocks.forEach((block, index) => {
     if (block.type === "heading") {section = block.text[lang]; return;}
+    if(index===0 && block.type==="paragraph" && material.presentationCharts?.length && block.text[lang].length<320) {
+      slides[0]!.lines.push({label:block.text[lang],traceId:"material-block-0"});return;
+    }
     let lines: SlideSpec["lines"] = [];
     const traceId = `material-block-${index}`;
     if (block.type === "table" && block.head.length <= 6 && block.rows.every(row => row.length === block.head.length && row.every(cell => cell.length <= 200))) {
       const rowCost = (row: string[]) => Math.max(350_000, ...row.map(cell => Math.ceil(cell.length / (120 / block.head.length)) * 180_000 + 160_000));
       let rows: string[][] = [], cost = 0;
-      const flush = () => {if (rows.length) slides.push({title: block.caption[lang], eyebrow: lang === "pt" ? "ANÁLISE" : "ANALYSIS", kind: "table", blockId: traceId, lines: [], table: {headers: block.head.map(head => head[lang]), rows}}); rows = []; cost = 0;};
+      const pages:string[][][]=[];
+      const flush = () => {if (rows.length) pages.push(rows); rows = []; cost = 0;};
       block.rows.forEach(row => {const weight = rowCost(row); if (rows.length && cost + weight + rowCost(block.head.map(head => head[lang])) > 4_400_000) flush(); rows.push(row); cost += weight;});
-      flush(); return;
+      flush();
+      // Avoid a trailing one-row appendix slide while preserving row order and readable type.
+      const tail=pages.at(-1), previous=pages.at(-2);
+      if(tail && previous) while(tail.length<3 && previous.length>3) {
+        const candidate=previous.at(-1)!;
+        if([...tail,candidate].reduce((sum,row)=>sum+rowCost(row),rowCost(block.head.map(head=>head[lang])))>4_400_000)break;
+        tail.unshift(previous.pop()!);
+      }
+      pages.forEach(pageRows=>slides.push({title:block.caption[lang],eyebrow:lang==="pt"?"ANÁLISE":"ANALYSIS",kind:"table",blockId:traceId,lines:[],table:{headers:block.head.map(head=>head[lang]),rows:pageRows}}));
+      return;
     }
     switch (block.type) {
-      case "paragraph": case "disclaimer": lines = [{label: block.text[lang], traceId}]; break;
+      case "paragraph": lines = [{label: block.text[lang], traceId}]; break;
+      case "disclaimer": section=lang==="pt"?"Base e limites de uso":"Basis and limits of use";lines = [{label: block.text[lang], traceId}]; break;
       case "list": lines = block.items.map((item) => ({label: item[lang], traceId})); break;
       case "metrics": lines = block.items.map((item) => ({label: item.label[lang], value: item.formatted[lang], traceId})); break;
       case "kv": section = block.caption?.[lang] ?? section; lines = block.rows.map((row) => row.value[lang].length > 200 ? ({label: `${row.label[lang]}: ${row.value[lang]}${row.note ? ` ${row.note[lang]}` : ""}`, traceId}) : ({label: row.label[lang], value: row.value[lang], note: row.note?.[lang], traceId})); break;

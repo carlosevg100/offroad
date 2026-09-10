@@ -133,4 +133,27 @@ test.describe("documentary work products with actual provider execution", () => 
     await page.screenshot({path: join(directory, `${scenario.job}.png`), fullPage: true});
     writeFileSync(join(directory, `${scenario.job}.json`), JSON.stringify({projectUrl: page.url(), request: scenario.request, result, progress: await brief.locator(".execution-brief-card__workstreams").innerText()}, null, 2));
   });
+  test("new standalone request preserves the project and proposes fresh consent", async () => {
+    test.setTimeout(600_000);
+    const projectUrl = page.url().split("#")[0]!;
+    const brief = page.getByTestId("execution-brief");
+    const priorFingerprint = await brief.getAttribute("data-brief-fingerprint");
+    const request = page.getByTestId("documentary-work-request");
+    await request.locator("summary").click();
+    await request.locator("textarea").fill("Prepare a reunião com esta companhia usando os documentos enviados.");
+    await request.getByRole("button", {name: "Preparar novo plano", exact: true}).click();
+    await expect(brief).not.toHaveAttribute("data-brief-fingerprint", priorFingerprint!, {timeout: 180_000});
+    await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible();
+    await expect(brief).toContainText("Prepare a reunião com esta companhia usando os documentos enviados.");
+    await expect(brief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(0);
+    expect(page.url().split("#")[0]).toBe(projectUrl);
+    await page.reload();
+    await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible();
+    await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
+    const work = page.locator(".advisor-work-surface");
+    await expect(work.getByRole("heading", {name: "Preparação para a reunião", exact: true})).toBeVisible({timeout: 180_000});
+    await expect(brief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(3, {timeout: 120_000});
+    await expect(work.getByRole("link", {name: "Baixar Word", exact: true})).toBeVisible();
+  });
+
 });

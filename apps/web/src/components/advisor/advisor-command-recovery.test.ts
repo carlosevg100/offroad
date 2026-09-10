@@ -3,7 +3,7 @@ import {describe, expect, it, vi} from "vitest";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 
 describe("advisor command recovery", () => {
-  it.each(["message", "plan_edit", "answer"])("preserves %s draft and command ID after a lost response", async (kind) => {
+  it.each(["message", "plan_edit", "documentary_request", "answer"])("preserves %s draft and command ID after a lost response", async (kind) => {
     const createId = vi.fn().mockReturnValueOnce("original-id").mockReturnValueOnce("new-id");
     const recovery = createAdvisorCommandRecovery(createId);
     const saved = new Set<string>();

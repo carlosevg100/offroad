@@ -81,6 +81,17 @@ begin
   update public.processing_jobs set payload='{}' where id='81000000-0000-4000-8000-000000000901';
   projection:=private.governed_sector_context_inputs('20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901');
   if projection#>>'{candidates,0,extraction_document_version}' is not null or projection#>>'{candidates,0,extraction_source_sha256}' is not null then raise exception 'missing original source identity inferred from current source'; end if;
+  -- Every canonical business dimension reaches the existing scoped projection and approval hash.
+  foreach original_hash in array array['cost_model','working_capital','asset_model','capital_expenditure','regulation','operating_driver'] loop
+    update public.intake_field_candidates set field_path='company.'||original_hash,normalized_value='"Synthetic open business characteristic"'
+      where id='51000000-0000-4000-8000-000000000901';
+    projection:=private.governed_sector_context_inputs('20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901');
+    if jsonb_array_length(projection->'candidates')<>1 or projection#>>'{candidates,0,field_path}'<>'company.'||original_hash then
+      raise exception 'canonical business dimension lost: %',original_hash;
+    end if;
+    if private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'changed business dimension retained approval'; end if;
+  end loop;
+  update public.intake_field_candidates set field_path='company.sector',normalized_value='"energy"' where id='51000000-0000-4000-8000-000000000901';
   rejected:=false;
   begin
     insert into public.intake_field_candidates(organization_id,intake_session_id,source_document_id,extractor_key,field_path,field_group,label,normalized_value,value_type,information_class,evidence_rank,source_anchor,confidence,extraction_method,created_by,is_primary)

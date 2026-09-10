@@ -2,6 +2,8 @@
 
 import {isGovernedWorkProductRevisionRequest} from "@offroad/agent-contracts";
 import {
+  canCompileStandaloneDocumentWorkRequest,
+  documentWorkPlanSnapshot,
   capitalProjectJob,
   capitalProjectJobSchema,
   compileAdvisorStartingPlan,
@@ -149,6 +151,28 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
     p_message_id: parsed.data.messageId,
     p_locale: parsed.data.locale,
     p_content: parsed.data.content,
+  });
+  return error ? {ok: false, error: actionError(error)} : {ok: true};
+}
+
+/** Starts a bounded documentary request in the same project. The atomic command preserves
+ * history and source versions, then proposes a new plan requiring its own approval. */
+export async function requestAdvisorDocumentaryWork(input: unknown): Promise<AdvisorMessageResult> {
+  if (process.env.DOCUMENTARY_WORK_PLANNING_ENABLED !== "true") return {ok: false, error: "processing"};
+  const parsed = executionBriefEditSchema.safeParse(input);
+  if (!parsed.success || !canCompileStandaloneDocumentWorkRequest({objective: parsed.data.content,
+    proposedDeliverable: "Preliminary documentary reading"})) return {ok: false, error: "invalid"};
+  const {supabase, organization} = await requireWorkspace(parsed.data.locale);
+  const {data: project, error: readError} = await supabase.from("capital_projects")
+    .select("entry_job").eq("organization_id", organization.id).eq("id", parsed.data.projectId).maybeSingle();
+  if (readError || !project) return {ok: false, error: "not_found"};
+  const entry = capitalProjectJobSchema.safeParse(project.entry_job);
+  if (!entry.success) return {ok: false, error: "invalid"};
+  const {error} = await supabase.rpc("request_documentary_work_revision_v1", {
+    p_project_id: parsed.data.projectId, p_execution_brief_id: parsed.data.executionBriefId,
+    p_expected_fingerprint: parsed.data.expectedFingerprint, p_message_id: parsed.data.messageId,
+    p_locale: parsed.data.locale, p_content: parsed.data.content,
+    p_plan: documentWorkPlanSnapshot(entry.data) as unknown as Json,
   });
   return error ? {ok: false, error: actionError(error)} : {ok: true};
 }

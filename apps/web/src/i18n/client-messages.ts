@@ -18,6 +18,8 @@ export function selectClientMessages(messages: Messages) {
     ProviderWorkHistory: messages.ProviderWorkHistory,
     InstitutionalSetup: messages.InstitutionalSetup,
     InstitutionalModelResult: messages.InstitutionalModelResult,
+    InstitutionalScenarioComparison: messages.InstitutionalScenarioComparison,
+    DocumentaryWorkRequest: messages.DocumentaryWorkRequest,
     InstitutionalConfigurationReview: messages.InstitutionalConfigurationReview,
     InstitutionalIssues: messages.InstitutionalIssues,
     InstitutionalSetupReview: messages.InstitutionalSetupReview,

@@ -8,7 +8,9 @@ describe("bounded documentary plan",()=>{
     const file=readdirSync(directory).find(name=>name.endsWith("_documentary_field_assessments_contract.sql"));
     expect(file).toBeDefined();
     const contracts=Object.fromEntries((["structure_from_documents","review_existing_operation"] as const).map(entry=>[entry,documentWorkPlanSnapshot(entry)]));
-    for (const path of [new URL(file!,directory),new URL("../../../supabase/tests/support/documentary_plan_snapshots.sql",import.meta.url)]) {
+    // The historical release admitted two entries. The new six-entry fixture is checked
+    // against its additive migration in document-work-revision-contract.test.ts.
+    for (const path of [new URL(file!,directory)]) {
       const sql=readFileSync(path,"utf8");
       const serialized=sql.split("$documentary_contract$")[1];
       expect(serialized).toBeDefined();

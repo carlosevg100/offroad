@@ -1,3 +1,21 @@
+## 10 September 2026: new work requests, reviewed scenario comparisons and editable financial delivery: integration checkpoint
+
+Final local integration check passed (lint, typecheck, all tests and 43/43 production build tasks). Financial-model94, case-materials59, case-export20 and authenticated four-format route12 checks passed. Native Calc compared672 outputs across six contractual variants and six edited workbooks, with zero differences above1e-6; six missing-input cases fail visibly. Visual QA inspected64 PT/EN slides/pages plus the Unicode PDF. The latest v2 SQL fixture passed the staging lifecycle again. Final staging security advisors returned zero lints. CI, production migration and deployment remain pending.
+
+Implementation branch `feat/endgame-nine-closure` starts from verified main `576d0422fb65d3ad0bcabb8e82ad6343a109de0f` (PR589). Documentary planning is active on that production baseline; older entries below describing flags off are historical. This batch has not yet been promoted.
+
+New explicit documentary requests preserve the project and ready documents, bind the command to the exact preceding brief, and require fresh approval. The released Q graph now accepts all six canonical entry contexts, while a separate admission guard preserves authorized-private access and leaves public provider research available. Progress and products bind to the current dispatch run rather than completed historical work; retry retains the original command binding after a lost response. No additional paid model evaluation has been run.
+
+Financial results now support explicit comparison with compatible reviewed historical scenarios under the current source snapshot. The default workbook is `institutional-workbook-editable.v2`, with formulas for local assumption changes; persisted v1 files remain byte-compatible. Local edits do not update the project or other materials. Native PPT financial charts and bundled licensed PDF fonts improve export output. Font coverage is not universal; unsupported glyphs are rejected. This is not proof of institutional storytelling for every intent.
+
+Economic-context planning now consumes all thirteen existing dimensions, including operating drivers, working capital, costs, asset model, capex and regulation. The six newly connected field paths preserve evidence and review semantics. This does not accredit an unimplemented specialist method or limit supported business descriptions to example sectors.
+
+Applied only to staging `gjkkjtbfnssdsbmlhmwk`: `20260910134302_governed_business_dimensions`, `20260910134318_institutional_reviewed_result_comparison`, `20260910134705_institutional_editable_workbook_contract`, `20260910135224_explicit_documentary_work_revision`, and `20260910135636_documentary_revision_private_admission`. Rollback SQL passed for governed context, institutional lifecycle and explicit documentary revision, including twelve public-access rejection paths and preserved public provider research. Database types were regenerated from staging. Security advisors returned zero lints before the final private-admission guard; final advisors and CI remain release checks.
+
+The founder confirmed no lender database exists. A production count returned zero registered funds, active mandates and registered-directory records. Public research is being assembled separately with source-linked institutions, vehicles, transaction observations and an official CVM/BCB census; registry existence is not a verified financing mandate. Matching data completion and integration remain open. Old receivables PRs are under selective reconciliation because blind merging would remove later protections.
+
+Remaining acceptance: final combined checks, CI database/browser/security gates, exact production migration and deployment verification; provider-backed continuation E2E has been added but not run because the previous paid evaluation authorization was exhausted. Do not represent nine pending items as closed from this checkpoint.
+
 ## 10 September 2026: finish the second documentary evaluation within its existing limits
 
 PR588 is published on main d3763a7 (web deployment6369897088, worker revision311); post-merge Quality and Security passed. The worker definition is false and stable; the optional boot-log read was unavailable. No claim of an observed boot event is made.

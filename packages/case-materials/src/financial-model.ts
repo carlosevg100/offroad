@@ -110,5 +110,15 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
     ]),
     {type: "disclaimer", text: labels("Exportação dos resultados aprovados. Para alterar premissas e recalcular, submeta uma nova revisão na plataforma. Este arquivo não recalcula localmente e não constitui proposta ou compromisso de financiamento.", "Approved results export. To change assumptions and recalculate, submit a new review in the platform. This file does not recalculate locally and is not a financing offer or commitment.")},
   ]};
+  material.presentationCharts = input.scenarios.flatMap((scenario, scenarioIndex) => [
+    ["ebitda", "Geração operacional", "Operating earnings"],
+    ["cfads", "Caixa disponível para pagar a dívida", "Cash available to service debt"],
+    ["closingGrossDebt", "Evolução da dívida bruta", "Gross debt trajectory"],
+    ["unrestrictedCash", "Evolução do caixa disponível", "Unrestricted cash trajectory"],
+  ].map(([key, pt, en]) => ({title: labels(`${scenario.name}: ${pt}`, `${scenario.name}: ${en}`), series: {
+    id: `institutional-${scenarioIndex}-${key}`, label: input.lang === "en" ? en! : pt!, unit: scenario.currency, chartKind: "column" as const,
+    object: {id: `institutional-${scenarioIndex}`, type: "financial_model", fingerprint: input.artifactFingerprint, path: `scenarios.${scenarioIndex}.periods.${key}`},
+    points: scenario.periods.map(period => ({label: period.period, value: Number(period[key as keyof InstitutionalStatementPeriod]), evidenceState: "calculated" as const, sourceIds: [...input.supportIds], assumptionIds: [], gapIds: []})),
+  }})));
   return {...material, conductAudit: auditCompiledMaterial(material)};
 }

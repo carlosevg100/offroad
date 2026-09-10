@@ -8412,6 +8412,18 @@ export type Database = {
         }
         Returns: Json
       }
+      request_documentary_work_revision_v1: {
+        Args: {
+          p_content: string
+          p_execution_brief_id: string
+          p_expected_fingerprint: string
+          p_locale: string
+          p_message_id: string
+          p_plan: Json
+          p_project_id: string
+        }
+        Returns: Json
+      }
       request_origination_thesis_revision_v1: {
         Args: {
           p_artifact_fingerprint: string

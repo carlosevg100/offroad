@@ -680,6 +680,7 @@ async function ConversationalCapitalProject({
   }
 
   return <AdvisorProject
+    documentaryWorkEnabled={process.env.DOCUMENTARY_WORK_PLANNING_ENABLED === "true"}
     accessBasis={project.access_basis}
     artifacts={(artifacts ?? []).filter((artifact) => artifact.status !== "superseded" && customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
       id: artifact.id,

@@ -1,6 +1,6 @@
 import {z} from "zod";
 import {fingerprintJson} from "@offroad/case-understanding";
-import {type EconomicContextAttribute, type EconomicContextCompileRequest, type EconomicContextObject} from "@offroad/agent-contracts";
+import {economicContextDimensionSchema, type EconomicContextAttribute, type EconomicContextCompileRequest, type EconomicContextObject} from "@offroad/agent-contracts";
 import {compileEconomicContext} from "@offroad/dcm-specialization";
 import {
   normalizeSectorContextValue, sectorContextCatalog, sectorContextDimensionLabels,
@@ -8,7 +8,7 @@ import {
 } from "@offroad/credit-playbook";
 import {compileObjectiveToPlan, executionBriefPlanningContextSchema, type ExecutionBriefPlanningContext} from "@offroad/work-plan";
 
-const fields = ["company.sector", "company.subsector", "company.business_model", "company.revenue_model", "company.lifecycle", "company.recourse", "company.jurisdiction"] as const;
+const fields = economicContextDimensionSchema.options.map((dimension) => `company.${dimension}` as const);
 export const governedSectorContextInputsSchema = z.object({
   schema_version: z.literal("governed-sector-context-inputs.v1"), as_of: z.iso.date(),
   candidates: z.array(z.object({

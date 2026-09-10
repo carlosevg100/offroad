@@ -50,6 +50,7 @@ test("guided institutional setup calculates only after review and survives resum
  await page.goto(projectPath);
  await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
  const form=page.getByTestId("institutional-setup-form");
+ async function submitScenario(costRatio: string) {
  await expect(form).toBeVisible();
  await form.locator('[name="asOfDate"]').fill("2026-12-31");
  await form.locator('[name="currency"]').fill("BRL");
@@ -66,7 +67,7 @@ test("guided institutional setup calculates only after review and survives resum
  await form.locator('input[name^="source."][name$=".currency"]').fill("BRL");
  await form.locator('input[name^="source."][name$=".locator"]').fill("Financials, synthetic reconciled input");
  await form.locator('textarea[name^="source."][name$=".rationale"]').fill("All selected synthetic facts are stated in BRL base units.");
- const premises={volumeGrowth:"0",priceGrowth:"0",mixEffect:"0",fxEffect:"0",inorganicRevenue:"0",costRatio:"50",existingDepreciation:"0",dso:"0",dio:"0",dpo:"0",otherCurrentAssetsRatio:"0",otherCurrentLiabilitiesRatio:"0",cashTaxRate:"0",distributions:"0",minimumCash:"0"};
+ const premises={volumeGrowth:"0",priceGrowth:"0",mixEffect:"0",fxEffect:"0",inorganicRevenue:"0",costRatio,existingDepreciation:"0",dso:"0",dio:"0",dpo:"0",otherCurrentAssetsRatio:"0",otherCurrentLiabilitiesRatio:"0",cashTaxRate:"0",distributions:"0",minimumCash:"0"};
  for(const [key,value]of Object.entries(premises)){
   await form.locator(`[name="premise.${key}.2027"]`).fill(value);
   await form.locator(`[name="premise.${key}.rationale"]`).fill("Explicit synthetic annual scenario.");
@@ -86,8 +87,9 @@ test("guided institutional setup calculates only after review and survives resum
   await expect(sourceDate).toHaveAttribute("readonly","");
   await form.locator(`[name="debt.0.2027.${rate}Rationale"]`).fill("Explicit synthetic zero rate.");
  }
- await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await form.locator('button[type="submit"]').click();
+ }
+ await submitScenario("50");
  const reviewLink=page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup-review"]');
  await expect(reviewLink).toBeVisible({timeout:120_000});
  await reviewLink.click();
@@ -118,5 +120,27 @@ test("guided institutional setup calculates only after review and survives resum
  await page.reload();await resultLink.click();
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed);
  await expect(xlsx).toHaveAttribute("href",resultUrl!);
+ // A second explicitly reviewed calculation is a comparison reference, not an implicit
+ // recommendation. The browser must keep downloads bound to the current result.
+ await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
+ await submitScenario("40");
+ await reviewLink.click();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled({timeout:120_000});
+ await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
+ await resultLink.click();
+ await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
+ await expect(xlsx).not.toHaveAttribute("href",resultUrl!);
+ const currentUrl = await xlsx.getAttribute("href");
+ const comparison = result.getByRole("region",{name:messages.InstitutionalScenarioComparison.title,exact:true});
+ const selector = comparison.getByRole("combobox");
+ await expect(selector.locator("option")).toHaveCount(2);
+ await selector.selectOption({index:1});
+ const table = comparison.getByRole("table");
+ await expect(table).toBeVisible();
+ const ebitda = table.getByRole("row").filter({has:page.getByRole("rowheader",{name:"EBITDA",exact:true})});
+ const values = await ebitda.getByRole("cell").allTextContents();
+ expect(values[1]).not.toBe(values[2]);
+ await expect(xlsx).toHaveAttribute("href",currentUrl!);
+ await expect(comparison).toContainText(messages.InstitutionalScenarioComparison.boundary);
  expect(new URL(page.url()).pathname).toBe(projectPath);
 });

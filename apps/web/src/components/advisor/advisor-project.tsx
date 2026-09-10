@@ -13,6 +13,7 @@ import {
   beginAdvisorProjectProcessing,
   prepareAdvisorDocumentUpload,
   requestAdvisorExecutionBriefEdit,
+  requestAdvisorDocumentaryWork,
 } from "@/app/[locale]/app/advisor-actions";
 import {
   AdvisorChangeProposalCard,
@@ -31,6 +32,8 @@ import {AdvisorWorkSurface, type AdvisorWorkSection} from "./advisor-work-surfac
 import {advisorShouldRefresh, advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
+import {createDocumentaryRequestBindings} from "./documentary-request-binding";
+import {DocumentaryWorkRequest} from "./documentary-work-request";
 import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
 import {AdvisorEvidenceInventory} from "./advisor-evidence-inventory";
 import {InformationRequestCard, type AdvisorInformationRequest, type InformationRequestCopy} from "./information-request-card";
@@ -88,6 +91,7 @@ export type AdvisorProjectCopy = {
 
 type Props = {
   accessBasis: string;
+  documentaryWorkEnabled?: boolean;
   artifacts: AdvisorProjectArtifact[];
   copy: AdvisorProjectCopy;
   documents: AdvisorProjectDocument[];
@@ -115,6 +119,7 @@ type Props = {
 
 export function AdvisorProject(props: Props) {
   const router = useRouter();
+  const documentaryRequests = useRef(createDocumentaryRequestBindings());
   const workCopy = useTranslations("AdvisorWorkSurface");
   const sections = props.workSections ?? [];
   const {selectedId: selectedWorkId, mobileView, setMobileView, selectSection: selectWork} = useAdvisorWorkNavigation(sections, props.initialWorkSectionId);
@@ -223,6 +228,16 @@ export function AdvisorProject(props: Props) {
         content: normalized,
         messageId,
       }));
+  }
+
+  async function requestDocumentaryWork(message: string): Promise<AdvisorCommandResult> {
+    const current = props.executionBrief;
+    if (!current || pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
+    const reviewed = documentaryRequests.current.forRequest(message, {briefId: current.briefId, fingerprint: current.brief.fingerprint});
+    return runCommand(["documentary_request", reviewed.briefId, reviewed.fingerprint, message], message,
+      messageId => requestAdvisorDocumentaryWork({locale: props.locale, projectId: props.projectId,
+        executionBriefId: reviewed.briefId, expectedFingerprint: reviewed.fingerprint, messageId, content: message}),
+      () => documentaryRequests.current.accepted(message), false);
   }
 
   async function approvePlan(input: {expectedFingerprint: string; expectedVersion: number}): Promise<AdvisorCommandResult> {
@@ -352,6 +367,8 @@ export function AdvisorProject(props: Props) {
         </div>
 
         <div className="advisor-project__composer-wrap">
+          {props.documentaryWorkEnabled && props.executionBrief && props.accessBasis === "authorized_private" && props.documents.length > 0
+            ? <DocumentaryWorkRequest disabled={pending || uploading || active} onRequest={requestDocumentaryWork} /> : null}
           <section className="advisor-composer">
             <label><span className="sr-only">{props.copy.placeholder}</span><textarea
               disabled={pending || uploading}

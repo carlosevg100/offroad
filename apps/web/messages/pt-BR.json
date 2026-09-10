@@ -4151,6 +4151,7 @@
     "kicker": "Modelo financeiro",
     "title": "Resultados da configuração aprovada",
     "prepared": "Preparado em {date}",
+    "editableSnapshot": "Os arquivos refletem as premissas aprovadas. No Excel, você pode alterar as premissas e recalcular cenários localmente. Essas alterações não atualizam o projeto nem os demais materiais; para isso, revise a configuração no Offroad.",
     "snapshot": "Os arquivos apresentam os resultados calculados com as premissas aprovadas. Para alterar as premissas e recalcular, revise a configuração no Offroad. O Excel exportado contém os resultados, sem recálculo local.",
     "revision": "Revisão {revision} · {currency}",
     "downloads": "Baixar resultados",
@@ -4200,5 +4201,55 @@
       "execution": "O processamento foi interrompido ou não entregou um resultado verificável. Retome a solicitação na conversa; não há resultado aprovado disponível.",
       "unclassified": "Há uma pendência que exige revisão da configuração. Reenvie os dados corrigidos ou solicite ajuda na conversa."
     }
+  },
+  "InstitutionalScenarioComparison": {
+    "title": "Comparar resultados revisados",
+    "boundary": "Compare a configuração atual com uma revisão anterior calculada sobre os mesmos documentos. Uma revisão anterior é uma referência histórica; não é uma alternativa recomendada nem substitui o resultado atual.",
+    "reference": "Escolha a referência para comparação",
+    "choose": "Selecionar resultado revisado",
+    "empty": "Ainda não há outro resultado revisado nesta base documental",
+    "incompatible": "Os resultados têm moeda, base histórica, perímetro, data-base ou períodos diferentes. A comparação exige bases compatíveis; não fazemos conversões ou ajustes implícitos.",
+    "revision": "{name} · revisão {revision}",
+    "units": "Valores em unidades de {currency}. DSCR e dívida líquida / EBITDA em múltiplos. Data-base: {asOfDate}.",
+    "table": "Resultados financeiros lado a lado",
+    "metric": "Indicador",
+    "period": "Período projetado",
+    "current": "Atual",
+    "previous": "Referência anterior",
+    "notComputable": "Não calculável",
+    "evidence": "Premissas e fontes",
+    "reviewed": "Revisado em {date}",
+    "sourceVersion": "versão {version} · data-base {date}",
+    "assumptions": "Premissas aprovadas",
+    "assumptionUnits": {
+      "currency": "unidades monetárias",
+      "percent": "fração decimal; 0,10 = 10%",
+      "days": "dias",
+      "multiple": "múltiplo",
+      "quantity": "quantidade",
+      "index": "índice"
+    },
+    "metrics": {
+      "revenue": "Receita",
+      "ebitda": "EBITDA",
+      "cfads": "Caixa disponível para serviço da dívida",
+      "debtService": "Serviço da dívida",
+      "closingGrossDebt": "Dívida bruta final",
+      "unrestrictedCash": "Caixa disponível",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Dívida líquida / EBITDA",
+      "liquidityHeadroom": "Folga de liquidez"
+    }
+  },
+  "DocumentaryWorkRequest": {
+    "title": "Novo trabalho neste projeto",
+    "description": "Use os documentos já enviados para comparar propostas, preparar uma reunião ou revisar uma oportunidade. O trabalho anterior permanece no histórico. Você revisará e aprovará um novo plano antes da execução.",
+    "label": "O que você quer preparar?",
+    "placeholder": "Compare estas propostas e destaque os pontos a esclarecer.",
+    "scope": "Esta opção prepara uma análise documental qualitativa. Para cálculos, cenários ou outros trabalhos, continue pela conversa.",
+    "unsupported": "Descreva uma comparação de propostas, preparação de reunião ou revisão de oportunidade. Pedidos com cálculos devem seguir pela conversa.",
+    "submit": "Preparar novo plano",
+    "saving": "Preparando plano…",
+    "uncertain": "Não foi possível confirmar o recebimento. Tente novamente para verificar o mesmo pedido."
   }
 }
