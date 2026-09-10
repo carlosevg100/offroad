@@ -4601,3 +4601,26 @@ Browser correction verified in Quality 34433729697, job 102734405573, candidate
 completed its unmodified composer-to-approved-result-and-reload test in 10.6 seconds.
 Production-history filename alignment changes no migration SQL or application behavior;
 its final exact-head CI still precedes merge and deployment.
+
+
+## Public capital research browser: 10 September 2026 (implementation, not production proof)
+
+An authenticated `/[locale]/app/market` surface exposes the dated, source-linked public research sample of 28 institutions. Workspace navigation and the existing provider-research artifact link to it. Users can search institution/vehicle/strategy, filter roles and strategies, inspect evidence and named vehicles, and pre-screen the economic structure. Public strategy compatibility is explicitly separate from verified mandate eligibility, which remains false for every record. Arrangers, securitizers and fiduciary services are not represented as documented risk holders. Infrastructure membership alone does not establish project-finance activity: that requires an explicit source-linked claim annotation. Unknown strategy is unconfirmed, not a fabricated exclusion.
+
+The versioned JSON retains source IDs, URLs and observation dates from `outputs/endgame-nine-2026-09-10/market-map/brazil-capital-map.json`; source summaries remain Portuguese in both locales and are labeled accordingly. No private data, organization identity, verified fund directory, provider artifact or approved shortlist is mutated. No outreach is enabled. Existing `requireWorkspace` authorization is preserved. This is a bounded public research sample, not the regulatory census or a claim of current appetite.
+
+Validation: 23 focused tests passed (catalog, roles, structural negative cases, source integrity, rejected mandate promotion, route authorization, bilingual rendering and message parity); focused lint and web typecheck passed before the last source-annotation refinement, which is covered by the focused tests. Standalone rendering inspected at 1440px and 390px with no horizontal overflow. Screenshots: `outputs/endgame-nine-2026-09-10/market-map/product-qa/`. Integration full check, authenticated browser E2E, preview and production remain release gates. Security: no new database/grants/policies, no network writes or external effects; unsafe source URL schemes are rejected. Rollback: revert this additive route, navigation links, component and research asset.
+
+
+### Expanded registry and historical evidence scope
+
+The same surface now has separate profile, official-registry and historical-observation views. The compact registry projection includes 899 CVM managers with active broad-screen candidate funds and 1,742 BCB institution roots, searched by name/identity with 25 records per page. Fourteen-digit CNPJ and eight-digit BCB roots remain separate; counts are not summed as independent lenders. Consortium administrators retain registry-only status. Acquisition date is shown separately from the unknown publisher reference date. Source links, SHA-256 and ODbL attribution are retained. No raw fund/class census is bundled.
+
+Historical evidence displays four Movida debenture observations (issuer table, final-terms reconciliation pending) and the Tecon/BNDES announced approval (disbursement not verified); investor identity and rates remain unknown where the source does not identify them. BTG's dated advertised working-capital product floor is shown only within its researched profile, with monthly units, no binding offer, unknown CET and explicit non-comparability to annual CDI spreads. These are historical/source observations, not current market quotes.
+
+
+### Final local verification
+
+Independent review matched all 899 CVM and 1,742 BCB projected identities to the acquisition assets, including names, identity types, source URL/date/SHA-256; transactions and pricing match the curated research artifact. Full `pnpm check` passed: 43/43 build tasks, including web 88 test files / 533 tests. Dependencies were installed offline into this worktree and workspace resolution was verified locally; no borrowed workspace source paths. The initial restricted build was interrupted after waiting at Next build, then the full check passed with the build permissions needed for public fonts.
+
+The existing authenticated `provider-research.spec.ts` journey now tests rail navigation, profile search, structure selection, BCB identity search, historical sources and return to the preserved private project. It was not run here because no local Supabase/Docker E2E stack was available; CI execution remains required. Actual React component interactions (profile search, registry identity search, history tab) passed in an isolated local visual harness, with desktop and mobile captures and no horizontal overflow. That visual harness was removed and is not authentication or production proof. No deployment or outreach occurred.

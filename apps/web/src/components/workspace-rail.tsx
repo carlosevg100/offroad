@@ -1,6 +1,6 @@
 "use client";
 
-import {Check, ChevronDown, ChevronRight, CircleGauge, LogOut, PanelLeft, Plus, Search, UserRoundCog, X} from "lucide-react";
+import {Check, ChevronDown, ChevronRight, CircleGauge, Landmark, LogOut, PanelLeft, Plus, Search, UserRoundCog, X} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
@@ -22,6 +22,7 @@ export type WorkspaceRailCopy = WorkspaceNavigationCopy & {
   newChat: string;
   overview: string;
   professionalContext: string;
+  publicCapitalMarket: string;
   recent: string;
   folders: string;
   language: string;
@@ -217,6 +218,7 @@ export function WorkspaceRail(props: Props) {
           href={`/${locale}/app/context`}
           title={copy.professionalContext}
         ><UserRoundCog aria-hidden="true" size={15} /><span>{copy.professionalContext}</span></Link>
+        <Link aria-current={pathname.includes("/app/market") ? "page" : undefined} className="app-rail__row" href={`/${locale}/app/market`} title={copy.publicCapitalMarket}><Landmark aria-hidden="true" size={15} /><span>{copy.publicCapitalMarket}</span></Link>
       </nav>
 
       {props.showProjects ? (

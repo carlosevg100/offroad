@@ -14,6 +14,7 @@ export function selectClientMessages(messages: Messages) {
     Navigation: messages.Navigation,
     ProviderCaseFitForm: messages.ProviderCaseFitForm,
     ProviderCaseFitWork: messages.ProviderCaseFitWork,
+    PublicCapitalMarket: messages.PublicCapitalMarket,
     ProviderResearchWork: messages.ProviderResearchWork,
     ProviderWorkHistory: messages.ProviderWorkHistory,
     InstitutionalSetup: messages.InstitutionalSetup,

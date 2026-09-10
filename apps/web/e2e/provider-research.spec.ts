@@ -94,5 +94,28 @@ test("approved provider research persists an honest empty authorized universe", 
   await expect(history.getByTestId("provider-research-work")).toHaveText(text!);
   // The initial request remains in the conversation; no workspace restart occurred.
   await expect(page.getByText(request, {exact: true}).first()).toBeVisible();
+  // Actual authenticated market navigation exercises client messages, hydration and separation
+  // from the already persisted private research artifact. No external links are followed.
+  await page.locator('.app-rail__nav a[href="/pt-BR/app/market"]').click();
+  await expect(page).toHaveURL(/\/pt-BR\/app\/market$/);
+  await expect(page.getByRole("heading", {name: "Encontre o caminho para o capital."})).toBeVisible();
+  await page.getByLabel("Buscar", {exact: true}).fill("Pátria");
+  await expect(page.locator("main article")).toHaveCount(1);
+  await page.getByLabel("Estrutura a pesquisar").selectOption("receivables");
+  await expect(page.locator("main article")).toContainText("Estratégia pública compatível");
+  await page.getByRole("button", {name: "Cadastros oficiais", exact: true}).click();
+  await page.getByLabel("Base de origem").selectOption("bcb_root");
+  await page.getByLabel("Buscar nome ou CNPJ").fill("61190658");
+  await expect(page.locator("main article")).toHaveCount(1);
+  await expect(page.locator("main article")).toContainText("8 dígitos; não é CNPJ completo");
+  await expect(page.locator("main article")).toContainText("Sem mandato, ticket, taxa, capacidade ou apetite verificados.");
+  await expect(page.locator('main article a[href^="https://olinda.bcb.gov.br/"]')).toHaveCount(1);
+  await page.getByRole("button", {name: "Operações e taxas históricas", exact: true}).click();
+  await expect(page.locator("main article")).toHaveCount(5);
+  await expect(page.locator("main article").filter({hasText: "MOVIB2"})).toContainText("Investidores / financiadores não identificados na fonte.");
+  await expect(page.locator("main article").filter({hasText: "MOVIB2"}).getByRole("link")).toHaveAttribute("href", /^https:\/\//);
+  await page.goto(projectPath);
+  await expect(page.getByTestId("provider-case-fit-work")).toHaveText(fitText!);
+
 
 });
