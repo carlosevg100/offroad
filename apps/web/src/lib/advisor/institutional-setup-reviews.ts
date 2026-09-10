@@ -7,7 +7,7 @@ const candidate = z.object({candidateId: z.uuid(), revision: z.number().int().po
 export type InstitutionalSetupReview = Omit<z.infer<typeof candidate>, "configuration" | "answerEvidence"> & {
   canApprove: boolean; currency: string; periods: string[]; submittedAt:string;
   assumptions: z.infer<typeof institutionalModelConfigurationSchema>["assumptionBook"]["assumptions"];
-  sources: Array<{name:string;version:string;asOfDate:string;currency:string;locator:string;rationale:string}>;
+  sources: Array<{id:string;name:string;version:string;asOfDate:string;currency:string;locator:string;rationale:string}>;
   findings:z.infer<typeof candidate>["answerEvidence"]["review"]["findings"];
   coverage:z.infer<typeof candidate>["answerEvidence"]["review"]["coverage"];
   historical: Array<{name:string;fieldPath:string;periodEnd:string;entityName:string;sourceName:string;value:string|null}>;
@@ -36,6 +36,6 @@ export function parseInstitutionalSetupReviews(context: InstitutionalSetupContex
     const historical = [...Object.entries(config.openingBalanceSheet.bindings), ...config.revenueSegments.map(s=>["baseRevenue",s.baseRevenue] as const), ["taxLossCarryforward",config.taxes.openingTaxLossCarryforward] as const,["disallowedInterestCarryforward",config.taxes.openingDisallowedInterestCarryforward] as const].map(([name,binding])=>({name,fieldPath:binding.fieldPath,periodEnd:binding.periodEnd,entityName:binding.entityName,sourceName:sourceName(binding.sourceDocument),value:e.lineage.find(l=>l.fieldPath===binding.fieldPath&&l.periodEnd===binding.periodEnd&&l.entityName===binding.entityName&&l.sourceDocument===binding.sourceDocument&&l.sourceVersion===binding.sourceVersion&&l.sourceHash===binding.sourceHash)?.value??null}));
     return [{candidateId:c.candidateId,revision:c.revision,status:c.status,configurationFingerprint:c.configurationFingerprint,parentFingerprint:c.parentFingerprint,
       canApprove:c.status==="review_required" && !invalidApproved && current && (approved?.configurationFingerprint ?? null)===c.parentFingerprint && historical.every(h=>h.value!==null) && config.assumptionBook.assumptions.every(a=>config.assumptionBook.periods.every(p=>a.values[p]!==undefined)) && e.review.status!=="blocked" && !e.review.findings.some(f=>f.severity==="blocker"),currency:config.currency,periods:config.assumptionBook.periods,submittedAt:e.submittedAt,assumptions:config.assumptionBook.assumptions,
-      sources:e.sourceBindings.map(s=>({name:sourceName(s.sourceDocument),version:s.version,asOfDate:s.asOfDate,currency:s.currency,locator:s.metadataEvidence.locator,rationale:s.metadataEvidence.rationale})),findings:e.review.findings,coverage:e.review.coverage,historical,debt:config.debtInstruments,debtRateLineage:config.debtRateLineage,capex:config.capex,absence:config.absenceConfirmations}];
+      sources:e.sourceBindings.map(s=>({id:s.sourceDocument,name:sourceName(s.sourceDocument),version:s.version,asOfDate:s.asOfDate,currency:s.currency,locator:s.metadataEvidence.locator,rationale:s.metadataEvidence.rationale})),findings:e.review.findings,coverage:e.review.coverage,historical,debt:config.debtInstruments,debtRateLineage:config.debtRateLineage,capex:config.capex,absence:config.absenceConfirmations}];
   });
 }

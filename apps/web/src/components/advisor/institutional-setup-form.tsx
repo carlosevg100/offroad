@@ -28,6 +28,8 @@ export function InstitutionalSetupForm({context}: {context: InstitutionalSetupCo
   const [baseYear, setBaseYear] = useState("");
   const [horizon, setHorizon] = useState("");
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [debtSources, setDebtSources] = useState<Record<string, string>>({});
+  const [sourceDates, setSourceDates] = useState<Record<string, string>>({});
   const [capexMode, setCapexMode] = useState("");
   const [debtMode, setDebtMode] = useState("");
   const [capexCount, setCapexCount] = useState(1);
@@ -38,6 +40,10 @@ export function InstitutionalSetupForm({context}: {context: InstitutionalSetupCo
   const periods = /^\d{4}$/.test(baseYear) && Number(horizon) >= 1 && Number(horizon) <= 40
     ? Array.from({length: Number(horizon)}, (_, i) => String(Number(baseYear) + i + 1)) : [];
   const selectedSourceIds = new Set(context.candidates.filter(f => Object.values(selections).includes(f.id)).map(f => f.source_document_id));
+  if (debtMode === "present") for (let i = 0; i < debtCount; i++) for (const period of periods) for (const rate of ["indexation", "coupon"]) {
+    const sourceId = debtSources[`debt.${i}.${period}.${rate}Source`];
+    if (sourceId) selectedSourceIds.add(sourceId);
+  }
   const selectedSources = context.currentSources.filter(source => selectedSourceIds.has(source.sourceDocument));
   const premise = (form: FormData, prefix: string, label: string): SetupPremise => ({label: {pt: label, en: label}, rationale: scalar(form, `${prefix}.rationale`), values: Object.fromEntries(periods.map(year => [year, scalar(form, `${prefix}.${year}`)]))});
 
@@ -66,8 +72,8 @@ export function InstitutionalSetupForm({context}: {context: InstitutionalSetupCo
           })),
         });
         for (const period of periods) debtRateLineage.push({instrumentId, period,
-          indexationSourceId: scalar(form, `${prefix}.${period}.indexationSource`), indexationAsOfDate: scalar(form, `${prefix}.${period}.indexationDate`), indexationMethodology: scalar(form, `${prefix}.${period}.indexationRationale`),
-          couponSourceId: scalar(form, `${prefix}.${period}.couponSource`), couponAsOfDate: scalar(form, `${prefix}.${period}.couponDate`), couponMethodology: scalar(form, `${prefix}.${period}.couponRationale`),
+          indexationSourceId: scalar(form, `${prefix}.${period}.indexationSource`), indexationAsOfDate: scalar(form, `source.${scalar(form, `${prefix}.${period}.indexationSource`)}.date`), indexationMethodology: scalar(form, `${prefix}.${period}.indexationRationale`),
+          couponSourceId: scalar(form, `${prefix}.${period}.couponSource`), couponAsOfDate: scalar(form, `source.${scalar(form, `${prefix}.${period}.couponSource`)}.date`), couponMethodology: scalar(form, `${prefix}.${period}.couponRationale`),
         });
       }
       draft = {currency: scalar(form, "currency"), asOfDate: scalar(form, "asOfDate"), baseYear, periods, selections,
@@ -111,7 +117,7 @@ export function InstitutionalSetupForm({context}: {context: InstitutionalSetupCo
         <option value="">{t("choose")}</option>{context.candidates.map(fact => <option value={fact.id} key={fact.id}>{fact.label ? `${fact.label} · ` : ""}{String(fact.normalized_value)} {fact.currency ?? ""} · {fact.period_end} · {fact.entity_name} · {context.currentSources.find(source => source.sourceDocument === fact.source_document_id)?.originalName}</option>)}
       </select></label>)}
     </div>{selectedSources.map(source => <article key={source.sourceDocument} className={styles.source}><h3>{source.originalName}</h3><div className={styles.grid}>
-      <label>{t("sourceDate")}<input type="date" name={`source.${source.sourceDocument}.date`} required /></label>
+      <label>{t("sourceDate")}<input type="date" name={`source.${source.sourceDocument}.date`} value={sourceDates[source.sourceDocument] ?? ""} onChange={event => setSourceDates(current => ({...current, [source.sourceDocument]: event.target.value}))} required /></label>
       <label>{t("currency")}<input name={`source.${source.sourceDocument}.currency`} pattern="[A-Z]{3}" maxLength={3} required /></label>
       <label>{t("locator")}<input name={`source.${source.sourceDocument}.locator`} maxLength={500} required /></label>
     </div><label>{t("sourceRationale")}<textarea name={`source.${source.sourceDocument}.rationale`} maxLength={500} required rows={2} /></label><p>{t("unitsNotice")}</p></article>)}</fieldset>
@@ -135,8 +141,8 @@ export function InstitutionalSetupForm({context}: {context: InstitutionalSetupCo
         {choice(`debt.${i}.couponTreatment`, t("couponTreatment"), ["cash_paid", "capitalized_principal"].map(value => ({value, label: t(value as "cash_paid" | "capitalized_principal")})))}
         {choice(`debt.${i}.couponBase`, t("couponBase"), ["opening_principal", "indexed_principal", "average_principal"].map(value => ({value, label: t(value as "opening_principal" | "indexed_principal" | "average_principal")})))}
       </div>{periods.map(year => <fieldset key={year}><legend>{year}</legend><div className={styles.grid}>{["indexationRate", "couponRate", "drawdown", "scheduledPrincipal", "prepayment"].map(key => numberField(`debt.${i}.${year}.${key}`, t(key as "indexationRate" | "couponRate" | "drawdown" | "scheduledPrincipal" | "prepayment")))}</div>{["indexation", "coupon"].map(rate => <div className={styles.grid} key={rate}>
-        <label>{t(rate === "indexation" ? "indexationRate" : "couponRate")} · {t("rateSource")}<input name={`debt.${i}.${year}.${rate}Source`} required maxLength={500} /></label>
-        <label>{t("sourceDate")}<input type="date" name={`debt.${i}.${year}.${rate}Date`} required /></label>
+        <label>{t(rate === "indexation" ? "indexationRate" : "couponRate")} · {t("rateSource")}<select name={`debt.${i}.${year}.${rate}Source`} required value={debtSources[`debt.${i}.${year}.${rate}Source`] ?? ""} onChange={event => setDebtSources(current => ({...current, [`debt.${i}.${year}.${rate}Source`]: event.target.value}))}><option value="">{t("choose")}</option>{context.currentSources.map(source => <option key={source.sourceDocument} value={source.sourceDocument}>{source.originalName}</option>)}</select></label>
+        <label>{t("sourceDate")}<input type="date" name={`debt.${i}.${year}.${rate}Date`} readOnly value={sourceDates[debtSources[`debt.${i}.${year}.${rate}Source`] ?? ""] ?? ""} /></label>
         <label>{t("rateRationale")}<input name={`debt.${i}.${year}.${rate}Rationale`} required maxLength={500} /></label>
       </div>)}</fieldset>)}</article>)}</div><div className={styles.actions}><button type="button" disabled={debtCount >= 100} onClick={() => setDebtCount(count => count + 1)}>{t("addDebt")}</button>{debtCount > 1 ? <button type="button" onClick={() => setDebtCount(count => count - 1)}>{t("remove")}</button> : null}</div></> : null}
     </fieldset>

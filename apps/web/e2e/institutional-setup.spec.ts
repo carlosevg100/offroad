@@ -78,8 +78,12 @@ test("guided institutional setup calculates only after review and survives resum
  for(const [key,value]of Object.entries({indexer:"fixed",indexationTreatment:"not_applicable",couponTreatment:"cash_paid",couponBase:"opening_principal"}))await form.locator(`[name="debt.0.${key}"]`).selectOption(value);
  for(const key of ["indexationRate","couponRate","drawdown","scheduledPrincipal","prepayment"])await form.locator(`[name="debt.0.2027.${key}"]`).fill("0");
  for(const rate of ["indexation","coupon"]){
-  await form.locator(`[name="debt.0.2027.${rate}Source"]`).fill("Synthetic debt agreement");
-  await form.locator(`[name="debt.0.2027.${rate}Date"]`).fill("2026-12-31");
+  const source=form.locator(`select[name="debt.0.2027.${rate}Source"]`);
+  await source.selectOption({label:"Synthetic reconciled accounts.xlsx"});
+  await expect(source).toHaveValue(/^[0-9a-f-]{36}$/);
+  const sourceDate=form.locator(`[name="debt.0.2027.${rate}Date"]`);
+  await expect(sourceDate).toHaveValue("2026-12-31");
+  await expect(sourceDate).toHaveAttribute("readonly","");
   await form.locator(`[name="debt.0.2027.${rate}Rationale"]`).fill("Explicit synthetic zero rate.");
  }
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
@@ -89,6 +93,10 @@ test("guided institutional setup calculates only after review and survives resum
  await reviewLink.click();
  const review=page.getByTestId("institutional-setup-review");
  await expect(review).toContainText("Synthetic reconciled accounts.xlsx");
+ const debtReview=review.locator("details").filter({has:page.locator("summary").filter({hasText:new RegExp(`^${messages.InstitutionalSetup.debt}$`)})});
+ await debtReview.locator("summary").click();
+ await expect(debtReview).toContainText("Synthetic reconciled accounts.xlsx");
+ await expect(debtReview).not.toContainText(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await page.reload();
