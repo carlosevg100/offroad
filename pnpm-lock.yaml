@@ -68,12 +68,12 @@ importers:
       '@offroad/document-parsers':
         specifier: workspace:*
         version: link:../../packages/document-parsers
-      '@offroad/financial-model':
-        specifier: workspace:*
-        version: link:../../packages/financial-model
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../../packages/domain-contracts
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../../packages/financial-model
       '@offroad/fund-mandate':
         specifier: workspace:*
         version: link:../../packages/fund-mandate
@@ -108,6 +108,9 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
     devDependencies:
+      '@offroad/testing-fixtures':
+        specifier: workspace:*
+        version: link:../../packages/testing-fixtures
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
