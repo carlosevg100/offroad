@@ -20,6 +20,10 @@
       "stopTimeout": 120,
       "environment": [
         {
+          "name": "DOCUMENTARY_WORK_PLANNING_ENABLED",
+          "value": "false"
+        },
+        {
           "name": "NODE_ENV",
           "value": "production"
         },

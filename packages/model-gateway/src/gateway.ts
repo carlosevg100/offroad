@@ -6,6 +6,7 @@ import {estimateCostReservationUsd, estimateCostUsd, estimateInputTokens, listPr
 import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
+import {conservativeTextReservationUsd} from "./conservative-reservation";
 import {
   ModelGatewayError,
   type AdapterRequest,
@@ -31,6 +32,8 @@ export type ModelGatewayConfig = {
   redaction?: RedactionOptions | false;
   /** Per-gateway-instance ceilings (one instance per processing run). */
   budget?: {maxCostUsd?: number; maxCalls?: number};
+  /** Opt-in complete UTF-8 textual payload reservation; rejects unknown prices/non-text inputs. */
+  budgetReservation?: "conservative_text_v1";
   /**
    * Extra models this gateway instance may use, beyond the production allowlist.
    * Only the evals sweep sets it (P1 plan §15.1); the denylist still applies.
@@ -175,7 +178,9 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       // Refuse before the provider call, not after it. The old check only looked at already
       // spent dollars, so a single large request could cross the ceiling and be billed in full.
       const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-      const reservationUsd = estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
+      const reservationUsd = config.budgetReservation === "conservative_text_v1"
+        ? conservativeTextReservationUsd(ref.provider, adapterRequest, prices)
+        : estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
       if (config.budget?.maxCostUsd !== undefined && budgetExposureUsd + reservationUsd > config.budget.maxCostUsd) {
         throw new ModelGatewayError(
           `cost budget would be exceeded (${budgetExposureUsd.toFixed(4)} + ${reservationUsd.toFixed(4)} > ${config.budget.maxCostUsd})`,
