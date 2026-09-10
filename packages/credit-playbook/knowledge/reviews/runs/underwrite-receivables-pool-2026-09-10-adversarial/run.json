@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "underwrite-receivables-pool-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "underwrite-receivables-pool",
+    "version": "2026.09.06-v1"
+  },
+  "executor": {
+    "module": "@offroad/receivables-analysis",
+    "exportName": "underwriteReceivablesPool"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/receivables-method-runs.ts",
+    "exportName": "buildReceivablesMethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-10T20:00:10.967Z",
+    "finishedAt": "2026-09-10T20:00:13.609Z",
+    "commit": "6cdaa0c07a8f3a69418860ed6b7578eae2866f6c"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "r02-accounting-mismatch",
+      "expectation": "loan tape does not tie to accounting permanece visivel e a decisao e needs_remediation",
+      "observed": "loan tape does not tie to accounting permanece visivel e a decisao e needs_remediation",
+      "inputFingerprint": "4c64a5a883f0550bfcbc8eec500c55b49960bd58b53c60cc7f4574e25da1ca59",
+      "outputFingerprint": "e2865d6caf803ef52a8e883458506ed639d1c4e6dbde7d4b1039d295fc5102bc",
+      "passed": true
+    },
+    {
+      "id": "r11-single-debtor-concentration",
+      "expectation": "single obligor concentration permanece visivel e a decisao e needs_remediation",
+      "observed": "single obligor concentration permanece visivel e a decisao e needs_remediation",
+      "inputFingerprint": "e2979a32837d0dd12e78175e928d237b4fe883ffdefe9088305b76c493da26b8",
+      "outputFingerprint": "549ae834a4a25ccd5a16c982dde81ae97ae8ff5b4b247dd1e3670f4d3c132e3b",
+      "passed": true
+    },
+    {
+      "id": "r15-encumbered-base",
+      "expectation": "available base below minimum permanece visivel e a decisao e needs_remediation",
+      "observed": "available base below minimum permanece visivel e a decisao e needs_remediation",
+      "inputFingerprint": "590c4315c4513b10793ad7cdb1566ebaabce684da47e79cc8636dce7554dcdad",
+      "outputFingerprint": "a014bba6c90bd8d04fe7015fbf36082d83409062bfe78020f4d87cb90c5f2b79",
+      "passed": true
+    },
+    {
+      "id": "r19-no-eligible-base",
+      "expectation": "correct refusal with zero eligible base permanece visivel e a decisao e not_viable",
+      "observed": "correct refusal with zero eligible base permanece visivel e a decisao e not_viable",
+      "inputFingerprint": "236958eafd944e3b3df838e384b890b8e9a5618e593086e7426c172b3ce017ca",
+      "outputFingerprint": "12d1af7796050e276401895b12a466416f2bcdcaca14c7d9b839bbcde9cf1d9e",
+      "passed": true
+    },
+    {
+      "id": "r20-duplicate-cash",
+      "expectation": "duplicate cash record permanece visivel e a decisao e needs_remediation",
+      "observed": "duplicate cash record permanece visivel e a decisao e needs_remediation",
+      "inputFingerprint": "3749a21fde8f374fc65cb3a223f979c7fb59775e03dc351de73b402a31f29129",
+      "outputFingerprint": "29ba9a8cafd433935e05f9107a4ab5cc6cd7dda5ea1964e5b838aad1c0dde60b",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "a597a4da634b497f0865347ed63f2b5673c48e7cdaa882cb6c036e968615d36e",
+  "notes": "Cenarios adversariais declarados no frontmatter do metodo, com a decisao esperada declarada fora do analisador."
+}

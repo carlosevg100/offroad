@@ -1,0 +1,189 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "underwrite-receivables-pool-2026-09-10-consistency",
+  "kind": "consistency",
+  "humanApproval": false,
+  "method": {
+    "id": "underwrite-receivables-pool",
+    "version": "2026.09.06-v1"
+  },
+  "executor": {
+    "module": "@offroad/receivables-analysis",
+    "exportName": "underwriteReceivablesPool"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/receivables-method-runs.ts",
+    "exportName": "buildReceivablesMethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-10T20:00:10.967Z",
+    "finishedAt": "2026-09-10T20:00:13.610Z",
+    "commit": "6cdaa0c07a8f3a69418860ed6b7578eae2866f6c"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc03-aurora-2026-07-permutation-01",
+      "expectation": "permutacao 1 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 1 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-02",
+      "expectation": "permutacao 2 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 2 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-03",
+      "expectation": "permutacao 3 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 3 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-04",
+      "expectation": "permutacao 4 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 4 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-05",
+      "expectation": "permutacao 5 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 5 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-06",
+      "expectation": "permutacao 6 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 6 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-07",
+      "expectation": "permutacao 7 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 7 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-08",
+      "expectation": "permutacao 8 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 8 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-09",
+      "expectation": "permutacao 9 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 9 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "gc03-aurora-2026-07-permutation-10",
+      "expectation": "permutacao 10 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "observed": "permutacao 10 de gc03-aurora-2026-07 reproduz 528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "inputFingerprint": "d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad",
+      "outputFingerprint": "528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-01",
+      "expectation": "permutacao 1 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 1 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-02",
+      "expectation": "permutacao 2 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 2 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-03",
+      "expectation": "permutacao 3 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 3 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-04",
+      "expectation": "permutacao 4 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 4 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-05",
+      "expectation": "permutacao 5 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 5 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-06",
+      "expectation": "permutacao 6 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 6 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-07",
+      "expectation": "permutacao 7 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 7 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-08",
+      "expectation": "permutacao 8 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 8 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-09",
+      "expectation": "permutacao 9 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 9 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    },
+    {
+      "id": "r01-clean-diversified-permutation-10",
+      "expectation": "permutacao 10 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "observed": "permutacao 10 de r01-clean-diversified reproduz 8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "inputFingerprint": "25a27317319ccc995bd25bb8bfff3dc0878be7c1e9661fb77f517f20dc6b683e",
+      "outputFingerprint": "8144315fc93cc3e8e668f11112df3f60aa83fd5e64f9f13c358c1b8c4c02fd7b",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "8bb5451eca7ea43dd914e6c3165dc03830747d6e58bac6e02890a1e9439e3832",
+  "notes": "Vinte permutacoes de linhas sobre dois casos: mesma carteira e mesma politica precisam reproduzir o mesmo fingerprint."
+}

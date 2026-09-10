@@ -10,7 +10,7 @@ export const specialistMethodRuntimeManifest = [
     procedure: {
       id: "underwrite-receivables-pool",
       version: "2026.09.06-v1",
-      maturity: "implemented",
+      maturity: "tested",
     },
     taskIds: ["R01"],
     requiredPackIds: ["analysis.receivables-underwriting"],
@@ -21,14 +21,15 @@ export const specialistMethodRuntimeManifest = [
     },
     resultContract: "method.underwrite-receivables-pool.v1",
     sourcePath: "receivables/underwrite-receivables-pool.md",
-    sourceHash: "2c7911e31f79556ce77bbf197eebe5d5c19e734dc86a5a0e1e83f701331b7ecc",
+    sourceHash: "51215b4cfdbf01b42edfeb23772c83cb707c544e9c8fe1faa6b048bd1747bc0c",
   },
 ] as const;
 
 /**
  * Accredited execution policy projected from the same Markdown source as the method binding.
- * Exposure allowlists are deliberately absent here: an internal/shadow method cannot become a
- * customer capability merely because a tenant id appeared in source control.
+ * Exposure allowlists are deliberately absent here: the organizations allowed to read the released
+ * analytical result live in the database grant, never in source control, and an allowlisted method
+ * with an empty bundled allowlist stays closed to the universal dispatcher.
  */
 export const specialistTaskCapabilityRuntimeManifest = [
   {
@@ -37,8 +38,8 @@ export const specialistTaskCapabilityRuntimeManifest = [
     executorVersion: "2026.09.06-v1",
     procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
     availability: "shadow",
-    exposure: "internal",
-    allowedUses: ["internal_validation"],
+    exposure: "allowlisted",
+    allowedUses: ["internal_validation", "customer_work"],
     allowedEvidenceRegimes: ["project_private", "mixed_governed"],
     allowedDataClasses: ["project_confidential"],
     allowedSourceClasses: ["project_context", "provided_documents", "house_method"],

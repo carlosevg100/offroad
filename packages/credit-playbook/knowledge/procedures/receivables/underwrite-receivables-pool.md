@@ -1,7 +1,7 @@
 ---
 id: underwrite-receivables-pool
 version: 2026.09.06-v1
-maturity: implemented
+maturity: tested
 title_pt: Conciliar e testar a capacidade de uma carteira de recebíveis
 title_en: Reconcile and test the capacity of a receivables pool
 role: financial_analysis
@@ -26,8 +26,8 @@ task_specs: [R01]
 required_depth_pack_ids: [analysis.receivables-underwriting]
 binding_priority: 100
 capability_availability: shadow
-capability_exposure: internal
-capability_allowed_uses: [internal_validation]
+capability_exposure: allowlisted
+capability_allowed_uses: [internal_validation, customer_work]
 capability_allowed_evidence_regimes: [project_private, mixed_governed]
 capability_allowed_data_classes: [project_confidential]
 capability_allowed_source_classes: [project_context, provided_documents, house_method]
@@ -36,6 +36,10 @@ capability_allowed_tool_ids: []
 capability_provider_required: false
 capability_maximum_effect: none
 gold_cases: [gc03-assessor-recebiveis]
+review_ids: [underwrite-receivables-pool-2026-09-10-independent-review]
+gold_run_ids: [underwrite-receivables-pool-2026-09-10-gold]
+adversarial_run_ids: [underwrite-receivables-pool-2026-09-10-adversarial]
+consistency_run_ids: [underwrite-receivables-pool-2026-09-10-consistency]
 ---
 
 # Objetivo
