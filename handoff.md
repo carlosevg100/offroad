@@ -1,3 +1,7 @@
+## Publication correction: documentary progress scope
+
+PR590 fresh-database CI exposed a real stale-scope display defect after a legacy fixture was updated to a released documentary snapshot. Additive migration `20260910160700_documentary_progress_persisted_scope_guard` requires persisted target IDs and the Q01/Q02/Q03 task set to match the admitted documentary plan before displaying documentary stages. The complete execution-proposal revision SQL passed in staging, including changed targets and missing Q02; security advisors returned zero findings. The integrated publication batch now contains nine migrations. Production application, final CI and deployment remain pending at this checkpoint.
+
 ## 10 September 2026: new work requests, reviewed scenario comparisons and editable financial delivery: integration checkpoint
 
 Final local integration check passed (lint, typecheck, all tests and 43/43 production build tasks). Financial-model94, case-materials59, case-export20 and authenticated four-format route12 checks passed. Native Calc compared672 outputs across six contractual variants and six edited workbooks, with zero differences above1e-6; six missing-input cases fail visibly. Visual QA inspected64 PT/EN slides/pages plus the Unicode PDF. The latest v2 SQL fixture passed the staging lifecycle again. Final staging security advisors returned zero lints. CI, production migration and deployment remain pending.
