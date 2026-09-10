@@ -1,4 +1,4 @@
-import {randomUUID} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
 import {
   receivablesSupplementFieldPathSchema,
@@ -108,8 +108,11 @@ fieldDefinitions.push(
 
 const definitionByPath = new Map(fieldDefinitions.map((definition) => [definition.fieldPath, definition]));
 
-function requirementKey(code: string): string {
-  return `receivables.r01.${code.toLowerCase().replace(/[^a-z0-9_.-]+/g, "-")}`.slice(0, 120);
+function requirementKey(code: string, sourceDatasetHash: string): string {
+  // A response to a different pool must never suppress this pool's diligence.
+  // Run IDs and localized prose do not change the economic question identity.
+  const identity = createHash("sha256").update(JSON.stringify({sourceDatasetHash, code})).digest("hex");
+  return `receivables.r01.evidence.${identity}`;
 }
 
 function fieldRequirementKey(path: ReceivablesSupplementFieldPath): string {
@@ -159,7 +162,7 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
     projectionRef: `${input.processingRunId}:R01:evidence:${input.readiness.sourceDatasetHash}:${input.readiness.state}`,
     requests: input.readiness.methodExecutionAllowed ? [] : evidenceGaps.slice(0, 3).map((gap, index) => ({
       id: idFactory(), schemaVersion: "dcm-information-request.v1", projectId: input.projectId,
-      requirementKey: requirementKey(gap.code), question: english ? gap.question.en : gap.question.pt,
+      requirementKey: requirementKey(gap.code, input.readiness.sourceDatasetHash), question: english ? gap.question.en : gap.question.pt,
       whyItMatters: english ? gap.message.en : gap.message.pt,
       decisionImpact: english ? "Without this evidence, R01 remains blocked and produces no title-level conclusion." : "Sem esta evidência, o R01 permanece bloqueado e não produz conclusão por título.",
       acceptableEvidence: evidenceByDimension[gap.dimensionId][english ? "en" : "pt"], answerKind: "document" as const,

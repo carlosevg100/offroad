@@ -112,9 +112,13 @@ describe("R01 deterministic in-memory assembly lifecycle", () => {
     });
     // Document-backed sections suppress duplicate assembly requests; raw event
     // completeness still requires evidence and is never inferred from absent rows.
-    expect(evidenceQuestions.requests.map((request) => request.requirementKey)).toEqual([
-      "receivables.r01.performance_history_incomplete",
-    ]);
+    expect(evidenceQuestions.requests).toHaveLength(1);
+    const historyGap = blocked.gaps.find((gap) => gap.code === "performance_history_incomplete");
+    expect(historyGap).toBeDefined();
+    expect(evidenceQuestions.requests[0]).toMatchObject({
+      requirementKey: expect.stringMatching(/^receivables\.r01\.evidence\.[a-f0-9]{64}$/),
+      question: historyGap!.question.pt,
+    });
     const premiseQuestions = buildReceivablesMethodFieldRequestProjection({
       projectId: "10000000-0000-4000-8000-000000000001",
       processingRunId: "20000000-0000-4000-8000-000000000001",
