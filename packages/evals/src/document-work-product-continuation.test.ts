@@ -1,0 +1,14 @@
+import {createHash} from "node:crypto";
+import {describe,it,expect} from "vitest";
+import {documentaryContinuationSource as source,documentaryContinuationCaseId as caseId,validateDocumentWorkProductContinuation as validate} from "./document-work-product-continuation";
+function fixture(){
+ const calls=Array.from({length:25},(_,i)=>({invocationId:`call-${i}`,costUsd:.01,costStatus:"measured",fromCassette:false}));
+ return {schemaVersion:"document-work-product-executor-eval.v5",synthetic:true,promotion:false,...source,workflowRef:"carlosevg100/offroad/.github/workflows/document-work-product-live.yml@refs/heads/main",budgetReservation:"conservative_text_v1",fixtureFingerprint:"a".repeat(64),sourceReviewFixtureFingerprint:"b".repeat(64),passed:false,budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:.5,maxCalls:8}},spent:{calls:17,costUsd:.17,unknownCostCalls:0,budgetExposureUsd:.17},sourceReviewControlSpend:{calls:8,costUsd:.08,unknownCostCalls:0,budgetExposureUsd:.08},accounting:{passed:true,requestsRecorded:6},runs:Array.from({length:6},(_,i)=>({caseId:`gold-${Math.floor(i/2)}`,repeat:i%2+1,score:{passed:true},failure:null,providerCallRange:{start:i*3,end:i===5?17:(i+1)*3}})),repeats:Array.from({length:3},(_,i)=>({caseId:`gold-${i}`,comparison:{passed:true}})),sourceReviewControls:Array.from({length:8},(_,i)=>({caseId:i===7?caseId:`control-${i}`,passed:i<7,review:i<7?{}:null,failure:i===7?"executor_or_provider_rejected":null,providerCallRange:{start:i===7?8:i,end:i===7?8:i===6?8:i+1}})),calls:calls.slice(0,17),sourceReviewControlCalls:calls.slice(17)};
+}
+function input(r=fixture()){const receiptBytes=JSON.stringify(r);return {receiptBytes,trusted:{...source,receiptSha256:createHash("sha256").update(receiptBytes).digest("hex"),fixtureFingerprint:r.fixtureFingerprint,sourceReviewFixtureFingerprint:r.sourceReviewFixtureFingerprint}};}
+describe("single control continuation",()=>{
+ it("allocates just one call and remaining control dollars",()=>{expect(validate(input())).toMatchObject({remainingCalls:1,maxCostUsd:.42,priorCalls:25,priorCostUsd:.25,caseId});});
+ it("rejects altered bytes",()=>{const i=input();i.receiptBytes+=" ";expect(()=>validate(i)).toThrow();});
+ it("rejects changed fixtures",()=>{const i=input();i.trusted.fixtureFingerprint="c".repeat(64);expect(()=>validate(i)).toThrow();});
+ it.each(["unknown","already-called","failed-gold","duplicate-call","wrong-cost"])("rejects %s even with matching envelope",kind=>{const r=fixture();if(kind==="unknown")r.spent.unknownCostCalls=1;if(kind==="already-called")r.sourceReviewControls[7]!.providerCallRange.end=9;if(kind==="failed-gold")r.runs[0]!.score.passed=false;if(kind==="duplicate-call")r.calls[1]!.invocationId=r.calls[0]!.invocationId;if(kind==="wrong-cost")r.spent.costUsd=.01;expect(()=>validate(input(r))).toThrow();});
+});

@@ -8,6 +8,7 @@ import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-w
 import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
 import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, scoreDocumentWorkSourceReviewControl, type LiveProduct} from "../src/document-work-product-live";
 import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
+import {documentWorkControlCallBudget, summarizeDocumentWorkControls, documentWorkControlFailure} from "../src/document-work-control-budget";
 import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
 type Review={reviewedFieldIds:string[];fieldAssessments:Array<{fieldId:string;verdict:string;exactExcerpt:string;sourceIds:string[]}>;issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
 type Diagnostic=ReturnType<typeof documentWorkFailureDiagnostics>;
@@ -17,10 +18,11 @@ async function main() {
   const directory=resolve(process.env.RUNNER_TEMP ?? ".","document-work-product-live");
   mkdirSync(directory,{recursive:true});
   const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY,disableSdkRetries:true}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY,disableSdkRetries:true})};
-  // Fixed partitions retain an aggregate USD3 ceiling, including the eight reviewer controls.
+  // Fixed dollar partitions retain USD3; controls receive only calls unused by completed gold runs.
   const calls:GatewayCallLog[]=[], controlCalls:GatewayCallLog[]=[];
   const gateway=createModelGateway({adapters,budget:{maxCostUsd:2.5,maxCalls:18},budgetReservation:"conservative_text_v1",onCall:call=>calls.push(call)});
-  const controlGateway=createModelGateway({adapters,budget:{maxCostUsd:0.5,maxCalls:8},budgetReservation:"conservative_text_v1",onCall:call=>controlCalls.push(call)});
+  let controlGateway:ReturnType<typeof createModelGateway>|null=null;
+  let controlMaxCalls:number|null=null;
   const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;
   const {hydrateDocumentWorkSelection}=await import(workerPath("document-work-selection")) as {hydrateDocumentWorkSelection:(input:unknown,raw:unknown)=>unknown};
   const {expandDocumentWorkSourceReview}=await import(workerPath("document-work-source-review")) as {expandDocumentWorkSourceReview:(input:unknown,raw:Review)=>Review};
@@ -38,12 +40,13 @@ async function main() {
   const controls:Array<{caseId:string;expectedIssueFieldId:string|null;expectedIssueFieldIds:string[];expectedCleanFieldIds:string[];scope:"mixed_locale_review_controls";passed:boolean;review:Review|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
   const persist=()=>{
     const accounting=summarizeDocumentWorkAttempts(runs.map(run=>({passed:run.score?.passed===true,completeCalls:run.completeCalls,narrativeCalls:run.narrativeCalls,reviewCalls:run.reviewCalls,firstResponseValid:run.responses.find(response=>response.kind==="narrative")?.validationPassed===true,providerCalls:run.providerCallRange.end-run.providerCallRange.start})),repeats.map(repeat=>repeat.comparison?.passed===true),gateway.spent());
-    const controlSpend=controlGateway.spent();
-    const controlsPassed=controls.length===8 && controls.every(control=>control.passed) && controlSpend.calls===8 && controlSpend.unknownCostCalls===0 && Number.isFinite(controlSpend.costUsd) && controlSpend.costUsd<=0.5;
+    const controlSpend=controlGateway?.spent() ?? {calls:0,costUsd:0,unknownCostCalls:0,budgetExposureUsd:0};
+    const controlAccounting=summarizeDocumentWorkControls(controls,gateway.spent(),controlSpend);
+    const controlsPassed=controlGateway!==null && controlAccounting.passed;
     const passed=accounting.passed && controlsPassed;
-    const evidence={schemaVersion:"document-work-product-executor-eval.v5",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budgetReservation:"conservative_text_v1",budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:8}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
+    const evidence={schemaVersion:"document-work-product-executor-eval.v6",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budgetReservation:"conservative_text_v1",budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:controlMaxCalls,allocation:"26-minus-completed-gold-calls"}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,controlAccounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
     writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(evidence,null,2));
-    writeFileSync(resolve(directory,"summary.md"),`# Document work product evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic inputs, actual executor and source reviewer. This is not application E2E, human domain certification or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nSource-review controls: ${controls.filter(control=>control.passed).length}/${controls.length}; eight required, including both supported and unsupported claims.\n\nRepeat comparisons require identical input and full expected fact coverage; prose identity is reported separately. First-pass narrative success after review: ${accounting.firstPassSuccessCount}/${runs.length}. All rejected attempts remain in evidence.\n\nGold provider attempts: ${gateway.spent().calls}; source-review control attempts: ${controlSpend.calls}. Measured total USD: ${gateway.spent().costUsd+controlSpend.costUsd}. Fixed ceilings: gold18/USD2.50, controls8/USD0.50; retries and fallback consume those same budgets.\n`);
+    writeFileSync(resolve(directory,"summary.md"),`# Document work product evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic inputs, actual executor and source reviewer. This is not application E2E, human domain certification or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nSource-review controls: ${controls.filter(control=>control.passed).length}/${controls.length}; eight required, including both supported and unsupported claims.\n\nRepeat comparisons require identical input and full expected fact coverage; prose identity is reported separately. First-pass narrative success after review: ${accounting.firstPassSuccessCount}/${runs.length}. All rejected attempts remain in evidence.\n\nGold provider attempts: ${gateway.spent().calls}; source-review control attempts: ${controlSpend.calls}. Measured total USD: ${gateway.spent().costUsd+controlSpend.costUsd}. Fixed ceilings: gold18/USD2.50, controls${controlMaxCalls ?? "not allocated"}/USD0.50, aggregate26/USD3.00; controls receive only attempts left after gold. Retries and fallback consume those same budgets.\n`);
     return passed;
   };
   for(const sample of documentWorkProductLiveCases) {
@@ -88,6 +91,8 @@ async function main() {
     }
     repeats.push({caseId:sample.id,comparison:outputs.length===2?compareDocumentWorkRepeats(outputs[0]!,outputs[1]!,sample):null});persist();
   }
+  controlMaxCalls=documentWorkControlCallBudget(gateway.spent().calls);
+  controlGateway=createModelGateway({adapters,budget:{maxCostUsd:0.5,maxCalls:controlMaxCalls},budgetReservation:"conservative_text_v1",onCall:call=>controlCalls.push(call)});
   for(const sample of documentWorkSourceReviewCases){
     const start=controlCalls.length;
     try{
@@ -95,7 +100,7 @@ async function main() {
       const review=await reviewDocumentWorkSourceFidelity(sample.input,sample.narrative,{gateway:controlGateway});
       const passed=scoreDocumentWorkSourceReviewControl(sample,review);
       controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed,review,failure:null,providerCallRange:{start,end:controlCalls.length}});
-    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed:false,review:null,failure:documentWorkFailureDiagnostics(error,undefined,null).code,providerCallRange:{start,end:controlCalls.length}});}
+    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed:false,review:null,failure:documentWorkControlFailure(error,start,controlCalls.length),providerCallRange:{start,end:controlCalls.length}});}
     persist();
   }
   if(!persist())process.exitCode=1;

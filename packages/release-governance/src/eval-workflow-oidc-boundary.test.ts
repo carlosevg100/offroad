@@ -10,6 +10,7 @@ const evaluationRole =
 
 const expectedConsumers = [
   "codex-review.yml",
+  "document-work-product-continuation.yml",
   "document-work-product-live.yml",
   "gold-baseline.yml",
   "intent-router-gold.yml",
@@ -42,11 +43,14 @@ describe("paid evaluation workflow OIDC boundary", () => {
 
   it("applies the same repository, ref, Environment, checkout and token boundary", () => {
     for (const {name, source} of roleConsumers()) {
+      const continuation = name === "document-work-product-continuation.yml";
       expect(
         source,
         `${name} must fail closed outside the canonical repository main branch`,
       ).toMatch(
-        /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main'$/m,
+        continuation
+          ? /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main' && github\.run_attempt == 1$/m
+          : /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main'$/m,
       );
       expect(source, `${name} must use the common paid-eval Environment`).toMatch(
         /^ {4}environment: intent-router-gold-main$/m,
@@ -64,7 +68,7 @@ describe("paid evaluation workflow OIDC boundary", () => {
       expect(permissionBlock[1]!.trim().split("\n").map((line) => line.trim()).sort()).toEqual([
         "contents: read",
         "id-token: write",
-      ]);
+      ].concat(continuation ? ["actions: read"] : []).sort());
 
       const checkoutCount = (source.match(/uses: actions\/checkout@/g) ?? []).length;
       const exactCheckoutCount = (

@@ -1,3 +1,17 @@
+## 10 September 2026: finish the second documentary evaluation within its existing limits
+
+PR588 is published on main d3763a7 (web deployment6369897088, worker revision311); post-merge Quality and Security passed. The worker definition is false and stable; the optional boot-log read was unavailable. No claim of an observed boot event is made.
+
+Run34467680287 passed six requests, three repeat comparisons and seven controls. It made25 known-cost calls totaling USD0.914770. The eighth control never reached a provider: an earlier control used fallback after invalid issue-code enums, exhausting the evaluator's eight-call control partition. This is incomplete coverage, not a semantic failure of the unexecuted control, and not acceptance. Both planning flags remain off.
+
+The evaluator now gives controls only the unused calls from the existing26-call aggregate ceiling, keeping gold at most18/USD2.50 and controls at mostUSD0.50. Acceptance requires all eight distinct controls to have executed and passed; retries are counted. Diagnostics distinguish a control never called for budget reasons from a rejected response.
+
+CI caught the existing evaluation-role consumer allowlist rejecting the new workflow. The boundary test now explicitly admits only this named continuation with its stricter first-attempt condition and actions-read permission; every other consumer retains the original permission/condition checks. Workflow and CI-script files are now global cache dependencies so local checks cannot reuse stale package test results after those root files change.
+
+A dedicated, single-use continuation can complete only the previously uncalled control from that exact run. Its immutable parent receipt is pinned by SHA-256; current fixtures, reviewer, gateway, scorer and dependencies must match the evaluated version. It permits one HTTP call, no SDK retry, within the remainingUSD0.255978 control allocation. Any earlier continuation, rerun, incomplete run inventory or changed implementation fails closed before provider access. The original failed receipt remains unchanged; a linked receipt records the combined result and cumulative cost/count. This uses the last of the26 attempts already authorized, not a fresh evaluation round. No continuation has been dispatched at this checkpoint.
+
+Local pnpm check passed after integration (43/43 build tasks). Allocation/diagnostic17 and receipt/workflow14 focused tests passed. Validation and activation remain separate: required CI must pass before dispatching the continuation once. Activate only if the combined eight-control acceptance is proved. A timeout consumes the last slot; no automatic retry or additional paid round is authorized. No customer fixtures, new database migration, IAM expansion or external contact is part of this correction.
+
 ## 10 September 2026: integrated financial delivery and provider case fit, pending promotion
 
 
