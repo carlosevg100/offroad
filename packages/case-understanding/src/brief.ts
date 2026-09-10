@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {archetype, executiveSynthesisInstructions, type ArchetypeId} from "@offroad/credit-playbook";
+import {archetype, executiveSynthesisInstructions, executiveSynthesisOpeningEvidence, type ArchetypeId} from "@offroad/credit-playbook";
 import type {InformationGap, ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
 import {buildBriefEvidenceCatalog, type BriefEvidenceInput} from "./brief-evidence";
@@ -79,6 +79,7 @@ export function briefAuthoringSchema(input: BriefEvidenceInput) {
     const claimIds = new Set(all.map(item => item.id));
     if (claimIds.size !== all.length) context.addIssue({code: "custom", message: "claim_ids_must_be_unique"});
     if (new Set(draft.executiveSummaryClaimIds).size !== draft.executiveSummaryClaimIds.length || draft.executiveSummaryClaimIds.some(id => !claimIds.has(id))) context.addIssue({code: "custom", message: "summary_claim_selection_invalid"});
+    if (draft.executiveSummaryClaimIds.some(id => all.find(item => item.id === id)?.material === false)) context.addIssue({code: "custom", message: "summary_claim_must_be_material"});
     const summaryLength = draft.executiveSummaryClaimIds.map(id => all.find(item => item.id === id)?.text ?? "").join("\n\n").length;
     if (summaryLength > 4000) context.addIssue({code: "custom", message: "executive_summary_too_long"});
     if (all.some(item => item.material && !item.supportIds.length)) context.addIssue({code: "custom", message: "material_claim_requires_evidence"});
@@ -89,7 +90,18 @@ export function compileAuthoredBrief(draft: {sections: CaseBrief["sections"]; ex
   const claims = draft.sections.flatMap(section => section.claims);
   const byId = new Map(claims.map(claim => [claim.id, claim]));
   if (byId.size !== claims.length || new Set(draft.executiveSummaryClaimIds).size !== draft.executiveSummaryClaimIds.length || draft.executiveSummaryClaimIds.some(id => !byId.has(id))) throw new Error("summary_claim_selection_invalid");
-  return caseBriefSchema.parse({...draft, executiveSummary: draft.executiveSummaryClaimIds.map(id => byId.get(id)!.text).join("\n\n")});
+  const selected = draft.executiveSummaryClaimIds.map(id => byId.get(id)!);
+  if (selected.some(claim => !claim.material)) throw new Error("summary_claim_must_be_material");
+  const opening: string[] = [];
+  for (const anchor of executiveSynthesisOpeningEvidence) {
+    if ([...opening.map(id => byId.get(id)!), ...selected].some(claim => claim.supportIds.includes(anchor.supportId))) continue;
+    const context = draft.sections.filter(section => section.id === anchor.section).flatMap(section => section.claims)
+      .find(claim => claim.material && claim.kind === "fact" && claim.supportIds.includes(anchor.supportId));
+    if (context) opening.push(context.id);
+  }
+  const executiveSummaryClaimIds = [...opening, ...draft.executiveSummaryClaimIds];
+  return caseBriefSchema.parse({...draft, executiveSummaryClaimIds,
+    executiveSummary: executiveSummaryClaimIds.map(id => byId.get(id)!.text).join("\n\n")});
 }
 
 /**

@@ -759,7 +759,7 @@ describe("worker case analysis", () => {
           expect(request.allowFallback).toBe(false);
           spent = {costUsd: spent.costUsd + 0.05, calls: spent.calls + 1};
           return {
-            output: {reviewsByClaim: {}},
+            output: {reviewsByClaim: Object.fromEntries(["summary-identity", "summary-request"].map(id => [id, {verdict: "supported", reasons: [], explanation: "Matches the fixture source."}])), revisions: []},
             provider: "openai",
             model: "gpt-5.6-sol",
             effort: "high",
@@ -774,7 +774,10 @@ describe("worker case analysis", () => {
         }
         spent = {costUsd: 0.1, calls: 1};
         return {
-          output: {sections: [{id: "executive_summary", heading: "Resumo", claims: [{id: "summary-context", text: "Resumo institucional sem afirmações materiais.", material: false, kind: "fact", supportIds: []}]}], executiveSummaryClaimIds: ["summary-context"]},
+          output: {sections: [
+            {id: "identity", heading: "Companhia", claims: [{id: "summary-identity", text: "A companhia é Empresa Teste Ltda.", material: true, kind: "fact", supportIds: ["company.legal_name"]}]},
+            {id: "request", heading: "Pedido", claims: [{id: "summary-request", text: "O pedido é de R$ 10 milhões.", material: true, kind: "fact", supportIds: ["transaction.requested_amount"]}]},
+          ], executiveSummaryClaimIds: ["summary-request"]},
           provider: "anthropic",
           model: "claude-sonnet-5",
           effort: "high",
@@ -1068,7 +1071,7 @@ describe("worker case analysis", () => {
       expect(diagnosticUnderstanding).toHaveProperty(required);
     }
     expect(diagnosticUnderstanding.brief).toMatchObject({
-      executiveSummaryClaimIds: ["summary-context"],
+      executiveSummaryClaimIds: ["summary-identity", "summary-request"],
     });
     expect(diagnosticUnderstanding).not.toHaveProperty("structureTruth");
     expect(diagnosticUnderstanding).not.toHaveProperty("pricingTruth");

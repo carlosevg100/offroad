@@ -56,3 +56,23 @@ describe("governed material package", () => {
     expect(governedMaterialPackageFromRows(chain(fingerprint("e")))).toBeNull();
   });
 });
+
+it("preserves the compiler's workbook rendering contract through the approved package loader", () => {
+  const rows = chain();
+  const artifact = rows[3]!;
+  const metadata = {title: "Modelo da companhia", asOfDate: "2026-09-09", currency: "BRL", scale: "unidades", classification: "confidential"};
+  const rendering = {rendererVersion: "2026.09.07-v1", metadata: {pt: metadata, en: {...metadata, title: "Company model"}}};
+  const financialModel = {
+    version: "2026.08.29-v1", selectedAlternativeId: "selected", proposalFingerprint: fingerprint("a"),
+    inputs: {amount: "12000000", termMonths: 48, graceMonths: 6, amortization: "sac", annualInterestRate: null},
+    periods: [], sheetNames: {pt: [], en: []}, deskAssumptions: [], supportIds: [],
+    workbooks: {pt: {sha256: fingerprint("b"), byteSize: 5000}, en: {sha256: fingerprint("c"), byteSize: 5000}},
+    fingerprint: fingerprint("e"), rendering,
+  };
+  artifact.payload = {...artifact.payload as Record<string, unknown>, financialModel} as DealStateRow["payload"];
+  expect(governedMaterialPackageFromRows(rows)?.financialModel?.rendering).toEqual(rendering);
+  artifact.payload = {...artifact.payload as Record<string, unknown>, financialModel: {...financialModel,
+    rendering: {...rendering, metadata: {pt: metadata}},
+  }} as DealStateRow["payload"];
+  expect(governedMaterialPackageFromRows(rows)).toBeNull();
+});

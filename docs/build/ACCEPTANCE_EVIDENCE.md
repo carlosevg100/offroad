@@ -1,3 +1,70 @@
+## 9 September: review v16 operating-control compatibility
+
+PR584 Quality run34405085387 failed the approved receivables-scope journey with
+`operating_control_capability_scope_invalid`, twice, with zero model calls in
+the failing jobs. The v16 engine scope was rejected by the database v15-only
+allowlist. The earlier summary-schema hypothesis was not the cause.
+
+Migration20260910013934 adds the exact v16 scope and rejects null/unknown scopes.
+It preserves capability, tenant, frozen-input, report, time and quality checks;
+it neither grants privileges nor copies v15 accreditation to v16. SQL regression
+coverage records v16 as blocked without accreditation and rejects forged tokens.
+Staging migration applied; transaction-rolled-back operating-controls SQL passed,
+security advisor returned zero lints and regenerated types are byte-equivalent.
+Full local check passed from valid cache (43/43 packages per task).
+Production migration applied after verifying the destination in deployed commit68119a8
+and successful worker run34403037571. Production security advisor: zero lints;
+v16 guard present and anonymous execution refused. Staging used timestamp20260910013207
+for identical SQL. Exact-head CI remains pending before merge.
+Controls APP-03/04/10/11: existing guards retained; no new disclosure or external action.
+Rollback worker to v15 remains compatible with the additive scope migration.
+
+## 9 September: connect institutional workbook compilation to download
+
+The case engine generated governed/styled XLSX bytes while the authenticated download
+route regenerated the plain legacy workbook. Even unchanged financial inputs therefore
+failed the approved hash comparison. Engine-to-download PT/EN tests reproduce that mismatch.
+
+New artifacts persist the exact renderer version and localized metadata in their existing
+fingerprinted payload. The authorized material loader preserves/validates this contract.
+Download invokes the same governed renderer and still requires both approved SHA256 and
+byte length. Unknown renderer versions, altered metadata and changed economics are refused.
+Historical plain workbooks retain exact-byte replay; old styled artifacts without metadata
+require recompilation, never an invented rendering date or a replaced approval hash.
+Case engine version v16 invalidates old execution caches. No DB migration or permission change.
+
+Financial-model tests and33 engine tests passed, including compiler-to-download identity
+in both languages and rejection of the original renderer. Loader tests preserve the full
+contract and reject incomplete localization. Existing style/formulas are unchanged, so no
+new layout acceptance is claimed. Root review; controls APP-03/04/10/11 unchanged. Existing
+production-plan/tenant checks remain. Rollback code; legacy payloads remain readable.
+Complete combined local lint, typecheck, tests and build passed43/43 packages each.
+Financial-model38, engine33 and loader3 focused tests passed. This repairs XLSX delivery;
+it does not connect the separate institutional financial calculation engine or finish endgame.
+
+## 9 September: retain company and request context in executive summaries
+
+Actual run34400372257 passed semantic/numeric review in Portuguese but its summary
+omitted the company identity already present in the body. The gate correctly rejected
+that omission. The canonical synthesis contract now identifies opening anchors, and the
+compiler prepends only existing material factual claims from identity/request sections
+when their support is absent from the selected summary. All body claims, numbers, sources
+and selected conclusions remain unchanged. Missing facts are not generated; judgments and
+non-material claims cannot be promoted into factual opening context. Text/id limits still
+fail closed instead of silently dropping conclusions. The compiler adds context only when
+the provider already authored that factual claim; it never rejects or invents a missing
+opening. Understanding version v8.
+
+Offline replay of both persisted synthetic outputs from34400372257 now passes the
+existing summary coverage predicate: PT gains identity; EN stays unchanged. Both are
+idempotent with byte-equivalent sections. Zero model calls; this is not new live acceptance.
+117 understanding tests passed including missing/duplicated context, non-material and
+judgment refusal, supplied evidence and overflow. Complete local lint, typecheck, tests and build passed43/43 packages each.
+Worker464 tests include a material sourced brief and both independent review stages. Controls APP-03/10, AI-05/07/08 unchanged; no provider, budget, permissions,
+database or disclosure changes. Numerical and independent semantic reviews still execute
+on all material claims. Root review; rollback code/version. Documentary activation and
+full endgame remain unaccepted.
+
 ## 9 September: route an initial public analytical draft into the released plan
 
 A real public-company meeting request completed its advisor response but remained idle:

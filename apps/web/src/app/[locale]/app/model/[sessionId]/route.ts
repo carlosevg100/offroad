@@ -1,6 +1,5 @@
-import {createHash} from "node:crypto";
 import {deskEvidence} from "@offroad/case-understanding";
-import {buildFinancialModel, toXlsxBuffer} from "@offroad/financial-model";
+import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/financial-model";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -59,10 +58,8 @@ export async function GET(_request: Request, {params}: Params) {
     ...(artifact.inputs.annualInterestRate ? {annualInterestRate: artifact.inputs.annualInterestRate} : {}),
   });
 
-  const bytes = toXlsxBuffer(model, lang);
-  const expected = artifact.workbooks[lang].sha256;
-  const actual = createHash("sha256").update(bytes).digest("hex");
-  if (actual !== expected) {
+  const bytes = await renderApprovedFinancialWorkbook(model, lang, artifact);
+  if (!bytes) {
     return new Response(lang === "pt" ? "O modelo mudou desde a compilação e precisa ser preparado novamente." : "The model changed since compilation and must be prepared again.", {status: 409});
   }
   const stamp = new Date().toISOString().slice(0, 10);

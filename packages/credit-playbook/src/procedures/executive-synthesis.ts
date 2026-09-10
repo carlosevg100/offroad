@@ -1,9 +1,17 @@
+/** Opening context is selected from existing material factual claims, never generated. */
+export const executiveSynthesisOpeningEvidence = [
+  {section: "identity", supportId: "company.legal_name"},
+  {section: "request", supportId: "transaction.requested_amount"},
+] as const;
+
 /** Canonical authoring contract; enforcement belongs to the deterministic brief auditor. */
 export const executiveSynthesisInstructions = `Executive synthesis and evidence contract:
 Use the requested output locale. Write structured claims once. Select their ids in
 executiveSummaryClaimIds in reading order. Code will assemble executiveSummary; do not write it.
 The selected ids must exist and must not repeat. Prefer a concise decision-focused opening,
-with the supported request, material drivers, constraints and next decision. Select existing
+with the supported company identity, request, material drivers, constraints and next decision.
+When these facts are supplied, include material factual claims in the identity and request
+sections. The compiler preserves that existing context in the opening; it never invents it. Select existing
 claims when appropriate; do not create copies only to populate the summary. Prefer three to six
 concise claims in the opening; the supporting sections provide the detail.
 Use only exact supportIds from the authoritative citation catalog. Calculation dependencies are

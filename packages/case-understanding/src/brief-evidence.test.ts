@@ -57,3 +57,45 @@ describe("shared brief evidence contract", () => {
     expect(() => compileAuthoredBrief({...draft, executiveSummaryClaimIds: ["unknown"]})).toThrow("summary_claim_selection_invalid");
   });
 });
+
+describe("executive opening context", () => {
+  const identity = {id: "entity", text: "A companhia é Azul S.A.", material: true, kind: "fact" as const, supportIds: ["company.legal_name"]};
+  const request = {id: "request", text: "Solicita R$ 12 milhões.", material: true, kind: "fact" as const, supportIds: ["transaction.requested_amount"]};
+  const sections = [
+    {id: "identity" as const, heading: "Companhia", claims: [identity]},
+    {id: "request" as const, heading: "Pedido", claims: [request]},
+    ...draft.sections,
+  ];
+  it("retains authored facts and adds omitted context before selected conclusions", () => {
+    const result = compileAuthoredBrief({sections, executiveSummaryClaimIds: [claim.id]});
+    expect(result.executiveSummaryClaimIds).toEqual([identity.id, request.id, claim.id]);
+    expect(result.executiveSummary).toBe([identity.text, request.text, claim.text].join("\n\n"));
+    expect(result.sections).toEqual(sections);
+    expect(compileAuthoredBrief({...result, executiveSummaryClaimIds: result.executiveSummaryClaimIds!})).toEqual(result);
+  });
+  it("does not duplicate supported context already selected by the author", () => {
+    const result = compileAuthoredBrief({sections, executiveSummaryClaimIds: [request.id, identity.id, claim.id]});
+    expect(result.executiveSummaryClaimIds).toEqual([request.id, identity.id, claim.id]);
+  });
+  it("does not invent missing context or promote opinions or non-material context", () => {
+    for (const changed of [{...identity, kind: "judgment" as const}, {...identity, material: false}]) {
+      const result = compileAuthoredBrief({sections: [{id: "identity", heading: "Company", claims: [changed]}, ...draft.sections], executiveSummaryClaimIds: [claim.id]});
+      expect(result.executiveSummaryClaimIds).toEqual([claim.id]);
+    }
+    expect(compileAuthoredBrief(draft).executiveSummaryClaimIds).toEqual([claim.id]);
+  });
+  it("refuses a non-material summary selection", () => {
+    expect(() => compileAuthoredBrief({sections: [{...sections[0]!, claims: [{...identity, material: false}]}], executiveSummaryClaimIds: [identity.id]})).toThrow("summary_claim_must_be_material");
+  });
+  it("does not silently remove conclusions when added context exceeds the text limit", () => {
+    const long = Array.from({length: 6}, (_, i) => ({...claim, id: `long-${i}`, text: "x".repeat(660)}));
+    expect(() => compileAuthoredBrief({sections: [...sections, {id: "risks", heading: "Risks", claims: long}], executiveSummaryClaimIds: long.map(c => c.id)})).toThrow();
+  });
+  it("does not manufacture opening facts when the provider did not author them", () => {
+    const entityFact = {...input.facts[0]!, key: {fieldPath: "company.legal_name"}, value: "Azul S.A.", valueType: "text" as const,
+      accepted: {...input.facts[0]!.accepted, fieldPath: "company.legal_name", normalizedValue: "Azul S.A.", valueType: "text" as const}};
+    const schema = briefAuthoringSchema({...input, facts: [entityFact]});
+    expect(schema.safeParse(draft).success).toBe(true);
+    expect(schema.safeParse({sections: [sections[0]!, ...draft.sections], executiveSummaryClaimIds: [claim.id]}).success).toBe(true);
+  });
+});

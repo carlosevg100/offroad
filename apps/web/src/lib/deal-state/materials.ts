@@ -55,6 +55,12 @@ const materialSchema = z.object({
   sections: z.array(z.string()).optional(),
   artifactFingerprint: z.string().optional(),
 });
+const workbookMetadataSchema = z.object({
+  title: z.string(), companyName: z.string().optional(), asOfDate: z.string(),
+  currency: z.string(), scale: z.string(), classification: z.enum(["internal", "confidential"]),
+  decisionContractFingerprint: z.string().optional(),
+  artifactClass: z.enum(["credit_model", "decision_workbook"]).optional(),
+});
 const financialModelSchema = z.object({
   version: z.string(),
   selectedAlternativeId: z.string(),
@@ -74,6 +80,7 @@ const financialModelSchema = z.object({
     pt: z.object({sha256: hashSchema, byteSize: z.number().int().positive()}),
     en: z.object({sha256: hashSchema, byteSize: z.number().int().positive()}),
   }),
+  rendering: z.object({rendererVersion: z.string(), metadata: z.object({pt: workbookMetadataSchema, en: workbookMetadataSchema})}).optional(),
   fingerprint: hashSchema,
 });
 const artifactPayloadSchema = z.object({
