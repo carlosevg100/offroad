@@ -221,3 +221,23 @@ export function receivablesFieldDefinition(path: string): FieldDefinition | null
   const parsed = receivablesSupplementFieldPathSchema.safeParse(path);
   return parsed.success ? definitionByPath.get(parsed.data) ?? null : null;
 }
+
+/** Source diligence and premise collection can progress independently. */
+export function buildReceivablesMethodRequestProjections(input: {
+  projectId: string;
+  processingRunId: string;
+  locale: "pt-BR" | "en-US";
+  readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  missingDraftSections?: readonly string[];
+}) {
+  const evidence = buildReceivablesMethodEvidenceRequestProjection(input);
+  const activeGroups = [...new Set(input.readiness.gaps.flatMap((gap) =>
+    gap.class === "policy" ? ["policy" as const] : gap.class === "structure" ? ["structure" as const] : [],
+  ))];
+  const fields = buildReceivablesMethodFieldRequestProjection({
+    projectId: input.projectId, processingRunId: input.processingRunId, locale: input.locale,
+    sourceDatasetHash: input.readiness.sourceDatasetHash, activeGroups,
+    ...(input.missingDraftSections ? {missingSections: input.missingDraftSections} : {}),
+  });
+  return [evidence, fields];
+}

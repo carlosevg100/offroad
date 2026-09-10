@@ -1,3 +1,4 @@
+import {receivablesR01Fixture} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -837,6 +838,59 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(englishBalances).not.toContainText("999999");
     await englishBalances.scrollIntoViewIfNeeded();
     await capture("synthetic-balance-proposals-en");
+  });
+
+  test("collects a governed R01 premise beside source diligence and persists only internal validation", async ({}, testInfo) => {
+    const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    const address = new URL(databaseUrl);
+    if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres") throw new Error("R01 fixture requires the isolated local database.");
+    const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
+    const fixture = await receivablesR01Fixture();
+    const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query}).trim();
+    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
+    const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;");
+    await page.goto(`/pt-BR/app/projects/${projectId}`);
+    const scope = page.getByTestId("receivables-scope-card");
+    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
+    for (const support of await scope.locator('input[name="complementDocumentIds"]').all()) await support.uncheck();
+    await scope.locator(`input[name="complementDocumentIds"][value="${fixture.sources[1]!.id}"]`).check();
+    await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
+    await scope.locator('input[name="scopeConfirmed"]').check();
+    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
+    const currentJob = "select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;";
+    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("awaiting_approval");
+    await page.reload();
+    await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
+    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("succeeded");
+    const initialRun = sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;");
+    const initialDraft = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
+    expect(initialDraft.fields["/structure/advanceRate"]).toBeUndefined();
+    expect(initialDraft.sections.titles.value).toHaveLength(2);
+    expect(sql("select count(*) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_evidence' and status='open';")).not.toBe("0");
+    const request = JSON.parse(sql("select jsonb_build_object('id',id,'question',question) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_fields' and status='open' order by created_at desc limit 1;"));
+    await page.reload();
+    await page.locator('.information-request-card__selector select').selectOption(request.id);
+    const answer = page.locator('article.information-request-card').filter({has: page.getByRole("heading", {name: request.question, exact: true})});
+    await answer.locator('input[type="number"]').fill("50");
+    await answer.locator('button[type="submit"]').click();
+    await expect.poll(() => sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;"), {timeout: 120_000}).not.toBe(initialRun);
+    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toMatch(/awaiting_approval|succeeded/);
+    if (sql(currentJob) === "awaiting_approval") {
+      await page.reload();
+      await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
+    }
+    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("succeeded");
+    const refreshed = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
+    expect(refreshed.fields["/structure/advanceRate"].value).toBe("0.5");
+    expect(refreshed.sections.titles).toEqual(initialDraft.sections.titles);
+    const result = JSON.parse(sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;"));
+    expect(result.methodExecution).toMatchObject({status: "succeeded", mode: "internal_shadow", externalEffectAllowed: false});
+    const persisted = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint) from private.receivables_specialist_shadow_runs r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
+    expect(result.methodExecution.outputFingerprint).toBe(persisted.outputFingerprint);
+    expect(result.methodExecution.inputFingerprint).toBe(persisted.inputFingerprint);
+    await page.reload();
+    await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
+    await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
   });
 
 });

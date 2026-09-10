@@ -130,6 +130,8 @@ export function AdvisorProject(props: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [commandRecovery] = useState(() => createAdvisorCommandRecovery());
   const [content, setContent] = useState("");
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const selectedRequest = props.pendingRequests?.find((request) => request.id === selectedRequestId) ?? props.pendingRequests?.[0];
   const [pending, setPending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -256,7 +258,7 @@ export function AdvisorProject(props: Props) {
   }
 
   async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<AdvisorCommandResult> {
-    const request = props.pendingRequests?.[0];
+    const request = selectedRequest;
     if (!request || pending) return {ok: false, error: props.copy.errors.processing};
     const normalized = input.content.trim();
     return runCommand(["answer", request.id, request.updatedAt, input.source, normalized], normalized,
@@ -360,13 +362,20 @@ export function AdvisorProject(props: Props) {
             </article>;
           })}
           {props.workProduct ? <div className="advisor-thread__work-product">{props.workProduct}</div> : null}
-          {props.pendingRequests?.length ? <InformationRequestCard
+          {selectedRequest && props.pendingRequests && props.pendingRequests.length > 1 ? <label className="information-request-card__selector">
+            <span>{props.copy.contextQuestion}</span>
+            <select aria-label={props.copy.contextQuestion} value={selectedRequest.id} disabled={pending || uploading} onChange={(event) => setSelectedRequestId(event.target.value)}>
+              {props.pendingRequests.map((request) => <option key={request.id} value={request.id}>{request.question}</option>)}
+            </select>
+          </label> : null}
+          {selectedRequest ? <InformationRequestCard
+            key={`${selectedRequest.id}:${selectedRequest.updatedAt}`}
             copy={props.copy.informationRequest}
             disabled={pending || uploading}
             onAnswer={answerInformationRequest}
             onAttachEvidence={() => inputRef.current?.click()}
-            remaining={Math.max(0, props.pendingRequests.length - 1)}
-            request={props.pendingRequests[0]!}
+            remaining={Math.max(0, (props.pendingRequests?.length ?? 0) - 1)}
+            request={selectedRequest}
           /> : null}
         </div>
 
@@ -406,8 +415,8 @@ export function AdvisorProject(props: Props) {
         <header><span className="section-kicker">{props.copy.context}</span></header>
         {props.pendingRequests?.length ? <section className="advisor-context-section advisor-context-section--waiting">
           <div><strong>{props.copy.contextQuestion}</strong><small>{props.pendingRequests.length}</small></div>
-          <p>{props.pendingRequests[0]!.question}</p>
-          <small>{props.pendingRequests[0]!.whyItMatters}</small>
+          <p>{selectedRequest?.question}</p>
+          <small>{selectedRequest?.whyItMatters}</small>
         </section> : null}
         {props.documents.length > 0 || props.executionBrief || props.coverage.total > 0 ? <section className="advisor-context-section">
           <Link className="advisor-context-section__open" href="#project-evidence">{inventoryCopy("title")}</Link>

@@ -4385,5 +4385,18 @@
       "floorBoundary": "Not a binding offer or approved rate. Total effective cost, eligibility and terms unverified; do not compare directly with annual spreads over CDI.",
       "viewRelated": "View identified historical transaction"
     }
+  },
+  "ReceivablesCurrentResult": {
+    "title": "Pool analysis",
+    "titles": "Receivables analyzed",
+    "balance": "Outstanding balance",
+    "validated": "Technical validation completed",
+    "validatedBody": "The specialist calculation ran in internal validation. Publishing a credit conclusion requires its own review and release.",
+    "failed": "Technical validation interrupted",
+    "failedBody": "The calculation did not complete. Information already received is preserved for review.",
+    "ready": "Data prepared for validation",
+    "readyBody": "The pool and assumptions are reconciled. Calculation execution has not yet been verified in this result.",
+    "blocked": "Information to complete",
+    "blockedBody": "The pool analysis is available. You can answer assumptions while gathering remaining documents; the specialist conclusion depends on the conditions below."
   }
 }

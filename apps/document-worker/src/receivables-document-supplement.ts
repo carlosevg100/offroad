@@ -48,8 +48,16 @@ function findTable(documents: readonly ReceivablesEvidenceDocument[], required: 
     for (const candidate of rows) {
       if (sheetName && fold(candidate.sheet) !== fold(sheetName)) continue;
       const columns = new Map<string, string>();
-      for (const [col, cell] of candidate.cells) columns.set(fold(String(cell.v ?? "")), col);
+      const duplicateHeaders = new Set<string>();
+      for (const [col, cell] of candidate.cells) {
+        const header = fold(String(cell.v ?? ""));
+        if (columns.has(header)) duplicateHeaders.add(header);
+        columns.set(header, col);
+      }
       if (!expected.every((header) => columns.has(header))) continue;
+      // Never choose one of two conflicting source columns, or silently fall back to
+      // another table when an otherwise complete contract header is ambiguous.
+      if (expected.some(header => duplicateHeaders.has(header))) return null;
       matches.push({
         document, sheet: candidate.sheet, headerRow: candidate.row, columns,
         rows: rows.filter((row) => row.sheet === candidate.sheet && row.row > candidate.row

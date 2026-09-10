@@ -1,0 +1,752 @@
+{
+  "id": "room-document",
+  "fileName": "modelo-offroad-r01.xlsx",
+  "fileHash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "layer": {
+    "documentId": "room-document",
+    "sheets": [
+      {
+        "name": "CEDENTE",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "CEDENTE_ID"
+          },
+          {
+            "ref": "B1",
+            "v": "RAZAO_SOCIAL"
+          },
+          {
+            "ref": "C1",
+            "v": "PAPEL_SERVICING"
+          },
+          {
+            "ref": "A2",
+            "v": "cedent-1"
+          },
+          {
+            "ref": "B2",
+            "v": "Cedente Teste S.A."
+          },
+          {
+            "ref": "C2",
+            "v": "cedente"
+          }
+        ]
+      },
+      {
+        "name": "CARTEIRA",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "NUM_TITULO"
+          },
+          {
+            "ref": "B1",
+            "v": "CNPJ_SACADO"
+          },
+          {
+            "ref": "C1",
+            "v": "NOME_SACADO"
+          },
+          {
+            "ref": "D1",
+            "v": "DT_EMISSAO"
+          },
+          {
+            "ref": "E1",
+            "v": "DT_VENCIMENTO"
+          },
+          {
+            "ref": "F1",
+            "v": "VLR_TITULO"
+          },
+          {
+            "ref": "G1",
+            "v": "SITUACAO"
+          },
+          {
+            "ref": "H1",
+            "v": "DT_PAGAMENTO"
+          },
+          {
+            "ref": "I1",
+            "v": "VLR_PAGO"
+          },
+          {
+            "ref": "J1",
+            "v": "SETOR_SACADO"
+          },
+          {
+            "ref": "K1",
+            "v": "VLR_RECEBIDO_PERIODO"
+          },
+          {
+            "ref": "L1",
+            "v": "SALDO_INADIMPLENTE"
+          },
+          {
+            "ref": "M1",
+            "v": "RECUPERADO_PERIODO"
+          },
+          {
+            "ref": "N1",
+            "v": "DILUICAO_PERIODO"
+          },
+          {
+            "ref": "O1",
+            "v": "RECOMPRA_PERIODO"
+          },
+          {
+            "ref": "P1",
+            "v": "SUBSTITUICAO_PERIODO"
+          },
+          {
+            "ref": "Q1",
+            "v": "CEDIVEL"
+          },
+          {
+            "ref": "R1",
+            "v": "LASTRO_VERIFICADO"
+          },
+          {
+            "ref": "S1",
+            "v": "REGISTRO"
+          },
+          {
+            "ref": "T1",
+            "v": "ONUS"
+          },
+          {
+            "ref": "U1",
+            "v": "DISPUTADO"
+          },
+          {
+            "ref": "V1",
+            "v": "PARTE_RELACIONADA"
+          },
+          {
+            "ref": "A2",
+            "v": "T-001"
+          },
+          {
+            "ref": "B2",
+            "v": "11222333000144"
+          },
+          {
+            "ref": "C2",
+            "v": "Comprador A"
+          },
+          {
+            "ref": "D2",
+            "v": "2026-06-01"
+          },
+          {
+            "ref": "E2",
+            "v": "2026-09-30"
+          },
+          {
+            "ref": "F2",
+            "v": "1000000"
+          },
+          {
+            "ref": "G2",
+            "v": "ABERTO"
+          },
+          {
+            "ref": "H2",
+            "v": ""
+          },
+          {
+            "ref": "I2",
+            "v": "0"
+          },
+          {
+            "ref": "J2",
+            "v": "varejo"
+          },
+          {
+            "ref": "K2",
+            "v": "250000"
+          },
+          {
+            "ref": "L2",
+            "v": "0"
+          },
+          {
+            "ref": "M2",
+            "v": "0"
+          },
+          {
+            "ref": "N2",
+            "v": "0"
+          },
+          {
+            "ref": "O2",
+            "v": "0"
+          },
+          {
+            "ref": "P2",
+            "v": "0"
+          },
+          {
+            "ref": "Q2",
+            "v": "sim"
+          },
+          {
+            "ref": "R2",
+            "v": "sim"
+          },
+          {
+            "ref": "S2",
+            "v": "registrado"
+          },
+          {
+            "ref": "T2",
+            "v": "livre"
+          },
+          {
+            "ref": "U2",
+            "v": "n\u00e3o"
+          },
+          {
+            "ref": "V2",
+            "v": "n\u00e3o"
+          },
+          {
+            "ref": "A3",
+            "v": "T-002"
+          },
+          {
+            "ref": "B3",
+            "v": "22333444000155"
+          },
+          {
+            "ref": "C3",
+            "v": "Comprador B"
+          },
+          {
+            "ref": "D3",
+            "v": "2026-07-01"
+          },
+          {
+            "ref": "E3",
+            "v": "2026-10-31"
+          },
+          {
+            "ref": "F3",
+            "v": "1000000"
+          },
+          {
+            "ref": "G3",
+            "v": "ABERTO"
+          },
+          {
+            "ref": "H3",
+            "v": ""
+          },
+          {
+            "ref": "I3",
+            "v": "0"
+          },
+          {
+            "ref": "J3",
+            "v": "ind\u00fastria"
+          },
+          {
+            "ref": "K3",
+            "v": "200000"
+          },
+          {
+            "ref": "L3",
+            "v": "0"
+          },
+          {
+            "ref": "M3",
+            "v": "0"
+          },
+          {
+            "ref": "N3",
+            "v": "0"
+          },
+          {
+            "ref": "O3",
+            "v": "0"
+          },
+          {
+            "ref": "P3",
+            "v": "0"
+          },
+          {
+            "ref": "Q3",
+            "v": "sim"
+          },
+          {
+            "ref": "R3",
+            "v": "sim"
+          },
+          {
+            "ref": "S3",
+            "v": "registrado"
+          },
+          {
+            "ref": "T3",
+            "v": "livre"
+          },
+          {
+            "ref": "U3",
+            "v": "n\u00e3o"
+          },
+          {
+            "ref": "V3",
+            "v": "n\u00e3o"
+          },
+          {
+            "ref": "W1",
+            "v": "CHAVE_NFE"
+          },
+          {
+            "ref": "W2",
+            "v": "11111111111111111111111111111111111111111111"
+          },
+          {
+            "ref": "W3",
+            "v": "22222222222222222222222222222222222222222222"
+          }
+        ]
+      },
+      {
+        "name": "RECEBIMENTOS",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "ID_RECEBIMENTO"
+          },
+          {
+            "ref": "B1",
+            "v": "DATA_RECEBIMENTO"
+          },
+          {
+            "ref": "C1",
+            "v": "VALOR_RECEBIMENTO"
+          },
+          {
+            "ref": "D1",
+            "v": "NUM_TITULO"
+          },
+          {
+            "ref": "E1",
+            "v": "CNPJ_SACADO"
+          },
+          {
+            "ref": "F1",
+            "v": "CONTA_VINCULADA"
+          },
+          {
+            "ref": "G1",
+            "v": "DUPLICADO_DE"
+          },
+          {
+            "ref": "A2",
+            "v": "R-001"
+          },
+          {
+            "ref": "B2",
+            "v": "2026-07-31"
+          },
+          {
+            "ref": "C2",
+            "v": "250000"
+          },
+          {
+            "ref": "D2",
+            "v": "T-001"
+          },
+          {
+            "ref": "E2",
+            "v": "11222333000144"
+          },
+          {
+            "ref": "F2",
+            "v": "sim"
+          },
+          {
+            "ref": "G2",
+            "v": ""
+          },
+          {
+            "ref": "A3",
+            "v": "R-002"
+          },
+          {
+            "ref": "B3",
+            "v": "2026-07-31"
+          },
+          {
+            "ref": "C3",
+            "v": "200000"
+          },
+          {
+            "ref": "D3",
+            "v": "T-002"
+          },
+          {
+            "ref": "E3",
+            "v": "22333444000155"
+          },
+          {
+            "ref": "F3",
+            "v": "sim"
+          },
+          {
+            "ref": "G3",
+            "v": ""
+          }
+        ]
+      },
+      {
+        "name": "CONTABIL",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "SALDO_CONTAS_A_RECEBER"
+          },
+          {
+            "ref": "B1",
+            "v": "PROVISAO"
+          },
+          {
+            "ref": "C1",
+            "v": "RECEBIMENTOS_PERIODO"
+          },
+          {
+            "ref": "A2",
+            "v": "2000000"
+          },
+          {
+            "ref": "B2",
+            "v": "0"
+          },
+          {
+            "ref": "C2",
+            "v": "450000"
+          }
+        ]
+      },
+      {
+        "name": "POLITICA",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "CAMPO"
+          },
+          {
+            "ref": "B1",
+            "v": "VALOR"
+          },
+          {
+            "ref": "A2",
+            "v": "MAX_ATRASO_DIAS"
+          },
+          {
+            "ref": "B2",
+            "v": "30"
+          },
+          {
+            "ref": "A3",
+            "v": "MAX_PRAZO_REMANESCENTE_DIAS"
+          },
+          {
+            "ref": "B3",
+            "v": "180"
+          },
+          {
+            "ref": "A4",
+            "v": "MIN_SEASONING_DIAS"
+          },
+          {
+            "ref": "B4",
+            "v": "0"
+          },
+          {
+            "ref": "A5",
+            "v": "EXIGIR_CEDIVEL"
+          },
+          {
+            "ref": "B5",
+            "v": "sim"
+          },
+          {
+            "ref": "A6",
+            "v": "EXIGIR_LASTRO_VERIFICADO"
+          },
+          {
+            "ref": "B6",
+            "v": "sim"
+          },
+          {
+            "ref": "A7",
+            "v": "REGRA_REGISTRO"
+          },
+          {
+            "ref": "B7",
+            "v": "obrigat\u00f3rio"
+          },
+          {
+            "ref": "A8",
+            "v": "EXCLUIR_DISPUTADOS"
+          },
+          {
+            "ref": "B8",
+            "v": "sim"
+          },
+          {
+            "ref": "A9",
+            "v": "EXCLUIR_PARTES_RELACIONADAS"
+          },
+          {
+            "ref": "B9",
+            "v": "sim"
+          },
+          {
+            "ref": "A10",
+            "v": "EXCLUIR_ONERADOS"
+          },
+          {
+            "ref": "B10",
+            "v": "sim"
+          },
+          {
+            "ref": "A11",
+            "v": "SETORES_PERMITIDOS"
+          },
+          {
+            "ref": "B11",
+            "v": "todos"
+          },
+          {
+            "ref": "A12",
+            "v": "MAX_CONCENTRACAO_SACADO"
+          },
+          {
+            "ref": "B12",
+            "v": "60.0%"
+          },
+          {
+            "ref": "A13",
+            "v": "MAX_CONCENTRACAO_GRUPO"
+          },
+          {
+            "ref": "B13",
+            "v": "60.0%"
+          },
+          {
+            "ref": "A14",
+            "v": "MIN_CARTEIRA_ELEGIVEL"
+          },
+          {
+            "ref": "B14",
+            "v": "80.0%"
+          },
+          {
+            "ref": "A15",
+            "v": "MIN_COBERTURA_LASTRO"
+          },
+          {
+            "ref": "B15",
+            "v": "100.0%"
+          },
+          {
+            "ref": "A16",
+            "v": "MIN_COBERTURA_REGISTRO"
+          },
+          {
+            "ref": "B16",
+            "v": "100.0%"
+          },
+          {
+            "ref": "A17",
+            "v": "MAX_ATRASO_30"
+          },
+          {
+            "ref": "B17",
+            "v": "5.0%"
+          },
+          {
+            "ref": "A18",
+            "v": "MAX_DILUICAO"
+          },
+          {
+            "ref": "B18",
+            "v": "5.0%"
+          },
+          {
+            "ref": "A19",
+            "v": "MAX_RECOMPRA"
+          },
+          {
+            "ref": "B19",
+            "v": "5.0%"
+          },
+          {
+            "ref": "A20",
+            "v": "MIN_RECUPERACAO"
+          },
+          {
+            "ref": "B20",
+            "v": "0.0%"
+          },
+          {
+            "ref": "A21",
+            "v": "MAX_DIVERGENCIA_CONTABIL"
+          },
+          {
+            "ref": "B21",
+            "v": "1.0%"
+          },
+          {
+            "ref": "A22",
+            "v": "MAX_DIVERGENCIA_CAIXA"
+          },
+          {
+            "ref": "B22",
+            "v": "1.0%"
+          },
+          {
+            "ref": "A23",
+            "v": "MIN_CAIXA_CONCILIADO"
+          },
+          {
+            "ref": "B23",
+            "v": "100.0%"
+          },
+          {
+            "ref": "A24",
+            "v": "MIN_CAIXA_CONTA_VINCULADA"
+          },
+          {
+            "ref": "B24",
+            "v": "100.0%"
+          }
+        ]
+      },
+      {
+        "name": "ESTRUTURA",
+        "cells": [
+          {
+            "ref": "A1",
+            "v": "CAMPO"
+          },
+          {
+            "ref": "B1",
+            "v": "VALOR"
+          },
+          {
+            "ref": "A2",
+            "v": "VALOR_LINHA"
+          },
+          {
+            "ref": "B2",
+            "v": "1000000"
+          },
+          {
+            "ref": "A3",
+            "v": "OVERCOLLATERALIZATION_MIN"
+          },
+          {
+            "ref": "B3",
+            "v": "1.20"
+          },
+          {
+            "ref": "A4",
+            "v": "SUBORDINACAO_MIN"
+          },
+          {
+            "ref": "B4",
+            "v": "10.0%"
+          },
+          {
+            "ref": "A5",
+            "v": "SALDO_SENIOR"
+          },
+          {
+            "ref": "B5",
+            "v": "1000000"
+          },
+          {
+            "ref": "A6",
+            "v": "SALDO_MEZANINO"
+          },
+          {
+            "ref": "B6",
+            "v": "0"
+          },
+          {
+            "ref": "A7",
+            "v": "SALDO_SUBORDINADO"
+          },
+          {
+            "ref": "B7",
+            "v": "1000000"
+          },
+          {
+            "ref": "A8",
+            "v": "RESERVA_PERCENTUAL"
+          },
+          {
+            "ref": "B8",
+            "v": "2.0%"
+          },
+          {
+            "ref": "A9",
+            "v": "WATERFALL_CAIXA_DISPONIVEL"
+          },
+          {
+            "ref": "B9",
+            "v": "450000"
+          },
+          {
+            "ref": "A10",
+            "v": "WATERFALL_SERVICING_FEE"
+          },
+          {
+            "ref": "B10",
+            "v": "5000"
+          },
+          {
+            "ref": "A11",
+            "v": "WATERFALL_JUROS_SENIOR"
+          },
+          {
+            "ref": "B11",
+            "v": "20000"
+          },
+          {
+            "ref": "A12",
+            "v": "WATERFALL_PRINCIPAL_SENIOR"
+          },
+          {
+            "ref": "B12",
+            "v": "200000"
+          },
+          {
+            "ref": "A13",
+            "v": "WATERFALL_RESERVA_INICIAL"
+          },
+          {
+            "ref": "B13",
+            "v": "20000"
+          },
+          {
+            "ref": "A14",
+            "v": "WATERFALL_MEZANINO"
+          },
+          {
+            "ref": "B14",
+            "v": "0"
+          }
+        ]
+      }
+    ]
+  }
+}

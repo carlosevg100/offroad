@@ -4385,5 +4385,18 @@
       "floorBoundary": "Não é oferta vinculante ou taxa aprovada. CET, elegibilidade e condições não verificados; não compare diretamente com spreads anuais sobre CDI.",
       "viewRelated": "Consultar operação histórica identificada"
     }
+  },
+  "ReceivablesCurrentResult": {
+    "title": "Leitura da carteira",
+    "titles": "Títulos analisados",
+    "balance": "Saldo em aberto",
+    "validated": "Validação técnica concluída",
+    "validatedBody": "O cálculo especialista foi executado em validação interna. A publicação de uma conclusão de crédito exige revisão e liberação próprias.",
+    "failed": "Validação técnica interrompida",
+    "failedBody": "O cálculo não foi concluído. As informações já recebidas estão preservadas para revisão.",
+    "ready": "Dados preparados para validação",
+    "readyBody": "A carteira e as premissas estão conciliadas. A execução do cálculo ainda não foi comprovada neste resultado.",
+    "blocked": "Informações a completar",
+    "blockedBody": "A leitura da carteira está disponível. Você pode responder às premissas enquanto reúne os documentos restantes; a conclusão especialista depende das condições abaixo."
   }
 }

@@ -183,6 +183,22 @@ function changeCell(document: ReceivablesEvidenceDocument, sheetName: string, re
 }
 
 describe("document supplement integrity", () => {
+  it.each([
+    ["CONTABIL", "saldo contas a receber", "9999,00", "accounting"],
+    ["CONTROLES_TITULO", "lastro verificado", "não", "titles"],
+  ] as const)("rejects duplicate normalized required headers in %s", (sheetName, header, value, section) => {
+    const document = evidenceDocument();
+    const ambiguous = {...document, layer: {...document.layer, sheets: document.layer.sheets!.map(item => item.name !== sheetName ? item : {
+      ...item, cells: [...item.cells, {ref:"Z1",v:header}, {ref:"Z2",v:value}, ...(section === "titles" ? [{ref:"Z3",v:value}] : [])],
+    })}};
+    const result = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [ambiguous]});
+    expect(result.patch?.sections[section]).toBeUndefined();
+    expect(result.omittedSections).toContain(section);
+    expect(result.extractedSections).not.toContain(section);
+    // A second clean table cannot hide the ambiguity of the first source.
+    const alternative = {...document, id:"alternative-document"};
+    expect(buildReceivablesDocumentSupplementPatch({phaseOne, documents:[ambiguous, alternative]}).patch?.sections[section]).toBeUndefined();
+  });
   it("includes governed fields and source dataset in idempotency identity", () => {
     const document = evidenceDocument({assumptions: "partial"});
     const before = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [document]});

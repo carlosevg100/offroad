@@ -114,8 +114,7 @@ import {buildDocumentWorkInput, documentWorkRequestSchema, isStandaloneDocumentW
 import {processStandaloneDocumentWork} from "./document-work-standalone";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
-  buildReceivablesMethodEvidenceRequestProjection,
-  buildReceivablesMethodFieldRequestProjection,
+  buildReceivablesMethodRequestProjections,
 } from "./receivables-information-requests";
 import {prepareReceivablesDocumentSupplement} from "./receivables-document-supplement";
 import {resolveReceivablesMethodInput, type ReceivablesMethodInputResolution} from "./receivables-method-input-resolution";
@@ -1135,33 +1134,19 @@ export async function processCaseAnalysisJob(
       });
     }
     if (receivablesVertical && dependencies.queue.syncReceivablesInformationRequests) {
-      const evidenceProjection = buildReceivablesMethodEvidenceRequestProjection({
-        projectId: raw.session.capital_project_id,
-        processingRunId: job.processing_run_id,
+      // Asking for premises does not clear evidence gaps or authorize execution.
+      const projections = buildReceivablesMethodRequestProjections({
+        projectId: raw.session.capital_project_id, processingRunId: job.processing_run_id,
         locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
         readiness: receivablesVertical.methodReadiness,
         ...(receivables?.inputResolution.draftState === "incomplete"
           ? {missingDraftSections: receivables.inputResolution.missingSections} : {}),
       });
-      await dependencies.queue.syncReceivablesInformationRequests(job, evidenceProjection);
-      const evidenceOpen = evidenceProjection.requests.length > 0;
-      if (!evidenceOpen) {
-        const activeGroups = [...new Set(receivablesVertical.methodReadiness.gaps.flatMap((gap) =>
-          gap.class === "policy" ? ["policy" as const] : gap.class === "structure" ? ["structure" as const] : [],
-        ))];
-        const fieldProjection = buildReceivablesMethodFieldRequestProjection({
-          projectId: raw.session.capital_project_id,
-          processingRunId: job.processing_run_id,
-          locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
-          sourceDatasetHash: receivablesVertical.methodReadiness.sourceDatasetHash,
-          activeGroups,
-          ...(receivables?.inputResolution.missingSections
-            ? {missingSections: receivables.inputResolution.missingSections}
-            : {}),
-        });
-        await dependencies.queue.syncReceivablesInformationRequests(job, fieldProjection);
+      for (const projection of projections) {
+        await dependencies.queue.syncReceivablesInformationRequests(job, projection);
       }
     }
+
     let receivablesInputAssemblyId = receivables?.inputAssemblyId ?? null;
     if (receivables?.inputAssembly && !receivablesInputAssemblyId) {
       if (!dependencies.queue.recordReceivablesMethodInputAssembly) {
