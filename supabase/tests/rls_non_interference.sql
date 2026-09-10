@@ -717,7 +717,7 @@ begin
     when insufficient_privilege then null;
   end;
 
-  -- Capital providers do not run document-first intake (borrower-side journey only).
+  -- Capital providers never open a borrower-side journey, even with a direct row insert.
   begin
     insert into public.document_intake_sessions (organization_id, started_by, journey, locale)
     values (
@@ -726,10 +726,35 @@ begin
       'company',
       'pt-BR'
     );
-    raise exception 'capital provider started a document intake session';
+    raise exception 'capital provider started a company document intake session';
   exception
     when insufficient_privilege then null;
   end;
+  begin
+    insert into public.document_intake_sessions (organization_id, started_by, journey, locale)
+    values (
+      '20000000-0000-4000-8000-000000000003',
+      '10000000-0000-4000-8000-000000000003',
+      'originator',
+      'pt-BR'
+    );
+    raise exception 'capital provider started an originator document intake session';
+  exception
+    when insufficient_privilege then null;
+  end;
+
+  -- The financier analytical journey is the only one a capital provider may open for itself.
+  insert into public.document_intake_sessions (organization_id, started_by, journey, locale)
+  values (
+    '20000000-0000-4000-8000-000000000003',
+    '10000000-0000-4000-8000-000000000003',
+    'capital_provider',
+    'pt-BR'
+  );
+  if (select count(*) from public.document_intake_sessions
+      where organization_id = '20000000-0000-4000-8000-000000000003' and journey = 'capital_provider') <> 1 then
+    raise exception 'capital provider analytical session was not visible to its own organization';
+  end if;
 end;
 $$;
 

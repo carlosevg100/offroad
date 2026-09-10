@@ -171,10 +171,18 @@ alter table public.document_intake_sessions
   check (journey in ('company', 'originator', 'capital_provider'));
 
 drop policy if exists document_intake_sessions_insert on public.document_intake_sessions;
+-- A financier organization may open only its own analytical journey; the borrower-side journeys
+-- keep their previous domain. Journey and organization type agree at the row level, not only
+-- inside the creation commands.
 create policy document_intake_sessions_insert on public.document_intake_sessions for insert to authenticated
   with check (
-    (select private.is_org_type_member(organization_id, array['company', 'originator', 'capital_provider', 'offroad']))
-    and started_by = (select auth.uid())
+    started_by = (select auth.uid())
+    and (
+      ((select private.is_org_type_member(organization_id, array['company', 'originator', 'offroad']))
+        and journey in ('company', 'originator'))
+      or ((select private.is_org_type_member(organization_id, array['capital_provider']))
+        and journey = 'capital_provider')
+    )
   );
 
 drop policy if exists document_intake_sessions_select on public.document_intake_sessions;
