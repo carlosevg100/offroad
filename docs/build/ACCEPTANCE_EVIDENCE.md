@@ -6,6 +6,8 @@ Final affected-proof rerun: the staging institutional lifecycle passed again wit
 
 PR587 CodeQL reported two high alerts on the DOCX row-length stripping expression. The expression was removed and replaced by a single-pass numeric measurement of generated XML; user text continues to be escaped before XML construction. The adversarial regression with 50,000 opening angle brackets passed; case-export17 and four-format route12 tests passed, build43/43 passed, and both PT/EN DOCX outputs are byte-identical to the fully inspected QA artifacts. The new CodeQL result is still required before merge; no alert was dismissed or suppressed.
 
+The first PR587 UI run exposed two integration failures: institutional navigation matched both a navigation link and a shortcut; the provider form rendered message keys because LocaleLayout omitted new client namespaces. The institutional test now selects the canonical navigation and waits for a completed result. LocaleLayout now uses a shared client-message projection, with regression checks against actual client components in both languages. No timeout, skip or operating gate was relaxed. The combined local pnpm check passed after these fixes; the next complete CI E2E and CodeQL run must pass before promotion.
+
 
 Implemented in this branch: source-bound institutional setup; review and deterministic calculation with a persisted result receipt; authenticated project result downloads in XLSX, DOCX, PPTX and PDF; provider case-fit criteria and persisted mandate comparison; historical provider results distinct from the current result. The corrected documentary reviewer contract is isolated from this integrated work and was merged through PR586. This checkpoint is implementation evidence, not a production completion claim.
 

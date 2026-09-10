@@ -2,6 +2,7 @@ import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
 import {join} from "node:path";
 import {expect,test} from "@playwright/test";
+import messages from "../messages/pt-BR.json";
 import {waitForOneTimeCode} from "./support/mail";
 import {institutionalInputFixture} from "../../../packages/financial-model/src/institutional-input.fixture";
 
@@ -47,7 +48,7 @@ test("guided institutional setup calculates only after review and survives resum
  expect(projectId).toBeTruthy();
  const projectPath=`/pt-BR/app/projects/${projectId}`;
  await page.goto(projectPath);
- await page.locator('a[href="#work-institutional-setup"]').click();
+ await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
  const form=page.getByTestId("institutional-setup-form");
  await expect(form).toBeVisible();
  await form.locator('[name="asOfDate"]').fill("2026-12-31");
@@ -81,22 +82,24 @@ test("guided institutional setup calculates only after review and survives resum
   await form.locator(`[name="debt.0.2027.${rate}Date"]`).fill("2026-12-31");
   await form.locator(`[name="debt.0.2027.${rate}Rationale"]`).fill("Explicit synthetic zero rate.");
  }
- await expect(page.locator('a[href="#work-institutional-model-result"]')).toHaveCount(0);
+ await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await form.locator('button[type="submit"]').click();
- const reviewLink=page.locator('a[href="#work-institutional-setup-review"]');
+ const reviewLink=page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup-review"]');
  await expect(reviewLink).toBeVisible({timeout:120_000});
  await reviewLink.click();
  const review=page.getByTestId("institutional-setup-review");
  await expect(review).toContainText("Synthetic reconciled accounts.xlsx");
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
- await expect(page.locator('a[href="#work-institutional-model-result"]')).toHaveCount(0);
+ await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await page.reload();
  await reviewLink.click();
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
  await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
- const resultLink=page.locator('a[href="#work-institutional-model-result"]');
+ const resultLink=page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]');
  await expect(resultLink).toBeVisible({timeout:120_000});
  await resultLink.click();
+ const result=page.getByTestId("institutional-model-result");
+ await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
  const xlsx=page.locator(`a[href^="${projectPath}/financial-results/"][href$="/xlsx"]`);
  await expect(xlsx).toHaveCount(1);
  const resultUrl=await xlsx.getAttribute("href");
@@ -105,6 +108,7 @@ test("guided institutional setup calculates only after review and survives resum
   expect(response.status()).toBe(200);const bytes=await response.body();expect(bytes.byteLength).toBeGreaterThan(500);expect(bytes.subarray(0,format==="pdf"?5:2).toString()).toBe(format==="pdf"?"%PDF-":"PK");
  }
  await page.reload();await resultLink.click();
+ await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed);
  await expect(xlsx).toHaveAttribute("href",resultUrl!);
  expect(new URL(page.url()).pathname).toBe(projectPath);
 });
