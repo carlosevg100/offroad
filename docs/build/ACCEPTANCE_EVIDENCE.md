@@ -5,14 +5,17 @@ PR584 Quality run34405085387 failed the approved receivables-scope journey with
 the failing jobs. The v16 engine scope was rejected by the database v15-only
 allowlist. The earlier summary-schema hypothesis was not the cause.
 
-Migration20260910013207 adds the exact v16 scope and rejects null/unknown scopes.
+Migration20260910013934 adds the exact v16 scope and rejects null/unknown scopes.
 It preserves capability, tenant, frozen-input, report, time and quality checks;
 it neither grants privileges nor copies v15 accreditation to v16. SQL regression
 coverage records v16 as blocked without accreditation and rejects forged tokens.
 Staging migration applied; transaction-rolled-back operating-controls SQL passed,
 security advisor returned zero lints and regenerated types are byte-equivalent.
 Full local check passed from valid cache (43/43 packages per task).
-Production application and exact-head CI remain pending.
+Production migration applied after verifying the destination in deployed commit68119a8
+and successful worker run34403037571. Production security advisor: zero lints;
+v16 guard present and anonymous execution refused. Staging used timestamp20260910013207
+for identical SQL. Exact-head CI remains pending before merge.
 Controls APP-03/04/10/11: existing guards retained; no new disclosure or external action.
 Rollback worker to v15 remains compatible with the additive scope migration.
 
