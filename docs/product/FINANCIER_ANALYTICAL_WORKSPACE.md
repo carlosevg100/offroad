@@ -185,3 +185,5 @@ Não promove pesquisa pública a mandato verificado, não libera R01 como recome
 não cria um motor separado para financiadores e não abre o corpus privado de um emissor para
 quem só recebeu uma oportunidade compartilhada. O cadastro de fundos e mandatos depois de um
 onboarding concluído pela análise permanece como trabalho futuro da frente de mandatos.
+
+Produção (projeto `ifnogpksgdadruooqydi`) gravou a mesma migração como versão `20260910232821` em 10 de setembro de 2026; o arquivo local segue esse stamp. O staging mantém o stamp próprio `20260910194219` mais o delta `financier_intake_journey_coherence`, com SQL final idêntico (hashes das funções e da política de insert conferidos).
