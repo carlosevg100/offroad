@@ -2371,3 +2371,26 @@ The refresh correction reads pending plan jobs before the produced brief and
 refreshes only queued/leased preparation; awaiting approval does not imply execution.
 13 focused state tests and the combined local quality check pass after the fix.
 The original E2E assertions remain unchanged; exact-head CI must confirm the correction.
+
+
+Production database promotion, 10 September 2026: founder explicitly authorized all ten
+migrations for `ifnogpksgdadruooqydi` after automatic review required destination-specific
+approval. All ten applied successfully, in dependency order. Recorded production versions:
+
+- `20260910033410_strict_documentary_plan_persistence`
+- `20260910033425_documentary_work_request_context`
+- `20260910033433_compact_documentary_plan_contract`
+- `20260910033442_reviewed_documentary_plan_contract`
+- `20260910033449_documentary_entity_plan_contract`
+- `20260910033507_documentary_diligence_plan_contract`
+- `20260910033516_documentary_comparison_review_contract`
+- `20260910033526_provider_research_persisted_bridge`
+- `20260910033542_institutional_model_assumption_answers`
+- `20260910033550_institutional_private_explicit_rls`
+
+Migration SQL is unchanged; filenames now match production history. Staging retains its
+original recorded timestamps. Types regenerated from production have no API difference.
+Security advisor returned zero lints. Both institutional tables have enabled and forced
+RLS, four explicit deny policies each and no new direct tenant grants. No customer fixture,
+backfill, plan approval, model call or documentary feature activation was performed.
+Code publication remains gated on the final PR checks, Vercel and worker deployment.
