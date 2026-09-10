@@ -218,6 +218,8 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await page.locator('.app-rail__create input[name="group_name"]').fill(`Comitê ${id}`);
   await page.locator('.app-rail__create button[type="submit"]').click();
   await expect(page.locator(".app-rail__folder").filter({hasText: `Comitê ${id}`})).toBeVisible();
+  // The project is in the navigation of the same workspace, reachable without the composer.
+  await expect(page.locator(`.app-rail__scroll a[href="${projectPath}"]`)).toBeVisible();
 
   // 8. A gap is answered in the project, and a stale answer is refused.
   const requestId = setup("information_request", email, projectId);
