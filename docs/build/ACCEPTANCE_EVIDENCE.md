@@ -1,3 +1,9 @@
+## Publication correction: unanswered decision continuity
+
+The authenticated R01 E2E exposed `capital_project_decisions_check`: a repeated assessment tried to supersede an open decision with no recommendation. Migration `20260910164327_preserve_open_decision_history` reuses only an unreviewed open/null placeholder, retaining its identity and original attribution, recording its prior snapshot in the project event history, and preventing old assessment replays from overwriting the successor. Actual recommendations remain revisioned; human-confirmed/rejected decisions remain untouched. No CHECK, RLS policy or grant changed.
+
+The complete `agentic_dcm_work_system.sql` passed against staging after application, including placeholder revisions, legitimate promotion, old replay, human-decision preservation and negative recommendation/reviewer constraints. Security advisors returned zero findings; the root local check passed 43/43 tasks. The batch now contains ten staging migrations. Final browser CI, production migration and deployment remain pending; this SQL receipt does not claim the R01 browser journey passed.
+
 ## Publication correction: documentary progress scope
 
 PR590 fresh-database CI exposed a real stale-scope display defect after a legacy fixture was updated to a released documentary snapshot. Additive migration `20260910160700_documentary_progress_persisted_scope_guard` requires persisted target IDs and the Q01/Q02/Q03 task set to match the admitted documentary plan before displaying documentary stages. The complete execution-proposal revision SQL passed in staging, including changed targets and missing Q02; security advisors returned zero findings. The integrated publication batch now contains nine migrations. Production application, final CI and deployment remain pending at this checkpoint.
