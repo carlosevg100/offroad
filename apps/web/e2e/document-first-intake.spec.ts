@@ -893,6 +893,13 @@ test.describe("Document-first intake (company journey)", () => {
     expect(initialDraft.sections.titles.value).toHaveLength(2);
     expect(sql("select count(*) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_evidence' and status='open';")).not.toBe("0");
     const request = JSON.parse(sql("select jsonb_build_object('id',id,'question',question) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_fields' and status='open' order by created_at desc limit 1;"));
+    // Before the grant the organization sees exactly today's compact card and nothing is stored.
+    await page.reload();
+    await expect(page.getByTestId("receivables-current-result")).toBeVisible();
+    await expect(page.getByTestId("receivables-released-result")).toHaveCount(0);
+    expect(sql("select count(*) from private.receivables_released_results r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid;")).toBe("0");
+    // The operator opens the released reading for this organization; the method is not promoted.
+    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-f", join(__dirname, "support", "receivables-release-grant-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
     await page.reload();
     await page.locator('.information-request-card__selector select').selectOption(request.id);
     const answer = page.locator('article.information-request-card').filter({has: page.getByRole("heading", {name: request.question, exact: true})});
@@ -916,6 +923,43 @@ test.describe("Document-first intake (company journey)", () => {
     await page.reload();
     await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
     await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+
+    // The released result is the same calculation, bound to the confirmed selection and its dataset.
+    const released = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint,'scopeFingerprint',r.evidence_scope_fingerprint,'datasetHash',r.source_dataset_hash,'maturity',r.method_maturity,'maximumEffect',r.release->>'maximumEffect') from private.receivables_released_results r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
+    expect(released.outputFingerprint).toBe(persisted.outputFingerprint);
+    expect(released.inputFingerprint).toBe(persisted.inputFingerprint);
+    expect(released.scopeFingerprint).toBe(JSON.parse(sql("select to_jsonb(fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;")));
+    expect(released.datasetHash).toBe(JSON.parse(sql("select to_jsonb(source_dataset_hash) from private.receivables_method_input_assemblies where intake_session_id=:'session_id'::uuid order by created_at desc limit 1;")));
+    expect(released.maturity).toBe("tested");
+    expect(released.maximumEffect).toBe("none");
+    const releasedSection = page.getByTestId("receivables-released-result");
+    await expect(releasedSection).toBeVisible();
+    await expect(page.getByTestId("receivables-current-result")).toHaveCount(0);
+    for (const block of ["receivables-released-base", "receivables-released-facility", "receivables-released-concentration", "receivables-released-waterfall", "receivables-released-triggers", "receivables-released-gaps", "receivables-released-coverage", "receivables-released-evidence", "receivables-released-limitations"]) {
+      await expect(releasedSection.getByTestId(block)).toBeVisible();
+    }
+    // Historical coverage is stated per family; an unmeasured family is never shown as a zero.
+    await expect(releasedSection.getByTestId("receivables-released-coverage").locator("[data-coverage-status]")).toHaveCount(6);
+    await expect(releasedSection.getByTestId("receivables-released-coverage")).toContainText("Agregados informados por título");
+    await expect(releasedSection.getByTestId("receivables-released-waterfall")).toContainText("Ordem fixa");
+    await expect(releasedSection.getByTestId("receivables-released-limitations")).toContainText("Não há aprovação de crédito neste resultado.");
+    await testInfo.attach("r01-released-analysis", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+
+    // A new confirmed selection turns the stored result into history, never into a current answer.
+    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
+    for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
+    await scope.locator('input[name="reportingDate"]').fill("2026-08-30");
+    await scope.locator('input[name="scopeConfirmed"]').check();
+    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
+    await expect.poll(() => sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;"), {timeout: 120_000}).toBe("2");
+    // The new run waits for its own approval, so the previous result stays visible as history.
+    await waitForCaseStatus(["awaiting_approval"]);
+    await page.reload();
+    const supersededSection = page.getByTestId("receivables-released-superseded");
+    await expect(supersededSection).toBeVisible();
+    await expect(supersededSection).not.toHaveAttribute("data-superseded-reason", "unknown");
+    await expect(page.getByTestId("receivables-released-result")).toHaveCount(0);
+    await testInfo.attach("r01-released-superseded", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
     } catch (error) {
       // Print immediately: CI exposes this before the remaining browser suite completes.
       console.error("R01_SYNTHETIC_JOURNEY_FAILED", error instanceof Error ? error.stack : String(error));

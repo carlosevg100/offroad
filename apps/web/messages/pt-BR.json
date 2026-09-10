@@ -4400,6 +4400,7 @@
     "blocked": "Informações a completar",
     "blockedBody": "A leitura da carteira está disponível. Você pode responder às premissas enquanto reúne os documentos restantes; a conclusão especialista depende das condições abaixo."
   },
+<<<<<<< HEAD
   "NewWorkRequest": {
     "title": "Novo trabalho neste projeto",
     "description": "Descreva o objetivo e escolha o tipo de trabalho. O pedido vai para o executor correspondente e mostra o plano, os dados utilizados, o resultado esperado e os limites antes da aprovação. O trabalho anterior permanece no histórico.",
@@ -4534,6 +4535,173 @@
       "denied": "Sua função na organização não permite alterar responsabilidades.",
       "not_found": "O projeto não está mais disponível.",
       "save": "Não foi possível salvar a alteração."
+=======
+  "ReceivablesReleasedResult": {
+    "title": "Análise da carteira de recebíveis",
+    "subtitle": "Cálculo determinístico sob as premissas declaradas e sobre a seleção de carteira confirmada.",
+    "referenceDate": "Data-base",
+    "computedAt": "Calculado em",
+    "decision": {
+      "ready_for_structuring": "Carteira pronta para estruturação",
+      "needs_remediation": "Carteira com pontos a corrigir",
+      "not_viable": "Carteira sem viabilidade nas premissas atuais"
+    },
+    "supersededTitle": "Resultado desatualizado",
+    "supersededBody": "A análise guardada foi calculada para outra seleção ou outra execução. Ela fica registrada como histórico e não é apresentada como resultado atual.",
+    "supersededReason": {
+      "run_replaced": "A execução do caso foi substituída por outra.",
+      "scope_stale": "A seleção confirmada deixou de valer para as fontes atuais.",
+      "scope_replaced": "Outra seleção de carteira foi confirmada depois do cálculo.",
+      "sources_changed": "Os documentos de origem mudaram depois do cálculo."
+    },
+    "portfolio": {
+      "heading": "Carteira e base elegível",
+      "titleCount": "Títulos",
+      "debtorCount": "Sacados",
+      "groupCount": "Grupos econômicos",
+      "totalOutstanding": "Saldo em aberto",
+      "preliminaryEligible": "Base elegível preliminar",
+      "adjustedEligible": "Base elegível ajustada por concentração",
+      "eligibleShare": "Participação elegível",
+      "weightedAverageRemainingDays": "Prazo médio ponderado a decorrer, em dias",
+      "convention": "Convenção do denominador: os tetos de concentração usam a base elegível preliminar e são aplicados primeiro por sacado e depois por grupo econômico. Limites definidos sobre o saldo após exclusões teriam outra matemática."
+    },
+    "facility": {
+      "heading": "Capacidade suportada e valor pedido",
+      "requested": "Valor pedido",
+      "maximumByAdvanceRate": "Máximo pelo advance rate",
+      "maximumByOvercollateralization": "Máximo pela sobrecolateralização",
+      "supported": "Facilidade suportada",
+      "overcollateralizationAtRequest": "Sobrecolateralização no valor pedido",
+      "requiredOvercollateralization": "Sobrecolateralização exigida",
+      "actualSubordination": "Subordinação atual",
+      "requiredSubordination": "Subordinação exigida",
+      "reserveTarget": "Reserva-alvo",
+      "note": "A facilidade suportada é o menor valor entre o máximo pelo advance rate e o máximo pela sobrecolateralização. O valor pedido é comparado com essa capacidade e nunca entra na base."
+    },
+    "concentration": {
+      "heading": "Concentração",
+      "topDebtor": "Maior sacado",
+      "topFiveDebtors": "Cinco maiores sacados",
+      "topGroup": "Maior grupo econômico",
+      "debtorLimit": "Teto por sacado",
+      "groupLimit": "Teto por grupo econômico",
+      "herfindahl": "Herfindahl por sacado"
+    },
+    "waterfall": {
+      "heading": "Cascata indicativa",
+      "convention": "Ordem fixa: taxa de servicing, juros sênior, reposição da reserva, principal sênior, mezanino e residual subordinado. O cálculo é indicativo e não representa nenhuma outra ordem contratual.",
+      "priority": "Ordem",
+      "item": "Item",
+      "due": "Devido",
+      "paid": "Pago",
+      "shortfall": "Falta",
+      "items": {
+        "servicing_fee": "Taxa de servicing",
+        "senior_interest": "Juros sênior",
+        "reserve_top_up": "Reposição da reserva",
+        "senior_principal": "Principal sênior",
+        "mezzanine": "Mezanino",
+        "subordinated_residual": "Residual subordinado"
+      },
+      "empty": "A cascata não foi calculada nesta execução."
+    },
+    "triggers": {
+      "heading": "Gatilhos",
+      "actual": "Medido",
+      "threshold": "Limite",
+      "statusLabel": "Situação",
+      "status": {
+        "within_limit": "Dentro do limite",
+        "breached": "Fora do limite"
+      },
+      "consequence": {
+        "block": "Bloqueia",
+        "remediate": "Exige correção"
+      },
+      "ids": {
+        "eligible_share": "Participação elegível",
+        "evidence_coverage": "Cobertura de evidência",
+        "registration_coverage": "Cobertura de registro",
+        "accounting_reconciliation": "Conciliação com a contabilidade",
+        "tape_collections_reconciliation": "Conciliação de recebimentos da carteira",
+        "cash_reconciliation": "Conciliação de caixa",
+        "cash_mapping": "Mapeamento de caixa",
+        "linked_account": "Conta vinculada",
+        "single_debtor_concentration": "Concentração por sacado",
+        "debtor_group_concentration": "Concentração por grupo econômico",
+        "delinquency_30": "Inadimplência acima de 30 dias",
+        "dilution": "Diluição",
+        "repurchase": "Recompra",
+        "recovery": "Recuperação",
+        "subordination": "Subordinação"
+      }
+    },
+    "gaps": {
+      "heading": "Lacunas",
+      "severity": {
+        "blocking": "Bloqueante",
+        "material": "Material",
+        "attention": "Atenção"
+      },
+      "scope": {
+        "portfolio": "Carteira",
+        "cedent": "Cedente",
+        "obligor": "Sacado",
+        "servicing": "Servicing",
+        "structure": "Estrutura"
+      },
+      "empty": "Nenhuma lacuna registrada nesta execução."
+    },
+    "coverage": {
+      "heading": "Cobertura histórica",
+      "note": "Cada família mostra o que as séries entregues permitiram medir. Ausência de série não é zero e não vira histórico medido.",
+      "families": {
+        "roll_rates": "Matrizes de transição",
+        "vintages": "Safras",
+        "dilution": "Diluição",
+        "repurchase_and_loss": "Recompra e perda",
+        "punctual_settlement": "Liquidação pontual",
+        "extensions": "Prorrogações"
+      },
+      "status": {
+        "measured": "Medida",
+        "partial": "Parcial",
+        "not_evaluable": "Não avaliável"
+      },
+      "unavailable": "Métricas indisponíveis",
+      "warnings": "Avisos do motor",
+      "aggregateHeading": "Desempenho agregado informado",
+      "aggregateBasis": "Agregados informados por título. Não são séries históricas medidas.",
+      "metrics": {
+        "delinquency1Share": "Atraso acima de 1 dia",
+        "delinquency30Share": "Atraso acima de 30 dias",
+        "delinquency90Share": "Atraso acima de 90 dias",
+        "grossDefaultRate": "Inadimplência bruta",
+        "netLossRate": "Perda líquida",
+        "recoveryRate": "Recuperação",
+        "dilutionRate": "Diluição",
+        "repurchaseRate": "Recompra",
+        "substitutionRate": "Substituição"
+      },
+      "absent": "Este resultado foi calculado antes da projeção de cobertura histórica e não declara cobertura por família."
+    },
+    "evidence": {
+      "heading": "Referências de evidência",
+      "section": "Seção",
+      "source": "Fonte",
+      "anchor": "Âncora",
+      "empty": "Nenhuma referência de evidência foi vinculada a este resultado."
+    },
+    "limitations": {
+      "heading": "Limites desta análise",
+      "assumptions": "A análise vale para as premissas declaradas e para a seleção de carteira confirmada. Outra seleção exige nova execução.",
+      "noExternalDirection": "Não há direcionamento externo neste resultado.",
+      "noFinancierRecommendation": "Não há recomendação de financiador neste resultado.",
+      "noCreditApproval": "Não há aprovação de crédito neste resultado.",
+      "method": "Método {procedure}, versão {version}, maturidade {maturity}.",
+      "engine": "Contrato do resultado {schema}, moeda {currency}."
+>>>>>>> 5b825b9 (feat(web): show the released receivables analysis with its sources and its limits)
     }
   }
 }

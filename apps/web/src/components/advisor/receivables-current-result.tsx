@@ -1,6 +1,9 @@
 import {z} from "zod";
 import {getTranslations} from "next-intl/server";
 
+import {receivablesReleasedResultSchema} from "@/lib/receivables/released-result";
+import {ReceivablesReleasedResultSection} from "./receivables-released-result";
+
 const metric = z.object({value: z.string()});
 const resultSchema = z.object({receivablesVertical: z.object({
   pipeline: z.object({phaseOne: z.object({staticMetrics: z.object({portfolio: z.object({titleCount: metric, totalOpenValue: metric})})})}).nullable(),
@@ -8,8 +11,21 @@ const resultSchema = z.object({receivablesVertical: z.object({
   methodExecution: z.object({status: z.enum(["not_ready", "succeeded", "failed"]), mode: z.literal("internal_shadow"), externalEffectAllowed: z.literal(false)}).optional(),
 })});
 
-/** The caller supplies only the completed current-run report checked by the server reader. */
-export async function ReceivablesCurrentResult({report, locale}: {report: unknown; locale: "pt-BR" | "en-US"}) {
+/**
+ * The caller supplies only the completed current-run report checked by the server reader, plus the
+ * organization's own released analysis when the database granted it. Without that grant, and while
+ * a stored result no longer matches the confirmed selection, this stays the compact card.
+ */
+export async function ReceivablesCurrentResult({report, locale, released}: {
+  report: unknown;
+  locale: "pt-BR" | "en-US";
+  released?: unknown;
+}) {
+  const grantedRelease = receivablesReleasedResultSchema.safeParse(released);
+  if (grantedRelease.success && (grantedRelease.data.state === "current" || grantedRelease.data.state === "superseded")) {
+    // Resolved here rather than nested as an element so the released block renders in one pass.
+    return await ReceivablesReleasedResultSection({locale, released: grantedRelease.data});
+  }
   const parsed = resultSchema.safeParse(report);
   if (!parsed.success || !parsed.data.receivablesVertical.pipeline) return null;
   const t = await getTranslations({locale, namespace: "ReceivablesCurrentResult"});

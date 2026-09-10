@@ -4400,6 +4400,7 @@
     "blocked": "Information to complete",
     "blockedBody": "The pool analysis is available. You can answer assumptions while gathering remaining documents; the specialist conclusion depends on the conditions below."
   },
+<<<<<<< HEAD
   "NewWorkRequest": {
     "title": "New work in this project",
     "description": "Describe the objective and choose the type of work. The request goes to the matching executor and shows the plan, the data used, the expected result and the limits before approval. Previous work stays in the history.",
@@ -4534,6 +4535,173 @@
       "denied": "Your role in the organization does not allow changing responsibilities.",
       "not_found": "The project is no longer available.",
       "save": "The change could not be saved."
+=======
+  "ReceivablesReleasedResult": {
+    "title": "Receivables pool analysis",
+    "subtitle": "Deterministic calculation under the declared assumptions and over the confirmed pool selection.",
+    "referenceDate": "Reporting date",
+    "computedAt": "Calculated on",
+    "decision": {
+      "ready_for_structuring": "Pool ready for structuring",
+      "needs_remediation": "Pool with points to correct",
+      "not_viable": "Pool not viable under the current assumptions"
+    },
+    "supersededTitle": "Result out of date",
+    "supersededBody": "The stored analysis was calculated for another selection or another run. It stays on record as history and is not presented as the current result.",
+    "supersededReason": {
+      "run_replaced": "The case run was replaced by another one.",
+      "scope_stale": "The confirmed selection no longer matches the current sources.",
+      "scope_replaced": "Another pool selection was confirmed after the calculation.",
+      "sources_changed": "The source documents changed after the calculation."
+    },
+    "portfolio": {
+      "heading": "Pool and eligible base",
+      "titleCount": "Receivables",
+      "debtorCount": "Debtors",
+      "groupCount": "Economic groups",
+      "totalOutstanding": "Outstanding balance",
+      "preliminaryEligible": "Preliminary eligible base",
+      "adjustedEligible": "Concentration-adjusted eligible base",
+      "eligibleShare": "Eligible share",
+      "weightedAverageRemainingDays": "Weighted average remaining term, in days",
+      "convention": "Denominator convention: concentration caps use the preliminary eligible base and are applied first per debtor and then per economic group. Caps defined over the balance after exclusions would be different mathematics."
+    },
+    "facility": {
+      "heading": "Supported capacity and requested amount",
+      "requested": "Requested amount",
+      "maximumByAdvanceRate": "Maximum by advance rate",
+      "maximumByOvercollateralization": "Maximum by overcollateralization",
+      "supported": "Supported facility",
+      "overcollateralizationAtRequest": "Overcollateralization at the requested amount",
+      "requiredOvercollateralization": "Required overcollateralization",
+      "actualSubordination": "Actual subordination",
+      "requiredSubordination": "Required subordination",
+      "reserveTarget": "Reserve target",
+      "note": "The supported facility is the lower of the maximum by advance rate and the maximum by overcollateralization. The requested amount is compared with that capacity and never enters the base."
+    },
+    "concentration": {
+      "heading": "Concentration",
+      "topDebtor": "Top debtor",
+      "topFiveDebtors": "Top five debtors",
+      "topGroup": "Top economic group",
+      "debtorLimit": "Per-debtor cap",
+      "groupLimit": "Per-group cap",
+      "herfindahl": "Debtor Herfindahl"
+    },
+    "waterfall": {
+      "heading": "Indicative waterfall",
+      "convention": "Fixed order: servicing fee, senior interest, reserve top-up, senior principal, mezzanine and subordinated residual. The calculation is indicative and represents no other contractual order.",
+      "priority": "Order",
+      "item": "Item",
+      "due": "Due",
+      "paid": "Paid",
+      "shortfall": "Shortfall",
+      "items": {
+        "servicing_fee": "Servicing fee",
+        "senior_interest": "Senior interest",
+        "reserve_top_up": "Reserve top-up",
+        "senior_principal": "Senior principal",
+        "mezzanine": "Mezzanine",
+        "subordinated_residual": "Subordinated residual"
+      },
+      "empty": "The waterfall was not calculated in this run."
+    },
+    "triggers": {
+      "heading": "Triggers",
+      "actual": "Measured",
+      "threshold": "Limit",
+      "statusLabel": "Status",
+      "status": {
+        "within_limit": "Within limit",
+        "breached": "Outside limit"
+      },
+      "consequence": {
+        "block": "Blocks",
+        "remediate": "Requires correction"
+      },
+      "ids": {
+        "eligible_share": "Eligible share",
+        "evidence_coverage": "Evidence coverage",
+        "registration_coverage": "Registration coverage",
+        "accounting_reconciliation": "Reconciliation with accounting",
+        "tape_collections_reconciliation": "Pool collections reconciliation",
+        "cash_reconciliation": "Cash reconciliation",
+        "cash_mapping": "Cash mapping",
+        "linked_account": "Linked account",
+        "single_debtor_concentration": "Single debtor concentration",
+        "debtor_group_concentration": "Economic group concentration",
+        "delinquency_30": "Delinquency over 30 days",
+        "dilution": "Dilution",
+        "repurchase": "Repurchase",
+        "recovery": "Recovery",
+        "subordination": "Subordination"
+      }
+    },
+    "gaps": {
+      "heading": "Gaps",
+      "severity": {
+        "blocking": "Blocking",
+        "material": "Material",
+        "attention": "Attention"
+      },
+      "scope": {
+        "portfolio": "Pool",
+        "cedent": "Seller",
+        "obligor": "Debtor",
+        "servicing": "Servicing",
+        "structure": "Structure"
+      },
+      "empty": "No gap recorded in this run."
+    },
+    "coverage": {
+      "heading": "Historical coverage",
+      "note": "Each family shows what the delivered series allowed to measure. A missing series is not zero and does not become measured history.",
+      "families": {
+        "roll_rates": "Roll rate matrices",
+        "vintages": "Vintages",
+        "dilution": "Dilution",
+        "repurchase_and_loss": "Repurchase and loss",
+        "punctual_settlement": "On-time settlement",
+        "extensions": "Extensions"
+      },
+      "status": {
+        "measured": "Measured",
+        "partial": "Partial",
+        "not_evaluable": "Not evaluable"
+      },
+      "unavailable": "Unavailable metrics",
+      "warnings": "Engine warnings",
+      "aggregateHeading": "Reported aggregate performance",
+      "aggregateBasis": "Reported title aggregates. These are not measured historical series.",
+      "metrics": {
+        "delinquency1Share": "Past due over 1 day",
+        "delinquency30Share": "Past due over 30 days",
+        "delinquency90Share": "Past due over 90 days",
+        "grossDefaultRate": "Gross default",
+        "netLossRate": "Net loss",
+        "recoveryRate": "Recovery",
+        "dilutionRate": "Dilution",
+        "repurchaseRate": "Repurchase",
+        "substitutionRate": "Substitution"
+      },
+      "absent": "This result was calculated before the historical coverage projection and declares no coverage per family."
+    },
+    "evidence": {
+      "heading": "Evidence references",
+      "section": "Section",
+      "source": "Source",
+      "anchor": "Anchor",
+      "empty": "No evidence reference was bound to this result."
+    },
+    "limitations": {
+      "heading": "Limits of this analysis",
+      "assumptions": "The analysis holds for the declared assumptions and for the confirmed pool selection. Another selection requires a new run.",
+      "noExternalDirection": "This result carries no external direction.",
+      "noFinancierRecommendation": "This result carries no financier recommendation.",
+      "noCreditApproval": "This result carries no credit approval.",
+      "method": "Method {procedure}, version {version}, maturity {maturity}.",
+      "engine": "Result contract {schema}, currency {currency}."
+>>>>>>> 5b825b9 (feat(web): show the released receivables analysis with its sources and its limits)
     }
   }
 }
