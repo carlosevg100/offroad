@@ -13769,3 +13769,44 @@ button[disabled].workspace-search,
 .information-request-card__selector {display:grid;gap:8px;min-width:0;color:#616b71;font-size:12px;}
 .information-request-card__selector select {width:100%;min-width:0;max-width:100%;padding:12px;border:1px solid #dfe4db;border-radius:10px;background:#fff;color:#293137;font:inherit;}
 .information-request-card__selector select:focus-visible {outline:2px solid #7d9455;outline-offset:3px;}
+
+/* Financier analytical workspace: onboarding start, the /app/new analytical entry and the terms reminder. */
+.financier-onboarding-start .intake-welcome__roles {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.financier-onboarding-start .intake-welcome__action {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.financier-onboarding-start .intake-welcome__action small {
+  flex-basis: 100%;
+  color: var(--ink-muted, #6b6f76);
+  font-size: 0.85rem;
+}
+
+.financier-analysis-entry__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.financier-analysis-entry__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.financier-analysis-entry__list li svg {
+  flex: none;
+  margin-top: 4px;
+}
+
+.financier-terms-notice {
+  margin: 16px auto 0;
+  max-width: 760px;
+}

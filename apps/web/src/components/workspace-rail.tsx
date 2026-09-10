@@ -1,6 +1,6 @@
 "use client";
 
-import {Check, ChevronDown, ChevronRight, CircleGauge, Landmark, LogOut, PanelLeft, Plus, Search, UserRoundCog, X} from "lucide-react";
+import {Check, ChevronDown, ChevronRight, CircleGauge, Landmark, LogOut, PanelLeft, Plus, Search, Target, UserRoundCog, X} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
@@ -25,6 +25,7 @@ export type WorkspaceRailCopy = WorkspaceNavigationCopy & {
   publicCapitalMarket: string;
   recent: string;
   folders: string;
+  fundsAndMandates: string;
   language: string;
   signOut: string;
   account: string;
@@ -38,6 +39,8 @@ type Props = {
   locale: "pt-BR" | "en-US";
   organizationName: string;
   initialCollapsed: boolean;
+  /** Present only for organizations with the mandate-management capability. */
+  mandatesHref?: string;
   projects: WorkspaceNavigationProject[];
   showProjects: boolean;
   signOutAction: (formData: FormData) => void | Promise<void>;
@@ -219,6 +222,9 @@ export function WorkspaceRail(props: Props) {
           title={copy.professionalContext}
         ><UserRoundCog aria-hidden="true" size={15} /><span>{copy.professionalContext}</span></Link>
         <Link aria-current={pathname.includes("/app/market") ? "page" : undefined} className="app-rail__row" href={`/${locale}/app/market`} title={copy.publicCapitalMarket}><Landmark aria-hidden="true" size={15} /><span>{copy.publicCapitalMarket}</span></Link>
+        {props.mandatesHref ? (
+          <Link aria-current={pathname.includes("/app/mandates") ? "page" : undefined} className="app-rail__row" data-testid="rail-mandates" href={props.mandatesHref} title={copy.fundsAndMandates}><Target aria-hidden="true" size={15} /><span>{copy.fundsAndMandates}</span></Link>
+        ) : null}
       </nav>
 
       {props.showProjects ? (

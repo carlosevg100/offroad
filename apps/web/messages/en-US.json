@@ -866,7 +866,11 @@
         "pending": "Recording acceptance",
         "acceptedTitle": "Confidentiality terms accepted.",
         "acceptedBody": " Your financing remains private and no information will be shared without your authorization.",
-        "returnCta": "Continue"
+        "returnCta": "Continue",
+        "financierIntro": "This is a private environment. Offroad will use the information only for the analysis your organization is authorized to perform: understand the company, organize the evidence and prepare the internal read.",
+        "financierTitleLabel": "Title or role at the organization",
+        "financierCtaNote": "This acceptance permits private analysis only. It does not declare representation of the analyzed company, does not authorize disclosure or contact with participants and is not a credit decision.",
+        "financierAcceptedBody": " The analysis remains private and no information leaves your organization without authorization."
       },
       "project": {
         "kicker": "YOUR FINANCING",
@@ -1103,6 +1107,26 @@
           "body": "Confirm the mandate before activating it for qualification."
         }
       }
+    },
+    "financier": {
+      "welcomeBody": "Our mission is to expand your team's capacity to analyze opportunities, prepare committees and review documents with depth and continuity.",
+      "kicker": "Own analysis",
+      "title": "Start with the analysis. Funds and mandates can wait.",
+      "body": "Your organization can analyze opportunities, prepare committees and review the documents it is authorized to analyze. None of this discloses the case, originates an offer or declares a credit approval.",
+      "examplesTitle": "What you can do today",
+      "examples": {
+        "0": "Review an opportunity you received before the committee.",
+        "1": "Prepare the committee read with debt capacity, security package and open points.",
+        "2": "Analyze financial statements, contracts and term sheets you received.",
+        "3": "Standalone tasks: a question, a calculation, a comparison.",
+        "4": "Continue the work in the same project when new documents arrive."
+      },
+      "startCta": "Start own analysis",
+      "mandateCta": "Register funds and mandates",
+      "mandateNote": "Mandate registration is optional and is not a prerequisite for analysis.",
+      "boundary": "Analyzing a company does not mean representing it.",
+      "breadcrumbWelcome": "Start",
+      "breadcrumbTerms": "Workspace terms"
     }
   },
   "App": {
@@ -2479,7 +2503,73 @@
       "version": "Version",
       "insufficientEvidence": "Insufficient evidence to complete the review"
     },
-    "publicCapitalMarket": "Capital map"
+    "publicCapitalMarket": "Capital map",
+    "advisorFinancier": {
+      "question": "What does your team need to analyze?",
+      "prompt": "Describe the analysis, or attach the documents you are authorized to analyze.",
+      "documentsOnly": "Analyse the attached documents and tell me what they support.",
+      "exampleLabel": "Example",
+      "examples": {
+        "0": {
+          "role": "Credit analyst",
+          "prompt": "I received the deck and the financials for this opportunity. Where are the inconsistencies between the balance sheet and the debt schedule?"
+        },
+        "1": {
+          "role": "Credit committee",
+          "prompt": "Prepare the committee read: debt capacity, security package and what still needs confirmation."
+        },
+        "2": {
+          "role": "Credit fund manager",
+          "prompt": "Test this transaction against the fund criteria: ticket, tenor, security, return, and what would make me pass."
+        },
+        "3": {
+          "role": "Investment analyst",
+          "prompt": "Rebuild this company's capital structure from public information before asking for documents."
+        },
+        "4": {
+          "role": "Risk",
+          "prompt": "Review the term sheet we received: covenants, triggers and stress scenarios."
+        },
+        "5": {
+          "role": "Continued work",
+          "prompt": "Pick up last week's analysis with the revised financials that just arrived."
+        }
+      },
+      "errors": {
+        "denied": "Operation not available in this workspace: own analysis does not include origination, representation or disclosure. For private documents, accept the workspace terms first."
+      },
+      "termsNoticeTitle": "Workspace terms pending.",
+      "termsNoticeBody": "To attach private documents, an organization owner or admin needs to accept the terms and the information-usage declaration.",
+      "termsNoticeCta": "Accept the terms"
+    },
+    "financierEntry": {
+      "kicker": "Own analysis",
+      "title": "Start the analysis from the conversation.",
+      "body": "Describe the opportunity, the committee or the review you need, or attach the documents your organization is authorized to analyze. The project keeps company, evidence, questions and materials in one place.",
+      "availableTitle": "Available to your organization",
+      "available": {
+        "conversation": "Standalone requests and continued work in the same project: opportunity review, committee preparation, document analysis.",
+        "documents": "Private documents the organization is authorized to analyze, with origin and history preserved.",
+        "mandates": "Funds, mandates and contacts remain on the organization panel."
+      },
+      "unavailableTitle": "Outside own analysis",
+      "unavailable": {
+        "companyDebt": "Form-based debt view and origination thesis: entries for companies and advisors.",
+        "representation": "Declaring representation of the analyzed company.",
+        "disclosure": "Disclosing the case, contacting participants or a qualified introduction."
+      },
+      "boundary": "Analyzing a company does not mean representing it. Nothing here declares a credit approval.",
+      "cta": "Go to the conversation",
+      "mandatesCta": "Funds and mandates",
+      "termsAcceptedTitle": "Workspace terms accepted.",
+      "termsAcceptedBody": "The organization can now attach private documents to its projects."
+    },
+    "financierUnavailableEntry": {
+      "title": "This entry belongs to companies and advisors.",
+      "body": "The form-based debt view and the origination thesis create origination work. A financier organization does its own analysis from the workspace conversation, without representing the analyzed company.",
+      "cta": "Back to the analysis"
+    },
+    "mandatesBack": "Back to the analysis"
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",

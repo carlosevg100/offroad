@@ -4,10 +4,11 @@ import {ArrowLeft, Globe2, LockKeyhole, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
 import Link from "next/link";
 import {getTranslations} from "next-intl/server";
-import {redirect} from "next/navigation";
 
 import {IntakeActionSubmit} from "@/components/intake/intake-action-submit";
+import {FinancierUnavailableEntry} from "@/components/onboarding/financier-unavailable-entry";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {hasWorkspaceCapability} from "@/lib/workspace/capabilities";
 
 import {startPublicOriginationThesis} from "./actions";
 
@@ -24,7 +25,10 @@ export default async function OriginationThesisSetup({params, searchParams}: Pro
   const {error} = await searchParams;
   const t = await getTranslations({locale, namespace: "App.origination"});
   const {organization} = await requireWorkspace(locale);
-  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
+  // A financier gets the explanation, never a form whose action the server refuses.
+  if (!hasWorkspaceCapability(organization.organization_type, "origination_representation")) {
+    return <FinancierUnavailableEntry locale={locale} />;
+  }
 
   const errorMessage = error === "duplicate"
     ? t("errors.duplicate")

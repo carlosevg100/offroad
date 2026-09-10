@@ -30,6 +30,7 @@ import {reportServerFailure} from "@/lib/observability/report";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
 import {parseProfessionalContextForm} from "@/lib/professional-context";
+import {workspaceHomeAfterOnboarding} from "@/lib/workspace/capabilities";
 
 type Journey = "company" | "originator" | "capital_provider";
 type AnswerMap = Record<string, Json | undefined>;
@@ -222,6 +223,44 @@ export async function acceptPrivateWorkspaceTerms(formData: FormData) {
     redirect(`/${locale}/onboarding?job=${entryJob}&setup=terms&error=save`);
   }
   redirect(`/${locale}/onboarding?job=${entryJob}&setup=project`);
+}
+
+/**
+ * The financier's analytical entry: the workspace terms with an information-usage declaration,
+ * recorded and completed in one database transaction. No fund, mandate, contact or
+ * representation declaration is involved; mandate registration stays its own optional path.
+ */
+export async function startFinancierAnalyticalWorkspace(formData: FormData) {
+  const locale = localeFrom(formData);
+  const termsUrl = `/${locale}/onboarding?setup=terms`;
+  const parsed = z.object({
+    signatoryName: z.string().trim().min(2).max(160),
+    signatoryTitle: z.string().trim().min(2).max(160),
+    termsAgreed: z.literal("confirmed"),
+    informationRightsDeclared: z.literal("confirmed"),
+  }).safeParse({
+    signatoryName: value(formData, "signatory_name"),
+    signatoryTitle: value(formData, "signatory_title"),
+    termsAgreed: value(formData, "terms_agreed"),
+    informationRightsDeclared: value(formData, "information_rights_declared"),
+  });
+  if (!parsed.success) redirect(`${termsUrl}&error=validation`);
+
+  const supabase = await createClient();
+  if (!supabase) redirect(onboardingUrl(locale, "provider"));
+  const {error} = await supabase.rpc("start_financier_analytical_workspace_v1", {
+    p_locale: locale,
+    p_signatory_name: parsed.data.signatoryName,
+    p_signatory_title: parsed.data.signatoryTitle,
+    p_terms_agreed: true,
+    p_information_rights_declared: true,
+    p_terms_acceptance_recorded: value(formData, "terms_acceptance_recorded") === "confirmed",
+  });
+  if (error) {
+    reportServerFailure({step: "onboarding.start_financier_analytical_workspace", error});
+    redirect(`${termsUrl}&error=${error.code === "42501" ? "step" : "save"}`);
+  }
+  redirect(`/${locale}/app`);
 }
 
 const guidedCompanySchema = z.object({
@@ -728,7 +767,9 @@ export async function completeOnboarding(formData: FormData) {
   await context.supabase.from("organizations").update({verification_status: "pending"}).eq("id", context.organizationId);
   const {error} = await context.supabase.from("onboarding_progress").update({current_step: "complete", completed_at: new Date().toISOString()}).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
   if (error) redirect(`/${locale}/onboarding?error=save`);
-  redirect(`/${locale}/app?welcome=1`);
+  // The mandate path lands on the mandates panel; the conversation is the home of every workspace.
+  const home = workspaceHomeAfterOnboarding({organizationType: context.journey, completedThrough: context.journey === "capital_provider" ? "mandate" : "own_analysis"});
+  redirect(home === "mandates" ? `/${locale}/app/mandates?welcome=1` : `/${locale}/app?welcome=1`);
 }
 
 function sectionIsAvailable(journey: Journey, target: string, answers: AnswerMap) {

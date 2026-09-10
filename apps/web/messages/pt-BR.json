@@ -866,7 +866,11 @@
         "pending": "Registrando aceite",
         "acceptedTitle": "Termos de confidencialidade aceitos.",
         "acceptedBody": " Sua captação continua privada e nenhuma informação será compartilhada sem sua autorização.",
-        "returnCta": "Continuar"
+        "returnCta": "Continuar",
+        "financierIntro": "Este é um ambiente privado. A Offroad utilizará as informações apenas para a análise que a sua organização está autorizada a fazer: entender a companhia, organizar as evidências e preparar a leitura interna.",
+        "financierTitleLabel": "Cargo ou função na organização",
+        "financierCtaNote": "Este aceite permite apenas a análise privada. Não declara representação da companhia analisada, não autoriza divulgação nem contato com participantes e não constitui decisão de crédito.",
+        "financierAcceptedBody": " A análise continua privada e nenhuma informação sai da sua organização sem autorização."
       },
       "project": {
         "kicker": "SUA CAPTAÇÃO",
@@ -1103,6 +1107,26 @@
           "body": "Confirme o mandato antes de ativá-lo para qualificação."
         }
       }
+    },
+    "financier": {
+      "welcomeBody": "Nossa missão é ampliar a capacidade da sua equipe de analisar oportunidades, preparar comitês e revisar documentos com profundidade e continuidade.",
+      "kicker": "Análise própria",
+      "title": "Comece pela análise. Fundos e mandatos ficam para depois.",
+      "body": "Sua organização pode analisar oportunidades, preparar comitês e revisar os documentos que está autorizada a analisar. Nada disso divulga o caso, origina uma oferta ou declara aprovação de crédito.",
+      "examplesTitle": "O que dá para fazer hoje",
+      "examples": {
+        "0": "Revisar uma oportunidade recebida antes do comitê.",
+        "1": "Preparar a leitura de comitê com capacidade de pagamento, garantias e pendências.",
+        "2": "Analisar demonstrações, contratos e term sheets recebidos.",
+        "3": "Tarefas avulsas: uma pergunta, um cálculo, uma comparação.",
+        "4": "Continuar o trabalho no mesmo projeto quando chegarem novos documentos."
+      },
+      "startCta": "Começar a análise própria",
+      "mandateCta": "Cadastrar fundos e mandatos",
+      "mandateNote": "O cadastro de mandatos é opcional e não é pré-requisito para analisar.",
+      "boundary": "Analisar uma companhia não significa representá-la.",
+      "breadcrumbWelcome": "Começar",
+      "breadcrumbTerms": "Termos do workspace"
     }
   },
   "App": {
@@ -2479,7 +2503,73 @@
       "version": "Versão",
       "insufficientEvidence": "Informações insuficientes para concluir a análise"
     },
-    "publicCapitalMarket": "Mapa de capital"
+    "publicCapitalMarket": "Mapa de capital",
+    "advisorFinancier": {
+      "question": "O que a sua equipe precisa analisar?",
+      "prompt": "Descreva a análise ou anexe os documentos que está autorizado a analisar.",
+      "documentsOnly": "Analise os documentos anexados e diga o que eles sustentam.",
+      "exampleLabel": "Exemplo",
+      "examples": {
+        "0": {
+          "role": "Analista de crédito",
+          "prompt": "Recebi o deck e as demonstrações desta oportunidade. Onde estão as inconsistências entre o balanço e o mapa de dívida?"
+        },
+        "1": {
+          "role": "Comitê de crédito",
+          "prompt": "Prepare a leitura para o comitê: capacidade de pagamento, garantias e o que ainda falta confirmar."
+        },
+        "2": {
+          "role": "Gestor de crédito",
+          "prompt": "Teste esta operação contra os critérios do fundo: ticket, prazo, garantia, retorno e o que me faria dizer não."
+        },
+        "3": {
+          "role": "Analista de investimentos",
+          "prompt": "Reconstrua a estrutura de capital desta companhia a partir das informações públicas antes de pedir documentos."
+        },
+        "4": {
+          "role": "Risco",
+          "prompt": "Revise o term sheet recebido: covenants, gatilhos e cenários de estresse."
+        },
+        "5": {
+          "role": "Trabalho continuado",
+          "prompt": "Retome a análise da semana passada com as demonstrações revisadas que acabaram de chegar."
+        }
+      },
+      "errors": {
+        "denied": "Operação indisponível neste workspace: a análise própria não inclui originação, representação nem divulgação. Para documentos privados, confirme antes os termos do workspace."
+      },
+      "termsNoticeTitle": "Termos do workspace pendentes.",
+      "termsNoticeBody": "Para anexar documentos privados, um responsável pela organização precisa aceitar os termos e a declaração de uso das informações.",
+      "termsNoticeCta": "Aceitar os termos"
+    },
+    "financierEntry": {
+      "kicker": "Análise própria",
+      "title": "Comece a análise pela conversa.",
+      "body": "Descreva a oportunidade, o comitê ou a revisão que precisa fazer, ou anexe os documentos que a sua organização está autorizada a analisar. O projeto guarda companhia, evidências, perguntas e materiais no mesmo lugar.",
+      "availableTitle": "Disponível para a sua organização",
+      "available": {
+        "conversation": "Pedidos avulsos e trabalho continuado no mesmo projeto: revisão de oportunidade, preparação de comitê, análise de documentos.",
+        "documents": "Documentos privados que a organização está autorizada a analisar, com origem e histórico preservados.",
+        "mandates": "Fundos, mandatos e contatos continuam no painel da organização."
+      },
+      "unavailableTitle": "Fora da análise própria",
+      "unavailable": {
+        "companyDebt": "Visão de dívida por formulário e tese de originação: entradas das companhias e dos assessores.",
+        "representation": "Declaração de representação da companhia analisada.",
+        "disclosure": "Divulgação do caso, contato com participantes ou introdução qualificada."
+      },
+      "boundary": "Analisar uma companhia não significa representá-la. Nada aqui declara aprovação de crédito.",
+      "cta": "Ir para a conversa",
+      "mandatesCta": "Fundos e mandatos",
+      "termsAcceptedTitle": "Termos do workspace aceitos.",
+      "termsAcceptedBody": "A organização já pode anexar documentos privados nos seus projetos."
+    },
+    "financierUnavailableEntry": {
+      "title": "Esta entrada é das companhias e dos assessores.",
+      "body": "A visão de dívida por formulário e a tese de originação criam trabalho de originação. Uma organização financiadora faz a análise própria pela conversa do workspace, sem representar a companhia analisada.",
+      "cta": "Voltar à análise"
+    },
+    "mandatesBack": "Voltar à análise"
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",

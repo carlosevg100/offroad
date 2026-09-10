@@ -12,11 +12,13 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {canStartPreliminaryUnderstanding, dealBriefOf} from "@/lib/intake/deal-brief";
 import {IntakeReview} from "@/components/intake/intake-review";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
+import {FinancierAnalysisEntry} from "@/components/onboarding/financier-analysis-entry";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {loadIntakeCollection, loadIntakeReview} from "@/lib/intake/server";
+import {loadIntakeCollection, loadIntakeReview, loadIntakeSession} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
+import {resolveNewProjectEntry} from "@/lib/workspace/capabilities";
 import type {Json} from "@/types/database";
 
 import {
@@ -79,7 +81,6 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     getTranslations({locale, namespace: "Intake"}),
   ]);
   const {supabase, organization, userId} = await requireWorkspace(locale);
-  if (organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
 
   const notice = state.error ? tIntake(`errors.${intakeErrorCodes.includes(state.error) ? state.error as IntakeErrorCode : "save"}`) : null;
   if (state.mode === "manual") redirect(`/${locale}/app/new`);
@@ -91,6 +92,66 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
   }
   const entryJobQuery = `job=${entryJob}`;
   const sessionId = typeof state.session === "string" ? state.session : "";
+
+  // A financier never sees the representation-declared setup or the guided company pages: its
+  // sessions open in their project and the choice screen is the analytical entry, with the
+  // workspace terms available for organizations that still have to accept them.
+  const financierSession = mode === "documents" && sessionId
+    ? await loadIntakeSession({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId})
+    : null;
+  const entry = resolveNewProjectEntry({
+    organizationType: organization.organization_type,
+    mode,
+    session: financierSession ? {id: financierSession.id, capitalProjectId: financierSession.capital_project_id} : null,
+  });
+  if (entry.kind === "project") redirect(`/${locale}/app/projects/${entry.projectId}`);
+  if (entry.kind === "session_not_found" || entry.kind === "analysis_entry") {
+    const {data: financierSetupData} = await supabase.rpc("get_workspace_project_setup", {p_locale: locale});
+    const financierSetup = financierSetupData && typeof financierSetupData === "object" && !Array.isArray(financierSetupData)
+      ? financierSetupData as WorkspaceProjectSetup
+      : null;
+    const financierTermsAccepted = financierSetup?.terms_accepted === true;
+    return (
+      <main className="app-canvas intake-page">
+        <Link className="text-link" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("overview")}</Link>
+        {notice ? <p className="form-notice form-notice--error" role="alert">{notice}</p> : null}
+        {entry.kind === "session_not_found" ? (
+          <section className="intake-form">
+            <p className="form-notice form-notice--error">{tIntake("errors.sessionNotFound")}</p>
+            <Link className="button button--ghost" href={`/${locale}/app`}>{tIntake("errors.back")}</Link>
+          </section>
+        ) : null}
+        {entry.kind === "analysis_entry" && (state.setup === "terms" || !financierTermsAccepted) ? (
+          <section className="intake-setup-card intake-setup-card--terms">
+            <PrivateProjectSetup
+              acceptAction={acceptWorkspacePrivateTerms}
+              journey="capital_provider"
+              legalDocument={financierSetup?.legal_document ?? null}
+              locale={locale}
+              mode="terms"
+              profile={{
+                fullName: financierSetup?.profile?.full_name ?? "",
+                jobTitle: financierSetup?.profile?.job_title ?? "",
+              }}
+              returnHref={`/${locale}/app`}
+              startAction={startWorkspaceDocumentIntake}
+              termsAccepted={financierTermsAccepted}
+              termsAcceptanceRecorded={financierTermsAccepted}
+              termsHref={`/${locale}/app/new?setup=terms`}
+            />
+          </section>
+        ) : null}
+        {entry.kind === "analysis_entry" ? (
+          <FinancierAnalysisEntry
+            conversationHref={`/${locale}/app`}
+            locale={locale}
+            mandatesHref={`/${locale}/app/mandates`}
+            termsAccepted={financierTermsAccepted}
+          />
+        ) : null}
+      </main>
+    );
+  }
   const requestedStep = state.step ?? state.stage;
   const guidedStep = requestedStep === "company" || requestedStep === "operation" || requestedStep === "preliminary" || requestedStep === "documents"
     ? requestedStep
