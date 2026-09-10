@@ -3,6 +3,7 @@ import {randomBytes, randomUUID} from "node:crypto";
 import {join} from "node:path";
 import {expect, test, type APIRequestContext} from "@playwright/test";
 import {capitalProjectPlanSnapshot} from "../../../packages/work-plan/src/capital-jobs";
+import {dataRoomFiles} from "./support/data-room";
 import {waitForOneTimeCode} from "./support/mail";
 
 // The financier analytical workspace end to end: a capital_provider organization starts its own
@@ -183,6 +184,10 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   const requestText = "Revisar a proposta recebida da companhia antes do comitê de crédito.";
   const composer = page.locator(".advisor-composer--start");
   await composer.locator("textarea").fill(requestText);
+  // The document the organization is authorized to analyse travels with the request, through
+  // the product's own upload path; that is the only moment a conversational session collects files.
+  await composer.locator('input[type="file"]').setInputFiles(dataRoomFiles.slice(0, 1));
+  await expect(composer.locator(".advisor-composer__files > span")).toHaveCount(1);
   await composer.locator(".advisor-composer__send").click();
   await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
   const projectPath = new URL(page.url()).pathname;
@@ -198,19 +203,14 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   expect(sessions[0]!.representation_status).toBe("not_claimed");
   expect(await rest(request, `project_representation_evidence?select=id&intake_session_id=eq.${sessionId}`, token)).toHaveLength(0);
 
-  // 6b. A document the organization is authorized to analyse, in its own tenant path.
-  const documentId = randomUUID();
-  const registered = await rpc(request, "register_intake_document_command", {
-    p_organization_id: organizationId, p_session_id: sessionId, p_event_id: randomUUID(),
-    p_document_id: documentId, p_bucket_id: "opportunity-documents",
-    p_object_path: `${organizationId}/${sessionId}/${documentId}-proposta.pdf`,
-    p_original_name: "proposta.pdf", p_mime_type: "application/pdf", p_byte_size: 4096,
-    p_sha256: "a".repeat(64),
-  }, token);
-  expect(registered.status, registered.payload).toBe(200);
-  const documents = await rest(request, `source_documents?select=id,organization_id&intake_session_id=eq.${sessionId}`, token);
+  // 6b. The attached document was registered in the organization's own tenant path, and the
+  // private reading of the financier's session reaches the same understanding block as any
+  // other private project: no representation was needed to read what it is allowed to read.
+  const documents = await rest(request, `source_documents?select=id,organization_id,object_path&intake_session_id=eq.${sessionId}`, token);
   expect(documents).toHaveLength(1);
   expect(documents[0]!.organization_id).toBe(organizationId);
+  expect(String(documents[0]!.object_path).startsWith(`${organizationId}/${sessionId}/`)).toBe(true);
+  await expect(page.locator(".advisor-private-work__understanding")).toBeVisible({timeout: 120_000});
 
   // 7. A folder from the product's own rail: creation was blocked for financiers before.
   await page.goto("/pt-BR/app");
@@ -277,17 +277,17 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
     p_organization_id: organizationId, p_session_id: sessionId, p_match_screen_fingerprint: "c".repeat(64),
   }, ["42501"], token);
 
-  // 11. Tampered file bindings and an organization switch inside the command.
+  // 11. An organization switch inside the command is refused by the access guard before any
+  // status or path check. Tampered file paths are refused by the same command after the
+  // collecting check, so they are proven on a collecting session in
+  // supabase/tests/financier_analytical_workspace.sql rather than here, where the worker may
+  // already have moved the session on.
   const documentArgs = (organization: string, path: string) => ({
     p_organization_id: organization, p_session_id: sessionId, p_event_id: randomUUID(),
     p_document_id: randomUUID(), p_bucket_id: "opportunity-documents", p_object_path: path,
     p_original_name: "proposta.pdf", p_mime_type: "application/pdf", p_byte_size: 4096,
     p_sha256: "d".repeat(64),
   });
-  await expectRefusal(request, "file bound to another tenant path", "register_intake_document_command",
-    documentArgs(organizationId, `${nullUuid}/${sessionId}/hijack.pdf`), ["22023"], token);
-  await expectRefusal(request, "file bound to another session path", "register_intake_document_command",
-    documentArgs(organizationId, `${organizationId}/${nullUuid}/hijack.pdf`), ["22023"], token);
   await expectRefusal(request, "organization switch on document registration", "register_intake_document_command",
     documentArgs(nullUuid, `${nullUuid}/${sessionId}/switch.pdf`), ["42501"], token);
 
