@@ -84,6 +84,24 @@ function run(evidence: ReceivablesEvidenceEnvelope[], scope: ReceivablesEvidence
 }
 
 describe("receivables worker evidence scope", () => {
+  it("retains the complete existing corpus in discovery without including its other pools in analysis", async () => {
+    const prior = await envelope(1);
+    const added = await envelope(2, true, 1, "combined");
+    const corpus = [prior, added];
+    const incomplete = confirmation([added]);
+    expect(resolveConfirmedReceivablesScope(discoverReceivablesEvidence(corpus), incomplete)).toEqual({state: "pending", code: "scope_stale"});
+    const complete = confirmation(corpus, 1);
+    const report = run(corpus, complete).publicReport;
+    expect(report.sourceManifest.fingerprint).toBe(complete.scope!.sourceManifestFingerprint);
+    expect(report.sourceManifest.sources).toHaveLength(2);
+    const selected = resolveConfirmedReceivablesScope(discoverReceivablesEvidence(corpus), complete);
+    expect(selected.state).toBe("current");
+    if (selected.state !== "current") throw new Error("fixture");
+    expect(selected.documents.map((document) => document.id)).toEqual([id(2)]);
+    expect(selected.documents[0]!.layer.sheets).toHaveLength(1);
+    expect(JSON.stringify(selected.documents)).not.toContain("NF-SECOND");
+  });
+
   it("includes only explicitly selected non-tape sheets and preserves the exact primary row block", async () => {
     const evidence = [await envelope(1, true, 1, "combined")];
     const discovery = discoverReceivablesEvidence(evidence);

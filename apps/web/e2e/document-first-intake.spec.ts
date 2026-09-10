@@ -1,4 +1,4 @@
-import {receivablesR01Fixture} from "./support/receivables-r01-fixture";
+import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -848,6 +848,8 @@ test.describe("Document-first intake (company journey)", () => {
     const fixture = await receivablesR01Fixture();
     const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query}).trim();
     execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
+    const discovery = refreshReceivablesFixtureDiscovery(databaseUrl, sessionId, account.email);
+    expect(discovery.sourceManifest.sources.length).toBeGreaterThan(fixture.sources.length);
     const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;");
     await page.goto(`/pt-BR/app/projects/${projectId}`);
     const scope = page.getByTestId("receivables-scope-card");
@@ -880,6 +882,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.reload();
     await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     await waitForCaseStatus(["succeeded"]);
+    expect(sql("select private.receivables_evidence_scope_context(s.organization_id,s.id)->>'state' from public.document_intake_sessions s where s.id=:'session_id'::uuid;")).toBe("current");
     const selectedScope = JSON.parse(sql("select scope from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
     expect(selectedScope.schemaVersion).toBe("receivables-evidence-scope.v2");
     expect(selectedScope.primarySupportSheets).toEqual(["CEDENTE", "CONTABIL", "ESTRUTURA", "POLITICA", "RECEBIMENTOS"]);

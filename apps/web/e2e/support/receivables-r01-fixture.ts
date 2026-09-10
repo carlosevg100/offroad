@@ -47,3 +47,42 @@ export async function receivablesR01Fixture() {
     return {sources, report: {status: "needs_evidence_scope", sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: codec.fingerprintReceivablesEvidence(envelopes), sources: revisions}, candidates: ["CARTEIRA", "Excluded pool"].map((sheet) => ({documentId: sources[0]!.id, fileName: sources[0]!.name, sheet, headerRow: 1})), supportSheetCandidates: source.layer.sheets.filter((sheet: {name: string}) => sheet.name !== "CARTEIRA").map((sheet: {name: string}) => ({documentId: sources[0]!.id, sheet: sheet.name}))}};
   } finally {rmSync(directory, {recursive: true, force: true});}
 }
+
+/** Discover the complete current synthetic corpus, including sources from preceding journey steps. */
+export function refreshReceivablesFixtureDiscovery(databaseUrl: string, sessionId: string, ownerEmail: string) {
+  const address = new URL(databaseUrl);
+  if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres" || !/^e2e-.*@example\.com$/.test(ownerEmail)) {
+    throw new Error("R01 discovery fixture requires the synthetic loopback owner.");
+  }
+  const query = `select coalesce(jsonb_agg(jsonb_build_object(
+    'source_document_id',chosen.source_document_id,'document_version',chosen.document_version,
+    'content_kind',chosen.content_kind,'schema_version',chosen.schema_version,
+    'source_sha256',chosen.source_sha256,'content_sha256',chosen.content_sha256,
+    'payload_sha256',chosen.payload_sha256,'codec',chosen.codec,
+    'uncompressed_bytes',chosen.uncompressed_bytes,'payload_base64',encode(chosen.compressed_payload,'base64'),
+    'file_name',chosen.original_name
+  ) order by chosen.source_document_id),'[]'::jsonb) from (
+    select distinct on (fragment.source_document_id,fragment.document_version) fragment.*,source.original_name
+    from private.receivables_evidence_fragments fragment
+    join public.source_documents source on source.organization_id=fragment.organization_id
+      and source.id=fragment.source_document_id and source.intake_session_id=fragment.intake_session_id
+      and source.document_version=fragment.document_version
+    join public.document_intake_sessions session on session.organization_id=fragment.organization_id and session.id=fragment.intake_session_id
+    join auth.users owner on owner.id=session.started_by
+    where session.id=:'session_id'::uuid and owner.email=:'owner_email'
+    order by fragment.source_document_id,fragment.document_version,fragment.created_at desc
+  ) chosen;`;
+  const commandArgs = [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${ownerEmail}`];
+  const entries = JSON.parse(execFileSync("psql", commandArgs, {encoding: "utf8", input: query}).trim()) as Array<Record<string, unknown> & {source_document_id: string; file_name: string}>;
+  if (!entries.length) throw new Error("Synthetic discovery has no current sources.");
+  const workerRequire = createRequire(resolve(__dirname, "../../../document-worker/package.json"));
+  const directory = mkdtempSync(resolve(tmpdir(), "offroad-r01-discovery-"));
+  try {
+    const target = resolve(directory, "discovery.cjs");
+    execFileSync(process.execPath, [workerRequire.resolve("esbuild/bin/esbuild"), resolve(__dirname, "../../../document-worker/src/receivables-scope-resolution.ts"), "--bundle", "--platform=node", "--format=cjs", `--outfile=${target}`], {stdio: "pipe"});
+    const discovery = workerRequire(target).discoverReceivablesEvidence(entries.map((entry) => {const envelope: Record<string, unknown> = {...entry}; delete envelope.file_name; return envelope;}), new Map(entries.map((entry) => [entry.source_document_id, entry.file_name])));
+    const report = {status: "needs_evidence_scope", sourceManifest: discovery.sourceManifest, candidates: discovery.candidates, supportSheetCandidates: discovery.supportSheetCandidates};
+    execFileSync("psql", [...commandArgs, "-v", `report=${JSON.stringify(report)}`], {encoding: "utf8", input: `update public.document_intake_sessions s set result_summary=jsonb_set(coalesce(result_summary,'{}'),'{case_state}',coalesce(result_summary->'case_state','{}')||jsonb_build_object('receivablesVertical',:'report'::jsonb)) where s.id=:'session_id'::uuid and exists(select 1 from auth.users u where u.id=s.started_by and u.email=:'owner_email');`});
+    return report;
+  } finally {rmSync(directory, {recursive: true, force: true});}
+}
