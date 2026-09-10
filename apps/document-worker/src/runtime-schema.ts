@@ -13,6 +13,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "execution-brief-proposal.v1",
   "governed-sector-planning-context.v1",
   "confirmed-receivables-evidence-scope.v1",
+  "confirmed-receivables-support-sheets.v1",
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
   "atomic-documentary-commit.v1",

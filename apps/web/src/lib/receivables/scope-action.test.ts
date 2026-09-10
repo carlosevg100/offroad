@@ -5,7 +5,7 @@ vi.mock("next/cache", () => ({revalidatePath: mocks.revalidate}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 import {confirmReceivablesScope} from "@/app/[locale]/app/projects/[projectId]/actions";
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-const input = {locale: "pt-BR", projectId: id(1), sessionId: id(2), manifestFingerprint: "a".repeat(64), primaryTape: {documentId: id(3), sheet: "Tape", headerRow: 1}, complementDocumentIds: [], reportingDate: "2026-08-31", commandId: id(4)};
+const input = {locale: "pt-BR", projectId: id(1), sessionId: id(2), manifestFingerprint: "a".repeat(64), primaryTape: {documentId: id(3), sheet: "Tape", headerRow: 1}, complementDocumentIds: [], primarySupportSheets: [], reportingDate: "2026-08-31", commandId: id(4)};
 beforeEach(() => {
   vi.clearAllMocks();
   const query = {select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: mocks.session};
@@ -26,7 +26,7 @@ describe("scope confirmation action", () => {
     mocks.rpc.mockResolvedValue({data: null, error: {message, code}});
     expect(await confirmReceivablesScope(input)).toEqual({ok: false, code: expected});
     expect(mocks.revalidate).not.toHaveBeenCalled();
-    expect(mocks.rpc).toHaveBeenCalledWith("confirm_receivables_evidence_scope_v1", expect.objectContaining({p_session_id: input.sessionId, p_expected_manifest_fingerprint: input.manifestFingerprint, p_command_id: input.commandId}));
+    expect(mocks.rpc).toHaveBeenCalledWith("confirm_receivables_evidence_scope_v2", expect.objectContaining({p_session_id: input.sessionId, p_expected_manifest_fingerprint: input.manifestFingerprint, p_command_id: input.commandId}));
   });
   it("does not treat an empty RPC response as confirmation", async () => {
     mocks.rpc.mockResolvedValue({data: null, error: null});

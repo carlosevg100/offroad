@@ -30,7 +30,14 @@ export function discoverReceivablesEvidence(envelopes: readonly ReceivablesEvide
       };
     }).sort((a, b) => a.sourceDocumentId < b.sourceDocumentId ? -1 : a.sourceDocumentId > b.sourceDocumentId ? 1 : 0),
   };
-  return {documents, fiscalArchives, sourceManifest, candidates: identifyReceivablesTapes(documents)};
+  const candidates = identifyReceivablesTapes(documents);
+  const supportSheetCandidates = documents.flatMap((document) => {
+    const sheets = document.layer.sheets ?? [];
+    return sheets.filter((sheet) => sheets.filter((other) => other.name === sheet.name).length === 1
+      && !candidates.some((candidate) => candidate.documentId === document.id && candidate.sheet === sheet.name))
+      .map((sheet) => ({documentId: document.id, sheet: sheet.name}));
+  }).sort((a, b) => a.documentId < b.documentId ? -1 : a.documentId > b.documentId ? 1 : a.sheet < b.sheet ? -1 : a.sheet > b.sheet ? 1 : 0);
+  return {documents, fiscalArchives, sourceManifest, candidates, supportSheetCandidates};
 }
 
 export type ReceivablesScopeIssueCode = "multiple_receivables_tapes" | "scope_confirmation_required" | "scope_stale" | "reporting_date_conflict";
@@ -63,7 +70,7 @@ export function resolveConfirmedReceivablesScope(
   const scope = parsed.data.scope;
   // Use fresh discovery, not the candidate list supplied beside the confirmation.
   const checked = receivablesEvidenceScopeContextSchema.safeParse({
-    state: "current", sourceManifest: discovery.sourceManifest, candidates: discovery.candidates, scope,
+    state: "current", sourceManifest: discovery.sourceManifest, candidates: discovery.candidates, supportSheetCandidates: discovery.supportSheetCandidates, scope,
   });
   if (!checked.success) return {state: "pending", code: "scope_stale"};
   const primary = discovery.documents.find((document) => document.id === scope.primaryTape.documentId);
@@ -81,7 +88,7 @@ export function resolveConfirmedReceivablesScope(
   const documents: ReceivablesEvidenceDocument[] = [{
     ...primary,
     // Original row addresses and file hash remain unchanged for source tracing.
-    layer: {documentId: primary.id, sheets: [{name: sheet.name, cells}]},
+    layer: {documentId: primary.id, sheets: [{name: sheet.name, cells}, ...(scope.primarySupportSheets ?? []).map((name) => primary.layer.sheets!.find((support) => support.name === name)!)]},
   }, ...discovery.documents.filter((document) => selected.has(document.id)).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)];
   const fiscalArchives = discovery.fiscalArchives.filter((archive) => selected.has(archive.archiveId)).sort((a, b) => a.archiveId < b.archiveId ? -1 : a.archiveId > b.archiveId ? 1 : 0);
   const datasetHash = createHash("sha256").update(JSON.stringify({
@@ -90,6 +97,7 @@ export function resolveConfirmedReceivablesScope(
     sourceManifestFingerprint: scope.sourceManifestFingerprint,
     reportingDate: scope.reportingDate,
     primaryTape: scope.primaryTape,
+    ...(scope.schemaVersion === "receivables-evidence-scope.v2" ? {primarySupportSheets: scope.primarySupportSheets} : {}),
     sourceRevisions: [...scope.sourceRevisions].sort((a, b) => a.sourceDocumentId < b.sourceDocumentId ? -1 : a.sourceDocumentId > b.sourceDocumentId ? 1 : 0),
   })).digest("hex");
   return {state: "current", scope, datasetHash, documents, fiscalArchives};

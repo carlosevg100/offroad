@@ -2477,7 +2477,8 @@
       "download": "Download Word",
       "version": "Version",
       "insufficientEvidence": "Insufficient evidence to complete the review"
-    }
+    },
+    "publicCapitalMarket": "Capital map"
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",
@@ -3737,7 +3738,9 @@
     "unnamedSource": "File name unavailable",
     "sheet": "Sheet",
     "headerRow": "header at row",
-    "version": "Version"
+    "version": "Version",
+    "supportSheets": "Supporting sheets in this file",
+    "supportSheetsHelp": "Select the sheets that should support the chosen pool. Other pools will not be included."
   },
   "ReceivablesSupportPeriods": {
     "title": "Dates and periods of supporting documents",
@@ -3873,7 +3876,8 @@
     "searchPlaceholder": "Name, instrument or characteristic",
     "sourceClass": {
       "directory": "Directory record",
-      "registered": "Registered mandate"
+      "registered": "Registered mandate",
+      "public_research": "Public research"
     },
     "observedAt": "Recorded on {date}",
     "dateUnknown": "Observation date not provided",
@@ -3882,7 +3886,9 @@
     "noSearchResults": "No records in this snapshot match your search.",
     "limitations": "Coverage and limitations",
     "boundary": "Informational research. These records do not establish interest, fit for the transaction or capital availability. No recipient list has been approved and no contact has been authorized.",
-    "status": "Informational research"
+    "status": "Informational research",
+    "publicCatalog": "Explore public strategies and sources",
+    "publicSnapshot": "Includes the public catalog observed on {date}, separate from private records. Strategies are not current mandates."
   },
   "InstitutionalConfigurationReview": {
     "title": "Assumptions for review",
@@ -4151,6 +4157,7 @@
     "kicker": "Financial model",
     "title": "Approved configuration results",
     "prepared": "Prepared on {date}",
+    "editableSnapshot": "The files reflect the approved assumptions. In Excel, you can change assumptions and recalculate scenarios locally. Those changes do not update the project or the other materials; to update them, revise the configuration in Offroad.",
     "snapshot": "These files present results calculated from the approved assumptions. To change assumptions and recalculate, review the configuration in Offroad. The exported Excel contains results without local recalculation.",
     "revision": "Revision {revision} · {currency}",
     "downloads": "Download results",
@@ -4200,5 +4207,200 @@
       "execution": "Processing stopped or did not produce a verifiable result. Resume the request in the conversation; no approved result is available.",
       "unclassified": "An outstanding issue requires configuration review. Resubmit corrected inputs or request help in the conversation."
     }
+  },
+  "InstitutionalScenarioComparison": {
+    "title": "Compare reviewed results",
+    "boundary": "Compare the current configuration with an earlier reviewed calculation using the same documents. An earlier revision is a historical reference; it is not a recommended alternative and does not replace the current result.",
+    "reference": "Choose a comparison reference",
+    "choose": "Select a reviewed result",
+    "empty": "No other reviewed result is available for these documents yet",
+    "incompatible": "Currency, historical base, entity perimeter, as-of date or periods differ. Comparison requires compatible bases; no implicit conversions or adjustments are made.",
+    "revision": "{name} · revision {revision}",
+    "units": "Amounts in {currency} units. DSCR and net debt / EBITDA in multiples. As of: {asOfDate}.",
+    "table": "Financial results side by side",
+    "metric": "Metric",
+    "period": "Projected period",
+    "current": "Current",
+    "previous": "Earlier reference",
+    "notComputable": "Not computable",
+    "evidence": "Assumptions and sources",
+    "reviewed": "Reviewed at {date}",
+    "sourceVersion": "version {version} · as of {date}",
+    "assumptions": "Approved assumptions",
+    "assumptionUnits": {
+      "currency": "currency units",
+      "percent": "decimal fraction; 0.10 = 10%",
+      "days": "days",
+      "multiple": "multiple",
+      "quantity": "quantity",
+      "index": "index"
+    },
+    "metrics": {
+      "revenue": "Revenue",
+      "ebitda": "EBITDA",
+      "cfads": "Cash available for debt service",
+      "debtService": "Debt service",
+      "closingGrossDebt": "Closing gross debt",
+      "unrestrictedCash": "Unrestricted cash",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Net debt / EBITDA",
+      "liquidityHeadroom": "Liquidity headroom"
+    }
+  },
+  "DocumentaryWorkRequest": {
+    "title": "New work in this project",
+    "description": "Use the documents already provided to compare proposals, prepare a meeting or review an opportunity. Previous work stays in the history. You will review and approve a new plan before execution.",
+    "label": "What would you like to prepare?",
+    "placeholder": "Compare these proposals and highlight the points to clarify.",
+    "scope": "This option prepares a qualitative documentary analysis. Continue in the conversation for calculations, scenarios or other work.",
+    "unsupported": "Describe a proposal comparison, meeting preparation or opportunity review. Requests involving calculations should continue in the conversation.",
+    "submit": "Prepare new plan",
+    "saving": "Preparing plan…",
+    "uncertain": "We could not confirm receipt. Retry to check the same request."
+  },
+  "PublicCapitalMarket": {
+    "kicker": "Market intelligence",
+    "title": "Find a path to capital.",
+    "intro": "Explore institutions, strategies and vehicles documented in public sources. Understand who does what and what needs confirmation for your case.",
+    "coverageTitle": "Research coverage",
+    "institutions": "Researched institutions",
+    "snapshot": "Research snapshot",
+    "boundary": "A public research sample, not a complete census. No active mandate has been verified. Sources are dated; appetite, terms and capacity may have changed.",
+    "search": "Search",
+    "searchPlaceholder": "Institution, strategy or vehicle",
+    "role": "Market role",
+    "allRoles": "All roles",
+    "strategy": "Published strategy",
+    "allStrategies": "All strategies",
+    "screenTitle": "Pre-screen by structure",
+    "screenBody": "The economic structure guides research. Strategy alignment is a starting point, not approval, an offer or a confirmed mandate.",
+    "structure": "Structure to research",
+    "results": "{count, plural, =0 {No institutions found} one {# institution found} other {# institutions found}}",
+    "evidence": "Strategy and sources",
+    "observed": "Observed on {date} · research summary in Portuguese",
+    "vehicles": "Named vehicles ({count})",
+    "vehicleBoundary": "A public name does not confirm legal identity, current mandate or availability. Manager and vehicle are distinct entities.",
+    "noVehicles": "No individual vehicle documented in this research.",
+    "qualification": "What to confirm for this case",
+    "unknowns": "Ticket, tenor, capacity, terms and current appetite are unverified. This research does not authorize contact or sharing.",
+    "empty": "Adjust your filters. Absence from this sample does not imply absence from the market.",
+    "footer": "This public research is separate from your private project records and does not change approved lists. Group relationships still need reconciliation; do not sum institutions as independent sources of capacity.",
+    "roles": {
+      "bank": "Bank",
+      "arranger": "Arranger / distributor",
+      "asset_manager": "Asset manager",
+      "development_lender": "Development lender",
+      "equipment_lender": "Equipment lender",
+      "fiduciary_provider": "Fiduciary services",
+      "securitizer": "Securitizer"
+    },
+    "segments": {
+      "corporate": "Corporate credit",
+      "capital_markets": "Capital markets",
+      "receivables": "Receivables",
+      "infrastructure": "Infrastructure",
+      "equipment": "Equipment and fleets",
+      "real_estate": "Real estate",
+      "agriculture": "Agriculture",
+      "venture": "Venture debt",
+      "special_situations": "Special situations",
+      "innovation": "Innovation",
+      "market_infrastructure": "Market services",
+      "securitization": "Securitization",
+      "trade": "Trade finance"
+    },
+    "structures": {
+      "corporate": "Corporate debt",
+      "receivables": "Receivables financing",
+      "project_finance": "Project finance",
+      "equipment": "Equipment and fleets",
+      "real_estate": "Real estate financing",
+      "venture": "Venture debt"
+    },
+    "statuses": {
+      "strategy_observed": "Relevant public strategy",
+      "strategy_unconfirmed": "Strategy not yet evidenced",
+      "intermediary_only": "Arranging / service role"
+    },
+    "rationales": {
+      "strategy_observed": "Public evidence supports activity in {structure}. Eligibility for this transaction still needs confirmation.",
+      "strategy_unconfirmed": "This research does not establish activity in {structure}. Not a candidate in this pre-screen; this does not establish a refusal or prohibition.",
+      "intermediary_only": "The documented role is arranging or servicing. There is no evidence that this entity would assume credit risk."
+    },
+    "checks": {
+      "riskEntity": "Confirm legal entity, group, vehicle, decision maker and risk holder.",
+      "ticketTenor": "Confirm transaction ticket, tenor, grace period and amortization.",
+      "currentAppetite": "Obtain dated confirmation of appetite, available capacity and current restrictions.",
+      "currencySecurity": "Confirm currency, index, security, jurisdiction and covenants.",
+      "corporate": "Assess company cash flow, existing debt, priority, security and use of proceeds. A FIDC requires assessment of eligible credit rights; a corporate borrower is not automatically excluded.",
+      "receivables": "Confirm credit rights and eligibility, assignment, concentration, obligors, loss history, servicer and portfolio tenor. Project finance experience does not establish a receivables strategy.",
+      "project_finance": "Confirm construction/operating stage, contracts, completion risk, sponsor support, tenor, coverage and security. Receivables activity does not establish construction funding capability.",
+      "equipment": "Confirm asset, resale value, supplier, useful life, down payment, tenor and security.",
+      "real_estate": "Confirm asset type, construction stage, sales/leases, permits, priority and security.",
+      "venture": "Confirm recurring revenue, runway, burn, investors, unit economics and eligibility criteria."
+    },
+    "views": {
+      "label": "Explore market",
+      "profiles": "Researched profiles",
+      "registry": "Official registries",
+      "history": "Historical transactions and pricing"
+    },
+    "registry": {
+      "title": "Broaden research through official registries",
+      "boundary": "Public records without strategy or eligibility assessment. Managing a fund or appearing in the central bank register does not establish that an entity finances this case. Consortium administrators are also listed and are not treated as lenders.",
+      "counts": "{managers} managers with active candidate funds in the CVM broad screen; {banks} institution roots in the BCB register. Sources may overlap and do not represent a total of independent lenders.",
+      "snapshot": "Acquired on {date}. The publisher did not specify a registry reference date.",
+      "search": "Search name or CNPJ",
+      "source": "Source registry",
+      "all": "All registries",
+      "cvm_manager": "CVM · registered manager",
+      "bcb_root": "BCB · institution root",
+      "results": "{count, plural, one {# record found} other {# records found}}",
+      "cnpj": "CNPJ: {id}",
+      "root": "CNPJ root: {id} (8 digits; not a full CNPJ)",
+      "candidateFunds": "{count} active candidate funds in the broad screen. Fund count, not class count; co-management may overlap counts between managers.",
+      "noMandate": "No verified mandate, ticket, pricing, capacity or appetite.",
+      "evidence": "Official source · acquired on {date}",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {current} of {total}",
+      "license": "Sources: CVM and Banco Central open data, ODbL per publisher catalogs. Legal identities and CNPJ roots remain separate.",
+      "SedesBancoComMultCE": "Banks",
+      "SedesCooperativas": "Credit cooperatives",
+      "SedesSociedades": "Regulated companies",
+      "SedesConsorcios": "Consortium administrators"
+    },
+    "history": {
+      "title": "Observed transactions and historical terms",
+      "boundary": "Public-source observations; investors are not inferred when unidentified. Contractual coupon, advertised product floor and a current quote are distinct concepts. These observations are neither a credit curve nor an offer for your case.",
+      "debenture": "Debenture",
+      "financing": "Announced financing",
+      "issue": "Issued: {date}",
+      "announcement": "Announcement period: {period}",
+      "maturity": "Maturity: {date}",
+      "coupon": "Historical coupon: {index} + {spread}% p.a.",
+      "noPricing": "Pricing not disclosed in the researched source.",
+      "lender": "Identified lender: {name}",
+      "noLender": "Investors / lenders not identified in the source.",
+      "issuer_table_requires_final_terms_reconciliation": "Issuer table; final terms still require reconciliation with issue documentation.",
+      "approval_announced_disbursement_not_verified": "Approval announced; disbursement not verified.",
+      "productPricing": "Advertised product floor",
+      "advertisedFloor": "Working capital: starting at {value}% per month, per the researched page.",
+      "floorBoundary": "Not a binding offer or approved rate. Total effective cost, eligibility and terms unverified; do not compare directly with annual spreads over CDI.",
+      "viewRelated": "View identified historical transaction"
+    }
+  },
+  "ReceivablesCurrentResult": {
+    "title": "Pool analysis",
+    "titles": "Receivables analyzed",
+    "balance": "Outstanding balance",
+    "validated": "Technical validation completed",
+    "validatedBody": "The specialist calculation ran in internal validation. Publishing a credit conclusion requires its own review and release.",
+    "failed": "Technical validation interrupted",
+    "failedBody": "The calculation did not complete. Information already received is preserved for review.",
+    "ready": "Data prepared for validation",
+    "readyBody": "The pool and assumptions are reconciled. Calculation execution has not yet been verified in this result.",
+    "blocked": "Information to complete",
+    "blockedBody": "The pool analysis is available. You can answer assumptions while gathering remaining documents; the specialist conclusion depends on the conditions below."
   }
 }

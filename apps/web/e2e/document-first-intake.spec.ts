@@ -1,3 +1,4 @@
+import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -837,6 +838,96 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(englishBalances).not.toContainText("999999");
     await englishBalances.scrollIntoViewIfNeeded();
     await capture("synthetic-balance-proposals-en");
+  });
+
+  test("collects a governed R01 premise beside source diligence and persists only internal validation", async ({}, testInfo) => {
+    const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    const address = new URL(databaseUrl);
+    if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres") throw new Error("R01 fixture requires the isolated local database.");
+    const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
+    const fixture = await receivablesR01Fixture();
+    const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query}).trim();
+    try {
+    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
+    const discovery = refreshReceivablesFixtureDiscovery(databaseUrl, sessionId, account.email);
+    expect(discovery.sourceManifest.sources.length).toBeGreaterThan(fixture.sources.length);
+    const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;");
+    await page.goto(`/pt-BR/app/projects/${projectId}`);
+    const scope = page.getByTestId("receivables-scope-card");
+    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
+    for (const support of await scope.locator('input[name="complementDocumentIds"]').all()) await support.uncheck();
+    for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
+    await expect(scope.locator('input[name="primarySupportSheets"][value="Excluded pool"]')).toHaveCount(0);
+    await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
+    await scope.locator('input[name="scopeConfirmed"]').check();
+    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
+    const currentJob = "select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;";
+    const waitForCaseStatus = async (allowed: string[]) => {
+      const deadline = Date.now() + 120_000;
+      let status = "";
+      while (Date.now() < deadline) {
+        status = sql(currentJob);
+        if (allowed.includes(status)) return status;
+        if (["failed", "cancelled", "dead_letter"].includes(status)) {
+          // Restricted above to this test owner's synthetic loopback session.
+          const diagnostic = sql("select jsonb_build_object('status',j.status,'failure',j.last_error,'stages',r.stages) from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id join public.processing_runs r on r.id=j.processing_run_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;");
+          await testInfo.attach("r01-synthetic-worker-failure", {body: diagnostic, contentType: "application/json"});
+          throw new Error(`Synthetic R01 worker failed: ${diagnostic}`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      expect(status, `R01 job did not reach ${allowed.join(" or ")}`).toBe(allowed[0]);
+      return status;
+    };
+    await waitForCaseStatus(["awaiting_approval"]);
+    await page.reload();
+    await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
+    await waitForCaseStatus(["succeeded"]);
+    expect(sql("select private.receivables_evidence_scope_context(s.organization_id,s.id)->>'state' from public.document_intake_sessions s where s.id=:'session_id'::uuid;")).toBe("current");
+    const selectedScope = JSON.parse(sql("select scope from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
+    expect(selectedScope.schemaVersion).toBe("receivables-evidence-scope.v2");
+    expect(selectedScope.primarySupportSheets).toEqual(["CEDENTE", "CONTABIL", "ESTRUTURA", "POLITICA", "RECEBIMENTOS"]);
+    const initialRun = sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;");
+    const initialDraft = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
+    expect(initialDraft.fields["/structure/advanceRate"]).toBeUndefined();
+    expect(initialDraft.sections.titles.value).toHaveLength(2);
+    expect(sql("select count(*) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_evidence' and status='open';")).not.toBe("0");
+    const request = JSON.parse(sql("select jsonb_build_object('id',id,'question',question) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_fields' and status='open' order by created_at desc limit 1;"));
+    await page.reload();
+    await page.locator('.information-request-card__selector select').selectOption(request.id);
+    const answer = page.locator('article.information-request-card').filter({has: page.getByRole("heading", {name: request.question, exact: true})});
+    await answer.locator('input[type="number"]').fill("50");
+    await answer.locator('button[type="submit"]').click();
+    await expect.poll(() => sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;"), {timeout: 120_000}).not.toBe(initialRun);
+    await waitForCaseStatus(["awaiting_approval", "succeeded"]);
+    if (sql(currentJob) === "awaiting_approval") {
+      await page.reload();
+      await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
+    }
+    await waitForCaseStatus(["succeeded"]);
+    const refreshed = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
+    expect(refreshed.fields["/structure/advanceRate"].value).toBe("0.5");
+    expect(refreshed.sections.titles).toEqual(initialDraft.sections.titles);
+    const result = JSON.parse(sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;"));
+    expect(result.methodExecution).toMatchObject({status: "succeeded", mode: "internal_shadow", externalEffectAllowed: false});
+    const persisted = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint) from private.receivables_specialist_shadow_runs r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
+    expect(result.methodExecution.outputFingerprint).toBe(persisted.outputFingerprint);
+    expect(result.methodExecution.inputFingerprint).toBe(persisted.inputFingerprint);
+    await page.reload();
+    await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
+    await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+    } catch (error) {
+      // Print immediately: CI exposes this before the remaining browser suite completes.
+      console.error("R01_SYNTHETIC_JOURNEY_FAILED", error instanceof Error ? error.stack : String(error));
+      try {
+        const diagnostic = sql("select coalesce(jsonb_agg(to_jsonb(recent) order by recent.created_at desc),'[]'::jsonb) from (select j.id,j.kind,j.status,j.processing_run_id,j.last_error,j.created_at,r.stages->-1 as last_stage from public.processing_jobs j join public.processing_runs r on r.id=j.processing_run_id where j.intake_session_id=:'session_id'::uuid order by j.created_at desc limit 6) recent;");
+        console.error("R01_SYNTHETIC_RECENT_JOBS", diagnostic);
+        await testInfo.attach("r01-synthetic-recent-jobs", {body: diagnostic, contentType: "application/json"});
+      } catch {
+        console.error("R01_SYNTHETIC_DIAGNOSTIC_UNAVAILABLE");
+      }
+      throw error;
+    }
   });
 
 });

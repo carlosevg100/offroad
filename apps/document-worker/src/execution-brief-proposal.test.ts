@@ -1,5 +1,5 @@
 import {describe, expect, it, vi} from "vitest";
-import {capitalProjectPlanSnapshot,compileAdvisorStartingPlan,providerResearchPlanSnapshot} from "@offroad/work-plan";
+import {capitalProjectPlanSnapshot,compileAdvisorStartingPlan,providerResearchPlanSnapshot,documentWorkPlanSnapshot} from "@offroad/work-plan";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {claimedJobSchema, type ExecutionBriefProposalJob} from "./queue";
 
@@ -269,4 +269,24 @@ it("does not replace a financial plan's economic objective with the initial docu
   expect(await processExecutionBriefProposalJob(job, q, {documentaryWorkEnabled: true})).toEqual({status: "proposed"});
   expect(q.recordExecutionBriefProposal.mock.calls[0]![1].objective).toBe(value.objective);
   expect(q.recordExecutionBriefProposal.mock.calls[0]![1].planVersion).not.toMatch(/^document-work-plan.v1:/);
+});
+
+
+it.each(["company_debt_view", "origination_thesis", "capital_planning", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"] as const)("proposes explicit documentary revisions in %s without reusing the prior objective or consent", async entry => {
+  const base = context();
+  const objective = "Prepare a reunião com a companhia.";
+  const updated = {...base, project: {...base.project, entry_job: entry}, plan: documentWorkPlanSnapshot(entry),
+    initial_work_request: {message_id: id(95), text: objective}};
+  const first = queue(updated);
+  expect(await processExecutionBriefProposalJob(job, first, {documentaryWorkEnabled: true})).toEqual({status: "proposed"});
+  const [, internal, visible, , replacement] = first.recordExecutionBriefProposal.mock.calls[0]!;
+  expect(visible.objective).toBe(objective);
+  expect(visible.executionMode).toBe("confirm_before_expensive_work");
+  expect(visible.workstreams).toHaveLength(3);
+  expect(replacement).toBeNull(); // The explicit SQL command already selected the exact graph.
+  const second = queue({...updated, target_job_id: id(96), initial_work_request: {message_id: id(97), text: "Compare estas propostas."}});
+  const nextJob = {...job, payload: {...job.payload, approval_target_job_id: id(96)}};
+  expect(await processExecutionBriefProposalJob(nextJob, second, {documentaryWorkEnabled: true})).toEqual({status: "proposed"});
+  expect(second.recordExecutionBriefProposal.mock.calls[0]![1].fingerprint).not.toBe(internal.fingerprint);
+  expect(second.recordExecutionBriefProposal.mock.calls[0]![2].objective).toBe("Compare estas propostas.");
 });

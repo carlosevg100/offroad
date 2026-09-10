@@ -38,6 +38,12 @@ export const sectorContextEvidenceLabels: Record<string, Labels> = {
   service_obligations_and_payment_calendar: {pt: "Obrigações de serviço e calendário de pagamento", en: "Service obligations and payment calendar"},
 };
 export const sectorContextDimensionLabels = {
+  cost_model: {pt: "Estrutura de custos", en: "Cost structure"},
+  working_capital: {pt: "Dinâmica do capital de giro", en: "Working capital dynamics"},
+  asset_model: {pt: "Ativos e utilização", en: "Assets and utilization"},
+  capital_expenditure: {pt: "Investimentos e manutenção", en: "Capital expenditure and maintenance"},
+  regulation: {pt: "Regulação e obrigações", en: "Regulation and obligations"},
+  operating_driver: {pt: "Drivers operacionais", en: "Operating drivers"},
   sector: {pt: "Setor", en: "Sector"}, subsector: {pt: "Subsetor", en: "Subsector"}, business_model: {pt: "Modelo de negócio", en: "Business model"}, revenue_model: {pt: "Modelo de receita", en: "Revenue model"}, lifecycle: {pt: "Estágio", en: "Lifecycle"}, recourse: {pt: "Recurso", en: "Recourse"}, jurisdiction: {pt: "Jurisdição", en: "Jurisdiction"},
 } satisfies Record<string, Labels>;
 export const sectorContextValueLabels: Record<string, Labels> = {

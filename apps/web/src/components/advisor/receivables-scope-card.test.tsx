@@ -10,6 +10,19 @@ const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")
 const source = (n: number) => ({sourceDocumentId: id(n), documentVersion: 1, contentKind: "document_layer", sourceSha256: "a".repeat(64), contentSha256: "b".repeat(64), schemaVersion: "2026.08.28-v1", fileName: `Source ${n}.xlsx`});
 const context = receivablesEvidenceScopeContextSchema.parse({state: "unconfirmed", scope: null, sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: "c".repeat(64), sources: [source(1), source(2), source(3)]}, candidates: [{documentId: id(1), fileName: "Pool A.xlsx", sheet: "A", headerRow: 1}, {documentId: id(2), fileName: "Pool B.xlsx", sheet: "B", headerRow: 2}]});
 describe("receivables scope form", () => {
+  it("renders only explicit non-tape supporting sheets for the current primary workbook", () => {
+    const selected = receivablesEvidenceScopeContextSchema.parse({...context, state: "current", supportSheetCandidates: [{documentId: id(1), sheet: "Contabilidade"}, {documentId: id(2), sheet: "Outro apoio"}], scope: {
+      schemaVersion: "receivables-evidence-scope.v2", id: id(6), fingerprint: "d".repeat(64), sourceManifestFingerprint: "c".repeat(64),
+      primaryTape: {documentId: id(1), sheet: "A", headerRow: 1}, primarySupportSheets: ["Contabilidade"], complementDocumentIds: [],
+      reportingDate: "2026-08-31", sourceRevisions: [source(1)], confirmedBy: id(7), confirmedAt: "2026-09-10T00:00:00Z",
+    }});
+    const html = renderToStaticMarkup(<ReceivablesScopeCard context={selected} copy={pt.ReceivablesScope} locale="pt-BR" projectId={id(4)} sessionId={id(5)} />);
+    expect(html).toContain('name="primarySupportSheets"');
+    expect(html).toContain('value="Contabilidade"');
+    expect(html).not.toContain('value="Outro apoio"');
+    expect(html).not.toContain('name="primarySupportSheets" value="A"');
+  });
+
   it.each(["pt-BR", "en-US"] as const)("renders explicit selection and only non-tape supports in %s", (locale) => {
     const copy = (locale === "pt-BR" ? pt : en).ReceivablesScope;
     const html = renderToStaticMarkup(<ReceivablesScopeCard context={context} copy={copy} locale={locale} projectId={id(4)} sessionId={id(5)} />);

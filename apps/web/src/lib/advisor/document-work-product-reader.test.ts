@@ -57,6 +57,9 @@ describe("document work product reader", () => {
   });
   it.each([
     ["different project binding", {document_intake_sessions: {...session, result_summary: {...session.result_summary, case_state: {...state, documentWorkProduct: {product, binding: {...binding, projectId: id(20)}}}}}}],
+    ["same plan but new request before execution", {document_intake_sessions: {...session, current_run_id: id(21)}, processing_jobs: [{...job, id: id(22), status: "awaiting_approval"}]}],
+    ["same plan with replacement objective", {binding: {...binding, objective: "Compare proposals", briefId: id(22), version: 2, requestFingerprint: "b".repeat(64)}}],
+    ["same plan with new run after prior completion", {document_intake_sessions: {...session, current_run_id: id(21)}}],
     ["changed approved version", {binding: {...binding, version: 2}}],
     ["changed approval during reads", {freshBinding: {...binding, version: 2}}],
     ["changed source version", {source_documents: [{...source, document_version: 2}]}],

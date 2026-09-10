@@ -9,7 +9,8 @@ export function readProviderWorkHistory(rows:readonly ProviderResearchRow[],plan
   const plan=plans.find(p=>p.id===row.plan_id);if(!plan||!runs.some(r=>r.id===row.task_run_id&&r.plan_id===plan.id&&r.status==='succeeded'))return[];
   if(!['draft','pending_confirmation','confirmed','approved','stale','superseded'].includes(row.status))return[];
   const scoped={organizationId:binding.organizationId,projectId:binding.projectId,planId:plan.id,planFingerprint:plan.plan_fingerprint};
-  const research=row.artifact_type==='provider_research'&&row.schema_version==='provider-research.v1'?readProviderResearchArtifact(row.content,scoped):null;
+  const research=row.artifact_type==='provider_research'&&['provider-research.v1','provider-research.v2'].includes(row.schema_version)?readProviderResearchArtifact(row.content,scoped):null;
+  if(research && research.schemaVersion!==row.schema_version)return[];
   const fit=row.artifact_type==='provider_case_fit'&&row.schema_version==='provider-case-fit.v1'?readProviderCaseFitArtifact(row.content,scoped):null;
   return research||fit?[{id:row.id,version:row.artifact_version,status:row.status,planId:plan.id,research,fit}]:[];
  });

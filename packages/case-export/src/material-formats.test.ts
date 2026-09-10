@@ -1,5 +1,5 @@
 import {mkdir, writeFile} from "node:fs/promises";
-import type {Material} from "@offroad/case-materials";
+import {institutionalFinancialModelMaterial, type Material} from "@offroad/case-materials";
 import JSZip from "jszip";
 import {PDFDocument, PDFArray, PDFRawStream, decodePDFRawStream} from "pdf-lib";
 import {describe, expect, it} from "vitest";
@@ -24,6 +24,24 @@ const material: Material = {
 };
 
 describe("approved material delivery formats", () => {
+  it("puts native editable financial charts before the complete statement tables",async()=>{
+    const report=institutionalFinancialModelMaterial({artifactFingerprint:"a".repeat(64),supportIds:["synthetic-source"],lang:"en",scenarios:[{name:"Synthetic",currency:"BRL",periods:[{period:"2027",revenue:"365",ebitda:"182.5",netIncome:"132.5",totalAssets:"1182.5",totalLiabilitiesAndEquity:"1182.5",cfads:"82.5",closingGrossDebt:"100",unrestrictedCash:"182.5",balanceCheck:"0"}]}]});
+    const archive=await JSZip.loadAsync(await materialToPptx({material:report,lang:"en",meta:{issuedOn:"2026-09-10"}}));
+    const charts=Object.keys(archive.files).filter(name=>/^ppt\/charts\/chart\d+\.xml$/.test(name));expect(charts).toHaveLength(4);
+    expect(await archive.file("ppt/charts/chart2.xml")!.async("string")).toContain("182.5");
+    expect(archive.file("ppt/embeddings/chart2.xlsx")).not.toBeNull();
+    expect(await archive.file("ppt/slides/slide2.xml")!.async("string")).toContain("Operating earnings");
+  });
+  it("embeds Unicode for mathematical symbols, Greek and Cyrillic without lossy substitution", async () => {
+    const unicodeMaterial = {...material, title: local("Δ EBITDA ≥ 0 · Компания"), blocks: [{type:"paragraph" as const, text:local("α = 0,35; Δ dívida ≤ € 1.000. Компания Ω. Custo − receita ≠ lucro.")}]};
+    const bytes = await materialToPdf({material:unicodeMaterial,lang:"pt",meta:{issuedOn:"2026-09-10"}});
+    const document=await PDFDocument.load(bytes);expect(document.getTitle()).toBe(unicodeMaterial.title.pt);
+    const directory=process.env.OFFROAD_FORMAT_QA_DIR;if(directory){await mkdir(directory,{recursive:true});await writeFile(`${directory}/unicode.pdf`,bytes);}
+    expect(Buffer.compare(bytes,await materialToPdf({material:unicodeMaterial,lang:"pt",meta:{issuedOn:"2026-09-10"}}))).toBe(0);
+  });
+  it("rejects unsupported script glyphs explicitly instead of emitting missing characters",async()=>{
+    await expect(materialToPdf({material:{...material,title:local("漢字")},lang:"pt",meta:{issuedOn:"2026-09-10"}})).rejects.toThrow("Unicode font coverage");
+  });
   it.each(["pt", "en"] as const)("preserves the approved content and fixed issuance date in %s", async (lang) => {
     const input = {material, lang, meta: {issuedOn: "2026-09-10"}};
     const pdf = await materialToPdf(input);
@@ -51,6 +69,20 @@ describe("approved material delivery formats", () => {
       await mkdir(directory, {recursive: true});
       await Promise.all([["pdf", pdf], ["pptx", pptx], ["docx", docx]].map(([extension, bytes]) => writeFile(`${directory}/material-${lang}.${extension}`, bytes as Uint8Array)));
     }
+  });
+  it.each(["pt", "en"] as const)("rounds displayed ratios and keeps table introductions with evidence in %s", async lang => {
+    const period = {period:"2027",revenue:"365",ebitda:"182.5",netIncome:"132.5",totalAssets:"1182.5",totalLiabilitiesAndEquity:"1182.5",cfads:"82.5",closingGrossDebt:"100",unrestrictedCash:"182.5",balanceCheck:"0",netDebtToEbitda:"-0.45205479",dscr:null};
+    const report = institutionalFinancialModelMaterial({artifactFingerprint:"a".repeat(64),supportIds:[],lang,scenarios:[{name:"Reviewed",currency:"BRL",periods:[period]}]});
+    const ratioTable = report.blocks.find(block => block.type === "table" && block.rows.some(row => row[0]?.includes("EBITDA (x)")));
+    expect(ratioTable?.type === "table" && ratioTable.rows[0]?.[1]).toBe(lang === "pt" ? "-0,45" : "-0.45");
+    expect(period.netDebtToEbitda).toBe("-0.45205479");
+    const intro = {pt:"Premissas aprovadas para este cenário.",en:"Reviewed assumptions for this scenario."};
+    const appendix: Material = {...report,blocks:[{type:"heading",text:local("Assumptions")},{type:"paragraph",text:intro},{type:"table",caption:local("Assumptions"),head:[local("Name"),local("Value")],rows:[["Growth","5%"],["Tax","34%"]]}],presentationCharts:[]};
+    const archive = await JSZip.loadAsync(await materialToPptx({material:appendix,lang,meta:{issuedOn:"2026-09-10"}}));
+    const paths=Object.keys(archive.files).filter(path=>/^ppt\/slides\/slide\d+\.xml$/.test(path));
+    expect(paths).toHaveLength(2);
+    const xml=await archive.file("ppt/slides/slide2.xml")!.async("string");
+    expect(xml).toContain(intro[lang]); expect(xml).toContain("<a:tbl>");
   });
   it("rejects inconsistent table geometry instead of dropping cells", async () => {
     await expect(materialToPdf({material: {...material, blocks: [{type: "table", caption: local("Teste"), head: [local("A")], rows: [["1", "2"]]}]}, lang: "pt", meta: {issuedOn: "2026-09-10"}})).rejects.toThrow("column mismatch");

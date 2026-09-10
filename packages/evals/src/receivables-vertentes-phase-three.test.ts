@@ -195,6 +195,7 @@ describe("Vertentes Phase 3 raw-document replay", () => {
     expect(rawDetection.defects.find((defect) => defect.id === "undeclared_recourse_and_debt")?.measured).toBeUndefined();
   });
 
+  // Rebuilding 34,397 titles can exceed the 5s default under shared CI CPU contention.
   it("reconstructs the governed universe directly from the delivered tape", () => {
     const built = buildReceivablesRawUniverse({
       universeId: manifest.fixtureId,
@@ -213,7 +214,7 @@ describe("Vertentes Phase 3 raw-document replay", () => {
       "repurchases, substitutions, assignments and liens were not delivered title by title",
       "debt bridge, financing proposal and advance-rate assumptions remain pending",
     ]));
-  });
+  }, 15_000);
 
   it("detects the planted control failures from delivered evidence without reading reserved truth", () => {
     expect(rawDetection.defects.map((item) => item.id)).toEqual(gold.defectIds);

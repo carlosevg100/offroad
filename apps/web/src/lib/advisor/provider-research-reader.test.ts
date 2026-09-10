@@ -1,4 +1,5 @@
 import {describe, expect, it} from "vitest";
+import {publicCapitalCatalogReference} from "@offroad/public-research/capital-catalog";
 import {compileProviderResearchArtifact} from "@offroad/work-plan";
 import {currentProviderResearch, type ProviderResearchRow} from "./provider-research-reader";
 const binding = {projectId: "10000000-0000-4000-8000-000000000001", planId: "10000000-0000-4000-8000-000000000002", planFingerprint: "a".repeat(64)};
@@ -20,4 +21,15 @@ describe("currentProviderResearch", () => {
   it("does not resurrect an earlier snapshot after invalidation of the newest version", () => {
     expect(currentProviderResearch([row, {...row, artifact_version: 2, status: "stale"}], runs, binding)).toBeNull();
   });
+});
+
+
+it("reads pinned v2 without accepting a mislabeled v1 row or unknown catalog", () => {
+  const {fingerprint, ...payload} = content;
+  expect(fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  const publicContent = compileProviderResearchArtifact({...payload, schemaVersion: "provider-research.v2", publicCatalog: publicCapitalCatalogReference});
+  const publicRow = {...row, schema_version: "provider-research.v2", content: publicContent};
+  expect(currentProviderResearch([publicRow], runs, binding)?.research).toEqual(publicContent);
+  expect(currentProviderResearch([{...publicRow, schema_version: "provider-research.v1"}], runs, binding)).toBeNull();
+  expect(currentProviderResearch([{...publicRow, content: {...publicContent, publicCatalog: {...publicCapitalCatalogReference, sourceFingerprint: "f".repeat(64)}}}], runs, binding)).toBeNull();
 });

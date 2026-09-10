@@ -59,7 +59,7 @@ describe("case input loading", () => {
     const scope = {state: "confirmed", scope: {fingerprint: "a".repeat(64)}};
     const approvedRequest = {objective: "Current approved request", requestFingerprint: "b".repeat(64)};
     const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
-      if (name === "worker_load_case_input_v2") return {data: {session: {id: "case"}, confirmed_receivables_scope: scope}, error: null};
+      if (name === "worker_load_case_input_v3") return {data: {session: {id: "case"}, confirmed_receivables_scope: scope}, error: null};
       if (name === "worker_load_claim_decisions") return {data: [{id: "decision"}], error: null};
       if (name === "worker_load_document_work_request_v1") return {data: approvedRequest, error: null};
       if (name === "worker_freeze_case_input") {
@@ -81,7 +81,7 @@ describe("case input loading", () => {
       confirmed_receivables_scope: scope,
     });
     expect(rpc.mock.calls.map(([name]) => name)).toEqual([
-      "worker_load_case_input_v2",
+      "worker_load_case_input_v3",
       "worker_load_claim_decisions",
       "worker_load_document_work_request_v1",
       "worker_freeze_case_input",
@@ -436,7 +436,7 @@ describe("execution-brief activation", () => {
     const internal = {schemaVersion: "execution-brief.v1", fingerprint: "a".repeat(64)};
     const visible = {schemaVersion: "execution-brief.v1", fingerprint: "a".repeat(64)};
     const inputFingerprint = "b".repeat(64);
-    const rpc = vi.fn(async (name: string) => ({data: name === "worker_load_agent_context_v4" ? {approval_input_fingerprint: inputFingerprint} : {
+    const rpc = vi.fn(async (name: string) => ({data: name === "worker_load_agent_context_v5" ? {approval_input_fingerprint: inputFingerprint} : {
       message_id: "60000000-0000-4000-8000-000000000001",
       activation: {job_id: "70000000-0000-4000-8000-000000000001"},
       execution_brief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
@@ -445,7 +445,7 @@ describe("execution-brief activation", () => {
 
     const context = await queue.loadAgentContext(advisorJob) as {approval_input_fingerprint: string};
     expect(context.approval_input_fingerprint).toBe(inputFingerprint);
-    expect(rpc).toHaveBeenCalledWith("worker_load_agent_context_v4", {p_job_id: advisorJob.job_id, p_capability_token: advisorJob.capability_token});
+    expect(rpc).toHaveBeenCalledWith("worker_load_agent_context_v5", {p_job_id: advisorJob.job_id, p_capability_token: advisorJob.capability_token});
     await expect(queue.recordAgentResponse(
       advisorJob,
       "60000000-0000-4000-8000-000000000001",
@@ -760,7 +760,7 @@ it("uses only capability-scoped proposal RPCs and forwards the loaded input fing
   await queue.loadExecutionBriefProposal!(proposal);
   await queue.recordExecutionBriefProposal!(proposal, {internal: true}, {visible: true}, "a".repeat(64));
   expect(rpc.mock.calls).toEqual([
-    ["worker_load_execution_brief_proposal_v3", {p_job_id: job.job_id, p_capability_token: job.capability_token}],
+    ["worker_load_execution_brief_proposal_v4", {p_job_id: job.job_id, p_capability_token: job.capability_token}],
     ["worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: {internal: true}, p_visible_snapshot: {visible: true}, p_expected_input_fingerprint: "a".repeat(64), p_plan: null}],
   ]);
 });

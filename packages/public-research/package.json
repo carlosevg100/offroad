@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./capital-catalog": {
+      "types": "./src/capital-catalog.ts",
+      "default": "./src/capital-catalog.ts"
     }
   },
   "scripts": {

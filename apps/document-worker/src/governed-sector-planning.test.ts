@@ -1,4 +1,6 @@
 import {describe, expect, it} from "vitest";
+import {economicContextDimensionSchema} from "@offroad/agent-contracts";
+import {resolveFieldPath} from "@offroad/credit-ontology";
 import {buildGovernedSectorPlanning, sectorIntentForObjective, type GovernedSectorContextInputs} from "./governed-sector-planning";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 function packet(): GovernedSectorContextInputs {return {
@@ -8,6 +10,37 @@ function packet(): GovernedSectorContextInputs {return {
 };}
 function build(inputs = packet(), objective = "Analisar a companhia") {return buildGovernedSectorPlanning({inputs,sessionId:id(5),companyLabel:"Synthetic Company",locale:"en-US",objective})!;}
 describe("governed sector planning producer", () => {
+  it("supports every canonical dimension in extraction and the scoped planning reader", () => {
+    for (const dimension of economicContextDimensionSchema.options) {
+      expect(resolveFieldPath(`company.${dimension}`), dimension).not.toBeNull();
+      const p = packet();
+      p.candidates[0]!.field_path = `company.${dimension}`;
+      p.candidates[0]!.normalized_value = "An explicitly reviewed business characteristic";
+      expect(build(p).objects[0]!.attributes[0]).toMatchObject({dimension, status: "confirmed"});
+    }
+  });
+  it.each([
+    ["cost_model", "Fixed fleet costs and variable fuel"],
+    ["working_capital", "Customer advances before delivery"],
+    ["asset_model", "Leased and owned handling equipment"],
+    ["capital_expenditure", "Maintenance versus expansion investments"],
+    ["regulation", "Operating licence renewal obligations"],
+    ["operating_driver", "Handled volume and occupied capacity"],
+  ] as const)("carries reviewed %s from the governed source to the plan without sector inference", (dimension, value) => {
+    const p = packet();
+    p.candidates[0]!.field_path = `company.${dimension}`;
+    p.candidates[0]!.normalized_value = value;
+    const result = build(p);
+    expect(result.objects[0]!.attributes[0]).toMatchObject({dimension, value, status: "confirmed", sources: [{basis: "reviewed_document"}]});
+    expect(result.objects[0]!.requirements).toEqual([]);
+    expect(result.objects[0]!.gaps.some(gap => gap.id === "coverage:attribute_uncovered")).toBe(true);
+    p.sources[0]!.document_version++;
+    const changed = build(p);
+    expect(changed.objects[0]!.attributes[0]!.status).toBe("proposed");
+    expect(changed.contextFingerprint).not.toBe(result.contextFingerprint);
+    expect(result.mode).toBe("planning_only");
+  });
+
   it("preserves reviewed document lineage and changes fingerprint when the source revision changes", () => {
     const p=packet(); const result=build(p);
     expect(result.objects[0]!.attributes[0]).toMatchObject({status:"confirmed",sources:[{basis:"reviewed_document",version:`2:${"a".repeat(64)}`,anchor:'{"page":3}'}]});

@@ -1,4 +1,4 @@
-import {randomUUID} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 
 import {
   receivablesSupplementFieldPathSchema,
@@ -108,8 +108,11 @@ fieldDefinitions.push(
 
 const definitionByPath = new Map(fieldDefinitions.map((definition) => [definition.fieldPath, definition]));
 
-function requirementKey(code: string): string {
-  return `receivables.r01.${code.toLowerCase().replace(/[^a-z0-9_.-]+/g, "-")}`.slice(0, 120);
+function requirementKey(code: string, sourceDatasetHash: string): string {
+  // A response to a different pool must never suppress this pool's diligence.
+  // Run IDs and localized prose do not change the economic question identity.
+  const identity = createHash("sha256").update(JSON.stringify({sourceDatasetHash, code})).digest("hex");
+  return `receivables.r01.evidence.${identity}`;
 }
 
 function fieldRequirementKey(path: ReceivablesSupplementFieldPath): string {
@@ -129,14 +132,29 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
   processingRunId: string;
   locale: "pt-BR" | "en-US";
   readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  missingDraftSections?: readonly string[];
   idFactory?: () => string;
 }) {
   const english = input.locale === "en-US";
   const idFactory = input.idFactory ?? randomUUID;
-  const evidenceGaps = input.readiness.gaps.filter((gap) => gap.class !== "policy" && gap.class !== "structure"
-    // This is a source-reading limitation, not proof that the user omitted a date.
-    // Keep it blocking in readiness without asking for documents already delivered.
-    && gap.code !== "support_period:undeclared_recourse_and_debt");
+  const missing = new Set(input.missingDraftSections ?? []);
+  // Suppress only missing-assembly questions already satisfied by the current
+  // source-bound draft. Temporal gaps, conflicts and unknown requirements remain.
+  const assembledRequirements: Record<string, readonly string[]> = {
+    portfolio_lineage_not_assembled: ["titles"],
+    cedent_and_servicing_not_evidenced: ["cedent", "evidence.cedentAndServicing"],
+    title_legal_controls_not_evidenced: ["titles", "evidence.titleLegalControls"],
+    cash_reconciliation_not_evidenced: ["cashReceipts", "evidence.cashReconciliation"],
+    accounting_reconciliation_not_evidenced: ["accounting", "evidence.accountingReconciliation"],
+  };
+  const evidenceGaps = input.readiness.gaps.filter((gap) => {
+    if (gap.class === "policy" || gap.class === "structure") return false;
+    // Source reading remains blocking without asking for documents already delivered.
+    if (gap.code === "support_period:undeclared_recourse_and_debt") return false;
+    if (input.missingDraftSections === undefined || gap.class === "conflict") return true;
+    const requirements = assembledRequirements[gap.code];
+    return requirements === undefined || requirements.some((section) => missing.has(section));
+  });
   return {
     schemaVersion: "project-information-request-projection.v1",
     projectId: input.projectId,
@@ -144,7 +162,7 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
     projectionRef: `${input.processingRunId}:R01:evidence:${input.readiness.sourceDatasetHash}:${input.readiness.state}`,
     requests: input.readiness.methodExecutionAllowed ? [] : evidenceGaps.slice(0, 3).map((gap, index) => ({
       id: idFactory(), schemaVersion: "dcm-information-request.v1", projectId: input.projectId,
-      requirementKey: requirementKey(gap.code), question: english ? gap.question.en : gap.question.pt,
+      requirementKey: requirementKey(gap.code, input.readiness.sourceDatasetHash), question: english ? gap.question.en : gap.question.pt,
       whyItMatters: english ? gap.message.en : gap.message.pt,
       decisionImpact: english ? "Without this evidence, R01 remains blocked and produces no title-level conclusion." : "Sem esta evidência, o R01 permanece bloqueado e não produz conclusão por título.",
       acceptableEvidence: evidenceByDimension[gap.dimensionId][english ? "en" : "pt"], answerKind: "document" as const,
@@ -205,4 +223,24 @@ export function buildReceivablesMethodInformationRequestProjection(input: Parame
 export function receivablesFieldDefinition(path: string): FieldDefinition | null {
   const parsed = receivablesSupplementFieldPathSchema.safeParse(path);
   return parsed.success ? definitionByPath.get(parsed.data) ?? null : null;
+}
+
+/** Source diligence and premise collection can progress independently. */
+export function buildReceivablesMethodRequestProjections(input: {
+  projectId: string;
+  processingRunId: string;
+  locale: "pt-BR" | "en-US";
+  readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  missingDraftSections?: readonly string[];
+}) {
+  const evidence = buildReceivablesMethodEvidenceRequestProjection(input);
+  const activeGroups = [...new Set(input.readiness.gaps.flatMap((gap) =>
+    gap.class === "policy" ? ["policy" as const] : gap.class === "structure" ? ["structure" as const] : [],
+  ))];
+  const fields = buildReceivablesMethodFieldRequestProjection({
+    projectId: input.projectId, processingRunId: input.processingRunId, locale: input.locale,
+    sourceDatasetHash: input.readiness.sourceDatasetHash, activeGroups,
+    ...(input.missingDraftSections ? {missingSections: input.missingDraftSections} : {}),
+  });
+  return [evidence, fields];
 }

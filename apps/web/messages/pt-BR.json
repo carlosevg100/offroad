@@ -2477,7 +2477,8 @@
       "download": "Baixar Word",
       "version": "Versão",
       "insufficientEvidence": "Informações insuficientes para concluir a análise"
-    }
+    },
+    "publicCapitalMarket": "Mapa de capital"
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",
@@ -3737,7 +3738,9 @@
     "unnamedSource": "Arquivo sem nome disponível",
     "sheet": "Aba",
     "headerRow": "cabeçalho na linha",
-    "version": "Versão"
+    "version": "Versão",
+    "supportSheets": "Abas de apoio neste arquivo",
+    "supportSheetsHelp": "Selecione as abas que devem complementar a carteira escolhida. Outras carteiras não serão incluídas."
   },
   "ReceivablesSupportPeriods": {
     "title": "Datas e períodos dos documentos de apoio",
@@ -3873,7 +3876,8 @@
     "searchPlaceholder": "Nome, instrumento ou característica",
     "sourceClass": {
       "directory": "Registro do diretório",
-      "registered": "Mandato registrado"
+      "registered": "Mandato registrado",
+      "public_research": "Pesquisa pública"
     },
     "observedAt": "Registrado em {date}",
     "dateUnknown": "Data de observação não informada",
@@ -3882,7 +3886,9 @@
     "noSearchResults": "Nenhum registro deste retrato corresponde à busca.",
     "limitations": "Cobertura e limitações",
     "boundary": "Pesquisa informativa. Os registros não comprovam interesse, aderência à operação ou disponibilidade de capital. Nenhuma lista de destinatários foi aprovada e nenhum contato foi autorizado.",
-    "status": "Pesquisa informativa"
+    "status": "Pesquisa informativa",
+    "publicCatalog": "Explorar estratégias e fontes públicas",
+    "publicSnapshot": "Inclui catálogo público observado em {date}, separado dos registros privados. Estratégias não equivalem a mandatos atuais."
   },
   "InstitutionalConfigurationReview": {
     "title": "Premissas para revisão",
@@ -4151,6 +4157,7 @@
     "kicker": "Modelo financeiro",
     "title": "Resultados da configuração aprovada",
     "prepared": "Preparado em {date}",
+    "editableSnapshot": "Os arquivos refletem as premissas aprovadas. No Excel, você pode alterar as premissas e recalcular cenários localmente. Essas alterações não atualizam o projeto nem os demais materiais; para isso, revise a configuração no Offroad.",
     "snapshot": "Os arquivos apresentam os resultados calculados com as premissas aprovadas. Para alterar as premissas e recalcular, revise a configuração no Offroad. O Excel exportado contém os resultados, sem recálculo local.",
     "revision": "Revisão {revision} · {currency}",
     "downloads": "Baixar resultados",
@@ -4200,5 +4207,200 @@
       "execution": "O processamento foi interrompido ou não entregou um resultado verificável. Retome a solicitação na conversa; não há resultado aprovado disponível.",
       "unclassified": "Há uma pendência que exige revisão da configuração. Reenvie os dados corrigidos ou solicite ajuda na conversa."
     }
+  },
+  "InstitutionalScenarioComparison": {
+    "title": "Comparar resultados revisados",
+    "boundary": "Compare a configuração atual com uma revisão anterior calculada sobre os mesmos documentos. Uma revisão anterior é uma referência histórica; não é uma alternativa recomendada nem substitui o resultado atual.",
+    "reference": "Escolha a referência para comparação",
+    "choose": "Selecionar resultado revisado",
+    "empty": "Ainda não há outro resultado revisado nesta base documental",
+    "incompatible": "Os resultados têm moeda, base histórica, perímetro, data-base ou períodos diferentes. A comparação exige bases compatíveis; não fazemos conversões ou ajustes implícitos.",
+    "revision": "{name} · revisão {revision}",
+    "units": "Valores em unidades de {currency}. DSCR e dívida líquida / EBITDA em múltiplos. Data-base: {asOfDate}.",
+    "table": "Resultados financeiros lado a lado",
+    "metric": "Indicador",
+    "period": "Período projetado",
+    "current": "Atual",
+    "previous": "Referência anterior",
+    "notComputable": "Não calculável",
+    "evidence": "Premissas e fontes",
+    "reviewed": "Revisado em {date}",
+    "sourceVersion": "versão {version} · data-base {date}",
+    "assumptions": "Premissas aprovadas",
+    "assumptionUnits": {
+      "currency": "unidades monetárias",
+      "percent": "fração decimal; 0,10 = 10%",
+      "days": "dias",
+      "multiple": "múltiplo",
+      "quantity": "quantidade",
+      "index": "índice"
+    },
+    "metrics": {
+      "revenue": "Receita",
+      "ebitda": "EBITDA",
+      "cfads": "Caixa disponível para serviço da dívida",
+      "debtService": "Serviço da dívida",
+      "closingGrossDebt": "Dívida bruta final",
+      "unrestrictedCash": "Caixa disponível",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Dívida líquida / EBITDA",
+      "liquidityHeadroom": "Folga de liquidez"
+    }
+  },
+  "DocumentaryWorkRequest": {
+    "title": "Novo trabalho neste projeto",
+    "description": "Use os documentos já enviados para comparar propostas, preparar uma reunião ou revisar uma oportunidade. O trabalho anterior permanece no histórico. Você revisará e aprovará um novo plano antes da execução.",
+    "label": "O que você quer preparar?",
+    "placeholder": "Compare estas propostas e destaque os pontos a esclarecer.",
+    "scope": "Esta opção prepara uma análise documental qualitativa. Para cálculos, cenários ou outros trabalhos, continue pela conversa.",
+    "unsupported": "Descreva uma comparação de propostas, preparação de reunião ou revisão de oportunidade. Pedidos com cálculos devem seguir pela conversa.",
+    "submit": "Preparar novo plano",
+    "saving": "Preparando plano…",
+    "uncertain": "Não foi possível confirmar o recebimento. Tente novamente para verificar o mesmo pedido."
+  },
+  "PublicCapitalMarket": {
+    "kicker": "Inteligência de mercado",
+    "title": "Encontre o caminho para o capital.",
+    "intro": "Explore instituições, estratégias e veículos documentados em fontes públicas. Entenda quem faz o quê e o que precisa ser confirmado para o seu caso.",
+    "coverageTitle": "Escopo desta pesquisa",
+    "institutions": "Instituições pesquisadas",
+    "snapshot": "Data do levantamento",
+    "boundary": "Amostra de pesquisa pública, não um censo completo. Nenhum mandato ativo foi verificado. As fontes têm data; apetite, condições e capacidade podem ter mudado.",
+    "search": "Buscar",
+    "searchPlaceholder": "Instituição, estratégia ou veículo",
+    "role": "Papel no mercado",
+    "allRoles": "Todos os papéis",
+    "strategy": "Estratégia publicada",
+    "allStrategies": "Todas as estratégias",
+    "screenTitle": "Triagem por estrutura",
+    "screenBody": "A estrutura econômica orienta a pesquisa. Compatibilidade de estratégia é um ponto de partida; não é aprovação, oferta ou mandato confirmado.",
+    "structure": "Estrutura a pesquisar",
+    "results": "{count, plural, =0 {Nenhuma instituição encontrada} one {# instituição encontrada} other {# instituições encontradas}}",
+    "evidence": "Estratégia e fontes",
+    "observed": "Observado em {date} · síntese da pesquisa em português",
+    "vehicles": "Veículos nomeados ({count})",
+    "vehicleBoundary": "Nome público não confirma identidade legal, mandato atual ou disponibilidade. Gestor e veículo são entidades distintas.",
+    "noVehicles": "Nenhum veículo individual documentado nesta pesquisa.",
+    "qualification": "O que confirmar para este caso",
+    "unknowns": "Ticket, prazo, capacidade, condições e apetite atual não verificados. Nenhum contato ou compartilhamento foi autorizado por esta pesquisa.",
+    "empty": "Ajuste os filtros. A ausência nesta amostra não significa ausência de participantes no mercado.",
+    "footer": "Esta pesquisa pública é independente dos registros privados do seu projeto e não altera listas aprovadas. Relações de grupo ainda precisam ser reconciliadas; não some instituições como fontes independentes de capacidade.",
+    "roles": {
+      "bank": "Banco",
+      "arranger": "Estruturador / distribuidor",
+      "asset_manager": "Gestor de recursos",
+      "development_lender": "Banco / agência de desenvolvimento",
+      "equipment_lender": "Financiador de equipamentos",
+      "fiduciary_provider": "Serviços fiduciários",
+      "securitizer": "Securitizadora"
+    },
+    "segments": {
+      "corporate": "Crédito corporativo",
+      "capital_markets": "Mercado de capitais",
+      "receivables": "Recebíveis",
+      "infrastructure": "Infraestrutura",
+      "equipment": "Equipamentos e frotas",
+      "real_estate": "Imobiliário",
+      "agriculture": "Agronegócio",
+      "venture": "Venture debt",
+      "special_situations": "Situações especiais",
+      "innovation": "Inovação",
+      "market_infrastructure": "Serviços de mercado",
+      "securitization": "Securitização",
+      "trade": "Comércio exterior"
+    },
+    "structures": {
+      "corporate": "Dívida corporativa",
+      "receivables": "Financiamento de recebíveis",
+      "project_finance": "Project finance",
+      "equipment": "Equipamentos e frotas",
+      "real_estate": "Financiamento imobiliário",
+      "venture": "Venture debt"
+    },
+    "statuses": {
+      "strategy_observed": "Estratégia pública compatível",
+      "strategy_unconfirmed": "Estratégia ainda não comprovada",
+      "intermediary_only": "Papel de estruturação / serviço"
+    },
+    "rationales": {
+      "strategy_observed": "Há evidência pública de atuação em {structure}. A elegibilidade desta operação ainda precisa ser confirmada.",
+      "strategy_unconfirmed": "As fontes desta pesquisa não comprovam atuação em {structure}. Não entra como candidato nesta triagem; isso não demonstra recusa ou impedimento.",
+      "intermediary_only": "O papel documentado é de estruturação ou serviço. Não há comprovação de que esta entidade assumiria o risco de crédito."
+    },
+    "checks": {
+      "riskEntity": "Confirmar entidade legal, grupo econômico, veículo e quem decide e assume o risco.",
+      "ticketTenor": "Confirmar ticket por operação, prazo, carência e amortização.",
+      "currentAppetite": "Obter confirmação datada de apetite, capacidade disponível e restrições atuais.",
+      "currencySecurity": "Confirmar moeda, indexador, garantias, jurisdição e covenants.",
+      "corporate": "Avaliar caixa da companhia, dívida existente, prioridade, garantias e uso dos recursos. Um FIDC exige avaliação dos direitos creditórios elegíveis; a identidade corporativa do tomador não o exclui.",
+      "receivables": "Confirmar natureza e elegibilidade dos direitos creditórios, cessão, concentração, sacados, histórico de perdas, servicer e prazo da carteira. Experiência em project finance não comprova estratégia de recebíveis.",
+      "project_finance": "Confirmar fase de construção/operação, contratos, risco de conclusão, suporte de patrocinadores, prazo, cobertura e garantias. Atuação em recebíveis não comprova capacidade para financiar construção.",
+      "equipment": "Confirmar ativo, valor de revenda, fornecedor, vida útil, entrada, prazo e garantias.",
+      "real_estate": "Confirmar tipo de ativo, estágio de obra, vendas/locação, licenças, prioridade e garantias.",
+      "venture": "Confirmar receita recorrente, runway, burn, investidores, unidade econômica e critérios de elegibilidade."
+    },
+    "views": {
+      "label": "Explorar mercado",
+      "profiles": "Perfis pesquisados",
+      "registry": "Cadastros oficiais",
+      "history": "Operações e taxas históricas"
+    },
+    "registry": {
+      "title": "Amplie a pesquisa nos cadastros oficiais",
+      "boundary": "Registros públicos, sem análise de estratégia ou elegibilidade. Gestão de um fundo ou registro no Banco Central não comprova que a entidade financie este caso. Administradores de consórcio também constam do cadastro e não são tratados como credores.",
+      "counts": "{managers} gestores com fundos candidatos ativos na triagem CVM; {banks} raízes de instituições no BCB. As bases podem se sobrepor e não representam um total de financiadores independentes.",
+      "snapshot": "Aquisição em {date}. A data de referência do cadastro não foi informada pelo publicador.",
+      "search": "Buscar nome ou CNPJ",
+      "source": "Base de origem",
+      "all": "Todas as bases",
+      "cvm_manager": "CVM · gestor cadastrado",
+      "bcb_root": "BCB · raiz de instituição",
+      "results": "{count, plural, one {# registro encontrado} other {# registros encontrados}}",
+      "cnpj": "CNPJ: {id}",
+      "root": "Raiz CNPJ: {id} (8 dígitos; não é CNPJ completo)",
+      "candidateFunds": "{count} fundos candidatos ativos na triagem ampla. Contagem de fundos, não de classes; cogestão pode sobrepor contagens entre gestores.",
+      "noMandate": "Sem mandato, ticket, taxa, capacidade ou apetite verificados.",
+      "evidence": "Fonte oficial · adquirido em {date}",
+      "previous": "Anterior",
+      "next": "Próxima",
+      "page": "Página {current} de {total}",
+      "license": "Fontes: dados abertos da CVM e Banco Central, ODbL conforme catálogos dos publicadores. Identidades jurídicas e raízes de CNPJ permanecem separadas.",
+      "SedesBancoComMultCE": "Bancos",
+      "SedesCooperativas": "Cooperativas de crédito",
+      "SedesSociedades": "Sociedades reguladas",
+      "SedesConsorcios": "Administradoras de consórcios"
+    },
+    "history": {
+      "title": "Operações observadas e condições históricas",
+      "boundary": "Observações de fontes públicas, sem inferir o investidor quando não identificado. Cupom contratado, piso anunciado de produto e cotação atual são conceitos distintos. Estas observações não formam uma curva de crédito nem uma oferta para seu caso.",
+      "debenture": "Debênture",
+      "financing": "Financiamento anunciado",
+      "issue": "Emissão: {date}",
+      "announcement": "Período do anúncio: {period}",
+      "maturity": "Vencimento: {date}",
+      "coupon": "Cupom histórico: {index} + {spread}% a.a.",
+      "noPricing": "Taxa não informada na fonte pesquisada.",
+      "lender": "Financiador identificado: {name}",
+      "noLender": "Investidores / financiadores não identificados na fonte.",
+      "issuer_table_requires_final_terms_reconciliation": "Tabela do emissor; condições finais ainda precisam de conciliação com os documentos da emissão.",
+      "approval_announced_disbursement_not_verified": "Aprovação anunciada; desembolso não verificado.",
+      "productPricing": "Piso anunciado de produto",
+      "advertisedFloor": "Capital de giro: a partir de {value}% ao mês, conforme página pesquisada.",
+      "floorBoundary": "Não é oferta vinculante ou taxa aprovada. CET, elegibilidade e condições não verificados; não compare diretamente com spreads anuais sobre CDI.",
+      "viewRelated": "Consultar operação histórica identificada"
+    }
+  },
+  "ReceivablesCurrentResult": {
+    "title": "Leitura da carteira",
+    "titles": "Títulos analisados",
+    "balance": "Saldo em aberto",
+    "validated": "Validação técnica concluída",
+    "validatedBody": "O cálculo especialista foi executado em validação interna. A publicação de uma conclusão de crédito exige revisão e liberação próprias.",
+    "failed": "Validação técnica interrompida",
+    "failedBody": "O cálculo não foi concluído. As informações já recebidas estão preservadas para revisão.",
+    "ready": "Dados preparados para validação",
+    "readyBody": "A carteira e as premissas estão conciliadas. A execução do cálculo ainda não foi comprovada neste resultado.",
+    "blocked": "Informações a completar",
+    "blockedBody": "A leitura da carteira está disponível. Você pode responder às premissas enquanto reúne os documentos restantes; a conclusão especialista depende das condições abaixo."
   }
 }

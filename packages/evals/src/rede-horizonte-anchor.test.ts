@@ -133,7 +133,9 @@ describe("Rede Horizonte full-case anchor", () => {
       qualifiedIntroductionAllowed: gold.outcome!.qualifiedIntroductionAllowed,
     });
     expect(state.outcome.reasons).toEqual(expect.arrayContaining(gold.outcome!.reasonsInclude));
-  });
+  // This integration executes the complete engine three times, including material production.
+  // Keep unit-test timeouts unchanged while allowing bounded CPU contention on the CI runner.
+  }, 15_000);
 });
 
 function structureProposalFrom(state: CaseEngineState) {

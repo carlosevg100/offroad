@@ -769,14 +769,14 @@ export async function recordPrivateProjectMarketFeedback(
 }
 
 export async function confirmReceivablesScope(input: unknown): Promise<{ok: boolean; code?: "invalid" | "stale" | "denied" | "processing" | "save"}> {
-  const schema = z.object({locale: z.enum(["pt-BR", "en-US"]), projectId: z.uuid(), sessionId: z.uuid(), manifestFingerprint: z.string().regex(/^[a-f0-9]{64}$/), primaryTape: z.object({documentId: z.uuid(), sheet: z.string().min(1), headerRow: z.number().int().positive()}), complementDocumentIds: z.array(z.uuid()), reportingDate: z.iso.date(), commandId: z.uuid()});
+  const schema = z.object({locale: z.enum(["pt-BR", "en-US"]), projectId: z.uuid(), sessionId: z.uuid(), manifestFingerprint: z.string().regex(/^[a-f0-9]{64}$/), primaryTape: z.object({documentId: z.uuid(), sheet: z.string().min(1), headerRow: z.number().int().positive()}), complementDocumentIds: z.array(z.uuid()), primarySupportSheets: z.array(z.string().min(1).max(255)).max(100), reportingDate: z.iso.date(), commandId: z.uuid()});
   const parsed = schema.safeParse(input);
   if (!parsed.success) return {ok: false, code: "invalid"};
   const value = parsed.data;
   const {supabase, organization} = await requireWorkspace(value.locale);
   const {data: session} = await supabase.from("document_intake_sessions").select("id").eq("organization_id", organization.id).eq("id", value.sessionId).eq("capital_project_id", value.projectId).maybeSingle();
   if (!session) return {ok: false, code: "denied"};
-  const {data, error} = await supabase.rpc("confirm_receivables_evidence_scope_v1", {p_session_id: value.sessionId, p_expected_manifest_fingerprint: value.manifestFingerprint, p_primary_tape: value.primaryTape, p_complement_document_ids: value.complementDocumentIds, p_reporting_date: value.reportingDate, p_command_id: value.commandId});
+  const {data, error} = await supabase.rpc("confirm_receivables_evidence_scope_v2", {p_session_id: value.sessionId, p_expected_manifest_fingerprint: value.manifestFingerprint, p_primary_tape: value.primaryTape, p_complement_document_ids: value.complementDocumentIds, p_primary_support_sheets: value.primarySupportSheets, p_reporting_date: value.reportingDate, p_command_id: value.commandId});
   if (error) return {ok: false, code: error.message.includes("stale") || error.message.includes("command_conflict") ? "stale" : error.message.includes("processing_unavailable") ? "processing" : error.code === "42501" ? "denied" : error.code === "22023" ? "invalid" : "save"};
   if (!z.object({scope: receivablesEvidenceScopeSchema, processingRunId: z.uuid(), replayed: z.boolean()}).safeParse(data).success) return {ok: false, code: "save"};
   revalidatePath(`/${value.locale}/app/projects/${value.projectId}`);

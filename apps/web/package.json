@@ -31,6 +31,7 @@
     "@offroad/market-reference": "workspace:*",
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",
+    "@offroad/public-research": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",

@@ -13764,3 +13764,7 @@ button[disabled].workspace-search,
 .receivables-support-periods > nav > button:focus-visible {outline:2px solid #536438;outline-offset:3px;}
 .receivables-support-periods > nav > button:disabled {opacity:.45;cursor:default;}
 @media(max-width:600px){.receivables-support-periods > nav > button{flex:1;}.receivables-support-periods{scroll-margin-top:90px;}}
+
+.information-request-card__selector {display:grid;gap:8px;min-width:0;color:#616b71;font-size:12px;}
+.information-request-card__selector select {width:100%;min-width:0;max-width:100%;padding:12px;border:1px solid #dfe4db;border-radius:10px;background:#fff;color:#293137;font:inherit;}
+.information-request-card__selector select:focus-visible {outline:2px solid #7d9455;outline-offset:3px;}

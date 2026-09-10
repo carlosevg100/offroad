@@ -1,0 +1,113 @@
+{
+  "job": {
+    "claimed": true,
+    "job_id": "11111111-1111-4111-8111-111111111111",
+    "capability_token": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "lease_expires_at": "2026-09-10T00:00:00Z",
+    "attempt": 1,
+    "organization_id": "22222222-2222-4222-8222-222222222222",
+    "intake_session_id": "33333333-3333-4333-8333-333333333333",
+    "processing_run_id": "44444444-4444-4444-8444-444444444444",
+    "kind": "capital_project_analysis",
+    "payload": {
+      "analysis_scope": "provider_research",
+      "locale": "pt-BR",
+      "capital_project_id": "55555555-5555-4555-8555-555555555555",
+      "capital_project_plan_id": "66666666-6666-4666-8666-666666666666",
+      "capital_project_brief_id": "77777777-7777-4777-8777-777777777777",
+      "capital_task_ids": [
+        "M01",
+        "K01",
+        "K02"
+      ],
+      "capital_artifact_required": true,
+      "trigger_event": {},
+      "model_budget": {
+        "max_cost_usd": 0,
+        "max_calls": 0
+      }
+    }
+  },
+  "context": {
+    "schemaVersion": "provider-research-context.v1",
+    "organizationId": "22222222-2222-4222-8222-222222222222",
+    "projectId": "55555555-5555-4555-8555-555555555555",
+    "planId": "66666666-6666-4666-8666-666666666666",
+    "planFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "approvalStatus": "approved",
+    "objective": "Pesquisar registros disponíveis de financiadores",
+    "locale": "pt-BR",
+    "asOf": "2026-09-09T00:00:00Z",
+    "tasks": [
+      {
+        "id": "M01",
+        "dependencies": []
+      },
+      {
+        "id": "K01",
+        "dependencies": [
+          "M01"
+        ]
+      },
+      {
+        "id": "K02",
+        "dependencies": [
+          "K01"
+        ]
+      }
+    ],
+    "providers": [
+      {
+        "providerId": "fund-1",
+        "name": "Fundo próprio",
+        "sourceClass": "registered",
+        "ownerOrganizationId": "22222222-2222-4222-8222-222222222222",
+        "observations": [
+          {
+            "criterion": "sectors",
+            "value": "Energia",
+            "provenance": "declared",
+            "observedAt": null
+          }
+        ]
+      }
+    ]
+  },
+  "artifact": {
+    "schemaVersion": "provider-research.v1",
+    "scope": "research_only",
+    "projectId": "55555555-5555-4555-8555-555555555555",
+    "planId": "66666666-6666-4666-8666-666666666666",
+    "planFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "locale": "pt-BR",
+    "objective": "Pesquisar registros disponíveis de financiadores",
+    "asOf": "2026-09-09T00:00:00Z",
+    "sourceFingerprint": "998f94ba44e1186640c080b56b959e81a708987d46e73db8c54659596b282adc",
+    "providers": [
+      {
+        "providerId": "fund-1",
+        "name": "Fundo próprio",
+        "sourceClass": "registered",
+        "observations": [
+          {
+            "criterion": "Setores",
+            "value": "Energia",
+            "provenance": "declared",
+            "observedAt": null
+          }
+        ],
+        "gaps": [
+          "Há informações sem data de observação.",
+          "Interesse atual, capacidade disponível e adequação a uma operação não foram verificados."
+        ]
+      }
+    ],
+    "limitations": [
+      "Cobertura limitada aos registros que esta organização tem autorização para consultar; não representa todo o mercado.",
+      "Declarações e observações são preservadas como registradas; esta pesquisa não seleciona financiadores nem autoriza contato."
+    ],
+    "shortlistAuthorized": false,
+    "externalEffectAllowed": false,
+    "fingerprint": "239511c8270738469630e542ee95e9f2e806062ff1880862ebbbe883ceb0881e"
+  }
+}

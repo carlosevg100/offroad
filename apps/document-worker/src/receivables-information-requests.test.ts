@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  buildReceivablesMethodEvidenceRequestProjection,
   buildReceivablesMethodFieldRequestProjection,
   buildReceivablesMethodInformationRequestProjection,
 } from "./receivables-information-requests";
@@ -25,6 +26,36 @@ const base = {
 };
 
 describe("receivables method question projection", () => {
+  it("asks again for a new dataset while retaining evidence identity across runs and languages", () => {
+    const context = {projectId: "10000000-0000-4000-8000-000000000001", processingRunId: "20000000-0000-4000-8000-000000000001", locale: "pt-BR" as const, readiness: base};
+    const original = buildReceivablesMethodEvidenceRequestProjection(context).requests[0]!;
+    const replay = buildReceivablesMethodEvidenceRequestProjection({...context, processingRunId: "20000000-0000-4000-8000-000000000002", locale: "en-US"}).requests[0]!;
+    const nextPool = buildReceivablesMethodEvidenceRequestProjection({...context, readiness: {...base, sourceDatasetHash: "b".repeat(64)}}).requests[0]!;
+    expect(replay.requirementKey).toBe(original.requirementKey);
+    expect(replay.question).not.toBe(original.question);
+    expect(nextPool.requirementKey).not.toBe(original.requirementKey);
+    expect(nextPool.requirementKey).toMatch(/^[a-z0-9_.-]{3,120}$/);
+  });
+
+  it("suppresses only assembled draft requirements and preserves temporal and conflict gaps", () => {
+    const projection = buildReceivablesMethodEvidenceRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001",
+      processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "en-US", missingDraftSections: ["policy.maxDaysPastDue"],
+      readiness: {...base, gaps: [
+        {...base.gaps[0]!, class: "evidence" as const, code: "portfolio_lineage_not_assembled"},
+        {...base.gaps[0]!, class: "evidence" as const, code: "support_period:accounting_reconciliation_difference"},
+        {...base.gaps[0]!, code: "portfolio_lineage_not_assembled"},
+        {...base.gaps[0]!, class: "evidence" as const, code: "performance_history_incomplete"},
+      ].map((gap) => ({...gap, question: {pt: gap.code, en: gap.code}}))},
+    });
+    expect(projection.requests.map((request) => request.question)).toEqual([
+      "support_period:accounting_reconciliation_difference",
+      "portfolio_lineage_not_assembled",
+      "performance_history_incomplete",
+    ]);
+  });
+
   it("keeps source review pending without asking the user to resupply existing balance documents", () => {
     const readiness = {...base, gaps: [{...base.gaps[0]!, code: "support_period:undeclared_recourse_and_debt"}]};
     const projection = buildReceivablesMethodInformationRequestProjection({
@@ -56,7 +87,7 @@ describe("receivables method question projection", () => {
     expect(projection).toMatchObject({
       sourceNamespace: "receivables_method_r01_evidence",
       requests: [{
-        requirementKey: "receivables.r01.finding_unresolved-duplicate-1",
+        requirementKey: expect.stringMatching(/^receivables\.r01\.evidence\.[a-f0-9]{64}$/),
         question: "Esse título foi corrigido ou é um falso positivo?",
         answerKind: "document",
         priority: "blocking",

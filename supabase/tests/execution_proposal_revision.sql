@@ -3,6 +3,7 @@
 -- Synthetic rollback-only consent boundary regression. Legacy metadata setup uses the
 -- shared fixture helper; the owner calls the real public approval RPC directly.
 begin;
+\ir support/documentary_plan_snapshots.sql
 do $$ begin
  if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='worker_load_document_work_request_v1' and p.provolatile<>'v') then raise exception 'capability loader must be volatile for PostgREST row locks'; end if;
 end $$;
@@ -1164,6 +1165,11 @@ begin
  perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000999','role','authenticated')::text,true);
  if public.read_documentary_plan_job_v1((c#>>'{project,id}')::uuid,(select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901')) is not null then raise exception 'outsider read plan projection'; end if;
  perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
+ -- The synthetic partial snapshot above exercises authorization boundaries. Progress
+ -- admission now requires a released compiler snapshot, including its complete graph.
+ update public.capital_project_plans p set snapshot=pg_temp.documentary_plan_fixture(p.entry_job)
+ where p.id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
+ if not exists(select 1 from public.capital_project_plans p where p.id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') and private.is_released_documentary_plan_v1(p.snapshot,p.entry_job)) then raise exception 'progress fixture is not a released compiler snapshot'; end if;
  -- Progress is derived only from worker-capability stages for this exact job attempt.
  update public.processing_jobs set status='leased',attempts=1,capability_sha256=extensions.digest(repeat('e',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id='80000000-0000-4000-8000-000000000901';
  perform public.worker_write_stage_result('80000000-0000-4000-8000-000000000901',repeat('e',64),'documentary_Q01','succeeded','{"attempt":1}');
@@ -1215,6 +1221,15 @@ begin
  exception when no_data_found then null;
  end;
  perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated')::text,true);
+ begin
+  delete from public.capital_project_plan_tasks where plan_id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901') and task_id='Q02';
+  if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' = 'completed' then raise exception 'changed persisted task set exposed completed stages'; end if;
+  raise exception 'rollback changed task-set fixture' using errcode='ZX004';
+ exception
+  when sqlstate 'ZX004' then null;
+  when sqlstate '22023' then
+   if sqlerrm <> 'execution_brief_progress_binding_invalid' then raise; end if;
+ end;
  update public.capital_project_plans set target_task_ids=array['S11'] where id=(select plan_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901');
  if private.document_work_request_binding_v1('80000000-0000-4000-8000-000000000901') ? 'executionScope' then raise exception 'financial target authorized documentary scope'; end if;
  if public.read_capital_project_execution_brief_progress_v1((select execution_brief_id from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901'))#>>'{workstreams,2,status}' = 'completed' then raise exception 'stale scope exposed completed stages'; end if;

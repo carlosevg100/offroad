@@ -175,7 +175,7 @@ export const offroadTaskRegistryVersion = "2026.09.10-v15";
 export type CapitalProjectPlanSnapshot = {
   schemaVersion: typeof capitalProjectPlanSchemaVersion;
   compilerVersion: typeof capitalProjectPlanCompilerVersion;
-  registryVersion: typeof offroadTaskRegistryVersion | "2026.09.10-v14";
+  registryVersion: typeof offroadTaskRegistryVersion | "2026.09.10-v14" | "2026.09.10-public-research-v2";
   job: {
     id: CapitalProjectJob;
     targetTaskIds: readonly string[];

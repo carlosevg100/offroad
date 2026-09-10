@@ -76,6 +76,8 @@ import {
 import type {FactCandidate} from "@offroad/reconciliation";
 import {
   analyzeReceivablesPhaseOne,
+  type ReceivablesSupplementDraft,
+  type ReceivablesSupplementPatch,
   assessReceivablesPoolMethodReadiness,
   buildReceivablesRawUniverse,
   identifyReceivablesTapes,
@@ -112,9 +114,9 @@ import {buildDocumentWorkInput, documentWorkRequestSchema, isStandaloneDocumentW
 import {processStandaloneDocumentWork} from "./document-work-standalone";
 import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
 import {
-  buildReceivablesMethodEvidenceRequestProjection,
-  buildReceivablesMethodFieldRequestProjection,
+  buildReceivablesMethodRequestProjections,
 } from "./receivables-information-requests";
+import {prepareReceivablesDocumentSupplement} from "./receivables-document-supplement";
 import {resolveReceivablesMethodInput, type ReceivablesMethodInputResolution} from "./receivables-method-input-resolution";
 import {ensureInstitutionalModelSetup} from "./institutional-model-setup";
 import {
@@ -1119,32 +1121,32 @@ export async function processCaseAnalysisJob(
     }
     const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
+    if (receivables?.documentSupplement?.patch) {
+      if (!dependencies.queue.applyReceivablesMethodSupplementPatch) throw new Error("receivables_document_supplement_persistence_unavailable");
+      const stored = await dependencies.queue.applyReceivablesMethodSupplementPatch(job, {
+        patch: receivables.documentSupplement.patch, nextDraft: receivables.documentSupplement.nextDraft,
+      });
+      await dependencies.queue.writeStage(job, "receivables_document_supplement", "succeeded", {
+        taskId: "R01", sourceDatasetHash: receivables.documentSupplement.patch.sourceDatasetHash,
+        draftFingerprint: stored.draftFingerprint, revision: stored.revision,
+        extractedSections: receivables.documentSupplement.extractedSections,
+        omittedSections: receivables.documentSupplement.omittedSections, replayed: stored.replayed,
+      });
+    }
     if (receivablesVertical && dependencies.queue.syncReceivablesInformationRequests) {
-      const evidenceProjection = buildReceivablesMethodEvidenceRequestProjection({
-        projectId: raw.session.capital_project_id,
-        processingRunId: job.processing_run_id,
+      // Asking for premises does not clear evidence gaps or authorize execution.
+      const projections = buildReceivablesMethodRequestProjections({
+        projectId: raw.session.capital_project_id, processingRunId: job.processing_run_id,
         locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
         readiness: receivablesVertical.methodReadiness,
+        ...(receivables?.inputResolution.draftState === "incomplete"
+          ? {missingDraftSections: receivables.inputResolution.missingSections} : {}),
       });
-      await dependencies.queue.syncReceivablesInformationRequests(job, evidenceProjection);
-      const evidenceOpen = evidenceProjection.requests.length > 0;
-      if (!evidenceOpen) {
-        const activeGroups = [...new Set(receivablesVertical.methodReadiness.gaps.flatMap((gap) =>
-          gap.class === "policy" ? ["policy" as const] : gap.class === "structure" ? ["structure" as const] : [],
-        ))];
-        const fieldProjection = buildReceivablesMethodFieldRequestProjection({
-          projectId: raw.session.capital_project_id,
-          processingRunId: job.processing_run_id,
-          locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
-          sourceDatasetHash: receivablesVertical.methodReadiness.sourceDatasetHash,
-          activeGroups,
-          ...(receivables?.inputResolution.missingSections
-            ? {missingSections: receivables.inputResolution.missingSections}
-            : {}),
-        });
-        await dependencies.queue.syncReceivablesInformationRequests(job, fieldProjection);
+      for (const projection of projections) {
+        await dependencies.queue.syncReceivablesInformationRequests(job, projection);
       }
     }
+
     let receivablesInputAssemblyId = receivables?.inputAssemblyId ?? null;
     if (receivables?.inputAssembly && !receivablesInputAssemblyId) {
       if (!dependencies.queue.recordReceivablesMethodInputAssembly) {
@@ -1721,6 +1723,7 @@ type PublicReceivablesVertical = {
   status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
   scopeIssue?: {code: ReceivablesScopeIssueCode; candidates: ReturnType<typeof identifyReceivablesTapes>};
   sourceManifest: ReceivablesEvidenceSourceManifest;
+  supportSheetCandidates?: readonly {documentId: string; sheet: string}[];
   candidates: ReturnType<typeof identifyReceivablesTapes>;
   supportPeriodAssessment?: ReceivablesRawDetectionReport["supportPeriodAssessment"];
   balanceSourceAssessment?: ReceivablesRawDetectionReport["balanceSourceAssessment"];
@@ -1780,12 +1783,18 @@ export function buildReceivablesVertical(
   inputAssemblyId: string | null;
   inputAssembly: ReceivablesPoolInputAssembly | null;
   inputResolution: ReceivablesMethodInputResolution;
+  documentSupplement: null | {
+    patch: ReceivablesSupplementPatch | null;
+    nextDraft: ReceivablesSupplementDraft;
+    extractedSections: string[];
+    omittedSections: string[];
+  };
 } | null {
   if (raw.receivables_evidence.length === 0) return null;
 
   const sourceNames = new Map((raw.documents ?? []).flatMap((document) => typeof document.id === "string" && typeof document.original_name === "string" ? [[document.id, document.original_name] as const] : []));
   const discovery = discoverReceivablesEvidence(raw.receivables_evidence, sourceNames);
-  const {sourceManifest, candidates} = discovery;
+  const {sourceManifest, candidates, supportSheetCandidates} = discovery;
   if (candidates.length === 0) return null;
   const caseId = String(raw.session.id ?? raw._execution.id);
   const pending = (code: ReceivablesScopeIssueCode): NonNullable<ReturnType<typeof buildReceivablesVertical>> => {
@@ -1802,7 +1811,7 @@ export function buildReceivablesVertical(
     };
     return {
       publicReport: {
-        version: "2026.08.28-v1", status: "needs_evidence_scope", sourceManifest, candidates,
+        version: "2026.08.28-v1", status: "needs_evidence_scope", sourceManifest, candidates, supportSheetCandidates,
         fingerprint: fingerprintJson({version: "receivables-scope.v2", code, sourceManifestFingerprint: sourceManifest.fingerprint,
           scopeFingerprint: raw.confirmed_receivables_scope?.scope?.fingerprint ?? null, candidates}),
         scopeIssue: {code, candidates},
@@ -1820,7 +1829,7 @@ export function buildReceivablesVertical(
           inputFingerprint: null, outputFingerprint: null, qualityResults: [], failureCode: null},
         pipeline: null,
       },
-      privateReport: null, specialistShadow: null, inputAssemblyId: null, inputAssembly: null,
+      privateReport: null, specialistShadow: null, inputAssemblyId: null, inputAssembly: null, documentSupplement: null,
       inputResolution: {assembly: null, origin: "none", draftState: "missing", missingSections: [], openConflictIds: []},
     };
   };
@@ -1842,10 +1851,14 @@ export function buildReceivablesVertical(
     fiscalArchives,
   });
   const storedAssembly = raw.receivables_method_input_assembly;
+  const storedDraft = raw.receivables_method_supplement_draft?.draft;
+  // Only documents admitted by the confirmed evidence scope reach the adapter.
+  // Existing support-period and specialist-dispatch controls remain authoritative.
+  const documentSupplement = prepareReceivablesDocumentSupplement({phaseOne: built.phaseOne, documents, storedDraft});
   const inputResolution = resolveReceivablesMethodInput({
     phaseOne: built.phaseOne,
     storedAssembly: storedAssembly?.assembly,
-    supplementDraft: raw.receivables_method_supplement_draft?.draft,
+    supplementDraft: documentSupplement.patch || storedDraft ? documentSupplement.nextDraft : undefined,
   });
   const methodAssembly = inputResolution.assembly;
   const readinessAssessment = assessReceivablesPoolMethodReadiness({
@@ -1917,7 +1930,7 @@ export function buildReceivablesVertical(
   });
   const common = {
     version: "2026.08.28-v1" as const,
-    sourceManifest, candidates,
+    sourceManifest, candidates, supportSheetCandidates,
     fingerprint,
     supportPeriodAssessment: detection.supportPeriodAssessment,
     balanceSourceAssessment: detection.balanceSourceAssessment,
@@ -1947,6 +1960,7 @@ export function buildReceivablesVertical(
       inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
       inputAssembly: methodAssembly,
       inputResolution,
+      documentSupplement,
     };
   }
 
@@ -1995,6 +2009,7 @@ export function buildReceivablesVertical(
     inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
     inputAssembly: methodAssembly,
     inputResolution,
+    documentSupplement,
     publicReport: {
       ...common,
       status: "analyzed",

@@ -1,11 +1,12 @@
 "use client";
 import {useRef, useState, type FormEvent} from "react";
 import {useRouter} from "next/navigation";
-import type {ReceivablesEvidenceScopeContext} from "@offroad/receivables-analysis";
+import {canonicalReceivablesSupportSheets, type ReceivablesEvidenceScopeContext} from "@offroad/receivables-analysis";
 import {confirmReceivablesScope} from "@/app/[locale]/app/projects/[projectId]/actions";
-export type ReceivablesScopeCopy = Record<"title" | "body" | "primary" | "support" | "date" | "declaration" | "confirm" | "pending" | "saved" | "current" | "stale" | "unavailable" | "refresh" | "noSupport" | "invalid" | "denied" | "processing" | "save" | "unnamedSource" | "sheet" | "headerRow" | "version", string>;
+export type ReceivablesScopeCopy = Record<"title" | "body" | "primary" | "support" | "date" | "declaration" | "confirm" | "pending" | "saved" | "current" | "stale" | "unavailable" | "refresh" | "noSupport" | "invalid" | "denied" | "processing" | "save" | "unnamedSource" | "sheet" | "headerRow" | "version" | "supportSheets" | "supportSheetsHelp", string>;
 export function ReceivablesScopeCard({context, copy, locale, projectId, sessionId}: {context: ReceivablesEvidenceScopeContext; copy: ReceivablesScopeCopy; locale: "pt-BR" | "en-US"; projectId: string; sessionId: string}) {
   const router = useRouter();
+  const [primaryDocumentId, setPrimaryDocumentId] = useState(context.scope?.primaryTape.documentId ?? "");
   const [pending, setPending] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +21,7 @@ export function ReceivablesScopeCard({context, copy, locale, projectId, sessionI
     const index = typeof selection === "string" && /^\d+$/.test(selection) ? Number(selection) : -1;
     const candidate = Number.isSafeInteger(index) && index >= 0 ? context.candidates[index] : undefined;
     if (!candidate || form.get("scopeConfirmed") !== "yes") {setError(copy.invalid); return;}
-    const payload = {locale, projectId, sessionId, manifestFingerprint: context.sourceManifest.fingerprint, primaryTape: {documentId: candidate.documentId, sheet: candidate.sheet, headerRow: candidate.headerRow}, complementDocumentIds: form.getAll("complementDocumentIds").map(String), reportingDate: String(form.get("reportingDate") ?? "")};
+    const payload = {locale, projectId, sessionId, manifestFingerprint: context.sourceManifest.fingerprint, primaryTape: {documentId: candidate.documentId, sheet: candidate.sheet, headerRow: candidate.headerRow}, primarySupportSheets: canonicalReceivablesSupportSheets(form.getAll("primarySupportSheets").filter((value): value is string => typeof value === "string")), complementDocumentIds: form.getAll("complementDocumentIds").map(String), reportingDate: String(form.get("reportingDate") ?? "")};
     const key = JSON.stringify(payload);
     if (command.current?.payload !== key) command.current = {payload: key, id: crypto.randomUUID()};
     setPending(true); setError(null);
@@ -37,8 +38,11 @@ export function ReceivablesScopeCard({context, copy, locale, projectId, sessionI
     {saved ? <p role="status" data-testid="receivables-scope-saved">{copy.saved}</p> : null}
     {context.state === "unavailable" || !context.sourceManifest || !context.candidates.length ? <p>{copy.unavailable}</p> : <form key={`${context.sourceManifest.fingerprint}:${context.scope?.fingerprint ?? "new"}`} onSubmit={submit} data-testid="receivables-scope-form">
       <fieldset disabled={pending || saved} style={{minWidth: 0}}><legend>{copy.primary}</legend>
-        {context.candidates.map((candidate, index) => <label key={`${candidate.documentId}:${candidate.sheet}:${candidate.headerRow}`} style={{display: "block", marginBlock: 12}}><input type="radio" name="primaryTape" value={index} required defaultChecked={context.scope?.primaryTape.documentId === candidate.documentId && context.scope.primaryTape.sheet === candidate.sheet && context.scope.primaryTape.headerRow === candidate.headerRow} /> <strong>{candidate.fileName}</strong><small style={{display: "block", marginLeft: 20, marginTop: 4}}>{copy.sheet} {candidate.sheet} · {copy.headerRow} {candidate.headerRow}</small></label>)}
+        {context.candidates.map((candidate, index) => <label key={`${candidate.documentId}:${candidate.sheet}:${candidate.headerRow}`} style={{display: "block", marginBlock: 12}}><input type="radio" name="primaryTape" value={index} required onChange={() => setPrimaryDocumentId(candidate.documentId)} defaultChecked={context.scope?.primaryTape.documentId === candidate.documentId && context.scope.primaryTape.sheet === candidate.sheet && context.scope.primaryTape.headerRow === candidate.headerRow} /> <strong>{candidate.fileName}</strong><small style={{display: "block", marginLeft: 20, marginTop: 4}}>{copy.sheet} {candidate.sheet} · {copy.headerRow} {candidate.headerRow}</small></label>)}
       </fieldset>
+      {(context.supportSheetCandidates ?? []).some((entry) => entry.documentId === primaryDocumentId) ? <fieldset key={primaryDocumentId} disabled={pending || saved} style={{minWidth: 0}}><legend>{copy.supportSheets}</legend><p>{copy.supportSheetsHelp}</p>
+        {(context.supportSheetCandidates ?? []).filter((entry) => entry.documentId === primaryDocumentId).map((entry) => <label key={entry.sheet} style={{display: "block", marginBlock: 12}}><input type="checkbox" name="primarySupportSheets" value={entry.sheet} defaultChecked={context.scope?.primaryTape.documentId === primaryDocumentId && context.scope.primarySupportSheets?.includes(entry.sheet)} /> {entry.sheet}</label>)}
+      </fieldset> : null}
       <fieldset disabled={pending || saved} style={{minWidth: 0}}><legend>{copy.support}</legend>
         {supports.length ? supports.map((source) => <label key={source.sourceDocumentId} style={{display: "block", marginBlock: 12}}><input type="checkbox" name="complementDocumentIds" value={source.sourceDocumentId} defaultChecked={context.scope?.complementDocumentIds.includes(source.sourceDocumentId)} /> <strong>{source.fileName ?? copy.unnamedSource}</strong><small style={{display: "block", marginLeft: 20, marginTop: 4}}>{copy.version} {source.documentVersion}</small></label>) : <p>{copy.noSupport}</p>}
       </fieldset>

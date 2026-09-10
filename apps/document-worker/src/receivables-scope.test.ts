@@ -2,12 +2,13 @@ import {describe, expect, it} from "vitest";
 import {parseDocument} from "@offroad/document-parsers";
 import type {ReceivablesEvidenceScopeContext} from "@offroad/receivables-analysis";
 import {discoverReceivablesEvidence, resolveConfirmedReceivablesScope} from "./receivables-scope-resolution";
+import {receivablesScopeAssumptions} from "./execution-brief";
 import {buildReceivablesVertical} from "./case-analysis";
 import {documentEvidence, encodeReceivablesEvidence, type ReceivablesEvidenceEnvelope} from "./receivables-evidence";
 import {buildReceivablesMethodEvidenceRequestProjection} from "./receivables-information-requests";
 
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-async function envelope(n: number, twoSheets = false, version = 1, mode: "tape" | "blocks" | "support" = "tape", csv?: string): Promise<ReceivablesEvidenceEnvelope> {
+async function envelope(n: number, twoSheets = false, version = 1, mode: "tape" | "blocks" | "support" | "combined" = "tape", csv?: string): Promise<ReceivablesEvidenceEnvelope> {
   const parsed = await parseDocument({
     bytes: new TextEncoder().encode(csv ?? "NUM_TITULO,CNPJ_SACADO,NOME_SACADO,DT_EMISSAO,DT_VENCIMENTO,VLR_TITULO,SITUACAO,DT_PAGAMENTO,VLR_PAGO\nNF-1,11222333000144,Synthetic buyer,2026-06-01,2026-07-01,1000,ABERTO,,"),
     documentId: id(n),
@@ -19,13 +20,14 @@ async function envelope(n: number, twoSheets = false, version = 1, mode: "tape" 
     const sheet = parsed.layer.sheets![0]!;
     parsed.layer.sheets!.push({...structuredClone(sheet), name: "Second pool"});
   }
-  if (mode === "blocks") {
+  if (mode === "blocks" || mode === "combined") {
     const sheet = parsed.layer.sheets![0]!;
     const second = structuredClone(sheet.cells).map((cell) => ({...cell, ref: cell.ref.replace(/^([A-Z]+)([0-9]+)$/, (_ref, column: string, row: string) => `${column}${Number(row) + 4}`), v: cell.v === "NF-1" ? "NF-SECOND" : cell.v}));
     sheet.cells.push(...second);
   } else if (mode === "support") {
     parsed.layer.sheets = [{...parsed.layer.sheets![0]!, cells: [{ref: "A1", t: "s", v: "Synthetic supporting evidence"}]}];
   }
+  if (mode === "combined") parsed.layer.sheets!.push({name: "CONTABIL", hidden: false, tables: [], cells: [{ref: "A1", t: "s", v: "SALDO_CONTAS_A_RECEBER"}, {ref: "A2", t: "s", v: "1000"}]});
   const encoded = encodeReceivablesEvidence(documentEvidence({
     documentId: id(n),
     fileName: "synthetic.csv",
@@ -82,6 +84,51 @@ function run(evidence: ReceivablesEvidenceEnvelope[], scope: ReceivablesEvidence
 }
 
 describe("receivables worker evidence scope", () => {
+  it("retains the complete existing corpus in discovery without including its other pools in analysis", async () => {
+    const prior = await envelope(1);
+    const added = await envelope(2, true, 1, "combined");
+    const corpus = [prior, added];
+    const incomplete = confirmation([added]);
+    expect(resolveConfirmedReceivablesScope(discoverReceivablesEvidence(corpus), incomplete)).toEqual({state: "pending", code: "scope_stale"});
+    const complete = confirmation(corpus, 1);
+    const report = run(corpus, complete).publicReport;
+    expect(report.sourceManifest.fingerprint).toBe(complete.scope!.sourceManifestFingerprint);
+    expect(report.sourceManifest.sources).toHaveLength(2);
+    const selected = resolveConfirmedReceivablesScope(discoverReceivablesEvidence(corpus), complete);
+    expect(selected.state).toBe("current");
+    if (selected.state !== "current") throw new Error("fixture");
+    expect(selected.documents.map((document) => document.id)).toEqual([id(2)]);
+    expect(selected.documents[0]!.layer.sheets).toHaveLength(1);
+    expect(JSON.stringify(selected.documents)).not.toContain("NF-SECOND");
+  });
+
+  it("includes only explicitly selected non-tape sheets and preserves the exact primary row block", async () => {
+    const evidence = [await envelope(1, true, 1, "combined")];
+    const discovery = discoverReceivablesEvidence(evidence);
+    expect(discovery.supportSheetCandidates).toEqual([{documentId: id(1), sheet: "CONTABIL"}]);
+    const old = confirmation(evidence);
+    const original = resolveConfirmedReceivablesScope(discovery, old);
+    expect(original.state).toBe("current");
+    if (original.state !== "current") throw new Error("fixture");
+    expect(original.documents[0]!.layer.sheets).toHaveLength(1);
+    const current = {...old, supportSheetCandidates: discovery.supportSheetCandidates, scope: {...old.scope!, schemaVersion: "receivables-evidence-scope.v2" as const, primarySupportSheets: ["CONTABIL"]}};
+    const approval = receivablesScopeAssumptions(current, "pt-BR")[0]!;
+    expect(JSON.parse(approval.basis)).toMatchObject({scopeFingerprint: current.scope.fingerprint, primarySupportSheetCount: 1});
+    expect(approval.value).toContain("CONTABIL");
+    const selected = resolveConfirmedReceivablesScope(discovery, current);
+    expect(selected.state).toBe("current");
+    if (selected.state !== "current") throw new Error("fixture");
+    expect(selected.documents[0]!.layer.sheets!.map((sheet) => sheet.name)).toEqual([old.scope!.primaryTape.sheet, "CONTABIL"]);
+    expect(selected.documents[0]!.layer.sheets![0]).toEqual(original.documents[0]!.layer.sheets![0]);
+    expect(JSON.stringify(selected.documents)).not.toContain("NF-SECOND");
+    expect(selected.datasetHash).not.toBe(original.datasetHash);
+    for (const sheet of ["Second pool", old.scope!.primaryTape.sheet, "Invented"]) {
+      expect(resolveConfirmedReceivablesScope(discovery, {...current, scope: {...current.scope, primarySupportSheets: [sheet]}})).toMatchObject({state: "pending", code: "scope_stale"});
+    }
+    const changed = discoverReceivablesEvidence([await envelope(1, true, 2, "combined")]);
+    expect(resolveConfirmedReceivablesScope(changed, current)).toMatchObject({state: "pending", code: "scope_stale"});
+  });
+
   it("publishes only selected balance-source proposals and binds their source changes to the result", async () => {
     const tape = await envelope(1);
     const bank = await envelope(2, false, 1, "tape", "Base 30/06/2026,,\nConta,Saldo anterior,Saldo atual\nSynthetic liability,999999,100");

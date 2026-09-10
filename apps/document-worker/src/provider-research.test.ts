@@ -90,3 +90,53 @@ describe("provider research runtime", () => {
     expect(buildProviderResearch({...context, asOf: "2026-09-10T00:00:00Z"}, job).artifact.fingerprint).not.toBe(buildProviderResearch(context, job).artifact.fingerprint);
   });
 });
+
+describe("pinned public research v2", () => {
+  const pin = {schemaVersion: "offroad.public-capital-research.v1", snapshotId: "br-capital-2026-09-10.v1", sourceFingerprint: "f158ac09fc2a44a77d608cc57a1fbb074f7de8b88d558ce9d29bff917429f235", asOf: "2026-09-10"};
+  const v2 = {...context, schemaVersion: "provider-research-context.v2", publicCatalog: pin, asOf: "2026-09-10T12:00:00Z", providers: []};
+  it("delivers 28 real sourced public profiles even with an empty private directory, without funding claims", async () => {
+    const artifact = buildProviderResearch(v2, job).artifact;
+    expect(artifact.schemaVersion).toBe("provider-research.v2");
+    expect(artifact.providers).toHaveLength(28);
+    expect(artifact.providers.every(row => row.sourceClass === "public_research")).toBe(true);
+    expect(artifact.providers[0]?.observations[0]).toMatchObject({observedAt: "2026-09-10T00:00:00Z", sources: [{url: "https://www.itau.com.br/empresas/emprestimos-financiamentos"}]});
+    expect(JSON.stringify(artifact)).not.toContain("ownerOrganizationId");
+    expect(artifact.shortlistAuthorized).toBe(false);
+    expect(artifact.externalEffectAllowed).toBe(false);
+    const test = harness(v2);
+    expect(await processProviderResearchJob(job, test)).toMatchObject({status: "succeeded"});
+    expect(test.records).toHaveLength(3);
+    for (const record of test.records) expect(record.content).toMatchObject({publicCatalog: pin});
+    for (const call of test.starts.mock.calls as unknown as Array<[unknown, {executorVersion: string}]>) expect(call[1].executorVersion).toBe("2026.09.10-v2");
+    test.queue.loadProviderResearchContext = async () => ({...v2, priorArtifacts: test.records.map((record, index) => ({taskId: ["M01", "K01", "K02"][index], id: id(String(index + 1)), artifactFingerprint: String(index + 1).repeat(64), inputFingerprint: record.inputFingerprint, content: record.content}))});
+    expect(await processProviderResearchJob({...job, attempt: 2}, test)).toMatchObject({status: "succeeded"});
+    expect(test.records).toHaveLength(3);
+  });
+  it("refuses unknown or modified pins and reference dates before the catalog instead of falling back", async () => {
+    for (const invalid of [{...v2, publicCatalog: {...pin, sourceFingerprint: "f".repeat(64)}}, {...v2, publicCatalog: {...pin, snapshotId: "future"}}, {...v2, publicCatalog: {...pin, asOf: "2026-09-11"}}, {...v2, asOf: "2026-09-09T00:00:00Z"}]) {
+      const test = harness(invalid);
+      expect(await processProviderResearchJob(job, test)).toEqual({status: "failed"});
+      expect(test.records).toHaveLength(0);
+      expect(test.complete).not.toHaveBeenCalled();
+    }
+  });
+  it("supports 500 private records plus 28 public profiles and identifies intermediary roles", () => {
+    const privateProviders = Array.from({length: 500}, (_, index) => ({...context.providers[0]!, providerId: `fund-${index}`}));
+    const artifact = buildProviderResearch({...v2, providers: privateProviders}, job).artifact;
+    expect(artifact.providers).toHaveLength(528);
+    expect(artifact.providers.find(row => row.providerId === "public:bradesco-bbi")?.observations[0]?.value).toBe("Estruturador / distribuidor");
+    expect(artifact.providers.find(row => row.providerId === "public:oliveira-trust")?.observations[0]?.value).toBe("Serviços fiduciários");
+  });
+  it("preserves private ownership checks, while public and private identities remain distinct", () => {
+    const artifact = buildProviderResearch({...v2, providers: context.providers}, job).artifact;
+    expect(artifact.providers).toHaveLength(29);
+    expect(artifact.providers[0]?.sourceClass).toBe("registered");
+    expect(() => buildProviderResearch({...v2, providers: [{...context.providers[0], ownerOrganizationId: id("9")}]}, job)).toThrow();
+    expect(buildProviderResearch({...context, providers: []}, job).artifact.providers).toHaveLength(0);
+  });
+});
+
+it("preserves the exact pre-bridge v1 artifact and fingerprint", async () => {
+  const {default: golden} = await import("./provider-research-v1.fixture.json");
+  expect(buildProviderResearch(golden.context, golden.job as CapitalProjectAnalysisJob).artifact).toEqual(golden.artifact);
+});

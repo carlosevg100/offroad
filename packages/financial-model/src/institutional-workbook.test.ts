@@ -1,4 +1,4 @@
-import {mkdirSync,writeFileSync} from "node:fs";
+import {mkdirSync,writeFileSync,readFileSync} from "node:fs";
 import {describe,it,expect} from "vitest";
 import * as XLSX from "xlsx";
 import {institutionalInputFixture} from "./institutional-input.fixture";
@@ -12,10 +12,15 @@ function scenario():ApprovedInstitutionalScenario{
  return {configurationId:"11111111-1111-4111-8111-111111111111",revision:1,configurationFingerprint:prepared.configurationFingerprint,reviewedBy:"22222222-2222-4222-8222-222222222222",reviewedAt:"2026-09-10T03:00:00Z",prepared,model,review:reviewInstitutionalFinancialModel(prepared.input!,model),sourceBindings:f.sources.map(s=>({...s,currency:"BRL",amountScale:"units",metadataEvidence:{locator:"Page 1",rationale:"Reviewed normalized monetary units"},reviewedBy:"22222222-2222-4222-8222-222222222222",reviewedAt:"2026-09-10T03:00:00Z"}))};
 }
 describe("approved institutional workbook",()=>{
+ it("replays the pre-upgrade v1 receipt without changing a single byte",async()=>{
+  const original=JSON.parse(readFileSync(new URL("./institutional-workbook-v1.fixture.json",import.meta.url),"utf8"));
+  expect(original.version).toBe("institutional-workbook-snapshot.v1");
+  for(const lang of ["pt","en"] as const) expect(await renderApprovedInstitutionalFinancialWorkbook(original,lang)).not.toBeNull();
+ });
  it("replays exact bilingual bytes and includes all approved statement outputs and source anchors",async()=>{
   const approved=scenario();const artifact=await buildInstitutionalWorkbookArtifact([approved],"a".repeat(64));
-  expect(parseVerifiedInstitutionalWorkbookArtifact(artifact)).toEqual(artifact);expect(artifact.institutional.exportMode).toBe("approved_snapshot");expect(artifact.renderAudits.pt.editableInputCount).toBe(0);
-  for(const lang of ["pt","en"] as const){const bytes=await renderApprovedInstitutionalFinancialWorkbook(artifact,lang);expect(bytes).not.toBeNull();if(process.env.OFFROAD_INSTITUTIONAL_QA_DIR){mkdirSync(process.env.OFFROAD_INSTITUTIONAL_QA_DIR,{recursive:true});writeFileSync(`${process.env.OFFROAD_INSTITUTIONAL_QA_DIR}/institutional-${lang}.xlsx`,bytes!);writeFileSync(`${process.env.OFFROAD_INSTITUTIONAL_QA_DIR}/institutional-artifact.json`,JSON.stringify(artifact,null,2));}const wb=XLSX.read(bytes!,{type:"array"});const grid=XLSX.utils.sheet_to_json(wb.Sheets[lang==="pt"?"Cenário 1":"Scenario 1"]!,{header:1}) as string[][];expect(grid.some(row=>row[0]==="EBITDA"&&row[1]===approved.model.periods[0]!.ebitda)).toBe(true);expect(grid.some(row=>row[0]===(lang==="pt"?"Conciliação do balanço":"Balance check")&&row.slice(1).every(v=>v==="0"))).toBe(true);expect(approved.model.periods.every(p=>p.dscr===null)).toBe(true);expect(grid.find(row=>row[0]==="DSCR")?.slice(1)).toEqual(approved.model.periods.map(()=>lang==="pt"?"Não calculável":"Not computable"));const cover=JSON.stringify(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]!]!,{header:1}));expect(cover).toContain(lang==="pt"?"sem recálculo local":"without local assumption recalculation");}
+  expect(parseVerifiedInstitutionalWorkbookArtifact(artifact)).toEqual(artifact);expect(artifact.institutional.exportMode).toBe("approved_snapshot");expect(artifact.renderAudits.pt.editableInputCount).toBeGreaterThan(0);
+  for(const lang of ["pt","en"] as const){const bytes=await renderApprovedInstitutionalFinancialWorkbook(artifact,lang);expect(bytes).not.toBeNull();if(process.env.OFFROAD_INSTITUTIONAL_QA_DIR){mkdirSync(process.env.OFFROAD_INSTITUTIONAL_QA_DIR,{recursive:true});writeFileSync(`${process.env.OFFROAD_INSTITUTIONAL_QA_DIR}/institutional-${lang}.xlsx`,bytes!);writeFileSync(`${process.env.OFFROAD_INSTITUTIONAL_QA_DIR}/institutional-artifact.json`,JSON.stringify(artifact,null,2));}const wb=XLSX.read(bytes!,{type:"array"});const grid=XLSX.utils.sheet_to_json(wb.Sheets[lang==="pt"?"Cenário 1":"Scenario 1"]!,{header:1}) as string[][];expect(grid.some(row=>row[0]==="EBITDA"&&row[1]===approved.model.periods[0]!.ebitda)).toBe(true);expect(grid.some(row=>row[0]===(lang==="pt"?"Conciliação do balanço":"Balance check")&&row.slice(1).every(v=>v==="0"))).toBe(true);expect(approved.model.periods.every(p=>p.dscr===null)).toBe(true);expect(grid.find(row=>row[0]==="DSCR")?.slice(1)).toEqual(approved.model.periods.map(()=>lang==="pt"?"Não calculável":"Not computable"));const cover=JSON.stringify(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]!]!,{header:1}));expect(cover).toContain(lang==="pt"?"recalculam localmente":"recalculate locally");}
  });
  it("refuses modified economics, approval, manifest and workbook receipts",async()=>{
   const artifact=await buildInstitutionalWorkbookArtifact([scenario()],"a".repeat(64));

@@ -1,9 +1,11 @@
+import fontkit from "@pdf-lib/fontkit";
+import {unicodeFontBase64} from "./fonts/dejavu";
 import type {Material} from "@offroad/case-materials";
 import {PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage} from "pdf-lib";
 
 import type {DocxLang, DocxMeta} from "./docx";
 
-export const materialPdfRendererVersion = "2026.09.10-v1";
+export const materialPdfRendererVersion = "2026.09.10-v2";
 
 /** Render the approved blocks directly. Never calculate or summarize financial values here. */
 export async function materialToPdf(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
@@ -18,9 +20,19 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
   document.setCreator(`Offroad ${materialPdfRendererVersion}`);
   document.setProducer("Offroad Capital");
   document.setLanguage(lang === "pt" ? "pt-BR" : "en-US");
-  const regular = await document.embedFont(StandardFonts.Helvetica);
-  const bold = await document.embedFont(StandardFonts.HelveticaBold);
-  const display = await document.embedFont(StandardFonts.TimesRoman);
+  let regular = await document.embedFont(StandardFonts.Helvetica);
+  let bold = await document.embedFont(StandardFonts.HelveticaBold);
+  let display = await document.embedFont(StandardFonts.TimesRoman);
+  const allText = JSON.stringify({material, companyName: meta.companyName});
+  const supported = new Set(regular.getCharacterSet());
+  if ([...allText].some(char => !supported.has(char.codePointAt(0)!))) {
+    document.registerFontkit(fontkit);
+    const unicode = await document.embedFont(Buffer.from(unicodeFontBase64, "base64"), {subset: true});
+    const glyphs = new Set(unicode.getCharacterSet());
+    // Never silently replace a company name, amount, identifier or quotation with a missing glyph.
+    if ([...allText].some(char => !glyphs.has(char.codePointAt(0)!))) throw new Error("PDF contains characters outside the bundled Unicode font coverage");
+    regular = unicode; bold = unicode; display = unicode;
+  }
   const ink = rgb(0.082, 0.102, 0.125);
   const muted = rgb(0.41, 0.45, 0.49);
   const accent = rgb(0.49, 0.58, 0.33);

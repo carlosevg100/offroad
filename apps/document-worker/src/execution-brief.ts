@@ -258,8 +258,9 @@ export function receivablesScopeAssumptions(input: ReceivablesEvidenceScopeConte
   const source = scope.sourceRevisions.find((revision) => revision.sourceDocumentId === scope.primaryTape.documentId)!;
   return [{
     label: locale === "pt-BR" ? "Carteira e data-base confirmadas" : "Confirmed pool and reporting date",
-    value: `${(source.fileName ?? source.sourceDocumentId).slice(0, 200)} · ${scope.primaryTape.sheet.slice(0, 200)}:${scope.primaryTape.headerRow} · ${scope.reportingDate}`,
+    value: `${(source.fileName ?? source.sourceDocumentId).slice(0, 200)} · ${scope.primaryTape.sheet.slice(0, 200)}:${scope.primaryTape.headerRow} · ${scope.reportingDate}${scope.schemaVersion === "receivables-evidence-scope.v2" ? ` · ${scope.primarySupportSheets?.length ?? 0} ${locale === "pt-BR" ? "abas de apoio" : "supporting sheets"}: ${(scope.primarySupportSheets ?? []).join(", ").slice(0, 300)}` : ""}`,
     basis: JSON.stringify({scopeFingerprint: scope.fingerprint, reportingDate: scope.reportingDate, primaryDocumentId: scope.primaryTape.documentId, headerRow: scope.primaryTape.headerRow, selectedSourceCount: scope.sourceRevisions.length,
+      ...(scope.schemaVersion === "receivables-evidence-scope.v2" ? {primarySupportSheetCount: scope.primarySupportSheets!.length} : {}),
       documentVersion: source.documentVersion, sourceSha256: source.sourceSha256, contentSha256: source.contentSha256}),
     editable: true as const,
   }];

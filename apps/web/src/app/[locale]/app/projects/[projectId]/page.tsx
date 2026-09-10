@@ -1,3 +1,4 @@
+import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
@@ -514,7 +515,7 @@ async function ConversationalCapitalProject({
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
   const receivablesScope = await loadReceivablesScope(supabase, session.id);
   const receivablesTemporalReport = await loadReceivablesTemporalReport(supabase, organization.id, session.id, receivablesScope);
-  const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
+  const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version", "supportSheets", "supportSheetsHelp"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
     ? informationRequests ?? []
@@ -680,6 +681,7 @@ async function ConversationalCapitalProject({
   }
 
   return <AdvisorProject
+    documentaryWorkEnabled={process.env.DOCUMENTARY_WORK_PLANNING_ENABLED === "true"}
     accessBasis={project.access_basis}
     artifacts={(artifacts ?? []).filter((artifact) => artifact.status !== "superseded" && customerArtifactLabel(artifact.artifact_type, locale) !== null).map((artifact) => ({
       id: artifact.id,
@@ -720,7 +722,7 @@ async function ConversationalCapitalProject({
     tasks={visibleActivities}
     workSections={workSections}
     workHref={["company_debt_view", "capital_planning"].includes(project.entry_job) ? `/${locale}/app/projects/${project.id}?view=work` : undefined}
-    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
+    workProduct={<>{receivablesScope.sourceManifest || receivablesScope.scope ? <ReceivablesScopeCard key={`${receivablesScope.state}:${receivablesScope.sourceManifest?.fingerprint ?? "none"}:${receivablesScope.scope?.id ?? "none"}:${receivablesScope.scope?.fingerprint ?? "none"}`} context={receivablesScope} copy={scopeCopy} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} sessionId={session.id} /> : null}{receivablesTemporalReport ? <ReceivablesCurrentResult report={receivablesTemporalReport} locale={locale === "en-US" ? "en-US" : "pt-BR"} /> : null}{receivablesTemporalReport ? <ReceivablesProjectSupportPeriods understanding={receivablesTemporalReport} locale={locale} current={true} /> : receivablesScope.scope ? <ReceivablesSupportPeriods locale={locale} /> : null}{preliminary ? <div className="advisor-private-stack"><PrivateCaseWork
       checklist={checklist}
       documentaryWork={documentResult?.binding.executionScope === "documentary_only" ? {job:documentResult.product.job,gaps:documentResult.product.gaps} : plannedDocumentaryWork}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}

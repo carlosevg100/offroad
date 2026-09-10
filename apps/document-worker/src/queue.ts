@@ -779,7 +779,7 @@ export function createQueueClient(
         p_capability_token: job.capability_token,
       };
       const [input, decisions, documentWorkRequest] = await Promise.all([
-        call("worker_load_case_input_v2", args),
+        call("worker_load_case_input_v3", args),
         call("worker_load_claim_decisions", args),
         call("worker_load_document_work_request_v1", args),
       ]);
@@ -916,13 +916,13 @@ export function createQueueClient(
     },
 
     async loadExecutionBriefProposal(job) {
-      return call("worker_load_execution_brief_proposal_v3", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+      return call("worker_load_execution_brief_proposal_v4", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
     async recordExecutionBriefProposal(job, internal, visible, expectedInputFingerprint, plan) {
       return call("worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: internal, p_visible_snapshot: visible, p_expected_input_fingerprint: expectedInputFingerprint, p_plan: plan ?? null});
     },
     async loadAgentContext(job) {
-      return call("worker_load_agent_context_v4", {
+      return call("worker_load_agent_context_v5", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });

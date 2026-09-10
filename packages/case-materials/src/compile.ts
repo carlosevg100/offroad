@@ -61,6 +61,8 @@ export type MaterialBlock =
   | {type: "callout"; title: {pt: string; en: string}; items: Array<({label: {pt: string; en: string}; value: {pt: string; en: string}} & MaterialClaimMetadata)>};
 
 export type Material = {
+  /** Exact governed series for native editable presentation charts. Tables remain the full record. */
+  presentationCharts?: Array<{title: {pt: string; en: string}; series: NonNullable<import("@offroad/case-understanding").DecisionArtifactContract["series"]>[number]}>;
   kind: MaterialKind;
   title: {pt: string; en: string};
   blocks: MaterialBlock[];

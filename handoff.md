@@ -1,3 +1,25 @@
+## Publication correction: documentary progress scope
+
+PR590 fresh-database CI exposed a real stale-scope display defect after a legacy fixture was updated to a released documentary snapshot. Additive migration `20260910160700_documentary_progress_persisted_scope_guard` requires persisted target IDs and the Q01/Q02/Q03 task set to match the admitted documentary plan before displaying documentary stages. The complete execution-proposal revision SQL passed in staging, including changed targets and missing Q02; security advisors returned zero findings. The integrated publication batch now contains nine migrations. Production application, final CI and deployment remain pending at this checkpoint.
+
+## 10 September 2026: new work requests, reviewed scenario comparisons and editable financial delivery: integration checkpoint
+
+Final local integration check passed (lint, typecheck, all tests and 43/43 production build tasks). Financial-model94, case-materials59, case-export20 and authenticated four-format route12 checks passed. Native Calc compared672 outputs across six contractual variants and six edited workbooks, with zero differences above1e-6; six missing-input cases fail visibly. Visual QA inspected64 PT/EN slides/pages plus the Unicode PDF. The latest v2 SQL fixture passed the staging lifecycle again. Final staging security advisors returned zero lints. CI, production migration and deployment remain pending.
+
+Implementation branch `feat/endgame-nine-closure` starts from verified main `576d0422fb65d3ad0bcabb8e82ad6343a109de0f` (PR589). Documentary planning is active on that production baseline; older entries below describing flags off are historical. This batch has not yet been promoted.
+
+New explicit documentary requests preserve the project and ready documents, bind the command to the exact preceding brief, and require fresh approval. The released Q graph now accepts all six canonical entry contexts, while a separate admission guard preserves authorized-private access and leaves public provider research available. Progress and products bind to the current dispatch run rather than completed historical work; retry retains the original command binding after a lost response. No additional paid model evaluation has been run.
+
+Financial results now support explicit comparison with compatible reviewed historical scenarios under the current source snapshot. The default workbook is `institutional-workbook-editable.v2`, with formulas for local assumption changes; persisted v1 files remain byte-compatible. Local edits do not update the project or other materials. Native PPT financial charts and bundled licensed PDF fonts improve export output. Font coverage is not universal; unsupported glyphs are rejected. This is not proof of institutional storytelling for every intent.
+
+Economic-context planning now consumes all thirteen existing dimensions, including operating drivers, working capital, costs, asset model, capex and regulation. The six newly connected field paths preserve evidence and review semantics. This does not accredit an unimplemented specialist method or limit supported business descriptions to example sectors.
+
+Applied only to staging `gjkkjtbfnssdsbmlhmwk`: `20260910134302_governed_business_dimensions`, `20260910134318_institutional_reviewed_result_comparison`, `20260910134705_institutional_editable_workbook_contract`, `20260910135224_explicit_documentary_work_revision`, and `20260910135636_documentary_revision_private_admission`. Rollback SQL passed for governed context, institutional lifecycle and explicit documentary revision, including twelve public-access rejection paths and preserved public provider research. Database types were regenerated from staging. Security advisors returned zero lints before the final private-admission guard; final advisors and CI remain release checks.
+
+The founder confirmed no lender database exists. A production count returned zero registered funds, active mandates and registered-directory records. Public research is being assembled separately with source-linked institutions, vehicles, transaction observations and an official CVM/BCB census; registry existence is not a verified financing mandate. Matching data completion and integration remain open. Old receivables PRs are under selective reconciliation because blind merging would remove later protections.
+
+Remaining acceptance: final combined checks, CI database/browser/security gates, exact production migration and deployment verification; provider-backed continuation E2E has been added but not run because the previous paid evaluation authorization was exhausted. Do not represent nine pending items as closed from this checkpoint.
+
 ## 10 September 2026: finish the second documentary evaluation within its existing limits
 
 PR588 is published on main d3763a7 (web deployment6369897088, worker revision311); post-merge Quality and Security passed. The worker definition is false and stable; the optional boot-log read was unavailable. No claim of an observed boot event is made.
@@ -4583,3 +4605,37 @@ Browser correction verified in Quality 34433729697, job 102734405573, candidate
 completed its unmodified composer-to-approved-result-and-reload test in 10.6 seconds.
 Production-history filename alignment changes no migration SQL or application behavior;
 its final exact-head CI still precedes merge and deployment.
+
+
+## Public capital research browser: 10 September 2026 (implementation, not production proof)
+
+An authenticated `/[locale]/app/market` surface exposes the dated, source-linked public research sample of 28 institutions. Workspace navigation and the existing provider-research artifact link to it. Users can search institution/vehicle/strategy, filter roles and strategies, inspect evidence and named vehicles, and pre-screen the economic structure. Public strategy compatibility is explicitly separate from verified mandate eligibility, which remains false for every record. Arrangers, securitizers and fiduciary services are not represented as documented risk holders. Infrastructure membership alone does not establish project-finance activity: that requires an explicit source-linked claim annotation. Unknown strategy is unconfirmed, not a fabricated exclusion.
+
+The versioned JSON retains source IDs, URLs and observation dates from `outputs/endgame-nine-2026-09-10/market-map/brazil-capital-map.json`; source summaries remain Portuguese in both locales and are labeled accordingly. No private data, organization identity, verified fund directory, provider artifact or approved shortlist is mutated. No outreach is enabled. Existing `requireWorkspace` authorization is preserved. This is a bounded public research sample, not the regulatory census or a claim of current appetite.
+
+Validation: 23 focused tests passed (catalog, roles, structural negative cases, source integrity, rejected mandate promotion, route authorization, bilingual rendering and message parity); focused lint and web typecheck passed before the last source-annotation refinement, which is covered by the focused tests. Standalone rendering inspected at 1440px and 390px with no horizontal overflow. Screenshots: `outputs/endgame-nine-2026-09-10/market-map/product-qa/`. Integration full check, authenticated browser E2E, preview and production remain release gates. Security: no new database/grants/policies, no network writes or external effects; unsafe source URL schemes are rejected. Rollback: revert this additive route, navigation links, component and research asset.
+
+
+### Expanded registry and historical evidence scope
+
+The same surface now has separate profile, official-registry and historical-observation views. The compact registry projection includes 899 CVM managers with active broad-screen candidate funds and 1,742 BCB institution roots, searched by name/identity with 25 records per page. Fourteen-digit CNPJ and eight-digit BCB roots remain separate; counts are not summed as independent lenders. Consortium administrators retain registry-only status. Acquisition date is shown separately from the unknown publisher reference date. Source links, SHA-256 and ODbL attribution are retained. No raw fund/class census is bundled.
+
+Historical evidence displays four Movida debenture observations (issuer table, final-terms reconciliation pending) and the Tecon/BNDES announced approval (disbursement not verified); investor identity and rates remain unknown where the source does not identify them. BTG's dated advertised working-capital product floor is shown only within its researched profile, with monthly units, no binding offer, unknown CET and explicit non-comparability to annual CDI spreads. These are historical/source observations, not current market quotes.
+
+
+### Final local verification
+
+Independent review matched all 899 CVM and 1,742 BCB projected identities to the acquisition assets, including names, identity types, source URL/date/SHA-256; transactions and pricing match the curated research artifact. Full `pnpm check` passed: 43/43 build tasks, including web 88 test files / 533 tests. Dependencies were installed offline into this worktree and workspace resolution was verified locally; no borrowed workspace source paths. The initial restricted build was interrupted after waiting at Next build, then the full check passed with the build permissions needed for public fonts.
+
+The existing authenticated `provider-research.spec.ts` journey now tests rail navigation, profile search, structure selection, BCB identity search, historical sources and return to the preserved private project. It was not run here because no local Supabase/Docker E2E stack was available; CI execution remains required. Actual React component interactions (profile search, registry identity search, history tab) passed in an isolated local visual harness, with desktop and mobile captures and no horizontal overflow. That visual harness was removed and is not authentication or production proof. No deployment or outreach occurred.
+
+
+## Approved public provider research bridge (10 September 2026)
+
+The approved provider-research workflow now consumes the same versioned 28-profile catalog as the market browser through the client-safe `@offroad/public-research/capital-catalog` export. New plans use `2026.09.10-public-research-v2`, explicitly allow public research, show mixed public/private sources before approval, and bind the exact snapshot key/hash. Context `provider-research-context.v2`, executor `2026.09.10-v2` and artifact `provider-research.v2` carry the immutable catalog pin `br-capital-2026-09-10.v1` / SHA-256 `f158ac09fc2a44a77d608cc57a1fbb074f7de8b88d558ce9d29bff917429f235`. Unknown pins, changed hashes, or an as-of date preceding the catalog fail closed.
+
+Private source ownership validation remains unchanged. Public profiles have their own `public_research` source class, no fabricated organization owner, and dated source URLs inside the persisted artifact and its actual project UI. Documented roles distinguish arrangers, managers and fiduciary services from risk holders. Up to 500 authorized private records and 28 public profiles are supported; the regulatory census is not represented as financing observations. Public strategies are not verified current mandates or case-fit approvals. There are zero model calls, no outreach, no fund-directory writes and no matching promotion.
+
+V1 context, plan, executor, artifact and replay remain supported. An immutable synthetic golden artifact generated from the pre-bridge worker at `e8edf97` verifies exact v1 output/fingerprint preservation. V2 tests verify 28 sourced profiles with an empty private universe, all intermediate pins, replay without duplication, private ownership denial, unknown pin rejection and the 528-record boundary. The real authenticated Playwright provider-research journey now expects public evidence while the subsequent authorized-mandate matching universe remains empty.
+
+Migration `20260910151957_provider_research_public_catalog_v2.sql` was applied to staging by the root agent; root reported both unchanged v1 persistence SQL and the new v2 suite passed, including mutation of the approved brief. The approved-input fingerprint now binds stored and computed research-brief content hashes; public catalog changes cannot silently bypass approval. This migration has not been applied to production by this task. Full local `pnpm check` passed (43/43 tasks); the final worker suite passed 12 tests including the max-record boundary. Authenticated E2E execution still requires the CI/local Supabase harness. Deployment and production verification remain release gates.

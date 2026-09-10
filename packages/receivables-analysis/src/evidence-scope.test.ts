@@ -26,6 +26,18 @@ function fixture(): ReceivablesEvidenceScopeContext {
 }
 
 describe("confirmed receivables scope contract", () => {
+  it("keeps v1 byte shape and requires explicit v2 support inventory", () => {
+    const old = fixture();
+    expect(receivablesEvidenceScopeSchema.safeParse({...old.scope!, primarySupportSheets: []}).success).toBe(false);
+    const scope = {...old.scope!, schemaVersion: "receivables-evidence-scope.v2", primarySupportSheets: ["Apoio"]};
+    expect(receivablesEvidenceScopeContextSchema.safeParse({...old, scope}).success).toBe(false);
+    const current = {...old, scope, supportSheetCandidates: [{documentId: scope.primaryTape.documentId, sheet: "Apoio"}]};
+    expect(receivablesEvidenceScopeContextSchema.parse(current)).toEqual(current);
+    for (const primarySupportSheets of [["Apoio", "Apoio"], ["Pool"], ["Z", "Apoio"]]) {
+      expect(receivablesEvidenceScopeContextSchema.safeParse({...current, scope: {...scope, primarySupportSheets}}).success).toBe(false);
+    }
+  });
+
   it("accepts the exact discovered table and current source revision", () => {
     expect(receivablesEvidenceScopeContextSchema.parse(fixture())).toEqual(fixture());
   });

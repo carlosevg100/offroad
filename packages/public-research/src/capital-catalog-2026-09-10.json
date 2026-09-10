@@ -1,0 +1,1858 @@
+{
+  "schemaVersion": "offroad.public-capital-research.v1",
+  "asOf": "2026-09-10",
+  "status": "research_not_verified_mandates",
+  "coverage": {
+    "namedOrganizations": 28,
+    "capitalProviderOrManagerOrganizations": 25,
+    "arrangers": 1,
+    "serviceInfrastructureOrganizations": 2,
+    "totalBrazilianUniverse": null,
+    "coveragePercentage": null,
+    "registryCensusCompleted": false,
+    "liveMandatesVerified": 0,
+    "scope": "Brazilian debt financing of private-sector borrowers, including public development lenders; not a complete census"
+  },
+  "segments": [
+    {
+      "id": "corporate",
+      "description": "Crédito corporativo: giro, expansão, refinanciamento e aquisições"
+    },
+    {
+      "id": "capital_markets",
+      "description": "DCM e distribuição de títulos: arranjo separado de retenção de risco"
+    },
+    {
+      "id": "receivables",
+      "description": "Recebíveis: FIDC, warehouse e carteiras; separar cedente, sacado, originador e cotista"
+    },
+    {
+      "id": "infrastructure",
+      "description": "Infraestrutura e project finance: construção, operação e concessões"
+    },
+    {
+      "id": "equipment",
+      "description": "Ativos, equipamentos, frotas, leasing e financiamento a fornecedores"
+    },
+    {
+      "id": "real_estate",
+      "description": "Imobiliário: incorporação, ativos estabilizados, CRI e garantias reais"
+    },
+    {
+      "id": "agriculture",
+      "description": "Agronegócio: produtor, cadeia, armazenagem e recebíveis"
+    },
+    {
+      "id": "venture",
+      "description": "Venture debt e crédito a modelos de crescimento e plataformas"
+    },
+    {
+      "id": "special_situations",
+      "description": "Situações especiais: distressed, recuperação, créditos litigiosos e reestruturação"
+    },
+    {
+      "id": "innovation",
+      "description": "Inovação e desenvolvimento: programas de elegibilidade específica"
+    },
+    {
+      "id": "market_infrastructure",
+      "description": "Infraestrutura de mercado: administração, custódia e agente fiduciário"
+    },
+    {
+      "id": "securitization",
+      "description": "Securitização e estruturação: veículo não equivale a fonte de capital"
+    },
+    {
+      "id": "trade",
+      "description": "Comércio exterior, exportação, importação e garantias"
+    }
+  ],
+  "institutions": [
+    {
+      "id": "itau",
+      "name": "Itaú / Itaú BBA",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "receivables"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Crédito empresarial, conta garantida e desconto de recebíveis.",
+          "sourceIds": [
+            "source-itau"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "santander",
+      "name": "Santander Brasil",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Project finance e estruturação de financiamento de projetos.",
+          "sourceIds": [
+            "source-santander"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10",
+          "structureIds": [
+            "project_finance"
+          ]
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "bradesco-bbi",
+      "name": "Bradesco BBI",
+      "roles": [
+        "arranger"
+      ],
+      "segmentIds": [
+        "capital_markets",
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "DCM local com debêntures, CRI, CRA, notas comerciais e FIDC; financiamento estruturado.",
+          "sourceIds": [
+            "source-bradesco-bbi"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "btg",
+      "name": "BTG Pactual",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "special_situations"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Crédito corporativo e soluções para situações especiais.",
+          "sourceIds": [
+            "source-btg"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "abc",
+      "name": "Banco ABC Brasil",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "infrastructure",
+        "capital_markets"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Crédito empresarial, garantias, DCM e project finance.",
+          "sourceIds": [
+            "source-abc"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10",
+          "structureIds": [
+            "project_finance"
+          ]
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "daycoval",
+      "name": "Banco Daycoval",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "receivables",
+        "equipment",
+        "agriculture"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Capital de giro, desconto de recebíveis, leasing, agro e financiamento de estoques de veículos.",
+          "sourceIds": [
+            "source-daycoval"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "sofisa",
+      "name": "Banco Sofisa",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "receivables"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Capital de giro, antecipação, repasses BNDES/Finep e financiamento a fornecedores.",
+          "sourceIds": [
+            "source-sofisa"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "fibra",
+      "name": "Banco Fibra",
+      "roles": [
+        "bank"
+      ],
+      "segmentIds": [
+        "corporate",
+        "agriculture",
+        "trade"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Capital de giro, garantias, Funcafé e instrumentos de comércio exterior.",
+          "sourceIds": [
+            "source-fibra"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "kinea",
+      "name": "Kinea",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "corporate",
+        "capital_markets"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Gestão de crédito privado local e internacional.",
+          "sourceIds": [
+            "source-kinea"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        },
+        {
+          "field": "publicVehicles",
+          "value": "Veículos de crédito imobiliário, infraestrutura e agronegócio nomeados publicamente.",
+          "sourceIds": [
+            "vehicles-kinea"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [
+        {
+          "name": "KNCR11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-kinea"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "KDIF11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-kinea"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "KNCA11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-kinea"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        }
+      ],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "solis",
+      "name": "Solis Investimentos",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "receivables",
+        "venture"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Estratégias de crédito para startups, fintechs e carteiras de crédito.",
+          "sourceIds": [
+            "source-solis"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "anga",
+      "name": "Angá Asset",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "receivables",
+        "corporate"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Gestão especializada em crédito privado e FIDC.",
+          "sourceIds": [
+            "source-anga"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "jive-maua",
+      "name": "JiveMauá",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "special_situations",
+        "real_estate",
+        "infrastructure",
+        "agriculture"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Estratégias de situações especiais, imobiliário e crédito de infraestrutura e agro.",
+          "sourceIds": [
+            "source-jive-maua"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [
+        {
+          "name": "JMBI11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-jive-maua"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "Jive BossaNova 90",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-jive-maua"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "Jive BossaNova 360",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-jive-maua"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        }
+      ],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "srm-empirica",
+      "name": "SRM Empírica",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "receivables",
+        "corporate"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Gestão de crédito estruturado através de FIDC, FIF, FIP e FII.",
+          "sourceIds": [
+            "source-srm-empirica"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "valora",
+      "name": "Valora Investimentos",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "corporate",
+        "real_estate",
+        "agriculture",
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Crédito privado e veículos imobiliários, de agro e infraestrutura.",
+          "sourceIds": [
+            "source-valora"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [
+        {
+          "name": "VGIR11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-valora"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "VGIP11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-valora"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "VGHF11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-valora"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "VGIA11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-valora"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        },
+        {
+          "name": "VGIE11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-valora"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        }
+      ],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "patria",
+      "name": "Pátria Crédito",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "corporate",
+        "receivables"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Originação e gestão de crédito estruturado; Pátria Crédito Estruturado FIDC I.",
+          "sourceIds": [
+            "source-patria"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [
+        {
+          "name": "Pátria Crédito Estruturado FIDC I",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-patria"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        }
+      ],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "bocaina",
+      "name": "Bocaina Capital",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Dívida de infraestrutura e crédito estruturado de projetos e ativos operacionais.",
+          "sourceIds": [
+            "source-bocaina"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10",
+          "structureIds": [
+            "project_finance"
+          ]
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [
+        {
+          "name": "BODB11",
+          "legalEntityId": null,
+          "sourceIds": [
+            "vehicles-bocaina"
+          ],
+          "status": "publicly_named_identity_and_current_mandate_unconfirmed"
+        }
+      ],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "vinci",
+      "name": "Vinci Partners",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Gestão do Vinci Crédito Infra Master e estratégia de crédito de infraestrutura.",
+          "sourceIds": [
+            "source-vinci"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "jgp",
+      "name": "JGP",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "agriculture"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Processo de investimento em crédito estruturado do agronegócio.",
+          "sourceIds": [
+            "source-jgp"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "bndes",
+      "name": "BNDES",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "infrastructure",
+        "corporate",
+        "equipment"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Operações de financiamento divulgadas na consulta pública do banco.",
+          "sourceIds": [
+            "source-bndes"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "brde",
+      "name": "BRDE",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Financiamento de projetos de PPP e concessões.",
+          "sourceIds": [
+            "source-brde"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "bdmg",
+      "name": "BDMG",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "corporate",
+        "innovation"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Financiamento ao investimento, inovação e sustentabilidade empresarial.",
+          "sourceIds": [
+            "source-bdmg"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "dll",
+      "name": "DLL Brasil",
+      "roles": [
+        "equipment_lender"
+      ],
+      "segmentIds": [
+        "equipment"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Soluções de financiamento de equipamentos e ativos, incluindo leasing.",
+          "sourceIds": [
+            "source-dll"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "augme",
+      "name": "Augme Capital",
+      "roles": [
+        "asset_manager"
+      ],
+      "segmentIds": [
+        "corporate",
+        "real_estate"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Gestão especializada em crédito, incluindo crédito imobiliário.",
+          "sourceIds": [
+            "source-augme"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "bnb",
+      "name": "Banco do Nordeste",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "FNE Proinfra para investimentos de infraestrutura na área de atuação elegível.",
+          "sourceIds": [
+            "source-bnb"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "basa",
+      "name": "Banco da Amazônia",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "corporate",
+        "infrastructure",
+        "agriculture",
+        "innovation"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "FNO para atividades produtivas na Região Norte, com linhas empresariais e de infraestrutura.",
+          "sourceIds": [
+            "source-basa"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "finep",
+      "name": "Finep",
+      "roles": [
+        "development_lender"
+      ],
+      "segmentIds": [
+        "innovation"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Financiamento reembolsável de projetos e planos de inovação de empresas elegíveis.",
+          "sourceIds": [
+            "source-finep"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "vert",
+      "name": "VERT Capital",
+      "roles": [
+        "securitizer"
+      ],
+      "segmentIds": [
+        "securitization",
+        "receivables"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Estruturação e securitização conectando originadores e investidores. Não implica compromisso de capital próprio.",
+          "sourceIds": [
+            "source-vert"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    },
+    {
+      "id": "oliveira-trust",
+      "name": "Oliveira Trust",
+      "roles": [
+        "fiduciary_provider"
+      ],
+      "segmentIds": [
+        "market_infrastructure"
+      ],
+      "claims": [
+        {
+          "field": "publicStrategy",
+          "value": "Agente fiduciário e prestador de serviços; repositório público de relatórios de emissões. Não classificado como financiador.",
+          "sourceIds": [
+            "source-oliveira-trust"
+          ],
+          "evidenceStatus": "publicly_observed",
+          "observedAt": "2026-09-10"
+        }
+      ],
+      "legalEntityId": null,
+      "groupId": null,
+      "vehicles": [],
+      "borrowerTicket": {
+        "minimum": null,
+        "maximum": null,
+        "currency": null,
+        "status": "not_verified"
+      },
+      "currentCapacity": null,
+      "currentAppetite": "unconfirmed",
+      "mandateStatus": "public_research_only",
+      "eligibleForVerifiedMandateMatching": false,
+      "qualificationQuestions": [
+        "Qual entidade e veículo assumiriam o risco?",
+        "Qual ticket, prazo, instrumento e garantia são elegíveis hoje?",
+        "Existe capacidade e interesse atual neste caso, confirmados e datados?"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "source-itau",
+      "publisher": "Itaú / Itaú BBA",
+      "url": "https://www.itau.com.br/empresas/emprestimos-financiamentos",
+      "title": "Crédito empresarial, conta garantida e desconto de recebíveis.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-santander",
+      "publisher": "Santander Brasil",
+      "url": "https://www.santander.com.br/assessoria-financeira-e-mercado-de-capitais/global-debt-financing/project-finance",
+      "title": "Project finance e estruturação de financiamento de projetos.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-bradesco-bbi",
+      "publisher": "Bradesco BBI",
+      "url": "https://bradescobbi.com.br/pt/investment-banking",
+      "title": "DCM local com debêntures, CRI, CRA, notas comerciais e FIDC; financiamento estruturado.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-btg",
+      "publisher": "BTG Pactual",
+      "url": "https://ri.btgpactual.com/sobre-o-banco/setor-de-atuacao/",
+      "title": "Crédito corporativo e soluções para situações especiais.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-abc",
+      "publisher": "Banco ABC Brasil",
+      "url": "https://www.abcbrasil.com.br/empresas",
+      "title": "Crédito empresarial, garantias, DCM e project finance.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-daycoval",
+      "publisher": "Banco Daycoval",
+      "url": "https://www.daycoval.com.br/credito-para-sua-empresa/creditos/operacoes-credito/",
+      "title": "Capital de giro, desconto de recebíveis, leasing, agro e financiamento de estoques de veículos.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-sofisa",
+      "publisher": "Banco Sofisa",
+      "url": "https://www.sofisa.com.br/credito/",
+      "title": "Capital de giro, antecipação, repasses BNDES/Finep e financiamento a fornecedores.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-fibra",
+      "publisher": "Banco Fibra",
+      "url": "https://bancofibra.com.br/credit_and_financing/",
+      "title": "Capital de giro, garantias, Funcafé e instrumentos de comércio exterior.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-kinea",
+      "publisher": "Kinea",
+      "url": "https://www.kinea.com.br/credito-privado/",
+      "title": "Gestão de crédito privado local e internacional.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-solis",
+      "publisher": "Solis Investimentos",
+      "url": "https://solisinvestimentos.com.br/",
+      "title": "Estratégias de crédito para startups, fintechs e carteiras de crédito.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-anga",
+      "publisher": "Angá Asset",
+      "url": "https://www.angaasset.com.br/a-anga/quem-somos/",
+      "title": "Gestão especializada em crédito privado e FIDC.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-jive-maua",
+      "publisher": "JiveMauá",
+      "url": "https://jivemaua.com.br/en/strategies/",
+      "title": "Estratégias de situações especiais, imobiliário e crédito de infraestrutura e agro.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-srm-empirica",
+      "publisher": "SRM Empírica",
+      "url": "https://www.srmempirica.com.br/nossos-fundos/",
+      "title": "Gestão de crédito estruturado através de FIDC, FIF, FIP e FII.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-valora",
+      "publisher": "Valora Investimentos",
+      "url": "https://valorainvest.com.br/",
+      "title": "Crédito privado e veículos imobiliários, de agro e infraestrutura.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-patria",
+      "publisher": "Pátria Crédito",
+      "url": "https://www.patria.com/pt-BR/credito/",
+      "title": "Originação e gestão de crédito estruturado; Pátria Crédito Estruturado FIDC I.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-bocaina",
+      "publisher": "Bocaina Capital",
+      "url": "https://bocainacapital.com/",
+      "title": "Dívida de infraestrutura e crédito estruturado de projetos e ativos operacionais.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-vinci",
+      "publisher": "Vinci Partners",
+      "url": "https://www.vincicreditoficfiinfra.com/vinci-partners/sobre/",
+      "title": "Gestão do Vinci Crédito Infra Master e estratégia de crédito de infraestrutura.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-jgp",
+      "publisher": "JGP",
+      "url": "https://fiagro.jgp.com.br/fundos/processo-de-investimento/",
+      "title": "Processo de investimento em crédito estruturado do agronegócio.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-bndes",
+      "publisher": "BNDES",
+      "url": "https://www.bndes.gov.br/wps/portal/site/home/transparencia/consulta-operacoes-bndes",
+      "title": "Operações de financiamento divulgadas na consulta pública do banco.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-brde",
+      "publisher": "BRDE",
+      "url": "https://www.brde.com.br/ppps-e-concessoes/",
+      "title": "Financiamento de projetos de PPP e concessões.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-bdmg",
+      "publisher": "BDMG",
+      "url": "https://www.bdmg.mg.gov.br/investimento/",
+      "title": "Financiamento ao investimento, inovação e sustentabilidade empresarial.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-dll",
+      "publisher": "DLL Brasil",
+      "url": "https://www.dllgroup.com/br/pt-br",
+      "title": "Soluções de financiamento de equipamentos e ativos, incluindo leasing.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-augme",
+      "publisher": "Augme Capital",
+      "url": "https://www.augme.com.br/",
+      "title": "Gestão especializada em crédito, incluindo crédito imobiliário.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-bnb",
+      "publisher": "Banco do Nordeste",
+      "url": "https://www.bnb.gov.br/fne-proinfra",
+      "title": "FNE Proinfra para investimentos de infraestrutura na área de atuação elegível.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-basa",
+      "publisher": "Banco da Amazônia",
+      "url": "https://www.bancoamazonia.com.br/linhas-de-fomento/fno/",
+      "title": "FNO para atividades produtivas na Região Norte, com linhas empresariais e de infraestrutura.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-finep",
+      "publisher": "Finep",
+      "url": "https://www.finep.gov.br/area-para-clientes/24-apoio-e-financiamento",
+      "title": "Financiamento reembolsável de projetos e planos de inovação de empresas elegíveis.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-vert",
+      "publisher": "VERT Capital",
+      "url": "https://docs.vert-capital.com/vert-capital/securitizacao",
+      "title": "Estruturação e securitização conectando originadores e investidores. Não implica compromisso de capital próprio.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "source-oliveira-trust",
+      "publisher": "Oliveira Trust",
+      "url": "https://api-site.oliveiratrust.com.br/novo/relatorios-anuais/",
+      "title": "Agente fiduciário e prestador de serviços; repositório público de relatórios de emissões. Não classificado como financiador.",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "cvm-registry",
+      "publisher": "CVM",
+      "url": "https://dados.cvm.gov.br/dataset/fi-cad",
+      "title": "Cadastro de fundos, classes e subclasses; referência cadastral diária",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "cvm-fidc",
+      "publisher": "CVM",
+      "url": "https://dados.cvm.gov.br/dataset/fidc-doc-inf_mensal",
+      "title": "Informes mensais de FIDC",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "bcb-registry",
+      "publisher": "Banco Central",
+      "url": "https://www.bcb.gov.br/estabilidadefinanceira/encontreinstituicao",
+      "title": "Instituições autorizadas, reguladas ou supervisionadas",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "anbima-ranking",
+      "publisher": "ANBIMA",
+      "url": "https://www.anbima.com.br/main.jsp?lumA=1&lumII=2CA08A87629D35E001629D3601A001A5&lumPageId=4028B88155C6FAF60155CB295D365506",
+      "title": "Ranking de gestores e patrimônio por classe",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "anbima-prices",
+      "publisher": "ANBIMA",
+      "url": "https://developers.anbima.com.br/pt/documentacao/precos-indices/apis-de-precos/debentures/",
+      "title": "API de taxas e preços indicativos de debêntures",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "anbima-history",
+      "publisher": "ANBIMA",
+      "url": "https://www.anbima.com.br/pt_br/noticias/mercado-de-credito-mais-transparente-passamos-a-divulgar-taxas-e-precos-de-debentures-cris-e-cras-prefixados.htm",
+      "title": "Histórico gratuito recente e histórico longo via Feed",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vert-api",
+      "publisher": "VERT",
+      "url": "https://docs.vert-capital.com/vert-capital/bem-vindo/credenciais-de-acesso",
+      "title": "Documentação de API pública e APIs restritas",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "movida-issues",
+      "publisher": "Movida RI",
+      "url": "https://ri.movida.com.br/informacoes-financeiras/emissao-no-mercado-de-capitais/",
+      "title": "Tabela de emissões e remuneração contratual",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "tecon",
+      "publisher": "Ministério de Portos e Aeroportos",
+      "url": "https://www.gov.br/portos-e-aeroportos/pt-br/assuntos/noticias/2025/11/porto-de-salvador-deve-dobrar-capacidade-com-financiamento-de-r-848-milhoes-do-bndes",
+      "title": "Aprovação de financiamento de R$848 milhões para Tecon Salvador",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "forward",
+      "publisher": "Forward",
+      "url": "https://www.useforward.co/",
+      "title": "Fluxo de originação e fund matching anunciado pelo fornecedor",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "modelml",
+      "publisher": "ModelML",
+      "url": "https://llms.modelml.com/model-ml-use-cases-and-customer-evidence",
+      "title": "Casos de uso e evidências publicadas pelo fornecedor, incluindo buyer cluster analysis",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "modelml-data",
+      "publisher": "ModelML",
+      "url": "https://modelml.com/blog",
+      "title": "Anúncios de integrações com provedores de dados financeiros",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "btg-rate",
+      "publisher": "BTG Pactual",
+      "url": "https://empresas.btgpactual.com/capital-de-giro",
+      "title": "Taxa anunciada a partir de 1,70% ao mês; sujeita a análise",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "patria-solis",
+      "publisher": "Pátria",
+      "url": "https://ir.patria.com/news-releases/news-release-details/patria-prepares-next-vintage-latin-america-private-credit/",
+      "title": "Participação de 51% na Solis e estratégia de crédito latino-americana",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vehicles-kinea",
+      "publisher": "Kinea",
+      "url": "https://www.kinea.com.br/somos/",
+      "title": "Veículos mencionados publicamente pela organização",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vehicles-jive-maua",
+      "publisher": "JiveMauá",
+      "url": "https://jivemaua.com.br/credito-privado-infra/",
+      "title": "Veículos mencionados publicamente pela organização",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vehicles-valora",
+      "publisher": "Valora Investimentos",
+      "url": "https://valorainvest.com.br/",
+      "title": "Veículos mencionados publicamente pela organização",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vehicles-patria",
+      "publisher": "Pátria Crédito",
+      "url": "https://www.patria.com/pt-BR/credito/",
+      "title": "Veículos mencionados publicamente pela organização",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    },
+    {
+      "id": "vehicles-bocaina",
+      "publisher": "Bocaina Capital",
+      "url": "https://bocainacapital.com/bodb11/o-fundo/",
+      "title": "Veículos mencionados publicamente pela organização",
+      "publishedAt": null,
+      "accessedAt": "2026-09-10",
+      "type": "primary_public_page"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "MOVIB2",
+      "issuer": "Movida Participações S.A.",
+      "instrument": "debenture",
+      "issueDate": "2025-06-15",
+      "maturity": "2030-06-15",
+      "principalAmount": 750000000,
+      "currency": "BRL",
+      "pricing": {
+        "type": "contractual_coupon",
+        "index": "CDI",
+        "spreadPercentPerYear": 2.3,
+        "observationNotCurrentQuote": true
+      },
+      "lenderIdentity": null,
+      "sourceIds": [
+        "movida-issues"
+      ],
+      "status": "issuer_table_requires_final_terms_reconciliation"
+    },
+    {
+      "id": "MOVIC2",
+      "issuer": "Movida Participações S.A.",
+      "instrument": "debenture",
+      "issueDate": "2025-09-15",
+      "maturity": "2031-03-15",
+      "principalAmount": 1000000000,
+      "currency": "BRL",
+      "pricing": {
+        "type": "contractual_coupon",
+        "index": "CDI",
+        "spreadPercentPerYear": 2.3,
+        "observationNotCurrentQuote": true
+      },
+      "lenderIdentity": null,
+      "sourceIds": [
+        "movida-issues"
+      ],
+      "status": "issuer_table_requires_final_terms_reconciliation"
+    },
+    {
+      "id": "MOVIB4",
+      "issuer": "Movida Participações S.A.",
+      "instrument": "debenture",
+      "issueDate": "2025-10-10",
+      "maturity": "2031-04-10",
+      "principalAmount": 750000000,
+      "currency": "BRL",
+      "pricing": {
+        "type": "contractual_coupon",
+        "index": "CDI",
+        "spreadPercentPerYear": 2.35,
+        "observationNotCurrentQuote": true
+      },
+      "lenderIdentity": null,
+      "sourceIds": [
+        "movida-issues"
+      ],
+      "status": "issuer_table_requires_final_terms_reconciliation"
+    },
+    {
+      "id": "MOVIB5",
+      "issuer": "Movida Participações S.A.",
+      "instrument": "debenture",
+      "issueDate": "2026-01-20",
+      "maturity": "2031-07-20",
+      "principalAmount": 400000000,
+      "currency": "BRL",
+      "pricing": {
+        "type": "contractual_coupon",
+        "index": "CDI",
+        "spreadPercentPerYear": 2.4,
+        "observationNotCurrentQuote": true
+      },
+      "lenderIdentity": null,
+      "sourceIds": [
+        "movida-issues"
+      ],
+      "status": "issuer_table_requires_final_terms_reconciliation"
+    },
+    {
+      "id": "tecon-salvador-2025",
+      "issuer": "Tecon Salvador",
+      "instrument": "financing",
+      "issueDate": null,
+      "announcementPeriod": "2025-11",
+      "principalAmount": 848000000,
+      "currency": "BRL",
+      "pricing": null,
+      "lenderIdentity": "bndes",
+      "sourceIds": [
+        "tecon"
+      ],
+      "status": "approval_announced_disbursement_not_verified"
+    }
+  ],
+  "pricingObservations": [
+    {
+      "institutionId": "btg",
+      "kind": "advertised_product_floor",
+      "value": 1.7,
+      "unit": "percent_per_month",
+      "product": "capital_de_giro",
+      "sourceIds": [
+        "btg-rate"
+      ],
+      "bindingOffer": false,
+      "totalEffectiveCost": null,
+      "borrowerEligibility": null
+    }
+  ]
+}

@@ -4,6 +4,34 @@
 begin;
 \ir support/execution_approval.sql
 
+-- Seed only this rollback test's synthetic human-review state. Production has no such helper.
+create function pg_temp.fixture_review_placeholder(p_status text, p_recommendation text, p_reviewed_by text)
+returns void language sql security definer set search_path='' as $$
+ update public.capital_project_decisions set status=p_status,recommendation=p_recommendation,reviewed_by=p_reviewed_by
+ where organization_id='20000000-0000-4000-8000-000000000393'
+ and id='82000000-0000-4000-8000-000000000393';
+$$;
+
+-- Seed already-persisted specialist questions in this synthetic project only.
+create function pg_temp.fixture_parallel_questions(p_project_id uuid)
+returns void language plpgsql security definer set search_path='' as $$
+declare namespace text;
+begin
+ if not exists(select 1 from public.capital_projects p where p.id=p_project_id and p.organization_id='20000000-0000-4000-8000-000000000393') then raise exception 'fixture project mismatch'; end if;
+ foreach namespace in array array['receivables_method_r01_evidence','receivables_method_r01_fields','institutional_model_assumptions','future_specialist'] loop
+  insert into public.capital_project_information_requests (
+    organization_id,capital_project_id,requirement_key,question,why_it_matters,decision_impact,
+    acceptable_evidence,answer_kind,choices,priority,information_gain,materiality,answerability,redundancy_penalty,status,source_namespace
+  ) values (
+    '20000000-0000-4000-8000-000000000393',p_project_id,'parallel.'||namespace,
+    'Qual informação falta para esta análise?', 'Esta informação altera a análise especializada.',
+    'A resposta permite completar a próxima etapa.',array['Documento ou confirmação expressa'],
+    'text','{}','blocking',1,1,1,0,'open',namespace
+  );
+ end loop;
+end;
+$$;
+
 do $$
 declare
   table_name text;
@@ -314,6 +342,100 @@ begin
     or (select count(*) from public.capital_project_agent_events where capital_project_id = ids.project_id) <> 3 then
     raise exception 'agent assessment replay or attribution invariant failed: %', replayed;
   end if;
+
+  -- The general assessment must preserve all other producers, including simultaneous
+  -- source diligence and a typed R01 premise, while managing its own old questions.
+  declare
+    foreign_before jsonb;
+    foreign_after jsonb;
+    empty_assessment jsonb := assessment || jsonb_build_object('coverage','[]'::jsonb,'requests','[]'::jsonb,'decisions','[]'::jsonb,'assessmentRef','parallel-producer-check');
+    collision jsonb;
+  begin
+    perform pg_temp.fixture_parallel_questions(ids.project_id);
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_before from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),empty_assessment);
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_after from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    if foreign_before is distinct from foreign_after or jsonb_array_length(foreign_after)<>4
+      or not exists(select 1 from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace='agent_assessment' and r.status='superseded') then
+      raise exception 'general assessment changed specialist questions or failed its own supersession';
+    end if;
+    collision := jsonb_set(empty_assessment,'{requests}',jsonb_build_array((assessment#>'{requests,0}') || jsonb_build_object('requirementKey','parallel.receivables_method_r01_fields')));
+    begin
+      perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),collision);
+      raise exception 'general assessment took another producer question';
+    exception when invalid_parameter_value then
+      if sqlerrm<>'agent_information_request_namespace_conflict' then raise; end if;
+    end;
+    select jsonb_agg(to_jsonb(r) order by r.id) into foreign_after from public.capital_project_information_requests r where r.capital_project_id=ids.project_id and r.source_namespace<>'agent_assessment';
+    if foreign_before is distinct from foreign_after then raise exception 'producer collision changed specialist questions'; end if;
+    raise exception 'rollback parallel producer fixture' using errcode='ZX010';
+  exception when sqlstate 'ZX010' then null;
+  end;
+
+  -- Reassess an unanswered decision without inventing a recommendation or losing history.
+  declare
+    pending jsonb := assessment || jsonb_build_object('coverage','[]'::jsonb,'requests','[]'::jsonb);
+    initial jsonb;
+    prior_snapshot jsonb;
+    decision_id uuid := '81000000-0000-4000-8000-000000000393';
+    review_status text;
+    rejected_constraint text;
+  begin
+    pending := jsonb_set(pending,'{decisions}',jsonb_build_array((assessment#>'{decisions,0}') || jsonb_build_object(
+      'id',decision_id,'decisionKey','case.unanswered_direction','status','open','recommendation',null,
+      'confidence','insufficient','fingerprint',repeat('c',64))));
+    pending := pending || jsonb_build_object('assessmentRef','placeholder-first');
+    initial := pending;
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
+    select to_jsonb(d) into prior_snapshot from public.capital_project_decisions d where d.id=decision_id;
+    pending := jsonb_set(pending,'{decisions,0,id}',to_jsonb('82000000-0000-4000-8000-000000000393'::text));
+    pending := jsonb_set(pending,'{decisions,0,fingerprint}',to_jsonb(repeat('d',64))) || jsonb_build_object('assessmentRef','placeholder-second');
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
+    if (select count(*) from public.capital_project_decisions d where d.capital_project_id=ids.project_id and d.decision_key='case.unanswered_direction') <> 1
+      or not exists(select 1 from public.capital_project_decisions d where d.id=decision_id and d.status='open' and d.recommendation is null and d.revision=1 and d.decision_fingerprint=repeat('d',64)
+        and d.created_by=(prior_snapshot->>'created_by')::uuid and d.created_at=(prior_snapshot->>'created_at')::timestamptz)
+      or not exists(select 1 from public.capital_project_agent_events e where e.capital_project_id=ids.project_id and e.detail->'prior_decision'=prior_snapshot) then
+      raise exception 'unanswered decision identity or history lost';
+    end if;
+    recorded := public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),initial);
+    if recorded->>'decision_count'<>'0' or not exists(select 1 from public.capital_project_decisions d where d.id=decision_id and d.decision_fingerprint=repeat('d',64)) then
+      raise exception 'old assessment replay overwrote current placeholder';
+    end if;
+    pending := jsonb_set(pending,'{decisions,0}',(pending#>'{decisions,0}') || jsonb_build_object('status','directional','recommendation','Testar uma linha com amortização ajustada.','fingerprint',repeat('e',64))) || jsonb_build_object('assessmentRef','placeholder-directional');
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
+    if not exists(select 1 from public.capital_project_decisions d where d.id=decision_id and d.status='directional' and d.revision=1 and d.recommendation is not null) then raise exception 'placeholder promotion lost its identity'; end if;
+    pending := jsonb_set(pending,'{decisions,0,fingerprint}',to_jsonb(repeat('f',64))) || jsonb_build_object('assessmentRef','directional-successor');
+    perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
+    if not exists(select 1 from public.capital_project_decisions d where d.id=decision_id and d.status='superseded')
+      or not exists(select 1 from public.capital_project_decisions d where d.supersedes_decision_id=decision_id and d.revision=2 and d.status='directional') then raise exception 'actual recommendations no longer revisioned'; end if;
+    foreach review_status in array array['directional','confirmed','rejected'] loop
+      begin
+        perform pg_temp.fixture_review_placeholder(review_status,null,'user');
+        raise exception 'recommendation constraint was weakened';
+      exception when check_violation then
+        get stacked diagnostics rejected_constraint=constraint_name;
+        if rejected_constraint <> 'capital_project_decisions_check' then raise; end if;
+      end;
+    end loop;
+    begin
+      perform pg_temp.fixture_review_placeholder('confirmed','Uma recomendação real.',null);
+      raise exception 'confirmed decision lost reviewer constraint';
+    exception when check_violation then
+      get stacked diagnostics rejected_constraint=constraint_name;
+      if rejected_constraint <> 'capital_project_decisions_check1' then raise; end if;
+    end;
+    foreach review_status in array array['confirmed','rejected'] loop
+      perform pg_temp.fixture_review_placeholder(review_status,'Uma recomendação revista pela pessoa.','user');
+      select to_jsonb(d) into prior_snapshot from public.capital_project_decisions d where d.id='82000000-0000-4000-8000-000000000393';
+      pending := jsonb_set(pending,'{decisions,0,fingerprint}',to_jsonb(repeat('9',64))) || jsonb_build_object('assessmentRef','after-human-'||review_status);
+      recorded := public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
+      if recorded->>'decision_count'<>'0' or (select to_jsonb(d) from public.capital_project_decisions d where d.id='82000000-0000-4000-8000-000000000393') is distinct from prior_snapshot then
+        raise exception 'worker changed a human-reviewed decision';
+      end if;
+    end loop;
+    raise exception 'rollback placeholder lifecycle fixture' using errcode='ZX009';
+  exception when sqlstate 'ZX009' then null;
+  end;
 
   begin
     perform public.worker_record_agent_assessment_v1(

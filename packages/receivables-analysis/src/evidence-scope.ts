@@ -29,19 +29,41 @@ export const receivablesPrimaryTapeSchema = z.object({
 }).strict();
 export const receivablesTapeCandidateSchema = receivablesPrimaryTapeSchema.extend({fileName: z.string().min(1)});
 
+/** Unicode codepoint order matches UTF-8 byte order / PostgreSQL COLLATE C. */
+export function canonicalReceivablesSupportSheets(sheets: readonly string[]): string[] {
+  return [...sheets].sort((left, right) => {
+    const a = [...left], b = [...right];
+    for (let index = 0; index < Math.min(a.length, b.length); index++) {
+      const difference = a[index]!.codePointAt(0)! - b[index]!.codePointAt(0)!;
+      if (difference) return difference;
+    }
+    return a.length - b.length;
+  });
+}
+
 /** Confirmation records scope and source revisions, never a second ledger of financial facts. */
 export const receivablesEvidenceScopeSchema = z.object({
-  schemaVersion: z.literal("receivables-evidence-scope.v1"),
+  schemaVersion: z.enum(["receivables-evidence-scope.v1", "receivables-evidence-scope.v2"]),
   id: z.uuid(),
   fingerprint,
   sourceManifestFingerprint: fingerprint,
   primaryTape: receivablesPrimaryTapeSchema,
   complementDocumentIds: z.array(z.uuid()),
+  primarySupportSheets: z.array(z.string().min(1).max(255)).max(100).optional(),
   reportingDate: z.iso.date(),
   sourceRevisions: z.array(receivablesEvidenceSourceRevisionSchema).min(1),
   confirmedBy: z.uuid(),
   confirmedAt: z.iso.datetime({offset: true}),
 }).strict().superRefine((scope, context) => {
+  if (scope.schemaVersion === "receivables-evidence-scope.v1" && scope.primarySupportSheets !== undefined) {
+    context.addIssue({code: "custom", message: "v1 scope must not acquire new sheet selections"});
+  }
+  if (scope.schemaVersion === "receivables-evidence-scope.v2") {
+    const sheets = scope.primarySupportSheets;
+    if (!sheets || new Set(sheets).size !== sheets.length || sheets.some((sheet, index) => sheet === scope.primaryTape.sheet || canonicalReceivablesSupportSheets(sheets)[index] !== sheet)) {
+      context.addIssue({code: "custom", message: "v2 support sheets must be explicit, unique, sorted and different from the primary sheet"});
+    }
+  }
   const selectedIds = [scope.primaryTape.documentId, ...scope.complementDocumentIds].map((id) => id.toLowerCase());
   const revisionIds = scope.sourceRevisions.map((source) => source.sourceDocumentId.toLowerCase());
   if (new Set(selectedIds).size !== selectedIds.length) context.addIssue({code: "custom", message: "selected sources must be unique"});
@@ -59,6 +81,7 @@ export const receivablesEvidenceScopeContextSchema = z.object({
   state: z.enum(["unavailable", "unconfirmed", "current", "stale"]),
   sourceManifest: receivablesEvidenceSourceManifestSchema.nullable(),
   candidates: z.array(receivablesTapeCandidateSchema),
+  supportSheetCandidates: z.array(z.object({documentId: z.uuid(), sheet: z.string().min(1).max(255)}).strict()).optional(),
   scope: receivablesEvidenceScopeSchema.nullable(),
 }).strict().superRefine((value, context) => {
   if (value.state !== "current") return;
@@ -70,6 +93,12 @@ export const receivablesEvidenceScopeContextSchema = z.object({
   if (!value.candidates.some((candidate) => candidate.documentId === scope.primaryTape.documentId
     && candidate.sheet === scope.primaryTape.sheet && candidate.headerRow === scope.primaryTape.headerRow)) {
     context.addIssue({code: "custom", message: "current scope requires its discovered primary table"});
+  }
+  for (const sheet of scope.primarySupportSheets ?? []) {
+    if (!value.supportSheetCandidates?.some((entry) => entry.documentId === scope.primaryTape.documentId && entry.sheet === sheet)
+      || value.candidates.some((entry) => entry.documentId === scope.primaryTape.documentId && entry.sheet === sheet)) {
+      context.addIssue({code: "custom", message: "selected supporting sheet must be discovered and contain no title tape"});
+    }
   }
   for (const revision of scope.sourceRevisions) {
     const source = sourceManifest.sources.find((entry) => entry.sourceDocumentId === revision.sourceDocumentId);
