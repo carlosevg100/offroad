@@ -48,6 +48,28 @@ test("guided institutional setup calculates only after review and survives resum
  expect(projectId).toBeTruthy();
  const projectPath=`/pt-BR/app/projects/${projectId}`;
  await page.goto(projectPath);
+ // Common entry. A documentary request is explained, not started: the documentary reading is not
+ // activated in this stack and no model is called. A financial objective goes to the model
+ // configuration, is recorded, and survives a reload.
+ const entry=page.getByTestId("new-work-request");
+ await entry.locator("summary").click();
+ const objectiveField=entry.locator('textarea[name="objective"]');
+ await objectiveField.fill("Compare estas propostas de financiamento.");
+ const preview=page.getByTestId("new-work-preview");
+ await expect(preview).toHaveAttribute("data-kind","blocked");
+ await expect(preview).toHaveAttribute("data-reason","documentary_not_activated");
+ await expect(preview).toContainText(messages.NewWorkRequest.blocked.documentary_not_activated);
+ const financialObjective="Faça a comparação financeira dos cenários e calcule o serviço da dívida.";
+ await objectiveField.fill(financialObjective);
+ await expect(preview).toHaveAttribute("data-kind","dispatch");
+ await expect(preview).toHaveAttribute("data-capability","financial_result");
+ await expect(preview).toContainText(messages.NewWorkRequest.approval.institutional_configuration);
+ await entry.getByRole("button",{name:messages.NewWorkRequest.submit,exact:true}).click();
+ await expect(page).toHaveURL(/#work-institutional-setup$/);
+ await expect(page.getByTestId("new-work-history")).toContainText(financialObjective);
+ await page.reload();
+ await entry.locator("summary").click();
+ await expect(page.getByTestId("new-work-history")).toContainText(financialObjective);
  await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
  const form=page.getByTestId("institutional-setup-form");
  async function submitScenario(costRatio: string) {
@@ -102,6 +124,27 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await page.reload();
+ await reviewLink.click();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
+ // Review roles. The account owns the organization, so it may configure them; it also prepared
+ // this configuration, so approving its own work needs the explicit self-approval setting.
+ await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
+ const roles=page.getByTestId("project-review-roles");
+ await expect(roles).toHaveAttribute("data-mode","open");
+ const ownRow=roles.locator(`tr[data-member-email="${email}"]`);
+ await ownRow.locator('input[value="preparer"]').click();
+ await expect(ownRow.locator('input[value="preparer"]')).toBeChecked();
+ await expect(roles).toHaveAttribute("data-mode","assigned");
+ await ownRow.locator('input[value="approver"]').click();
+ await expect(ownRow.locator('input[value="approver"]')).toBeChecked();
+ await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","false");
+ await reviewLink.click();
+ await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
+ await expect(review.getByRole("alert")).toHaveText(messages.InstitutionalSetupReview.roleRequired);
+ await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
+ await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
+ await roles.locator('select[name="project_self_approval"]').selectOption("allowed");
+ await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","true");
  await reviewLink.click();
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
  await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();

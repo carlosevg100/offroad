@@ -6,7 +6,7 @@ import {requestProviderCaseFit} from "@/lib/advisor/provider-case-fit-action";
 import styles from "./provider-research-work.module.css";
 const instruments=["debenture","nota_comercial","ccb","cri","cra","fidc","direct_loan","receivables_purchase","project_finance","equity_kicker_debt"] as const;
 const collateral=["recebiveis","imovel","equipamento","estoque","aval_fianca","cessao_fiduciaria","alienacao_fiduciaria_quotas","conta_reserva","quirografario"] as const;
-export function ProviderCaseFitForm({projectId,projectName,expectedPlanFingerprint}:{projectId?:string;projectName?:string;expectedPlanFingerprint?:string}){
+export function ProviderCaseFitForm({projectId,projectName,expectedPlanFingerprint,initialObjective}:{projectId?:string;projectName?:string;expectedPlanFingerprint?:string;initialObjective?:string}){
  const t=useTranslations("ProviderCaseFitForm");const locale=useLocale();const router=useRouter();const [pending,startTransition]=useTransition();const [error,setError]=useState<string|null>(null);const [done,setDone]=useState(false);const [requestId]=useState(()=>crypto.randomUUID());
  return <details className={`${styles.research} ${styles.caseForm}`} data-testid="provider-case-fit-form"><summary>{t('title')}</summary><p>{t('description')}</p>
  <form onSubmit={event=>{event.preventDefault();const data=new FormData(event.currentTarget);setError(null);const date=String(data.get('asOf')??'');if(!date||!Number.isFinite(new Date(date).getTime())){setError('invalid');return;}
@@ -18,7 +18,7 @@ export function ProviderCaseFitForm({projectId,projectName,expectedPlanFingerpri
  startTransition(async()=>{const result=await requestProviderCaseFit({requestId,locale,projectName:projectName??String(data.get('projectName')??''),objective:String(data.get('objective')??''),criteria:values,...(projectId?{projectId,expectedPlanFingerprint}:{})});if(!result.ok){setError(result.error);return;}setDone(true);if(!projectId)router.push(`/${locale}/app/projects/${result.projectId}`);else router.refresh();});
  }}>
  {!projectName?<label className={styles.search}>{t('projectName')}<input name="projectName" required minLength={2} maxLength={80}/></label>:null}
- <label className={styles.search}>{t('objective')}<textarea name="objective" required minLength={2} maxLength={8000} defaultValue={t('objectiveDefault')}/></label>
+ <label className={styles.search}>{t('objective')}<textarea name="objective" required minLength={2} maxLength={8000} defaultValue={initialObjective??t('objectiveDefault')}/></label>
  <label className={styles.search}>{t('asOf')}<input name="asOf" type="datetime-local" required/></label>
  <label className={styles.search}>{t('currency')}<select name="currency" required defaultValue=""><option value="" disabled>{t('choose')}</option>{['BRL','USD','EUR'].map(value=><option key={value} value={value}>{value}</option>)}</select></label>
  <p>{t('optional')}</p>

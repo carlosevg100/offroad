@@ -1,0 +1,16 @@
+.roles { display: grid; gap: 12px; font-size: 13px; line-height: 1.6; color: #30373d; }
+.roles h2 { margin: 0; font-size: 16px; }
+.roles p { margin: 0; }
+.policy { padding: 10px 12px; border: 1px solid #dce1d9; border-radius: 8px; background: #f7f8f4; }
+.table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table th, .table td { padding: 8px 6px; border-bottom: 1px solid #e4e7e1; text-align: left; vertical-align: top; }
+.table th[scope="row"] { font-weight: 500; }
+.table th[scope="row"] small { display: block; color: #657068; font-weight: 400; }
+.table td { text-align: center; }
+.settings { display: grid; gap: 10px; padding: 12px; border: 1px solid #dce1d9; border-radius: 8px; background: white; }
+.settings label { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; }
+.settings select { padding: 6px 8px; border: 1px solid #dce1d9; border-radius: 6px; font: inherit; }
+.muted { color: #657068; font-size: 12px; }
+.roles [role="alert"] { color: #a3463f; font-size: 12px; }
+.roles :disabled { cursor: not-allowed; opacity: .6; }
+.wrap { overflow-x: auto; }
