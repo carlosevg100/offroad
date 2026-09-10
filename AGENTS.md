@@ -204,7 +204,12 @@ ledger reconciliation, reported-aggregate performance, evidence coverage and tri
 comparison) live in `packages/financial-core/src/receivables/pool-*.ts` as deterministic,
 Decimal-based, traced and tested kernels; that migration is done (10 September 2026) and
 `analyze.ts` keeps only orchestration, gap and decision assembly. The published result is
-byte-identical to the prototype and pinned by `pool-kernel-parity.test.ts`. Promotion of the
-vertical still requires the method maturity evidence recorded in the procedure markdown
-(independent review, gold, adversarial and consistency runs) and the founder's approval for
-production; neither is implied by the migration.
+byte-identical to the prototype and pinned by `pool-kernel-parity.test.ts`. The method maturity
+evidence is now on record (independent review plus gold, adversarial and consistency runs under
+`packages/credit-playbook/knowledge/reviews/`), so `underwrite-receivables-pool` stands at
+`tested` and its exposure is `allowlisted`. The organizations allowed to read the released
+analytical result live in the database grant `private.receivables_analytical_release_grants`,
+never in source control; without that grant the run stays an internal shadow and the project page
+keeps the compact card. The released reading shows a calculation under declared assumptions and
+carries no external direction, no financier recommendation and no credit approval. `production`
+maturity still requires the founder's approval on record; no agent may set it.
