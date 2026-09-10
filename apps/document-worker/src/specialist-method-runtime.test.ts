@@ -6,7 +6,12 @@ import {
   type ReceivablesRawDetectionReport,
 } from "@offroad/receivables-analysis";
 
-import {executeReceivablesSpecialistShadow, specialistCandidateExecutorRuntimeManifest} from "./specialist-method-runtime";
+import {
+  evaluateReceivablesSpecialistPolicy,
+  executeReceivablesSpecialistShadow,
+  releaseReceivablesSpecialistAnalysis,
+  specialistCandidateExecutorRuntimeManifest,
+} from "./specialist-method-runtime";
 
 const datasetHash = "c".repeat(64);
 const sourceFileHash = "d".repeat(64);
@@ -138,5 +143,95 @@ describe("specialist method shadow runtime", () => {
       taskId: "D06", executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool", executorVersion: "2026.09.06-v1",
       phaseOne, detection, assembly,
     })).toThrow("specialist_task_not_supported");
+  });
+});
+
+const organizationId = "11111111-1111-4111-8111-111111111111";
+const confirmedScope = {id: "22222222-2222-4222-8222-222222222222", fingerprint: "e".repeat(64)};
+const grant = {granted: true, organizationId, confirmedScope, sourceDatasetHash: datasetHash};
+const releaseInput = {
+  taskId: "R01",
+  executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
+  executorVersion: "2026.09.06-v1",
+  phaseOne, detection, assembly, organizationId, grant,
+};
+const bundledMethod = {
+  executor: {module: "@offroad/receivables-analysis", exportName: "underwriteReceivablesPool"},
+  procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1", maturity: "tested"},
+};
+const bundledCapability = {
+  executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
+  executorVersion: "2026.09.06-v1",
+  procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+  availability: "shadow", exposure: "allowlisted",
+  allowedUses: ["internal_validation", "customer_work"], maximumEffect: "none",
+};
+
+describe("released analytical result for a granted organization", () => {
+  it("releases the same deterministic calculation, bound to the confirmed scope and its dataset", () => {
+    const shadow = executeReceivablesSpecialistShadow({
+      taskId: "R01", executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
+      executorVersion: "2026.09.06-v1", phaseOne, detection, assembly,
+    });
+    const released = releaseReceivablesSpecialistAnalysis(releaseInput);
+    expect(released).toMatchObject({
+      mode: "analytical_release",
+      taskId: "R01",
+      externalEffectAllowed: false,
+      release: {
+        organizationId,
+        methodMaturity: "tested",
+        maximumEffect: "none",
+        confirmedScope,
+        sourceDatasetHash: datasetHash,
+      },
+      artifact: {artifactType: "receivables_pool_underwriting", status: "released"},
+    });
+    // A released result is the internally validated one, never a second calculation.
+    expect(released.artifact.outputFingerprint).toBe(shadow.artifact.outputFingerprint);
+    expect(released.artifact.inputFingerprint).toBe(shadow.artifact.inputFingerprint);
+    expect(released.release.allowedUses).not.toContain("external_material");
+    expect(released.release.allowedUses).not.toContain("external_action");
+    expect(released.artifact.content.history_coverage?.aggregatePerformanceBasis).toBe("reported_title_aggregates");
+  });
+
+  it("refuses to release without the organization grant", () => {
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, granted: false}}))
+      .toThrow("receivables_analytical_release_not_granted");
+  });
+
+  it("refuses a grant issued to another organization", () => {
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, organizationId: "33333333-3333-4333-8333-333333333333"}}))
+      .toThrow("receivables_analytical_release_tenant_mismatch");
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, organizationId: ""}))
+      .toThrow("receivables_analytical_release_tenant_mismatch");
+  });
+
+  it("refuses a portfolio selection the organization did not confirm", () => {
+    // A different sheet or document selection produces a different dataset hash; the confirmed
+    // scope travels with the grant, so the unconfirmed dataset can never be released.
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, sourceDatasetHash: "f".repeat(64)}}))
+      .toThrow("receivables_analytical_release_dataset_mismatch");
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, confirmedScope: {id: "", fingerprint: confirmedScope.fingerprint}}}))
+      .toThrow("receivables_analytical_release_scope_required");
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, confirmedScope: {id: confirmedScope.id, fingerprint: "not-a-fingerprint"}}}))
+      .toThrow("receivables_analytical_release_scope_required");
+  });
+
+  it("admits the bundled policy and refuses every policy that is not the released one", () => {
+    expect(evaluateReceivablesSpecialistPolicy("internal_shadow", bundledMethod, bundledCapability)).toBeNull();
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, bundledCapability)).toBeNull();
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, exposure: "internal"}))
+      .toBe("receivables_specialist_release_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, allowedUses: ["internal_validation"]}))
+      .toBe("receivables_specialist_release_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", {...bundledMethod, procedure: {...bundledMethod.procedure, maturity: "implemented"}}, bundledCapability))
+      .toBe("receivables_specialist_release_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, maximumEffect: "propose_state"}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, allowedUses: ["internal_validation", "customer_work", "external_action"]}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, availability: "live"}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
   });
 });

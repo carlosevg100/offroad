@@ -112,7 +112,12 @@ import {buildPreliminaryAssessment, buildPrivateCaseAssessment} from "./agent-as
 import {describeJobFailure} from "./job-failure";
 import {buildDocumentWorkInput, documentWorkRequestSchema, isStandaloneDocumentWorkRequest, canCompileStandaloneDocumentWorkRequest} from "./document-work-input";
 import {processStandaloneDocumentWork} from "./document-work-standalone";
-import {executeReceivablesSpecialistShadow, type ReceivablesSpecialistShadowResult} from "./specialist-method-runtime";
+import {
+  executeReceivablesSpecialistShadow,
+  releaseReceivablesSpecialistAnalysis,
+  type ReceivablesSpecialistReleaseResult,
+  type ReceivablesSpecialistShadowResult,
+} from "./specialist-method-runtime";
 import {
   buildReceivablesMethodRequestProjections,
 } from "./receivables-information-requests";
@@ -388,6 +393,15 @@ const rawCaseInputSchema = z.object({
   receivables_case: receivablesCaseSchema.optional(),
   receivables_evidence: z.array(receivablesEvidenceEnvelopeSchema).default([]),
   confirmed_receivables_scope: receivablesEvidenceScopeContextSchema.nullable().default(null),
+  /**
+   * Whether this organization may read its own released R01 analysis. The concession lives in the
+   * database, never in source control, and its absence keeps the run in the internal shadow.
+   */
+  receivables_analytical_release: z.object({
+    granted: z.boolean(),
+    organizationId: z.uuid(),
+    note: z.string().nullable().default(null),
+  }).nullable().default(null),
   receivables_method_input_assembly: z.object({
     id: z.uuid(),
     source_dataset_hash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -1187,6 +1201,34 @@ export async function processCaseAnalysisJob(
         externalEffectAllowed: false,
       });
     }
+    if (receivables?.specialistRelease && receivablesInputAssemblyId) {
+      if (!dependencies.queue.recordReceivablesReleasedResult) {
+        throw new Error("receivables_analytical_release_persistence_unavailable");
+      }
+      // The database re-checks the grant, the tenant, the dataset and the confirmed scope; a
+      // release the worker computed but the database refuses never reaches the organization.
+      const persistedRelease = await dependencies.queue.recordReceivablesReleasedResult(job, {
+        inputAssemblyId: receivablesInputAssemblyId,
+        result: receivables.specialistRelease,
+      });
+      await dependencies.queue.writeStage(job, "receivables_specialist_R01_release", "succeeded", {
+        mode: "analytical_release",
+        taskId: "R01",
+        methodMaturity: receivables.specialistRelease.release.methodMaturity,
+        inputFingerprint: persistedRelease.inputFingerprint,
+        outputFingerprint: persistedRelease.outputFingerprint,
+        evidenceScopeFingerprint: receivables.specialistRelease.release.confirmedScope.fingerprint,
+        replayed: persistedRelease.replayed,
+        externalEffectAllowed: false,
+      });
+    } else if (receivables?.releaseFailureCode) {
+      await dependencies.queue.writeStage(job, "receivables_specialist_R01_release", "failed", {
+        mode: "analytical_release",
+        taskId: "R01",
+        failureCode: receivables.releaseFailureCode,
+        externalEffectAllowed: false,
+      });
+    }
     const economic = economicInput(raw);
     const extractionVersion = stringOr(raw.session.extraction_version, "unknown");
     const versions = pipelineVersions({snapshot: economic, extractionVersion});
@@ -1773,13 +1815,16 @@ type PublicReceivablesVertical = {
  * mandate collection tasks and the internal shortlist never cross this boundary.
  */
 export function buildReceivablesVertical(
-  raw: Pick<z.infer<typeof rawCaseInputSchema>, "session" | "_execution" | "receivables_evidence" | "receivables_method_input_assembly" | "receivables_method_supplement_draft" | "receivables_provider_context" | "confirmed_receivables_scope"> & {documents?: Record<string, unknown>[]},
+  raw: Pick<z.infer<typeof rawCaseInputSchema>, "session" | "_execution" | "receivables_evidence" | "receivables_method_input_assembly" | "receivables_method_supplement_draft" | "receivables_provider_context" | "confirmed_receivables_scope"> & {documents?: Record<string, unknown>[]; receivables_analytical_release?: z.infer<typeof rawCaseInputSchema>["receivables_analytical_release"]},
   asOf: string,
   includeProviderFit: boolean,
 ): {
   publicReport: PublicReceivablesVertical;
   privateReport: ReceivablesCasePipelineReport | null;
   specialistShadow: ReceivablesSpecialistShadowResult | null;
+  /** The same calculation released to the granted organization. Null keeps today's behaviour. */
+  specialistRelease: ReceivablesSpecialistReleaseResult | null;
+  releaseFailureCode: string | null;
   inputAssemblyId: string | null;
   inputAssembly: ReceivablesPoolInputAssembly | null;
   inputResolution: ReceivablesMethodInputResolution;
@@ -1829,7 +1874,8 @@ export function buildReceivablesVertical(
           inputFingerprint: null, outputFingerprint: null, qualityResults: [], failureCode: null},
         pipeline: null,
       },
-      privateReport: null, specialistShadow: null, inputAssemblyId: null, inputAssembly: null, documentSupplement: null,
+      privateReport: null, specialistShadow: null, specialistRelease: null, releaseFailureCode: null,
+      inputAssemblyId: null, inputAssembly: null, documentSupplement: null,
       inputResolution: {assembly: null, origin: "none", draftState: "missing", missingSections: [], openConflictIds: []},
     };
   };
@@ -1918,6 +1964,36 @@ export function buildReceivablesVertical(
       };
     }
   }
+  // The released analytical result is the same deterministic calculation, never a second one. It
+  // exists only when the database granted this organization the concession, and it carries the
+  // confirmed scope so an unconfirmed portfolio selection can never be shown as an answer.
+  let specialistRelease: ReceivablesSpecialistReleaseResult | null = null;
+  let releaseFailureCode: string | null = null;
+  const releaseGrant = raw.receivables_analytical_release;
+  if (specialistShadow && methodAssembly && releaseGrant?.granted) {
+    const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === "R01");
+    if (!capability) throw new Error("receivables_specialist_capability_not_registered");
+    try {
+      specialistRelease = releaseReceivablesSpecialistAnalysis({
+        taskId: "R01",
+        executorKey: capability.executorKey,
+        executorVersion: capability.executorVersion,
+        phaseOne: built.phaseOne,
+        detection,
+        assembly: methodAssembly,
+        organizationId: releaseGrant.organizationId,
+        grant: {
+          granted: true,
+          organizationId: releaseGrant.organizationId,
+          confirmedScope: {id: scope.id, fingerprint: scope.fingerprint},
+          sourceDatasetHash: methodAssembly.source.datasetHash,
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "receivables_analytical_release_failed";
+      releaseFailureCode = message.split(":", 1)[0] ?? "receivables_analytical_release_failed";
+    }
+  }
   const fingerprint = fingerprintJson({
     version: "receivables-vertical-balance-proposals.v1",
     evidenceScope: {id: scope.id, fingerprint: scope.fingerprint},
@@ -1957,6 +2033,8 @@ export function buildReceivablesVertical(
       publicReport: {...common, status: "needs_requested_amount", pipeline: null},
       privateReport: null,
       specialistShadow,
+      specialistRelease,
+      releaseFailureCode,
       inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
       inputAssembly: methodAssembly,
       inputResolution,
@@ -2006,6 +2084,8 @@ export function buildReceivablesVertical(
   return {
     privateReport: report,
     specialistShadow,
+    specialistRelease,
+    releaseFailureCode,
     inputAssemblyId: inputResolution.origin === "stored_assembly" ? storedAssembly?.id ?? null : null,
     inputAssembly: methodAssembly,
     inputResolution,
