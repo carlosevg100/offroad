@@ -1,16 +1,26 @@
 import Decimal from "decimal.js";
 import {
+  allocateReceivablesPoolWaterfall,
   calculateDynamicReceivablesMetrics,
+  calculateReceivablesPoolBorrowingBase,
+  calculateReceivablesPoolEvidenceCoverage,
+  calculateReceivablesPoolPerformance,
   calculateStaticReceivablesMetrics,
+  capReceivablesPoolConcentration,
+  classifyReceivablesPoolTitle,
+  compareReceivablesPoolTrigger,
+  reconcileReceivablesPoolLedgers,
   type DynamicReceivablesMetrics,
+  type IsoDate,
   type MeasuredMetric,
+  type ReceivablesAgingBucket,
+  type ReceivablesPoolTrigger,
   type StaticReceivablesMetrics,
 } from "@offroad/financial-core";
 
 import {
   receivablesCaseSchema,
   type EligibilityReason,
-  type Receivable,
   type ReceivablesCase,
   type ReceivablesDecision,
 } from "./schema";
@@ -20,14 +30,11 @@ Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toEx
 
 const ZERO = new Decimal(0);
 const ONE = new Decimal(1);
-const DAY = 86_400_000;
 const d = (value: Decimal.Value) => new Decimal(value);
-const money = (value: Decimal) => value.toDecimalPlaces(2).toFixed(2);
-const ratio = (value: Decimal) => value.toDecimalPlaces(8).toFixed(8);
+/** Presentation layer of the published result: money at two decimals, ratios at eight. The kernels stay unrounded. */
+const money = (value: Decimal.Value) => d(value).toDecimalPlaces(2).toFixed(2);
+const ratio = (value: Decimal.Value) => d(value).toDecimalPlaces(8).toFixed(8);
 const sum = (values: readonly Decimal.Value[]) => values.reduce<Decimal>((total, value) => total.plus(value), ZERO);
-const safeRatio = (numerator: Decimal, denominator: Decimal) => denominator.isZero() ? ZERO : numerator.div(denominator);
-const utc = (value: string) => Date.parse(`${value}T00:00:00.000Z`);
-const daysBetween = (from: string, to: string) => Math.floor((utc(to) - utc(from)) / DAY);
 
 function requiredMetricValue(metric: MeasuredMetric): string {
   if (metric.status !== "measured" || metric.value === null) {
@@ -136,108 +143,68 @@ export type ReceivablesAnalysis = {
   };
 };
 
-function eligibilityReasons(item: Receivable, input: ReceivablesCase): Omit<ReceivableEligibility, "receivableId" | "debtorId" | "debtorGroupId" | "balance"> {
-  const policy = input.policy;
-  const daysPastDue = Math.max(0, daysBetween(item.dueDate, input.referenceDate));
-  const seasoningDays = Math.max(0, daysBetween(item.originDate, input.referenceDate));
-  const remainingTermDays = Math.max(0, daysBetween(input.referenceDate, item.dueDate));
-  const reasons: EligibilityReason[] = [];
-  if (d(item.outstandingBalance).lte(0)) reasons.push("zero_balance");
-  if (d(item.defaultedBalance).gt(0)) reasons.push("defaulted");
-  if (daysPastDue > policy.maxDaysPastDue) reasons.push("past_due");
-  if (remainingTermDays > policy.maxRemainingTermDays) reasons.push("remaining_term");
-  if (seasoningDays < policy.minSeasoningDays) reasons.push("seasoning");
-  if (policy.requireAssignable && !item.assignable) reasons.push("not_assignable");
-  if (policy.requireEvidenceVerified && !item.evidenceVerified) reasons.push("evidence_unverified");
-  if (!item.anchorVerified) reasons.push("anchor_unverified");
-  if (policy.registrationRule !== "not_required" && item.registration === "missing") reasons.push("registration_missing");
-  if (item.registration === "conflict") reasons.push("registration_conflict");
-  if (policy.excludeEncumbered && item.encumbrance !== "free") reasons.push("encumbered");
-  if (policy.excludeDisputed && item.disputed) reasons.push("disputed");
-  if (policy.excludeRelatedParties && item.relatedParty) reasons.push("related_party");
-  if (policy.allowedDebtorSectors.length > 0 && !policy.allowedDebtorSectors.includes(item.debtorSector)) reasons.push("sector_outside_policy");
-  return {daysPastDue, seasoningDays, remainingTermDays, eligible: reasons.length === 0, reasons};
-}
-
-function balancesBy(items: readonly Receivable[], key: (item: Receivable) => string): Map<string, Decimal> {
-  const values = new Map<string, Decimal>();
-  for (const item of items) values.set(key(item), (values.get(key(item)) ?? ZERO).plus(item.outstandingBalance));
-  return values;
-}
-
-function concentration(values: Map<string, Decimal>, total: Decimal) {
-  const shares = [...values.values()].map((value) => safeRatio(value, total)).sort((a, b) => b.comparedTo(a));
-  return {
-    top: shares[0] ?? ZERO,
-    topFive: sum(shares.slice(0, 5)),
-    herfindahl: sum(shares.map((share) => share.pow(2))),
-  };
-}
-
-function adjustedForConcentration(items: readonly Receivable[], maxDebtorShare: Decimal, maxGroupShare: Decimal): Decimal {
-  const total = sum(items.map((item) => item.outstandingBalance));
-  const debtorCap = total.times(maxDebtorShare);
-  const groupCap = total.times(maxGroupShare);
-  const groups = new Map<string, Map<string, Decimal>>();
-  for (const item of items) {
-    const groupId = item.debtorGroupId ?? item.debtorId;
-    const debtors = groups.get(groupId) ?? new Map<string, Decimal>();
-    debtors.set(item.debtorId, (debtors.get(item.debtorId) ?? ZERO).plus(item.outstandingBalance));
-    groups.set(groupId, debtors);
-  }
-  return [...groups.values()].reduce((portfolio, debtors) => {
-    const afterDebtorCaps = [...debtors.values()].reduce((group, balance) => group.plus(Decimal.min(balance, debtorCap)), ZERO);
-    return portfolio.plus(Decimal.min(afterDebtorCaps, groupCap));
-  }, ZERO);
-}
-
-function allocateWaterfall(input: ReceivablesCase["structure"]["waterfall"], reserveTarget: Decimal) {
-  let cash = d(input.availableCash);
-  const dueItems = [
-    {item: "servicing_fee", due: d(input.servicingFeeDue)},
-    {item: "senior_interest", due: d(input.seniorInterestDue)},
-    {item: "reserve_top_up", due: Decimal.max(reserveTarget.minus(input.reserveOpening), ZERO)},
-    {item: "senior_principal", due: d(input.seniorPrincipalDue)},
-    {item: "mezzanine", due: d(input.mezzanineDue)},
-  ];
-  const allocations = dueItems.map(({item, due}, index) => {
-    const paid = Decimal.min(cash, due);
-    cash = cash.minus(paid);
-    return {priority: index + 1, item, due: money(due), paid: money(paid), shortfall: money(due.minus(paid))};
-  });
-  const residual = cash;
-  allocations.push({priority: 6, item: "subordinated_residual", due: money(residual), paid: money(residual), shortfall: "0.00"});
-  return {allocations, residualCash: ZERO};
-}
+const agingBucketIds: readonly ReceivablesAgingBucket[] = [
+  "not_due", "past_due_1_15", "past_due_16_30", "past_due_31_60", "past_due_61_90", "past_due_91_180", "past_due_over_180",
+];
 
 const gap = (code: string, severity: AnalysisGap["severity"], scope: AnalysisGap["scope"], pt: string, en: string, evidenceIds: string[] = []): AnalysisGap => ({
   code, severity, scope, message: {pt, en}, evidenceIds,
 });
 
-function compareTrigger(id: string, actual: Decimal, threshold: Decimal, comparison: TriggerResult["comparison"], consequence: TriggerResult["consequence"]): TriggerResult {
-  const breached = comparison === "maximum" ? actual.gt(threshold) : actual.lt(threshold);
-  return {id, actual: ratio(actual), threshold: ratio(threshold), comparison, status: breached ? "breached" : "within_limit", consequence};
+function publishTrigger(trigger: ReceivablesPoolTrigger): TriggerResult {
+  return {id: trigger.id, actual: ratio(trigger.actual), threshold: ratio(trigger.threshold), comparison: trigger.comparison, status: trigger.status, consequence: trigger.consequence};
 }
 
+/**
+ * Orchestrates the deterministic kernels of `@offroad/financial-core` over a validated case and
+ * assembles gaps and the bounded decision. No figure is computed here: eligibility, concentration
+ * caps, borrowing base, waterfall, reconciliation, performance, evidence coverage and triggers
+ * come from the kernels; this module only chooses inputs, formats the published strings and
+ * turns kernel outcomes into gap codes.
+ */
 export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   const input = receivablesCaseSchema.parse(raw);
   const canonical = canonicalizeLegacyReceivablesCase(input);
   const staticMetrics = calculateStaticReceivablesMetrics(canonical.universe, {datasetHash: canonical.datasetHash});
   const dynamicMetrics = calculateDynamicReceivablesMetrics(canonical.universe, {datasetHash: canonical.datasetHash});
-  const analyzedReceivables = input.portfolio.map((item): ReceivableEligibility => ({
-    receivableId: item.id,
-    debtorId: item.debtorId,
-    debtorGroupId: item.debtorGroupId ?? item.debtorId,
-    balance: money(d(item.outstandingBalance)),
-    ...eligibilityReasons(item, input),
-  }));
+  const referenceDate = input.referenceDate as IsoDate;
+  const analyzedReceivables = input.portfolio.map((item): ReceivableEligibility => {
+    const classification = classifyReceivablesPoolTitle({
+      outstandingBalance: item.outstandingBalance,
+      defaultedBalance: item.defaultedBalance,
+      originDate: item.originDate as IsoDate,
+      dueDate: item.dueDate as IsoDate,
+      assignable: item.assignable,
+      evidenceVerified: item.evidenceVerified,
+      anchorVerified: item.anchorVerified,
+      registration: item.registration,
+      encumbrance: item.encumbrance,
+      disputed: item.disputed,
+      relatedParty: item.relatedParty,
+      debtorSector: item.debtorSector,
+    }, input.policy, referenceDate);
+    return {
+      receivableId: item.id,
+      debtorId: item.debtorId,
+      debtorGroupId: item.debtorGroupId ?? item.debtorId,
+      balance: money(item.outstandingBalance),
+      daysPastDue: classification.daysPastDue,
+      seasoningDays: classification.seasoningDays,
+      remainingTermDays: classification.remainingTermDays,
+      eligible: classification.eligible,
+      reasons: classification.reasons,
+    };
+  });
   const total = d(requiredMetricValue(staticMetrics.portfolio.totalOpenValue));
   const eligibleIds = new Set(analyzedReceivables.filter((item) => item.eligible).map((item) => item.receivableId));
   const eligibleItems = input.portfolio.filter((item) => eligibleIds.has(item.id));
-  const preliminaryEligible = sum(eligibleItems.map((item) => item.outstandingBalance));
-  const adjustedEligible = adjustedForConcentration(eligibleItems, d(input.policy.maxSingleDebtorShare), d(input.policy.maxDebtorGroupShare));
-  const debtors = balancesBy(input.portfolio, (item) => item.debtorId);
-  const groups = balancesBy(input.portfolio, (item) => item.debtorGroupId ?? item.debtorId);
+  const concentration = capReceivablesPoolConcentration({
+    items: eligibleItems.map((item) => ({debtorId: item.debtorId, debtorGroupId: item.debtorGroupId ?? item.debtorId, balance: item.outstandingBalance})),
+    maxSingleDebtorShare: input.policy.maxSingleDebtorShare,
+    maxDebtorGroupShare: input.policy.maxDebtorGroupShare,
+  });
+  const debtors = new Set(input.portfolio.map((item) => item.debtorId));
+  const groups = new Set(input.portfolio.map((item) => item.debtorGroupId ?? item.debtorId));
   const debtorConcentration = {
     top: d(staticMetrics.concentration.openByObligor.top_1.value ?? 0),
     topFive: d(staticMetrics.concentration.openByObligor.top_5.value ?? 0),
@@ -246,120 +213,91 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
   const groupConcentration = {
     top: d(staticMetrics.concentration.openByEconomicGroup.top_1.value ?? 0),
   };
-
-  const aging = {
-    current: d(requiredMetricValue(staticMetrics.aging.not_due)),
-    days_1_30: d(requiredMetricValue(staticMetrics.aging.past_due_1_15)).plus(requiredMetricValue(staticMetrics.aging.past_due_16_30)),
-    days_31_60: d(requiredMetricValue(staticMetrics.aging.past_due_31_60)),
-    days_61_90: d(requiredMetricValue(staticMetrics.aging.past_due_61_90)),
-    days_91_plus: d(requiredMetricValue(staticMetrics.aging.past_due_91_180)).plus(requiredMetricValue(staticMetrics.aging.past_due_over_180)),
-  };
-  const overdue1 = aging.days_1_30.plus(aging.days_31_60).plus(aging.days_61_90).plus(aging.days_91_plus);
-  const overdue30 = aging.days_31_60.plus(aging.days_61_90).plus(aging.days_91_plus);
-  const overdue90 = aging.days_91_plus;
-  const defaulted = sum(input.portfolio.map((item) => item.defaultedBalance));
-  const recovered = sum(input.portfolio.map((item) => item.recoveredInPeriod));
-  const dilution = sum(input.portfolio.map((item) => item.dilutionInPeriod));
-  const repurchase = sum(input.portfolio.map((item) => item.repurchasedInPeriod));
-  const substitution = sum(input.portfolio.map((item) => item.substitutedInPeriod));
-  const originated = sum(input.portfolio.map((item) => item.originalAmount));
-  const netLoss = Decimal.max(defaulted.minus(recovered), ZERO);
   const weightedRemaining = d(staticMetrics.portfolio.weightedRemainingTermDays.value ?? 0);
 
-  const verifiedBalance = sum(input.portfolio.filter((item) => item.evidenceVerified).map((item) => item.outstandingBalance));
-  const anchoredBalance = sum(input.portfolio.filter((item) => item.anchorVerified).map((item) => item.outstandingBalance));
-  const registrationCovered = sum(input.portfolio.filter((item) => item.registration === "registered" || item.registration === "not_required").map((item) => item.outstandingBalance));
-  const assignable = sum(input.portfolio.filter((item) => item.assignable).map((item) => item.outstandingBalance));
-  const free = sum(input.portfolio.filter((item) => item.encumbrance === "free").map((item) => item.outstandingBalance));
+  const performance = calculateReceivablesPoolPerformance({
+    totalOutstanding: total.toFixed(),
+    agingBuckets: Object.fromEntries(agingBucketIds.map((bucket) => [bucket, requiredMetricValue(staticMetrics.aging[bucket])])) as Record<ReceivablesAgingBucket, string>,
+    titles: input.portfolio,
+  });
+  const evidence = calculateReceivablesPoolEvidenceCoverage({totalOutstanding: total.toFixed(), titles: input.portfolio});
+  const reconciliation = reconcileReceivablesPoolLedgers({
+    tapeOutstanding: total.toFixed(),
+    accountingGrossBalance: input.accounting.grossReceivablesBalance,
+    tapeCollections: sum(input.portfolio.map((item) => item.collectedInPeriod)).toFixed(),
+    reportedCollections: input.accounting.reportedCollectionsInPeriod,
+    receipts: input.cashReceipts,
+    titles: input.portfolio,
+    maximumAccountingMismatchShare: input.policy.maximumAccountingMismatchShare,
+    maximumCashMismatchShare: input.policy.maximumCashMismatchShare,
+  });
+  const cash = d(reconciliation.cashControls.validCashReceipts);
+  const defaulted = d(performance.amounts.defaulted);
 
-  const accounting = d(input.accounting.grossReceivablesBalance);
-  const tapeDifference = total.minus(accounting).abs();
-  const tapeDifferenceShare = safeRatio(tapeDifference, Decimal.max(accounting.abs(), ONE));
-  const validCashReceipts = input.cashReceipts.filter((receipt) => receipt.duplicateOf === null);
-  const tapeCollections = sum(input.portfolio.map((item) => item.collectedInPeriod));
-  const cash = sum(validCashReceipts.map((receipt) => receipt.amount));
-  const reportedCollections = d(input.accounting.reportedCollectionsInPeriod);
-  const tapeCollectionsDifference = tapeCollections.minus(reportedCollections).abs();
-  const tapeCollectionsDifferenceShare = safeRatio(tapeCollectionsDifference, Decimal.max(reportedCollections.abs(), ONE));
-  const cashDifference = cash.minus(reportedCollections).abs();
-  const cashDifferenceShare = safeRatio(cashDifference, Decimal.max(reportedCollections.abs(), ONE));
-  const allCash = sum(input.cashReceipts.map((receipt) => receipt.amount));
-  const receivableById = new Map(input.portfolio.map((item) => [item.id, item]));
-  const unknownMappingReceiptIds = validCashReceipts.filter((receipt) => {
-    if (receipt.receivableId === null || receipt.debtorId === null) return false;
-    const receivable = receivableById.get(receipt.receivableId);
-    return receivable === undefined || receivable.debtorId !== receipt.debtorId;
-  }).map((receipt) => receipt.id);
-  const unknownMapping = new Set(unknownMappingReceiptIds);
-  const mappedCash = sum(validCashReceipts.filter((receipt) => receipt.receivableId !== null && receipt.debtorId !== null && !unknownMapping.has(receipt.id)).map((receipt) => receipt.amount));
-  const linkedCash = sum(validCashReceipts.filter((receipt) => receipt.linkedAccount).map((receipt) => receipt.amount));
-  const mappedShare = safeRatio(mappedCash, Decimal.max(cash, ONE));
-  const linkedShare = safeRatio(linkedCash, Decimal.max(cash, ONE));
+  const borrowingBase = calculateReceivablesPoolBorrowingBase({
+    adjustedEligibleBalance: concentration.adjustedEligibleBalance,
+    totalOutstanding: total.toFixed(),
+    requestedFacility: input.structure.requestedFacility,
+    advanceRate: input.structure.advanceRate,
+    requiredOvercollateralization: input.structure.requiredOvercollateralization,
+    requiredSubordinationRate: input.structure.requiredSubordinationRate,
+    actualSeniorAmount: input.structure.actualSeniorAmount,
+    actualMezzanineAmount: input.structure.actualMezzanineAmount,
+    actualSubordinatedAmount: input.structure.actualSubordinatedAmount,
+    reserveRate: input.structure.reserveRate,
+  });
+  const waterfall = allocateReceivablesPoolWaterfall({
+    availableCash: input.structure.waterfall.availableCash,
+    servicingFeeDue: input.structure.waterfall.servicingFeeDue,
+    seniorInterestDue: input.structure.waterfall.seniorInterestDue,
+    seniorPrincipalDue: input.structure.waterfall.seniorPrincipalDue,
+    mezzanineDue: input.structure.waterfall.mezzanineDue,
+    reserveOpening: input.structure.waterfall.reserveOpening,
+    reserveTarget: borrowingBase.reserveTarget,
+  });
+  const publishedWaterfall = waterfall.allocations.map((allocation) => ({
+    priority: allocation.priority, item: allocation.item, due: money(allocation.due), paid: money(allocation.paid), shortfall: money(allocation.shortfall),
+  }));
+  // The published two-decimal shortfalls are what the gap reads, as the result shows them.
+  const seniorShortfall = d(publishedWaterfall.find((item) => item.item === "senior_interest")?.shortfall ?? "0")
+    .plus(publishedWaterfall.find((item) => item.item === "senior_principal")?.shortfall ?? "0");
 
-  const maximumByAdvance = adjustedEligible.times(input.structure.advanceRate);
-  const maximumByOc = adjustedEligible.div(input.structure.requiredOvercollateralization);
-  const supportedFacility = Decimal.min(maximumByAdvance, maximumByOc);
-  const requested = d(input.structure.requestedFacility);
-  const totalCapital = d(input.structure.actualSeniorAmount).plus(input.structure.actualMezzanineAmount).plus(input.structure.actualSubordinatedAmount);
-  const subordinateCapital = d(input.structure.actualMezzanineAmount).plus(input.structure.actualSubordinatedAmount);
-  const actualSubordination = safeRatio(subordinateCapital, totalCapital);
-  const overcollateralization = requested.isZero() ? ZERO : adjustedEligible.div(requested);
-  const reserveTarget = d(input.structure.actualSeniorAmount).times(input.structure.reserveRate);
-  const waterfall = allocateWaterfall(input.structure.waterfall, reserveTarget);
-
-  const performance = {
-    delinquency1Share: safeRatio(overdue1, total),
-    delinquency30Share: safeRatio(overdue30, total),
-    delinquency90Share: safeRatio(overdue90, total),
-    grossDefaultRate: safeRatio(defaulted, originated),
-    netLossRate: safeRatio(netLoss, originated),
-    recoveryRate: safeRatio(recovered, defaulted),
-    dilutionRate: safeRatio(dilution, originated),
-    repurchaseRate: safeRatio(repurchase, originated),
-    substitutionRate: safeRatio(substitution, originated),
-  };
-  const evidence = {
-    verifiedBalanceShare: safeRatio(verifiedBalance, total),
-    anchoredBalanceShare: safeRatio(anchoredBalance, total),
-    registrationCoverageShare: safeRatio(registrationCovered, total),
-    assignableBalanceShare: safeRatio(assignable, total),
-    freeBalanceShare: safeRatio(free, total),
-  };
-  const eligibleShare = safeRatio(adjustedEligible, total);
-  const seniorShortfall = d(waterfall.allocations.find((item) => item.item === "senior_interest")?.shortfall ?? "0")
-    .plus(waterfall.allocations.find((item) => item.item === "senior_principal")?.shortfall ?? "0");
-
+  const trigger = (id: string, actual: Decimal.Value, threshold: string, comparison: TriggerResult["comparison"], consequence: TriggerResult["consequence"]) => (
+    publishTrigger(compareReceivablesPoolTrigger({id, actual: d(actual).toFixed(), threshold, comparison, consequence}))
+  );
   const triggers: TriggerResult[] = [
-    compareTrigger("eligible_share", eligibleShare, d(input.policy.minimumEligibleShare), "minimum", "block"),
-    compareTrigger("evidence_coverage", evidence.verifiedBalanceShare, d(input.policy.minimumEvidenceCoverage), "minimum", "block"),
-    compareTrigger("registration_coverage", evidence.registrationCoverageShare, d(input.policy.minimumRegistrationCoverage), "minimum", "block"),
-    compareTrigger("accounting_reconciliation", tapeDifferenceShare, d(input.policy.maximumAccountingMismatchShare), "maximum", "block"),
-    compareTrigger("tape_collections_reconciliation", tapeCollectionsDifferenceShare, d(input.policy.maximumCashMismatchShare), "maximum", "block"),
-    compareTrigger("cash_reconciliation", cashDifferenceShare, d(input.policy.maximumCashMismatchShare), "maximum", "block"),
-    compareTrigger("cash_mapping", cash.isZero() ? ONE : mappedShare, d(input.policy.minimumMappedCashShare), "minimum", "block"),
-    compareTrigger("linked_account", cash.isZero() ? ONE : linkedShare, d(input.policy.minimumLinkedAccountCashShare), "minimum", "block"),
-    compareTrigger("single_debtor_concentration", debtorConcentration.top, d(input.policy.maxSingleDebtorShare), "maximum", "remediate"),
-    compareTrigger("debtor_group_concentration", groupConcentration.top, d(input.policy.maxDebtorGroupShare), "maximum", "remediate"),
-    compareTrigger("delinquency_30", performance.delinquency30Share, d(input.policy.maximumDelinquency30Share), "maximum", "remediate"),
-    compareTrigger("dilution", performance.dilutionRate, d(input.policy.maximumDilutionShare), "maximum", "remediate"),
-    compareTrigger("repurchase", performance.repurchaseRate, d(input.policy.maximumRepurchaseShare), "maximum", "remediate"),
-    compareTrigger("recovery", defaulted.isZero() ? ONE : performance.recoveryRate, d(input.policy.minimumRecoveryRate), "minimum", "remediate"),
-    compareTrigger("subordination", actualSubordination, d(input.structure.requiredSubordinationRate), "minimum", "remediate"),
+    trigger("eligible_share", borrowingBase.eligibleShare, input.policy.minimumEligibleShare, "minimum", "block"),
+    trigger("evidence_coverage", evidence.shares.verifiedBalanceShare, input.policy.minimumEvidenceCoverage, "minimum", "block"),
+    trigger("registration_coverage", evidence.shares.registrationCoverageShare, input.policy.minimumRegistrationCoverage, "minimum", "block"),
+    trigger("accounting_reconciliation", reconciliation.tapeToAccounting.differenceShare, input.policy.maximumAccountingMismatchShare, "maximum", "block"),
+    trigger("tape_collections_reconciliation", reconciliation.tapeCollectionsToAccounting.differenceShare, input.policy.maximumCashMismatchShare, "maximum", "block"),
+    trigger("cash_reconciliation", reconciliation.collectionsToCash.differenceShare, input.policy.maximumCashMismatchShare, "maximum", "block"),
+    // A period without cash has nothing to map: the control counts as fully met, not as zero.
+    trigger("cash_mapping", cash.isZero() ? ONE : reconciliation.cashControls.mappedShare, input.policy.minimumMappedCashShare, "minimum", "block"),
+    trigger("linked_account", cash.isZero() ? ONE : reconciliation.cashControls.linkedAccountShare, input.policy.minimumLinkedAccountCashShare, "minimum", "block"),
+    trigger("single_debtor_concentration", debtorConcentration.top, input.policy.maxSingleDebtorShare, "maximum", "remediate"),
+    trigger("debtor_group_concentration", groupConcentration.top, input.policy.maxDebtorGroupShare, "maximum", "remediate"),
+    trigger("delinquency_30", performance.ratios.delinquency30Share, input.policy.maximumDelinquency30Share, "maximum", "remediate"),
+    trigger("dilution", performance.ratios.dilutionRate, input.policy.maximumDilutionShare, "maximum", "remediate"),
+    trigger("repurchase", performance.ratios.repurchaseRate, input.policy.maximumRepurchaseShare, "maximum", "remediate"),
+    // Without defaults there is nothing to recover: the floor counts as met.
+    trigger("recovery", defaulted.isZero() ? ONE : performance.ratios.recoveryRate, input.policy.minimumRecoveryRate, "minimum", "remediate"),
+    trigger("subordination", borrowingBase.actualSubordinationRate, input.structure.requiredSubordinationRate, "minimum", "remediate"),
   ];
 
   const gaps: AnalysisGap[] = [];
   if (total.isZero()) gaps.push(gap("empty_portfolio", "blocking", "portfolio", "A carteira não contém saldo econômico.", "The portfolio has no economic balance."));
-  if (supportedFacility.lt(requested)) gaps.push(gap("facility_above_borrowing_base", "blocking", "structure", "O pedido excede a base elegível suportada pela taxa de avanço e pela sobrecolateralização.", "The request exceeds the eligible borrowing base supported by the advance rate and overcollateralization."));
-  if (input.cashReceipts.some((receipt) => receipt.duplicateOf !== null)) gaps.push(gap("duplicate_cash_receipts", "blocking", "servicing", "O extrato contém recebimentos duplicados ou estornados sem reconciliação concluída.", "The cash ledger contains duplicate or reversed receipts without completed reconciliation.", input.cashReceipts.filter((item) => item.duplicateOf !== null).map((item) => item.id)));
-  if (unknownMappingReceiptIds.length > 0) gaps.push(gap("cash_mapping_unknown_receivable", "blocking", "servicing", "Há recebimentos ligados a título inexistente ou a sacado divergente no loan tape.", "Some receipts point to an unknown receivable or a mismatched obligor in the loan tape.", unknownMappingReceiptIds));
+  if (!borrowingBase.requestCoveredBySupportedFacility) gaps.push(gap("facility_above_borrowing_base", "blocking", "structure", "O pedido excede a base elegível suportada pela taxa de avanço e pela sobrecolateralização.", "The request exceeds the eligible borrowing base supported by the advance rate and overcollateralization."));
+  if (reconciliation.cashControls.duplicateReceiptIds.length > 0) gaps.push(gap("duplicate_cash_receipts", "blocking", "servicing", "O extrato contém recebimentos duplicados ou estornados sem reconciliação concluída.", "The cash ledger contains duplicate or reversed receipts without completed reconciliation.", reconciliation.cashControls.duplicateReceiptIds));
+  if (reconciliation.cashControls.unknownMappingReceiptIds.length > 0) gaps.push(gap("cash_mapping_unknown_receivable", "blocking", "servicing", "Há recebimentos ligados a título inexistente ou a sacado divergente no loan tape.", "Some receipts point to an unknown receivable or a mismatched obligor in the loan tape.", reconciliation.cashControls.unknownMappingReceiptIds));
   if (input.portfolio.some((item) => item.registration === "conflict")) gaps.push(gap("registration_or_ownership_conflict", "blocking", "portfolio", "Há conflito de registro ou titularidade que impede tratar os direitos creditórios como base disponível.", "A registration or ownership conflict prevents treating the receivables as an available base.", input.portfolio.filter((item) => item.registration === "conflict").map((item) => item.id)));
-  if (input.cashReceipts.some((receipt) => !receipt.anchorVerified)) gaps.push(gap("cash_anchor_unverified", "blocking", "servicing", "Há recebimentos sem âncora verificável no extrato de origem.", "Some receipts lack a verifiable anchor in the source statement.", input.cashReceipts.filter((item) => !item.anchorVerified).map((item) => item.id)));
+  if (reconciliation.cashControls.unanchoredReceiptIds.length > 0) gaps.push(gap("cash_anchor_unverified", "blocking", "servicing", "Há recebimentos sem âncora verificável no extrato de origem.", "Some receipts lack a verifiable anchor in the source statement.", reconciliation.cashControls.unanchoredReceiptIds));
   if (seniorShortfall.gt(0)) gaps.push(gap("waterfall_senior_shortfall", "material", "structure", "O caixa disponível não cobre integralmente juros e principal sênior na waterfall indicativa.", "Available cash does not fully cover senior interest and principal in the indicative waterfall."));
-  for (const trigger of triggers.filter((item) => item.status === "breached")) {
-    const severity = trigger.consequence === "block" ? "blocking" : "material";
-    gaps.push(gap(`trigger_${trigger.id}`, severity, trigger.id.includes("cash") ? "servicing" : trigger.id.includes("concentration") ? "obligor" : trigger.id.includes("subordination") ? "structure" : "portfolio", `O gatilho ${trigger.id} está fora do limite definido.`, `The ${trigger.id} trigger is outside its defined limit.`));
+  for (const breached of triggers.filter((item) => item.status === "breached")) {
+    const severity = breached.consequence === "block" ? "blocking" : "material";
+    gaps.push(gap(`trigger_${breached.id}`, severity, breached.id.includes("cash") ? "servicing" : breached.id.includes("concentration") ? "obligor" : breached.id.includes("subordination") ? "structure" : "portfolio", `O gatilho ${breached.id} está fora do limite definido.`, `The ${breached.id} trigger is outside its defined limit.`));
   }
-  if (allCash.gt(cash)) {
+  if (d(reconciliation.cashControls.excludedDuplicateCash).gt(0)) {
     gaps.push(gap("cash_ledger_contains_excluded_duplicates", "attention", "servicing", "O total bruto do extrato inclui itens duplicados que foram excluídos da conciliação.", "The gross cash ledger includes duplicate items excluded from reconciliation."));
   }
 
@@ -392,35 +330,35 @@ export function analyzeReceivables(raw: ReceivablesCase): ReceivablesAnalysis {
         debtorCount: debtors.size,
         debtorGroupCount: groups.size,
         totalOutstanding: money(total),
-        preliminaryEligibleBalance: money(preliminaryEligible),
-        concentrationAdjustedEligibleBalance: money(adjustedEligible),
-        eligibleShare: ratio(eligibleShare),
+        preliminaryEligibleBalance: money(concentration.preliminaryEligibleBalance),
+        concentrationAdjustedEligibleBalance: money(concentration.adjustedEligibleBalance),
+        eligibleShare: ratio(borrowingBase.eligibleShare),
         weightedAverageRemainingDays: weightedRemaining.toDecimalPlaces(2).toFixed(2),
         topDebtorShare: ratio(debtorConcentration.top),
         topFiveDebtorShare: ratio(debtorConcentration.topFive),
         topGroupShare: ratio(groupConcentration.top),
         debtorHerfindahl: ratio(debtorConcentration.herfindahl),
       },
-      aging: Object.fromEntries(Object.entries(aging).map(([key, value]) => [key, money(value)])) as ReceivablesAnalysis["metrics"]["aging"],
-      performance: Object.fromEntries(Object.entries(performance).map(([key, value]) => [key, ratio(value)])) as ReceivablesAnalysis["metrics"]["performance"],
-      evidence: Object.fromEntries(Object.entries(evidence).map(([key, value]) => [key, ratio(value)])) as ReceivablesAnalysis["metrics"]["evidence"],
+      aging: Object.fromEntries(Object.entries(performance.aging).map(([key, value]) => [key, money(value)])) as ReceivablesAnalysis["metrics"]["aging"],
+      performance: Object.fromEntries(Object.entries(performance.ratios).map(([key, value]) => [key, ratio(value)])) as ReceivablesAnalysis["metrics"]["performance"],
+      evidence: Object.fromEntries(Object.entries(evidence.shares).map(([key, value]) => [key, ratio(value)])) as ReceivablesAnalysis["metrics"]["evidence"],
     },
     reconciliation: {
-      tapeToAccounting: {tape: money(total), accounting: money(accounting), difference: money(tapeDifference), differenceShare: ratio(tapeDifferenceShare), status: tapeDifferenceShare.lte(input.policy.maximumAccountingMismatchShare) ? "tied" : "outside_tolerance"},
-      tapeCollectionsToAccounting: {tape: money(tapeCollections), reported: money(reportedCollections), difference: money(tapeCollectionsDifference), differenceShare: ratio(tapeCollectionsDifferenceShare), status: tapeCollectionsDifferenceShare.lte(input.policy.maximumCashMismatchShare) ? "tied" : "outside_tolerance"},
-      collectionsToCash: {reported: money(reportedCollections), cash: money(cash), difference: money(cashDifference), differenceShare: ratio(cashDifferenceShare), status: cashDifferenceShare.lte(input.policy.maximumCashMismatchShare) ? "tied" : "outside_tolerance"},
+      tapeToAccounting: {tape: money(reconciliation.tapeToAccounting.left), accounting: money(reconciliation.tapeToAccounting.right), difference: money(reconciliation.tapeToAccounting.difference), differenceShare: ratio(reconciliation.tapeToAccounting.differenceShare), status: reconciliation.tapeToAccounting.status},
+      tapeCollectionsToAccounting: {tape: money(reconciliation.tapeCollectionsToAccounting.left), reported: money(reconciliation.tapeCollectionsToAccounting.right), difference: money(reconciliation.tapeCollectionsToAccounting.difference), differenceShare: ratio(reconciliation.tapeCollectionsToAccounting.differenceShare), status: reconciliation.tapeCollectionsToAccounting.status},
+      collectionsToCash: {reported: money(reconciliation.collectionsToCash.right), cash: money(reconciliation.collectionsToCash.left), difference: money(reconciliation.collectionsToCash.difference), differenceShare: ratio(reconciliation.collectionsToCash.differenceShare), status: reconciliation.collectionsToCash.status},
       cashControls: {
-        mappedShare: ratio(mappedShare), linkedAccountShare: ratio(linkedShare),
-        duplicateReceiptIds: input.cashReceipts.filter((item) => item.duplicateOf !== null).map((item) => item.id),
-        unanchoredReceiptIds: input.cashReceipts.filter((item) => !item.anchorVerified).map((item) => item.id),
-        unknownMappingReceiptIds,
+        mappedShare: ratio(reconciliation.cashControls.mappedShare), linkedAccountShare: ratio(reconciliation.cashControls.linkedAccountShare),
+        duplicateReceiptIds: reconciliation.cashControls.duplicateReceiptIds,
+        unanchoredReceiptIds: reconciliation.cashControls.unanchoredReceiptIds,
+        unknownMappingReceiptIds: reconciliation.cashControls.unknownMappingReceiptIds,
       },
     },
     structure: {
-      requestedFacility: money(requested), maximumByAdvanceRate: money(maximumByAdvance), maximumByOvercollateralization: money(maximumByOc), supportedFacility: money(supportedFacility),
-      overcollateralizationAtRequest: ratio(overcollateralization), requiredOvercollateralization: d(input.structure.requiredOvercollateralization).toFixed(8),
-      actualSubordinationRate: ratio(actualSubordination), requiredSubordinationRate: ratio(d(input.structure.requiredSubordinationRate)), reserveTarget: money(reserveTarget),
-      waterfall: waterfall.allocations, residualCash: money(waterfall.residualCash),
+      requestedFacility: money(borrowingBase.requestedFacility), maximumByAdvanceRate: money(borrowingBase.maximumByAdvanceRate), maximumByOvercollateralization: money(borrowingBase.maximumByOvercollateralization), supportedFacility: money(borrowingBase.supportedFacility),
+      overcollateralizationAtRequest: ratio(borrowingBase.overcollateralizationAtRequest), requiredOvercollateralization: d(input.structure.requiredOvercollateralization).toFixed(8),
+      actualSubordinationRate: ratio(borrowingBase.actualSubordinationRate), requiredSubordinationRate: ratio(input.structure.requiredSubordinationRate), reserveTarget: money(borrowingBase.reserveTarget),
+      waterfall: publishedWaterfall, residualCash: money(waterfall.unallocatedCash),
     },
     triggers,
     gaps,

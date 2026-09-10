@@ -56,6 +56,9 @@ describe("Aurora receivables underwriting gold", () => {
       topFiveDebtorShare: "0.47600000",
     });
     expect(result.evidence_coverage.freeBalanceShare).toBe("0.53162281");
+    // Byte-identity pin of the published gold result across the financial-core kernel migration.
+    expect(result.trace.output_fingerprint).toBe("528c07c62a8e8c81f1f0645485a1e550a40c07bdb24fa5b1abd75da773d1f097");
+    expect(result.trace.input_fingerprint).toBe("d90b1f808982d13dafcf38cc582a371665c43332439381bdd84e05466410e8ad");
     expect(result.performance.delinquency30Share).toBe("0.10739919");
     expect(result.performance.delinquency90Share).toBe("0.02684973");
     expect(result.borrowing_base).toMatchObject({

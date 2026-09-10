@@ -1,3 +1,5 @@
+import {createHash} from "node:crypto";
+
 import {generateCase, receivablesScenario} from "@offroad/case-factory";
 import {
   analyzeReceivables,
@@ -20,6 +22,8 @@ describe("receivables vertical on the governed case factory", () => {
     expect(result.metrics.portfolio.topDebtorShare).toBe("0.12000000");
     expect(result.reconciliation.tapeToAccounting.status).toBe("tied");
     expect(result.decision.externalDirectionAllowed).toBe(false);
+    // Byte-identity pin of the factory analysis across the financial-core kernel migration.
+    expect(createHash("sha256").update(JSON.stringify(result, null, 1)).digest("hex")).toBe("29c2b358bc7e4e77857b72f8e03aa68f71b0639e1d30e7573fc5e7ae7e804368");
   });
 
   it("covers at least twenty independent parametric scenarios including correct refusal", () => {

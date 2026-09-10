@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.09-v15";
+export const financialCoreVersion = "2026.09.10-v16";
 
 export * from "./financial-truth";
 export * from "./depreciation";
@@ -9,6 +9,14 @@ export * from "./indexed-debt";
 export * from "./operation";
 export * from "./receivables/contracts";
 export * from "./receivables/eligibility-allocation";
+export {receivablesPoolKernelsVersion, type ReceivablesPoolKernelTrace} from "./receivables/pool-shared";
+export * from "./receivables/pool-eligibility";
+export * from "./receivables/pool-concentration";
+export * from "./receivables/pool-waterfall";
+export * from "./receivables/pool-borrowing-base";
+export * from "./receivables/pool-reconciliation";
+export * from "./receivables/pool-performance";
+export * from "./receivables/pool-triggers";
 export * from "./receivables/provider-allocation";
 export * from "./receivables/dynamic-metrics";
 export * from "./receivables/static-metrics";
@@ -232,6 +240,14 @@ export const financialCalculationRegistry = {
   "structure.coverage_series": "calculateCoverageSeries",
   "structure.covenant_headroom": "calculateCovenantHeadroom",
   "structure.maturity_concentration": "maturityConcentration",
+  "receivables.pool_eligibility": "classifyReceivablesPoolTitle",
+  "receivables.pool_concentration_cap": "capReceivablesPoolConcentration",
+  "receivables.pool_waterfall": "allocateReceivablesPoolWaterfall",
+  "receivables.pool_borrowing_base": "calculateReceivablesPoolBorrowingBase",
+  "receivables.pool_reconciliation": "reconcileReceivablesPoolLedgers",
+  "receivables.pool_performance": "calculateReceivablesPoolPerformance",
+  "receivables.pool_evidence_coverage": "calculateReceivablesPoolEvidenceCoverage",
+  "receivables.pool_trigger": "compareReceivablesPoolTrigger",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

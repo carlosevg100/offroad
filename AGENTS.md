@@ -198,6 +198,13 @@ code, never model output), the provenance rule ([M]/[C]/[E] on every numeric or
 normative claim), the reading order, the build phases, and the acceptance bars.
 Canonical decisions that resolve conflicts in the research corpus live in
 [`docs/knowledge/recebiveis/CANONICAL-SPEC.md`](docs/knowledge/recebiveis/CANONICAL-SPEC.md).
-The existing `packages/receivables-analysis` package is an orchestration prototype;
-its financial calculations must migrate to `packages/financial-core` before the
-vertical can be promoted.
+The financial calculations of `packages/receivables-analysis` (title eligibility,
+concentration caps on the preliminary eligible base, borrowing base, indicative waterfall,
+ledger reconciliation, reported-aggregate performance, evidence coverage and trigger
+comparison) live in `packages/financial-core/src/receivables/pool-*.ts` as deterministic,
+Decimal-based, traced and tested kernels; that migration is done (10 September 2026) and
+`analyze.ts` keeps only orchestration, gap and decision assembly. The published result is
+byte-identical to the prototype and pinned by `pool-kernel-parity.test.ts`. Promotion of the
+vertical still requires the method maturity evidence recorded in the procedure markdown
+(independent review, gold, adversarial and consistency runs) and the founder's approval for
+production; neither is implied by the migration.
