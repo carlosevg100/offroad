@@ -1,3 +1,13 @@
+## 10 September 2026: receivables history coverage correction (local candidate)
+
+Published baseline is main `220a37f` (PR590); prior publication checkpoints below are historical. The targeted economic review passed 67 tests against identical published sources without paid model calls. It found no arithmetic discrepancy in inspected borrowing-base and waterfall fixtures, but the R01 wrapper dropped dynamic-history coverage while retaining reported aggregate performance.
+
+This candidate preserves versioned history coverage and explicit concentration/waterfall conventions in new underwriting outputs and their fingerprints. Existing v1 results remain readable without inventing coverage when the added fields are absent. Regression evidence and the independent economic review are tracked in the workspace report `outputs/endgame-nine-2026-09-10/VALIDACAO-RECEBIVEIS.md` outside this repository. This is an internal-output correction, not a method promotion, production receipt or an external credit recommendation. No database migration or authorization change is included.
+
+Local integrated validation completed after the coverage correction: `pnpm check` passed lint, typecheck, tests and all 43/43 build tasks. The receivables package passed 146 tests, including the short-history regression; the worker integration preserves unavailable-history states despite supplied evidence references. Independent review of the coverage defect is resolved. CI/browser promotion and deployment of this candidate are not claimed.
+
+Release work remains: move prototype financial calculations into financial-core as required by AGENTS.md, complete independent method evidence, implement released analytical output and verify the current approved-revision browser journey. Provider analytical workspaces, broader standalone tasks, review responsibilities, corporate templates and verified mandates remain separate product gaps; see the workspace plan `outputs/endgame-nine-2026-09-10/LACUNAS-E-PLANO-IMEDIATO.md`.
+
 ## Publication correction: documentary progress scope
 
 PR590 fresh-database CI exposed a real stale-scope display defect after a legacy fixture was updated to a released documentary snapshot. Additive migration `20260910160700_documentary_progress_persisted_scope_guard` requires persisted target IDs and the Q01/Q02/Q03 task set to match the admitted documentary plan before displaying documentary stages. The complete execution-proposal revision SQL passed in staging, including changed targets and missing Q02; security advisors returned zero findings. The integrated publication batch now contains nine migrations. Production application, final CI and deployment remain pending at this checkpoint.
