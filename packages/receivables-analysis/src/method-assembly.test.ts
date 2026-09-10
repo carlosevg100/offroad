@@ -55,6 +55,22 @@ const supplement = {
 const detection: ReceivablesRawDetectionReport = {version: "2026.08.28-v1", defects: [], questions: [], routeFacts: [], evidenceCoverage: {deliveredEvidenceIds: ["tape-1"], searchedEvidenceIds: ["tape-1"], complete: true, warnings: []}};
 
 describe("receivables method input compiler", () => {
+  it("maps production source locators to valid stable method IDs without truncating provenance", () => {
+    const sourceIds = [
+      "10000000-0000-4000-8000-000000000001:pool:20000000-0000-4000-8000-000000000001:CARTEIRA:1",
+      `10000000-0000-4000-8000-000000000001:pool:20000000-0000-4000-8000-000000000001:${encodeURIComponent("Carteira São João ".repeat(20))}:1`,
+      "same:pool/a", "same:pool?a",
+    ];
+    const outputs = sourceIds.map((id) => assembleReceivablesPoolMethodInput({phaseOne: {...phaseOne, universe: {...phaseOne.universe, id}}, supplement}));
+    expect(new Set(outputs.map((assembly) => assembly.input.case.id)).size).toBe(sourceIds.length);
+    for (const [index, assembly] of outputs.entries()) {
+      expect(assembly.input.case.id).toMatch(/^r01-[a-f0-9]{64}$/);
+      expect(assembly.source.universeId).toBe(sourceIds[index]);
+      expect(assembleReceivablesPoolMethodInput({phaseOne: {...phaseOne, universe: {...phaseOne.universe, id: sourceIds[index]!}}, supplement})).toEqual(assembly);
+    }
+    expect(assembleReceivablesPoolMethodInput({phaseOne, supplement}).input.case.id).toBe("aurora-pool");
+  });
+
   it("preserves source economics and compiles only explicitly supplied judgements", () => {
     const assembly = assembleReceivablesPoolMethodInput({phaseOne, supplement});
     const title = assembly.input.case.portfolio[0]!;

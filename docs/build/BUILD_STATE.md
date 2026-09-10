@@ -1,3 +1,9 @@
+## Publication correction: source locators in the R01 refresh
+
+The authenticated journey reached the post-answer refresh and exposed a method-input mismatch: the worker's source identifier contains a case, document, sheet and row locator, while the method accepts a bounded slug. The compiler now preserves already-valid method IDs and maps other complete source identifiers to an `r01-` identifier with the full SHA-256. The original `source.universeId` remains exact for provenance and dataset checks. The method schema and its validation were not relaxed; no database migration was needed.
+
+Five compiler tests passed, including long encoded Unicode sheet names, deterministic replay, distinct locators and legacy valid IDs. The direct worker materializer test passed from confirmed scope through the governed “50” answer to refreshed assembly and internal-only R01 output, with stable replay. An independent actual-XLSX probe also passed with the production locator format. The browser E2E now prints compact failure diagnostics immediately; its final CI outcome and deployment remain separate gates. No paid model call was introduced.
+
 ## Publication correction: revise questions when the source binding changes
 
 The next authenticated R01 run exposed reuse of an advance-rate question whose immutable binding belonged to an earlier dataset. Migration `20260910174141_revise_receivables_request_bindings` creates a new question for a changed dataset or binding, preserves old answers and immutable bindings, supersedes only incompatible open questions, and retains same-binding replay behavior. Binding lookup uses the actual question identity or exact binding rather than timestamp ordering. Evidence question keys now include dataset and gap identity, so an answer concerning another pool cannot suppress new diligence; language and run changes retain the same key.

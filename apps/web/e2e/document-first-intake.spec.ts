@@ -847,6 +847,7 @@ test.describe("Document-first intake (company journey)", () => {
     const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
     const fixture = await receivablesR01Fixture();
     const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query}).trim();
+    try {
     execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
     const discovery = refreshReceivablesFixtureDiscovery(databaseUrl, sessionId, account.email);
     expect(discovery.sourceManifest.sources.length).toBeGreaterThan(fixture.sources.length);
@@ -915,6 +916,18 @@ test.describe("Document-first intake (company journey)", () => {
     await page.reload();
     await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
     await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+    } catch (error) {
+      // Print immediately: CI exposes this before the remaining browser suite completes.
+      console.error("R01_SYNTHETIC_JOURNEY_FAILED", error instanceof Error ? error.stack : String(error));
+      try {
+        const diagnostic = sql("select coalesce(jsonb_agg(to_jsonb(recent) order by recent.created_at desc),'[]'::jsonb) from (select j.id,j.kind,j.status,j.processing_run_id,j.last_error,j.created_at,r.stages->-1 as last_stage from public.processing_jobs j join public.processing_runs r on r.id=j.processing_run_id where j.intake_session_id=:'session_id'::uuid order by j.created_at desc limit 6) recent;");
+        console.error("R01_SYNTHETIC_RECENT_JOBS", diagnostic);
+        await testInfo.attach("r01-synthetic-recent-jobs", {body: diagnostic, contentType: "application/json"});
+      } catch {
+        console.error("R01_SYNTHETIC_DIAGNOSTIC_UNAVAILABLE");
+      }
+      throw error;
+    }
   });
 
 });

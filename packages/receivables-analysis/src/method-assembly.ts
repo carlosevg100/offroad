@@ -103,6 +103,14 @@ export const receivablesPoolInputSupplementSchema = z.object({
 });
 export type ReceivablesPoolInputSupplement = z.infer<typeof receivablesPoolInputSupplementSchema>;
 
+function methodCaseId(universeId: string): string {
+  // Preserve already-valid method IDs; source identifiers may include sheet names,
+  // separators and long locators. Hash the complete identifier without truncation.
+  return /^[a-z0-9][a-z0-9-]{2,99}$/.test(universeId)
+    ? universeId
+    : `r01-${createHash("sha256").update(universeId, "utf8").digest("hex")}`;
+}
+
 function methodReceivableId(sourceReceivableId: string): string {
   return `r-${createHash("sha256").update(sourceReceivableId).digest("hex").slice(0, 24)}`;
 }
@@ -204,7 +212,7 @@ export function assembleReceivablesPoolMethodInput(input: {
       currency: universe.currency,
       case: {
         schemaVersion: "2026.08.24-v1",
-        id: universe.id,
+        id: methodCaseId(universe.id),
         referenceDate: universe.dates.reportingDate,
         cedent: supplement.cedent,
         portfolio,
