@@ -174,3 +174,4 @@ export * from "./advisor-starting-plan";
 
 export * from "./provider-research";
 export * from "./provider-research-plan";
+export * from "./project-capability-registry";
