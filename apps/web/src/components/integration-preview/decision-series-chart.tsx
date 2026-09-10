@@ -4,6 +4,8 @@ import {formatPreviewNumber} from "./preview-value-format";
 type Props = {
   series: NonNullable<DecisionArtifactContract["series"]>[number];
   locale: "pt-BR" | "en-US";
+  /** Drawn where a point has no value. The parent supplies it so the words stay in the catalogue. */
+  missingLabel: string;
 };
 
 const ink = "var(--ink, #151a20)";
@@ -13,7 +15,7 @@ const accent = "var(--accent, #7d9455)";
 /** Decorative projection of the parent's accessible table. Numbers are used only
  * for plot geometry; no unit conversion, interpolation across gaps or imputation.
  */
-export function DecisionSeriesChart({series, locale}: Props) {
+export function DecisionSeriesChart({series, locale, missingLabel}: Props) {
   const points = series.points;
   if (points.length === 0) return null;
   const numeric = points.flatMap(({value}) => value !== null && Number.isFinite(value) ? [value] : []);
@@ -73,7 +75,7 @@ export function DecisionSeriesChart({series, locale}: Props) {
           {point.label.length > (horizontal ? 22 : 16) ? `${point.label.slice(0, horizontal ? 21 : 15)}…` : point.label}
         </text> : null}
         {showValues ? <text x={horizontal ? (position ?? baseline) + (value !== null && value < 0 ? -8 : 8) : categoryPosition} y={horizontal ? categoryPosition + 4 : position === null ? baseline - 10 : position + (value !== null && value < 0 ? 18 : -10)} textAnchor={horizontal ? value !== null && value < 0 ? "end" : "start" : "middle"} fill={ink} fontSize={11}>
-          {value === null ? "—" : formatPreviewNumber(value, locale)}
+          {value === null ? missingLabel : formatPreviewNumber(value, locale)}
         </text> : null}
       </g>;
     })}

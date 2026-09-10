@@ -11,7 +11,7 @@ function series(chartKind: Series["chartKind"], values: (number | null)[]): Seri
       evidenceState: value === null ? "not_computable" : "calculated", sourceIds: [], assumptionIds: [], gapIds: []}))};
 }
 function render(input: Series, locale: "pt-BR" | "en-US" = "en-US") {
-  return renderToStaticMarkup(<DecisionSeriesChart series={input} locale={locale} />);
+  return renderToStaticMarkup(<DecisionSeriesChart series={input} locale={locale} missingLabel="not computable" />);
 }
 
 describe("decision series geometry", () => {
@@ -25,6 +25,7 @@ describe("decision series geometry", () => {
     expect(html).toContain("-12,5 declared units");
     expect(html).toContain("25 declared units");
     expect(html.match(/data-point-state="missing"/g)).toHaveLength(1);
+    expect(html).toContain("not computable</text>");
     expect(html).not.toMatch(/(?:x|y|width|height|cx|cy)="(?:NaN|Infinity|-Infinity)/);
   });
   it("breaks a line across missing evidence instead of interpolating it", () => {

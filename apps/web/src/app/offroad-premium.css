@@ -1080,6 +1080,7 @@
 .advisor-private-provider > header {align-items: flex-start; display: flex; gap: 12px; justify-content: space-between;}
 .advisor-private-provider > header > div {align-items: flex-start; display: flex; gap: 9px;}
 .advisor-private-provider input {accent-color: #718a4d; margin-top: 3px;}
+.advisor-private-provider__mark {flex: none; width: 12px;}
 .advisor-private-provider header small {color: #71884f; display: block; font-size: 8px; text-transform: uppercase;}
 .advisor-private-provider header strong {display: block; font-size: 12px; margin-top: 3px;}
 .advisor-private-provider header b {background: #f2f5ee; color: #60783f; font-size: 8px; font-weight: 700; padding: 4px 6px;}
