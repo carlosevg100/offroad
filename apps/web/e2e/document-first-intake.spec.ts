@@ -859,10 +859,27 @@ test.describe("Document-first intake (company journey)", () => {
     await scope.locator('input[name="scopeConfirmed"]').check();
     await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
     const currentJob = "select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;";
-    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("awaiting_approval");
+    const waitForCaseStatus = async (allowed: string[]) => {
+      const deadline = Date.now() + 120_000;
+      let status = "";
+      while (Date.now() < deadline) {
+        status = sql(currentJob);
+        if (allowed.includes(status)) return status;
+        if (["failed", "cancelled", "dead_letter"].includes(status)) {
+          // Restricted above to this test owner's synthetic loopback session.
+          const diagnostic = sql("select jsonb_build_object('status',j.status,'failure',j.last_error,'stages',r.stages) from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id join public.processing_runs r on r.id=j.processing_run_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;");
+          await testInfo.attach("r01-synthetic-worker-failure", {body: diagnostic, contentType: "application/json"});
+          throw new Error(`Synthetic R01 worker failed: ${diagnostic}`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+      expect(status, `R01 job did not reach ${allowed.join(" or ")}`).toBe(allowed[0]);
+      return status;
+    };
+    await waitForCaseStatus(["awaiting_approval"]);
     await page.reload();
     await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
-    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("succeeded");
+    await waitForCaseStatus(["succeeded"]);
     const selectedScope = JSON.parse(sql("select scope from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
     expect(selectedScope.schemaVersion).toBe("receivables-evidence-scope.v2");
     expect(selectedScope.primarySupportSheets).toEqual(["CEDENTE", "CONTABIL", "ESTRUTURA", "POLITICA", "RECEBIMENTOS"]);
@@ -878,12 +895,12 @@ test.describe("Document-first intake (company journey)", () => {
     await answer.locator('input[type="number"]').fill("50");
     await answer.locator('button[type="submit"]').click();
     await expect.poll(() => sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;"), {timeout: 120_000}).not.toBe(initialRun);
-    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toMatch(/awaiting_approval|succeeded/);
+    await waitForCaseStatus(["awaiting_approval", "succeeded"]);
     if (sql(currentJob) === "awaiting_approval") {
       await page.reload();
       await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     }
-    await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("succeeded");
+    await waitForCaseStatus(["succeeded"]);
     const refreshed = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
     expect(refreshed.fields["/structure/advanceRate"].value).toBe("0.5");
     expect(refreshed.sections.titles).toEqual(initialDraft.sections.titles);
