@@ -1134,7 +1134,7 @@ describe("worker case analysis", () => {
             expect(input.approvedRequest.text).toBe(requested.objective);
             const passage = input.sources.find(item => item.availableQuotes.length > 0)!;
             return {output: {sections: input.sectionKeys.map(key => ({key, title: "Leitura documental", quoteIds: [passage.availableQuotes[0]!.id]})), hypotheses: [], gaps: []}};
-          })() : ["document_work_source_review_v4","document_work_source_review_revision_v2"].includes(request.schemaName) ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:null}:{})}} : await gateway.complete(request);
+          })() : ["document_work_source_review_v5","document_work_source_review_revision_v3"].includes(request.schemaName) ? {output:{reviewedFieldIds:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string})=>field.id),fieldAssessments:JSON.parse((request.input[0] as {text:string}).text).authoredFields.map((field:{id:string;text:string})=>({fieldId:field.id,verdict:"no_factual_assertion",exactExcerpt:field.text.slice(0,160),sourceIds:[]})),issues:[],...(request.schemaName==="document_work_source_review_revision_v3"?{revisedSelection:null}:{})}} : await gateway.complete(request);
           logs.push({...invocation, invocationId: `document-call-${logs.length}`, task: request.task, schemaName: request.schemaName});
           return result;
         },
@@ -1183,10 +1183,10 @@ describe("worker case analysis", () => {
     const standaloneLogs: GatewayCallLog[] = [];
     const standaloneGateway = {
       complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
-        if(["document_work_source_review_v4","document_work_source_review_revision_v2"].includes(request.schemaName)) {
+        if(["document_work_source_review_v5","document_work_source_review_revision_v3"].includes(request.schemaName)) {
           standaloneLogs.push({...invocation,invocationId:`standalone-call-${standaloneLogs.length}`,task:request.task,schemaName:request.schemaName});
-          const reviewInput=JSON.parse((request.input[0] as {text:string}).text) as {authoredFields:Array<{id:string}>};
-          return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:null}:{})}};
+          const reviewInput=JSON.parse((request.input[0] as {text:string}).text) as {authoredFields:Array<{id:string;text:string}>};
+          return {output:{reviewedFieldIds:reviewInput.authoredFields.map(field=>field.id),fieldAssessments:reviewInput.authoredFields.map(field=>({fieldId:field.id,verdict:"no_factual_assertion",exactExcerpt:field.text.slice(0,160),sourceIds:[]})),issues:[],...(request.schemaName==="document_work_source_review_revision_v3"?{revisedSelection:null}:{})}};
         }
         expect(request.schemaName).toBe("document_work_selection_v1");
         const input = JSON.parse((request.input[0] as {text:string}).text) as {sources:Array<{id:string;text:string;availableQuotes:Array<{id:string}>}>;sectionKeys:string[]};

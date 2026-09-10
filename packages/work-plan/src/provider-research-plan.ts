@@ -11,7 +11,7 @@ export function isProviderResearchRequest(message: string): boolean {
 export function providerResearchPlanSnapshot(): CapitalProjectPlanSnapshot {
   const base = capitalProjectPlanSnapshot("company_debt_view");
   const graph = compileTaskGraph(["K02"]);
-  return {...base, job: {...base.job, targetTaskIds: ["K02"], firstWorkProduct: "provider_research", inputPolicy: {company: "not_applicable", documents: "not_applicable", capitalIntent: "not_applicable", existingTransaction: "not_applicable", publicResearch: "not_applicable"}},
+  return {...base, registryVersion: "2026.09.10-v14", job: {...base.job, targetTaskIds: ["K02"], firstWorkProduct: "provider_research", inputPolicy: {company: "not_applicable", documents: "not_applicable", capitalIntent: "not_applicable", existingTransaction: "not_applicable", publicResearch: "not_applicable"}},
     taskSpecs: graph.tasks.map((task, ordinal) => ({...task, ordinal, batch: ordinal})), parallelBatches: graph.parallelBatches};
 }
 export function compileProviderResearchBrief(input: {plan: CapitalProjectPlanSnapshot; revisionContext: string; locale: ExecutionBriefLocale; objective: string}) {
