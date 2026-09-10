@@ -129,14 +129,29 @@ export function buildReceivablesMethodEvidenceRequestProjection(input: {
   processingRunId: string;
   locale: "pt-BR" | "en-US";
   readiness: Omit<ReceivablesPoolMethodReadiness, "validatedInput">;
+  missingDraftSections?: readonly string[];
   idFactory?: () => string;
 }) {
   const english = input.locale === "en-US";
   const idFactory = input.idFactory ?? randomUUID;
-  const evidenceGaps = input.readiness.gaps.filter((gap) => gap.class !== "policy" && gap.class !== "structure"
-    // This is a source-reading limitation, not proof that the user omitted a date.
-    // Keep it blocking in readiness without asking for documents already delivered.
-    && gap.code !== "support_period:undeclared_recourse_and_debt");
+  const missing = new Set(input.missingDraftSections ?? []);
+  // Suppress only missing-assembly questions already satisfied by the current
+  // source-bound draft. Temporal gaps, conflicts and unknown requirements remain.
+  const assembledRequirements: Record<string, readonly string[]> = {
+    portfolio_lineage_not_assembled: ["titles"],
+    cedent_and_servicing_not_evidenced: ["cedent", "evidence.cedentAndServicing"],
+    title_legal_controls_not_evidenced: ["titles", "evidence.titleLegalControls"],
+    cash_reconciliation_not_evidenced: ["cashReceipts", "evidence.cashReconciliation"],
+    accounting_reconciliation_not_evidenced: ["accounting", "evidence.accountingReconciliation"],
+  };
+  const evidenceGaps = input.readiness.gaps.filter((gap) => {
+    if (gap.class === "policy" || gap.class === "structure") return false;
+    // Source reading remains blocking without asking for documents already delivered.
+    if (gap.code === "support_period:undeclared_recourse_and_debt") return false;
+    if (input.missingDraftSections === undefined || gap.class === "conflict") return true;
+    const requirements = assembledRequirements[gap.code];
+    return requirements === undefined || requirements.some((section) => missing.has(section));
+  });
   return {
     schemaVersion: "project-information-request-projection.v1",
     projectId: input.projectId,

@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  buildReceivablesMethodEvidenceRequestProjection,
   buildReceivablesMethodFieldRequestProjection,
   buildReceivablesMethodInformationRequestProjection,
 } from "./receivables-information-requests";
@@ -25,6 +26,25 @@ const base = {
 };
 
 describe("receivables method question projection", () => {
+  it("suppresses only assembled draft requirements and preserves temporal and conflict gaps", () => {
+    const projection = buildReceivablesMethodEvidenceRequestProjection({
+      projectId: "10000000-0000-4000-8000-000000000001",
+      processingRunId: "20000000-0000-4000-8000-000000000001",
+      locale: "en-US", missingDraftSections: ["policy.maxDaysPastDue"],
+      readiness: {...base, gaps: [
+        {...base.gaps[0]!, class: "evidence", code: "portfolio_lineage_not_assembled"},
+        {...base.gaps[0]!, class: "evidence", code: "support_period:accounting_reconciliation_difference"},
+        {...base.gaps[0]!, code: "portfolio_lineage_not_assembled"},
+        {...base.gaps[0]!, class: "evidence", code: "performance_history_incomplete"},
+      ]},
+    });
+    expect(projection.requests.map((request) => request.requirementKey)).toEqual([
+      "receivables.r01.support_period-accounting_reconciliation_difference",
+      "receivables.r01.portfolio_lineage_not_assembled",
+      "receivables.r01.performance_history_incomplete",
+    ]);
+  });
+
   it("keeps source review pending without asking the user to resupply existing balance documents", () => {
     const readiness = {...base, gaps: [{...base.gaps[0]!, code: "support_period:undeclared_recourse_and_debt"}]};
     const projection = buildReceivablesMethodInformationRequestProjection({
