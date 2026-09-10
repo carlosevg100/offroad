@@ -43,7 +43,7 @@ function snapshotModel(scenarios:InstitutionalWorkbookArtifact["institutional"][
   sheets.push({key:`institutional_${index}`,name,widths:[44,...result.periods.map(()=>22)],rows:[
    {key:"title",cells:[{role:"header",value:input.assumptionBook.scenarioName},...result.periods.map(p=>({role:"header" as const,value:p.period}))]},
    {key:"scope",cells:[txt(lang==="pt"?"Resultado aprovado; alterações exigem nova revisão na plataforma.":"Approved snapshot; changes require a new review in the platform.")]},
-   ...metrics.map(([key,pt,en])=>({key,cells:[txt(lang==="pt"?pt:en),...result.periods.map(p=>recorded(p[key] as string|null))]})),
+   ...metrics.map(([key,pt,en])=>({key,cells:[txt(lang==="pt"?pt:en),...result.periods.map(p=>p[key] === null ? txt(lang === "pt" ? "Não calculável" : "Not computable") : recorded(p[key] as string))]})),
 
   ]});
  }
