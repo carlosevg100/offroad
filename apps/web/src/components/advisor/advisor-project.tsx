@@ -27,7 +27,7 @@ import "@/app/advisor-work-surface.css";
 import {workSectionFromHash, workSectionHref} from "./advisor-work-links";
 import {AdvisorWorkSurface, type AdvisorWorkSection} from "./advisor-work-surface";
 
-import {advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {advisorShouldRefresh, advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {ExecutionBriefCard, type ExecutionBriefApproval} from "./execution-brief-card";
@@ -94,6 +94,7 @@ type Props = {
   messages: AdvisorProjectMessage[];
   activityEvents: AdvisorProjectActivityEvent[];
   outcomeEvents?: AdvisorProjectActivityEvent[];
+  planPreparationStatus?: string | null;
   coverage: {verified: number; total: number; openIssues: number; notExamined: number};
   openRequirements: Array<{id: string; label: string; status: string; materiality: string; reason: string | null}>;
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
@@ -304,7 +305,7 @@ export function AdvisorProject(props: Props) {
         <button type="button" aria-pressed={mobileView === "conversation"} onClick={() => setMobileView("conversation")}>{workCopy("conversation")}</button>
         <button type="button" aria-pressed={mobileView === "work"} onClick={() => setMobileView("work")}>{workCopy("work")} <span>{sections.length}</span></button>
       </nav> : null}
-      <DealStateRefresh active={active || pending || uploading} />
+      <DealStateRefresh active={advisorShouldRefresh({active, interactionPending: pending || uploading, planPreparationStatus: props.planPreparationStatus})} />
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>

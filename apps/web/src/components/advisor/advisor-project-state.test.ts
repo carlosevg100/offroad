@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  advisorShouldRefresh,
   advisorIsActive,
   advisorNeedsAttention,
   canShowAdvisorInformationRequests,
@@ -137,5 +138,15 @@ describe("advisor project current state", () => {
       "new-research",
       "new-question",
     ]);
+  });
+});
+
+describe("pending plan refresh", () => {
+  it("refreshes a collecting project while the plan is being prepared without declaring execution active", () => {
+    const active = advisorIsActive({sessionStatus: "collecting", taskStatuses: ["queued", "queued", "queued"], messageStatuses: ["completed", "completed"]});
+    expect(active).toBe(false);
+    for (const planPreparationStatus of ["queued", "leased"]) expect(advisorShouldRefresh({active, interactionPending: false, planPreparationStatus})).toBe(true);
+    for (const planPreparationStatus of [null, "succeeded", "failed", "awaiting_approval"]) expect(advisorShouldRefresh({active, interactionPending: false, planPreparationStatus})).toBe(false);
+    expect(advisorShouldRefresh({active: true, interactionPending: false, planPreparationStatus: "succeeded"})).toBe(true);
   });
 });

@@ -2358,3 +2358,16 @@ The final combined `pnpm check` passed lint, typecheck, tests and production bui
 was moved aside before the successful clean build. No merge, production deployment,
 complete endgame or institutional quality across all deliverables is claimed by this checkpoint. Existing approval, tenant, provider-budget and disclosure controls stay
 in force. Rollback: code revert; the additive documentary migration preserves old plans.
+
+
+PR #585, candidate `7a83327`: CI Quality 34432556696 passed the full quality and
+database jobs; Security 34432556643 and Vercel preview passed. Browser acceptance
+found one real integration defect: the provider plan finished with zero model calls,
+but the initial project page did not refresh to display its approval card.
+E2E: 25 passed, 15 skipped, 1 failed (both attempts). Publication remains held while
+the page refresh is corrected and the complete journey is re-run.
+
+The refresh correction reads pending plan jobs before the produced brief and
+refreshes only queued/leased preparation; awaiting approval does not imply execution.
+13 focused state tests and the combined local quality check pass after the fix.
+The original E2E assertions remain unchanged; exact-head CI must confirm the correction.

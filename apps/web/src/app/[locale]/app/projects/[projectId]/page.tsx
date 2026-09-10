@@ -270,6 +270,12 @@ async function ConversationalCapitalProject({
     .maybeSingle();
   if (!session) notFound();
 
+  // Read the queue before its produced brief: a completion between the two reads
+  // may cause one extra refresh, but can never leave the initial page frozen.
+  const {data: pendingPlanJobs} = await supabase.from("processing_jobs").select("status")
+    .eq("organization_id", organization.id).eq("intake_session_id", session.id)
+    .eq("kind", "execution_brief_proposal").in("status", ["queued", "leased"]).limit(1);
+
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}, {data: executionBriefRow}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status, document_version").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
@@ -649,6 +655,7 @@ async function ConversationalCapitalProject({
     } : null}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
+    planPreparationStatus={pendingPlanJobs?.[0]?.status ?? null}
     activityEvents={activityEvents}
     outcomeEvents={outcomeEvents}
     coverage={{verified: verifiedCoverage, total: totalCoverage, openIssues: openCoverage, notExamined: notExaminedCoverage}}
