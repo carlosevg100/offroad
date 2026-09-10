@@ -4255,6 +4255,17 @@
       "liquidityHeadroom": "Folga de liquidez"
     }
   },
+  "DocumentaryWorkRequest": {
+    "title": "Novo trabalho neste projeto",
+    "description": "Use os documentos já enviados para comparar propostas, preparar uma reunião ou revisar uma oportunidade. O trabalho anterior permanece no histórico. Você revisará e aprovará um novo plano antes da execução.",
+    "label": "O que você quer preparar?",
+    "placeholder": "Compare estas propostas e destaque os pontos a esclarecer.",
+    "scope": "Esta opção prepara uma análise documental qualitativa. Para cálculos, cenários ou outros trabalhos, continue pela conversa.",
+    "unsupported": "Descreva uma comparação de propostas, preparação de reunião ou revisão de oportunidade. Pedidos com cálculos devem seguir pela conversa.",
+    "submit": "Preparar novo plano",
+    "saving": "Preparando plano…",
+    "uncertain": "Não foi possível confirmar o recebimento. Tente novamente para verificar o mesmo pedido."
+  },
   "PublicCapitalMarket": {
     "kicker": "Inteligência de mercado",
     "title": "Encontre o caminho para o capital.",
@@ -4400,142 +4411,6 @@
     "blocked": "Informações a completar",
     "blockedBody": "A leitura da carteira está disponível. Você pode responder às premissas enquanto reúne os documentos restantes; a conclusão especialista depende das condições abaixo."
   },
-<<<<<<< HEAD
-  "NewWorkRequest": {
-    "title": "Novo trabalho neste projeto",
-    "description": "Descreva o objetivo e escolha o tipo de trabalho. O pedido vai para o executor correspondente e mostra o plano, os dados utilizados, o resultado esperado e os limites antes da aprovação. O trabalho anterior permanece no histórico.",
-    "objective": "O que você quer obter?",
-    "placeholder": "Compare os cenários de refinanciamento e calcule o serviço da dívida.",
-    "capability": "Tipo de trabalho",
-    "options": {
-      "auto": {
-        "title": "Identificar pelo objetivo",
-        "hint": "A Offroad reconhece leitura documental, resultado financeiro ou pesquisa de financiadores a partir do texto."
-      },
-      "documentary_reading": {
-        "title": "Leitura documental",
-        "hint": "Comparar propostas, preparar uma reunião ou revisar uma oportunidade a partir dos documentos enviados. Sem cálculos."
-      },
-      "financial_result": {
-        "title": "Resultado financeiro",
-        "hint": "Cálculos, cenários e comparações com fatos conciliados e premissas declaradas."
-      },
-      "provider_research": {
-        "title": "Pesquisa de financiadores",
-        "hint": "Comparar os critérios do caso com mandatos e registros que a organização pode consultar."
-      }
-    },
-    "executor": "Executor: {surface}",
-    "surfaces": {
-      "document-review": "leitura documental",
-      "institutional-setup": "configuração do modelo financeiro",
-      "provider-case-criteria": "critérios do caso e financiadores"
-    },
-    "plan": "Plano",
-    "dataUsed": "Dados utilizados",
-    "expectedResult": "Resultado esperado",
-    "limits": "Limites do trabalho",
-    "inputTiming": {
-      "dispatch": "necessário agora",
-      "execution": "informado no executor"
-    },
-    "approval": {
-      "execution_brief": "Um aprovador do projeto precisa aprovar o plano desta versão antes da execução.",
-      "institutional_configuration": "Um aprovador do projeto precisa revisar e aprovar a configuração antes do cálculo."
-    },
-    "notes": {
-      "calculation_routed_to_financial": "O pedido inclui cálculo. A leitura documental não calcula, por isso ele segue para o resultado financeiro."
-    },
-    "inputs": {
-      "documentary_activation": "Leitura documental ativada para a organização",
-      "private_access": "Projeto com acesso privado autorizado",
-      "ready_documents": "Documentos processados",
-      "execution_brief": "Plano vigente do projeto",
-      "reconciled_facts": "Fatos históricos aceitos dos documentos",
-      "declared_assumptions": "Premissas declaradas por período",
-      "case_criteria": "Critérios do caso confirmados",
-      "reference_date": "Data-base e moeda"
-    },
-    "blocked": {
-      "documentary_not_activated": "Leitura documental não ativada",
-      "missing_inputs": "Faltam informações para este trabalho",
-      "not_authorized": "Sua função não permite preparar trabalhos"
-    },
-    "unsupported": {
-      "title": "Pedido não suportado"
-    },
-    "nextStep": "Próximo passo: ",
-    "useSuggestion": "Enviar como {capability}",
-    "submit": "Enviar para execução",
-    "record": "Registrar pedido para retomar depois",
-    "saving": "Registrando…",
-    "scope": "Nada é executado sem aprovação. Um pedido fora destas capacidades recebe explicação e próximo passo, sem execução fictícia.",
-    "dispatched": {
-      "documentary_reading": "Pedido registrado. Um novo plano será proposto para aprovação.",
-      "financial_result": "Pedido registrado. Informe os dados da configuração financeira para seguir.",
-      "provider_research": "Pedido registrado. Informe os critérios do caso para seguir."
-    },
-    "recorded": "Pedido registrado. Retome quando as informações estiverem disponíveis.",
-    "history": "Pedidos deste projeto",
-    "status": {
-      "dispatched": "encaminhado",
-      "needs_information": "aguardando informações"
-    },
-    "open": "Abrir executor",
-    "origin": "Voltar ao resultado de origem",
-    "uncertain": "Não foi possível confirmar o recebimento. Tente novamente para verificar o mesmo pedido.",
-    "errors": {
-      "unsupported": "Este pedido não é suportado pelas capacidades disponíveis. Veja a explicação e o próximo passo acima.",
-      "blocked": "Este pedido não pode seguir agora. Veja o que falta acima."
-    }
-  },
-  "ProjectReviewRoles": {
-    "title": "Responsabilidades de revisão",
-    "modeLabel": {
-      "open": "sem funções atribuídas",
-      "assigned": "funções atribuídas"
-    },
-    "mode": {
-      "open": "Nenhuma função foi atribuída neste projeto. Qualquer membro ativo pode preparar, devolver e aprovar, inclusive quem preparou a versão. Esta é a política de compatibilidade para equipes de uma pessoa e para projetos anteriores.",
-      "assigned": "Funções atribuídas. Preparar exige a função de preparador; devolver exige revisor ou aprovador; aprovar exige aprovador. Quem preparou uma versão só a aprova quando a autoaprovação está permitida."
-    },
-    "selfApproval": {
-      "effective": "Autoaprovação neste projeto: {state}.",
-      "allowed": "permitida",
-      "forbidden": "não permitida",
-      "project": "Autoaprovação neste projeto",
-      "organization": "Permitir autoaprovação na organização (vale para os projetos que seguem a organização)",
-      "options": {
-        "inherit": "Seguir a organização",
-        "allowed": "Permitida",
-        "forbidden": "Não permitida"
-      }
-    },
-    "yourRoles": "Suas funções neste projeto: {roles}.",
-    "none": "nenhuma",
-    "member": "Membro",
-    "roles": {
-      "preparer": "Preparador",
-      "reviewer": "Revisor",
-      "approver": "Aprovador"
-    },
-    "membership": {
-      "owner": "proprietário da organização",
-      "admin": "administrador da organização",
-      "member": "membro",
-      "analyst": "analista",
-      "relationship_manager": "relacionamento",
-      "compliance": "compliance"
-    },
-    "readOnly": "Somente proprietários e administradores da organização alteram funções e a autoaprovação.",
-    "profileNote": "Perfil comercial ou profissional (CFO, banker, analista, investidor) não concede função de revisão nem acesso a dados por si só.",
-    "saving": "Salvando…",
-    "errors": {
-      "invalid": "Esta alteração não é válida.",
-      "denied": "Sua função na organização não permite alterar responsabilidades.",
-      "not_found": "O projeto não está mais disponível.",
-      "save": "Não foi possível salvar a alteração."
-=======
   "ReceivablesReleasedResult": {
     "title": "Análise da carteira de recebíveis",
     "subtitle": "Cálculo determinístico sob as premissas declaradas e sobre a seleção de carteira confirmada.",
@@ -4701,7 +4576,142 @@
       "noCreditApproval": "Não há aprovação de crédito neste resultado.",
       "method": "Método {procedure}, versão {version}, maturidade {maturity}.",
       "engine": "Contrato do resultado {schema}, moeda {currency}."
->>>>>>> 5b825b9 (feat(web): show the released receivables analysis with its sources and its limits)
+    }
+  },
+  "NewWorkRequest": {
+    "title": "Novo trabalho neste projeto",
+    "description": "Descreva o objetivo e escolha o tipo de trabalho. O pedido vai para o executor correspondente e mostra o plano, os dados utilizados, o resultado esperado e os limites antes da aprovação. O trabalho anterior permanece no histórico.",
+    "objective": "O que você quer obter?",
+    "placeholder": "Compare os cenários de refinanciamento e calcule o serviço da dívida.",
+    "capability": "Tipo de trabalho",
+    "options": {
+      "auto": {
+        "title": "Identificar pelo objetivo",
+        "hint": "A Offroad reconhece leitura documental, resultado financeiro ou pesquisa de financiadores a partir do texto."
+      },
+      "documentary_reading": {
+        "title": "Leitura documental",
+        "hint": "Comparar propostas, preparar uma reunião ou revisar uma oportunidade a partir dos documentos enviados. Sem cálculos."
+      },
+      "financial_result": {
+        "title": "Resultado financeiro",
+        "hint": "Cálculos, cenários e comparações com fatos conciliados e premissas declaradas."
+      },
+      "provider_research": {
+        "title": "Pesquisa de financiadores",
+        "hint": "Comparar os critérios do caso com mandatos e registros que a organização pode consultar."
+      }
+    },
+    "executor": "Executor: {surface}",
+    "surfaces": {
+      "document-review": "leitura documental",
+      "institutional-setup": "configuração do modelo financeiro",
+      "provider-case-criteria": "critérios do caso e financiadores"
+    },
+    "plan": "Plano",
+    "dataUsed": "Dados utilizados",
+    "expectedResult": "Resultado esperado",
+    "limits": "Limites do trabalho",
+    "inputTiming": {
+      "dispatch": "necessário agora",
+      "execution": "informado no executor"
+    },
+    "approval": {
+      "execution_brief": "Um aprovador do projeto precisa aprovar o plano desta versão antes da execução.",
+      "institutional_configuration": "Um aprovador do projeto precisa revisar e aprovar a configuração antes do cálculo."
+    },
+    "notes": {
+      "calculation_routed_to_financial": "O pedido inclui cálculo. A leitura documental não calcula, por isso ele segue para o resultado financeiro."
+    },
+    "inputs": {
+      "documentary_activation": "Leitura documental ativada para a organização",
+      "private_access": "Projeto com acesso privado autorizado",
+      "ready_documents": "Documentos processados",
+      "execution_brief": "Plano vigente do projeto",
+      "reconciled_facts": "Fatos históricos aceitos dos documentos",
+      "declared_assumptions": "Premissas declaradas por período",
+      "case_criteria": "Critérios do caso confirmados",
+      "reference_date": "Data-base e moeda"
+    },
+    "blocked": {
+      "documentary_not_activated": "Leitura documental não ativada",
+      "missing_inputs": "Faltam informações para este trabalho",
+      "not_authorized": "Sua função não permite preparar trabalhos"
+    },
+    "unsupported": {
+      "title": "Pedido não suportado"
+    },
+    "nextStep": "Próximo passo: ",
+    "useSuggestion": "Enviar como {capability}",
+    "submit": "Enviar para execução",
+    "record": "Registrar pedido para retomar depois",
+    "saving": "Registrando…",
+    "scope": "Nada é executado sem aprovação. Um pedido fora destas capacidades recebe explicação e próximo passo, sem execução fictícia.",
+    "dispatched": {
+      "documentary_reading": "Pedido registrado. Um novo plano será proposto para aprovação.",
+      "financial_result": "Pedido registrado. Informe os dados da configuração financeira para seguir.",
+      "provider_research": "Pedido registrado. Informe os critérios do caso para seguir."
+    },
+    "recorded": "Pedido registrado. Retome quando as informações estiverem disponíveis.",
+    "history": "Pedidos deste projeto",
+    "status": {
+      "dispatched": "encaminhado",
+      "needs_information": "aguardando informações"
+    },
+    "open": "Abrir executor",
+    "origin": "Voltar ao resultado de origem",
+    "uncertain": "Não foi possível confirmar o recebimento. Tente novamente para verificar o mesmo pedido.",
+    "errors": {
+      "unsupported": "Este pedido não é suportado pelas capacidades disponíveis. Veja a explicação e o próximo passo acima.",
+      "blocked": "Este pedido não pode seguir agora. Veja o que falta acima."
+    }
+  },
+  "ProjectReviewRoles": {
+    "title": "Responsabilidades de revisão",
+    "modeLabel": {
+      "open": "sem funções atribuídas",
+      "assigned": "funções atribuídas"
+    },
+    "mode": {
+      "open": "Nenhuma função foi atribuída neste projeto. Qualquer membro ativo pode preparar, devolver e aprovar, inclusive quem preparou a versão. Esta é a política de compatibilidade para equipes de uma pessoa e para projetos anteriores.",
+      "assigned": "Funções atribuídas. Preparar exige a função de preparador; devolver exige revisor ou aprovador; aprovar exige aprovador. Quem preparou uma versão só a aprova quando a autoaprovação está permitida."
+    },
+    "selfApproval": {
+      "effective": "Autoaprovação neste projeto: {state}.",
+      "allowed": "permitida",
+      "forbidden": "não permitida",
+      "project": "Autoaprovação neste projeto",
+      "organization": "Permitir autoaprovação na organização (vale para os projetos que seguem a organização)",
+      "options": {
+        "inherit": "Seguir a organização",
+        "allowed": "Permitida",
+        "forbidden": "Não permitida"
+      }
+    },
+    "yourRoles": "Suas funções neste projeto: {roles}.",
+    "none": "nenhuma",
+    "member": "Membro",
+    "roles": {
+      "preparer": "Preparador",
+      "reviewer": "Revisor",
+      "approver": "Aprovador"
+    },
+    "membership": {
+      "owner": "proprietário da organização",
+      "admin": "administrador da organização",
+      "member": "membro",
+      "analyst": "analista",
+      "relationship_manager": "relacionamento",
+      "compliance": "compliance"
+    },
+    "readOnly": "Somente proprietários e administradores da organização alteram funções e a autoaprovação.",
+    "profileNote": "Perfil comercial ou profissional (CFO, banker, analista, investidor) não concede função de revisão nem acesso a dados por si só.",
+    "saving": "Salvando…",
+    "errors": {
+      "invalid": "Esta alteração não é válida.",
+      "denied": "Sua função na organização não permite alterar responsabilidades.",
+      "not_found": "O projeto não está mais disponível.",
+      "save": "Não foi possível salvar a alteração."
     }
   }
 }
