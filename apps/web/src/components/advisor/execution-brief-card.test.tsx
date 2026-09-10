@@ -197,3 +197,34 @@ it.each(["pt-BR", "en-US"] as const)("renders scope proof as human copy, retaini
   expect(html).not.toContain("scopeFingerprint&quot;");
   expect(html).not.toContain("primaryDocumentId");
 });
+
+describe("execution brief progress snapshot binding", () => {
+  const workstream = {label: "Revisar contratos", purpose: "Conferir obrigações", sources: [], analyses: [], output: "Leitura", dependencies: []};
+  const step = {position: 0, label: workstream.label, status: "completed" as const, completed: 1, total: 1};
+  const render = (version: number, workstreams: Array<typeof step>) => renderToStaticMarkup(
+    <NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+      <ExecutionBriefCard brief={{...brief, workstreams: [workstream]}} version={3}
+        progress={{briefId: "10000000-0000-4000-8000-000000000001", version, workstreams}} />
+    </NextIntlClientProvider>,
+  );
+  it("does not present previous-version or mismatched work as completed", () => {
+    for (const html of [render(2, [step]), render(3, [{...step, label: "Outra tarefa"}]), render(3, [{...step, position: 1}]), render(3, [step, step]), render(3, [{...step, completed: 0}]), render(3, [{...step, completed: 2}])]) {
+      expect(html).not.toContain('data-progress="completed"');
+      expect(html).toContain('data-progress="waiting"');
+    }
+  });
+  it("uses explicit position and label even when the progress array is reordered", () => {
+    expect(render(3, [{...step, position: 1, label: "Outra tarefa"}, step])).toContain('data-progress="completed"');
+  });
+});
+
+it.each(["pt-BR", "en-US"] as const)("keeps the full objective inspectable below its persisted summary in %s", (locale) => {
+  const messages = locale === "pt-BR" ? pt : en;
+  const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}>
+    <ExecutionBriefCard version={1} brief={{...brief, locale, objective: "Complete request\nEarlier project context", objectiveSummary: "Current request"}} />
+  </NextIntlClientProvider>);
+  expect(html).toContain('class="execution-brief-card__objective">Current request</p>');
+  expect(html).toContain(messages.ExecutionBriefCard.completeObjective);
+  expect(html).toContain("Complete request\nEarlier project context");
+  expect(html).not.toContain('<details class="execution-brief-card__objective-context" open');
+});

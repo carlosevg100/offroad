@@ -19,9 +19,9 @@ export function scoreDocumentWorkSemantics(product: LiveProduct, sample: LiveSam
       failures.push({assertionId:assertion.id,ruleId:"reference-source-mismatch",field:"reference",matchedText:""});
       continue;
     }
-    const fields = [...product.hypotheses.flatMap((item,index) => [{field:`hypotheses.${index}.text`,text:item.text},{field:`hypotheses.${index}.question`,text:item.question}]),
-      ...product.gaps.flatMap((item,index) => [{field:`gaps.${index}.text`,text:item.text},{field:`gaps.${index}.question`,text:item.question}])];
-    for (const {field,text} of fields) for (const rule of assertion.forbiddenClaims) {
+    const fields = [...product.hypotheses.flatMap((item,index) => [{field:`hypotheses.${index}.text`,text:item.text,pairedText:null},{field:`hypotheses.${index}.question`,text:item.question,pairedText:item.text}]),
+      ...product.gaps.flatMap((item,index) => [{field:`gaps.${index}.text`,text:item.text,pairedText:null},{field:`gaps.${index}.question`,text:item.question,pairedText:item.text}])];
+    for (const {field,text,pairedText} of fields) for (const rule of assertion.forbiddenClaims) {
       const pattern = new RegExp(rule.pattern,"gi");
       for (const match of text.matchAll(pattern)) {
         const sentenceStart = Math.max(text.lastIndexOf(".",match.index),text.lastIndexOf("?",match.index),text.lastIndexOf("!",match.index)) + 1;
@@ -34,6 +34,14 @@ export function scoreDocumentWorkSemantics(product: LiveProduct, sample: LiveSam
         // Documentary absence explicitly scoped to supplied information preserves the source meaning.
         const afterClaim = text.slice(match.index + match[0].length);
         if (rule.id === "asserted-absence" && /^(?: and (?:a |an )?(?:leverage covenant|amortization schedule))? (?:from|in) (?:the )?(?:supplied|provided|reviewed|available) (?:passages|documents|materials|information)\b/i.test(afterClaim)) continue;
+        // Narrow paired-field exception for this English reference rule: the same term is
+        // explicitly hypothetical in the paired text and the question asks for possibly none.
+        // Other assertions in either field still pass through every rule independently.
+        const term = /\b(leverage covenant|amortization schedule)\b/i.exec(match[0])?.[1];
+        if (rule.id === "asserted-absence" && pairedText && term
+          && new RegExp(`^if (?:the (?:agreement|loan) (?:has no|lacks)|no) (?:an? )?${term}\\b[^,]*,`, "i").test(pairedText.trim())
+          && /^what (?:other|additional) [^.!?]+, if any, [^.!?]+\?$/i.test(text.trim())
+          && /^in the $/i.test(text.slice(Math.max(0,match.index-7),match.index))) continue;
         failures.push({assertionId:assertion.id,ruleId:rule.id,field,matchedText:match[0]});
       }
     }

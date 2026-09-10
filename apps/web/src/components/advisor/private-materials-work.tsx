@@ -13,7 +13,7 @@ import {
 import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 
-import {privateMaterialArtifacts} from "./private-material-artifacts";
+import {privateMaterialArtifacts, privateMaterialPackageApproved} from "./private-material-artifacts";
 
 type Props = {
   governed: GovernedMaterialPackage | null;
@@ -63,8 +63,8 @@ function PackageReview({governed, locale, packageReview, projectId, sessionId}: 
   const t = useTranslations("App.privateCase");
   const [state, action] = useActionState(approvePrivateProjectMaterialPackage, initialState);
   const artifacts = privateMaterialArtifacts(governed, locale, sessionId);
-  const complete = artifacts.every((artifact) => artifact.available);
-  const approved = packageReview?.status === "approved";
+  const complete = artifacts.length > 0 && artifacts.every((artifact) => artifact.available);
+  const approved = privateMaterialPackageApproved(packageReview, governed.artifactFingerprint);
   return (
     <section className="advisor-private-materials">
       <header><span>{approved ? t("materialsApprovedKicker") : t("materialsKicker")}</span><h2>{approved ? t("materialsApprovedTitle") : t("materialsTitle")}</h2><p>{approved ? t("materialsApprovedBody") : t("materialsBody")}</p></header>

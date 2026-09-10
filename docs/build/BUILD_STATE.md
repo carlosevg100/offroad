@@ -3613,3 +3613,61 @@ underwriting, diligência, decisão de crédito e fechamento continuam fora da e
   séries, fontes e lacunas já presentes no contrato e preserva seus identificadores. Não projeta
   dimensões ausentes e não deve ser chamado de modelo financeiro integrado. O modelo institucional
   integrado, templates de cliente, revisão visual aprovada e DOCX nativo continuam fora do escopo.
+## 10 September: integrated delivery candidate, not yet released
+
+Baseline production is PR584, main b0ba09573e0bb6295cabef47b627b89857f82a24.
+The candidate branch connects approved material scope to the worker and case engine:
+teaser-only work omits the financial workbook, and empty/invalid approved scope produces
+no material. The selected scope participates in cache identity. The project displays only
+planned outputs and rejects approval of an older material fingerprint. Word and print dates
+come from the persisted artifact; route tests compare actual Word bytes across different days.
+
+Documentary method v11 / registry v14 supplies paired questions and assertions to both
+independent critics. Migration 20260910021710 preserves the exact historical plans and adds
+the newly compiled snapshot. Applied only to dataless staging gjkkjtbfnssdsbmlhmwk after the
+founder's explicit destination approval; persistence SQL passed in a rolled-back transaction.
+Staging security advisor: zero lints. Documentary activation and production migration remain
+unapproved by technical acceptance; no new paid model evaluation has been run.
+
+Financial work adds source-bound institutional input preparation and guided missing-input
+questions, and fixes depreciation beyond useful life / final half-year depreciation.
+Focused financial-core tests: 90 passed; institutional/financial-model tests: 65 passed at
+the first stable checkpoint. Configuration persistence and answer-to-model integration are
+still being implemented, not claimed as delivered. Institutional input readiness does not
+replace independent model validation or promote the indicative production model.
+
+Provider research is being connected through a distinct authorized tenant reader and an
+approved M01→K01→K02 plan. Internal cross-organization matching arrays are not a display
+source. The research reader requires the current plan, valid content fingerprint and a
+completed task; no fallback to obsolete results. This work does not authorize shortlist
+selection, disclosure or introductions. First reader/UI tests: 8 passed; worker/queue/
+completion tests: 32 passed. Activation, SQL and full integrated acceptance remain pending.
+
+Staging integration proof (10 September, 03:02 UTC): provider bridge migration
+20260910025417 and institutional revision store migration20260910025833 applied.
+Their transactional SQL suites passed: actual approval/claim/task/artifact lifecycle,
+tenant exclusion, frozen sources, resumed work, exact decimal/hash identity, answer
+binding, immutable candidate review and stale/replay rejection. The provider test's
+first ownership-transfer fixture violated the unique claim constraint; revocation now
+uses a null claim and the complete test passes. The financial migration's first
+attempt failed PL/pgSQL parsing; CASE expressions were parenthesized before the
+successful apply. No applied migration was edited.
+
+Migration20260910030116 makes the private tables' existing deny boundary explicit
+and adds FK indexes. Policy regression passed. Final security advisor: zero lints.
+Performance INFOs remain27 unindexed existing FKs,229 unused indexes and the existing
+Auth connection-allocation notice; no institutional FK warning was introduced.
+Database types regenerated; temporary RPC casts removed from the three web adapters.
+Institutional setup reports configuration_needs_review when submitted answers still
+lack a reviewed mapping. Source denomination/date/perimeter review and the initial
+configuration producer remain missing; no institutional recalculation is claimed.
+Provider results inventory only the authorized acervo, not deal-fit selection.
+Local Playwright coverage now starts research through the real composer, requires
+plan approval and checks persisted result/progress after reload, without paid providers.
+This new journey still requires execution in CI before acceptance.
+
+The final combined `pnpm check` passed lint, typecheck, tests and production build
+(43 successful build tasks). A stale Turbopack cache containing a sandbox port failure
+was moved aside before the successful clean build. No merge, production deployment,
+complete endgame or institutional quality across all deliverables is claimed by this checkpoint. Existing approval, tenant, provider-budget and disclosure controls stay
+in force. Rollback: code revert; the additive documentary migration preserves old plans.

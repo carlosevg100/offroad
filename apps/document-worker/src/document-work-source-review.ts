@@ -23,18 +23,32 @@ export function documentWorkAuthoredFields(narrative: DocumentWorkProductNarrati
     ...narrative.gaps.flatMap((item,index)=>[{id:`gaps.${index}.text`,text:item.text},{id:`gaps.${index}.question`,text:item.question}]),
   ];
 }
+
+/** Keep paired assertions/questions and their declared basis identical in both critic stages. */
+export function documentWorkReviewFields(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative) {
+  return documentWorkAuthoredFields(narrative).map(field => {
+    const match = /^(hypotheses|gaps)\.(\d+)\.(text|question)$/.exec(field.id);
+    if (!match) return field;
+    const index = Number(match[2]);
+    const pair = match[1] === "hypotheses" ? narrative.hypotheses[index]! : narrative.gaps[index]!;
+    const basisSourceIds = match[1] === "hypotheses" ? narrative.hypotheses[index]!.basisPassageIds.map(id => {
+      const offset = input.passages.findIndex(p => p.id === id);
+      if (offset < 0) throw failed();
+      return `p${offset + 1}`;
+    }) : [];
+    return {...field, pairId: `${match[1]}.${index}`, pairedText: pair.text, pairedQuestion: pair.question, basisSourceIds};
+  });
+}
+
 const failed = () => new Error("document_work_product_source_review_failed");
 type Dependencies = {gateway: Pick<ModelGateway,"complete">};
 /** Independent model review; structural coverage is deterministic, semantic judgment is not certification. */
 export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, {gateway}: Dependencies): Promise<DocumentWorkSourceReview> {
-  const fields = documentWorkAuthoredFields(narrative).map(field=>{
-    const match=/^hypotheses\.(\d+)\./.exec(field.id);
-    return match ? {...field,basisSourceIds:narrative.hypotheses[Number(match[1])]!.basisPassageIds.map(id=>`p${input.passages.findIndex(p=>p.id===id)+1}`)} : field;
-  });
+  const fields = documentWorkReviewFields(input,narrative);
   const response = await gateway.complete({
     task:"preliminary_understanding", system:documentWorkSourceReviewInstructions,
     input:[{type:"text",text:JSON.stringify({passages:input.passages.map((passage,index)=>({id:`p${index+1}`,documentId:passage.documentId,documentName:passage.documentName,text:passage.text})),coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:fields})}],
-    schema:sourceReviewSchema, schemaName:"document_work_source_review_v3",
+    schema:sourceReviewSchema, schemaName:"document_work_source_review_v4",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},
     maxOutputTokens:4000,
   });
@@ -50,8 +64,8 @@ export async function reviewAndProposeDocumentWorkRevision(input: DocumentWorkPr
   const context=buildDocumentWorkSelectionContext(input);
   const response=await gateway.complete({
     task:"preliminary_understanding",system:`${documentWorkSourceReviewInstructions}\n${documentWorkProductRevisionInstructions}`,
-    input:[{type:"text",text:JSON.stringify({passages:context.sources,coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:documentWorkAuthoredFields(narrative),selection:documentWorkSelectionSchema.parse(selection)})}],
-    schema,schemaName:"document_work_source_review_revision_v1",
+    input:[{type:"text",text:JSON.stringify({passages:context.sources,coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:documentWorkReviewFields(input,narrative),selection:documentWorkSelectionSchema.parse(selection)})}],
+    schema,schemaName:"document_work_source_review_revision_v2",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},maxOutputTokens:4000,
   });
   const parsed=schema.safeParse(response.output);if(!parsed.success)throw failed();

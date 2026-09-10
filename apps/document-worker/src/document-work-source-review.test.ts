@@ -1,7 +1,7 @@
 import {describe,it,expect,vi} from "vitest";
 import type {DocumentWorkProductInput,DocumentWorkProductNarrative} from "@offroad/domain-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
-import {documentWorkAuthoredFields,reviewDocumentWorkSourceFidelity,verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
+import {documentWorkAuthoredFields,documentWorkReviewFields,reviewAndProposeDocumentWorkRevision,reviewDocumentWorkSourceFidelity,verifyDocumentWorkSourceFidelity} from "./document-work-source-review";
 const input:DocumentWorkProductInput={job:"comparison",locale:"en-US",approvedRequest:{text:"Compare proposals",fingerprint:"a".repeat(64)},passages:[{id:"alpha",documentId:"a",documentName:"Alpha",version:"1",hash:"b".repeat(64),anchor:"terms",text:"Alpha requires quarterly reporting."},{id:"beta",documentId:"b",documentName:"Beta",version:"1",hash:"c".repeat(64),anchor:"terms",text:"Beta requires monthly reporting."}],coverage:{documentsConsidered:2,omittedPassages:0,limitations:[]}};
 const narrative:DocumentWorkProductNarrative={sections:["terms","differences","clarifications"].map(key=>({key:key as "terms"|"differences"|"clarifications",title:key,observations:[]})),hypotheses:[{text:"Alpha reports more frequently than Beta.",basisPassageIds:["alpha","beta"],question:"Can you confirm the reporting obligations?"}],gaps:[{text:"Covenant terms were not supplied.",question:"Can you provide them or confirm whether covenants exist?"}]};
 const ids=documentWorkAuthoredFields(narrative).map(f=>f.id);
@@ -12,7 +12,7 @@ describe("documentary source review boundaries",()=>{
     await verifyDocumentWorkSourceFidelity(input,narrative,d);
     expect(d.gateway.complete).toHaveBeenCalledTimes(1);
     const request=vi.mocked(d.gateway.complete).mock.calls[0]![0];
-    expect(request).toMatchObject({schemaName:"document_work_source_review_v3",task:"preliminary_understanding",maxOutputTokens:4000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
+    expect(request).toMatchObject({schemaName:"document_work_source_review_v4",task:"preliminary_understanding",maxOutputTokens:4000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
     expect(JSON.parse((request.input[0] as {text:string}).text)).toMatchObject({passages:input.passages.map((p,index)=>({id:`p${index+1}`,documentId:p.documentId,documentName:p.documentName,text:p.text})),authoredFields:documentWorkAuthoredFields(narrative)});
   });
   it.each(["inverse_comparison","unsupported_premise","unknown_as_absent","other_unsupported"])("fails closed for reviewer finding %s without repair",async code=>{
@@ -60,4 +60,19 @@ describe("documentary source review boundaries",()=>{
     const d=deps(null);vi.mocked(d.gateway.complete).mockRejectedValue(new Error("provider_unavailable"));
     await expect(verifyDocumentWorkSourceFidelity(input,narrative,d)).rejects.toThrow("provider_unavailable");
   });
+});
+
+it("gives both critic stages identical paired context and local source bindings",async()=>{
+  const d=deps({reviewedFieldIds:ids,issues:[],revisedSelection:null});
+  const selection={sections:[{key:"terms",title:"Terms",quoteIds:[]},{key:"differences",title:"Differences",quoteIds:[]},{key:"clarifications",title:"Clarifications",quoteIds:[]}],hypotheses:[],gaps:[]};
+  await reviewAndProposeDocumentWorkRevision(input,narrative,selection,d);
+  const revisionInput=JSON.parse((vi.mocked(d.gateway.complete).mock.calls[0]![0].input[0] as {text:string}).text);
+  const independent=deps({reviewedFieldIds:ids,issues:[]});
+  await reviewDocumentWorkSourceFidelity(input,narrative,independent);
+  const finalInput=JSON.parse((vi.mocked(independent.gateway.complete).mock.calls[0]![0].input[0] as {text:string}).text);
+  expect(revisionInput.authoredFields).toEqual(finalInput.authoredFields);
+  expect(finalInput.authoredFields).toEqual(documentWorkReviewFields(input,narrative));
+  expect(finalInput.authoredFields.find((f:{id:string})=>f.id==="hypotheses.0.question")).toMatchObject({pairId:"hypotheses.0",pairedText:narrative.hypotheses[0]!.text,basisSourceIds:["p1","p2"]});
+  expect(finalInput.authoredFields.find((f:{id:string})=>f.id==="gaps.0.question")).toMatchObject({pairId:"gaps.0",pairedText:narrative.gaps[0]!.text,basisSourceIds:[]});
+  expect(()=>documentWorkReviewFields(input,{...narrative,hypotheses:[{...narrative.hypotheses[0]!,basisPassageIds:["foreign-source"]}]})).toThrow("document_work_product_source_review_failed");
 });

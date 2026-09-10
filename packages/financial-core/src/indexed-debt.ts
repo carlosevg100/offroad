@@ -171,8 +171,9 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
   };
 }
 
-export function aggregateIndexedDebtSchedules(schedules: readonly IndexedDebtSchedule[]) {
-  const periods = [...new Set(schedules.flatMap((schedule) => schedule.rows.map((row) => row.period)))].sort();
+export function aggregateIndexedDebtSchedules(schedules: readonly IndexedDebtSchedule[], confirmedDebtFreePeriods?: readonly string[]) {
+  if(confirmedDebtFreePeriods && (schedules.length>0||new Set(confirmedDebtFreePeriods).size!==confirmedDebtFreePeriods.length||confirmedDebtFreePeriods.some(period=>!period.trim())))throw new RangeError("debt-free periods require an empty instrument ledger and unique explicit periods");
+  const periods = confirmedDebtFreePeriods ? [...confirmedDebtFreePeriods] : [...new Set(schedules.flatMap((schedule) => schedule.rows.map((row) => row.period)))].sort();
   return periods.map((period) => {
     const rows = schedules.flatMap((schedule) => schedule.rows.filter((row) => row.period === period));
     const sum = (key: keyof Pick<IndexedDebtServiceRow, "openingPrincipal" | "drawdown" | "indexationAccrued" | "indexationPaid" | "indexationCapitalized" | "couponAccrued" | "couponPaid" | "couponCapitalized" | "scheduledPrincipal" | "prepayment" | "cashDebtService" | "nonCashDebtIncrease" | "financeExpense" | "closingPrincipal">) =>

@@ -230,6 +230,8 @@ export type CaseEngineInput = {
   /** Explicit production gate. A confirmed structure alone does not authorize compiling teaser,
    * model, term sheet or data-room artifacts; the company must also approve the production plan. */
   materialsPreparationApproved?: boolean;
+  /** Exact artifact scope from the approved production plan; omitted only for legacy callers. */
+  plannedMaterialKinds?: readonly Material["kind"][];
   materialRelease?: MaterialExternalReleaseEvidence;
   marketGovernance?: {
     mandateMaxAgeMonths: number | null;
@@ -999,6 +1001,7 @@ export async function executeCaseEngine(
           claimDecisions: input.claimDecisions,
           materialRelease: input.materialRelease,
           materialsPreparationApproved: input.materialsPreparationApproved === true,
+          plannedMaterialKinds: input.plannedMaterialKinds ?? null,
         }),
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
@@ -1710,6 +1713,7 @@ const materialTruthSubtaskSchema = z.object({materialTruth: z.unknown()});
 
 async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
   const {input, reconciliation, metrics, structure, redFlags, claims, extracted} = graphInput;
+  const requested = (kind: Material["kind"]) => input.plannedMaterialKinds === undefined || input.plannedMaterialKinds.includes(kind);
   const sourceIds = caseSourceIds(input);
   const task = (
     id: MaterialsSubtaskId,
@@ -1724,6 +1728,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       claimDecisions: input.claimDecisions ?? [],
       materialRelease: input.materialRelease ?? null,
       materialsPreparationApproved: input.materialsPreparationApproved === true,
+      plannedMaterialKinds: input.plannedMaterialKinds ?? null,
       claimsFingerprint: fingerprintJson(claims),
       structureFingerprint: fingerprintJson(structure),
       reconciliationFingerprint: fingerprintJson(reconciliation),
@@ -1759,6 +1764,9 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       };
     }),
     task("financial_model", ["material_inputs"], financialModelSubtaskSchema, ["financial_model"], async ({outputs}) => {
+      if (!requested("financial_model")) {
+        return {output: {financialModel: null, material: null, blockers: []}, toolsUsed: [], sourceIds};
+      }
       const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
       if (!materialInputs.canCompileFinancialModel || !structure.structureDecision.selectedAlternativeId || !structure.structureAlternatives.proposalFingerprint) {
         return {
@@ -1904,7 +1912,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         approvedJudgmentIds: materialInputs.approvedJudgmentIds,
       });
       return compiled.ok
-        ? {output: {materials: compiled.materials, materialsBlockedBy: [], audit: "pass"}, toolsUsed: ["case_materials"], sourceIds}
+        ? {output: {materials: compiled.materials.filter(material => requested(material.kind)), materialsBlockedBy: [], audit: "pass"}, toolsUsed: ["case_materials"], sourceIds}
         : {output: {materials: [], materialsBlockedBy: compiled.detail, audit: "blocked"}, toolsUsed: ["case_materials"], sourceIds};
     }),
     task("plan_room", ["compile_documents", "financial_model"], plannedRoomSchema, ["data_room"], ({outputs}) => {
@@ -1919,7 +1927,8 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         exceptions: reconciliation.exceptions,
         readiness: metrics.readiness,
       });
-      const materials = [...packageMaterials.filter((material) => material.kind !== "data_room_index"), dataRoomIndex(dataRoom)];
+      const materials = [...packageMaterials.filter((material) => material.kind !== "data_room_index"),
+        ...(requested("data_room_index") ? [dataRoomIndex(dataRoom)] : [])];
       return {output: {materials, dataRoom}, toolsUsed: ["data_room"], sourceIds};
     }),
     task("claim_registry", ["plan_room"], claimRegistrySubtaskSchema, ["claim_registry"], ({outputs}) => {

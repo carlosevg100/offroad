@@ -55,6 +55,14 @@ describe("governed material package", () => {
   it("rejects a plan linked to a different structure decision", () => {
     expect(governedMaterialPackageFromRows(chain(fingerprint("e")))).toBeNull();
   });
+
+  it("keeps the material version's UTC issue date instead of deriving it from download time", () => {
+    const rows = chain();
+    rows[3]!.created_at = "2026-09-07T23:30:00-03:00";
+    expect(governedMaterialPackageFromRows(rows)?.issuedOn).toBe("2026-09-08");
+    rows[3]!.created_at = "invalid";
+    expect(governedMaterialPackageFromRows(rows)).toBeNull();
+  });
 });
 
 it("preserves the compiler's workbook rendering contract through the approved package loader", () => {

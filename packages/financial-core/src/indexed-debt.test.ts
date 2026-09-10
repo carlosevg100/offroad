@@ -153,3 +153,9 @@ describe("indexed debt schedule", () => {
     });
   });
 });
+
+it("aggregates an explicitly confirmed empty debt ledger across its stated periods",()=>{
+ expect(aggregateIndexedDebtSchedules([], ["2027","2028"])).toEqual([expect.objectContaining({period:"2027",closingPrincipal:"0",cashDebtService:"0"}),expect.objectContaining({period:"2028",closingPrincipal:"0",cashDebtService:"0"})]);
+ expect(aggregateIndexedDebtSchedules([])).toEqual([]);
+ expect(()=>aggregateIndexedDebtSchedules([], ["2027","2027"])).toThrow();
+});

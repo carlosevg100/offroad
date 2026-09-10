@@ -115,6 +115,7 @@ import {
   buildReceivablesMethodFieldRequestProjection,
 } from "./receivables-information-requests";
 import {resolveReceivablesMethodInput, type ReceivablesMethodInputResolution} from "./receivables-method-input-resolution";
+import {ensureInstitutionalModelSetup} from "./institutional-model-setup";
 import {
   buildCaseOperatingControlSnapshot,
   caseAnalysisCapabilityScope,
@@ -485,6 +486,17 @@ export function caseAnalysisExecutionPlan(workflow: DealWorkflowState): CaseAnal
 }
 
 type DealStateContext = z.infer<typeof rawCaseInputSchema>["deal_state_context"];
+
+/** Only the exact approved production plan can authorize material compilation. */
+export function plannedMaterialKindsFrom(context: DealStateContext, workflow: DealWorkflowState): Array<"teaser" | "financial_model" | "term_sheet" | "data_room_index"> {
+  const plan = context.production_plan;
+  if (!workflow.gates.productionPlanApproved || !plan || plan.status !== "approved"
+    || plan.fingerprint !== workflow.objectFingerprints.production_plan) return [];
+  const parsed = z.array(z.enum(["teaser", "financial_model", "indicative_term_sheet", "data_room_index"]))
+    .min(1).max(4).safeParse(plan.payload.artifacts);
+  if (!parsed.success || new Set(parsed.data).size !== parsed.data.length) return [];
+  return parsed.data.map((kind) => kind === "indicative_term_sheet" ? "term_sheet" : kind);
+}
 
 function structureProposalFrom(context: DealStateContext) {
   if (context.structure_decision?.status === "changes_requested") return null;
@@ -911,6 +923,7 @@ export async function processCaseAnalysisJob(
       } : {}),
       externalReleaseApproved: false,
       materialsPreparationApproved: executionPlan.produceMaterials,
+      plannedMaterialKinds: plannedMaterialKindsFrom(raw.deal_state_context, raw.deal_workflow),
       ...(persistedStructureProposal ? {structureProposal: persistedStructureProposal} : {}),
       ...(persistedStructureConfirmation ? {structureConfirmation: persistedStructureConfirmation} : {}),
       ...(!persistedStructureProposal && executionPlan.designStructure ? {designStructure: async (context: StructureDesignerContext) => {
@@ -1084,6 +1097,20 @@ export async function processCaseAnalysisJob(
 
     const publicState = publicCaseState(result.state);
     const publicReport = publicCaseRunReport(result.report);
+    const institutionalSetup = await ensureInstitutionalModelSetup({
+      queue: dependencies.queue, job,
+      workbookRequested: plannedMaterialKindsFrom(raw.deal_state_context, raw.deal_workflow).includes("financial_model"),
+      shadow: useShadow,
+      locale: raw.session.locale === "en-US" ? "en-US" : "pt-BR",
+    });
+    if (institutionalSetup.status !== "not_requested") {
+      await dependencies.queue.writeStage(job, "institutional_model_setup", "succeeded", {
+        configurationState: institutionalSetup.status,
+        openQuestionCount: institutionalSetup.openCount,
+        modelReadiness: "not_assessed",
+        modelCalls: 0,
+      });
+    }
     const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
     if (receivablesVertical && dependencies.queue.syncReceivablesInformationRequests) {

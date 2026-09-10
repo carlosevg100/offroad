@@ -49,3 +49,16 @@ describe("review reference distinguishes unprovided from nonexistent",()=>{
     expect(scoreDocumentWorkSemantics({...product,hypotheses:[{text:"The absence of a leverage covenant limits options.",question:"What next?"}]},documentWorkProductLiveCases[0]).passed).toBe(true);
   });
 });
+
+it("evaluates the recorded conditional diligence question with its own paired context", () => {
+  // Synthetic executor-pr580 review repeat2; no real borrower information.
+  const item = {text:"If the agreement has no leverage covenant, it is unclear what other financial protections, if any, apply.",question:"What other financial protections, if any, apply in the absence of a leverage covenant?"};
+  expect(scoreDocumentWorkSemantics({...product,gaps:[item]},sample).passed).toBe(true);
+  // The condition may not come from a different item, a different term, or a factual assertion.
+  for (const text of ["The agreement has no leverage covenant.","If the loan has no amortization schedule, other protections may apply.","The covenant was not supplied."]) {
+    expect(scoreDocumentWorkSemantics({...product,gaps:[{...item,text}]},sample).passed).toBe(false);
+  }
+  expect(scoreDocumentWorkSemantics({...product,gaps:[item,{text:"Another point.",question:item.question}]},sample).passed).toBe(false);
+  expect(scoreDocumentWorkSemantics({...product,gaps:[{...item,question:"Which guarantee compensates for the absence of a leverage covenant?"}]},sample).passed).toBe(false);
+  expect(scoreDocumentWorkSemantics({...product,gaps:[{...item,text:item.text+" No leverage covenant exists."}]},sample).passed).toBe(false);
+});

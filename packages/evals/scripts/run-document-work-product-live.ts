@@ -67,11 +67,11 @@ async function main() {
         }else{
           const wire=response.output as Record<string,unknown>;
           const {revisedSelection,...reviewWire}=wire;
-          const parsed=sourceReviewSchema.safeParse(request.schemaName==="document_work_source_review_revision_v1"?reviewWire:response.output);
+          const parsed=sourceReviewSchema.safeParse(request.schemaName==="document_work_source_review_revision_v2"?reviewWire:response.output);
           let reviewAccepted=false; let expanded:Review|null=null;
           try{if(parsed.success){expanded=expandDocumentWorkSourceReview(input,parsed.data!);reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,expanded).issues.length===0;}}catch{}
           responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:expanded ?? (parsed.success?parsed.data!:null)});
-          if(request.schemaName==="document_work_source_review_revision_v1" && revisedSelection!==null && revisedSelection!==undefined){
+          if(request.schemaName==="document_work_source_review_revision_v2" && revisedSelection!==null && revisedSelection!==undefined){
             try{capturedNarrative=hydrateDocumentWorkSelection(input,revisedSelection);validateDocumentWorkProductNarrative(input,capturedNarrative);}catch{}
           }
         }

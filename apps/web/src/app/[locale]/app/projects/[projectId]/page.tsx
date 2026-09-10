@@ -25,6 +25,8 @@ import {OriginationConversationWork} from "@/components/advisor/origination-conv
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
 import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
+import {ProviderResearchWork} from "@/components/advisor/provider-research-work";
+import {currentProviderResearch} from "@/lib/advisor/provider-research-reader";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
 import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
@@ -40,6 +42,9 @@ import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-appro
 import {openEvidenceRequirements} from "@/lib/advisor/evidence-inventory";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
+import {loadInstitutionalConfigurationReviews} from "@/lib/advisor/institutional-configuration-reviews";
+import {InstitutionalConfigurationReviewWork} from "@/components/advisor/institutional-configuration-review";
+
 import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
 import {CapitalPlanningProject} from "./capital-planning-project";
@@ -48,6 +53,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {title: "Projeto", robots: {index: false, follow: false}};
 
 type Props = {params: Promise<{locale: string; projectId: string}>; searchParams: Promise<{view?: string}>};
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
 
 export default async function CapitalProjectPage({params, searchParams}: Props) {
   const {locale, projectId} = await params;
@@ -76,6 +85,12 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
     if (heldWork?.length) redirect(`/${locale}/app/projects/${project.id}`);
   }
   if (project.entry_job === "company_debt_view") {
+    const {data: currentPlan} = await supabase.from("capital_project_plans")
+      .select("snapshot").eq("organization_id", organization.id)
+      .eq("capital_project_id", project.id).eq("status", "active").maybeSingle();
+    if (record(record(currentPlan?.snapshot)?.job)?.firstWorkProduct === "provider_research") {
+      return <ConversationalCapitalProject locale={locale} project={project} />;
+    }
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
   }
   if (project.entry_job === "capital_planning") {
@@ -258,8 +273,8 @@ async function ConversationalCapitalProject({
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}, {data: executionBriefRow}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
     supabase.from("source_documents").select("id, original_name, byte_size, processing_status, document_version").eq("organization_id", organization.id).eq("intake_session_id", session.id).order("created_at"),
-    supabase.from("capital_project_plans").select("id, compiler_version").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
-    supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
+    supabase.from("capital_project_plans").select("id, compiler_version, plan_fingerprint").eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
+    supabase.from("capital_project_artifacts").select("id, artifact_type, artifact_version, schema_version, plan_id, task_run_id, status, artifact_fingerprint, content, created_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("created_at", {ascending: false}),
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at").eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
     supabase.from("capital_project_execution_briefs")
       .select("id, brief_version, visible_snapshot, change_summary, created_at")
@@ -358,11 +373,14 @@ async function ConversationalCapitalProject({
       ? supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal").eq("organization_id", organization.id).eq("plan_id", plan.id).order("ordinal")
       : Promise.resolve({data: []}),
     plan
-      ? supabase.from("capital_project_task_runs").select("plan_task_id, attempt_no, status").eq("organization_id", organization.id).eq("plan_id", plan.id).order("attempt_no", {ascending: false})
+      ? supabase.from("capital_project_task_runs").select("id, plan_task_id, attempt_no, status").eq("organization_id", organization.id).eq("plan_id", plan.id).order("attempt_no", {ascending: false})
       : Promise.resolve({data: []}),
   ]);
   const latestRunByTask = new Map<string, {status: string}>();
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
+
+  const providerResearch = currentProviderResearch(artifacts ?? [], runs ?? [], plan
+    ? {projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
 
   const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
     .select("id, revision, goal, status, snapshot")
@@ -466,7 +484,8 @@ async function ConversationalCapitalProject({
           errorCode: message.error_code,
           createdAt: message.created_at,
           artifactHref: artifactId && artifactIds.has(artifactId)
-            ? project.entry_job === "origination_thesis" && parsedOrigination?.success && artifactId === originationArtifact?.id
+            ? artifactId === providerResearch?.row.id ? workSectionHref("provider-research")
+              : project.entry_job === "origination_thesis" && parsedOrigination?.success && artifactId === originationArtifact?.id
               ? workSectionHref("meeting-brief") : project.entry_job !== "origination_thesis" ? `/${locale}/app/projects/${project.id}?view=work` : undefined
             : undefined,
           proposalId: message.proposal_id,
@@ -581,6 +600,18 @@ async function ConversationalCapitalProject({
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
   const workSections: AdvisorWorkSection[] = [];
+  const institutionalReviews = await loadInstitutionalConfigurationReviews(supabase, project.id);
+  if (institutionalReviews.length) {
+    const reviewCopy = await getTranslations({locale, namespace: "InstitutionalConfigurationReview"});
+    workSections.push({id: "institutional-premises", title: reviewCopy("title"), version: institutionalReviews[0].revision,
+      status: reviewCopy(`status.${institutionalReviews[0].status}`), content: <InstitutionalConfigurationReviewWork projectId={project.id} reviews={institutionalReviews} />});
+  }
+  if (providerResearch) {
+    const researchCopy = await getTranslations({locale, namespace: "ProviderResearchWork"});
+    workSections.push({id: "provider-research", artifactId: providerResearch.row.id,
+      title: researchCopy("title"), version: providerResearch.row.artifact_version, status: researchCopy("status"),
+      content: <ProviderResearchWork research={providerResearch.research} />});
+  }
   const documentResult = await loadDocumentWorkProduct(supabase, organization.id, project.id);
   if (documentResult) {
     const labels = await documentWorkProductLabels(documentResult.product.locale);

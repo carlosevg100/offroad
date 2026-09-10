@@ -10,3 +10,5 @@ export * from "./red-flags";
 export * from "./registry";
 
 export * from "./documentary-work";
+
+export * from "./provider-research";

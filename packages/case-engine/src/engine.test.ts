@@ -100,6 +100,7 @@ const requiredStructureCandidates = [
 async function executeWithConfirmedStructure(
   input: Omit<CaseEngineInput, "structureProposal" | "structureConfirmation">,
   productionPlanApproved = true,
+  previousTaskCache?: CaseEngineInput["taskCache"],
 ) {
   const requiredCandidates = requiredStructureCandidates.filter((item) => !input.candidates.some((existing) => existing.fieldPath === item.fieldPath));
   const governedInput = {
@@ -127,7 +128,7 @@ async function executeWithConfirmedStructure(
   if (!proposalFingerprint) throw new Error("test structure proposal did not compile");
   return executeCaseEngine({
     ...governedInput,
-    taskCache: taskCacheFromReport(pending.report),
+    taskCache: previousTaskCache ?? taskCacheFromReport(pending.report),
     materialsPreparationApproved: productionPlanApproved,
     structureProposal,
     structureConfirmation: {
@@ -418,7 +419,7 @@ describe("the governed case engine", () => {
       sections: [{id: "strengths" as const, heading: "Pontos fortes", claims: [judgment]}],
       executiveSummary: judgment.text,
     };
-    const run = (claimDecisions?: ClaimDecision[]) => executeWithConfirmedStructure({
+    const run = (claimDecisions?: ClaimDecision[], plannedMaterialKinds?: CaseEngineInput["plannedMaterialKinds"], previousTaskCache?: CaseEngineInput["taskCache"]) => executeWithConfirmedStructure({
       runId: "run-approval",
       caseId: "case-approval",
       archetypeId: "other",
@@ -432,9 +433,10 @@ describe("the governed case engine", () => {
       resolvedMandates: [],
       externalReleaseApproved: false,
       ...(claimDecisions ? {claimDecisions} : {}),
+      ...(plannedMaterialKinds ? {plannedMaterialKinds} : {}),
       writeBrief: async () => ({brief: caseBrief, blockedBy: []}),
       verifyBrief: async ({brief}) => ({audit: supportedSemanticAudit(brief)}),
-    });
+    }, true, previousTaskCache);
 
     const pending = await run();
     expect(pending.state.brief).toEqual(caseBrief);
@@ -477,14 +479,23 @@ describe("the governed case engine", () => {
     expect(pending.state.materialTruth.procedureCoverage).toHaveLength(32);
     expect(pending.state.materialTruth.releaseDecision).toBe("internal_only");
 
-    const approved = await run([{
+    const approvedDecisions: ClaimDecision[] = [{
       claimId: judgment.id,
       claimFingerprint: claimFingerprint(judgment),
       decision: "approved",
       decidedBy: "reviewer-1",
       decidedAt: "2026-08-24T15:00:00.000Z",
       reason: "Conclusão revisada contra as evidências citadas.",
-    }]);
+    }];
+    const approved = await run(approvedDecisions);
+    const teaserOnly = await run(approvedDecisions, ["teaser"], taskCacheFromReport(approved.report));
+    expect(teaserOnly.report.taskRuns.find(task => task.taskId === "materials")?.cacheHit).toBe(false);
+    expect(teaserOnly.state.materials.map(material => material.kind)).toEqual(["teaser"]);
+    expect(teaserOnly.state.financialModel).toBeNull();
+    expect(teaserOnly.state.materialsBlockedBy).not.toContain("confirmed_structure_unavailable_for_financial_model");
+    const noArtifacts = await run(approvedDecisions, [], taskCacheFromReport(teaserOnly.report));
+    expect(noArtifacts.state.materials).toEqual([]);
+    expect(noArtifacts.state.financialModel).toBeNull();
     expect(approved.state.claimRegistry?.publication.allowed).toBe(true);
     expect(approved.state.materials.length).toBeGreaterThan(0);
     expect(approved.state.materials.map((material) => material.kind)).toContain("financial_model");

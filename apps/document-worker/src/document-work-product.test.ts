@@ -9,8 +9,8 @@ const selection = (value: {sections: ReturnType<typeof narrative>["sections"]; h
   sections:value.sections.map(section=>({key:section.key,title:section.title,quoteIds:section.observations.map(observation=>observation.citations[0]?.passageId === "p1" && observation.citations[0]?.quote === input.passages[0]!.text ? "q1" : "q999")})),
   hypotheses:value.hypotheses.map((item: {text:string;question:string;basisPassageIds:string[]})=>({text:item.text,question:item.question,basisSourceIds:item.basisPassageIds})),gaps:value.gaps,
 });
-const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => ["document_work_source_review_v3","document_work_source_review_revision_v1"].includes(request.schemaName)
-  ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:null}:{})}} : undefined;
+const sourceReviewResponse = (request: {schemaName:string;input:Array<{text:string}>}) => ["document_work_source_review_v4","document_work_source_review_revision_v2"].includes(request.schemaName)
+  ? {output:{reviewedFieldIds:JSON.parse(request.input[0]!.text).authoredFields.map((field:{id:string})=>field.id),issues:[],...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:null}:{})}} : undefined;
 describe("uploaded document work products",()=>{
   it("rejects malformed semantic review before producing a product, without regeneration",async()=>{
     const complete=vi.fn().mockImplementation(async request=>{
@@ -37,13 +37,13 @@ describe("uploaded document work products",()=>{
     const reviewInput=JSON.parse(complete.mock.calls[1]![0].input[0].text);
     expect(reviewInput.selection).toEqual(original);
     expect(reviewInput.approvedRequest).toBe(first.approvedRequest.text);
-    expect(JSON.parse(complete.mock.calls[2]![0].input[0].text).authoredFields).toContainEqual({id:"gaps.0.text",text:revised.gaps[0]!.text});
+    expect(JSON.parse(complete.mock.calls[2]![0].input[0].text).authoredFields).toContainEqual({id:"gaps.0.text",text:revised.gaps[0]!.text,pairId:"gaps.0",pairedText:revised.gaps[0]!.text,pairedQuestion:revised.gaps[0]!.question,basisSourceIds:[]});
     expect(complete.mock.calls.every(call=>call[0].dataHandling.classification==="restricted")).toBe(true);
   });
   it("never publishes a revised response that fails the second source review",async()=>{
     const complete=vi.fn().mockImplementation(async request=>{
       const review=sourceReviewResponse(request);
-      return review ? {output:{...review.output,...(request.schemaName==="document_work_source_review_revision_v1"?{revisedSelection:selection(narrative())}:{}),issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Unconfirmed."}]}} : {output:selection(narrative())};
+      return review ? {output:{...review.output,...(request.schemaName==="document_work_source_review_revision_v2"?{revisedSelection:selection(narrative())}:{}),issues:[{fieldId:"gaps.0.text",code:"unsupported_premise",sourceIds:[],exactExcerpt:"Another proposal",premiseRole:"asserted_fact",rationale:"Unconfirmed."}]}} : {output:selection(narrative())};
     });
     await expect(runDocumentWorkProduct(input,{gateway:{complete} as unknown as Pick<ModelGateway,"complete">})).rejects.toThrow("source_review_failed");
     expect(complete).toHaveBeenCalledTimes(3);

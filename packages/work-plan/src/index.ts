@@ -171,3 +171,6 @@ export * from "./document-work-plan";
 
 export * from "./document-work-request";
 export * from "./advisor-starting-plan";
+
+export * from "./provider-research";
+export * from "./provider-research-plan";

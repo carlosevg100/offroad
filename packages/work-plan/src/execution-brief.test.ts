@@ -269,3 +269,18 @@ describe("execution brief planning context", () => {
     expect(executionBriefPlanningContextSchema.safeParse(context).success).toBe(false);
   });
 });
+
+it("keeps the complete approved objective while providing a bounded display excerpt only for new briefs", () => {
+  const objective = "Preparar alternativas de refinanciamento para a companhia.\n\nA reunião será com CFO e tesouraria, sem exposição atual.\n\nPreservar as informações fornecidas e detalhar as alternativas.";
+  const compiled = compileExecutionBrief({...minimalInput(), objective});
+  const visible = visibleExecutionBriefSchema.parse(visibleExecutionBrief(compiled));
+  expect(compiled.objective).toBe(objective);
+  expect(visible.objective).toBe(objective);
+  expect(visible.objectiveSummary).toBe("Preparar alternativas de refinanciamento para a companhia.…");
+  const historical = {...compiled}; delete historical.objectiveSummary;
+  expect(visibleExecutionBrief(historical)).not.toHaveProperty("objectiveSummary");
+  expect(visibleExecutionBrief(historical).fingerprint).toBe(compiled.fingerprint);
+  const revised = compileExecutionBrief({...minimalInput(), objective: objective + "\n\nNão considerar garantias do controlador."});
+  expect(revised.fingerprint).not.toBe(compiled.fingerprint);
+  expect(revised.objectiveSummary).toBe(compiled.objectiveSummary);
+});
