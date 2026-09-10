@@ -91,9 +91,11 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
     {title: labels("Fluxo de caixa e dívida", "Cash flow and debt"), metrics: [["netWorkingCapital","Capital de giro líquido","Net working capital"],["changeInNetWorkingCapital","Variação do capital de giro","Change in working capital"],["maintenanceCapex","Investimentos de manutenção","Maintenance capex"],["growthCapex","Investimentos de expansão","Growth capex"],["totalCapex","Investimentos totais","Total capex"],["cfads","Caixa disponível para serviço da dívida","Cash available for debt service"],["debtDrawdown","Liberações de dívida","Debt drawdowns"],["principalPaid","Amortização de principal","Principal repayments"],["cashCoupon","Juros pagos","Cash coupon"],["cashIndexation","Correção monetária paga","Cash indexation"],["debtService","Serviço da dívida","Debt service"],["distributions","Distribuições","Distributions"],["netDebt","Dívida líquida","Net debt"]]},
     {title: labels("Indicadores e liquidez", "Coverage and liquidity"), metrics: [["netDebtToEbitda","Dívida líquida / EBITDA (x)","Net debt / EBITDA (x)"],["dscr","Cobertura do serviço da dívida (x)","Debt service coverage (x)"],["interestCoverage","Cobertura de juros (x)","Interest coverage (x)"],["liquidityHeadroom","Folga de liquidez","Liquidity headroom"],["taxLossCarryforward","Prejuízos fiscais acumulados","Tax loss carryforward"],["disallowedInterestCarryforward","Juros não deduzidos acumulados","Disallowed interest carryforward"]]},
   ];
-  const format = (value: string | null | undefined) => {
+  const format = (value: string | null | undefined, ratio = false) => {
     if (value === null || value === undefined) return input.lang === "en" ? "Not computable" : "Não calculável";
     if (!input.lang) return value;
+    // Presentation precision only; approved inputs, calculations and registers stay exact.
+    if (ratio) value = Number(value).toFixed(2);
     const [whole = "", fraction] = value.split(".");
     const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, input.lang === "pt" ? "." : ",");
     return grouped + (fraction ? `${input.lang === "pt" ? "," : "."}${fraction}` : "");
@@ -105,7 +107,7 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
       ...sections.filter(section => section.metrics.some(([key]) => scenario.periods.some(period => period[key] !== undefined))).map(section => ({type: "table" as const,
         caption: labels(`${section.title.pt} · valores em unidades monetárias, salvo indicadores`, `${section.title.en} · monetary units, except ratios`),
         head: [labels("Indicador", "Metric"), ...scenario.periods.map(period => labels(period.period, period.period))],
-        rows: section.metrics.filter(([key]) => scenario.periods.some(period => period[key] !== undefined)).map(([key, pt, en]) => [input.lang ? (input.lang === "pt" ? pt : en) : `${pt} / ${en}`, ...scenario.periods.map(period => format(period[key]))]),
+        rows: section.metrics.filter(([key]) => scenario.periods.some(period => period[key] !== undefined)).map(([key, pt, en]) => [input.lang ? (input.lang === "pt" ? pt : en) : `${pt} / ${en}`, ...scenario.periods.map(period => format(period[key], ["netDebtToEbitda", "dscr", "interestCoverage"].includes(key)))]),
       })),
     ]),
     {type: "disclaimer", text: labels("Exportação dos resultados aprovados. Para alterar premissas e recalcular, submeta uma nova revisão na plataforma. Este arquivo não recalcula localmente e não constitui proposta ou compromisso de financiamento.", "Approved results export. To change assumptions and recalculate, submit a new review in the platform. This file does not recalculate locally and is not a financing offer or commitment.")},
