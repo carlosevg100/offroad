@@ -12,6 +12,7 @@ export function providerResearchPlanSnapshot(): CapitalProjectPlanSnapshot {
   const base = capitalProjectPlanSnapshot("company_debt_view");
   const graph = compileTaskGraph(["K02"]);
   // Provider research keeps its independently persisted exact graph; documentary-only registry changes do not rewrite it.
+
   return {...base, registryVersion: "2026.09.10-v14", job: {...base.job, targetTaskIds: ["K02"], firstWorkProduct: "provider_research", inputPolicy: {company: "not_applicable", documents: "not_applicable", capitalIntent: "not_applicable", existingTransaction: "not_applicable", publicResearch: "not_applicable"}},
     taskSpecs: graph.tasks.map((task, ordinal) => ({...task, ordinal, batch: ordinal})), parallelBatches: graph.parallelBatches};
 }
