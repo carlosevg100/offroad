@@ -63,7 +63,22 @@ const table = (rows: string[], columns: number) => {
   return `<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:color="BFC5CA"/><w:bottom w:val="single" w:sz="4" w:color="BFC5CA"/><w:insideH w:val="single" w:sz="4" w:color="D9DDE0"/></w:tblBorders><w:tblCellMar><w:left w:w="80" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows.join("")}</w:tbl>${paragraph("", {spacingAfter: 120})}`;
 };
 
-const row = (cells: string[], header = false) => `<w:tr><w:trPr>${cells.join("").replace(/<[^>]+>/g, "").length > 1200 ? "" : "<w:cantSplit/>"}${header ? "<w:tblHeader/>" : ""}</w:trPr>${cells.join("")}</w:tr>`;
+// Measure generated XML for pagination in a single pass. This does not sanitize
+// content: all user text is escaped by run() before entering a cell.
+function visibleXmlLength(markup: string): number {
+  let length = 0;
+  let insideTag = false;
+  for (const character of markup) {
+    if (character === "<") insideTag = true;
+    else if (character === ">") insideTag = false;
+    else if (!insideTag) length += character.length;
+  }
+  return length;
+}
+const row = (cells: string[], header = false) => {
+  const content = cells.join("");
+  return `<w:tr><w:trPr>${visibleXmlLength(content) > 1200 ? "" : "<w:cantSplit/>"}${header ? "<w:tblHeader/>" : ""}</w:trPr>${content}</w:tr>`;
+};
 
 /** Short internal links preserve readable prose while retaining every exact evidence id. */
 function referenceIndex(material: Material): Map<string, number> {

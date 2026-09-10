@@ -70,6 +70,15 @@ describe("materialToDocx", () => {
     expect(xml).toContain("R$ 25");
   });
 
+  it("preserves long hostile-looking text as escaped text without a stripping expression", () => {
+    const text = "<".repeat(50_000) + '<script>alert("literal")</script> & tail';
+    const xml = materialDocumentXml({material: {...material, blocks: [{type: "table", caption: {pt: "Teste", en: "Test"}, head: [{pt: "Texto", en: "Text"}], rows: [[text]]}]}, lang: "en", meta: {issuedOn: "2026-09-10"}});
+    expect(xml).toContain("&lt;".repeat(50_000));
+    expect(xml).toContain("&lt;script&gt;alert(&quot;literal&quot;)&lt;/script&gt; &amp; tail");
+    expect(xml).not.toContain("<script>");
+    expect(xml).not.toContain("</script>");
+  });
+
   it("computes CRC-32 as the zip standard does", () => {
     expect(crc32(new TextEncoder().encode("123456789")).toString(16)).toBe("cbf43926");
     expect(zipStored([]).length).toBe(22);
