@@ -3,7 +3,7 @@ import {expect, test} from "@playwright/test";
 import {waitForOneTimeCode} from "./support/mail";
 
 // Runs with the normal local worker, without provider credentials, seeded results or model calls.
-test("approved provider research persists an honest empty authorized universe", async ({page}) => {
+test("approved provider research persists public sources while private mandates remain empty", async ({page}) => {
   const base = new URL(process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000");
   if (!["127.0.0.1", "localhost", "[::1]"].includes(base.hostname)) throw new Error("Provider research E2E requires a local synthetic workspace.");
   const id = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -51,7 +51,9 @@ test("approved provider research persists an honest empty authorized universe", 
   await expect(research).toHaveCount(0);
   await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
   await expect(research).toBeVisible({timeout: 120_000});
-  await expect(research.locator('[role="status"]')).toBeVisible();
+  await expect(research.locator("article")).toHaveCount(28);
+  await expect(research.getByRole("link", {name: /Itaú/}).first()).toHaveAttribute("href", "https://www.itau.com.br/empresas/emprestimos-financiamentos");
+  await expect(research).toContainText("Estratégias não equivalem a mandatos atuais");
   await expect(research.getByRole("checkbox")).toHaveCount(0);
   const text = await research.textContent();
   await page.reload();

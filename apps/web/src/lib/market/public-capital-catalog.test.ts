@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import snapshot from "./public-capital-research.json";
+
 import {filterPublicInstitutions, parsePublicCapitalCatalog, publicCapitalCatalog as catalog, researchStructures, screenPublicInstitution} from "./public-capital-catalog";
 
 const byId = (id: string) => catalog.institutions.find(row => row.id === id)!;
@@ -39,13 +39,13 @@ describe("public capital research boundary", () => {
     expect(filterPublicInstitutions(catalog, {query: "nonexistent institution"})).toEqual([]);
   });
   it("rejects broken sources, dangerous URLs, duplicate IDs and false mandate promotion", () => {
-    const broken = structuredClone(snapshot); broken.institutions[0]!.claims[0]!.sourceIds = ["absent"];
+    const broken = structuredClone(catalog); broken.institutions[0]!.claims[0]!.sourceIds = ["absent"];
     expect(() => parsePublicCapitalCatalog(broken)).toThrow();
-    const unsafe = structuredClone(snapshot); unsafe.sources[0]!.url = "javascript:alert(1)";
+    const unsafe = structuredClone(catalog); unsafe.sources[0]!.url = "javascript:alert(1)";
     expect(() => parsePublicCapitalCatalog(unsafe)).toThrow();
-    const duplicate = structuredClone(snapshot); duplicate.institutions[1]!.id = duplicate.institutions[0]!.id;
+    const duplicate = structuredClone(catalog); duplicate.institutions[1]!.id = duplicate.institutions[0]!.id;
     expect(() => parsePublicCapitalCatalog(duplicate)).toThrow();
-    const mandate = structuredClone(snapshot); mandate.institutions[0]!.eligibleForVerifiedMandateMatching = true;
+    const mandate = {...catalog, institutions: catalog.institutions.map(row => ({...row, eligibleForVerifiedMandateMatching: true}))};
     expect(() => parsePublicCapitalCatalog(mandate)).toThrow();
   });
 });

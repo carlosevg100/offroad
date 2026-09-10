@@ -3874,7 +3874,8 @@
     "searchPlaceholder": "Nome, instrumento ou característica",
     "sourceClass": {
       "directory": "Registro do diretório",
-      "registered": "Mandato registrado"
+      "registered": "Mandato registrado",
+      "public_research": "Pesquisa pública"
     },
     "observedAt": "Registrado em {date}",
     "dateUnknown": "Data de observação não informada",
@@ -3884,7 +3885,8 @@
     "limitations": "Cobertura e limitações",
     "boundary": "Pesquisa informativa. Os registros não comprovam interesse, aderência à operação ou disponibilidade de capital. Nenhuma lista de destinatários foi aprovada e nenhum contato foi autorizado.",
     "status": "Pesquisa informativa",
-    "publicCatalog": "Explorar estratégias e fontes públicas"
+    "publicCatalog": "Explorar estratégias e fontes públicas",
+    "publicSnapshot": "Inclui catálogo público observado em {date}, separado dos registros privados. Estratégias não equivalem a mandatos atuais."
   },
   "InstitutionalConfigurationReview": {
     "title": "Premissas para revisão",

@@ -18,11 +18,12 @@ export function ProviderResearchWork({research}: {research: ProviderResearchArti
     <header><span>{t("kicker")}</span><h2>{t("title")}</h2><p>{t("description")}</p>
       <small>{t("asOf", {date: format.dateTime(new Date(research.asOf), {dateStyle: "medium", timeZone: "UTC"})})}</small></header>
     <p><Link href={`/${research.locale}/app/market`}>{t("publicCatalog")}</Link></p>
+    {research.schemaVersion === "provider-research.v2" ? <p>{t("publicSnapshot", {date: research.publicCatalog.asOf})}</p> : null}
     <div className={styles.coverage}><strong>{t("coverage", {count: research.providers.length})}</strong><p>{t("coverageBoundary")}</p></div>
     {research.providers.length ? <label className={styles.search}><span>{t("search")}</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={t("searchPlaceholder")} /></label> : null}
     {providers.length ? <div className={styles.providers}>{providers.map(provider => <article key={`${provider.sourceClass}-${provider.providerId}`}>
       <header><h3>{provider.name}</h3><span>{t(`sourceClass.${provider.sourceClass}`)}</span></header>
-      <dl>{provider.observations.map((observation, index) => <div key={index}><dt>{observation.criterion}</dt><dd>{observation.value}<small>{observation.provenance} · {observation.observedAt ? t("observedAt", {date: format.dateTime(new Date(observation.observedAt), {dateStyle: "medium", timeZone: "UTC"})}) : t("dateUnknown")}</small></dd></div>)}</dl>
+      <dl>{provider.observations.map((observation, index) => <div key={index}><dt>{observation.criterion}</dt><dd>{observation.value}<small>{observation.provenance} · {observation.observedAt ? t("observedAt", {date: format.dateTime(new Date(observation.observedAt), {dateStyle: "medium", timeZone: "UTC"})}) : t("dateUnknown")}</small>{("sources" in observation ? observation.sources : undefined)?.map(source => <a key={source.id} href={source.url} target="_blank" rel="noopener noreferrer">{source.publisher} · {format.dateTime(new Date(`${source.accessedAt}T00:00:00Z`), {dateStyle: "medium", timeZone: "UTC"})}</a>)}</dd></div>)}</dl>
       {provider.gaps.length ? <details><summary>{t("gaps", {count: provider.gaps.length})}</summary><ul>{provider.gaps.map((gap, index) => <li key={index}>{gap}</li>)}</ul></details> : null}
     </article>)}</div> : <p role="status" className={styles.empty}>{t(research.providers.length ? "noSearchResults" : "empty")}</p>}
     <footer><h3>{t("limitations")}</h3><ul>{research.limitations.map((limitation, index) => <li key={index}>{limitation}</li>)}</ul><p>{t("boundary")}</p></footer>

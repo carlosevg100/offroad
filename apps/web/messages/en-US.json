@@ -3874,7 +3874,8 @@
     "searchPlaceholder": "Name, instrument or characteristic",
     "sourceClass": {
       "directory": "Directory record",
-      "registered": "Registered mandate"
+      "registered": "Registered mandate",
+      "public_research": "Public research"
     },
     "observedAt": "Recorded on {date}",
     "dateUnknown": "Observation date not provided",
@@ -3884,7 +3885,8 @@
     "limitations": "Coverage and limitations",
     "boundary": "Informational research. These records do not establish interest, fit for the transaction or capital availability. No recipient list has been approved and no contact has been authorized.",
     "status": "Informational research",
-    "publicCatalog": "Explore public strategies and sources"
+    "publicCatalog": "Explore public strategies and sources",
+    "publicSnapshot": "Includes the public catalog observed on {date}, separate from private records. Strategies are not current mandates."
   },
   "InstitutionalConfigurationReview": {
     "title": "Assumptions for review",

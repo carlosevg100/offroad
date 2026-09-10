@@ -16,7 +16,8 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@offroad/public-research": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

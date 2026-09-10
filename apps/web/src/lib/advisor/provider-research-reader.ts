@@ -16,8 +16,8 @@ export function currentProviderResearch(
     .sort((a, b) => b.artifact_version - a.artifact_version)[0];
   // Never fall back to an earlier version when the newest result is invalidated or incomplete.
   if (!row || !["draft", "pending_confirmation", "confirmed", "approved"].includes(row.status)
-    || row.schema_version !== "provider-research.v1"
+    || !["provider-research.v1", "provider-research.v2"].includes(row.schema_version)
     || !runs.some(run => run.id === row.task_run_id && run.status === "succeeded")) return null;
   const research = readProviderResearchArtifact(row.content, binding);
-  return research ? {row, research} : null;
+  return research && research.schemaVersion === row.schema_version ? {row, research} : null;
 }

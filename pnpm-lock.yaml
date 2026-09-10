@@ -180,6 +180,9 @@ importers:
       '@offroad/model-gateway':
         specifier: workspace:*
         version: link:../../packages/model-gateway
+      '@offroad/public-research':
+        specifier: workspace:*
+        version: link:../../packages/public-research
       '@offroad/receivables-analysis':
         specifier: workspace:*
         version: link:../../packages/receivables-analysis
@@ -1075,6 +1078,9 @@ importers:
 
   packages/work-plan:
     dependencies:
+      '@offroad/public-research':
+        specifier: workspace:*
+        version: link:../public-research
       zod:
         specifier: 4.4.3
         version: 4.4.3
