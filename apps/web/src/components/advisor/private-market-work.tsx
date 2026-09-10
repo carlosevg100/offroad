@@ -174,7 +174,7 @@ function Candidate({approved, candidate, locale, selected}: {approved: boolean; 
   const open = candidate.criteria.filter((criterion) => criterion.outcome === "unknown" || criterion.outcome === "not_assessed");
   const conflicts = candidate.criteria.filter((criterion) => criterion.outcome === "conflicts");
   return <label className={`advisor-private-provider is-${candidate.verdict}${selected ? " is-selected" : ""}`}>
-    <header><div>{approved ? <span>{selected ? <Check aria-hidden="true" size={12} /> : "—"}</span> : <input defaultChecked={selected} disabled={!candidate.eligibleForShortlist} name="selected_provider_id" type="checkbox" value={candidate.providerId} />}<span><small>{t(`providerKinds.${candidate.providerKind}`)}</small><strong>{candidate.providerName}</strong></span></div><b>{candidate.eligibleForShortlist ? t("marketFits") : t("marketNeedsReview")}</b></header>
+    <header><div>{approved ? <span className="advisor-private-provider__mark">{selected ? <Check aria-hidden="true" size={12} /> : null}</span> : <input defaultChecked={selected} disabled={!candidate.eligibleForShortlist} name="selected_provider_id" type="checkbox" value={candidate.providerId} />}<span><small>{t(`providerKinds.${candidate.providerKind}`)}</small><strong>{candidate.providerName}</strong></span></div><b>{candidate.eligibleForShortlist ? t("marketFits") : t("marketNeedsReview")}</b></header>
     <p>{candidate.rationale}</p>
     <div className="advisor-private-provider__criteria">
       {fits.slice(0, 5).map((criterion) => <span className="is-fit" key={criterion.id}><Check aria-hidden="true" size={11} />{locale === "pt-BR" ? criterion.label.pt : criterion.label.en}</span>)}

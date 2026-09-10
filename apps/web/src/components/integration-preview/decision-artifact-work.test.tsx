@@ -159,7 +159,7 @@ describe("ordered executive blocks and trace navigation", () => {
     expect(html).toContain("Approved for named recipients");
     expect(html).not.toContain("Internal draft");
     expect(html).toContain("0.21689377 BRL thousand</td>");
-    expect(html).toContain("<td>—</td>");
+    expect(html).toContain("<td>Not computable</td>");
     expect(html).toContain('scope="row">2028');
     expect(html).toContain("Back to finding: Vencimentos · 2027");
     expect(html).toContain("Revisable assumption");

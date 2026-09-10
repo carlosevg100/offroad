@@ -9,7 +9,8 @@ import ptBR from "../../messages/pt-BR.json";
  * House style, enforced.
  *
  * The em dash is banned in everything a person reads: the message catalogues, the copy inside
- * the domain packages, and the prompts that write prose on our behalf. It is a founder decision
+ * the domain packages, the copy the web application renders straight from JSX, and the prompts
+ * that write prose on our behalf. It is a founder decision
  * and not a matter of taste to relitigate, which is exactly why it belongs in a test rather than
  * in a style guide nobody opens.
  *
@@ -25,6 +26,42 @@ import ptBR from "../../messages/pt-BR.json";
  */
 
 const EM_DASH = "—";
+
+/**
+ * Lines under `root` that carry the character outside a comment. Test files are skipped, as is
+ * anything `skipFile` names; `node_modules` and build output are never read.
+ */
+function sourceOffenders(root: string, extensions: readonly string[], skipFile: (name: string) => boolean = () => false): string[] {
+  const offenders: string[] = [];
+
+  const isComment = (line: string) => {
+    const trimmed = line.trim();
+    return trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*");
+  };
+
+  const walk = (directory: string) => {
+    for (const entry of readdirSync(directory, {withFileTypes: true})) {
+      const full = join(directory, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "node_modules" || entry.name === "dist") continue;
+        walk(full);
+        continue;
+      }
+      if (!extensions.some((extension) => entry.name.endsWith(extension)) || entry.name.includes(".test.") || skipFile(entry.name)) continue;
+
+      readFileSync(full, "utf8")
+        .split("\n")
+        .forEach((line, index) => {
+          if (line.includes(EM_DASH) && !isComment(line)) {
+            offenders.push(`${full.slice(root.length + 1)}:${index + 1}  ${line.trim().slice(0, 120)}`);
+          }
+        });
+    }
+  };
+
+  walk(root);
+  return offenders;
+}
 
 /** Every string in a message catalogue, with the key path that would let somebody find it. */
 function* strings(node: unknown, path: readonly string[] = []): Generator<{path: string; value: string}> {
@@ -51,39 +88,17 @@ describe("no em dash reaches a reader", () => {
   it("the copy inside the domain packages", () => {
     // Walks the packages rather than importing them: the copy lives in object literals of many
     // shapes, and reading the source catches a string wherever somebody chose to put it.
+    // The one file allowed to contain the character is the prompt that forbids it, since a
+    // rule has to name what it bans.
     const root = join(import.meta.dirname, "../../../../packages");
-    const offenders: string[] = [];
+    expect(sourceOffenders(root, [".ts"], (name) => name === "brief.ts")).toEqual([]);
+  });
 
-    const isComment = (line: string) => {
-      const trimmed = line.trim();
-      return trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*");
-    };
-
-    const walk = (directory: string) => {
-      for (const entry of readdirSync(directory, {withFileTypes: true})) {
-        const full = join(directory, entry.name);
-        if (entry.isDirectory()) {
-          if (entry.name === "node_modules" || entry.name === "dist") continue;
-          walk(full);
-          continue;
-        }
-        if (!entry.name.endsWith(".ts") || entry.name.includes(".test.")) continue;
-        // The one file allowed to contain the character is the prompt that forbids it, since a
-        // rule has to name what it bans.
-        if (entry.name === "brief.ts") continue;
-
-        readFileSync(full, "utf8")
-          .split("\n")
-          .forEach((line, index) => {
-            if (line.includes(EM_DASH) && !isComment(line)) {
-              offenders.push(`${full.slice(root.length + 1)}:${index + 1}  ${line.trim().slice(0, 120)}`);
-            }
-          });
-      }
-    };
-
-    walk(root);
-    expect(offenders).toEqual([]);
+  it("the copy the web application renders", () => {
+    // Components write copy straight into JSX as readily as they read it from the catalogue: a
+    // separator between two values, a placeholder in an empty cell. That reaches a reader too.
+    const root = join(import.meta.dirname, "..");
+    expect(sourceOffenders(root, [".ts", ".tsx"])).toEqual([]);
   });
 
   it("the markdown a person reads", () => {
