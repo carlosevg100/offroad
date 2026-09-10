@@ -71,9 +71,9 @@ test("guided institutional setup calculates only after review and survives resum
   await form.locator(`[name="premise.${key}.2027"]`).fill(value);
   await form.locator(`[name="premise.${key}.rationale"]`).fill("Explicit synthetic annual scenario.");
  }
- await form.getByLabel("Investimentos",{exact:true}).selectOption("none");
+ await form.getByRole("combobox",{name:messages.InstitutionalSetup.capex,exact:true}).selectOption("none");
  await form.locator('[name="noCapexRationale"]').fill("Explicit synthetic scenario assumes no capex.");
- await form.getByLabel("Dívida",{exact:true}).selectOption("present");
+ await form.getByRole("combobox",{name:messages.InstitutionalSetup.debt,exact:true}).selectOption("present");
  await form.locator('[name="debt.0.openingPrincipal"]').fill("100");
  for(const [key,value]of Object.entries({indexer:"fixed",indexationTreatment:"not_applicable",couponTreatment:"cash_paid",couponBase:"opening_principal"}))await form.locator(`[name="debt.0.${key}"]`).selectOption(value);
  for(const key of ["indexationRate","couponRate","drawdown","scheduledPrincipal","prepayment"])await form.locator(`[name="debt.0.2027.${key}"]`).fill("0");
