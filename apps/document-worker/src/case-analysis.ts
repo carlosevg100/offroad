@@ -1723,6 +1723,7 @@ type PublicReceivablesVertical = {
   status: "needs_requested_amount" | "needs_evidence_scope" | "analyzed";
   scopeIssue?: {code: ReceivablesScopeIssueCode; candidates: ReturnType<typeof identifyReceivablesTapes>};
   sourceManifest: ReceivablesEvidenceSourceManifest;
+  supportSheetCandidates?: readonly {documentId: string; sheet: string}[];
   candidates: ReturnType<typeof identifyReceivablesTapes>;
   supportPeriodAssessment?: ReceivablesRawDetectionReport["supportPeriodAssessment"];
   balanceSourceAssessment?: ReceivablesRawDetectionReport["balanceSourceAssessment"];
@@ -1793,7 +1794,7 @@ export function buildReceivablesVertical(
 
   const sourceNames = new Map((raw.documents ?? []).flatMap((document) => typeof document.id === "string" && typeof document.original_name === "string" ? [[document.id, document.original_name] as const] : []));
   const discovery = discoverReceivablesEvidence(raw.receivables_evidence, sourceNames);
-  const {sourceManifest, candidates} = discovery;
+  const {sourceManifest, candidates, supportSheetCandidates} = discovery;
   if (candidates.length === 0) return null;
   const caseId = String(raw.session.id ?? raw._execution.id);
   const pending = (code: ReceivablesScopeIssueCode): NonNullable<ReturnType<typeof buildReceivablesVertical>> => {
@@ -1810,7 +1811,7 @@ export function buildReceivablesVertical(
     };
     return {
       publicReport: {
-        version: "2026.08.28-v1", status: "needs_evidence_scope", sourceManifest, candidates,
+        version: "2026.08.28-v1", status: "needs_evidence_scope", sourceManifest, candidates, supportSheetCandidates,
         fingerprint: fingerprintJson({version: "receivables-scope.v2", code, sourceManifestFingerprint: sourceManifest.fingerprint,
           scopeFingerprint: raw.confirmed_receivables_scope?.scope?.fingerprint ?? null, candidates}),
         scopeIssue: {code, candidates},
@@ -1929,7 +1930,7 @@ export function buildReceivablesVertical(
   });
   const common = {
     version: "2026.08.28-v1" as const,
-    sourceManifest, candidates,
+    sourceManifest, candidates, supportSheetCandidates,
     fingerprint,
     supportPeriodAssessment: detection.supportPeriodAssessment,
     balanceSourceAssessment: detection.balanceSourceAssessment,

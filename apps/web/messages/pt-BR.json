@@ -3738,7 +3738,9 @@
     "unnamedSource": "Arquivo sem nome disponível",
     "sheet": "Aba",
     "headerRow": "cabeçalho na linha",
-    "version": "Versão"
+    "version": "Versão",
+    "supportSheets": "Abas de apoio neste arquivo",
+    "supportSheetsHelp": "Selecione as abas que devem complementar a carteira escolhida. Outras carteiras não serão incluídas."
   },
   "ReceivablesSupportPeriods": {
     "title": "Datas e períodos dos documentos de apoio",

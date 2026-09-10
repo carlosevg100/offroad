@@ -26,6 +26,7 @@ describe("worker runtime schema preflight", () => {
           "execution-brief-proposal.v1",
           "governed-sector-planning-context.v1",
           "confirmed-receivables-evidence-scope.v1",
+  "confirmed-receivables-support-sheets.v1",
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
   "atomic-documentary-commit.v1",
@@ -71,8 +72,14 @@ describe("worker runtime schema preflight", () => {
     expect(contractMigration).toBeDefined();
     const sql = readFileSync(`${migrationsDirectory}/${contractMigration}`, "utf8");
     expect(sql.replace(/,\s*/g, ",")).toContain(`'schemaVersion','${WORKER_RUNTIME_SCHEMA_VERSION}'`);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "confirmed-receivables-support-sheets.v1")) {
       expect(sql).toContain(`'${capability}'`);
     }
+    const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);
+    expect(extension).toBeDefined();
+    const additive = readFileSync(`${migrationsDirectory}/${extension}`, "utf8");
+    expect(additive).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    expect(additive).toContain("private.worker_runtime_schema_contract_before_support_sheets()");
+    expect(additive).toContain(`(c->'capabilities')||'["confirmed-receivables-support-sheets.v1"]'::jsonb`);
   });
 });

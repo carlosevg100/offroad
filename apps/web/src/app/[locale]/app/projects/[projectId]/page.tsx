@@ -515,7 +515,7 @@ async function ConversationalCapitalProject({
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
   const receivablesScope = await loadReceivablesScope(supabase, session.id);
   const receivablesTemporalReport = await loadReceivablesTemporalReport(supabase, organization.id, session.id, receivablesScope);
-  const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
+  const scopeCopy = Object.fromEntries(["title", "body", "primary", "support", "date", "declaration", "confirm", "pending", "saved", "current", "stale", "unavailable", "refresh", "noSupport", "invalid", "denied", "processing", "save", "unnamedSource", "sheet", "headerRow", "version", "supportSheets", "supportSheetsHelp"].map((key) => [key, scopeTranslations(key as keyof ReceivablesScopeCopy)])) as ReceivablesScopeCopy;
   const showInformationRequests = canShowAdvisorInformationRequests(preliminary?.current?.row.status ?? null);
   const visibleInformationRequests = showInformationRequests
     ? informationRequests ?? []

@@ -851,9 +851,10 @@ test.describe("Document-first intake (company journey)", () => {
     const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;");
     await page.goto(`/pt-BR/app/projects/${projectId}`);
     const scope = page.getByTestId("receivables-scope-card");
-    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
+    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
     for (const support of await scope.locator('input[name="complementDocumentIds"]').all()) await support.uncheck();
-    await scope.locator(`input[name="complementDocumentIds"][value="${fixture.sources[1]!.id}"]`).check();
+    for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
+    await expect(scope.locator('input[name="primarySupportSheets"][value="Excluded pool"]')).toHaveCount(0);
     await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
     await scope.locator('input[name="scopeConfirmed"]').check();
     await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
@@ -862,6 +863,9 @@ test.describe("Document-first intake (company journey)", () => {
     await page.reload();
     await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     await expect.poll(() => sql(currentJob), {timeout: 120_000}).toBe("succeeded");
+    const selectedScope = JSON.parse(sql("select scope from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
+    expect(selectedScope.schemaVersion).toBe("receivables-evidence-scope.v2");
+    expect(selectedScope.primarySupportSheets).toEqual(["CEDENTE", "CONTABIL", "ESTRUTURA", "POLITICA", "RECEBIMENTOS"]);
     const initialRun = sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;");
     const initialDraft = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
     expect(initialDraft.fields["/structure/advanceRate"]).toBeUndefined();

@@ -20,10 +20,11 @@ export async function receivablesR01Fixture() {
     };
     const parser = bundle("../../../../packages/document-parsers/src/xlsx.ts", "parser.cjs");
     const codec = bundle("../../../document-worker/src/receivables-evidence.ts", "codec.cjs");
-    const sources = [], envelopes = [], revisions = [];
-    for (const [index, name] of ["Synthetic governed R01.xlsx", "Synthetic R01 supporting data.xlsx"].entries()) {
+    const sources: Array<{id: string; name: string; contentKind: string; sourceHash: string; contentHash: string; payloadHash: string; bytes: number; payload: string}> = [];
+    const envelopes = [], revisions = [];
+    for (const name of ["Synthetic governed R01.xlsx"]) {
       const workbook = xlsx.utils.book_new();
-      for (const sheet of source.layer.sheets.filter((item: {name: string}) => index === 0 ? item.name === "CARTEIRA" : item.name !== "CARTEIRA")) {
+      for (const sheet of [...source.layer.sheets, {...source.layer.sheets.find((item: {name: string}) => item.name === "CARTEIRA"), name: "Excluded pool"}]) {
         const cells: Record<string, unknown> = {};
         let maxColumn = 0, maxRow = 0;
         for (const cell of sheet.cells) {
@@ -43,6 +44,6 @@ export async function receivablesR01Fixture() {
       sources.push({id, name, contentKind: "document_layer", sourceHash, contentHash: encoded.contentSha256, payloadHash: encoded.payloadSha256, bytes: encoded.uncompressedBytes, payload: encoded.payloadBase64});
       revisions.push({sourceDocumentId: id, documentVersion: 1, contentKind: "document_layer", sourceSha256: sourceHash, contentSha256: encoded.contentSha256, schemaVersion: encoded.schemaVersion, fileName: name});
     }
-    return {sources, report: {status: "needs_evidence_scope", sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: codec.fingerprintReceivablesEvidence(envelopes), sources: revisions}, candidates: [{documentId: sources[0]!.id, fileName: sources[0]!.name, sheet: "CARTEIRA", headerRow: 1}]}};
+    return {sources, report: {status: "needs_evidence_scope", sourceManifest: {schemaVersion: "receivables-evidence-manifest.v1", fingerprint: codec.fingerprintReceivablesEvidence(envelopes), sources: revisions}, candidates: ["CARTEIRA", "Excluded pool"].map((sheet) => ({documentId: sources[0]!.id, fileName: sources[0]!.name, sheet, headerRow: 1})), supportSheetCandidates: source.layer.sheets.filter((sheet: {name: string}) => sheet.name !== "CARTEIRA").map((sheet: {name: string}) => ({documentId: sources[0]!.id, sheet: sheet.name}))}};
   } finally {rmSync(directory, {recursive: true, force: true});}
 }

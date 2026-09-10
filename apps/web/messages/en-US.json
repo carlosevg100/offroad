@@ -3738,7 +3738,9 @@
     "unnamedSource": "File name unavailable",
     "sheet": "Sheet",
     "headerRow": "header at row",
-    "version": "Version"
+    "version": "Version",
+    "supportSheets": "Supporting sheets in this file",
+    "supportSheetsHelp": "Select the sheets that should support the chosen pool. Other pools will not be included."
   },
   "ReceivablesSupportPeriods": {
     "title": "Dates and periods of supporting documents",

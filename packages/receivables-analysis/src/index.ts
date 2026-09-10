@@ -21,3 +21,5 @@ export * from "./support-periods";
 export * from "./balance-source-proposals";
 
 export * from "./document-supplement-contract";
+
+export {canonicalReceivablesSupportSheets} from "./evidence-scope";
