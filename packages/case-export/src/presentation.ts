@@ -1,9 +1,12 @@
 import {createHash} from "node:crypto";
 
+import type {Material} from "@offroad/case-materials";
+import type {DocxLang, DocxMeta} from "./docx";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import JSZip from "jszip";
+import {chartWorkbook, nativeChartXml, nativeChartFrame} from "./presentation-chart";
 
-export const institutionalPresentationRendererVersion = "2026.09.07-v1";
+export const institutionalPresentationRendererVersion = "2026.09.10-v2";
 
 export type InstitutionalPresentationTemplate = {
   id: string;
@@ -56,7 +59,6 @@ export const offroadHousePresentationTemplate: InstitutionalPresentationTemplate
   origin: "offroad_house",
   colors: {ink: "151A20", paper: "F8F8F5", accent: "7D9455", muted: "69737D", warning: "A66C1F", danger: "A23B3B"},
   fonts: {display: "Georgia", body: "Arial"},
-  confidentialityLabel: "CONFIDENCIAL · MATERIAL DE TRABALHO",
 };
 
 type PresentationView = DecisionArtifactContract["views"][number];
@@ -68,8 +70,9 @@ type SlideSpec = {
   eyebrow: string;
   kind: "cover" | PresentationBlock["kind"];
   blockId: string | null;
-  lines: Array<{label: string; value?: string; note?: string; tone?: "normal" | "gap" | "source" | "danger"; traceId: string}>;
+  lines: Array<{label: string; value?: string | undefined; note?: string | undefined; tone?: "normal" | "gap" | "source" | "danger"; traceId: string}>;
   series?: PresentationSeries[];
+  table?: {headers: string[]; rows: string[][]};
 };
 
 function xml(value: string): string {
@@ -177,13 +180,14 @@ function buildSlides(input: InstitutionalPresentationInput, view: PresentationVi
     if (blockSeries.length > 1) throw new Error(`presentation block ${block.id} exceeds the one-series institutional chart limit`);
     if (blockSeries.length === 1) {
       if (blockSeries[0]!.points.length > 12) throw new Error(`presentation series ${blockSeries[0]!.id} exceeds the 12-point institutional chart limit`);
-      return [{title: block.title, eyebrow: sectionLabel(block.kind, input.locale), kind: block.kind, blockId: block.id, lines, series: blockSeries}];
+      const chartSlide: SlideSpec = {title: block.title, eyebrow: sectionLabel(block.kind, input.locale), kind: block.kind, blockId: block.id, lines: [], series: blockSeries};
+      return [chartSlide, ...paginateLines(lines).map((chunk): SlideSpec => ({title: block.title, eyebrow: sectionLabel(block.kind, input.locale), kind: block.kind, blockId: block.id, lines: chunk}))];
     }
     // Real institutional appendices often carry more than 32 governed sources or open points.
     // Preserve them and paginate; the 40-slide package ceiling remains the hard bound against
     // an accidental unbounded deck.
     if (lines.length > 120) throw new Error(`presentation block ${block.id} exceeds the 120-item governed block safety limit`);
-    const chunks = Array.from({length: Math.ceil(lines.length / 6)}, (_, index) => lines.slice(index * 6, index * 6 + 6));
+    const chunks = paginateLines(lines);
     return chunks.map((chunk, index) => ({
       title: block.title,
       eyebrow: `${sectionLabel(block.kind, input.locale)}${chunks.length > 1 ? ` · ${index + 1}/${chunks.length}` : ""}`,
@@ -195,6 +199,37 @@ function buildSlides(input: InstitutionalPresentationInput, view: PresentationVi
   return [cover, ...slides];
 }
 
+function lineWeight(line: SlideSpec["lines"][number]): number {
+  return Math.max(1, Math.ceil(line.label.length / (line.value || line.note ? 110 : 220)), Math.ceil(((line.value?.length ?? 0) + (line.note?.length ?? 0)) / 130));
+}
+function textChunks(value: string, maximum = 350): string[] {
+  const chunks: string[] = [];
+  let remaining = value;
+  while (remaining.length > maximum) {
+    const space = remaining.lastIndexOf(" ", maximum);
+    const at = space > maximum / 2 ? space : maximum;
+    chunks.push(remaining.slice(0, at));
+    remaining = remaining.slice(at).trimStart();
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
+}
+function paginateLines(lines: SlideSpec["lines"]): SlideSpec["lines"][] {
+  const expanded = lines.flatMap((line) => {
+    const labels = textChunks(line.label), values = textChunks(line.value ?? ""), notes = textChunks(line.note ?? "");
+    return Array.from({length: Math.max(labels.length, values.length, notes.length, 1)}, (_, index) => ({...line, label: labels[index] ?? "", value: values[index], note: notes[index]}));
+  });
+  const pages: SlideSpec["lines"][] = [];
+  let page: SlideSpec["lines"] = [], weight = 0;
+  for (const line of expanded) {
+    const next = lineWeight(line);
+    if (page.length && weight + next > 6) {pages.push(page); page = []; weight = 0;}
+    page.push(line); weight += next;
+  }
+  if (page.length) pages.push(page);
+  return pages;
+}
+
 function sectionLabel(kind: PresentationBlock["kind"], locale: InstitutionalPresentationInput["locale"]): string {
   const labels = locale === "pt-BR"
     ? {headline: "SÍNTESE", metric: "LEITURA FINANCEIRA", table: "ANÁLISE", chart: "CENÁRIO", narrative: "CONTEXTO", decision: "ALTERNATIVAS", gap: "PONTOS EM ABERTO", source_register: "FONTES"}
@@ -202,7 +237,7 @@ function sectionLabel(kind: PresentationBlock["kind"], locale: InstitutionalPres
   return labels[kind];
 }
 
-function slideXml(spec: SlideSpec, index: number, total: number, input: InstitutionalPresentationInput, template: InstitutionalPresentationTemplate): string {
+function slideXml(spec: SlideSpec, index: number, total: number, input: {locale: InstitutionalPresentationInput["locale"]; contract: {asOf: string}}, template: InstitutionalPresentationTemplate): string {
   const c = template.colors;
   const isCover = spec.kind === "cover";
   const background = isCover ? c.ink : c.paper;
@@ -219,17 +254,24 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: Institut
     shapes.push(shape({id: 6, name: "Cover details", x: 610_000, y: 4_150_000, w: 7_500_000, h: 1_300_000, paragraphs: detail}));
   } else {
     shapes.push(shape({id: 5, name: "Title", x: 610_000, y: 760_000, w: 10_600_000, h: 840_000, paragraphs: paragraph(spec.title, {size: spec.title.length > 55 ? 24 : 29, color: foreground, font: template.fonts.display})}));
-    if (spec.series?.length) {
-      shapes.push(...seriesShapes(spec.series[0]!, spec.lines, input.locale, template, 10));
+    if (spec.table) {
+      shapes.push(tableShape(spec.table, template));
+    } else if (spec.series?.length) {
+      shapes.push(shape({id: 12, name: "Chart measure and units", x: 610_000, y: 1_500_000, w: 10_600_000, h: 240_000, paragraphs: paragraph(`${spec.series[0]!.label}${spec.series[0]!.unit ? ` · ${spec.series[0]!.unit}` : ""}`, {size: 11, color: c.muted, font: template.fonts.body})}));
+      shapes.push(nativeChartFrame);
     } else {
     const availableHeight = 4_500_000;
-    const rowHeight = Math.min(980_000, Math.floor(availableHeight / spec.lines.length));
+    const weights = spec.lines.map(lineWeight);
+    const weightSum = weights.reduce((sum, weight) => sum + weight, 0);
+    let usedHeight = 0;
     spec.lines.forEach((line, lineIndex) => {
-      const y = 1_720_000 + lineIndex * rowHeight;
+      const rowHeight = Math.floor(availableHeight * weights[lineIndex]! / weightSum);
+      const y = 1_720_000 + usedHeight;
+      usedHeight += rowHeight;
       const toneColor = line.tone === "gap" ? c.warning : line.tone === "source" ? c.accent : line.tone === "danger" ? c.danger : c.ink;
       shapes.push(shape({id: 10 + lineIndex * 3, name: `Governed row · ${line.traceId}`, x: 610_000, y, w: 10_950_000, h: Math.max(410_000, rowHeight - 55_000), fill: lineIndex % 2 === 0 ? "FFFFFF" : c.paper, line: "DDE1E4"}));
-      shapes.push(shape({id: 11 + lineIndex * 3, name: `Label · ${line.traceId}`, x: 820_000, y: y + 85_000, w: 4_850_000, h: Math.max(260_000, rowHeight - 150_000), paragraphs: paragraph(line.label, {size: spec.lines.length > 5 ? 13 : 15, color: toneColor, bold: true, font: template.fonts.body})}));
-      const right = [line.value ? paragraph(line.value, {size: spec.lines.length > 5 ? 14 : spec.lines.length <= 2 ? 24 : 16, color: line.tone === "danger" ? c.danger : c.ink, bold: true, font: template.fonts.body}) : "", line.note ? paragraph(line.note, {size: 8.5, color: c.muted, font: template.fonts.body}) : ""].join("");
+      shapes.push(shape({id: 11 + lineIndex * 3, name: `Label · ${line.traceId}`, x: 820_000, y: y + 85_000, w: line.value || line.note ? 4_850_000 : 10_300_000, h: Math.max(260_000, rowHeight - 150_000), paragraphs: paragraph(line.label, {size: spec.lines.length > 5 ? 13 : 15, color: toneColor, bold: true, font: template.fonts.body})}));
+      const right = [line.value ? paragraph(line.value, {size: (line.value?.length ?? 0) > 70 ? 12 : spec.lines.length > 5 ? 14 : spec.lines.length <= 2 ? 24 : 16, color: line.tone === "danger" ? c.danger : c.ink, bold: true, font: template.fonts.body}) : "", line.note ? paragraph(line.note, {size: 10, color: c.muted, font: template.fonts.body}) : ""].join("");
       shapes.push(shape({id: 12 + lineIndex * 3, name: `Value · ${line.traceId}`, x: 5_900_000, y: y + 75_000, w: 5_350_000, h: Math.max(280_000, rowHeight - 130_000), paragraphs: right}));
     });
     }
@@ -237,39 +279,19 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: Institut
 
   const selectedLogo = isCover ? template.logoOnDark ?? template.logo : template.logo;
   if (selectedLogo) shapes.push(picture(90, selectedLogo.extension, 10_790_000, isCover ? 520_000 : 270_000, 710_000, 710_000));
-  const footer = `${template.confidentialityLabel ?? "CONFIDENTIAL"} · ${input.locale === "pt-BR" ? "Data-base" : "As of"} ${input.contract.asOf} · ${index}/${total}`;
+  const confidentiality = template.confidentialityLabel ?? (input.locale === "pt-BR" ? "CONFIDENCIAL · MATERIAL DE TRABALHO" : "CONFIDENTIAL · WORKING MATERIAL");
+  const footer = `${confidentiality} · ${input.locale === "pt-BR" ? "Data-base" : "As of"} ${input.contract.asOf} · ${index}/${total}`;
   shapes.push(shape({id: 91, name: "Footer", x: 610_000, y: 6_480_000, w: 10_900_000, h: 190_000, paragraphs: paragraph(footer, {size: 7.5, color: muted, font: template.fonts.body})}));
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${shapes.join("")}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
 }
 
-function seriesShapes(series: PresentationSeries, keyLines: SlideSpec["lines"], locale: InstitutionalPresentationInput["locale"], template: InstitutionalPresentationTemplate, firstId: number): string[] {
-  if (series.chartKind !== "column") throw new Error(`presentation chart kind ${series.chartKind} is not supported by renderer ${institutionalPresentationRendererVersion}`);
-  const points = series.points.filter((point) => point.value !== null) as Array<PresentationSeries["points"][number] & {value: number}>;
-  if (points.length === 0) throw new Error(`presentation series ${series.id} has no computable point`);
-  const chart = {x: 760_000, y: 2_150_000, w: 10_650_000, h: 3_500_000};
-  const max = Math.max(0, ...points.map((point) => point.value));
-  const min = Math.min(0, ...points.map((point) => point.value));
-  const range = max - min || 1;
-  const baseline = chart.y + Math.round(chart.h * (max / range));
-  const slot = Math.floor(chart.w / points.length);
-  const barWidth = Math.max(90_000, Math.floor(slot * 0.56));
-  const shapes: string[] = [];
-  const key = keyLines[0];
-  if (key?.value) {
-    shapes.push(shape({id: firstId, name: `Key figure · ${key.traceId}`, x: 6_750_000, y: 1_120_000, w: 4_620_000, h: 680_000, paragraphs: paragraph(`${key.label}: ${key.value}`, {size: 16, color: template.colors.ink, bold: true, font: template.fonts.body})}));
-  }
-  shapes.push(shape({id: firstId + 1, name: `Chart baseline · ${series.id}`, x: chart.x, y: baseline, w: chart.w, h: 18_000, fill: template.colors.muted}));
-  points.forEach((point, index) => {
-    const scaled = Math.round(Math.abs(point.value) / range * chart.h);
-    const x = chart.x + index * slot + Math.floor((slot - barWidth) / 2);
-    const y = point.value >= 0 ? baseline - scaled : baseline;
-    const fill = point.value === max ? template.colors.accent : "9BAA82";
-    const id = firstId + 2 + index * 3;
-    shapes.push(shape({id, name: `Series ${series.id} · ${point.label}`, x, y, w: barWidth, h: Math.max(16_000, scaled), fill}));
-    shapes.push(shape({id: id + 1, name: `Series value ${series.id} · ${point.label}`, x: x - Math.floor(slot * 0.2), y: point.value >= 0 ? Math.max(chart.y, y - 310_000) : y + scaled + 40_000, w: barWidth + Math.floor(slot * 0.4), h: 260_000, paragraphs: paragraph(formatValue(point.value, series.unit, locale), {size: 8.5, color: template.colors.ink, bold: true, font: template.fonts.body})}));
-    shapes.push(shape({id: id + 2, name: `Series label ${series.id} · ${point.label}`, x: x - Math.floor(slot * 0.2), y: baseline + 60_000, w: barWidth + Math.floor(slot * 0.4), h: 260_000, paragraphs: paragraph(point.label, {size: 8, color: template.colors.muted, font: template.fonts.body})}));
-  });
-  return shapes;
+function tableShape(table: NonNullable<SlideSpec["table"]>, template: InstitutionalPresentationTemplate): string {
+  const cols = table.headers.length, columnWidth = Math.floor(10_950_000 / cols);
+  const rows = [table.headers, ...table.rows];
+  const heights = rows.map(row => Math.max(350_000, ...row.map(cell => (Math.ceil(cell.length / (120 / cols)) * 180_000) + 160_000)));
+  const height = heights.reduce((a, b) => a + b, 0);
+  const contents = rows.map((row, index) => `<a:tr h="${heights[index]}">${row.map(cell => `<a:tc><a:txBody><a:bodyPr/><a:lstStyle/>${paragraph(cell, {size: 12, color: index === 0 ? "FFFFFF" : template.colors.ink, font: template.fonts.body, bold: index === 0})}</a:txBody><a:tcPr marL="110000" marR="110000" marT="80000" marB="80000"><a:solidFill><a:srgbClr val="${index === 0 ? template.colors.ink : index % 2 === 0 ? "EEF0ED" : "FFFFFF"}"/></a:solidFill></a:tcPr></a:tc>`).join("")}</a:tr>`).join("");
+  return `<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="10" name="Editable approved table"/><p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="610000" y="1720000"/><a:ext cx="10950000" cy="${height}"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="1"/><a:tblGrid>${Array.from({length: cols}, () => `<a:gridCol w="${columnWidth}"/>`).join("")}</a:tblGrid>${contents}</a:tbl></a:graphicData></a:graphic></p:graphicFrame>`;
 }
 
 const rootRelationships = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/></Relationships>`;
@@ -297,7 +319,7 @@ const slideLayout = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:s
 const slideLayoutRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/></Relationships>`;
 const theme = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Offroad"><a:themeElements><a:clrScheme name="Offroad"><a:dk1><a:srgbClr val="151A20"/></a:dk1><a:lt1><a:srgbClr val="F8F8F5"/></a:lt1><a:dk2><a:srgbClr val="333A42"/></a:dk2><a:lt2><a:srgbClr val="EEF0ED"/></a:lt2><a:accent1><a:srgbClr val="7D9455"/></a:accent1><a:accent2><a:srgbClr val="69737D"/></a:accent2><a:accent3><a:srgbClr val="A66C1F"/></a:accent3><a:accent4><a:srgbClr val="A23B3B"/></a:accent4><a:accent5><a:srgbClr val="9BAA82"/></a:accent5><a:accent6><a:srgbClr val="DDE1E4"/></a:accent6><a:hlink><a:srgbClr val="4A6D8C"/></a:hlink><a:folHlink><a:srgbClr val="72557A"/></a:folHlink></a:clrScheme><a:fontScheme name="Offroad"><a:majorFont><a:latin typeface="Georgia"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Arial"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="Offroad"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>`;
 
-function coreProperties(input: InstitutionalPresentationInput): string {
+function coreProperties(input: {title: string; contract: {asOf: string}}): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${xml(input.title)}</dc:title><dc:creator>Offroad Capital</dc:creator><cp:lastModifiedBy>Offroad governed renderer</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">${input.contract.asOf}T00:00:00Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${input.contract.asOf}T00:00:00Z</dcterms:modified></cp:coreProperties>`;
 }
 
@@ -328,17 +350,9 @@ async function addFile(zip: JSZip, path: string, data: string | Uint8Array): Pro
   zip.file(path, data, {date: FIXED_ZIP_DATE, createFolders: false});
 }
 
-export async function renderInstitutionalPresentation(input: InstitutionalPresentationInput): Promise<InstitutionalPresentationResult> {
-  const template = input.template ?? offroadHousePresentationTemplate;
-  for (const value of Object.values(template.colors)) color(value);
-  const view = input.contract.views.find((candidate) => candidate.surface === "presentation");
-  if (!view) throw new Error("decision artifact has no governed presentation view");
-  if (view.artifactKind !== "pptx") throw new Error("presentation view is not a pptx surface");
-  const slides = buildSlides(input, view);
-  if (slides.length > 40) throw new Error("institutional presentation exceeds the 40-slide safety limit");
-
+async function packageSlides(slides: SlideSpec[], input: {title: string; locale: InstitutionalPresentationInput["locale"]; contract: {asOf: string}}, template: InstitutionalPresentationTemplate, customXml: string): Promise<Uint8Array> {
   const zip = new JSZip();
-  await addFile(zip, "[Content_Types].xml", contentTypes(slides.length, [template.logo, template.logoOnDark]));
+  await addFile(zip, "[Content_Types].xml", contentTypes(slides.length, [template.logo, template.logoOnDark]).replace("</Types>", `<Default Extension="xlsx" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>${slides.map((slide,index)=>slide.series?.length ? `<Override PartName="/ppt/charts/chart${index+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>` : "").join("")}</Types>`));
   await addFile(zip, "_rels/.rels", rootRelationships);
   await addFile(zip, "ppt/presentation.xml", presentationXml(slides.length));
   await addFile(zip, "ppt/_rels/presentation.xml.rels", presentationRelationships(slides.length));
@@ -349,16 +363,34 @@ export async function renderInstitutionalPresentation(input: InstitutionalPresen
   await addFile(zip, "ppt/theme/theme1.xml", theme);
   await addFile(zip, "docProps/core.xml", coreProperties(input));
   await addFile(zip, "docProps/app.xml", appProperties(slides.length));
-  await addFile(zip, "docProps/custom.xml", customProperties(input, template));
+  await addFile(zip, "docProps/custom.xml", customXml);
   if (template.logo) await addFile(zip, `ppt/media/offroad-mark.${template.logo.extension}`, template.logo.data);
   if (template.logoOnDark) await addFile(zip, `ppt/media/offroad-mark-dark.${template.logoOnDark.extension}`, template.logoOnDark.data);
   for (const [index, slide] of slides.entries()) {
     await addFile(zip, `ppt/slides/slide${index + 1}.xml`, slideXml(slide, index + 1, slides.length, input, template));
     const selectedLogo = slide.kind === "cover" ? template.logoOnDark ?? template.logo : template.logo;
     const logoPath = selectedLogo ? `${slide.kind === "cover" && template.logoOnDark ? "offroad-mark-dark" : "offroad-mark"}.${selectedLogo.extension}` : undefined;
-    await addFile(zip, `ppt/slides/_rels/slide${index + 1}.xml.rels`, slideRelationships(logoPath));
+    await addFile(zip, `ppt/slides/_rels/slide${index + 1}.xml.rels`, slideRelationships(logoPath).replace("</Relationships>", slide.series?.length ? `<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart${index+1}.xml"/></Relationships>` : "</Relationships>"));
+    if (slide.series?.length) {
+      await addFile(zip, `ppt/charts/chart${index+1}.xml`, nativeChartXml(slide.series[0]!));
+      await addFile(zip, `ppt/embeddings/chart${index+1}.xlsx`, chartWorkbook(slide.series[0]!));
+      await addFile(zip, `ppt/charts/_rels/chart${index+1}.xml.rels`, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/package" Target="../embeddings/chart${index+1}.xlsx"/></Relationships>`);
+    }
   }
   const bytes = await zip.generateAsync({type: "uint8array", compression: "DEFLATE", compressionOptions: {level: 9}, platform: "DOS"});
+  return bytes;
+}
+
+export async function renderInstitutionalPresentation(input: InstitutionalPresentationInput): Promise<InstitutionalPresentationResult> {
+  const template = input.template ?? offroadHousePresentationTemplate;
+  for (const value of Object.values(template.colors)) color(value);
+  const view = input.contract.views.find((candidate) => candidate.surface === "presentation");
+  if (!view) throw new Error("decision artifact has no governed presentation view");
+  if (view.artifactKind !== "pptx") throw new Error("presentation view is not a pptx surface");
+  const slides = buildSlides(input, view);
+  if (slides.length > 40) throw new Error("institutional presentation exceeds the 40-slide safety limit");
+
+  const bytes = await packageSlides(slides, input, template, customProperties(input, template));
   const requiredParts = ["[Content_Types].xml", "_rels/.rels", "ppt/presentation.xml", "ppt/slideMasters/slideMaster1.xml", "ppt/slideLayouts/slideLayout1.xml", "ppt/theme/theme1.xml", ...slides.map((_, index) => `ppt/slides/slide${index + 1}.xml`)];
   const archive = await JSZip.loadAsync(bytes);
   const missingParts = requiredParts.filter((part) => !archive.file(part));
@@ -391,4 +423,36 @@ export async function renderInstitutionalPresentation(input: InstitutionalPresen
       releaseEligible: false,
     },
   };
+}
+
+/** A faithful editable presentation of the immutable approved material, with no generated claims. */
+export async function materialToPptx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
+  const {material, lang, meta} = input;
+  const title = material.title[lang];
+  const slides: SlideSpec[] = [{title, eyebrow: meta.companyName ?? "OFFROAD", kind: "cover", blockId: null, lines: [{label: `${lang === "pt" ? "Emitido em" : "Issued on"}: ${meta.issuedOn}`, traceId: "issued"}]}];
+  let section = title;
+  material.blocks.forEach((block, index) => {
+    if (block.type === "heading") {section = block.text[lang]; return;}
+    let lines: SlideSpec["lines"] = [];
+    const traceId = `material-block-${index}`;
+    if (block.type === "table" && block.head.length <= 6 && block.rows.every(row => row.length === block.head.length && row.every(cell => cell.length <= 200))) {
+      const rowCost = (row: string[]) => Math.max(350_000, ...row.map(cell => Math.ceil(cell.length / (120 / block.head.length)) * 180_000 + 160_000));
+      let rows: string[][] = [], cost = 0;
+      const flush = () => {if (rows.length) slides.push({title: block.caption[lang], eyebrow: lang === "pt" ? "ANÁLISE" : "ANALYSIS", kind: "table", blockId: traceId, lines: [], table: {headers: block.head.map(head => head[lang]), rows}}); rows = []; cost = 0;};
+      block.rows.forEach(row => {const weight = rowCost(row); if (rows.length && cost + weight + rowCost(block.head.map(head => head[lang])) > 4_400_000) flush(); rows.push(row); cost += weight;});
+      flush(); return;
+    }
+    switch (block.type) {
+      case "paragraph": case "disclaimer": lines = [{label: block.text[lang], traceId}]; break;
+      case "list": lines = block.items.map((item) => ({label: item[lang], traceId})); break;
+      case "metrics": lines = block.items.map((item) => ({label: item.label[lang], value: item.formatted[lang], traceId})); break;
+      case "kv": section = block.caption?.[lang] ?? section; lines = block.rows.map((row) => row.value[lang].length > 200 ? ({label: `${row.label[lang]}: ${row.value[lang]}${row.note ? ` ${row.note[lang]}` : ""}`, traceId}) : ({label: row.label[lang], value: row.value[lang], note: row.note?.[lang], traceId})); break;
+      case "callout": section = block.title[lang]; lines = block.items.map((item) => ({label: item.label[lang], value: item.value[lang], traceId})); break;
+      case "table": section = block.caption[lang]; lines = block.rows.flatMap((row, rowIndex) => row.map((value, column) => ({label: `${rowIndex + 1} · ${block.head[column]?.[lang] ?? ""}`, value, traceId}))); break;
+    }
+    paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: lang === "pt" ? "ANÁLISE" : "ANALYSIS", kind: "narrative", blockId: traceId, lines: page}));
+  });
+  if (slides.length > 120) throw new Error("material presentation exceeds the 120-slide safety limit");
+  const metadata = `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="OffroadMaterialFingerprint"><vt:lpwstr>${xml(material.artifactFingerprint ?? createHash("sha256").update(JSON.stringify(material)).digest("hex"))}</vt:lpwstr></property></Properties>`;
+  return packageSlides(slides, {title, locale: lang === "pt" ? "pt-BR" : "en-US", contract: {asOf: meta.issuedOn.slice(0, 10)}}, offroadHousePresentationTemplate, metadata);
 }

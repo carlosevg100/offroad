@@ -21,8 +21,9 @@ describe("privateMaterialArtifacts", () => {
         id: "teaser",
         available: true,
         actions: [
-          {kind: "pdf", href: "/pt-BR/app/materials/session-1/teaser?print=1"},
+          {kind: "pdf", href: "/pt-BR/app/materials/session-1/teaser/pdf"},
           {kind: "word", href: "/pt-BR/app/materials/session-1/teaser/docx"},
+          {kind: "powerpoint", href: "/pt-BR/app/materials/session-1/teaser/pptx"},
         ],
       },
       {
@@ -34,7 +35,7 @@ describe("privateMaterialArtifacts", () => {
         id: "indicative_term_sheet",
         available: true,
         actions: [
-          {kind: "pdf", href: "/pt-BR/app/materials/session-1/term_sheet?print=1"},
+          {kind: "pdf", href: "/pt-BR/app/materials/session-1/term_sheet/pdf"},
           {kind: "word", href: "/pt-BR/app/materials/session-1/term_sheet/docx"},
         ],
       },

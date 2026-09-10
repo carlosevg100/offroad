@@ -19,7 +19,8 @@
     "@offroad/case-materials": "workspace:*",
     "@offroad/case-understanding": "workspace:*",
     "@offroad/financial-model": "workspace:*",
-    "jszip": "3.10.1"
+    "jszip": "3.10.1",
+    "pdf-lib": "1.17.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

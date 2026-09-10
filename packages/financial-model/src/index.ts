@@ -18,3 +18,8 @@ export * from "./approved-download";
 export * from "./institutional-input-requests";
 
 export * from "./institutional-assumption-answer";
+
+export * from "./institutional-configuration";
+export * from "./institutional-runtime";
+
+export * from "./institutional-workbook";

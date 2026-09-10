@@ -1,5 +1,5 @@
 "use client";
-import {useState, useTransition} from "react";
+import {useRef, useState, useTransition} from "react";
 import {useLocale, useTranslations, useFormatter} from "next-intl";
 import {useRouter} from "next/navigation";
 import type {InstitutionalConfigurationReview} from "@/lib/advisor/institutional-configuration-reviews";
@@ -21,13 +21,18 @@ export function InstitutionalConfigurationReviewWork({projectId, reviews}: {proj
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const requests = useRef(new Map<string, string>());
   const [error, setError] = useState<string | null>(null);
   function review(candidate: InstitutionalConfigurationReview, decision: "approved" | "rejected") {
     setError(null);
+    const key = `${candidate.candidateId}:${candidate.configurationFingerprint}:${decision}`;
+    if (!requests.current.has(key)) requests.current.set(key, crypto.randomUUID());
     startTransition(async () => {
-      const result = await reviewAdvisorInstitutionalConfiguration({locale, projectId, candidateId: candidate.candidateId, expectedParentFingerprint: candidate.parentFingerprint, expectedCandidateFingerprint: candidate.configurationFingerprint, decision});
+      try {
+      const result = await reviewAdvisorInstitutionalConfiguration({locale, projectId, requestId: requests.current.get(key), candidateId: candidate.candidateId, expectedParentFingerprint: candidate.parentFingerprint, expectedCandidateFingerprint: candidate.configurationFingerprint, decision});
       if (!result.ok) setError(t(result.error === "stale" ? "stale" : "error"));
       else router.refresh();
+      } catch {setError(t("error"));}
     });
   }
   return <section className={styles.research} aria-label={t("title")}>

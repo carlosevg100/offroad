@@ -1,3 +1,4 @@
+import {processInstitutionalModelSetup,processInstitutionalModelResult} from "./institutional-model-runtime";
 import {applyInstitutionalAssumptionAnswer,institutionalAssumptionAnswerNamespace} from "@offroad/financial-model";
 import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
 import {randomUUID} from "node:crypto";
@@ -277,6 +278,30 @@ export async function processAgentOperationBriefJob(
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
+    if(context.message_metadata?.kind==="institutional_model_refresh") {
+      if(!queue.loadInstitutionalModelContext||!queue.recordInstitutionalModelResult)throw new Error("institutional_result_store_unavailable");
+      const result=await processInstitutionalModelResult({job,queue:{loadInstitutionalModelContext:queue.loadInstitutionalModelContext,recordInstitutionalModelResult:queue.recordInstitutionalModelResult}});
+      const assistantMessageId=randomUUID();
+      const reply=context.locale==="en-US"
+       ?result.status==="completed"?"The approved financial statements and scenarios are ready. Open the model results to review the calculations and download the approved snapshot.":"The calculation needs a new review because its source or approval conditions are no longer satisfied. The approved configuration was preserved."
+       :result.status==="completed"?"As demonstrações e os cenários aprovados estão prontos. Abra os resultados do modelo para revisar os cálculos e baixar a versão aprovada.":"O cálculo precisa de nova revisão porque as condições das fontes ou da aprovação não estão mais atendidas. A configuração aprovada foi preservada.";
+      await queue.recordAgentResponse(job,assistantMessageId,{state:"idle",reply});
+      await queue.writeStage(job,"institutional_model_result","succeeded",{resultId:result.id,state:result.status,modelCalls:0});
+      await queue.complete(job,{mode:"institutional_model_refresh",assistantMessageId,resultId:result.id,state:result.status,modelCalls:0});
+      return {status:"succeeded"};
+    }
+    if(context.message_metadata?.kind==="institutional_model_setup") {
+      if(!queue.loadInstitutionalModelContext||!queue.recordInitialInstitutionalConfigurationCandidate)throw new Error("institutional_setup_store_unavailable");
+      const result=await processInstitutionalModelSetup({job,queue:{loadInstitutionalModelContext:queue.loadInstitutionalModelContext,recordInitialInstitutionalConfigurationCandidate:queue.recordInitialInstitutionalConfigurationCandidate,...(queue.syncInstitutionalInformationRequests?{syncInstitutionalInformationRequests:queue.syncInstitutionalInformationRequests}:{})},locale:context.locale});
+      const assistantMessageId=randomUUID();
+      const reply=context.locale==="en-US"
+       ?result.status==="review_required"?"The configuration and source mappings passed the calculation checks. Review the proposed model configuration before approving its use.":"The model configuration still needs corrections or additional evidence. I preserved the submitted information and recorded the outstanding checks."
+       :result.status==="review_required"?"A configuração e os vínculos com as fontes passaram pelas verificações de cálculo. Revise a configuração proposta antes de aprovar seu uso.":"A configuração do modelo ainda precisa de correções ou evidências adicionais. Preservei as informações enviadas e registrei as verificações pendentes.";
+      await queue.recordAgentResponse(job,assistantMessageId,{state:"idle",reply});
+      await queue.writeStage(job,"institutional_model_setup_response","succeeded",{state:result.status,candidateId:result.candidateId,revision:result.revision,modelCalls:0});
+      await queue.complete(job,{mode:"institutional_model_setup",assistantMessageId,state:result.status,candidateId:result.candidateId,modelCalls:0});
+      return {status:"succeeded"};
+    }
     if(context.answered_information_request?.sourceNamespace===institutionalAssumptionAnswerNamespace) {
       if(!queue.loadInstitutionalConfiguration||!queue.applyInstitutionalAssumptionAnswer)throw new Error("institutional_answer_store_unavailable");
       const current=await queue.loadInstitutionalConfiguration(job);

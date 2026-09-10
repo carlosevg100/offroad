@@ -85,7 +85,7 @@ export const agentOperationBriefJobSchema = claimedJobBase.extend({
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   kind: z.literal("capital_project_analysis"),
   payload: z.object({
-    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning", "integration_preview", "provider_research"]),
+    analysis_scope: z.enum(["origination_thesis", "company_debt_view", "capital_planning", "integration_preview", "provider_research", "provider_case_fit"]),
     locale: z.enum(["pt-BR", "en-US"]),
     capital_project_id: z.uuid(),
     capital_project_plan_id: z.uuid(),
@@ -111,7 +111,7 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
     message: "revision artifact and decision must be supplied together",
   }).superRefine((payload, ctx) => {
-    if (payload.analysis_scope === "provider_research" ? (payload.model_budget.max_cost_usd !== 0 || payload.model_budget.max_calls !== 0) : (payload.model_budget.max_cost_usd <= 0 || payload.model_budget.max_calls <= 0)) {
+    if ((payload.analysis_scope === "provider_research" || payload.analysis_scope === "provider_case_fit") ? (payload.model_budget.max_cost_usd !== 0 || payload.model_budget.max_calls !== 0) : (payload.model_budget.max_cost_usd <= 0 || payload.model_budget.max_calls <= 0)) {
       ctx.addIssue({code: "custom", path: ["model_budget"], message: "provider research requires zero model budget; other scopes require a positive budget"});
     }
     if (payload.analysis_scope !== "integration_preview" && payload.capital_artifact_required !== true) {
@@ -217,6 +217,9 @@ export type QueueClient = {
     draftFingerprint: string;
     replayed: boolean;
   }>;
+  recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: {status: "completed"; artifact: unknown} | {status: "blocked"; blockers: string[]}): Promise<{id: string; status: string; replayed: boolean}>;
+  loadInstitutionalModelContext?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown>;
+  recordInitialInstitutionalConfigurationCandidate?(job: AgentOperationBriefJob, input: {submissionId: string; candidate: unknown}): Promise<{candidateId: string | null; revision: number | null; replayed: boolean}>;
   loadInstitutionalConfiguration?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<{configuration:InstitutionalModelConfiguration|null;configurationFingerprint:string|null;revision:number|null}>;
   syncInstitutionalInformationRequests?(job: FullCaseAnalysisJob | AgentOperationBriefJob, input:{requests:readonly unknown[]}):Promise<{openCount:number}>;
   applyInstitutionalAssumptionAnswer?(job:AgentOperationBriefJob, application:unknown):Promise<{candidateId:string;revision:number;replayed:boolean}>;
@@ -288,6 +291,7 @@ export type QueueClient = {
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   commitDocumentaryExecution?(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, state: unknown, result: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
+  loadProviderCaseFitContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadProviderResearchContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadAgentPlanContext?(job: AgentPlanJob): Promise<unknown>;
@@ -655,6 +659,17 @@ export function createQueueClient(
       };
     },
 
+    async recordInstitutionalModelResult(job, result) {
+      const data = await call("worker_record_institutional_model_result_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_result: result});
+      return z.object({id: z.uuid(), status: z.string(), replayed: z.boolean()}).parse(data);
+    },
+    async loadInstitutionalModelContext(job) {
+      return call("worker_load_institutional_model_context_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+    async recordInitialInstitutionalConfigurationCandidate(job, input) {
+      const data = await call("worker_record_initial_institutional_candidate_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_submission_id: input.submissionId, p_candidate: input.candidate});
+      return z.object({candidateId: z.uuid().nullable(), revision: z.number().int().nullable(), replayed: z.boolean()}).parse(data);
+    },
     async loadInstitutionalConfiguration(job) {
       const result=z.object({configuration:z.record(z.string(),z.unknown()).nullable(),configurationFingerprint:z.string().regex(/^[a-f0-9]{64}$/).nullable(),revision:z.number().int().positive().nullable()}).parse(await call("worker_load_institutional_configuration_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token}));
       return {...result,configuration:result.configuration as InstitutionalModelConfiguration|null};
@@ -911,6 +926,10 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
+    },
+
+    async loadProviderCaseFitContext(job) {
+      return call("worker_load_provider_case_fit_context", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
 
     async loadProviderResearchContext(job) {

@@ -18,7 +18,8 @@ begin
       or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v10','2026.09.09-v7'),entry)
       or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v11','2026.09.09-v8'),entry)
       or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v12','2026.09.09-v9'),entry)
-      or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v13','2026.09.09-v10'),entry) then
+      or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.09-v13','2026.09.09-v10'),entry)
+      or not private.is_released_documentary_plan_v1(pg_temp.documentary_plan_with_versions(current_plan,'2026.09.10-v14','2026.09.10-v11'),entry) then
       raise exception 'current or previously approved documentary contract rejected';
     end if;
     if private.is_released_documentary_plan_v1(jsonb_set(current_plan,'{registryVersion}','"2026.09.09-v9"'),entry)

@@ -1,0 +1,138 @@
+import type {Material} from "@offroad/case-materials";
+import {PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage} from "pdf-lib";
+
+import type {DocxLang, DocxMeta} from "./docx";
+
+export const materialPdfRendererVersion = "2026.09.10-v1";
+
+/** Render the approved blocks directly. Never calculate or summarize financial values here. */
+export async function materialToPdf(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
+  const {material, lang, meta} = input;
+  const document = await PDFDocument.create();
+  const issued = new Date(`${meta.issuedOn.slice(0, 10)}T00:00:00.000Z`);
+  if (!Number.isFinite(issued.getTime())) throw new Error("PDF requires a persisted issuance date");
+  document.setCreationDate(issued);
+  document.setModificationDate(issued);
+  document.setTitle(material.title[lang]);
+  document.setAuthor("Offroad Capital");
+  document.setCreator(`Offroad ${materialPdfRendererVersion}`);
+  document.setProducer("Offroad Capital");
+  document.setLanguage(lang === "pt" ? "pt-BR" : "en-US");
+  const regular = await document.embedFont(StandardFonts.Helvetica);
+  const bold = await document.embedFont(StandardFonts.HelveticaBold);
+  const display = await document.embedFont(StandardFonts.TimesRoman);
+  const ink = rgb(0.082, 0.102, 0.125);
+  const muted = rgb(0.41, 0.45, 0.49);
+  const accent = rgb(0.49, 0.58, 0.33);
+  const width = 595.28, height = 841.89, margin = 48, bodyWidth = width - margin * 2;
+  let page: PDFPage;
+  let y = 0;
+  const newPage = () => {
+    page = document.addPage([width, height]);
+    page.drawText("OFFROAD", {x: margin, y: height - 35, size: 9, font: bold, color: accent});
+    y = height - 64;
+  };
+  newPage();
+  const wrap = (text: string, font: PDFFont, size: number, maxWidth: number) => {
+    const lines: string[] = [];
+    for (const segment of text.split(/\r?\n/)) {
+      let line = "";
+      for (const word of segment.split(/\s+/).filter(Boolean)) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (font.widthOfTextAtSize(candidate, size) <= maxWidth) {line = candidate; continue;}
+        if (line) {lines.push(line); line = "";}
+        // Split overlong identifiers without truncating source locators or numbers.
+        for (const char of word) {
+          if (line && font.widthOfTextAtSize(line + char, size) > maxWidth) {lines.push(line); line = "";}
+          line += char;
+        }
+      }
+      lines.push(line);
+    }
+    return lines;
+  };
+  const ensure = (space: number) => {if (y - space < 58) newPage();};
+  const text = (value: string, size = 10, font = regular, spaceAfter = 8, color = ink) => {
+    const lines = wrap(value, font, size, bodyWidth);
+    for (const line of lines) {
+      ensure(size * 1.4);
+      page.drawText(line, {x: margin, y: y - size, size, font, color});
+      y -= size * 1.4;
+    }
+    y -= spaceAfter;
+  };
+  const table = (head: string[], rows: string[][]) => {
+    if (!head.length) return;
+    if (rows.some((row) => row.length !== head.length)) throw new Error("PDF table column mismatch");
+    // Wide tables use labeled records; this preserves every cell at a readable type size.
+    if (head.length > 6) {
+      rows.forEach((row, index) => {
+        ensure(40);
+        text(`${lang === "pt" ? "Registro" : "Record"} ${index + 1}`, 10, bold, 6);
+        row.forEach((cell, column) => text(`${head[column]}: ${cell}`));
+      });
+      return;
+    }
+    const cellWidth = bodyWidth / head.length, size = 9, lineHeight = 13, pad = 7;
+    const paint = (cells: string[][], offset: number, count: number, header: boolean) => {
+      const rowHeight = count * lineHeight + pad * 2;
+      page.drawRectangle({x: margin, y: y - rowHeight, width: bodyWidth, height: rowHeight, color: header ? ink : rgb(0.965, 0.969, 0.957)});
+      cells.forEach((lines, column) => lines.slice(offset, offset + count).forEach((line, index) => {
+        page.drawText(line, {x: margin + column * cellWidth + pad, y: y - pad - size - index * lineHeight, size, font: header ? bold : regular, color: header ? rgb(1, 1, 1) : ink});
+      }));
+      y -= rowHeight + 2;
+    };
+    const header = head.map((cell) => wrap(cell, bold, size, cellWidth - pad * 2));
+    const headerLines = Math.max(...header.map((lines) => lines.length));
+    if (headerLines > 12) throw new Error("PDF table header exceeds readable page capacity");
+    const headerHeight = headerLines * lineHeight + pad * 2 + 2;
+    ensure(headerHeight + 45);
+    paint(header, 0, headerLines, true);
+    for (const row of rows) {
+      const cells = row.map((cell) => wrap(cell, regular, size, cellWidth - pad * 2));
+      const lineCount = Math.max(...cells.map((lines) => lines.length));
+      // Keep ordinary records together; split only a row taller than a fresh page.
+      const freshCapacity = Math.floor((height - 64 - headerHeight - 58 - pad * 2 - 2) / lineHeight);
+      const remainingCapacity = Math.floor((y - 58 - pad * 2 - 2) / lineHeight);
+      if (lineCount <= freshCapacity && lineCount > remainingCapacity) {
+        newPage();
+        paint(header, 0, headerLines, true);
+      }
+      let offset = 0;
+      while (offset < lineCount) {
+        let capacity = Math.floor((y - 58 - pad * 2 - 2) / lineHeight);
+        if (capacity < 1) {newPage(); paint(header, 0, headerLines, true); capacity = Math.floor((y - 58 - pad * 2 - 2) / lineHeight);}
+        const count = Math.min(capacity, lineCount - offset);
+        paint(cells, offset, count, false);
+        offset += count;
+      }
+    }
+    y -= 10;
+  };
+  text(material.title[lang], 27, display, 12);
+  if (meta.companyName) text(meta.companyName, 12, bold, 8);
+  text(`${lang === "pt" ? "Emitido em" : "Issued on"} ${meta.issuedOn.slice(0, 10)}`, 9, regular, 20, muted);
+  for (const block of material.blocks) {
+    switch (block.type) {
+      case "heading": ensure(58); text(block.text[lang], 17, display, 10); break;
+      case "paragraph": text(block.text[lang]); break;
+      case "disclaimer": text(block.text[lang], 9, regular, 10, muted); break;
+      case "list": block.items.forEach((item) => text(`• ${item[lang]}`)); break;
+      case "metrics": table([lang === "pt" ? "Indicador" : "Metric", lang === "pt" ? "Valor" : "Value"], block.items.map((item) => [item.label[lang], item.formatted[lang]])); break;
+      case "table": ensure(58); text(block.caption[lang], 11, bold, 7); table(block.head.map((cell) => cell[lang]), block.rows); break;
+      case "kv":
+        if (block.rows.some(row => row.value[lang].length > 600)) {
+          if (block.caption) {ensure(58); text(block.caption[lang], 11, bold, 7);}
+          block.rows.forEach(row => {ensure(40); text(row.label[lang], 11, bold, 6); text(row.value[lang]); if (row.note) text(row.note[lang], 9, regular, 8, muted);});
+          break;
+        }
+        if (block.caption) {ensure(58); text(block.caption[lang], 11, bold, 7);} table([lang === "pt" ? "Item" : "Item", lang === "pt" ? "Descrição" : "Description"], block.rows.map((row) => [row.label[lang], `${row.value[lang]}${row.note ? `\n${row.note[lang]}` : ""}`])); break;
+      case "callout": ensure(58); text(block.title[lang], 13, bold, 8); block.items.forEach((item) => text(`${item.label[lang]}: ${item.value[lang]}`)); break;
+    }
+  }
+  document.getPages().forEach((sheet, index, pages) => {
+    sheet.drawLine({start: {x: margin, y: 42}, end: {x: width - margin, y: 42}, thickness: 0.5, color: accent});
+    sheet.drawText(`${lang === "pt" ? "Confidencial" : "Confidential"} · Offroad Capital · ${index + 1}/${pages.length}`, {x: margin, y: 28, font: regular, size: 8, color: muted});
+  });
+  return document.save({useObjectStreams: false});
+}

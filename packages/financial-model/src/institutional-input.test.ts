@@ -7,6 +7,11 @@ import type {AssumptionUnit} from "./assumptions";
 import {institutionalInputFixture as fixture} from "./institutional-input.fixture";
 
 describe("source-bound institutional input adapter",()=>{
+  it("does not apply raw source presentation scale twice to normalized facts",()=>{
+    const input=fixture();input.sources[0]!.amountScale="thousands";
+    const prepared=prepareInstitutionalModelInput(input);expect(prepared.status).toBe("missing_inputs");
+    expect(prepared.missingInputs.some(g=>g.code==="unit_mismatch")).toBe(true);
+  });
   it("supports explicitly confirmed debt-free and no-capex scenarios",()=>{
     const input=fixture();input.configuration.debtInstruments=[];input.configuration.debtRateLineage=[];input.configuration.capex=[];
     for(const fact of input.facts){if(fact.key.fieldPath.endsWith("gross_debt")){fact.value="0";fact.accepted.normalizedValue="0";}if(fact.key.fieldPath.endsWith("equity")){fact.value="1100";fact.accepted.normalizedValue="1100";}}
@@ -30,7 +35,7 @@ describe("source-bound institutional input adapter",()=>{
     const result=prepareInstitutionalModelInput(request);expect(result.input).toBeNull();expect(result.inputFingerprint).toBeNull();
     expect(result.missingInputs.map(g=>g.targetPath)).toEqual(expect.arrayContaining(["openingBalanceSheet.restrictedCash","taxes.openingTaxLossCarryforward"]));
   });
-  it.each(["disputed","anchor","period","entity","scope","value","projection","source_version","source_hash","scale","currency"])("fails locally for %s",issue=>{
+  it.each(["disputed","anchor","period","entity","scope","value","projection","source_version","source_hash","currency"])("fails locally for %s",issue=>{
     const request=fixture();const fact=request.facts[0]!;
     if(issue==="disputed")fact.disputed=true;
     if(issue==="anchor")fact.accepted.anchorVerified=false;
@@ -41,7 +46,6 @@ describe("source-bound institutional input adapter",()=>{
     if(issue==="projection")fact.accepted.informationClass="projection";
     if(issue==="source_version")request.sources[0]!.version="2";
     if(issue==="source_hash")request.sources[0]!.hash="b".repeat(64);
-    if(issue==="scale")request.sources[0]!.amountScale="millions";
     if(issue==="currency")request.sources[0]!.currency="USD";
     const result=prepareInstitutionalModelInput(request);expect(result.status).toBe("missing_inputs");expect(result.input).toBeNull();
   });

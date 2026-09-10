@@ -1,5 +1,5 @@
 import {createHash} from "node:crypto";
-import {buildLanguageConductTruthSet, buildMaterialTruthSet, caseMaterialsVersion, compileMaterials, financialModelMaterial, type FinancialModelArtifactEvidence, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
+import {buildLanguageConductTruthSet, buildMaterialTruthSet, caseMaterialsVersion, compileMaterials, financialModelMaterial, institutionalFinancialModelMaterial, type FinancialModelArtifactEvidence, type LanguageConductGovernance, type LanguageConductTruthSet, type Material, type MaterialExternalReleaseEvidence, type MaterialTruthSet} from "@offroad/case-materials";
 import {
   runCase,
   runSubgraph,
@@ -119,6 +119,10 @@ import {
 } from "@offroad/market-reference";
 import {
   buildFinancialModel,
+  calculateApprovedInstitutionalScenarios,
+  buildInstitutionalWorkbookArtifact,
+  type InstitutionalWorkbookArtifact,
+  type InstitutionalModelRuntimeContext,
   financialModelVersion,
   governedWorkbookRendererVersion,
   toGovernedXlsxBuffer,
@@ -129,7 +133,7 @@ import {reconcileCase, type FactCandidate, type ReconciledFact, type Reconciliat
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
-export const caseEngineVersion = "2026.09.09-v16";
+export const caseEngineVersion = "2026.09.10-v17";
 
 export type CaseDealBrief = {
   requestedAmount?: string;
@@ -193,7 +197,9 @@ export type StructureDesignerResult = {
   modelInvocations?: unknown[];
 };
 
-export type FinancialModelArtifact = FinancialModelArtifactEvidence & {
+export type FinancialModelArtifact = InstitutionalWorkbookArtifact | IndicativeFinancialModelArtifact;
+export type IndicativeFinancialModelArtifact = FinancialModelArtifactEvidence & {
+  modelKind?: "indicative";
   version: string;
   selectedAlternativeId: string;
   proposalFingerprint: string;
@@ -213,6 +219,7 @@ export type FinancialModelArtifact = FinancialModelArtifactEvidence & {
 };
 
 export type CaseEngineInput = {
+  institutionalModelContext?: InstitutionalModelRuntimeContext;
   runId: string;
   caseId: string;
   archetypeId: ArchetypeId;
@@ -1002,6 +1009,7 @@ export async function executeCaseEngine(
           materialRelease: input.materialRelease,
           materialsPreparationApproved: input.materialsPreparationApproved === true,
           plannedMaterialKinds: input.plannedMaterialKinds ?? null,
+      institutionalModelContext: input.institutionalModelContext ?? null,
         }),
         execute: async (context) => {
           const {reconciliation} = outputOf<ReconciliationOutput>(context, "reconciliation");
@@ -1729,6 +1737,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       materialRelease: input.materialRelease ?? null,
       materialsPreparationApproved: input.materialsPreparationApproved === true,
       plannedMaterialKinds: input.plannedMaterialKinds ?? null,
+      institutionalModelContext: input.institutionalModelContext ?? null,
       claimsFingerprint: fingerprintJson(claims),
       structureFingerprint: fingerprintJson(structure),
       reconciliationFingerprint: fingerprintJson(reconciliation),
@@ -1768,6 +1777,14 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
         return {output: {financialModel: null, material: null, blockers: []}, toolsUsed: [], sourceIds};
       }
       const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
+      if (input.institutionalModelContext) {
+        if (!input.materialsPreparationApproved) return {output:{financialModel:null,material:null,blockers:["production_plan_not_approved"]},toolsUsed:["financial_model"],sourceIds};
+        const calculation=calculateApprovedInstitutionalScenarios({context:input.institutionalModelContext,facts:reconciliation.facts});
+        if(calculation.status!=="ready")return {output:{financialModel:null,material:null,blockers:calculation.blockers},toolsUsed:["financial_model"],sourceIds};
+        const financialModel=await buildInstitutionalWorkbookArtifact(calculation.scenarios,input.institutionalModelContext.sourceManifestFingerprint);
+        const material=institutionalFinancialModelMaterial({artifactFingerprint:financialModel.fingerprint,supportIds:financialModel.supportIds,scenarios:calculation.scenarios.map(s=>({name:s.prepared.input!.assumptionBook.scenarioName,currency:s.model.currency,periods:s.model.periods}))});
+        return {output:{financialModel,material,blockers:[]},toolsUsed:["financial_model"],sourceIds};
+      }
       if (!materialInputs.canCompileFinancialModel || !structure.structureDecision.selectedAlternativeId || !structure.structureAlternatives.proposalFingerprint) {
         return {
           output: {financialModel: null, material: null, blockers: ["confirmed_structure_unavailable_for_financial_model"]},

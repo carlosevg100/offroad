@@ -456,6 +456,7 @@ describe("the governed case engine", () => {
     });
     expect(pending.state.financialModel?.renderAudits.pt.contentSha256).toBe(pending.state.financialModel?.workbooks.pt.sha256);
     const workbookArtifact = pending.state.financialModel!;
+    if(workbookArtifact.modelKind === "institutional")throw new Error("Expected indicative fixture model");
     expect(workbookArtifact.rendering?.metadata.pt.asOfDate).toBe("2026-08-24");
     const modelEvidence = deskEvidence(pending.state.desk, pending.state.trajectory);
     for (const lang of ["pt", "en"] as const) {

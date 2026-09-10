@@ -26,6 +26,7 @@ import {
   type PublicSearchProvider,
 } from "@offroad/public-research";
 import {createStorageUrlGuard} from "./storage-url";
+import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
@@ -207,7 +208,7 @@ async function main(): Promise<void> {
       (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
       0,
     );
-    const researchQueryCount = job.kind === "capital_project_analysis" && job.payload.analysis_scope !== "provider_research" && !job.payload.revision_of_artifact_id
+    const researchQueryCount = job.kind === "capital_project_analysis" && job.payload.analysis_scope !== "provider_research" && job.payload.analysis_scope !== "provider_case_fit" && !job.payload.revision_of_artifact_id
       ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
       : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
     const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
@@ -357,7 +358,9 @@ async function main(): Promise<void> {
           log,
         })
       : job.kind === "capital_project_analysis"
-        ? job.payload.analysis_scope === "provider_research"
+        ? job.payload.analysis_scope === "provider_case_fit"
+          ? processProviderCaseFitJob(job, {queue})
+          : job.payload.analysis_scope === "provider_research"
           ? processProviderResearchJob(job, {queue})
           : job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.

@@ -9,7 +9,7 @@ import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-
 import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, scoreDocumentWorkSourceReviewControl, type LiveProduct} from "../src/document-work-product-live";
 import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
 import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
-type Review={reviewedFieldIds:string[];issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
+type Review={reviewedFieldIds:string[];fieldAssessments:Array<{fieldId:string;verdict:string;exactExcerpt:string;sourceIds:string[]}>;issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
 type Diagnostic=ReturnType<typeof documentWorkFailureDiagnostics>;
 async function main() {
   assertDocumentWorkLiveEnvironment(process.env);
@@ -41,7 +41,7 @@ async function main() {
     const controlSpend=controlGateway.spent();
     const controlsPassed=controls.length===8 && controls.every(control=>control.passed) && controlSpend.calls===8 && controlSpend.unknownCostCalls===0 && Number.isFinite(controlSpend.costUsd) && controlSpend.costUsd<=0.5;
     const passed=accounting.passed && controlsPassed;
-    const evidence={schemaVersion:"document-work-product-executor-eval.v4",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:8}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
+    const evidence={schemaVersion:"document-work-product-executor-eval.v5",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:8}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
     writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(evidence,null,2));
     writeFileSync(resolve(directory,"summary.md"),`# Document work product evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic inputs, actual executor and source reviewer. This is not application E2E, human domain certification or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nSource-review controls: ${controls.filter(control=>control.passed).length}/${controls.length}; eight required, including both supported and unsupported claims.\n\nRepeat comparisons require identical input and full expected fact coverage; prose identity is reported separately. First-pass narrative success after review: ${accounting.firstPassSuccessCount}/${runs.length}. All rejected attempts remain in evidence.\n\nGold provider attempts: ${gateway.spent().calls}; source-review control attempts: ${controlSpend.calls}. Measured total USD: ${gateway.spent().costUsd+controlSpend.costUsd}. Fixed ceilings: gold18/USD2.50, controls8/USD0.50; retries and fallback consume those same budgets.\n`);
     return passed;
@@ -67,11 +67,11 @@ async function main() {
         }else{
           const wire=response.output as Record<string,unknown>;
           const {revisedSelection,...reviewWire}=wire;
-          const parsed=sourceReviewSchema.safeParse(request.schemaName==="document_work_source_review_revision_v2"?reviewWire:response.output);
+          const parsed=sourceReviewSchema.safeParse(request.schemaName==="document_work_source_review_revision_v3"?reviewWire:response.output);
           let reviewAccepted=false; let expanded:Review|null=null;
           try{if(parsed.success){expanded=expandDocumentWorkSourceReview(input,parsed.data!);reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,expanded).issues.length===0;}}catch{}
           responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:expanded ?? (parsed.success?parsed.data!:null)});
-          if(request.schemaName==="document_work_source_review_revision_v2" && revisedSelection!==null && revisedSelection!==undefined){
+          if(request.schemaName==="document_work_source_review_revision_v3" && revisedSelection!==null && revisedSelection!==undefined){
             try{capturedNarrative=hydrateDocumentWorkSelection(input,revisedSelection);validateDocumentWorkProductNarrative(input,capturedNarrative);}catch{}
           }
         }

@@ -1,3 +1,4 @@
+import {institutionalWorkbookArtifactSchema} from "@offroad/financial-model";
 import type {FinancialModelArtifact} from "@offroad/case-engine";
 import type {Material, MaterialKind} from "@offroad/case-materials";
 import type {SupabaseClient} from "@supabase/supabase-js";
@@ -61,7 +62,7 @@ const workbookMetadataSchema = z.object({
   decisionContractFingerprint: z.string().optional(),
   artifactClass: z.enum(["credit_model", "decision_workbook"]).optional(),
 });
-const financialModelSchema = z.object({
+const indicativeFinancialModelSchema = z.object({
   version: z.string(),
   selectedAlternativeId: z.string(),
   proposalFingerprint: hashSchema,
@@ -83,6 +84,7 @@ const financialModelSchema = z.object({
   rendering: z.object({rendererVersion: z.string(), metadata: z.object({pt: workbookMetadataSchema, en: workbookMetadataSchema})}).optional(),
   fingerprint: hashSchema,
 });
+const financialModelSchema = z.union([institutionalWorkbookArtifactSchema,indicativeFinancialModelSchema]);
 const artifactPayloadSchema = z.object({
   materials: z.array(materialSchema),
   financialModel: financialModelSchema.nullable(),

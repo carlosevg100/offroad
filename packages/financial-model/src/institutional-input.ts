@@ -124,7 +124,7 @@ export function prepareInstitutionalModelInput(request:{
       gap(targetPath,"source_unbound","The selected source version/hash must match one dated current source declaration.");return null;
     }
     if(source.currency!==config.currency||source.amountScale!=="units"){
-      gap(targetPath,"unit_mismatch","Historical values must already be normalized to model-currency units; no currency or scale is inferred.");return null;
+      gap(targetPath,"unit_mismatch","Historical values must already be normalized to model-currency units; source presentation scale must not be applied twice.");return null;
     }
     lineage.push({targetPath,fieldPath:selection.fieldPath,...(selection.periodStart?{periodStart:selection.periodStart}:{}),periodEnd:selection.periodEnd,
       entityName:selection.entityName,entityScope:selection.entityScope,value:fact.value,sourceDocument:source.sourceDocument,

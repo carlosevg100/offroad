@@ -78,7 +78,8 @@ it("preserves the compiler's workbook rendering contract through the approved pa
     fingerprint: fingerprint("e"), rendering,
   };
   artifact.payload = {...artifact.payload as Record<string, unknown>, financialModel} as DealStateRow["payload"];
-  expect(governedMaterialPackageFromRows(rows)?.financialModel?.rendering).toEqual(rendering);
+  const loadedModel = governedMaterialPackageFromRows(rows)?.financialModel;
+  expect(loadedModel?.modelKind === "institutional" ? null : loadedModel?.rendering).toEqual(rendering);
   artifact.payload = {...artifact.payload as Record<string, unknown>, financialModel: {...financialModel,
     rendering: {...rendering, metadata: {pt: metadata}},
   }} as DealStateRow["payload"];

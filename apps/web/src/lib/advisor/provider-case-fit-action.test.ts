@@ -1,0 +1,12 @@
+import {beforeEach,describe,expect,it,vi} from "vitest";
+const mocks=vi.hoisted(()=>({workspace:vi.fn(),start:vi.fn(),read:vi.fn(),refresh:vi.fn()}));
+vi.mock('@/lib/auth/workspace',()=>({requireWorkspace:mocks.workspace}));vi.mock('./provider-case-fit-command',()=>({startProviderCaseFitProject:mocks.start}));vi.mock('next/cache',()=>({revalidatePath:mocks.refresh}));
+import {requestProviderCaseFit} from './provider-case-fit-action';
+const id='10000000-0000-4000-8000-000000000001';
+const input=()=>({requestId:id,locale:'pt-BR',projectId:id,projectName:'Existing project',expectedPlanFingerprint:'a'.repeat(64),objective:'Selecionar financiadores para este caso.',criteria:{schemaVersion:'provider-case-criteria.v1',asOf:'2026-09-01T00:00:00Z',currency:'BRL',source:{kind:'user_confirmed',referenceId:id}}});
+beforeEach(()=>{vi.clearAllMocks();const query={select:()=>query,eq:vi.fn(()=>query),maybeSingle:mocks.read};mocks.workspace.mockResolvedValue({organization:{id},supabase:{from:()=>query}});mocks.read.mockResolvedValue({data:{entry_job:'origination_thesis'},error:null});mocks.start.mockResolvedValue({data:{capital_project_id:id},error:null});});
+describe('requestProviderCaseFit',()=>{
+ it('preserves the server-derived existing entry and exact parent CAS',async()=>{expect(await requestProviderCaseFit(input())).toEqual({ok:true,projectId:id});expect(mocks.start.mock.calls[0]![1]).toMatchObject({p_project_id:id,p_expected_plan_fingerprint:'a'.repeat(64),p_plan:{registryVersion:'2026.09.10-v14',job:{id:'origination_thesis',firstWorkProduct:'provider_case_fit'}}});});
+ it('rejects injected identity, ambiguous numbers and missing currency before calling the database',async()=>{for(const patch of [{...input(),organizationId:id},{...input(),criteria:{...input().criteria,currency:undefined}},{...input(),criteria:{...input().criteria,amount:'1,000'}},{...input(),expectedPlanFingerprint:undefined}])expect(await requestProviderCaseFit(patch)).toMatchObject({ok:false,error:'invalid'});expect(mocks.start).not.toHaveBeenCalled();});
+ it('rejects foreign or inaccessible projects and reports CAS conflict without success',async()=>{mocks.read.mockResolvedValueOnce({data:null,error:null});expect(await requestProviderCaseFit(input())).toMatchObject({ok:false,error:'forbidden'});expect(mocks.start).not.toHaveBeenCalled();mocks.start.mockResolvedValueOnce({data:null,error:{code:'40001'}});expect(await requestProviderCaseFit(input())).toMatchObject({ok:false,error:'stale'});expect(mocks.refresh).not.toHaveBeenCalled();});
+});

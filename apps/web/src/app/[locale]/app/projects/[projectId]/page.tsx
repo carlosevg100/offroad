@@ -1,3 +1,7 @@
+import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
+import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
+import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
+import {ProviderWorkHistory} from "@/components/advisor/provider-work-history";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
 import {loadReceivablesTemporalReport} from "@/lib/receivables/temporal-report";
 import {ReceivablesProjectSupportPeriods} from "@/components/intake/receivables-project-support-periods";
@@ -25,6 +29,9 @@ import {OriginationConversationWork} from "@/components/advisor/origination-conv
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
 import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
+import {ProviderCaseFitForm} from "@/components/advisor/provider-case-fit-form";
+import {ProviderCaseFitWork} from "@/components/advisor/provider-case-fit-work";
+import {currentProviderCaseFit} from "@/lib/advisor/provider-case-fit-reader";
 import {ProviderResearchWork} from "@/components/advisor/provider-research-work";
 import {currentProviderResearch} from "@/lib/advisor/provider-research-reader";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
@@ -43,6 +50,10 @@ import {openEvidenceRequirements} from "@/lib/advisor/evidence-inventory";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
 
 import {loadInstitutionalConfigurationReviews} from "@/lib/advisor/institutional-configuration-reviews";
+import {InstitutionalSetupReviewWork} from "@/components/advisor/institutional-setup-review";
+import {parseInstitutionalSetupReviews} from "@/lib/advisor/institutional-setup-reviews";
+import {InstitutionalSetupForm} from "@/components/advisor/institutional-setup-form";
+import {loadInstitutionalSetupContext} from "@/lib/advisor/institutional-setup-reader";
 import {InstitutionalConfigurationReviewWork} from "@/components/advisor/institutional-configuration-review";
 
 import {OriginationDecision} from "./origination-decision";
@@ -385,6 +396,8 @@ async function ConversationalCapitalProject({
   const latestRunByTask = new Map<string, {status: string}>();
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
+  const providerCaseFit = currentProviderCaseFit(artifacts ?? [], runs ?? [], plan
+    ? {organizationId: organization.id, projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
   const providerResearch = currentProviderResearch(artifacts ?? [], runs ?? [], plan
     ? {projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
 
@@ -490,7 +503,8 @@ async function ConversationalCapitalProject({
           errorCode: message.error_code,
           createdAt: message.created_at,
           artifactHref: artifactId && artifactIds.has(artifactId)
-            ? artifactId === providerResearch?.row.id ? workSectionHref("provider-research")
+            ? artifactId === providerCaseFit?.row.id ? workSectionHref("provider-case-fit")
+              : artifactId === providerResearch?.row.id ? workSectionHref("provider-research")
               : project.entry_job === "origination_thesis" && parsedOrigination?.success && artifactId === originationArtifact?.id
               ? workSectionHref("meeting-brief") : project.entry_job !== "origination_thesis" ? `/${locale}/app/projects/${project.id}?view=work` : undefined
             : undefined,
@@ -606,6 +620,17 @@ async function ConversationalCapitalProject({
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
   const workSections: AdvisorWorkSection[] = [];
+  const institutionalResult = await loadInstitutionalModelResult(supabase, project.id);
+  if (institutionalResult) {
+    const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
+    workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult} />});
+  }
+  const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];
+
+  if (providerCaseFit) {
+    const fitCopy = await getTranslations({locale, namespace: "ProviderCaseFitWork"});
+    workSections.push({id: "provider-case-fit", artifactId: providerCaseFit.row.id, title: fitCopy("title"), version: providerCaseFit.row.artifact_version, content: <ProviderCaseFitWork fit={providerCaseFit.fit} />});
+  }
   const institutionalReviews = await loadInstitutionalConfigurationReviews(supabase, project.id);
   if (institutionalReviews.length) {
     const reviewCopy = await getTranslations({locale, namespace: "InstitutionalConfigurationReview"});
@@ -633,6 +658,26 @@ async function ConversationalCapitalProject({
   if (parsedDecisionArtifact.success || previewArtifacts.length) workSections.push({id: "decision-work", title: t("openWork"),
     content: <AdvisorDecisionWork contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null} artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"} materialHref={`/${locale}/app/projects/${project.id}/preview/material`} />});
+
+  if (providerHistory.length) {
+    const historyCopy = await getTranslations({locale, namespace: "ProviderWorkHistory"});
+    workSections.push({id: "provider-history", title: historyCopy("title"), content: <ProviderWorkHistory entries={providerHistory} />});
+  }
+  if (plan && ["company_debt_view", "capital_planning", "origination_thesis", "structure_from_documents", "review_existing_operation", "prepare_materials_and_process"].includes(project.entry_job)) {
+    const fitCopy = await getTranslations({locale, namespace: "ProviderCaseFitForm"});
+    workSections.push({id: "provider-case-criteria", title: fitCopy("title"), content: <ProviderCaseFitForm projectId={project.id} projectName={project.project_name} expectedPlanFingerprint={plan.plan_fingerprint} />});
+  }
+
+  const institutionalSetup = await loadInstitutionalSetupContext(supabase, project.id);
+  if (institutionalSetup) {
+    const setupCopy = await getTranslations({locale, namespace: "InstitutionalSetup"});
+    workSections.push({id: "institutional-setup", title: setupCopy("title"), content: <InstitutionalSetupForm context={institutionalSetup} />});
+    const initialReviews = parseInstitutionalSetupReviews(institutionalSetup);
+    if (initialReviews.length) {
+      const initialReviewCopy = await getTranslations({locale, namespace: "InstitutionalSetupReview"});
+      workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} />});
+    }
+  }
 
   return <AdvisorProject
     accessBasis={project.access_basis}
