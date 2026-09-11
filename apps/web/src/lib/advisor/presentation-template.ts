@@ -6,7 +6,7 @@ import {
   presentationTemplateFromStored,
   type InstitutionalPresentationTemplate,
   type PresentationTemplateDefinition,
-} from "@offroad/case-export";
+} from "@offroad/case-export/presentation-template";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 

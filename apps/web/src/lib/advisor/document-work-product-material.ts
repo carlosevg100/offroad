@@ -1,4 +1,5 @@
-import {materialToDocx, materialToPdf, type DocxMeta, type InstitutionalPresentationTemplate} from "@offroad/case-export";
+import {materialToDocx, materialToPdf, type DocxMeta} from "@offroad/case-export";
+import type {InstitutionalPresentationTemplate} from "@offroad/case-export/presentation-template";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 import {documentWorkProductSchema, type DocumentWorkProduct} from "@offroad/domain-contracts";
 

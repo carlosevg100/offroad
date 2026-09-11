@@ -212,6 +212,21 @@ describe("delivered file quality", () => {
     }
   }
 
+  it("measures a cell that carries its own line breaks instead of refusing to render it", async () => {
+    const broken: Material = {kind: "credit_memo", title: local("Quebras de linha", "Line breaks"), dependsOn: [], blocks: [
+      {type: "kv", caption: local("Itens", "Items"), rows: [
+        {label: local("Item com nota", "Item with a note"), value: local("Valor aprovado do item"), note: local("Observação em uma segunda linha do mesmo campo.")},
+      ]},
+      {type: "table", caption: local("Registro", "Register"), head: [local("Campo", "Field"), local("Conteúdo", "Content")],
+        rows: [["Multilinha", "Primeira linha do conteúdo\nSegunda linha do conteúdo"]]},
+    ]};
+    for (const lang of ["pt", "en"] as const) {
+      const bytes = await materialToPdf({material: broken, lang, meta: {issuedOn}});
+      const pages = pdfPageText(bytes, await PDFDocument.load(bytes));
+      expect(pages.join(" ")).toContain("Segunda linha do conte");
+    }
+  });
+
   it("paginates the long case and keeps every wide table row with its own content", async () => {
     const longPdf = await materialToPdf({material: longCase, lang: "pt", meta: {issuedOn}});
     const longDocument = await PDFDocument.load(longPdf);

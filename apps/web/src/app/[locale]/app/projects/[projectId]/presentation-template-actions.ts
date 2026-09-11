@@ -8,7 +8,7 @@ import {
   presentationTemplateIssues,
   presentationTemplateToStored,
   type PresentationTemplateDefinition,
-} from "@offroad/case-export";
+} from "@offroad/case-export/presentation-template";
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 

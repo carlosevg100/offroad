@@ -1,6 +1,6 @@
 "use client";
 
-import {offroadHouseTemplateDefinition, pdfRenderableFonts, presentationTemplateColorKeys, suggestedPdfFont} from "@offroad/case-export";
+import {offroadHouseTemplateDefinition, pdfRenderableFonts, presentationTemplateColorKeys, suggestedPdfFont} from "@offroad/case-export/presentation-template";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
 import {useState, useTransition, type FormEvent} from "react";

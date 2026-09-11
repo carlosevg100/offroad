@@ -128,10 +128,13 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
     // Columns share the width by what they actually carry. Each one first gets enough room for its
     // widest indivisible word, so a number never breaks in half, and the rest is distributed
     // towards the columns with the most text, so a label column stops being squeezed.
+    // A cell may carry its own line breaks; a standard font cannot measure one, so both measures
+    // work on the pieces a line can actually hold.
     const wordWidth = (value: string, font: PDFFont) => Math.max(0, ...value.split(/\s+/).filter(Boolean).map((word) => font.widthOfTextAtSize(word, size)));
+    const lineWidth = (value: string, font: PDFFont) => Math.max(0, ...value.split(/\r?\n/).map((part) => font.widthOfTextAtSize(part, size)));
     const column = (index: number) => [head[index]!, ...rows.map((row) => row[index]!)];
     const need = head.map((_, index) => Math.min(bodyWidth / 2, Math.max(wordWidth(head[index]!, bold), ...rows.map((row) => wordWidth(row[index]!, regular))) + pad * 2 + 1));
-    const want = head.map((_, index) => Math.max(...column(index).map((cell, position) => (position === 0 ? bold : regular).widthOfTextAtSize(cell, size))) + pad * 2 + 1);
+    const want = head.map((_, index) => Math.max(...column(index).map((cell, position) => lineWidth(cell, position === 0 ? bold : regular))) + pad * 2 + 1);
     const needed = need.reduce((sum, value) => sum + value, 0);
     let widths: number[];
     if (needed >= bodyWidth) {
