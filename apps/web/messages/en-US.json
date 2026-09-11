@@ -4665,7 +4665,13 @@
       "noFinancierRecommendation": "This result carries no financier recommendation.",
       "noCreditApproval": "This result carries no credit approval.",
       "method": "Method {procedure}, version {version}, maturity {maturity}.",
-      "engine": "Result contract {schema}, currency {currency}."
+      "engine": "Result contract {schema}, currency {currency}.",
+      "founderApproval": "The method is in production under the founder's approval recorded on {approvedAt}.",
+      "maturityNames": {
+        "tested": "tested",
+        "ready_for_founder": "ready for the founder",
+        "production": "production"
+      }
     }
   },
   "NewWorkRequest": {

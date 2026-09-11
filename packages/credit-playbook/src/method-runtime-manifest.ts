@@ -20,6 +20,12 @@ export const specialistMethodRuntimeManifest = [
       exportName: "underwriteReceivablesPool",
     },
     resultContract: "method.underwrite-receivables-pool.v1",
+    /** The founder approval that took this method to `production`, projected from the Markdown. */
+    approval: {
+      approvedBy: "Carlos Eduardo Galves",
+      approvedAt: "2026-09-10",
+      approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026",
+    },
     sourcePath: "receivables/underwrite-receivables-pool.md",
     sourceHash: "9f5cf24e6751c708a7ff9825afebdd1878e2e07fc652c295df7493cb8e246264",
   },

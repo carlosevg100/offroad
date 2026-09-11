@@ -4665,7 +4665,13 @@
       "noFinancierRecommendation": "Não há recomendação de financiador neste resultado.",
       "noCreditApproval": "Não há aprovação de crédito neste resultado.",
       "method": "Método {procedure}, versão {version}, maturidade {maturity}.",
-      "engine": "Contrato do resultado {schema}, moeda {currency}."
+      "engine": "Contrato do resultado {schema}, moeda {currency}.",
+      "founderApproval": "Método em produção pela aprovação do fundador registrada em {approvedAt}.",
+      "maturityNames": {
+        "tested": "testada",
+        "ready_for_founder": "pronta para o fundador",
+        "production": "produção"
+      }
     }
   },
   "NewWorkRequest": {

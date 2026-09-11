@@ -29,6 +29,13 @@ describe("specialist method runtime manifest", () => {
         bindingPriority: method.frontmatter.binding_priority,
         executor: implementation.executor,
         resultContract: implementation.resultContract,
+        approval: method.procedure.owner.approvedBy && method.procedure.owner.approvedAt && method.procedure.owner.approvalSource
+          ? {
+            approvedBy: method.procedure.owner.approvedBy,
+            approvedAt: method.procedure.owner.approvedAt,
+            approvalSource: method.procedure.owner.approvalSource,
+          }
+          : null,
         sourcePath: method.sourcePath,
         sourceHash: method.sourceHash,
       }];

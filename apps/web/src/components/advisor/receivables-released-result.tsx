@@ -1,3 +1,4 @@
+import {specialistMethodRuntimeManifest} from "@offroad/credit-playbook";
 import {getTranslations} from "next-intl/server";
 
 import type {ReceivablesReleasedResult} from "@/lib/receivables/released-result";
@@ -34,6 +35,17 @@ function plain(locale: Locale, value: string | number, digits = 2) {
 
 function Pair({label, value}: {label: string; value: string}) {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
+}
+
+/** The founder approval that took the method to production, read from the compiled method. */
+const methodApproval = specialistMethodRuntimeManifest
+  .find((method) => method.procedure.id === "underwrite-receivables-pool")?.approval ?? null;
+
+function approvalDate(locale: Locale, isoDate: string) {
+  const parsed = new Date(`${isoDate}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime())
+    ? isoDate
+    : new Intl.DateTimeFormat(locale, {dateStyle: "long", timeZone: "UTC"}).format(parsed);
 }
 
 /**
@@ -233,8 +245,13 @@ export async function ReceivablesReleasedResultSection({released, locale}: {rele
         <li>{t("limitations.method", {
           procedure: result.release.procedure.id,
           version: result.release.procedure.version,
-          maturity: result.methodMaturity,
+          maturity: t(`limitations.maturityNames.${result.methodMaturity}`),
         })}</li>
+        {result.methodMaturity === "production" && methodApproval
+          ? <li data-testid="receivables-released-founder-approval">
+            {t("limitations.founderApproval", {approvedAt: approvalDate(locale, methodApproval.approvedAt)})}
+          </li>
+          : null}
         <li>{t("limitations.engine", {schema: content.schema_version, currency})}</li>
       </ul>
     </footer>
