@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "diagnose-maturity-wall-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual das participacoes, da cobertura periodo a periodo e dos deficits, teste da regra de fontes, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/diagnose-maturity-wall-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "diagnose-maturity-wall",
+    "version": "2026.09.05-v8",
+    "fingerprint": "c29bd9a183eb26f798485d7f573329ecfcc69a5f53158d328ddb0c35a55ef909"
+  },
+  "run": {
+    "id": "diagnose-maturity-wall-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Recalculei as participacoes de cada periodo sobre a divida bruta de 5.670.186: 2026/27 da 0,21689377 e 2028/29 da 0,21665515, as duas unicas acima do limite versionado de 20%. O pico e 2026/27 com 1.229.828.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 3, nota 15, p. 40",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Recalculei a cobertura periodo a periodo com o caixa contabil de 1.430.714: 2026/27 cobre 1,16334479 e fecha com 200.886; 2027/28 cobre 0,25858447 e abre um deficit incremental de 575.982; 2028/29 acrescenta 1.228.475 e o deficit acumulado vai a 1.804.457. Todos os numeros batem com os do executor.",
+      "source": "packages/credit-playbook/src/executors/diagnose-maturity-wall.ts",
+      "anchor": "coverage.by_period",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O crescimento do segundo degrau e real: 1.228.475 contra 886.187 em 28/02/2026, 342.288 a mais em um trimestre, com a ancora da coluna anterior.",
+      "source": "packages/credit-playbook/src/cases/gc01/diagnose-maturity-wall.ts",
+      "anchor": "walls[2].change_from_prior",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao declarada ja esta na base congelada e foi afirmada sobre ela: as duas operacoes aprovadas em ata (251.000 em notas comerciais e ate 535.000 em CPR) ficam unproven por falta de contrato e de prova de desembolso, e as fontes contratadas seguem em zero em todos os periodos.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/diagnose-maturity-wall-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:board-approvals-are-not-sources",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A cobertura e de principal apenas e diz isso: a base nao traz juros por periodo nem geracao de caixa para o servico da divida com base declarada, e o metodo termina incomplete com os dois motivos escritos.",
+      "source": "packages/credit-playbook/src/executors/diagnose-maturity-wall.ts",
+      "anchor": "incomplete_reasons",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A linha de custos de debentures de 63.224 negativos e tratada como ajuste, fica fora dos periodos e nunca entra na cobertura.",
+      "source": "packages/credit-playbook/src/executors/diagnose-maturity-wall.ts",
+      "anchor": "schedule_adjustments",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes de periodos, fontes e ordem de chaves reproduzem os mesmos fingerprints.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/diagnose-maturity-wall-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mecanica de vencimento antecipado vem da clausula da 13a e fica separada do cronograma contratual; o saldo acelerado nao e afirmado.",
+      "source": "packages/credit-playbook/src/cases/gc01/diagnose-maturity-wall.ts",
+      "anchor": "acceleration, escritura da 13a, 7.24.3(VIII) e 7.24.5",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "A cobertura so deixa de ser de principal apenas quando a base trouxer juros por periodo e geracao de caixa com base declarada; ate la nao pode ser lida como servico da divida completo.",
+    "As duas captacoes autorizadas so entram como fonte quando contrato e desembolso estiverem no pack; a autorizacao do conselho nao aloca nada no cronograma."
+  ],
+  "notes": "Revisao independente por agente com as participacoes, a cobertura e os deficits recalculados fora do executor. Nao e auditoria humana e nao projeta geracao de caixa. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/refinance/diagnose-maturity-wall.md, packages/credit-playbook/src/executors/diagnose-maturity-wall.ts, packages/credit-playbook/src/cases/gc01/diagnose-maturity-wall.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

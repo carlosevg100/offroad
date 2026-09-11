@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "declare-scenarios-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual do pro forma, teste da regra de origem de cada premissa, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/declare-scenarios-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "declare-scenarios",
+    "version": "2026.09.05-v6",
+    "fingerprint": "e1ae0c64b405eb8be71a871224414a8c5a57cb1dda4006390f454621db2a2d58"
+  },
+  "run": {
+    "id": "declare-scenarios-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Sobre o corpus congelado o metodo bloqueia e nao preenche: o cenario adverso declara choque de juros e haircut de EBITDA e o corpus nao traz nenhum dos dois; um choque de zero nao e choque. Uma unica premissa entra no registro, a captacao aprovada em ata, com confianca baixa e o motivo escrito.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "block_reasons; assumption_register",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Mesmo bloqueado o pro forma e calculado com as origens de cada componente: divida bruta 5.670.186, caixa dedutivel 1.455.809 e divida liquida contratual 4.228.477, que recalculei a mao pelos mesmos componentes da secao 5 do gabarito.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 5",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Nenhuma alavancagem e publicada no cenario bloqueado e nenhum headroom e medido: o limite da 13a esta insufficient_evidence com o degrau condicional escrito.",
+      "source": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "anchor": "scenarios[].results.headroom_note",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao declarada foi executada: uma premissa sem origem e sem ancora e recusada no contrato de entrada, nunca aceita com origem presumida.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/declare-scenarios-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:parameter-without-origin-refused",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A ata de 27/05/2026 e registrada como autorizacao, jamais como politica de rolagem: o historico de captacoes de 2.046.140 e liquidacoes de 1.285.146 no trimestre mostra rolagens passadas, nao uma politica.",
+      "source": "packages/credit-playbook/src/cases/gc01/declare-scenarios.ts",
+      "anchor": "gold().assumptions[0].rationale",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes de premissas, documentos, periodos, cenarios e ordem de chaves reproduzem os mesmos fingerprints.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/declare-scenarios-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O metodo declara uma chamada de modelo para redigir a frase de racional de cada cenario. Essa etapa nao foi exercida nesta revisao e nao tem evidencia gravada: o executor determinístico produz o registro, os parametros e o pro forma, nunca a prosa.",
+      "source": "packages/credit-playbook/knowledge/procedures/scenarios/declare-scenarios.md",
+      "anchor": "max_model_calls: 1",
+      "result": "unverifiable"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "A etapa assistida por modelo (a frase de racional de cada cenario) continua sem evidencia gravada e fora do alcance desta revisao.",
+    "O cenario adverso do Caso 01 so deixa de bloquear quando o corpus trouxer choque e haircut com origem; ate la a resposta correta e o bloqueio, nao um numero.",
+    "Toda premissa de intervalo declarado pelo usuario continua sendo intervalo, nunca estimativa da companhia."
+  ],
+  "notes": "Revisao independente por agente com o pro forma recalculado fora do executor. O metodo declara uma chamada de modelo, entao esta revisao cobre a parte determinística e diz o que nao cobriu. Nao e auditoria humana. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/scenarios/declare-scenarios.md, packages/credit-playbook/src/executors/declare-scenarios.ts, packages/credit-playbook/src/cases/gc01/declare-scenarios.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}
