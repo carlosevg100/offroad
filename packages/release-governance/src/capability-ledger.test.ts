@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(42);
+    expect(decision.entryCount).toBe(43);
     expect(decision.blockers).toEqual([]);
     // One scope is in production, on the founder approval of 10 September 2026, and it is the only
     // one an organization may rely on for its own work. Nothing else moved with it.
@@ -22,6 +22,13 @@ describe("capability ledger", () => {
     expect(candidate).toMatchObject({availability:"specified",exposure:"none",qualityMaturity:"specified",evidenceRefs:[],allowedUses:[]});
     const decision = evaluateCapabilityLedger({...currentCapabilityLedger, entries:[{...candidate, allowedUses:["customer_work"]}]});
     expect(decision.blockers.some(blocker => blocker.code === "customer_reliance_requires_live_production_scope")).toBe(true);
+  });
+
+  it("records a verified mandate contract with an empty population and no live lender network", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("capital.verified-mandate-record")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested", allowedUses: ["internal_validation"]});
+    expect(byId.get("capital.verified-mandate-record")!.limitations.some((limitation) => limitation.includes("No real fund has registered"))).toBe(true);
+    expect(byId.get("capital.live-mandate-network")).toMatchObject({availability: "absent", exposure: "none", qualityMaturity: "unsupported", runtimeRefs: [], allowedUses: []});
   });
 
   it("keeps the Case 01 compiler live but allowlisted and the universal compiler specified", () => {
