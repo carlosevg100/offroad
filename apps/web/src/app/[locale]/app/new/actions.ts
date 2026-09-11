@@ -10,6 +10,7 @@ import {capitalProjectJobSchema} from "@offroad/work-plan";
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {createClient} from "@/lib/supabase/server";
+import {hasWorkspaceCapability} from "@/lib/workspace/capabilities";
 import {
   acceptHighConfidenceCandidates,
   confirmIntakeCase,
@@ -59,11 +60,16 @@ function intakeUrl(locale: string, sessionId: string, error?: IntakeErrorCode, s
 /** Resolves the tenant scope from the verified session and checks the intake session belongs to it. */
 async function workspaceRuntime(locale: AppLocale, sessionId: string): Promise<IntakeRuntime> {
   const context = await requireWorkspace(locale);
-  if (context.organization.organization_type === "capital_provider") redirect(`/${locale}/app`);
   if (!sessionId) redirect(`/${locale}/app/new?error=session`);
   const runtime: IntakeRuntime = {supabase: context.supabase, organizationId: context.organization.id, userId: context.userId, locale, sessionId};
   const session = await loadIntakeSession(runtime);
   if (!session) redirect(`/${locale}/app/new?error=session`);
+  // The guided intake declares the company's operation on its behalf. A financier's analysis
+  // continues in the project the session already belongs to; the database refuses the
+  // representation-flavored commands regardless of this redirect.
+  if (!hasWorkspaceCapability(context.organization.organization_type, "origination_representation")) {
+    redirect(session.capital_project_id ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app`);
+  }
   return runtime;
 }
 
@@ -104,7 +110,9 @@ export async function startWorkspaceDocumentIntake(formData: FormData) {
       });
   const sessionId = data;
   if (error) {
-    const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "session" : "save";
+    // 42501 covers both the missing workspace terms and a workspace without the representation
+    // capability (a financier): the step is unavailable rather than a failed save.
+    const errorCode = error.message.includes("project_name_already_in_use") ? "duplicate" : error.code === "P0002" ? "session" : error.code === "42501" ? "step" : "save";
     redirect(`${projectSetupUrl}&error=${errorCode}`);
   }
   if (!sessionId) {

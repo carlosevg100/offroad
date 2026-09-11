@@ -58,3 +58,31 @@ export function resolveBorrowerOnboardingView(input: ResolveInput): BorrowerOnbo
 export function borrowerViewUsesWorkspace(view: BorrowerOnboardingView | "provider_legacy") {
   return view === "guided" || view === "completion" || view === "provider_legacy";
 }
+
+export type FinancierOnboardingView =
+  /** The choice between starting own analysis now and registering funds and mandates. */
+  | "financier_welcome"
+  /** Workspace terms with the information-usage declaration; completes onboarding on acceptance. */
+  | "financier_terms"
+  /** The mandate registration path that existed before: organization, fund, mandate, contacts, review. */
+  | "provider_legacy";
+
+type FinancierResolveInput = {
+  requestedSetup: BorrowerSetupRequest;
+  /** A provider step explicitly requested in the URL (`?section=`), already validated by the page. */
+  requestedSection: string | null;
+  persistedStep: string;
+  /** The organization step of the mandate path has been saved. */
+  mandatePathStarted: boolean;
+};
+
+/**
+ * The only router for financier onboarding. Own analysis never passes through fund, mandate or
+ * contact registration, and the mandate path is never entered by accident: it needs an explicit
+ * section request or a step that only that path persists.
+ */
+export function resolveFinancierOnboardingView(input: FinancierResolveInput): FinancierOnboardingView {
+  if (input.requestedSetup === "terms") return "financier_terms";
+  if (input.requestedSection || input.mandatePathStarted || input.persistedStep !== "organization") return "provider_legacy";
+  return "financier_welcome";
+}

@@ -11,7 +11,8 @@ type LegalSection = {heading: string; body: string};
 type Props = {
   locale: string;
   mode: "terms" | "project";
-  journey: "company" | "originator";
+  /** A financier accepts the terms with an information-usage declaration and never sees the project form. */
+  journey: "company" | "originator" | "capital_provider";
   legalDocument?: {
     title: string;
     version: string;
@@ -72,16 +73,17 @@ export async function PrivateProjectSetup({
   entryJob,
 }: Props) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
+  const financier = journey === "capital_provider";
 
   if (mode === "terms") {
     const sections = legalSections(legalDocument?.body_sections);
     const fullTermsText = customerFacingLegalText(legalDocument?.rendered_text, t("terms.fullTermsFallback"));
     return (
-      <section className="private-project-gate private-project-gate--terms">
+      <section className="private-project-gate private-project-gate--terms" data-journey={journey}>
         <header className="private-project-gate__header private-project-gate__legal-header">
           <span className="section-kicker">{t("terms.kicker")}</span>
           <h2>{t("terms.title")}</h2>
-          <p>{t("terms.intro")}</p>
+          <p>{financier ? t("terms.financierIntro") : t("terms.intro")}</p>
         </header>
 
         <div className="private-project-gate__promise">
@@ -100,7 +102,7 @@ export async function PrivateProjectSetup({
 
         {termsAccepted ? (
           <div className="private-project-gate__accepted">
-            <div><Check aria-hidden="true" size={15} /><span><strong>{t("terms.acceptedTitle")}</strong>{t("terms.acceptedBody")}</span></div>
+            <div><Check aria-hidden="true" size={15} /><span><strong>{t("terms.acceptedTitle")}</strong>{financier ? t("terms.financierAcceptedBody") : t("terms.acceptedBody")}</span></div>
             <details className="private-project-gate__full-terms">
               <summary>{t("terms.fullTerms")}</summary>
               <p>{fullTermsText}</p>
@@ -123,7 +125,7 @@ export async function PrivateProjectSetup({
               <input defaultValue={profile.fullName} maxLength={160} minLength={2} name="signatory_name" required />
             </label>
             <label>
-              <span>{t("terms.titleLabel")}</span>
+              <span>{financier ? t("terms.financierTitleLabel") : t("terms.titleLabel")}</span>
               <input defaultValue={profile.jobTitle} maxLength={160} minLength={2} name="signatory_title" required />
             </label>
           </div>
@@ -136,13 +138,17 @@ export async function PrivateProjectSetup({
             <span>{legalDocument?.information_rights_statement ?? t("terms.informationRightsDeclaration")}</span>
           </label>
           <div className="private-project-gate__submit">
-            <small>{t("terms.ctaNote")}</small>
+            <small>{financier ? t("terms.financierCtaNote") : t("terms.ctaNote")}</small>
             <IntakeActionSubmit idle={t("terms.cta")} pending={t("terms.pending")} />
           </div>
         </form>}
       </section>
     );
   }
+
+  // The project form carries a representation declaration. A financier never declares one, so
+  // there is nothing to render here for it; its projects start from the workspace conversation.
+  if (journey === "capital_provider") return null;
 
   const editingExistingProject = Boolean(project?.name.trim());
 

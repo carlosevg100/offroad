@@ -39,10 +39,11 @@ import {IntakeReview} from "@/components/intake/intake-review";
 import {IntakeStartChoice} from "@/components/intake/intake-start-choice";
 import {PrivateProjectSetup} from "@/components/intake/private-project-setup";
 import {AgentPanel, type AgentPanelCopy} from "@/components/intake/agent-panel";
+import {FinancierOnboardingStart} from "@/components/onboarding/financier-onboarding-start";
 import type {AppLocale} from "@/i18n/routing";
 import {loadIntakeCollection, loadIntakeReview} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
-import {resolveBorrowerOnboardingView} from "@/lib/onboarding/state-machine";
+import {resolveBorrowerOnboardingView, resolveFinancierOnboardingView} from "@/lib/onboarding/state-machine";
 import {createClient} from "@/lib/supabase/server";
 import type {Database, Json} from "@/types/database";
 
@@ -71,6 +72,7 @@ import {
   saveOrganizationStep,
   saveProfessionalContextAction,
   startDocumentIntake,
+  startFinancierAnalyticalWorkspace,
 } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -257,6 +259,16 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   const projectTitle = storedProjectName || (journey === "company" ? t("workspace.companyProject") : journey === "originator" ? t("workspace.originatorProject") : t("workspace.providerProject"));
   const termsAcceptance = bootstrap.terms_accepted;
   const requestedSetup = state.setup === "terms" || state.setup === "project" ? state.setup : null;
+  // A financier chooses between own analysis (terms, then the workspace) and the mandate path.
+  // The mandate steps below render only when that path was explicitly entered.
+  const financierView = journey === "capital_provider"
+    ? resolveFinancierOnboardingView({
+      requestedSetup,
+      requestedSection,
+      persistedStep,
+      mandatePathStarted: typeof answers.organization === "object" && answers.organization !== null,
+    })
+    : null;
   const onboardingView = resolveBorrowerOnboardingView({
     journey,
     termsAccepted: termsAcceptance,
@@ -267,11 +279,15 @@ export default async function OnboardingPage({params, searchParams}: Props) {
       projectName: intakeReview.session.project_name,
     } : null,
   });
-  const isPrivateTermsStep = onboardingView === "confidentiality" || onboardingView === "confidentiality_review";
+  const isPrivateTermsStep = onboardingView === "confidentiality" || onboardingView === "confidentiality_review" || financierView === "financier_terms";
   const isProjectSetupStep = onboardingView === "project_setup" || onboardingView === "project_edit";
   const isPrivateSetupStep = isPrivateTermsStep || isProjectSetupStep;
-  const isFirstOnboardingStart = onboardingView === "welcome";
-  const welcomeBody = journey === "originator" ? t("workspace.welcomeBodyOriginator") : t("workspace.welcomeBodyCompany");
+  const isFirstOnboardingStart = onboardingView === "welcome" || financierView === "financier_welcome";
+  const welcomeBody = journey === "originator"
+    ? t("workspace.welcomeBodyOriginator")
+    : journey === "capital_provider"
+      ? t("financier.welcomeBody")
+      : t("workspace.welcomeBodyCompany");
 
   const {data: latestProcessingRun} = intakeSessionId
     ? await supabase
@@ -379,7 +395,11 @@ export default async function OnboardingPage({params, searchParams}: Props) {
           ? t("error")
           : null;
   const agentCopy = t.raw("workspace.agent") as AgentPanelCopy;
-  const breadcrumbLabel = journey === "capital_provider"
+  const breadcrumbLabel = financierView === "financier_welcome"
+    ? t("financier.breadcrumbWelcome")
+    : financierView === "financier_terms"
+      ? t("financier.breadcrumbTerms")
+      : journey === "capital_provider"
     ? t(`workspace.nodes.${journey}.${currentStep}`)
     : onboardingView === "confidentiality" || onboardingView === "confidentiality_review"
       ? t("privateProject.terms.title")
@@ -470,25 +490,41 @@ export default async function OnboardingPage({params, searchParams}: Props) {
 
           <div className={isPrivateTermsStep ? "workspace-editor-layout workspace-editor-layout--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "workspace-editor-layout workspace-editor-layout--welcome" : "workspace-editor-layout"}>
             <section className={isPrivateTermsStep ? "onboarding-stage workspace-editor workspace-editor--legal" : isFirstOnboardingStart || isPrivateSetupStep ? "onboarding-stage workspace-editor workspace-editor--welcome" : "onboarding-stage workspace-editor"}>
-          {journey === "capital_provider" && !isFirstOnboardingStart ? <header className="onboarding-stage__header">
+          {financierView === "provider_legacy" ? <header className="onboarding-stage__header">
             <span>{t("workspace.currentActivity")}</span>
             <h2>{t(`workspace.nodes.${journey}.${currentStep}`)}</h2>
             <p>{t(`steps.${journey}.${currentStep}.body`)}</p>
           </header> : null}
           {errorMessage ? <p className="form-notice form-notice--error" role="alert">{errorMessage}</p> : null}
 
-          {onboardingView === "welcome" ? (
-            journey === "capital_provider" ? (
-              <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" journey="company" locale={locale} startHref={`/${locale}/onboarding?setup=terms`} />
-            ) : (
-              <>
-                <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" hideAction journey={journey} locale={locale} />
-                <CapitalJobLauncher locale={locale} newProjectBaseHref={`/${locale}/onboarding?setup=terms`} />
-              </>
-            )
+          {financierView === "financier_welcome" ? (
+            <FinancierOnboardingStart locale={locale} mandatesHref={`/${locale}/onboarding?section=organization`} startHref={`/${locale}/onboarding?setup=terms`} />
           ) : null}
 
-          {isPrivateTermsStep || isProjectSetupStep ? (
+          {financierView === "financier_terms" ? (
+            <PrivateProjectSetup
+              acceptAction={startFinancierAnalyticalWorkspace}
+              journey="capital_provider"
+              legalDocument={activeLegalDocument}
+              locale={locale}
+              mode="terms"
+              profile={{fullName: profile?.full_name ?? "", jobTitle: profile?.job_title ?? ""}}
+              returnHref={`/${locale}/app`}
+              startAction={startDocumentIntake}
+              termsAccepted={false}
+              termsAcceptanceRecorded={termsAcceptance}
+              termsHref={`/${locale}/onboarding?setup=terms`}
+            />
+          ) : null}
+
+          {onboardingView === "welcome" && journey !== "capital_provider" ? (
+            <>
+              <IntakeStartChoice actions={{start: startDocumentIntake}} context="onboarding" hideAction journey={journey} locale={locale} />
+              <CapitalJobLauncher locale={locale} newProjectBaseHref={`/${locale}/onboarding?setup=terms`} />
+            </>
+          ) : null}
+
+          {(isPrivateTermsStep || isProjectSetupStep) && journey !== "capital_provider" ? (
             <PrivateProjectSetup
               acceptAction={acceptPrivateWorkspaceTerms}
               journey={journey as "company" | "originator"}
@@ -508,7 +544,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
             />
           ) : null}
 
-          {currentStep === "organization" && journey === "capital_provider" ? (
+          {currentStep === "organization" && financierView === "provider_legacy" ? (
             <form action={saveOrganizationStep} className="onboarding-stage__form">
               <FormContext locale={locale} returnStep={returnStep} />
               <div className="form-grid form-grid--onboarding">

@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {resolveBorrowerOnboardingView} from "./state-machine";
+import {resolveBorrowerOnboardingView, resolveFinancierOnboardingView} from "./state-machine";
 
 const session = {id: "session-1", status: "collecting", projectName: "Projeto Atlas"};
 
@@ -81,5 +81,55 @@ describe("resolveBorrowerOnboardingView", () => {
       requestedSetup: null,
       session: null,
     })).toBe("provider_legacy");
+  });
+});
+
+describe("resolveFinancierOnboardingView", () => {
+  it("starts a financier on the analysis-or-mandates choice, never inside the mandate path", () => {
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: null,
+      requestedSection: null,
+      persistedStep: "organization",
+      mandatePathStarted: false,
+    })).toBe("financier_welcome");
+  });
+
+  it("opens the workspace terms when own analysis is chosen", () => {
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: "terms",
+      requestedSection: null,
+      persistedStep: "organization",
+      mandatePathStarted: false,
+    })).toBe("financier_terms");
+  });
+
+  it("enters the mandate path only on an explicit section request or a persisted mandate step", () => {
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: null,
+      requestedSection: "organization",
+      persistedStep: "organization",
+      mandatePathStarted: false,
+    })).toBe("provider_legacy");
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: null,
+      requestedSection: null,
+      persistedStep: "fund",
+      mandatePathStarted: true,
+    })).toBe("provider_legacy");
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: null,
+      requestedSection: null,
+      persistedStep: "organization",
+      mandatePathStarted: true,
+    })).toBe("provider_legacy");
+  });
+
+  it("never turns a project setup request into a representation form for a financier", () => {
+    expect(resolveFinancierOnboardingView({
+      requestedSetup: "project",
+      requestedSection: null,
+      persistedStep: "organization",
+      mandatePathStarted: false,
+    })).toBe("financier_welcome");
   });
 });

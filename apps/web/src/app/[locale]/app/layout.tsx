@@ -8,6 +8,7 @@ import {RAIL_COLLAPSE_COOKIE, WorkspaceRail, type WorkspaceRailCopy} from "@/com
 import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadIntegrationPreviewStatus} from "@/lib/integration-preview";
+import {workspaceCapabilities} from "@/lib/workspace/capabilities";
 
 import {signOut} from "./actions";
 
@@ -20,8 +21,13 @@ export default async function ApplicationLayout({children, params}: Props) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "App"});
   const {organization, email, supabase, userId} = await requireWorkspace(locale);
-  const canOriginate = organization.organization_type !== "capital_provider";
-  const {data: navigationSessions} = canOriginate
+  // Projects and folders follow the own-analysis capability, which every workspace type has.
+  // The mandates entry follows mandate management. Origination is a separate capability and
+  // no longer decides what the navigation shows.
+  const capabilities = workspaceCapabilities(organization.organization_type);
+  const showProjects = capabilities.own_analysis;
+  const mandatesHref = capabilities.mandate_management ? `/${locale}/app/mandates` : undefined;
+  const {data: navigationSessions} = showProjects
     ? await supabase.from("document_intake_sessions")
         .select("id, capital_project_id, project_name, status, opportunity_id, updated_at, archived_at")
         .eq("organization_id", organization.id)
@@ -38,7 +44,7 @@ export default async function ApplicationLayout({children, params}: Props) {
           .eq("organization_id", organization.id)
           .in("id", capitalProjectIds)
       : Promise.resolve({data: []}),
-    canOriginate
+    showProjects
       ? supabase.from("workspace_project_groups")
           .select("id, name, auto_created, updated_at")
           .eq("organization_id", organization.id)
@@ -92,6 +98,7 @@ export default async function ApplicationLayout({children, params}: Props) {
     },
     expand: t("expandRail"),
     folders: t("folders"),
+    fundsAndMandates: t("fundsAndMandates"),
     groupActions: t("projectActions"),
     groupArchive: t("deleteProjectGroup"),
     groupArchiveConfirm: t("deleteProjectGroupConfirm"),
@@ -128,9 +135,10 @@ export default async function ApplicationLayout({children, params}: Props) {
         groups={groups}
         initialCollapsed={railCollapsed}
         locale={locale === "en-US" ? "en-US" : "pt-BR"}
+        mandatesHref={mandatesHref}
         organizationName={organization.name}
         projects={projects}
-        showProjects={canOriginate}
+        showProjects={showProjects}
         signOutAction={signOut}
       />
       <div className="app-main">

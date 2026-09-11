@@ -8928,6 +8928,17 @@ export type Database = {
         }
         Returns: Json
       }
+      start_financier_analytical_workspace_v1: {
+        Args: {
+          p_information_rights_declared: boolean
+          p_locale: string
+          p_signatory_name: string
+          p_signatory_title: string
+          p_terms_acceptance_recorded?: boolean
+          p_terms_agreed: boolean
+        }
+        Returns: Json
+      }
       start_onboarding_capital_project: {
         Args: {
           p_entry_job: string
