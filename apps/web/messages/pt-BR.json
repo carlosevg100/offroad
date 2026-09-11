@@ -4299,7 +4299,7 @@
     "kicker": "Modelo financeiro",
     "title": "Resultados da configuração aprovada",
     "prepared": "Preparado em {date}",
-    "editableSnapshot": "Os arquivos refletem as premissas aprovadas. No Excel, você pode alterar as premissas e recalcular cenários localmente. Essas alterações não atualizam o projeto nem os demais materiais; para isso, revise a configuração no Offroad.",
+    "editableSnapshot": "Os arquivos refletem as premissas aprovadas. No Excel, você pode alterar as premissas e recalcular cenários localmente. Para trazer essa edição de volta, importe a planilha em Revisões: ela vira uma proposta de mudança e passa por revisão.",
     "snapshot": "Os arquivos apresentam os resultados calculados com as premissas aprovadas. Para alterar as premissas e recalcular, revise a configuração no Offroad. O Excel exportado contém os resultados, sem recálculo local.",
     "revision": "Revisão {revision} · {currency}",
     "downloads": "Baixar resultados",
@@ -5059,5 +5059,114 @@
     "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso.",
     "sourcesHelp": "De onde saiu este mandato: regulamento, ata, e-mail da gestora. Registro público e operação passada não entram aqui.",
     "noSources": "Nenhuma fonte informada"
+  },
+  "InstitutionalRevision": {
+    "kicker": "Revisão aprovada",
+    "title": "Revisões, diferenças e importação",
+    "introduction": "Cada resultado e cada arquivo declara a revisão aprovada de premissas e dados que o produziu. Uma revisão anterior continua identificável e nunca é sobrescrita.",
+    "currentRevision": "Revisão atual: {number}",
+    "pendingChange": "Uma mudança aprovada ainda não produziu resultado. Recalcule para obter o conjunto correspondente.",
+    "recompute": "Recalcular a revisão atual",
+    "recomputeQueued": "Recálculo enviado. O resultado aparece aqui quando terminar.",
+    "differenceTitle": "Diferença em relação à revisão anterior",
+    "noDifference": "Nenhum valor mudou entre as duas revisões.",
+    "assumptionsChanged": "Premissas que mudaram",
+    "outputsChanged": "Resultados que mudaram, em {currency}",
+    "assumption": "Premissa",
+    "metric": "Indicador",
+    "period": "Período",
+    "previousValue": "Anterior",
+    "currentValue": "Atual",
+    "movement": "Variação",
+    "notPresent": "Não existia",
+    "notComputable": "Não calculável",
+    "limits": {
+      "currency_changed": "A moeda mudou entre as revisões. Os resultados não são comparados e nenhuma conversão foi aplicada.",
+      "periods_changed": "Os períodos mudaram entre as revisões. Só aparecem na comparação os períodos presentes nas duas.",
+      "scenario_changed": "As revisões usam configurações diferentes. A comparação identifica cada uma.",
+      "value_not_computable": "Algum indicador não pôde ser calculado em um dos lados e permanece vazio."
+    },
+    "metrics": {
+      "revenue": "Receita",
+      "ebitda": "EBITDA",
+      "cfads": "Caixa disponível para o serviço da dívida",
+      "debtService": "Serviço da dívida",
+      "closingGrossDebt": "Dívida bruta final",
+      "unrestrictedCash": "Caixa disponível",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Dívida líquida / EBITDA",
+      "liquidityHeadroom": "Folga de liquidez"
+    },
+    "historyTitle": "Histórico de revisões",
+    "revisionLabel": "Revisão {number}",
+    "changed": "Mudou: {components}",
+    "producedAt": "produzido em {date}",
+    "noResultYet": "Ainda sem resultado produzido a partir desta revisão.",
+    "noRevisions": "Ainda não há revisão aprovada registrada neste projeto.",
+    "approvalKind": {
+      "initial": "Primeira revisão aprovada",
+      "institutional_configuration": "Premissas e dados aprovados",
+      "receivables_scope": "Escopo de recebíveis confirmado",
+      "documentary_revision": "Revisão documental aceita"
+    },
+    "components": {
+      "assumptions": "premissas",
+      "data": "dados",
+      "receivablesScope": "escopo de recebíveis",
+      "documentaryRevision": "revisão documental"
+    },
+    "standing": {
+      "current": "Atual",
+      "previous": "Anterior",
+      "pending": "Em cálculo"
+    },
+    "resultStatus": {
+      "queued": "Cálculo em andamento",
+      "completed": "Cálculo concluído",
+      "blocked": "Cálculo bloqueado"
+    },
+    "importTitle": "Importar planilha editada",
+    "importHelp": "Envie o Excel que você exportou deste projeto e editou. O sistema confere que é o arquivo do produto, lê apenas as células de premissas e abre uma proposta de mudança. Nada é aplicado sem revisão.",
+    "importField": "Arquivo .xlsx exportado deste projeto",
+    "importSubmit": "Enviar como proposta",
+    "importAccepted": "Proposta aberta. Alterações de premissa lidas: {changes}.",
+    "importAlreadyOpen": "Este arquivo já tem proposta aberta. Alterações de premissa lidas: {changes}.",
+    "refusedAt": "Planilha {sheet}, célula {cell}.",
+    "refusals": {
+      "unreadable": "O arquivo não pôde ser lido como planilha.",
+      "not_a_product_workbook": "Este arquivo não tem a estrutura da planilha exportada por este projeto.",
+      "unknown_revision": "Esta planilha veio de outra revisão aprovada ou de outro projeto.",
+      "structure_changed": "Uma fórmula, um rótulo ou o layout foi alterado. Só as células azuis de premissas podem mudar.",
+      "historical_value_changed": "Um valor histórico foi sobrescrito. Valores históricos vêm dos documentos e não mudam na planilha.",
+      "unsupported_change": "Uma célula editável que não é premissa foi alterada. Essa alteração é feita no Offroad.",
+      "value_invalid": "O valor proposto não é um número utilizável ou está fora dos limites declarados da premissa.",
+      "no_change": "O arquivo está igual à revisão aprovada. Não há mudança para propor."
+    },
+    "proposalsTitle": "Propostas de mudança importadas",
+    "proposalsEmpty": "Nenhuma proposta importada neste projeto.",
+    "proposalLabel": "Proposta. Alterações de premissa: {changes}",
+    "proposalOpened": "Aberta em {date}",
+    "proposalStatus": {
+      "proposed": "Aguardando revisão",
+      "approved": "Aprovada",
+      "rejected": "Devolvida"
+    },
+    "approve": "Aprovar e recalcular",
+    "reject": "Devolver",
+    "awaitingReviewer": "A aprovação cabe a quem tem a função de aprovador neste projeto.",
+    "reviewedAt": "Revisada em {date}",
+    "proposalApproved": "Proposta aprovada. O recálculo foi enviado.",
+    "proposalRejected": "Proposta devolvida.",
+    "errors": {
+      "invalid": "Não foi possível ler o pedido. Confira o arquivo e tente de novo.",
+      "denied": "Você não tem acesso a esta ação neste projeto.",
+      "role": "Esta ação exige a função correspondente neste projeto.",
+      "duplicate": "Este pedido já foi registrado.",
+      "not_found": "Projeto não encontrado.",
+      "save": "Não foi possível concluir agora. Tente de novo.",
+      "processing": "Há um processamento em andamento neste projeto.",
+      "stale": "As premissas ou os dados mudaram desde este arquivo. Exporte a planilha atual e refaça a edição."
+    },
+    "boundary": "Esta tela registra revisões de premissas e dados e recalcula resultados. Não constitui aprovação de crédito, compromisso de financiamento ou recomendação."
   }
 }

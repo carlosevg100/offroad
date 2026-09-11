@@ -1,6 +1,9 @@
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
+import {InstitutionalRevisionWork} from "@/components/advisor/institutional-revision-work";
+import {loadProjectRevisionHistory} from "@/lib/advisor/institutional-revision-history";
+import {loadInstitutionalRevisionProposals} from "@/lib/advisor/institutional-revision-proposals";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
 import {ProviderWorkHistory} from "@/components/advisor/provider-work-history";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
@@ -656,6 +659,16 @@ async function ConversationalCapitalProject({
   if (institutionalResult) {
     const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
     workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult} />});
+  }
+  // Which approved revision produced this result, what changed since the previous one, and the
+  // way back in for a workbook somebody edited. Shown only once a revision exists.
+  const revisionHistory = await loadProjectRevisionHistory(supabase, project.id);
+  if (revisionHistory && revisionHistory.revisions.length > 0) {
+    const revisionCopy = await getTranslations({locale, namespace: "InstitutionalRevision"});
+    const revisionProposals = await loadInstitutionalRevisionProposals(supabase, project.id);
+    workSections.push({id: "institutional-revisions", title: revisionCopy("title"),
+      version: revisionHistory.currentRevisionNumber ?? undefined,
+      content: <InstitutionalRevisionWork projectId={project.id} history={revisionHistory} proposals={revisionProposals} />});
   }
   const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];
 

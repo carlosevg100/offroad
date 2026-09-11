@@ -1,6 +1,9 @@
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
+import {writeFileSync} from "node:fs";
+import {tmpdir} from "node:os";
 import {join} from "node:path";
+import * as XLSX from "xlsx";
 import {expect,test} from "@playwright/test";
 import messages from "../messages/pt-BR.json";
 import {waitForOneTimeCode} from "./support/mail";
@@ -186,4 +189,52 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(xlsx).toHaveAttribute("href",currentUrl!);
  await expect(comparison).toContainText(messages.InstitutionalScenarioComparison.boundary);
  expect(new URL(page.url()).pathname).toBe(projectPath);
+
+ // Two approved revisions exist now. The older output stays identifiable as previous and the
+ // difference names the assumption that moved.
+ await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-revisions"]').click();
+ const revisions=page.getByTestId("institutional-revision-work");
+ await expect(revisions.getByTestId("current-revision")).toContainText("2");
+ await expect(revisions.getByTestId("revision-2")).toContainText(messages.InstitutionalRevision.standing.current);
+ await expect(revisions.getByTestId("revision-1")).toContainText(messages.InstitutionalRevision.standing.previous);
+ await expect(revisions).toContainText(messages.InstitutionalRevision.differenceTitle);
+ await expect(revisions).toContainText(messages.InstitutionalRevision.assumptionsChanged);
+
+ // The exported workbook comes back. Unchanged, it is refused rather than proposed as an empty
+ // change; with one assumption cell edited, it opens a proposal that only an approver closes.
+ const exported=Buffer.from(await (await page.request.get(currentUrl!)).body());
+ const importField=revisions.locator('input[type="file"]');
+ const submitImport=revisions.getByRole("button",{name:messages.InstitutionalRevision.importSubmit,exact:true});
+ const unchangedPath=join(tmpdir(),`offroad-e2e-unchanged-${id}.xlsx`);
+ writeFileSync(unchangedPath,exported);
+ await importField.setInputFiles(unchangedPath);
+ await submitImport.click();
+ await expect(revisions.getByRole("alert")).toHaveText(messages.InstitutionalRevision.refusals.no_change);
+
+ // 0.4 is the cost ratio this scenario approved and the only editable cell holding it.
+ const book=XLSX.read(exported,{type:"buffer"});
+ const inputs=book.Sheets["Premissas 1"];
+ const edited=Object.keys(inputs).find(address=>/^B\d+$/.test(address)&&(inputs[address] as {v?:unknown}).v===0.4);
+ expect(edited).toBeTruthy();
+ inputs[edited!]={t:"n",v:0.35};
+ const editedPath=join(tmpdir(),`offroad-e2e-edited-${id}.xlsx`);
+ writeFileSync(editedPath,Buffer.from(XLSX.write(book,{bookType:"xlsx",type:"array"}) as ArrayBuffer));
+ await importField.setInputFiles(editedPath);
+ await submitImport.click();
+ const proposal=revisions.locator('[data-testid^="proposal-"]');
+ await expect(proposal).toHaveCount(1,{timeout:60_000});
+ await expect(proposal).toContainText(messages.InstitutionalRevision.proposalStatus.proposed);
+ await expect(proposal).toContainText("40%");
+ await expect(proposal).toContainText("35%");
+
+ // Approving it produces a third revision and a new current result; the previous one is kept.
+ await proposal.getByRole("button",{name:messages.InstitutionalRevision.approve,exact:true}).click();
+ await expect(revisions.getByTestId("current-revision")).toContainText("3",{timeout:120_000});
+ await resultLink.click();
+ await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
+ await expect(xlsx).not.toHaveAttribute("href",currentUrl!);
+ await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-revisions"]').click();
+ await expect(revisions.getByTestId("revision-2")).toContainText(messages.InstitutionalRevision.standing.previous);
+ await expect(revisions.getByTestId("revision-3")).toContainText(messages.InstitutionalRevision.standing.current);
+ await expect(revisions).toContainText(messages.InstitutionalRevision.boundary);
 });

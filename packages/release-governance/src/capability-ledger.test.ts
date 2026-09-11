@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(44);
+    expect(decision.entryCount).toBe(45);
     expect(decision.blockers).toEqual([]);
     // One scope is in production, on the founder approval of 10 September 2026, and it is the only
     // one an organization may rely on for its own work. Nothing else moved with it.
