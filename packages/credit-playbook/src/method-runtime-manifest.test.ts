@@ -105,10 +105,16 @@ describe("specialist method runtime manifest", () => {
     // The project work entry names the methods it executes. It lives in work-plan, which cannot
     // import this package, so the projection is pinned here instead: promoting a method, demoting
     // one or bumping a version fails this test rather than drifting from the entry.
+    //
+    // R01 is the one production method that is not on this entry: an organization reads it through
+    // its own released analytical result, not by asking for debt structure work. Promoting anything
+    // else fails here until someone decides where it belongs on the entry.
+    const releasedOnItsOwnSurface = new Set(["underwrite-receivables-pool"]);
     const declared = projectCapability("debt_structure_analysis").methods ?? [];
     const production = library.methods
-      .filter((method) => method.procedure.maturity === "production")
+      .filter((method) => method.procedure.maturity === "production" && !releasedOnItsOwnSurface.has(method.procedure.id))
       .map((method) => ({id: method.procedure.id, version: method.procedure.version}));
     expect(declared).toEqual(production);
+    for (const method of declared) expect(library.methods.find((entry) => entry.procedure.id === method.id)?.procedure.maturity, method.id).toBe("production");
   });
 });
