@@ -4854,6 +4854,92 @@
       "save": "Não foi possível salvar a alteração."
     }
   },
+  "DeliverableFormats": {
+    "title": "Formatos desta entrega",
+    "conditionsLabel": "Condição",
+    "unavailableLabel": "Indisponível agora",
+    "formats": {
+      "interactive": "Leitura no Offroad",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "roles": {
+      "reading": "leitura no produto",
+      "editable": "editável",
+      "final": "versão final",
+      "formulas": "planilha com fórmulas",
+      "tabular": "tabela",
+      "executive": "apresentação executiva"
+    },
+    "conditions": {
+      "approved_content_and_sources": "Mesmo conteúdo aprovado e as mesmas fontes.",
+      "same_assumptions_and_results_version": "Mesma versão de premissas e resultados.",
+      "reproduction_approved": "Reprodução dos números aprovados conferida antes do download.",
+      "dates_sources_and_unknown_criteria_preserved": "Datas, fontes e critérios desconhecidos preservados.",
+      "narrative_structure_required": "Estrutura de apresentação própria; texto longo não vira slide automaticamente.",
+      "tabular_contract_required": "Estrutura tabular própria, com colunas e unidades declaradas."
+    },
+    "blocked": {
+      "access_expired": "Seu acesso a este projeto não está mais vigente.",
+      "result_superseded": "Este resultado foi substituído. Abra o resultado vigente e exporte a partir dele.",
+      "result_preparing": "O resultado ainda está sendo preparado.",
+      "result_unavailable": "Resolva as pendências indicadas e peça uma nova revisão.",
+      "reproduction_divergence": "A reprodução dos números aprovados não conferiu. Peça uma nova revisão da configuração antes de exportar.",
+      "no_tabular_contract": "Esta entrega não tem estrutura tabular própria; a planilha não é oferecida.",
+      "no_narrative_structure": "Esta entrega não tem estrutura de apresentação própria; a apresentação não é oferecida.",
+      "format_not_in_policy": "Este formato não faz parte da política de entrega deste material."
+    }
+  },
+  "PresentationTemplate": {
+    "title": "Identidade visual dos materiais",
+    "intro": "Os arquivos gerados neste projeto usam esta identidade. O template Offroad é o padrão e continua disponível.",
+    "currentHouse": "Em uso: template Offroad.",
+    "currentClient": "Em uso: {name}, versão {version} ({scope}).",
+    "fingerprint": "Identificação gravada nos arquivos: {fingerprint}",
+    "preview": "Prévia da identidade",
+    "previewMark": "MATERIAL DE TRABALHO",
+    "previewTitle": "Título de exemplo do material",
+    "previewBody": "Texto de exemplo com a tipografia e as cores escolhidas. Os números e as fontes de informação não mudam com o template.",
+    "readOnly": "Somente proprietários e administradores da organização alteram a identidade visual.",
+    "scopeLegend": "Onde aplicar",
+    "scope": {
+      "organization": "Toda a organização",
+      "project": "Somente este projeto"
+    },
+    "templateKey": "Nome do template",
+    "templateVersion": "Versão do template",
+    "fontDisplay": "Fonte de títulos",
+    "fontBody": "Fonte de texto",
+    "pdfDisplay": "Alternativa no PDF para títulos",
+    "pdfBody": "Alternativa no PDF para texto",
+    "confidentialityLabel": "Marca de confidencialidade",
+    "logo": "Logotipo (PNG ou JPEG, até 2 MB)",
+    "removeLogo": "Remover o logotipo atual",
+    "colorsLegend": "Cores (hexadecimal de seis dígitos)",
+    "colors": {
+      "ink": "Texto",
+      "paper": "Fundo",
+      "accent": "Destaque",
+      "muted": "Texto secundário",
+      "warning": "Atenção",
+      "danger": "Alerta"
+    },
+    "fontSuggested": "Word e PowerPoint usam a fonte informada. O PDF precisa de uma fonte que o gerador consiga embutir; a sugestão para as fontes atuais é {display} para títulos e {body} para texto.",
+    "fontChoiceRequired": "Word e PowerPoint usam a fonte informada. O PDF precisa de uma escolha explícita entre as fontes disponíveis; nenhuma substituição é feita automaticamente.",
+    "save": "Salvar identidade",
+    "useHouse": "Voltar ao template Offroad",
+    "saved": "Identidade atualizada. Os próximos arquivos usam esta versão.",
+    "errors": {
+      "invalid": "Revise os campos: cores em hexadecimal de seis dígitos, nome e versão no formato indicado.",
+      "unsupported_font": "Escolha uma fonte de PDF entre as disponíveis. Nenhuma fonte é substituída sem a sua escolha.",
+      "logo": "O logotipo precisa ser PNG ou JPEG com até 2 MB e ficar na área da sua organização.",
+      "denied": "Somente proprietários e administradores da organização alteram a identidade visual.",
+      "not_found": "O projeto não está mais disponível.",
+      "save": "Não foi possível salvar a identidade."
+    }
+  },
   "MandateRegistry": {
     "title": "Fundos e mandatos",
     "intro": "Cadastre cada fundo e o mandato que ele pratica hoje. O registro entra como rascunho; a confirmação é um ato separado, com data e origem.",

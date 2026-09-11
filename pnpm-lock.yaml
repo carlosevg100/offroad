@@ -358,6 +358,9 @@ importers:
         specifier: 1.17.1
         version: 1.17.1
     devDependencies:
+      '@offroad/work-plan':
+        specifier: workspace:*
+        version: link:../work-plan
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43

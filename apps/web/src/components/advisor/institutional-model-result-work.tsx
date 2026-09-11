@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import {useFormatter, useLocale, useTranslations} from "next-intl";
+import {deliverableFormatDecisions} from "@offroad/case-export/deliverable-formats";
 import type {InstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
+import {institutionalResultDeliverableContext, institutionalResultDeliverableTypes} from "@/lib/advisor/institutional-result-formats";
+import {DeliverableFormatList} from "./deliverable-format-list";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {institutionalResultIssues} from "@/lib/advisor/institutional-issue-presentation";
 import {InstitutionalIssues} from "./institutional-issues";
@@ -28,9 +31,13 @@ export function InstitutionalModelResultWork({projectId, result}: {projectId: st
         </article>)}
       </div>
       <InstitutionalScenarioComparison key={result.id} currentId={result.id} comparisons={result.comparisons ?? []} />
-      <nav className={styles.downloads} aria-label={t("downloads")}>
-        {(["xlsx", "pptx", "docx", "pdf"] as const).map(format => <a key={format} href={`/${locale}/app/projects/${projectId}/financial-results/${result.id}/${format}`}>{t(`formats.${format}`)}</a>)}
-      </nav>
+      <div className={styles.downloads}>
+        <DeliverableFormatList
+          label={t("downloads")}
+          decisions={deliverableFormatDecisions(institutionalResultDeliverableTypes, institutionalResultDeliverableContext(result))}
+          basePath={`/${locale}/app/projects/${projectId}/financial-results/${result.id}`}
+        />
+      </div>
     </> : result.status === "blocked" ? <><p>{t("blockedHelp")}</p><InstitutionalIssues issues={institutionalResultIssues(result.blockers)} /></> : null}
     <footer><Link href="#work-institutional-setup">{t("edit")}</Link></footer>
   </section>;

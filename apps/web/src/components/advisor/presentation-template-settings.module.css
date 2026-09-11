@@ -1,0 +1,24 @@
+.template {display: grid; gap: 12px; font-size: 13px; color: #20262b;}
+.current {margin: 0; font-size: 14px; font-weight: 600;}
+.muted {margin: 0; font-size: 12px; line-height: 1.6; color: #65717a;}
+.preview {display: grid; gap: 7px; border: 1px solid; border-radius: 10px; padding: 16px;}
+.preview strong {font-size: 19px; font-weight: 600; line-height: 1.25;}
+.previewMark {font-size: 11px; letter-spacing: .08em; text-transform: uppercase;}
+.previewSwatches {display: flex; gap: 6px;}
+.previewSwatches i {width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(0, 0, 0, .12);}
+.form {display: grid; gap: 14px;}
+.grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;}
+.grid label, .colors label, .scope label, .removeLogo {display: grid; gap: 5px; font-size: 12px; font-weight: 600;}
+.grid input, .grid select, .colors input {padding: 9px 10px; border: 1px solid #cbd4c2; border-radius: 7px; background: #fff; color: inherit; font: inherit; font-weight: 400;}
+.scope, .colors {display: grid; gap: 10px; border: 1px solid #e2e6de; border-radius: 9px; padding: 12px; margin: 0;}
+.scope {grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));}
+.colors {grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));}
+.scope legend, .colors legend {font-size: 12px; font-weight: 600; padding: 0 4px;}
+.scope label, .removeLogo {grid-auto-flow: column; grid-template-columns: auto 1fr; align-items: center; gap: 8px; font-weight: 400;}
+.actions {display: flex; flex-wrap: wrap; gap: 10px;}
+.actions button {padding: 10px 16px; border-radius: 7px; border: 1px solid #cbd4c2; background: #fff; color: #38482d; font: inherit; cursor: pointer;}
+.actions button[type="submit"] {background: #38482d; border-color: #38482d; color: #fff;}
+.actions button:disabled {opacity: .55; cursor: not-allowed;}
+.actions button:focus-visible, .form input:focus-visible, .form select:focus-visible {outline: 2px solid #71884f; outline-offset: 3px;}
+.saved {margin: 0; font-size: 12px; color: #4a6336;}
+.error {margin: 0; font-size: 12px; color: #a23b3b;}

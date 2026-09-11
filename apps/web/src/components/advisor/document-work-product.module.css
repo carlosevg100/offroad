@@ -4,6 +4,7 @@
 .eyebrow { color: #53653d; font-size: 12px; font-weight: 600; margin: 0; }
 .download { color: #fff; background: #38482d; padding: 11px 16px; border-radius: 8px; text-decoration: none; white-space: nowrap; font-size: 14px; }
 .download:focus-visible, .product summary:focus-visible { outline: 3px solid #7d9455; outline-offset: 4px; }
+.downloads { margin: 0 0 24px; }
 .scope { color: #616974; font-size: 14px; line-height: 1.65; margin: 0 0 28px; }
 .section { border-top: 1px solid #e9ebe7; padding: 24px 0; }
 .section h3 { margin: 0 0 16px; font-size: 19px; }

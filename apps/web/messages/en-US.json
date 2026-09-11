@@ -4854,6 +4854,92 @@
       "save": "The change could not be saved."
     }
   },
+  "DeliverableFormats": {
+    "title": "Formats for this delivery",
+    "conditionsLabel": "Condition",
+    "unavailableLabel": "Not available now",
+    "formats": {
+      "interactive": "Read in Offroad",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "roles": {
+      "reading": "read in the product",
+      "editable": "editable",
+      "final": "final version",
+      "formulas": "workbook with formulas",
+      "tabular": "table",
+      "executive": "executive presentation"
+    },
+    "conditions": {
+      "approved_content_and_sources": "Same approved content and the same sources.",
+      "same_assumptions_and_results_version": "Same version of assumptions and results.",
+      "reproduction_approved": "Reproduction of the approved numbers checked before the download.",
+      "dates_sources_and_unknown_criteria_preserved": "Dates, sources and unknown criteria preserved.",
+      "narrative_structure_required": "Its own presentation structure; long text does not become slides automatically.",
+      "tabular_contract_required": "Its own tabular structure, with declared columns and units."
+    },
+    "blocked": {
+      "access_expired": "Your access to this project is no longer current.",
+      "result_superseded": "This result was superseded. Open the current result and export from it.",
+      "result_preparing": "The result is still being prepared.",
+      "result_unavailable": "Resolve the listed issues and request a new review.",
+      "reproduction_divergence": "Reproducing the approved numbers did not match. Request a new review of the configuration before exporting.",
+      "no_tabular_contract": "This delivery has no tabular structure of its own; the spreadsheet is not offered.",
+      "no_narrative_structure": "This delivery has no presentation structure of its own; the deck is not offered.",
+      "format_not_in_policy": "This format is not part of the delivery policy for this material."
+    }
+  },
+  "PresentationTemplate": {
+    "title": "Visual identity of the materials",
+    "intro": "Files produced in this project use this identity. The Offroad template is the default and stays available.",
+    "currentHouse": "In use: Offroad template.",
+    "currentClient": "In use: {name}, version {version} ({scope}).",
+    "fingerprint": "Identity recorded in the files: {fingerprint}",
+    "preview": "Identity preview",
+    "previewMark": "WORKING MATERIAL",
+    "previewTitle": "Sample material title",
+    "previewBody": "Sample text with the chosen typography and colours. Numbers and information sources do not change with the template.",
+    "readOnly": "Only organization owners and administrators change the visual identity.",
+    "scopeLegend": "Where to apply",
+    "scope": {
+      "organization": "The whole organization",
+      "project": "This project only"
+    },
+    "templateKey": "Template name",
+    "templateVersion": "Template version",
+    "fontDisplay": "Heading font",
+    "fontBody": "Body font",
+    "pdfDisplay": "PDF alternative for headings",
+    "pdfBody": "PDF alternative for body text",
+    "confidentialityLabel": "Confidentiality mark",
+    "logo": "Logo (PNG or JPEG, up to 2 MB)",
+    "removeLogo": "Remove the current logo",
+    "colorsLegend": "Colours (six-digit hexadecimal)",
+    "colors": {
+      "ink": "Text",
+      "paper": "Background",
+      "accent": "Accent",
+      "muted": "Secondary text",
+      "warning": "Attention",
+      "danger": "Alert"
+    },
+    "fontSuggested": "Word and PowerPoint use the font you name. The PDF needs a family this renderer can embed; the suggestion for the current fonts is {display} for headings and {body} for body text.",
+    "fontChoiceRequired": "Word and PowerPoint use the font you name. The PDF needs an explicit choice among the available families; nothing is substituted automatically.",
+    "save": "Save identity",
+    "useHouse": "Return to the Offroad template",
+    "saved": "Identity updated. The next files use this version.",
+    "errors": {
+      "invalid": "Check the fields: six-digit hexadecimal colours, name and version in the indicated format.",
+      "unsupported_font": "Choose a PDF font among the available families. No font is replaced without your choice.",
+      "logo": "The logo must be PNG or JPEG up to 2 MB and stored in your organization's own area.",
+      "denied": "Only organization owners and administrators change the visual identity.",
+      "not_found": "The project is no longer available.",
+      "save": "The identity could not be saved."
+    }
+  },
   "MandateRegistry": {
     "title": "Funds and mandates",
     "intro": "Register each fund and the mandate it runs today. The record enters as a draft; confirming it is a separate act, with a date and an origin.",

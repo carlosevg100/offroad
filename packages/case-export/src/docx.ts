@@ -9,7 +9,18 @@
 
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 
+import {offroadHouseTemplateDefinition, presentationTemplateManifest, type InstitutionalPresentationTemplate} from "./presentation-template";
 import {zipStored} from "./zip";
+
+/** The house identity in renderer form, used whenever a delivery carries no client template. */
+export const houseDocumentTemplate: InstitutionalPresentationTemplate = {
+  id: offroadHouseTemplateDefinition.templateKey,
+  version: offroadHouseTemplateDefinition.templateVersion,
+  origin: "offroad_house",
+  colors: {...offroadHouseTemplateDefinition.colors},
+  fonts: {...offroadHouseTemplateDefinition.fonts},
+  pdfFonts: {display: offroadHouseTemplateDefinition.fonts.pdfDisplay, body: offroadHouseTemplateDefinition.fonts.pdfBody},
+};
 
 export type DocxLang = "pt" | "en";
 
@@ -22,6 +33,8 @@ export type DocxMeta = {
   preparedBy?: string;
   /** Exact locations in an existing source table; avoids a second reference index. */
   referenceTargets?: readonly {id: string; number: number; blockIndex: number; rowIndex: number}[];
+  /** The visual identity this file carries. Absent means the Offroad house template. */
+  template?: InstitutionalPresentationTemplate;
 };
 
 const copy = {
@@ -30,6 +43,13 @@ const copy = {
   prepared: {pt: "Preparado por", en: "Prepared by"},
   references: {pt: "Referências da análise", en: "Analysis references"},
 };
+
+/** A colour the document format can carry, or a refusal. Never a quietly different colour. */
+function templateColor(value: string): string {
+  const normalized = value.replace(/^#/, "").toUpperCase();
+  if (!/^[0-9A-F]{6}$/.test(normalized)) throw new Error(`invalid template color ${value}`);
+  return normalized;
+}
 
 export function escapeXml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -166,14 +186,14 @@ const rootRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 const documentRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>`;
 
-const styles = (lang: DocxLang) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="21"/><w:lang w:val="${lang === "pt" ? "pt-BR" : "en-US"}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:color w:val="000000"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:color w:val="253743"/></w:rPr></w:style></w:styles>`;
+const styles = (lang: DocxLang, template: InstitutionalPresentationTemplate) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="${escapeXml(template.fonts.body)}" w:hAnsi="${escapeXml(template.fonts.body)}" w:cs="${escapeXml(template.fonts.body)}"/><w:sz w:val="21"/><w:lang w:val="${lang === "pt" ? "pt-BR" : "en-US"}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:rFonts w:ascii="${escapeXml(template.fonts.display)}" w:hAnsi="${escapeXml(template.fonts.display)}"/><w:b/><w:sz w:val="36"/><w:color w:val="${templateColor(template.colors.ink)}"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="280" w:after="100"/></w:pPr><w:rPr><w:rFonts w:ascii="${escapeXml(template.fonts.display)}" w:hAnsi="${escapeXml(template.fonts.display)}"/><w:b/><w:sz w:val="26"/><w:color w:val="${templateColor(template.colors.ink)}"/></w:rPr></w:style></w:styles>`;
 
 const footer = (text: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${run(text, {size: 16, color: "6B7780"})}${run(" · ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="PAGE">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple>${run(" / ", {size: 16, color: "6B7780"})}<w:fldSimple w:instr="NUMPAGES">${run("1", {size: 16, color: "6B7780"})}</w:fldSimple></w:p></w:ftr>`;
 
-const core = (title: string, issuedOn: string) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${escapeXml(title)}</dc:title><dc:creator>Offroad Capital</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:modified></cp:coreProperties>`;
+const core = (title: string, issuedOn: string, template: InstitutionalPresentationTemplate) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${escapeXml(title)}</dc:title><dc:creator>Offroad Capital</dc:creator><cp:keywords>${escapeXml(presentationTemplateManifest(template, template.fingerprint ?? "").map((entry) => `${entry.name}=${entry.value}`).join("; "))}</cp:keywords><dcterms:created xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${issuedOn}T00:00:00Z</dcterms:modified></cp:coreProperties>`;
 
 /** The document.xml body, exported for tests that read the XML rather than the archive. */
 export function materialDocumentXml(input: {material: Material; lang: DocxLang; meta: DocxMeta}): string {
@@ -181,7 +201,7 @@ export function materialDocumentXml(input: {material: Material; lang: DocxLang; 
   const head = [
     paragraph(run(material.title[lang]), {style: "Title"}),
     paragraph(
-      run(`${meta.companyName ? `${meta.companyName} · ` : ""}${copy.issued[lang]} ${meta.issuedOn} · ${copy.confidential[lang]}`, {size: 18, color: "6B7780"}),
+      run(`${meta.companyName ? `${meta.companyName} · ` : ""}${copy.issued[lang]} ${meta.issuedOn} · ${meta.template?.confidentialityLabel ?? copy.confidential[lang]}`, {size: 18, color: templateColor((meta.template ?? houseDocumentTemplate).colors.muted)}),
       {spacingAfter: 240},
     ),
   ].join("");
@@ -216,14 +236,16 @@ export function materialDocumentXml(input: {material: Material; lang: DocxLang; 
 
 export function materialToDocx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Uint8Array {
   const {material, lang, meta} = input;
-  const footerText = `${copy.confidential[lang]} · ${copy.prepared[lang]} ${meta.preparedBy ?? "Offroad Capital"} · ${copy.issued[lang]} ${meta.issuedOn}`;
+  const template = meta.template ?? houseDocumentTemplate;
+  const label = template.confidentialityLabel ?? copy.confidential[lang];
+  const footerText = `${label} · ${copy.prepared[lang]} ${meta.preparedBy ?? "Offroad Capital"} · ${copy.issued[lang]} ${meta.issuedOn}`;
   return zipStored([
     {name: "[Content_Types].xml", data: contentTypes},
     {name: "_rels/.rels", data: rootRels},
     {name: "word/_rels/document.xml.rels", data: documentRels},
     {name: "word/document.xml", data: materialDocumentXml(input)},
-    {name: "word/styles.xml", data: styles(lang)},
+    {name: "word/styles.xml", data: styles(lang, template)},
     {name: "word/footer1.xml", data: footer(footerText)},
-    {name: "docProps/core.xml", data: core(material.title[lang], meta.issuedOn)},
+    {name: "docProps/core.xml", data: core(material.title[lang], meta.issuedOn, template)},
   ]);
 }
