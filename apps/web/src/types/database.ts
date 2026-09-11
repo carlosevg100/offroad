@@ -8657,6 +8657,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_institutional_revision_proposals_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       read_presentation_template_v1: {
         Args: { p_project_id: string }
         Returns: Json
@@ -9006,6 +9010,16 @@ export type Database = {
           p_expected_candidate_fingerprint: string
           p_expected_parent_fingerprint: string
           p_project_id: string
+        }
+        Returns: Json
+      }
+      review_institutional_revision_proposal_v1: {
+        Args: {
+          p_decision: string
+          p_expected_structure_fingerprint: string
+          p_locale: string
+          p_proposal_id: string
+          p_request_id: string
         }
         Returns: Json
       }
@@ -9437,6 +9451,10 @@ export type Database = {
           p_source_reviews: Json
           p_submission_id: string
         }
+        Returns: Json
+      }
+      submit_institutional_revision_proposal_v1: {
+        Args: { p_payload: Json; p_project_id: string; p_proposal_id: string }
         Returns: Json
       }
       update_workspace_project: {
