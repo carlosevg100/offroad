@@ -157,6 +157,18 @@ describe("plan-meeting-brief executor", () => {
     expect(planMeetingBrief(turn1()).change_note).toBeNull();
   });
 
+  it("signs the same brief when the base's document list arrives in another order", () => {
+    const first = planMeetingBrief(turn1());
+    for (const rotation of [1, 2, 3]) {
+      const shuffled = turn1();
+      shuffled.documents = [...shuffled.documents.slice(rotation), ...shuffled.documents.slice(0, rotation)];
+      const again = planMeetingBrief(shuffled);
+      expect(again.trace.inputFingerprint).toBe(first.trace.inputFingerprint);
+      expect(again.trace.outputFingerprint).toBe(first.trace.outputFingerprint);
+    }
+    expect(planMeetingBrief({...turn1(), documents: [...turn1().documents].reverse()}).trace.outputFingerprint).toBe(first.trace.outputFingerprint);
+  });
+
   it("is consistent under permutations of objects, headlines (ties in text included), questions, audience members, previous-version blocks and key order", () => {
     const base = (): BriefInput => {
       const input = turn1();
