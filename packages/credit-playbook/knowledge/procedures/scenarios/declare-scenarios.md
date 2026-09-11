@@ -1,7 +1,7 @@
 ---
 id: declare-scenarios
 version: 2026.09.05-v6
-maturity: implemented
+maturity: ready_for_founder
 title_pt: Declarar cenários com racional e sem inventar premissa
 title_en: Declare scenarios with a rationale and without inventing assumptions
 role: financial_analysis
@@ -27,6 +27,10 @@ calculation_ids: [financial.rate_shock, financial.liquidity_coverage, operation.
 gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
 max_model_calls: 1
 model_purpose: [redigir a frase de racional de cada cenário a partir dos parâmetros registrados]
+review_ids: [declare-scenarios-2026-09-10-independent-review]
+gold_run_ids: [declare-scenarios-2026-09-10-gold]
+adversarial_run_ids: [declare-scenarios-2026-09-10-adversarial]
+consistency_run_ids: [declare-scenarios-2026-09-10-consistency]
 ---
 
 # Objetivo

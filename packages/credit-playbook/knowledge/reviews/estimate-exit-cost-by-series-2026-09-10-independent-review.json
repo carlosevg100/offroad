@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "estimate-exit-cost-by-series-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual do premio de DI e do make-whole, teste das janelas por familia de serie, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/estimate-exit-cost-by-series-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "estimate-exit-cost-by-series",
+    "version": "2026.09.05-v8",
+    "fingerprint": "2f0a8246e3c9de774762795d6be764106097d5b5fcfb1e9d95ce4d41bd7dda0c"
+  },
+  "run": {
+    "id": "estimate-exit-cost-by-series-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Na base congelada as doze series ficam em insufficient_evidence e o total estimado e zero: o ITR traz o saldo de 31/05/2026 e nao o nominal, a remuneracao corrida e os encargos em 04/09/2026, e o metodo se recusa a assumir qualquer um deles.",
+      "source": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "anchor": "totals.series_estimated 0, series_open 12",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Recalculei a formula do premio de DI fora do executor sobre a serie hipotetica precificada: (1 + 0,004)^(504/252) menos 1 e 0,008016, que sobre o nominal de 100 da 0,80160000 truncado em oito casas. O prêmio e pro rata ao ano, nunca flat, como o gabarito exige.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.2 e 13.4",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As janelas por familia foram testadas contra as escrituras: as series DI da 13a e da 14a desde 14/05/2026 e 15/06/2026, a DI da 15a so a partir de 15/11/2027, as IPCA depois das carencias de 2027 e 2028 na 13a e na 14a e de 2028 e 2029 na 15a, e a prefixada da 15a so a partir de 15/11/2028.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.2",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao declarada ja esta na base e foi afirmada sobre ela: as catorze rotas de make-whole das seis series IPCA e da prefixada ficam sem cotacao e sem premio calculado, e o premio estimado do caso permanece zero.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/estimate-exit-cost-by-series-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:make-whole-without-quote-is-insufficient",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A 11a emissao nao tem resgate unilateral: so aquisicao facultativa sujeita ao aceite do vendedor e oferta que exige adesao de 100%, e o metodo registra as duas rotas com essa condicao.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.2; escritura da 11a, 4.13 e 4.14.1",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes de series, mecanismos, fluxos e ordem de chaves reproduzem os mesmos fingerprints.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/estimate-exit-cost-by-series-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A contagem de dias uteis usa dias de semana menos os feriados que o calendario listar; com o arquivo do calendario fora do corpus a contagem e declarada como teto, e nao como numero final.",
+      "source": "packages/credit-playbook/src/cases/gc01/estimate-exit-cost-by-series.ts",
+      "anchor": "days(), holidays declarados zero",
+      "result": "limitation"
+    },
+    {
+      "claim": "O valor monetario do premio em uma data exige a cotacao daquele dia (NTN-B pela ANBIMA nas series IPCA, curva Pre x DI da B3 na prefixada); sem ela o preco inteiro nao e estimado, so a rota e a regra.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.3",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "Nenhuma serie do Caso 01 e precificada: o resultado entrega rotas, janelas e regras, e diz que a base nao sustenta o preco.",
+    "O calendario de dias uteis precisa entrar no corpus para a contagem deixar de ser um teto declarado.",
+    "O premio de uma saida negociada e a adesao dos titulares nao se estimam antes da negociacao e ficam como incognita declarada."
+  ],
+  "notes": "Revisao independente por agente com a formula do premio recalculada fora do executor sobre a serie hipotetica precificada. Nao e auditoria humana, nao e cotacao e nao afirma preco de saida das series reais. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/refinance/estimate-exit-cost-by-series.md, packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts, packages/credit-playbook/src/cases/gc01/estimate-exit-cost-by-series.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

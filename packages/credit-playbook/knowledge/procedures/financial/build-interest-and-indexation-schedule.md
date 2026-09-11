@@ -1,12 +1,15 @@
 ---
 id: build-interest-and-indexation-schedule
 version: 2026.09.05-v7
-maturity: implemented
+maturity: production
 title_pt: Construir o cronograma de juros e separar IPCA capitalizado do pago
 title_en: Build the interest schedule and separate capitalized from paid indexation
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Modelagem
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-interest-and-indexation-schedule
 implementation_export: buildInterestAndIndexationSchedule
@@ -26,6 +29,10 @@ task_specs: [C05, C07]
 calculation_ids: [financial.indexed_debt_schedule, financial.indexed_debt_aggregation, financial.interest_expense_bridge, financial.daily_rate_annualized, financial.ipca_anniversary_update, financial.coupon_payment, financial.ledger_coverage]
 gold_cases: [gc01-analista-ib-camil]
 dependencies: [build-debt-ledger]
+review_ids: [build-interest-and-indexation-schedule-2026-09-10-independent-review]
+gold_run_ids: [build-interest-and-indexation-schedule-2026-09-10-gold]
+adversarial_run_ids: [build-interest-and-indexation-schedule-2026-09-10-adversarial]
+consistency_run_ids: [build-interest-and-indexation-schedule-2026-09-10-consistency]
 ---
 
 # Objetivo

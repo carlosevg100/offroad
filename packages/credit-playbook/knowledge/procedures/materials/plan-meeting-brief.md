@@ -1,7 +1,7 @@
 ---
 id: plan-meeting-brief
 version: 2026.09.05-v7
-maturity: implemented
+maturity: ready_for_founder
 title_pt: Planejar a devolutiva e o material de reunião
 title_en: Plan the first deliverable and the meeting material
 role: institutional_materials
@@ -27,6 +27,10 @@ gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
 max_model_calls: 2
 model_purpose: [propor o plano de páginas a partir dos objetos aprovados, redigir a prosa de cada página a partir dos objetos aprovados]
 dependencies: [build-debt-ledger, diagnose-maturity-wall, reconcile-covenant-definitions, compare-refinancing-before-after]
+review_ids: [plan-meeting-brief-2026-09-10-independent-review]
+gold_run_ids: [plan-meeting-brief-2026-09-10-gold]
+adversarial_run_ids: [plan-meeting-brief-2026-09-10-adversarial]
+consistency_run_ids: [plan-meeting-brief-2026-09-10-consistency]
 ---
 
 # Objetivo

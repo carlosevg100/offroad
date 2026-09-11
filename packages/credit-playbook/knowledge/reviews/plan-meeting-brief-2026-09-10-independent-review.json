@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "plan-meeting-brief-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "leitura do planejador contra os objetos assinados, teste da regra das tres perguntas, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/plan-meeting-brief-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "plan-meeting-brief",
+    "version": "2026.09.05-v7",
+    "fingerprint": "e998aeca7a187176d9f89a69ba7654cf11c38c14a5f3701591d9f48041c6780b"
+  },
+  "run": {
+    "id": "plan-meeting-brief-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "No turno 1 o planejador preenche os blocos somente com objetos utilizaveis, nomeia os condicionados como lacuna e faz tres perguntas de alinhamento, recusando quatro com o motivo de cada uma.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "alignment_questions, refused_questions",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Cada manchete citada carrega o fingerprint do objeto que a assinou: a divida bruta de 5.670.186 e a divida liquida contratual de 4.228.477 apontam para o mesmo objeto do ledger, e conferi os dois numeros contra a secao 5 do gabarito.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "deliverable.blocks[debt_by_instrument]",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O plano de paginas fica not_requested e a producao nao e liberada: o primeiro entregavel nao e material e o plano espera audiencia e forma.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "page_plan.production_allowed false",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao declarada ja esta na base e foi afirmada sobre ela: a pergunta cuja resposta esta nos documentos e recusada com a ancora da resposta (a data-base de 31/05/2026 na capa do ITR) e nao vai para a reuniao.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/plan-meeting-brief-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:question-answered-by-documents-refused",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A prosa das paginas nao e produzida aqui e o resultado diz isso em not_produced_here; o executor nao escreve uma frase de material.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "not_produced_here",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Defeito encontrado e corrigido: a lista de documentos da base era o unico conjunto que o planejador nao canonizava antes de assinar, entao a mesma base em outra ordem produzia outro fingerprint e o objeto parecia novo sem nada ter mudado. A lista passou a ser ordenada como os demais conjuntos, com teste de regressao.",
+      "source": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "anchor": "commit 7291ef9; teste signs the same brief when the base's document list arrives in another order",
+      "result": "corrected"
+    },
+    {
+      "claim": "Depois da correcao, dez permutacoes de objetos, manchetes, perguntas, membros da audiencia e ordem de chaves reproduzem os mesmos fingerprints. O conteudo assinado de cada objeto nao e permutado: alteralo e falsificacao, que o executor recusa.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/plan-meeting-brief-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O metodo declara duas chamadas de modelo (propor o plano de paginas e redigir a prosa). Nenhuma delas foi exercida nesta revisao e nenhuma tem evidencia gravada.",
+      "source": "packages/credit-playbook/knowledge/procedures/materials/plan-meeting-brief.md",
+      "anchor": "max_model_calls: 2",
+      "result": "unverifiable"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "As duas etapas assistidas por modelo continuam sem evidencia gravada e fora do alcance desta revisao.",
+    "A producao de material so e liberada depois do plano de paginas confirmado; nenhuma leitura do resultado pode antecipar isso.",
+    "As manchetes so podem citar numeros que o objeto assinado carrega no campo apontado."
+  ],
+  "notes": "Revisao independente por agente sobre o planejador e os objetos assinados do Caso 01. Encontrou e corrigiu um defeito de canonizacao antes de concluir. Nao e auditoria humana e nao cobre as etapas assistidas por modelo. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/materials/plan-meeting-brief.md, packages/credit-playbook/src/executors/plan-meeting-brief.ts, packages/credit-playbook/src/cases/gc01/plan-meeting-brief.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

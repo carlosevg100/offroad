@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "compare-refinancing-before-after-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual do depois de cada alternativa, do custo all-in e da alavancagem, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/compare-refinancing-before-after-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "compare-refinancing-before-after",
+    "version": "2026.09.05-v7",
+    "fingerprint": "674bff25f8a23869080fa05f60f2c30b538ef610ec5cf6456ec83dc83d657018"
+  },
+  "run": {
+    "id": "compare-refinancing-before-after-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Recalculei o depois da alternativa extend-di fora do executor: divida bruta 5.670.186 mais 745.000 menos os nominais contratuais de 304.160 e 411.643 sao 5.699.383; caixa dedutivel 1.455.809 mais 737.550 liquidos da comissao de 1% menos 304.160, 411.643, 2.448 e 5.266 de premio de saida e 1.500 de custos sao 1.468.342; divida liquida 4.231.041 e contratual 4.245.141. Todos batem.",
+      "source": "packages/credit-playbook/src/executors/compare-refinancing-before-after.ts",
+      "anchor": "alternatives[extend-di].after",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A alavancagem usa a divida liquida contratual sobre o EBITDA implicito de 895.864: 4.245.141 dividido por 895.864 sao 4,73859983 na extend-di e 4.228.477 dividido por 895.864 sao 4,71999879 no status quo. Recalculei as duas divisoes.",
+      "source": "packages/credit-playbook/src/executors/compare-refinancing-before-after.ts",
+      "anchor": "after.leverage",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O principal retirado e o nominal contratual de cada serie (304.160 e 411.643 debentures de R$ 1.000), nunca o saldo contabil do ITR, e cada parcela sai da sua propria janela.",
+      "source": "packages/credit-playbook/src/cases/gc01/compare-refinancing-before-after.ts",
+      "anchor": "escrituras da 13a e da 14a, clausula 4.1",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Nenhum headroom e medido em nenhuma alternativa: os quatro limites estao insufficient_evidence com comparabilidade condicional, e o motivo aparece instrumento a instrumento.",
+      "source": "packages/credit-playbook/src/executors/compare-refinancing-before-after.ts",
+      "anchor": "after.headroom_by_instrument",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao declarada ja esta na base e foi afirmada sobre ela: a alternativa retire-ipca, cuja saida nao tem preco, bloqueia sozinha e carrega o termo nao coberto; as outras duas seguem comparadas.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/compare-refinancing-before-after-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:unpriced-exit-blocks-alternative",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O ranking usa o discriminador declarado, concentracao no pico: o status quo lidera com 0,21689377 contra 0,21807226 da extend-di. A alternativa que levanta divida nova nao e comparada com a existente pelo custo, porque o custo contabil de 12,46% nao e all-in.",
+      "source": "packages/credit-playbook/src/executors/compare-refinancing-before-after.ts",
+      "anchor": "ranking; after.cost.comparable_with_new_debt",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes de alternativas, series retiradas, linhas do cronograma e ordem de chaves reproduzem os mesmos fingerprints.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/compare-refinancing-before-after-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os termos da divida nova sao indicativos e declarados como tal (curva de 04/09/2026, sem proposta e sem term sheet no corpus); a comparacao nao afirma disponibilidade de mercado.",
+      "source": "packages/credit-playbook/src/cases/gc01/compare-refinancing-before-after.ts",
+      "anchor": "newDebt.termsSource: indicative_unverified",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "O ranking vale somente sobre o que foi precificado; uma alternativa sem preco de saida nao entra e a comparacao diz por que.",
+    "Os termos da divida nova sao indicativos: nenhuma frase do resultado pode sugerir proposta, aprovacao ou disponibilidade de financiamento.",
+    "O headroom so aparece quando o limite estiver resolvido e a comparabilidade deixar de ser condicional."
+  ],
+  "notes": "Revisao independente por agente com o depois de cada alternativa recalculado fora do executor. Nao e auditoria humana, nao e recomendacao de estrutura e nao promete financiamento. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/refinance/compare-refinancing-before-after.md, packages/credit-playbook/src/executors/compare-refinancing-before-after.ts, packages/credit-playbook/src/cases/gc01/compare-refinancing-before-after.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

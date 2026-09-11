@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "reconcile-financial-statements-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "reconcile-financial-statements",
+    "version": "2026.09.05-v9"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
+    "exportName": "reconcileFinancialStatements"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.574Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:scale-mutation-breaks-roll-forward",
+      "expectation": "a ponte da divida deixa de fechar e a conciliacao vai para identity_failed",
+      "observed": "a ponte da divida deixa de fechar e a conciliacao vai para identity_failed",
+      "inputFingerprint": "9323ce3711b59580d1e3f1a7e927532b1b97e160ff4ab69b0bbb9df73ed113d3",
+      "outputFingerprint": "be56f722d52e6f0eb2445c8e619e162aaf75ce1aef727eaded6b4d1110b43d53",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "ad3345e96b5bd7922522228737e3880d355143a58aad98f91735c7b875bf5a94",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

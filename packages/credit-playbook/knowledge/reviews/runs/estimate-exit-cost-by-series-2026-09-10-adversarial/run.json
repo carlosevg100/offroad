@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "estimate-exit-cost-by-series-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "estimate-exit-cost-by-series",
+    "version": "2026.09.05-v8"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
+    "exportName": "estimateExitCostBySeries"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:make-whole-without-quote-is-insufficient",
+      "expectation": "as 14 rotas de make-whole das seis series IPCA e da prefixada ficam sem premio calculado e o premio estimado do caso e 0",
+      "observed": "as 14 rotas de make-whole das seis series IPCA e da prefixada ficam sem premio calculado e o premio estimado do caso e 0",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "44e0321f86c5ff48054fe83273a81c2a5486f59b9446814c7bcc854ae3126b40",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

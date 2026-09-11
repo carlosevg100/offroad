@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-debt-ledger-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "build-debt-ledger",
+    "version": "2026.09.05-v15"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/build-debt-ledger",
+    "exportName": "buildDebtLedger"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.574Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:scale-mutation-blocks-ledger",
+      "expectation": "a conciliacao com o balanco bloqueia o ledger",
+      "observed": "a conciliacao com o balanco bloqueia o ledger",
+      "inputFingerprint": "360b1bdd14f31dbfee27030cec096961473e5ea4c5fdb79b5b8958fc19e6cfc2",
+      "outputFingerprint": "3c3f1c1cc3c57f4539dc06bd2e6031d525c2227d057f8537c4352abe8c27ca28",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:compensating-split-swap-blocks-ledger",
+      "expectation": "a conciliacao por prazo bloqueia o ledger",
+      "observed": "a conciliacao por prazo bloqueia o ledger",
+      "inputFingerprint": "592bc0d7bd0bacd9ed986e4f1f0f5122809bb6ab1d3d841876580b91839b9ca1",
+      "outputFingerprint": "88d62f1aa21d49ec24fc9fb9ac7e0cb19c049999e4ec9e9736e37a51f48dccae",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:definition-text-contradicts-formula",
+      "expectation": "a visao contratual nao e calculada e o ledger bloqueia",
+      "observed": "a visao contratual nao e calculada e o ledger bloqueia",
+      "inputFingerprint": "40b3267fe512f922dee2014c4c557c3d984d232e033583f6bc0a4df33d5543e6",
+      "outputFingerprint": "b954410f34809d8c04d7098b7b917e3781e068a04a6522e64936344a3712fb8c",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:current-period-by-end-date-not-label",
+      "expectation": "o periodo corrente continua sendo o de 1229828, pela data de fim e nao pelo rotulo",
+      "observed": "o periodo corrente continua sendo o de 1229828, pela data de fim e nao pelo rotulo",
+      "inputFingerprint": "c205d3430c69906619936ed2860e451b62e0c66fd0e6cdea0673626ae0fe2db6",
+      "outputFingerprint": "4a931f80692242189eeb7a7a4af20e6b7d38e1a656acc4a9baacdcec328e47f7",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:row-split-must-add-up",
+      "expectation": "recusado no contrato de entrada",
+      "observed": "recusado no contrato de entrada",
+      "inputFingerprint": "e79f437a4568d47a499a59d27011ed142047eb6fe621ad4815e50c9f562ac576",
+      "outputFingerprint": "437c7922545ccd4a560fcf4230f18d64a97877fdbb792d2b1b87ef2c699600f2",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:contractual-only-row-out-of-balance-identity",
+      "expectation": "a linha so contratual entra na divida bruta, fica fora da reportada e a conciliacao segue em 0",
+      "observed": "a linha so contratual entra na divida bruta, fica fora da reportada e a conciliacao segue em 0",
+      "inputFingerprint": "2f700d37ceb16b92c605f9fc001ffc732a86e9d878081ab9184476c95eb66193",
+      "outputFingerprint": "b768f21b466577346bb79c0e79c4296f5b15eb8983e7ee4db903da913c63dac6",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:definition-polarity-swapped",
+      "expectation": "a visao do release nao e calculada e o ledger bloqueia",
+      "observed": "a visao do release nao e calculada e o ledger bloqueia",
+      "inputFingerprint": "780b3bb823c4663034183a0413a14390e57ad4f4022bb745a95ed1867543e803",
+      "outputFingerprint": "a097341c8791c1480df43bf63bcda0467112bb4e584badb40fbc9ace066b25ca",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "c2c483cc00327e1fac18c1404b6c979cbe0a96b9409940e9b6db1175f056621f",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

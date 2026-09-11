@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "reconcile-covenant-definitions-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual da divida liquida contratual e do EBITDA implicito, teste dos dois degraus e das condicoes juridicas, cinco mutacoes adversariais e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/reconcile-covenant-definitions-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "reconcile-covenant-definitions",
+    "version": "2026.09.05-v14",
+    "fingerprint": "13ec668c5dc72a472706def38197478cd1aafb2ece6ed849d1f90a765e8cb7e3"
+  },
+  "run": {
+    "id": "reconcile-covenant-definitions-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Recalculei a divida liquida pela definicao literal das quatro escrituras: 5.670.186 mais 14.335 de derivativos passivos menos 1.430.714 de caixa, 25.095 de aplicacoes e 235 de derivativos ativos sao 4.228.477, o valor da secao 5 do gabarito. O executor devolve o mesmo numero para as quatro, com uma ancora por operando.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 5; escrituras 11a 4.22.3, 13a 7.24.3, 14a 7.26.3, 15a 7.26.3",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O EBITDA implicito e derivacao, nao leitura: 4.228.477 dividido por 4,72 sao 895.863,77118644, o cerca de 895.900 do gabarito. O executor marca a base como implied_from_reported e nao a chama de EBITDA de covenant.",
+      "source": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "anchor": "covenants[].index.ebitda",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os dois degraus foram testados: o de 3,50x esta ended pelo vencimento dos CRA de referencia e o de 4,00x fica unproven com a condicao escrita (a quitacao ordinaria nao esta provada no pack). Nenhum limite se resolve e nenhum headroom e medido; o estado da execucao e conditioned.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.1",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Mutacao executada: retirados os derivativos da definicao da 11a, a divida liquida dela cai para 4.214.377 enquanto as outras tres seguem em 4.228.477. Nomes iguais, definicoes diferentes: o metodo nao as compara.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-covenant-definitions-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:different-net-debt-definition-not-comparable",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Mutacao executada: enumerado o passivo de arrendamento de 276.768 como outra divida onerosa, a divida liquida sobe para 4.505.245. Recalculei a soma a mao. Enquanto a questao juridica nao for respondida o arrendamento fica fora e a condicao aparece em cada escritura.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-covenant-definitions-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:leases-in-other-onerous-debt-changes-net-debt",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Mutacao executada: um EBITDA apresentado como abertura de 4,72x que nao reproduz o indice (4.228.477 sobre 700.000 sao 6,04x) deixa a comparabilidade em not_comparable nas quatro escrituras e nenhum headroom e medido.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-covenant-definitions-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:opening-must-reproduce-reported-index",
+      "result": "confirmed"
+    },
+    {
+      "claim": "O sellers finance da 11a continua como obrigacao de numerador sem valor datado na base: nunca somado ao EBITDA, nunca chamado de zero.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.1; escritura da 11a, 4.22.3(j)",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes reproduzem os mesmos fingerprints. Os degraus nao sao permutados porque a ordem e a escada que a escritura escreve e o resultado a reporta por indice.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-covenant-definitions-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A comparabilidade plena do pro forma de 4,72x com cada escritura continua condicionada: a companhia nao abre o EBITDA nem as informacoes complementares, e a 11a tem o ajuste de aquisicoes que as demais nao tem.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 13.1",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "O limite aplicavel de 4,00x segue condicionado a prova da quitacao ordinaria dos CRA de referencia; sem ela nao ha limite resolvido e nao ha headroom.",
+    "A classificacao juridica do arrendamento dentro de qualquer outra divida onerosa continua aberta e custa 276.768 na divida liquida.",
+    "Nenhuma frase do resultado pode dizer covenant rompido: a medicao e anual, a proxima e 28/02/2027 e a companhia estava adimplente em fevereiro."
+  ],
+  "notes": "Revisao independente por agente com a divida liquida contratual e o EBITDA implicito recalculados fora do executor. Nao e auditoria humana, nao e parecer juridico sobre as escrituras e nao decide covenant. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/financial/reconcile-covenant-definitions.md, packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts, packages/credit-playbook/src/cases/gc01/reconcile-covenant-definitions.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

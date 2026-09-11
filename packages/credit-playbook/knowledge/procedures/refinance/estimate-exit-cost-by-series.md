@@ -1,12 +1,15 @@
 ---
 id: estimate-exit-cost-by-series
 version: 2026.09.05-v8
-maturity: implemented
+maturity: production
 title_pt: Estimar o custo de saída por série
 title_en: Estimate the exit cost by series
 role: credit_structuring
 blueprint_stage: 6
 owner_role: Head de DCM
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/estimate-exit-cost-by-series
 implementation_export: estimateExitCostBySeries
@@ -27,6 +30,10 @@ task_specs: [S07, S10]
 calculation_ids: [structure.debt_service_schedule, financial.weighted_average_life]
 gold_cases: [gc01-analista-ib-camil]
 dependencies: [build-debt-ledger, reconcile-covenant-definitions]
+review_ids: [estimate-exit-cost-by-series-2026-09-10-independent-review]
+gold_run_ids: [estimate-exit-cost-by-series-2026-09-10-gold]
+adversarial_run_ids: [estimate-exit-cost-by-series-2026-09-10-adversarial]
+consistency_run_ids: [estimate-exit-cost-by-series-2026-09-10-consistency]
 ---
 
 # Objetivo

@@ -1,12 +1,15 @@
 ---
 id: diagnose-maturity-wall
 version: 2026.09.05-v8
-maturity: implemented
+maturity: production
 title_pt: Diagnosticar a parede de vencimentos
 title_en: Diagnose the maturity wall
 role: financial_analysis
 blueprint_stage: 5
 owner_role: Head de DCM
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/diagnose-maturity-wall
 implementation_export: diagnoseMaturityWall
@@ -26,6 +29,10 @@ task_specs: [C05, C08]
 calculation_ids: [financial.maturity_buckets, financial.liquidity_coverage]
 gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
 dependencies: [build-debt-ledger]
+review_ids: [diagnose-maturity-wall-2026-09-10-independent-review]
+gold_run_ids: [diagnose-maturity-wall-2026-09-10-gold]
+adversarial_run_ids: [diagnose-maturity-wall-2026-09-10-adversarial]
+consistency_run_ids: [diagnose-maturity-wall-2026-09-10-consistency]
 ---
 
 # Objetivo

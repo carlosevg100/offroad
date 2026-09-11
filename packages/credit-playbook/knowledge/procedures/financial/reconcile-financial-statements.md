@@ -1,12 +1,15 @@
 ---
 id: reconcile-financial-statements
 version: 2026.09.05-v9
-maturity: implemented
+maturity: production
 title_pt: Conciliar as demonstrações entre si e com o release
 title_en: Reconcile the financial statements with each other and with the release
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Análise Financeira
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/reconcile-financial-statements
 implementation_export: reconcileFinancialStatements
@@ -25,6 +28,10 @@ reference_data_keys: [policy.reconciliation.tolerance, policy.financial.material
 task_specs: [D06, C03]
 calculation_ids: [financial.accounting_identity, financial.debt_balance_bridge, financial.interest_expense_bridge]
 gold_cases: [gc01-analista-ib-camil]
+review_ids: [reconcile-financial-statements-2026-09-10-independent-review]
+gold_run_ids: [reconcile-financial-statements-2026-09-10-gold]
+adversarial_run_ids: [reconcile-financial-statements-2026-09-10-adversarial]
+consistency_run_ids: [reconcile-financial-statements-2026-09-10-consistency]
 ---
 
 # Objetivo

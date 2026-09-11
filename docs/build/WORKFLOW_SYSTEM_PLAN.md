@@ -102,7 +102,15 @@ homologado em profundidade, composição confiável, abstenção explícita onde
   CRA de referência (5ª, 8ª, 257ª) continua sem prova direta: o relatório mensal da 257ª mostra
   saldo até novembro de 2025 e vencimento em 29/12/2025. Fica como condição registrada em cada
   revisão; o executor de covenant mantém 4,00x em `insufficient_evidence` até a prova.
-- Itens 2 e 3: os nove métodos do Caso 01 estão em `implemented`, cada um com executor
+- Itens 2 e 3 (atualizado em 10/09/2026): os dez métodos do Caso 01 subiram a escada. Sete estão
+  em `production` pela instrução do fundador de 10 de setembro de 2026 (ledger de dívida,
+  conciliação das demonstrações, cronograma de juros e correção, conciliação de covenant, parede
+  de vencimentos, comparação antes e depois, custo de saída por série); três pararam em
+  `ready_for_founder` porque o contrato deles gasta chamada de modelo e essa etapa não tem
+  evidência gravada (`declare-scenarios`, `plan-meeting-brief`, `write-meeting-synthesis`). Cada
+  um tem revisão independente registrada em `knowledge/reviews/` e três execuções gravadas (gold,
+  adversarial e consistência) que `packages/evals/src/case01-method-runs.test.ts` re-executa. Cada
+  um continua com executor
   determinístico em `packages/credit-playbook/src/executors/` e testes gold, adversariais e de
   consistência (20 permutações). Os que envolvem número chamam o `financial-core`
   (`checkIdentity`, `buildDebtBalanceBridge`, `buildIndexedDebtSchedule`, `applyRateShock`,

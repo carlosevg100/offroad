@@ -6,12 +6,13 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(44);
+    expect(decision.entryCount).toBe(45);
     expect(decision.blockers).toEqual([]);
-    // One scope is in production, on the founder approval of 10 September 2026, and it is the only
-    // one an organization may rely on for its own work. Nothing else moved with it.
+    // Two scopes are in production, both on the founder's instruction of 10 September 2026: the
+    // released R01 reading and the seven deterministic Case 01 debt methods. Only the first carries
+    // customer work; the debt methods are selectable and recorded and produce no deliverable yet.
     expect(currentCapabilityLedger.entries.filter((entry) => entry.qualityMaturity === "production").map((entry) => entry.capabilityId))
-      .toEqual(["finance.receivables-released-analysis"]);
+      .toEqual(["finance.case01-debt-methods", "finance.receivables-released-analysis"]);
     expect(currentCapabilityLedger.entries.filter((entry) => entry.allowedUses.includes("customer_work")).map((entry) => entry.capabilityId))
       .toEqual(["finance.receivables-released-analysis"]);
     expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("external_material") || entry.allowedUses.includes("external_action"))).toBe(false);

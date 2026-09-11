@@ -14,6 +14,7 @@ const ready: ProjectWorkContext = {
   executionBriefAvailable: true,
   institutionalSetupAvailable: true,
   providerCaseFitAvailable: true,
+  acceptedDebtFactCount: 18,
   callerActions: {prepare: true, return: true, approve: true},
 };
 const surfaces = ["document-review", "institutional-setup", "provider-case-criteria", "institutional-model-result"];
@@ -52,6 +53,30 @@ describe("common new work entry", () => {
     expect(html).toContain(pt.NewWorkRequest.nextStep.trim());
     expect(html).toContain(`Enviar como ${pt.NewWorkRequest.options.financial_result.title}`);
     expect(html).toMatch(disabledSubmit);
+  });
+
+  it.each(["pt-BR", "en-US"] as const)("offers the promoted debt methods as ordinary work in %s", (locale) => {
+    const messages = locale === "pt-BR" ? pt : en;
+    const objective = locale === "pt-BR" ? "Monte o ledger de dívida e a parede de vencimentos." : "Build the debt ledger and the maturity wall.";
+    const html = render(locale, {initialObjective: objective});
+    expect(html).toContain('data-kind="dispatch"');
+    expect(html).toContain('data-capability="debt_structure_analysis"');
+    expect(html).toContain(messages.NewWorkRequest.options.debt_structure_analysis.title);
+    expect(html).toContain(messages.NewWorkRequest.inputs.accepted_debt_facts);
+    expect(html).toContain(messages.NewWorkRequest.approval.execution_brief);
+    expect(html).toMatch(enabledSubmit);
+    expect(html).not.toMatch(/—/);
+  });
+
+  it("blocks the debt structure on the accepted debt facts, not on an organization allowlist", () => {
+    const html = render("pt-BR", {initialObjective: "Monte o ledger de dívida.", context: {...ready, acceptedDebtFactCount: 0}});
+    expect(html).toContain('data-capability="debt_structure_analysis"');
+    expect(html).toContain('data-reason="missing_inputs"');
+    expect(html).toContain(pt.NewWorkRequest.inputs.accepted_debt_facts);
+    expect(html).toContain(pt.NewWorkRequest.record);
+    // Documentary activation is not a gate for this capability; it dispatches without it.
+    const inactive = render("pt-BR", {initialObjective: "Monte o ledger de dívida.", context: {...ready, documentaryPlanningEnabled: false}});
+    expect(inactive).toContain('data-kind="dispatch"');
   });
 
   it("explains that documentary reading is not activated and starts nothing", () => {

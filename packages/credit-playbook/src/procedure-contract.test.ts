@@ -101,6 +101,26 @@ describe("canonical procedure contract", () => {
     });
     expect(compileProcedure(production).implementation).toEqual(production.implementation);
     expect(compileProcedure(production).reviews).toHaveLength(1);
+    expect(production.owner).toEqual(approvedOwner(candidate.owner));
+  });
+
+  it("refuses an approval that is a name without a moment and a source", () => {
+    const candidate = growthCapexProcedures[0]!;
+    const production = {
+      ...candidate,
+      maturity: "production" as const,
+      implementation: {
+        executor: {module: "@offroad/case-engine", exportName: "runProcedure"},
+        resultContract: "offroad.test.result.v1",
+        connectedProductStates: ["understanding_in_progress"],
+        persistence: {mode: "persisted" as const, target: "case_procedure_results"},
+        evaluation: {unitTestFiles: ["a.test.ts"], goldCaseIds: ["gold:clean"], adversarialCaseIds: ["adversarial:conflict"], e2eScenarioIds: ["e2e:understanding"], costEvalIds: ["cost:understanding"]},
+      },
+      reviews: [{reviewId: "review.test.pass", kind: "ai_independent_review" as const, result: "pass" as const, recordPath: "knowledge/reviews/review.test.pass.json"}],
+      testRuns: {gold: ["gold:clean"], adversarial: ["adversarial:conflict"], consistency: ["consistency:20x"]},
+    };
+    expect(() => canonicalProcedureSchema.parse({...production, owner: {...candidate.owner, approvedBy: "Head de Crédito"}})).toThrow(/date of the founder's approval/);
+    expect(() => canonicalProcedureSchema.parse({...production, owner: {...candidate.owner, approvedBy: "Head de Crédito", approvedAt: "2026-09-10"}})).toThrow(/where the founder's approval was given/);
   });
 
   it("climbs one rung at a time: every rung above implemented needs its own evidence", () => {

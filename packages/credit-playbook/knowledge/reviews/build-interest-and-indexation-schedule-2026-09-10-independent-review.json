@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "build-interest-and-indexation-schedule-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual do fator DI e do primeiro cupom da 14a, teste das convencoes de arredondamento das escrituras, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/build-interest-and-indexation-schedule-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "build-interest-and-indexation-schedule",
+    "version": "2026.09.05-v7",
+    "fingerprint": "8c3a7abdc39d2d4c25751e0ec50d10daaf335f6a799e4fc612e742d273a3d495"
+  },
+  "run": {
+    "id": "build-interest-and-indexation-schedule-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Anualizei o CDI diario de 0,05166% a mao: (1,0005166)^252 menos 1 e 0,138998748..., que arredondado nas oito casas da escritura da 14a e 0,13899875, o valor que o executor registra no trace.",
+      "source": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "anchor": "financial.daily_rate_annualized:cdi-bcb-2026-09-04",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Recalculei o primeiro cupom da 1a serie da 14a emissao: nove dias uteis a 104% do DI diario dao fator 1,00484578 apos o arredondamento de oito casas da clausula 7.10.1.2, e 0,00484578 sobre o nominal de 411.643 sao 1.994,73141654, exatamente o que o executor devolve. Sem o arredondamento declarado a conta daria 1.994,731635: a diferenca e a convencao da escritura, nao erro.",
+      "source": "packages/credit-playbook/src/cases/gc01/build-interest-and-indexation-schedule.ts",
+      "anchor": "escritura da 14a, clausula 7.10.1.2",
+      "result": "confirmed"
+    },
+    {
+      "claim": "So tres series tem nominal contratual na base (304.160 da 13a 1a, 411.643 da 14a 1a e 406.349 da 15a 2a). Somam 1.122.152 e a participacao sobre o ledger de 5.670.186 e 0,19790391, que recalculei a mao.",
+      "source": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "anchor": "ledger_coverage",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As treze series restantes ficam em uncovered_series com o motivo escrito: o saldo do ITR e contabil e inclui juros corridos, variacao monetaria e custos de transacao, e o metodo se recusa a trata-lo como nominal.",
+      "source": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "anchor": "uncovered_series, 13 entradas",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A curva de CDI de 04/09/2026 nao e a curva da data-base de 31/05/2026, e o metodo registra isso como premissa em vez de silenciar.",
+      "source": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "anchor": "assumptions[0]",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao adversarial declarada foi executada: uma curva sem fonte e recusada no contrato de entrada, nao aceita como hipotese.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/build-interest-and-indexation-schedule-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:curve-without-source-refused",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes de series, curvas, periodos, datas de cupom e ordem de chaves reproduzem os mesmos fingerprints.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/build-interest-and-indexation-schedule-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A curva de IPCA da entrada congelada e uma variacao mensal hipotetica de 0,40%, declarada como fixture e nao como curva ANBIMA; o calendario de 63 dias uteis por trimestre tambem e sintetico e declarado.",
+      "source": "packages/credit-playbook/src/cases/gc01/build-interest-and-indexation-schedule.ts",
+      "anchor": "ipcaCurve, calendar",
+      "result": "limitation"
+    },
+    {
+      "claim": "A ponte contabil do trimestre anterior fica sem diferenca calculada porque a projecao nao cobre aquele periodo; o valor contabil e registrado ao lado, nao comparado.",
+      "source": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "anchor": "accounting_bridge",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "A projecao so vale como projecao enquanto a curva e o calendario forem os declarados; a producao precisa do calendario ANBIMA e da curva da data, nao do fixture do caso.",
+    "As treze series sem nominal contratual so entram na projecao quando o pack trouxer o valor unitario e a quantidade; o saldo contabil nao substitui o nominal."
+  ],
+  "notes": "Revisao independente por agente com o fator DI e o primeiro cupom recalculados fora do executor, inclusive a convencao de arredondamento da escritura. Nao e auditoria humana e nao valida as curvas de mercado. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/financial/build-interest-and-indexation-schedule.md, packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts, packages/credit-playbook/src/cases/gc01/build-interest-and-indexation-schedule.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

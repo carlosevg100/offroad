@@ -58,13 +58,57 @@ export const specialistTaskCapabilityRuntimeManifest = [
  * live beside the routing manifest rather than inside it: the routing projection is parsed by
  * strict runtime schemas and carries only what routing needs, while the product states who approved
  * a method and when. An approval is a person, a date and where the instruction was given.
+ *
+ * Ordered exactly as the Markdown library reads them, by source path.
  */
 export const specialistMethodApprovalManifest = [
+  {
+    procedure: {id: "build-debt-ledger", version: "2026.09.05-v15"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
+  {
+    procedure: {id: "build-interest-and-indexation-schedule", version: "2026.09.05-v7"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
+  {
+    procedure: {id: "reconcile-covenant-definitions", version: "2026.09.05-v14"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
+  {
+    procedure: {id: "reconcile-financial-statements", version: "2026.09.05-v9"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
   {
     procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
     approvedBy: "Carlos Eduardo Galves",
     approvedAt: "2026-09-10",
     approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026",
+  },
+  {
+    procedure: {id: "compare-refinancing-before-after", version: "2026.09.05-v7"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
+  {
+    procedure: {id: "diagnose-maturity-wall", version: "2026.09.05-v8"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
+  },
+  {
+    procedure: {id: "estimate-exit-cost-by-series", version: "2026.09.05-v8"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)",
   },
 ] as const;
 

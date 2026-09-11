@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "compare-refinancing-before-after-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "compare-refinancing-before-after",
+    "version": "2026.09.05-v7"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
+    "exportName": "compareRefinancingBeforeAfter"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "status-quo lidera por peak_concentration com 0.21689377 contra 0.21807226 de extend-di, retire-ipca bloqueada por saida nao precificada, estado compared",
+      "observed": "status-quo lidera por peak_concentration com 0.21689377 contra 0.21807226 de extend-di, retire-ipca bloqueada por saida nao precificada, estado compared",
+      "inputFingerprint": "21004a80d8377ee8deb0bd8bff0503492d1685d2194b8fca39f9e9879aef338f",
+      "outputFingerprint": "bbcab52a46866632a81fd292cd73e6be6717be5440fabf62429029334fa83d04",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "42917c06b7f4b5c4e0f77d90f16d8795ca68b74345b98ff8f6ce53a159f39722",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

@@ -12,7 +12,7 @@ import {case01Evidence, case01EvidenceManifest, type Case01Evidence} from "../ca
 import * as executors from "../executors";
 import type {BriefInput} from "../executors/plan-meeting-brief";
 import {synthesisSkeleton, type SynthesisOutput} from "./synthesis";
-import {case01PreviewSteps, previewStepByTask, type PreviewComposition, type PreviewWorkflowStep} from "./workflow";
+import {case01MethodMaturity, case01PreviewDisclaimer, case01PreviewSteps, previewStepByTask, type PreviewComposition, type PreviewWorkflowStep} from "./workflow";
 
 export const previewPremisesSchema = z.object({
   /** Annual rate of the new debt of every alternative that raises one, as a decimal ("0.1425"). */
@@ -265,10 +265,10 @@ export function previewArtifactContent(step: PreviewWorkflowStep, output: Previe
       mode: "integration_preview",
       methodId: step.methodId,
       methodVersion: step.methodVersion,
-      methodMaturity: "implemented",
+      methodMaturity: case01MethodMaturity[step.methodId] ?? "implemented",
       evidence: {caseId: case01EvidenceManifest.caseId, basis: case01EvidenceManifest.basis, version: case01EvidenceManifest.version, note: case01EvidenceManifest.note},
       premisesApplied: premisesFor(step, premises),
-      disclaimer: "Validação interna. Método em estágio implemented, sem revisão independente aprovada; nada aqui é liberação, parecer ou aprovação.",
+      disclaimer: case01PreviewDisclaimer(step.methodId),
     },
     output,
   };

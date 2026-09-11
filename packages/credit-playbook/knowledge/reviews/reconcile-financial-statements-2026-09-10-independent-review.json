@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "reconcile-financial-statements-2026-09-10-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "agent_session",
+    "model": "not_recorded_in_the_review_document",
+    "effort": "recalculo manual das identidades e das pontes, teste das definicoes por chave, uma mutacao adversarial e dez permutacoes",
+    "tool": "packages/evals/src/case01-method-runs.ts com os runs gravados em packages/credit-playbook/knowledge/reviews/runs/reconcile-financial-statements-2026-09-10-{gold,adversarial,consistency}/run.json"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "reconcile-financial-statements",
+    "version": "2026.09.05-v9",
+    "fingerprint": "b56eb50adcd4d462030489cd1e9563882becfeb7a35b4f45545999a0163668b2"
+  },
+  "run": {
+    "id": "reconcile-financial-statements-2026-09-10-independent-review",
+    "startedAt": "2026-09-10T22:30:00.000Z",
+    "finishedAt": "2026-09-10T22:30:00.000Z",
+    "commit": "ce815bcee698ff1e8cdb730fd8b6932c6ef2e8ad"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "A identidade do balanco fecha por soma independente: 9.032.723 de passivo mais 2.989.107 de patrimonio sao exatamente os 12.021.830 de ativo.",
+      "source": "packages/credit-playbook/src/cases/gc01/reconcile-financial-statements.ts",
+      "anchor": "ITR p. 11 e 12",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A ponte da divida fecha: 4.988.383 mais captacoes de 2.046.140, juros e variacoes de 172.359, apropriacao de custos de 4.741 negativa, amortizacao de principal de 1.285.146, amortizacao de juros de 229.611, variacao cambial de 60 e ajuste de conversao de 17.258 negativos dao 5.670.186, o saldo de 31/05/2026.",
+      "source": "docs/product/gold-cases/gc01-gabarito-rascunho.md",
+      "anchor": "secao 2, nota 15, p. 40",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A ponte do caixa fecha: 1.997.608 menos 566.894 sao 1.430.714.",
+      "source": "packages/credit-playbook/src/cases/gc01/reconcile-financial-statements.ts",
+      "anchor": "nota 3, p. 20; DFC p. 16",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A ponte de juros nao fecha e o metodo nao a fecha: 172.359 da nota 15 contam juros e atualizacao monetaria e 170.548 da demonstracao do resultado contam so juros; a diferenca de 1.811 fica registrada como nao comparavel, nunca zerada.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "incomplete_reasons: the interest bridge is not comparable",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Os quatro valores de dividendos nao sao comparaveis entre si porque seguem quatro definicoes: 338.565 (valor contabil no balanco), 395.000 (nominal remanescente), 322.498 (contabil da nota 25) e 420.000 (valor justo). O spread total de 97.502 e a diferenca entre 420.000 e 322.498; o subconjunto comparavel pela mesma chave (dois valores contabeis) abre 16.067.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "reconciliations[dividends]",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As derivacoes declaradas foram recalculadas operando a operando: 420.000 menos 25.000 da parcela paga sao os 395.000 nominais, e 395.000 menos 56.435 de ajuste a valor presente sao os 338.565 do balanco.",
+      "source": "packages/credit-playbook/src/cases/gc01/reconcile-financial-statements.ts",
+      "anchor": "derivation, nota 18e, p. 46",
+      "result": "confirmed"
+    },
+    {
+      "claim": "A mutacao de escala declarada foi executada: o saldo de abertura da ponte da divida lido em unidades em vez de milhares faz a identidade deixar de fechar e a conciliacao vai para identity_failed, sem arredondamento silencioso.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-financial-statements-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "adversarial:gc01:scale-mutation-breaks-roll-forward",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Dez permutacoes profundas reproduzem os mesmos fingerprints. Os operandos de uma derivacao do tipo diferenca nao sao permutados porque a ordem e a formula (primeiro menos o resto), o que o proprio executor recusa quando invertida.",
+      "source": "packages/credit-playbook/knowledge/reviews/runs/reconcile-financial-statements-2026-09-10-gold|adversarial|consistency/run.json",
+      "anchor": "10 casos, todos pass",
+      "result": "confirmed"
+    },
+    {
+      "claim": "As tres divergencias ficam abertas em vez de fechadas por tolerancia; a conciliacao termina incomplete.",
+      "source": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "anchor": "open_divergences",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "A ponte de juros so fecha quando a base trouxer a atualizacao monetaria separada na demonstracao do resultado; ate la ela e registrada, nao conciliada.",
+    "As tolerancias por familia (1.000 em capital de giro e divida liquida, 2.000 em juros) vem de politica versionada e precisam ser reconferidas a cada versao da politica."
+  ],
+  "notes": "Revisao independente por agente sobre procedimento, executor, entrada congelada e gabarito do Caso 01, com as identidades e as pontes recalculadas fora do executor. Nao e auditoria humana nem parecer contabil. Fingerprint do assunto: sha256 das linhas \"caminho:sha256\" dos arquivos revisados, nesta ordem: packages/credit-playbook/knowledge/procedures/financial/reconcile-financial-statements.md, packages/credit-playbook/src/executors/reconcile-financial-statements.ts, packages/credit-playbook/src/cases/gc01/reconcile-financial-statements.ts, docs/product/gold-cases/gc01-gabarito-rascunho.md."
+}

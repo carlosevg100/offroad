@@ -3,6 +3,8 @@ import {fileURLToPath} from "node:url";
 
 import {describe, expect, it} from "vitest";
 
+import {projectCapability} from "@offroad/work-plan";
+
 import {loadMethodLibrary} from "./procedure-markdown";
 import {
   specialistMethodApprovalManifest,
@@ -88,5 +90,31 @@ describe("specialist method runtime manifest", () => {
       expect(approval.approvedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(approval.approvalSource.length).toBeGreaterThan(0);
     }
+    // A method that spends a model call never reaches production: its prose step has no recorded run.
+    for (const approval of specialistMethodApprovalManifest) {
+      const method = library.methods.find((entry) => entry.procedure.id === approval.procedure.id)!;
+      expect(method.frontmatter.max_model_calls, approval.procedure.id).toBe(0);
+    }
+  });
+
+  it("keeps the project entry's debt capability on exactly the methods that reached production", () => {
+    const library = loadMethodLibrary(
+      resolve(here, "../knowledge/procedures"),
+      resolve(here, "../knowledge/reviews"),
+    );
+    // The project work entry names the methods it executes. It lives in work-plan, which cannot
+    // import this package, so the projection is pinned here instead: promoting a method, demoting
+    // one or bumping a version fails this test rather than drifting from the entry.
+    //
+    // R01 is the one production method that is not on this entry: an organization reads it through
+    // its own released analytical result, not by asking for debt structure work. Promoting anything
+    // else fails here until someone decides where it belongs on the entry.
+    const releasedOnItsOwnSurface = new Set(["underwrite-receivables-pool"]);
+    const declared = projectCapability("debt_structure_analysis").methods ?? [];
+    const production = library.methods
+      .filter((method) => method.procedure.maturity === "production" && !releasedOnItsOwnSurface.has(method.procedure.id))
+      .map((method) => ({id: method.procedure.id, version: method.procedure.version}));
+    expect(declared).toEqual(production);
+    for (const method of declared) expect(library.methods.find((entry) => entry.procedure.id === method.id)?.procedure.maturity, method.id).toBe("production");
   });
 });

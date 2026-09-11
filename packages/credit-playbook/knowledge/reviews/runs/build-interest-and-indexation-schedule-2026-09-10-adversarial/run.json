@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-interest-and-indexation-schedule-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "build-interest-and-indexation-schedule",
+    "version": "2026.09.05-v7"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
+    "exportName": "buildInterestAndIndexationSchedule"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.574Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:curve-without-source-refused",
+      "expectation": "recusado no contrato de entrada",
+      "observed": "recusado no contrato de entrada",
+      "inputFingerprint": "a6fa5d415c80131c4336688b92b9b6876fa084f446dbcb39b0ebbbb5736eec94",
+      "outputFingerprint": "c01a645298242419a13b2ca20db873d1972a2f26182ef49aafdc5a0d2a1eb9f4",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "97279b5ebd946dfe8e26f98a43b53e5cbcc146bcff6256078bec8994cca9f26f",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

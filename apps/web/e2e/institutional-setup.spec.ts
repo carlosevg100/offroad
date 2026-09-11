@@ -59,6 +59,13 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(preview).toHaveAttribute("data-kind","blocked");
  await expect(preview).toHaveAttribute("data-reason","documentary_not_activated");
  await expect(preview).toContainText(messages.NewWorkRequest.blocked.documentary_not_activated);
+ // The debt structure capability is on the same entry for every project, with no Case 01 grant and
+ // no router. This project has no accepted fact under the extraction's `debt.` field paths, so it
+ // blocks on the data it needs and names it, instead of pretending to run.
+ await objectiveField.fill("Monte o ledger de dívida e a parede de vencimentos.");
+ await expect(preview).toHaveAttribute("data-capability","debt_structure_analysis");
+ await expect(preview).toHaveAttribute("data-reason","missing_inputs");
+ await expect(preview).toContainText(messages.NewWorkRequest.inputs.accepted_debt_facts);
  const financialObjective="Faça a comparação financeira dos cenários e calcule o serviço da dívida.";
  await objectiveField.fill(financialObjective);
  await expect(preview).toHaveAttribute("data-kind","dispatch");

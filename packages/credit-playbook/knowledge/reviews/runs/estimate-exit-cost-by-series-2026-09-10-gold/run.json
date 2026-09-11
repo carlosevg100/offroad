@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "estimate-exit-cost-by-series-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "estimate-exit-cost-by-series",
+    "version": "2026.09.05-v8"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
+    "exportName": "estimateExitCostBySeries"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "12 series sem nominal, remuneracao corrida e encargos na data de saida, 0 precificadas, premio estimado 0, estado partial",
+      "observed": "12 series sem nominal, remuneracao corrida e encargos na data de saida, 0 precificadas, premio estimado 0, estado partial",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "3a7fc6aee5a55f1c3e8f9accd570c48c63af8c768658aa080e954fb16201b55f",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

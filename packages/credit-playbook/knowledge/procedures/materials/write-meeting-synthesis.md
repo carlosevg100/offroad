@@ -1,7 +1,7 @@
 ---
 id: write-meeting-synthesis
 version: 2026.09.05-v1
-maturity: implemented
+maturity: ready_for_founder
 title_pt: Escrever a síntese e o material da reunião
 title_en: Write the meeting synthesis and material
 role: institutional_materials
@@ -27,6 +27,10 @@ gold_cases: [gc01-analista-ib-camil]
 max_model_calls: 1
 model_purpose: [redigir a prosa de cada seção a partir dos objetos assinados e do plano da devolutiva]
 dependencies: [build-debt-ledger, reconcile-financial-statements, reconcile-covenant-definitions, diagnose-maturity-wall, build-interest-and-indexation-schedule, estimate-exit-cost-by-series, declare-scenarios, compare-refinancing-before-after, plan-meeting-brief]
+review_ids: [write-meeting-synthesis-2026-09-10-independent-review]
+gold_run_ids: [write-meeting-synthesis-2026-09-10-gold]
+adversarial_run_ids: [write-meeting-synthesis-2026-09-10-adversarial]
+consistency_run_ids: [write-meeting-synthesis-2026-09-10-consistency]
 ---
 
 # Objetivo

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "write-meeting-synthesis-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "write-meeting-synthesis",
+    "version": "2026.09.05-v1"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/preview/synthesis",
+    "exportName": "synthesisSkeleton"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.576Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:sentence-with-unsupported-number-removed",
+      "expectation": "a frase com um numero que os objetos nao sustentam e removida e listada, as outras duas ficam",
+      "observed": "a frase com um numero que os objetos nao sustentam e removida e listada, as outras duas ficam",
+      "inputFingerprint": "de291d3ec4e4077055f7794212e380ad23acfa80b76c2ad1ecf562ceb1fd57f5",
+      "outputFingerprint": "00dcf4af287988b1629e3429a7f56253cb961d78083024133584b01c4d9d7bb4",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "7bcff25147705dd01b91c384f876be0525e49a92fa09af3db1b0e794d39fe19d",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

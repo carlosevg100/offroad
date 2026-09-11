@@ -214,7 +214,12 @@ describe("integration_preview run processor", () => {
     expect(fake.recorded.map((artifact) => artifact.artifactType)).toEqual(["preview_debt_ledger", "preview_financial_statements", "preview_covenants", "preview_maturity_wall", "preview_interest_schedule", "preview_exit_costs", "preview_scenarios", "preview_alternatives", "preview_meeting_brief", "preview_decision_contract"]);
     for (const artifact of fake.recorded.filter((candidate) => candidate.artifactType !== "preview_decision_contract")) {
       expect((artifact.content.preview as {mode: string}).mode).toBe("integration_preview");
-      expect((artifact.content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
+      // Every artifact declares the rung its own method reached: seven in production on the
+      // founder's approval of 10/09/2026, and the meeting brief at ready_for_founder because its
+      // model-assisted step has no recorded run.
+      const methodId = (artifact.content.preview as {methodId: string}).methodId;
+      expect((artifact.content.preview as {methodMaturity: string}).methodMaturity, methodId).toBe(preview.case01MethodMaturity[methodId]);
+      expect((artifact.content.preview as {disclaimer: string}).disclaimer, methodId).toContain("liberação, parecer ou aprovação");
       expect(typeof (artifact.content.output as {state: string}).state).toBe("string");
     }
     const decisionArtifact = fake.recorded.find((artifact) => artifact.artifactType === "preview_decision_contract")!;

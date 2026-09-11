@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "write-meeting-synthesis-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "write-meeting-synthesis",
+    "version": "2026.09.05-v1"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/preview/synthesis",
+    "exportName": "synthesisSkeleton"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.576Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "esqueleto sem modelo com 5 secoes escritas so pelas manchetes assinadas, 0 numeros proprios verificados, 0 frases removidas, estado skeleton",
+      "observed": "esqueleto sem modelo com 5 secoes escritas so pelas manchetes assinadas, 0 numeros proprios verificados, 0 frases removidas, estado skeleton",
+      "inputFingerprint": "ec07fbb28d751d430274c3c46e969e31abcfdd5b9ba8b895f5cb798d6fd8962b",
+      "outputFingerprint": "3fded27d0e6b0aec5dba9bb074b0c24c41696f2e4523e1c08182e8dbeea914f2",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "fc799a09adf59d2fd371b779b9ed6f00654517756f1469342e9636a094776e4a",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

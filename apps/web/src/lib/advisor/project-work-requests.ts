@@ -50,3 +50,16 @@ export async function loadProjectWorkRequests(client: SupabaseClient<Database>, 
     .limit(10);
   return error ? [] : readProjectWorkRequests(data ?? []);
 }
+
+/**
+ * Facts the project's own review already accepted under the `debt.` field paths of the extraction
+ * vocabulary. The debt-structure methods read a debt note, not a balance sheet line, so the entry
+ * asks for exactly that: without an accepted debt fact the capability blocks and says so, and no
+ * organization allowlist is involved either way.
+ */
+export function countAcceptedDebtFacts(context: {candidates: readonly {field_path: string; review_state: string; anchor_verified: boolean}[]} | null): number {
+  if (!context) return 0;
+  return context.candidates.filter((candidate) => candidate.field_path.startsWith("debt.")
+    && (candidate.review_state === "accepted" || candidate.review_state === "edited")
+    && candidate.anchor_verified).length;
+}
