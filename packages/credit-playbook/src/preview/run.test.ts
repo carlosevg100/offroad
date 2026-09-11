@@ -60,7 +60,9 @@ describe("integration_preview run of Case 01", () => {
     }
     const content = previewArtifactContent(case01PreviewSteps.find((step) => step.methodId === "compare-refinancing-before-after")!, changed.outputs.get("S10")!, {newDebtAnnualRate: "0.1550"});
     expect((content.preview as {premisesApplied: unknown}).premisesApplied).toEqual({newDebtAnnualRate: "0.1550"});
-    expect((content.preview as {methodMaturity: string}).methodMaturity).toBe("implemented");
+    // The artifact declares the rung the method actually reached; the debt ledger is in production.
+    expect((content.preview as {methodMaturity: string}).methodMaturity).toBe("production");
+    expect((content.preview as {disclaimer: string}).disclaimer).toContain("nunca liberação, parecer ou aprovação");
   });
   it("keeps the previous brief's unanswered questions open when the run brings no new ones, and drops the answered one", () => {
     const first = runAll();

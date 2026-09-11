@@ -3,7 +3,7 @@ import {describe, expect, it} from "vitest";
 import {offroadTaskRegistry} from "@offroad/work-plan";
 
 import {loadMethodLibrary} from "../procedure-markdown";
-import {case01PreviewSteps, compileIntegrationPreviewPlan, previewBatches, previewStepsForComposition, previewTargetTaskIds, previewWorkflowIdentity} from "./workflow";
+import {case01MethodMaturity, case01PreviewSteps, compileIntegrationPreviewPlan, previewBatches, previewStepsForComposition, previewTargetTaskIds, previewWorkflowIdentity} from "./workflow";
 import {dirname, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -18,7 +18,18 @@ describe("integration_preview workflow of Case 01", () => {
       const method = library.methods.find((candidate) => candidate.frontmatter.id === step.methodId);
       expect(method, step.methodId).toBeDefined();
       expect(method!.frontmatter.version).toBe(step.methodVersion);
-      expect(method!.frontmatter.maturity).toBe("implemented");
+      // The preview declares the rung the method actually reached, never a fixed label.
+      expect(method!.frontmatter.maturity).toBe(case01MethodMaturity[step.methodId]);
+    }
+    expect(Object.keys(case01MethodMaturity).sort()).toEqual(case01PreviewSteps.map((step) => step.methodId).sort());
+    expect(Object.entries(case01MethodMaturity).filter(([, maturity]) => maturity === "production").map(([id]) => id).sort()).toEqual([
+      "build-debt-ledger", "build-interest-and-indexation-schedule", "compare-refinancing-before-after", "diagnose-maturity-wall",
+      "estimate-exit-cost-by-series", "reconcile-covenant-definitions", "reconcile-financial-statements",
+    ]);
+    // A method that spends a model call may not be labelled production: its prose step has no run.
+    for (const step of case01PreviewSteps) {
+      const method = library.methods.find((candidate) => candidate.frontmatter.id === step.methodId)!;
+      if (method.frontmatter.max_model_calls > 0) expect(case01MethodMaturity[step.methodId], step.methodId).not.toBe("production");
     }
     expect(new Set(case01PreviewSteps.map((step) => step.taskId)).size).toBe(case01PreviewSteps.length);
   });

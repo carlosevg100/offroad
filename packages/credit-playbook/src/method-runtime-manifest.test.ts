@@ -88,5 +88,10 @@ describe("specialist method runtime manifest", () => {
       expect(approval.approvedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(approval.approvalSource.length).toBeGreaterThan(0);
     }
+    // A method that spends a model call never reaches production: its prose step has no recorded run.
+    for (const approval of specialistMethodApprovalManifest) {
+      const method = library.methods.find((entry) => entry.procedure.id === approval.procedure.id)!;
+      expect(method.frontmatter.max_model_calls, approval.procedure.id).toBe(0);
+    }
   });
 });

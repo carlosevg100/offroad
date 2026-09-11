@@ -22,6 +22,34 @@ export type PreviewWorkflowStep = WorkflowRecipeStep;
 /** Backward-compatible preview projection; the reusable recipe is the source of graph truth. */
 export const case01PreviewSteps: readonly PreviewWorkflowStep[] = refinanceLiabilityManagementWorkflow.steps;
 
+/**
+ * The rung each Case 01 method reached, projected from the Markdown library that owns it and pinned
+ * by `workflow.test.ts`. The preview declares it on every artifact it writes: a method in production
+ * is not labelled `implemented`, and one whose model-assisted step has no recorded evidence is not
+ * labelled production. Seven methods carry the founder approval of 10 September 2026; the three that
+ * declare model calls stop at `ready_for_founder`.
+ */
+export const case01MethodMaturity: Readonly<Record<string, "implemented" | "ready_for_founder" | "production">> = {
+  "build-debt-ledger": "production",
+  "reconcile-financial-statements": "production",
+  "reconcile-covenant-definitions": "production",
+  "diagnose-maturity-wall": "production",
+  "build-interest-and-indexation-schedule": "production",
+  "estimate-exit-cost-by-series": "production",
+  "compare-refinancing-before-after": "production",
+  "declare-scenarios": "ready_for_founder",
+  "plan-meeting-brief": "ready_for_founder",
+  "write-meeting-synthesis": "ready_for_founder",
+};
+
+/** What the preview may say about a step's method, by the rung that method actually reached. */
+export function case01PreviewDisclaimer(methodId: string): string {
+  const maturity = case01MethodMaturity[methodId] ?? "implemented";
+  if (maturity === "production") return "Validação interna sobre a evidência congelada do caso. O método está em produção, com revisão independente e execuções gravadas; o resultado é um cálculo sob as premissas declaradas, nunca liberação, parecer ou aprovação.";
+  if (maturity === "ready_for_founder") return "Validação interna sobre a evidência congelada do caso. O método tem revisão independente e execuções gravadas da sua parte determinística; a etapa assistida por modelo não tem evidência gravada. Nada aqui é liberação, parecer ou aprovação.";
+  return "Validação interna. Método em estágio implemented, sem revisão independente aprovada; nada aqui é liberação, parecer ou aprovação.";
+}
+
 export type PreviewWorkflowOutcome = "meeting_plan" | "material";
 
 export function previewOutcome(composition: PreviewComposition): PreviewWorkflowOutcome {

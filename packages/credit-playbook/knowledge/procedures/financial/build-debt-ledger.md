@@ -1,12 +1,15 @@
 ---
 id: build-debt-ledger
 version: 2026.09.05-v15
-maturity: implemented
+maturity: production
 title_pt: Construir o ledger de dívida
 title_en: Build the debt ledger
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Análise Financeira
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/build-debt-ledger
 implementation_export: buildDebtLedger
@@ -25,6 +28,10 @@ reference_data_keys: [policy.debt.views]
 task_specs: [C05]
 calculation_ids: [financial.debt_views, financial.maturity_buckets, financial.indexed_debt_schedule]
 gold_cases: [gc01-analista-ib-camil]
+review_ids: [build-debt-ledger-2026-09-10-independent-review]
+gold_run_ids: [build-debt-ledger-2026-09-10-gold]
+adversarial_run_ids: [build-debt-ledger-2026-09-10-adversarial]
+consistency_run_ids: [build-debt-ledger-2026-09-10-consistency]
 ---
 
 # Objetivo

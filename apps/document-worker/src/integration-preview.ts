@@ -23,6 +23,7 @@ import {writePreviewSynthesis} from "./preview-synthesis";
 
 const {
   briefObjectFingerprints,
+  case01MethodMaturity,
   case01PreviewSteps,
   compileIntegrationPreviewPlan,
   describePremises,
@@ -702,7 +703,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             taskId: step.taskId, executorKey: step.executorKey, executorVersion: step.methodVersion, inputFingerprint,
             contextManifest: {
               schemaVersion: "capital-context-manifest.v1", projectId: context.project.id, planId: context.plan.id, briefId: context.brief.id,
-              mode: "integration_preview", methodId: step.methodId, methodVersion: step.methodVersion, methodMaturity: "implemented",
+              mode: "integration_preview", methodId: step.methodId, methodVersion: step.methodVersion, methodMaturity: case01MethodMaturity[step.methodId] ?? "implemented",
               replayOf: prior.id, sourceClasses: ["prior_preview_artifacts"], excludedContext: ["live_extraction", "public_research", "private_documents", "model_calls"],
             },
           });
@@ -727,12 +728,13 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           continue;
         }
       }
-      await queue.writeStage(job, `${stage}:${step.taskId}`, "started", {summary_pt: `${step.label.pt} (${step.methodId}, estágio implemented)`, summary_en: `${step.label.en} (${step.methodId}, implemented rung)`, task_spec_id: step.taskId});
+      const stepMaturity = case01MethodMaturity[step.methodId] ?? "implemented";
+      await queue.writeStage(job, `${stage}:${step.taskId}`, "started", {summary_pt: `${step.label.pt} (${step.methodId}, estágio ${stepMaturity})`, summary_en: `${step.label.en} (${step.methodId}, ${stepMaturity} rung)`, task_spec_id: step.taskId});
       const taskRunId = await queue.startCapitalTask(job, {
         taskId: step.taskId, executorKey: step.executorKey, executorVersion: step.methodVersion, inputFingerprint,
         contextManifest: {
           schemaVersion: "capital-context-manifest.v1", projectId: context.project.id, planId: context.plan.id, briefId: context.brief.id,
-          mode: "integration_preview", methodId: step.methodId, methodVersion: step.methodVersion, methodMaturity: "implemented",
+          mode: "integration_preview", methodId: step.methodId, methodVersion: step.methodVersion, methodMaturity: case01MethodMaturity[step.methodId] ?? "implemented",
           sourceClasses: ["frozen_case_evidence", "prior_preview_artifacts"], excludedContext: ["live_extraction", "public_research", "private_documents", "model_calls"],
         },
       });

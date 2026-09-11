@@ -1,12 +1,15 @@
 ---
 id: compare-refinancing-before-after
 version: 2026.09.05-v7
-maturity: implemented
+maturity: production
 title_pt: Comparar antes e depois de cada alternativa de refinanciamento
 title_en: Compare before and after for each refinancing alternative
 role: credit_structuring
 blueprint_stage: 7
 owner_role: Head de DCM
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026 (nada que deva estar em produção fica fora)
 effective_date: 2026-09-05
 implementation_module: @offroad/credit-playbook/executors/compare-refinancing-before-after
 implementation_export: compareRefinancingBeforeAfter
@@ -26,6 +29,10 @@ task_specs: [S05, S10, S11]
 calculation_ids: [operation.pro_forma_position, structure.maturity_concentration, structure.covenant_headroom, structure.coverage_series, financial.all_in_cost]
 gold_cases: [gc01-analista-ib-camil, gc05-banker-expansao-camil]
 dependencies: [build-debt-ledger, diagnose-maturity-wall, estimate-exit-cost-by-series, declare-scenarios]
+review_ids: [compare-refinancing-before-after-2026-09-10-independent-review]
+gold_run_ids: [compare-refinancing-before-after-2026-09-10-gold]
+adversarial_run_ids: [compare-refinancing-before-after-2026-09-10-adversarial]
+consistency_run_ids: [compare-refinancing-before-after-2026-09-10-consistency]
 ---
 
 # Objetivo

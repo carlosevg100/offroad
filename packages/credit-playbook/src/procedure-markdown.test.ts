@@ -47,8 +47,11 @@ describe("method library in markdown", () => {
     expect(() => compileMethodDocument(fixedStep.replace("# Testes", "# Provas"), "broken.md")).toThrow(/Testes/);
   });
 
-  it("does not let a task run on a candidate method, whatever its prose says", () => {
-    expect(() => assertTaskHasProductionMethod("C05", library.methods)).toThrow(/none is in production/);
+  it("lets a task run only on a method that reached production, and never improvises one", () => {
+    // C05 is bound to the debt ledger, in production since the founder's approval of 10/09/2026.
+    expect(assertTaskHasProductionMethod("C05", library.methods).procedure.id).toBe("build-debt-ledger");
+    // A02 is bound to the meeting synthesis, which spends a model call and stopped at ready_for_founder.
+    expect(() => assertTaskHasProductionMethod("A02", library.methods)).toThrow(/none is in production/);
     expect(() => assertTaskHasProductionMethod("K09", library.methods)).toThrow(/no method bound/);
   });
 });
