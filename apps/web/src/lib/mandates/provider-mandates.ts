@@ -73,6 +73,11 @@ export function readProviderMandates(value: unknown): ProviderMandate[] {
   return parsed.success ? parsed.data : [];
 }
 
+/** How urgently a fund needs somebody's attention. Expired first: it already left the selection. */
+const renewalOrder: Readonly<Record<MandateRenewalState, number>> = {
+  expired: 0, due_soon: 1, unconfirmed: 2, withdrawn: 3, current: 4,
+};
+
 /** One fund, its newest mandate version, and the older versions kept for the record. */
 export type MandateFund = {
   fundId: string;
@@ -119,7 +124,9 @@ export function groupMandatesByFund(mandates: readonly ProviderMandate[], asOf: 
         }, asOf),
       };
     })
-    .sort((left, right) => left.fundName.localeCompare(right.fundName));
+    // Funds that need somebody to act lead the list, then alphabetical order so two runs over the
+    // same registry read identically.
+    .sort((left, right) => renewalOrder[left.renewal] - renewalOrder[right.renewal] || left.fundName.localeCompare(right.fundName));
 }
 
 /** Funds whose record is what a case fit would read as a current mandate. */

@@ -4093,7 +4093,11 @@
     },
     "itemOrigin": "Origin: {source} · {date}",
     "itemOriginMissing": "Origin: this criterion is not in the manager's record.",
-    "confirmedMandateRecord": "Mandate confirmed by the manager, on the stated date"
+    "confirmedMandateRecord": "Mandate confirmed by the manager, on the stated date",
+    "renewal": {
+      "due_soon": "This mandate's validity window is close to closing. Confirm it with the manager before relying on it.",
+      "expired": "This mandate's validity window has closed. It returns to the selection when the manager confirms again."
+    }
   },
   "ProviderCaseFitForm": {
     "title": "Identify lenders for this transaction",

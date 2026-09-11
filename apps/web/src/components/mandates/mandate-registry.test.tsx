@@ -122,6 +122,17 @@ describe("funds and mandates registry", () => {
     expect(html).toContain(pt.MandateRegistry.empty);
   });
 
+
+  it("puts the funds that need somebody to act at the top of the registry", () => {
+    const html = render("en-US", [
+      mandate({id: "a1", fundId: "f1", fundName: "Zeta vigente"}),
+      mandate({id: "b1", fundId: "f2", fundName: "Alfa vencido", status: "confirmed", effectiveStatus: "expired", validUntil: "2026-08-01"}),
+      mandate({id: "c1", fundId: "f3", fundName: "Beta a vencer", validUntil: "2026-09-20"}),
+    ]);
+    const order = [...html.matchAll(/data-renewal="([a-z_]+)"/g)].map((match) => match[1]);
+    expect(order).toEqual(["expired", "due_soon", "current"]);
+  });
+
   it("drops a listing that does not match the mandate contract instead of guessing", () => {
     expect(readProviderMandates([{...mandate(), effectiveStatus: "renewed"}])).toEqual([]);
     expect(readProviderMandates([{...mandate(), instruments: ["convertible"]}])).toEqual([]);

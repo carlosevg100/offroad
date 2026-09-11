@@ -1,7 +1,7 @@
 "use client";
 import {useState} from "react";
 import {useFormatter,useLocale,useTranslations} from "next-intl";
-import type {ProviderCaseFitArtifact} from "@offroad/fund-mandate";
+import {mandateRenewalState, type ProviderCaseFitArtifact} from "@offroad/fund-mandate";
 import styles from "./provider-research-work.module.css";
 
 type Candidate = ProviderCaseFitArtifact["candidates"][number];
@@ -23,6 +23,9 @@ export function ProviderCaseFitWork({fit,archived=false}:{fit:ProviderCaseFitArt
   <div className={styles.providers}>{candidates.map(candidate=>{
    const classification=classificationOf(candidate);
    const record=candidate.mandateRecord ?? null;
+   // Freshness is read from the window at the date the question was asked, so a mandate whose
+   // window is closing is flagged before it silently drops out. Nothing here contacts the fund.
+   const renewal=record?mandateRenewalState(record,fit.asOf):null;
    return <article data-classification={classification} data-testid="case-fit-candidate" key={candidate.providerId}>
    <header><h3>{candidate.order}. {candidate.providerName}</h3><span>{t(archived?"archivedStatus":`classification.${classification}`)}</span></header>
    {/* Where this candidate comes from, and whether anybody confirmed it. */}
@@ -30,6 +33,7 @@ export function ProviderCaseFitWork({fit,archived=false}:{fit:ProviderCaseFitArt
     {record?.confirmedAt
       ? ` · ${t('mandateVersion',{version:record.versionNumber,date:day(record.confirmedAt),status:t(`mandateStatus.${record.effectiveStatus}`)})}`
       : ` · ${t('mandateUnconfirmed')}`}</p>
+   {renewal==='due_soon'||renewal==='expired'?<p data-testid="case-fit-renewal">{t(`renewal.${renewal}`)}</p>:null}
    {classification==='hypothesis'?<p>{t('hypothesisNote')}</p>:null}
    {candidate.fit?.incompatibilities.length?<p>{t('incompatibilities',{items:candidate.fit.incompatibilities.map(id=>t(`criterionName.${id}`)).join(', ')})}</p>:null}
    <p>{t('gaps',{company:candidate.companyGaps.length,mandate:candidate.mandateGaps.length})}</p>

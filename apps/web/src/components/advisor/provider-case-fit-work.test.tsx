@@ -44,6 +44,15 @@ describe('ProviderCaseFitWork',()=>{
   expect(html).toContain(en.ProviderCaseFitWork.noResults);
   expect(excluded.candidates[0]!.fit).toMatchObject({classification:'excluded',incompatibilities:['instrument']});
  });
+ it('asks for a renewal on a candidate whose window is closing, and contacts nobody',()=>{
+  const closing=confirmedFit();closing.candidates[0]!.mandateRecord={...closing.candidates[0]!.mandateRecord!,validUntil:'2026-09-20'};
+  const html=render('pt-BR',closing);
+  expect(html).toContain('data-testid="case-fit-renewal"');
+  expect(html).toContain(pt.ProviderCaseFitWork.renewal.due_soon);
+  expect(html).not.toContain('<button');
+  const current=render('pt-BR',confirmedFit());
+  expect(current).not.toContain('data-testid="case-fit-renewal"');
+ });
  it.each(['pt-BR','en-US'] as const)('requires explicit currency and case confirmation in %s',locale=>{
   const messages=locale==='pt-BR'?pt:en;const html=renderToStaticMarkup(<NextIntlClientProvider locale={locale} messages={selectClientMessages(messages)} timeZone="UTC"><ProviderCaseFitForm projectId={id} projectName="Existing case" expectedPlanFingerprint={'a'.repeat(64)}/></NextIntlClientProvider>);
   expect(html).toContain(messages.ProviderCaseFitForm.submit);expect(html).not.toContain("ProviderCaseFitForm.");expect(html).toContain(messages.ProviderCaseFitForm.confirm);expect(html).toContain(messages.ProviderCaseFitForm.fields.leverage);expect(html).toContain('value=""');expect(html).toContain('name="asOf"');expect(html).not.toContain('value="BRL" selected');

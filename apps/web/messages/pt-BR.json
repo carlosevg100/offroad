@@ -4093,7 +4093,11 @@
     },
     "itemOrigin": "Origem: {source} · {date}",
     "itemOriginMissing": "Origem: não temos este critério no registro da gestora.",
-    "confirmedMandateRecord": "Mandato confirmado pela gestora, na data indicada"
+    "confirmedMandateRecord": "Mandato confirmado pela gestora, na data indicada",
+    "renewal": {
+      "due_soon": "A vigência deste mandato está perto do fim. Confirme com a gestora antes de contar com ele.",
+      "expired": "A vigência deste mandato terminou. Ele volta à seleção quando a gestora confirmar de novo."
+    }
   },
   "ProviderCaseFitForm": {
     "title": "Identificar financiadores para este caso",
