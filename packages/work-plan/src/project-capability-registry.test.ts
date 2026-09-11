@@ -40,7 +40,7 @@ describe("project capability registry", () => {
       }
     }
     expect(projectCapability("financial_result").deliverableTypes).toEqual(["financial_model", "financial_memo", "executive_presentation"]);
-    expect(projectCapability("debt_structure_analysis").deliverableTypes).toEqual(["debt_structure_reading", "financial_memo"]);
+    expect(projectCapability("debt_structure_analysis").deliverableTypes).toEqual(["financial_memo"]);
     // The debt capability names the exact house methods it executes; credit-playbook pins the list
     // against the methods that actually reached production.
     expect(projectCapability("debt_structure_analysis").methods?.map((method) => method.id)).toEqual([

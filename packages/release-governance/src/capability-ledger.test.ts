@@ -6,7 +6,7 @@ describe("capability ledger", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(44);
+    expect(decision.entryCount).toBe(45);
     expect(decision.blockers).toEqual([]);
     // Two scopes are in production, both on the founder's instruction of 10 September 2026: the
     // released R01 reading and the seven deterministic Case 01 debt methods. Only the first carries

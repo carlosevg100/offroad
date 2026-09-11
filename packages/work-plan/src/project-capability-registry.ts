@@ -24,7 +24,6 @@ export const projectDeliverableTypeSchema = z.enum([
   "financial_memo",
   "executive_presentation",
   "market_research",
-  "debt_structure_reading",
 ]);
 export type ProjectDeliverableType = z.infer<typeof projectDeliverableTypeSchema>;
 
@@ -223,7 +222,9 @@ export const projectCapabilityRegistry: readonly ProjectCapabilityEntry[] = [
       {key: "reference_date", label: {pt: "Data-base e moeda", en: "Reference date and currency"}, neededBefore: "execution"},
     ],
     approval: {gate: "execution_brief", action: "approve", separationOfDuties: "project_review_roles"},
-    deliverableTypes: ["debt_structure_reading", "financial_memo"],
+    // The reading is a memo with tables, not a formula-linked model: the existing family is the
+    // honest one, and no new deliverable family is invented without a format rule behind it.
+    deliverableTypes: ["financial_memo"],
     plan: [
       {pt: "Registrar cada obrigação com saldo, moeda, indexador, vencimento, garantia e âncora, e conciliar o total com o balanço", en: "Record each obligation with balance, currency, indexer, maturity, guarantee and anchor, and reconcile the total against the balance sheet"},
       {pt: "Recalcular as definições literais de dívida líquida e de covenant, cada uma com a sua fonte", en: "Recalculate the literal net debt and covenant definitions, each with its own source"},
