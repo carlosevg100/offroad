@@ -167,6 +167,59 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await page.getByTestId("rail-mandates").click();
   await expect(page).toHaveURL(/\/pt-BR\/app\/mandates$/);
   await expect(page.getByTestId("mandates-panel")).toBeVisible();
+
+  // 4b. The organization registers its own fund and mandate, then confirms it. The record enters
+  // as a draft and only a dated confirmation event makes it current; no model call is involved.
+  const registry = page.getByTestId("mandate-registry");
+  await expect(registry).toBeVisible();
+  await page.getByTestId("mandate-register-toggle").click();
+  const registerForm = page.getByTestId("mandate-register-form");
+  await expect(registerForm).toBeVisible();
+  await registerForm.locator('input[name="fund_name"]').fill(`FIDC sintético ${id}`);
+  await registerForm.locator('input[name="fund_strategy"]').fill("Crédito estruturado sintético");
+  await registerForm.locator('input[name="ticket_min"]').fill("5000000");
+  await registerForm.locator('input[name="ticket_max"]').fill("40000000");
+  await registerForm.locator('input[name="instrument"][value="debenture"]').check();
+  await registerForm.locator('input[name="collateral"][value="recebiveis"]').check();
+  await registerForm.locator('input[name="sectors"]').fill("varejo alimentar");
+  await registerForm.locator('input[name="geographies"]').fill("BR");
+  await page.getByTestId("mandate-register-submit").click();
+
+  const fundCard = page.getByTestId("mandate-fund").first();
+  await expect(fundCard).toBeVisible();
+  await expect(fundCard).toHaveAttribute("data-renewal", "unconfirmed");
+  await expect(fundCard).toHaveAttribute("data-status", "draft");
+
+  const drafts = await rest(request, `provider_mandates?select=id,status,version_number,confirmed_at&organization_id=eq.${organizationId}`, token);
+  expect(drafts).toHaveLength(1);
+  expect(drafts[0]!.status).toBe("draft");
+  expect(drafts[0]!.version_number).toBe(1);
+  expect(drafts[0]!.confirmed_at).toBeNull();
+  const mandateId = String(drafts[0]!.id);
+
+  // A draft cannot be promoted by writing the column: `status` is outside the tenant's grant.
+  const promotion = await request.patch(`${supabaseUrl}/rest/v1/provider_mandates?id=eq.${mandateId}`, {
+    headers: {apikey: supabaseKey, Authorization: `Bearer ${token}`, "Content-Type": "application/json"},
+    data: {status: "confirmed"},
+  });
+  expect(promotion.status(), await promotion.text()).toBeGreaterThanOrEqual(400);
+
+  await page.getByTestId("mandate-confirm-toggle").first().click();
+  const confirmForm = page.getByTestId("mandate-confirm-form");
+  await expect(confirmForm).toBeVisible();
+  await confirmForm.locator('select[name="channel"]').selectOption("official_document");
+  await confirmForm.locator('input[name="document_reference"]').fill("Regulamento sintético, 3a alteração");
+  await confirmForm.locator('input[name="confirm_valid_until"]').fill("2027-12-31");
+  await page.getByTestId("mandate-confirm-submit").click();
+  await expect(page.getByTestId("mandate-fund").first()).toHaveAttribute("data-status", "confirmed");
+  await expect(page.getByTestId("mandate-freshness").first()).toContainText("Última confirmação");
+
+  const confirmations = await rest(request, `provider_mandate_confirmations?select=channel,document_reference,mandate_version_number&organization_id=eq.${organizationId}`, token);
+  expect(confirmations).toHaveLength(1);
+  expect(confirmations[0]!.channel).toBe("official_document");
+  expect(confirmations[0]!.mandate_version_number).toBe(1);
+  expect(String(confirmations[0]!.document_reference)).toContain("Regulamento");
+
   await page.goto("/pt-BR/app");
 
   // 5. The creation screens explain what is unavailable instead of offering a refused button.
@@ -309,6 +362,11 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await expectRefusal(request, "other tenant renaming the financier project", "manage_workspace_project", {
     p_session_id: sessionId, p_action: "rename", p_project_name: "Sequestro",
   }, ["P0002"], otherToken);
+  expect(await rest(request, `provider_mandates?select=id&organization_id=eq.${organizationId}`, otherToken)).toHaveLength(0);
+  expect(await rest(request, `provider_mandate_confirmations?select=id&organization_id=eq.${organizationId}`, otherToken)).toHaveLength(0);
+  await expectRefusal(request, "other tenant confirming the financier mandate", "confirm_provider_mandate_v1", {
+    p_organization_id: organizationId, p_mandate_id: mandateId, p_channel: "direct_declaration",
+  }, ["42501"], otherToken);
   await expectRefusal(request, "other tenant answering the financier gap", "submit_advisor_information_response_v1", {
     ...staleAnswer, p_message_id: randomUUID(), p_expected_updated_at: requests[0]!.updated_at,
   }, ["P0002"], otherToken);
