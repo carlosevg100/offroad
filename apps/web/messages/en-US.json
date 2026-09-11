@@ -5211,7 +5211,7 @@
     "itemsTitle": "Files in the pack",
     "artifactFingerprint": "Fingerprint",
     "openItem": "Open file",
-    "itemNotDownloadable": "Available only on the product screen",
+    "itemNotDownloadable": "Not available for download at this stage",
     "deliverable": {
       "teaser": "Transaction summary",
       "financial_model": "Financial model",

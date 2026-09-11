@@ -5211,7 +5211,7 @@
     "itemsTitle": "Arquivos do pacote",
     "artifactFingerprint": "Impressao digital",
     "openItem": "Abrir arquivo",
-    "itemNotDownloadable": "Disponivel apenas na tela do produto",
+    "itemNotDownloadable": "Nao disponivel para download nesta etapa",
     "deliverable": {
       "teaser": "Resumo da operacao",
       "financial_model": "Modelo financeiro",
