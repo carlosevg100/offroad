@@ -9,6 +9,7 @@ import {
   type InformationPackItemInput,
   type PresentationTemplateIdentity,
 } from "@/components/advisor/information-pack-items";
+import {loadPresentationTemplateContext} from "@/lib/advisor/presentation-template";
 import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
 import type {Database} from "@/types/database";
 
@@ -149,30 +150,23 @@ function structuredEntries(value: unknown): Array<{code: string; note?: string}>
 }
 
 
-const storedTemplateSchema = z.object({
-  template_key: z.string(),
-  template_version: z.string(),
-  fingerprint: z.string().regex(/^[0-9a-f]{64}$/),
-  definition: z.object({origin: z.enum(["offroad_house", "client_supplied"])}).loose(),
-});
-
 /**
- * The visual identity bound to the project, when the product already stores one. Until then the
- * pack records the Offroad house template, which is what the exported files actually carry.
+ * The visual identity bound to the project, read through the same context loader the export routes
+ * use. A project without a stored template records the Offroad house template, which is what its
+ * exported files actually carry.
  */
 export async function projectTemplateIdentity(
   supabase: SupabaseClient<Database>,
   projectId: string,
 ): Promise<PresentationTemplateIdentity> {
-  const {data, error} = await supabase.rpc("read_presentation_template_v1", {p_project_id: projectId});
-  if (error || !data || typeof data !== "object" || Array.isArray(data)) return houseTemplateIdentity;
-  const parsed = storedTemplateSchema.safeParse((data as Record<string, unknown>).effective);
-  if (!parsed.success) return houseTemplateIdentity;
+  const context = await loadPresentationTemplateContext(supabase, projectId);
+  const stored = context?.effective ?? null;
+  if (!stored) return houseTemplateIdentity;
   return {
-    key: parsed.data.template_key,
-    version: parsed.data.template_version,
-    origin: parsed.data.definition.origin,
-    fingerprint: parsed.data.definition.origin === "client_supplied" ? parsed.data.fingerprint : null,
+    key: stored.definition.templateKey,
+    version: stored.definition.templateVersion,
+    origin: stored.definition.origin,
+    fingerprint: stored.definition.origin === "client_supplied" ? stored.fingerprint : null,
   };
 }
 

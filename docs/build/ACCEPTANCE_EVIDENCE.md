@@ -62,9 +62,10 @@ in-product acts, and no external delivery mechanism exists in this work. Without
 shortlist target becomes a reachable recipient only when a capital provider registered in the product
 claimed its directory entry; every other target is recorded as named and undelivered. The recipient
 opens the transaction summary, the indicative terms and the document index; the spreadsheet of the
-financial model is not served to a recipient organization. The template identity recorded in a pack
-is the Offroad house template until the per-organization template of the deliverable-format work is
-merged, at which point the same code reads the stored identity. No authenticated browser journey
+financial model is not served to a recipient organization. The template identity recorded in a pack comes from
+the same `loadPresentationTemplateContext` the export routes use, so a project that bound its own
+visual identity records that key, version and fingerprint, and a project without one records the
+Offroad house template. No authenticated browser journey
 covers this capability: a new Playwright specification was deliberately not added because this
 environment has no local Supabase stack to verify it against, and an unverified specification would
 put the shared gate at risk. Production has not received these migrations.
