@@ -1,4 +1,4 @@
-import {materialToDocx, type DocxMeta} from "@offroad/case-export";
+import {materialToDocx, materialToPdf, type DocxMeta} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 import {documentWorkProductSchema, type DocumentWorkProduct} from "@offroad/domain-contracts";
 
@@ -57,8 +57,19 @@ export function documentWorkProductMaterial(product: DocumentWorkProduct, labels
   return compileDocumentWorkProductMaterial(product, labels).material;
 }
 
-export function documentWorkProductToDocx(input: {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string}): Uint8Array {
+type DocumentWorkProductRenderInput = {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string};
+
+function documentWorkProductRenderInput(input: DocumentWorkProductRenderInput) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issuedOn)) throw new Error("Invalid document issue date");
   const {material, referenceTargets} = compileDocumentWorkProductMaterial(input.product, input.labels);
-  return materialToDocx({material, lang: input.product.locale === "pt-BR" ? "pt" : "en", meta: {issuedOn: input.issuedOn, referenceTargets}});
+  return {material, lang: input.product.locale === "pt-BR" ? "pt" : "en", meta: {issuedOn: input.issuedOn, referenceTargets}} as const;
+}
+
+export function documentWorkProductToDocx(input: DocumentWorkProductRenderInput): Uint8Array {
+  return materialToDocx(documentWorkProductRenderInput(input));
+}
+
+/** The final version of the exact same approved reading; nothing is summarized for the PDF. */
+export function documentWorkProductToPdf(input: DocumentWorkProductRenderInput): Promise<Uint8Array> {
+  return materialToPdf(documentWorkProductRenderInput(input));
 }

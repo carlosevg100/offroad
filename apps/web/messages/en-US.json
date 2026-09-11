@@ -4803,5 +4803,43 @@
       "not_found": "The project is no longer available.",
       "save": "The change could not be saved."
     }
+  },
+  "DeliverableFormats": {
+    "title": "Formats for this delivery",
+    "conditionsLabel": "Condition",
+    "unavailableLabel": "Not available now",
+    "formats": {
+      "interactive": "Read in Offroad",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "roles": {
+      "reading": "read in the product",
+      "editable": "editable",
+      "final": "final version",
+      "formulas": "workbook with formulas",
+      "tabular": "table",
+      "executive": "executive presentation"
+    },
+    "conditions": {
+      "approved_content_and_sources": "Same approved content and the same sources.",
+      "same_assumptions_and_results_version": "Same version of assumptions and results.",
+      "reproduction_approved": "Reproduction of the approved numbers checked before the download.",
+      "dates_sources_and_unknown_criteria_preserved": "Dates, sources and unknown criteria preserved.",
+      "narrative_structure_required": "Its own presentation structure; long text does not become slides automatically.",
+      "tabular_contract_required": "Its own tabular structure, with declared columns and units."
+    },
+    "blocked": {
+      "access_expired": "Your access to this project is no longer current.",
+      "result_superseded": "This result was superseded. Open the current result and export from it.",
+      "result_preparing": "The result is still being prepared.",
+      "result_unavailable": "Resolve the listed issues and request a new review.",
+      "reproduction_divergence": "Reproducing the approved numbers did not match. Request a new review of the configuration before exporting.",
+      "no_tabular_contract": "This delivery has no tabular structure of its own; the spreadsheet is not offered.",
+      "no_narrative_structure": "This delivery has no presentation structure of its own; the deck is not offered.",
+      "format_not_in_policy": "This format is not part of the delivery policy for this material."
+    }
   }
 }

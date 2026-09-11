@@ -679,7 +679,7 @@ async function ConversationalCapitalProject({
     workSections.push({id: "document-review", title: labels[`${documentResult.product.job}Title`], version: documentResult.binding.version,
       status: documentResult.product.status === "insufficient_evidence" ? labels.insufficientEvidence : labels.preliminary,
       content: <DocumentWorkProduct product={documentResult.product} labels={labels}
-        downloadHref={`/${locale}/app/projects/${project.id}/work-products/${documentResult.product.fingerprint}/docx`} />});
+        downloadBase={`/${locale}/app/projects/${project.id}/work-products/${documentResult.product.fingerprint}`} />});
   }
   if (parsedOrigination?.success && originationArtifact) workSections.push({id: "meeting-brief", artifactId: originationArtifact.id,
     title: customerArtifactLabel("meeting_brief", locale)!, version: originationArtifact.artifact_version,
