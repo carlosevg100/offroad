@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "reconcile-financial-statements-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "reconcile-financial-statements",
+    "version": "2026.09.05-v9"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
+    "exportName": "reconcileFinancialStatements"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.574Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "5 contas conciliadas, 3 divergencias abertas, ponte de juros registrada e nao fechada, estado incomplete",
+      "observed": "5 contas conciliadas, 3 divergencias abertas, ponte de juros registrada e nao fechada, estado incomplete",
+      "inputFingerprint": "1af3fdc05e8e5f917e6bbea3dd21eecbd2a33fd69b60a7dd28da6ee39f8f83bf",
+      "outputFingerprint": "8c6168032e575458754ed5578d6ec0b1d9c53098447c398c126540fbb7cd8e14",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "04ef361d4203e3e58b50f50eee132b99c9ce9ee893c3784efd0679f375c76440",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "reconcile-covenant-definitions-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "reconcile-covenant-definitions",
+    "version": "2026.09.05-v14"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
+    "exportName": "reconcileCovenantDefinitions"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:different-net-debt-definition-not-comparable",
+      "expectation": "sem os derivativos a divida liquida da 11a e 4214377, nao os 4228477 das outras 3: os nomes coincidem, as definicoes nao",
+      "observed": "sem os derivativos a divida liquida da 11a e 4214377, nao os 4228477 das outras 3: os nomes coincidem, as definicoes nao",
+      "inputFingerprint": "14f9abb088ce5e66e4afbd009a6fc903f1efc1483a5c79d9a052e4b49440b9cc",
+      "outputFingerprint": "24721962e39a924b025cacacba7baf10f63983d159aa53f26de6396262d4a5c7",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:leases-in-other-onerous-debt-changes-net-debt",
+      "expectation": "com o arrendamento contado como outra divida onerosa a divida liquida sobe de 4228477 para 4505245",
+      "observed": "com o arrendamento contado como outra divida onerosa a divida liquida sobe de 4228477 para 4505245",
+      "inputFingerprint": "1389cf8b9a5148ced27aaa165e2ac92dcc88d5ae886203723488e480743ae76a",
+      "outputFingerprint": "2efe102e0701bf56af4c6475de92e0f88fa3691429df86441f89f7232c7cb150",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:ebitda-flag-is-not-an-opening",
+      "expectation": "sem EBITDA aberto nenhum headroom e medido",
+      "observed": "sem EBITDA aberto nenhum headroom e medido",
+      "inputFingerprint": "df7f66ffca443d1f92b905ea125672804876a047e4339755128a06abd0b2fe78",
+      "outputFingerprint": "b3a1c0c76f8d69bc6305eed8d9014aba4ec27e30d9e8e577b4456fbcaec9af05",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:opening-must-reproduce-reported-index",
+      "expectation": "a abertura que nao reproduz 4,72x deixa a comparabilidade em not_comparable em cada escritura e nenhum headroom e medido",
+      "observed": "a abertura que nao reproduz 4,72x deixa a comparabilidade em not_comparable em cada escritura e nenhum headroom e medido",
+      "inputFingerprint": "519cd49c143b88a8689d18e02e8f037acccee6ad32bb6d62acc306985d26b2c7",
+      "outputFingerprint": "0b2975324c8dbb3bad1a96941777404270f03d1aa3b1b2c8bd9d6b8726f02ebf",
+      "passed": true
+    },
+    {
+      "id": "adversarial:gc01:numerator-obligation-never-folded-into-ebitda",
+      "expectation": "o sellers finance continua como obrigacao de numerador sem valor, nunca somado ao EBITDA",
+      "observed": "o sellers finance continua como obrigacao de numerador sem valor, nunca somado ao EBITDA",
+      "inputFingerprint": "df7f66ffca443d1f92b905ea125672804876a047e4339755128a06abd0b2fe78",
+      "outputFingerprint": "b3a1c0c76f8d69bc6305eed8d9014aba4ec27e30d9e8e577b4456fbcaec9af05",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "2a3b7ab494a8901145e97df312062da7408b3dd0c3e167f284ce7dba0f0e3f5c",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

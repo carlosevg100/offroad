@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "estimate-exit-cost-by-series-2026-09-10-consistency",
+  "kind": "consistency",
+  "humanApproval": false,
+  "method": {
+    "id": "estimate-exit-cost-by-series",
+    "version": "2026.09.05-v8"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
+    "exportName": "estimateExitCostBySeries"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.576Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-permutation-01",
+      "expectation": "permutacao 1 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 1 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-02",
+      "expectation": "permutacao 2 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 2 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-03",
+      "expectation": "permutacao 3 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 3 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-04",
+      "expectation": "permutacao 4 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 4 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-05",
+      "expectation": "permutacao 5 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 5 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-06",
+      "expectation": "permutacao 6 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 6 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-07",
+      "expectation": "permutacao 7 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 7 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-08",
+      "expectation": "permutacao 8 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 8 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-09",
+      "expectation": "permutacao 9 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 9 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    },
+    {
+      "id": "gc01-permutation-10",
+      "expectation": "permutacao 10 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "observed": "permutacao 10 de gc01-analista-ib-camil reproduz 297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "inputFingerprint": "1c9691e07980edd27a32d3ad92332888bca74cffa986c0deb8dfddd96ec81656",
+      "outputFingerprint": "297a5bc42f94ecba8237240fca347ca30e36abae836abb306addb21ae8689f50",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "5c1a8612ebc98896ecf08c38cf7fbc93904652c0971fae25d3b72e30a5f42dcd",
+  "notes": "Dez permutacoes profundas da entrada (ordem de linhas, de listas e de chaves). Ordem que e significado (operandos de uma diferenca, degraus de covenant) e conteudo assinado nao sao permutados."
+}

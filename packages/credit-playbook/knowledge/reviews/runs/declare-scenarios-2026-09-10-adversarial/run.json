@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "declare-scenarios-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "declare-scenarios",
+    "version": "2026.09.05-v6"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/declare-scenarios",
+    "exportName": "declareScenarios"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.576Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:parameter-without-origin-refused",
+      "expectation": "recusado no contrato de entrada",
+      "observed": "recusado no contrato de entrada",
+      "inputFingerprint": "c6fa9ccc3eb5caf1257e0e3d5beed662c663d461c632d1ec7c8fa1b8b6188cb8",
+      "outputFingerprint": "6fca01c0aacd7fd5af31b72a8f36d657f668be7a2140fc30074d06a84dc76338",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "63c30d4103a24f8c5ec0d20549b676419b9907cc7410fad962c03aeda3465fac",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

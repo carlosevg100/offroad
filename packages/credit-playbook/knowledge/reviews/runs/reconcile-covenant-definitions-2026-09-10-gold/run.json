@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "reconcile-covenant-definitions-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "reconcile-covenant-definitions",
+    "version": "2026.09.05-v14"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
+    "exportName": "reconcileCovenantDefinitions"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "4 instrumentos, divida liquida 4228477 pela definicao de cada escritura, EBITDA implicito 895863.77118644 do indice reportado 4.72, nenhum limite resolvido, estado conditioned",
+      "observed": "4 instrumentos, divida liquida 4228477 pela definicao de cada escritura, EBITDA implicito 895863.77118644 do indice reportado 4.72, nenhum limite resolvido, estado conditioned",
+      "inputFingerprint": "df7f66ffca443d1f92b905ea125672804876a047e4339755128a06abd0b2fe78",
+      "outputFingerprint": "b3a1c0c76f8d69bc6305eed8d9014aba4ec27e30d9e8e577b4456fbcaec9af05",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "01e5a94cacfb578883db27b5c9c6a08f95818b219c4f47aa75f0e1a8e60102bd",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

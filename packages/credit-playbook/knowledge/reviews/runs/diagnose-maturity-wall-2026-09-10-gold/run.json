@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "diagnose-maturity-wall-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "diagnose-maturity-wall",
+    "version": "2026.09.05-v8"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
+    "exportName": "diagnoseMaturityWall"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "2 paredes acima de 20% (2026/27, 2028/29), pico 2026/27 de 1229828 com 0.21689377 da divida bruta, estado incomplete",
+      "observed": "2 paredes acima de 20% (2026/27, 2028/29), pico 2026/27 de 1229828 com 0.21689377 da divida bruta, estado incomplete",
+      "inputFingerprint": "f86fb476440a82a32a31f501a6f10871ec1e57eb382e224b17d432be653f5d67",
+      "outputFingerprint": "1f55c8a4cb7e515b40637c01c80d9ebacf3e56d0e70264370b20236ee1149664",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "815cebb04dd3df9e59b24335cb91641388d26c2d2ff8199feef0938d4a363622",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

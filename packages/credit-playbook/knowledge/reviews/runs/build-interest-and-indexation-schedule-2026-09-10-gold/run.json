@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-interest-and-indexation-schedule-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "build-interest-and-indexation-schedule",
+    "version": "2026.09.05-v7"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
+    "exportName": "buildInterestAndIndexationSchedule"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.574Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "3 series com nominal contratual projetadas em 4 periodos, 13 sem nominal na base, nominal projetado 1122152 sobre o ledger de 5670186, estado partial",
+      "observed": "3 series com nominal contratual projetadas em 4 periodos, 13 sem nominal na base, nominal projetado 1122152 sobre o ledger de 5670186, estado partial",
+      "inputFingerprint": "8f0c22d244b42ad927f68caaebf66d83520608c6eb0500a0b8d3844316c35b1b",
+      "outputFingerprint": "5e4aa35664b7ddba1a3904a1890fa2a4bf450616009a35c6a0823fdcfba73605",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "6d4c7416dc1f549c5632908eea273a03d870f0ac3f03be08989f9b974900d0d1",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}

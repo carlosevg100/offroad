@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "plan-meeting-brief-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "plan-meeting-brief",
+    "version": "2026.09.05-v7"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
+    "exportName": "planMeetingBrief"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.576Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:question-answered-by-documents-refused",
+      "expectation": "a pergunta que os documentos ja respondem e recusada com a ancora da resposta e nao vai para a reuniao",
+      "observed": "a pergunta que os documentos ja respondem e recusada com a ancora da resposta e nao vai para a reuniao",
+      "inputFingerprint": "6f219109e4c3bf981875b493cccbda985cac5c24915353f41c5770a51be5c131",
+      "outputFingerprint": "64193d4ef32340c07277f86d1b0395c131012fca8351446baf55c7ae85e4061f",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "2482db94d1db720ebf6ef8c2d76c2fa6f2dd93bab7cc16a8a84848570591622a",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

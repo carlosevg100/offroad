@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "diagnose-maturity-wall-2026-09-10-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "diagnose-maturity-wall",
+    "version": "2026.09.05-v8"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
+    "exportName": "diagnoseMaturityWall"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.575Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "adversarial:gc01:board-approvals-are-not-sources",
+      "expectation": "as 2 captacoes aprovadas em ata ficam sem prova de contrato e desembolso, 0 entra como fonte contratada em periodo nenhum",
+      "observed": "as 2 captacoes aprovadas em ata ficam sem prova de contrato e desembolso, 0 entra como fonte contratada em periodo nenhum",
+      "inputFingerprint": "f86fb476440a82a32a31f501a6f10871ec1e57eb382e224b17d432be653f5d67",
+      "outputFingerprint": "1f55c8a4cb7e515b40637c01c80d9ebacf3e56d0e70264370b20236ee1149664",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "ea9bd7969ab808db4885765fef4187ca21a7c530ccaea1c8989c1e6784251181",
+  "notes": "Mutacoes adversariais declaradas no frontmatter do metodo. A maioria e aplicada a evidencia congelada; onde a propria base do Caso 01 ja carrega a condicao (aprovacoes de conselho sem contrato, make-whole sem cotacao, EBITDA sem abertura), o caso afirma sobre ela em vez de inventar uma mutacao. Uma entrada que o contrato de entrada recusa e registrada como recusa estruturada."
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "build-debt-ledger-2026-09-10-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "build-debt-ledger",
+    "version": "2026.09.05-v15"
+  },
+  "executor": {
+    "module": "@offroad/credit-playbook/executors/build-debt-ledger",
+    "exportName": "buildDebtLedger"
+  },
+  "harness": {
+    "module": "@offroad/evals/src/case01-method-runs.ts",
+    "exportName": "buildCase01MethodRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-11T01:18:00.091Z",
+    "finishedAt": "2026-09-11T01:18:00.573Z",
+    "commit": "7291ef9af5da87fa3d433727a760ca3ad916c21f"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "gc01-analista-ib-camil",
+      "expectation": "divida bruta 5670186 (4988383 em 28/02/2026), conciliacao com o balanco 0, primeiro periodo 1229828 igual ao circulante, divida liquida contratual 4228477 e do release 4214377, estado incomplete",
+      "observed": "divida bruta 5670186 (4988383 em 28/02/2026), conciliacao com o balanco 0, primeiro periodo 1229828 igual ao circulante, divida liquida contratual 4228477 e do release 4214377, estado incomplete",
+      "inputFingerprint": "b596d7bd798e2967f53ee93ea48bad4c951d4eabbb687d8fe3beb22f906eeb8a",
+      "outputFingerprint": "7e2755dfa19fae96d17eeb6ea0a2cd0ba6db69f3a4c4033367376a09615d783e",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "8f0f7ea055374a219b38b13314e74e8cfbc11d0ae1e0769d76fedede7e98baf1",
+  "notes": "Evidencia congelada do Caso 01 (Camil) executada pelo executor publicado. Os valores esperados vem do gabarito do caso, nao do resultado."
+}
