@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./deliverable-formats": {
+      "types": "./src/deliverable-formats.ts",
+      "default": "./src/deliverable-formats.ts"
     }
   },
   "scripts": {
@@ -24,6 +28,7 @@
     "pdf-lib": "1.17.1"
   },
   "devDependencies": {
+    "@offroad/work-plan": "workspace:*",
     "@types/node": "^20.19.43"
   }
 }
