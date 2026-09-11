@@ -29,7 +29,7 @@ sees the answers and records its own next step from a vocabulary that states wor
 outcome, and the structuring side reads the aggregated objections, requested conditions and observed
 ranges for the next revision.
 
-Eight additive migrations, applied to staging with security advisors at zero after each:
+Nine additive migrations, applied to staging with security advisors at zero after each:
 `20260911020500_versioned_information_packs` (staging `20260911012528`),
 `20260911021500_authorized_pack_distribution` (staging `20260911013106`),
 `20260911023000_information_pack_fingerprint_variable_scope` (staging `20260911013814`),
@@ -37,8 +37,8 @@ Eight additive migrations, applied to staging with security advisors at zero aft
 `20260911025000_in_product_qualified_contact` (staging `20260911014540`),
 `20260911030000_pack_responses_and_next_steps` (staging `20260911014632`),
 `20260911031000_bind_qualified_contact_to_its_recipient` (staging `20260911014733`),
-`20260911032000_read_shared_pack_item_material` and
-`20260911033000_resolve_pack_distribution_candidates`. The repository keeps its own file stamps; the
+`20260911032000_read_shared_pack_item_material` (staging `20260911020048`) and
+`20260911033000_resolve_pack_distribution_candidates` (staging `20260911020229`). The repository keeps its own file stamps; the
 coordinator reconciles them with production. `apps/web/src/types/database.ts` was regenerated from
 staging and is a superset of production while other fronts remain unmerged.
 
