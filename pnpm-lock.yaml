@@ -848,6 +848,9 @@ importers:
 
   packages/fund-mandate:
     dependencies:
+      '@offroad/matching-core':
+        specifier: workspace:*
+        version: link:../matching-core
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
