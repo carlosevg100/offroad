@@ -1,10 +1,17 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import Decimal from "decimal.js";
+import {
+  adherenceSubjects,
+  classifyCandidate,
+  candidateFitVersion,
+  type CandidateCriterion,
+} from "@offroad/matching-core";
 import {assessMandateFit, type CriterionId, type DealRequest} from "./fit";
 import {resolveMandate, instrumentSchema, collateralKindSchema} from "./mandate";
 import {buildMarketTruthSet} from "./market-truth";
 import {mandateProvenanceSchema, resolveCriterion} from "./provenance";
+import {verifiedMandateRecordSchema} from "./verified-mandate";
 
 const decimal = z.string().regex(/^(0|[1-9][0-9]{0,29})(\.[0-9]{1,18})?$/);
 const timestamp = z.iso.datetime({offset: true});
@@ -30,15 +37,41 @@ export const caseFitProviderSchema = z.object({
     geographies: z.array(sourced(z.array(z.string().min(1)).min(1))), leverageCeiling: z.array(sourced(decimal)), minimumDscr: z.array(sourced(decimal)),
     active: z.array(sourced(z.boolean())), currencies: z.array(sourced(z.array(z.enum(["BRL", "USD", "EUR"])).min(1))),
   }).strict(),
+  /** The verified mandate record this provider was projected from, when it has one. */
+  mandateRecord: verifiedMandateRecordSchema.optional(),
 }).strict();
 const bilingual = z.object({pt: z.string(), en: z.string()}).strict();
 const criterion = z.object({id: z.string(), labels: bilingual, outcome: z.enum(["fits", "excluded", "unknown", "not_assessed"]), hard: z.boolean(), mandate: z.string().nullable(), request: z.string().nullable(), explanation: bilingual, divergent: z.boolean(), resolvedBy: z.string().nullable(), evidence: z.array(z.object({value: z.unknown(), provenance: mandateProvenanceSchema, observedAt: timestamp, note: z.string()}).strict())}).strict();
+/**
+ * The classification a reader acts on, persisted beside the criteria it was derived from.
+ *
+ * The fields are optional so a result produced before this contract still verifies against its
+ * own fingerprint: an artifact that was honest when it was written does not become unreadable
+ * because the vocabulary grew.
+ */
+const adherenceItem = z.object({
+  subject: z.enum(adherenceSubjects as unknown as [string, ...string[]]),
+  outcome: z.enum(["fits", "excluded", "unknown", "not_assessed"]),
+  mandate: z.string().nullable(), request: z.string().nullable(),
+  origin: mandateProvenanceSchema.nullable(), observedAt: z.string().nullable(),
+}).strict();
+const candidateFitSchema = z.object({
+  version: z.literal(candidateFitVersion),
+  evidenceSource: z.enum(["confirmed_mandate", "historical_activity", "public_record"]),
+  classification: z.enum(["eligible", "hypothesis", "excluded"]),
+  incompatibilities: z.array(z.string()), unverified: z.array(z.string()), openQuestions: z.array(z.string()),
+  adherence: z.array(adherenceItem).length(adherenceSubjects.length),
+  mandateVersion: z.number().int().positive().nullable(),
+  mandateStatus: z.enum(["draft", "confirmed", "expired", "withdrawn"]).nullable(),
+  confirmedAt: z.string().nullable(),
+}).strict();
 const payloadSchema = z.object({
   schemaVersion: z.literal("provider-case-fit.v1"), scope: z.literal("research_case_fit"), organizationId: z.uuid(), projectId: z.uuid(), planId: z.uuid(), planFingerprint: sha,
   asOf: timestamp, caseCriteria: providerCaseCriteriaSchema, caseFingerprint: sha, sourceFingerprint: sha,
   candidates: z.array(z.object({providerId: z.string(), providerName: z.string(), sourceClass: z.enum(["directory", "registered"]), order: z.number().int().positive(),
     verdict: z.enum(["fits", "possible", "excluded"]), reviewReadiness: z.enum(["ready_for_review", "requires_confirmation", "excluded"]), mandateFingerprint: sha,
     criteria: z.array(criterion), blockers: z.array(z.string()), companyGaps: z.array(z.string()), mandateGaps: z.array(z.string()), rankBasis: z.object({governed: z.boolean(), unresolved: z.number().int(), oldestHardCriterionMonths: z.number().nullable()}).strict(),
+    fit: candidateFitSchema.optional(), mandateRecord: verifiedMandateRecordSchema.nullable().optional(),
   }).strict()).max(500),
   structuralExclusions: z.array(z.string()), shortlistAuthorized: z.literal(false), externalEffectAllowed: z.literal(false),
 }).strict();
@@ -61,6 +94,11 @@ export function buildProviderCaseFit(input: {organizationId: string; projectId: 
   const candidates = providers.map(provider => {
     // Future evidence and directory identity never become current mandate assertions.
     const applicable = Object.fromEntries(Object.entries(provider.mandate).map(([key, values]) => [key, provider.sourceClass === "directory" ? [] : values.filter(v => Date.parse(v.observedAt) <= Date.parse(request.asOf))]));
+    // A directory identity carries no verified record, and a record confirmed after the approved
+    // date is not evidence about that date.
+    const mandateRecord = provider.sourceClass === "directory" || !provider.mandateRecord
+      || (provider.mandateRecord.confirmedAt !== null && Date.parse(provider.mandateRecord.confirmedAt) > Date.parse(request.asOf))
+      ? null : provider.mandateRecord;
     const parsed = caseFitProviderSchema.shape.mandate.parse(applicable);
     for (const range of parsed.ticket) if (new Decimal(range.value.min).gt(range.value.max)) throw new Error("case_fit_ticket_range_invalid");
     for (const range of parsed.termMonths) if (range.value.min > range.value.max) throw new Error("case_fit_term_range_invalid");
@@ -89,7 +127,14 @@ export function buildProviderCaseFit(input: {organizationId: string; projectId: 
     const verdict: "fits" | "possible" | "excluded" = allCriteria.some(c=>c.hard&&c.outcome==="excluded") ? "excluded" : allCriteria.some(c=>c.outcome==="unknown"||c.outcome==="not_assessed") ? "possible" : "fits";
     const governed = blockers.length === 0 && verdict !== "excluded";
     const hardAges = Object.entries(mandate).filter(([key]) => Object.values(fieldByCriterion).includes(key as typeof fieldByCriterion[CriterionId]) && key !== "collateral").map(([,value]) => value && typeof value === "object" && "ageMonths" in value ? value.ageMonths as number : null).filter((age):age is number => age !== null);
-    return {providerId:provider.providerId,providerName:provider.name,sourceClass:provider.sourceClass,order:1,verdict,reviewReadiness:verdict==="excluded"?"excluded":governed?"ready_for_review":"requires_confirmation",mandateFingerprint:providerCaseFitFingerprint(provider.mandate),criteria:allCriteria,blockers:[...new Set(blockers)].sort(),companyGaps:allCriteria.filter(c=>c.outcome==="unknown").map(c=>c.id),mandateGaps:allCriteria.filter(c=>c.outcome==="not_assessed").map(c=>c.id),rankBasis:{governed,unresolved:allCriteria.filter(c=>c.outcome==="unknown"||c.outcome==="not_assessed").length,oldestHardCriterionMonths:hardAges.length?Math.max(...hardAges,...(currency?[currency.ageMonths]:[])):null}};
+    const acceptedFor = (id: string) => id === "currency" ? currency?.accepted ?? null : mandate[fieldByCriterion[id as CriterionId]]?.accepted ?? null;
+    const classificationInput: CandidateCriterion[] = allCriteria.map(c => {
+      const accepted = acceptedFor(c.id);
+      return {id: c.id, hard: c.hard, outcome: c.outcome, mandate: c.mandate, request: c.request,
+        origin: accepted?.provenance ?? null, observedAt: accepted?.observedAt ?? null};
+    });
+    const candidateFit = classifyCandidate({criteria: classificationInput, record: mandateRecord, sourceClass: provider.sourceClass});
+    return {providerId:provider.providerId,providerName:provider.name,sourceClass:provider.sourceClass,order:1,verdict,reviewReadiness:verdict==="excluded"?"excluded":governed?"ready_for_review":"requires_confirmation",mandateFingerprint:providerCaseFitFingerprint(provider.mandate),fit:candidateFit,mandateRecord,criteria:allCriteria,blockers:[...new Set(blockers)].sort(),companyGaps:allCriteria.filter(c=>c.outcome==="unknown").map(c=>c.id),mandateGaps:allCriteria.filter(c=>c.outcome==="not_assessed").map(c=>c.id),rankBasis:{governed,unresolved:allCriteria.filter(c=>c.outcome==="unknown"||c.outcome==="not_assessed").length,oldestHardCriterionMonths:hardAges.length?Math.max(...hardAges,...(currency?[currency.ageMonths]:[])):null}};
   });
   const verdictOrder = {fits:0,possible:1,excluded:2};
   candidates.sort((a,b) => Number(b.rankBasis.governed)-Number(a.rankBasis.governed) || verdictOrder[a.verdict]-verdictOrder[b.verdict] || a.rankBasis.unresolved-b.rankBasis.unresolved || (a.rankBasis.oldestHardCriterionMonths??Infinity)-(b.rankBasis.oldestHardCriterionMonths??Infinity) || (a.providerId < b.providerId ? -1 : a.providerId > b.providerId ? 1 : 0));

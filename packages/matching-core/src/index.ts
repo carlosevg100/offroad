@@ -1,3 +1,5 @@
+export * from "./candidate-fit";
+
 import type {OpportunityProjection} from "@offroad/domain-contracts";
 import Decimal from "decimal.js";
 

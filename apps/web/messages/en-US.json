@@ -4034,11 +4034,6 @@
     "noResults": "No names match this filter. Show mismatches to inspect exclusions.",
     "empty": "No authorized mandates are available to compare.",
     "reviewBoundary": "This list is an analytical proposal. It does not authorize disclosure, contact or introduction; appetite, capacity and terms require lender confirmation.",
-    "status": {
-      "ready_for_review": "Ready for review",
-      "requires_confirmation": "Confirmations needed",
-      "excluded": "Outside criteria"
-    },
     "outcome": {
       "fits": "Compatible",
       "excluded": "Incompatible",
@@ -4053,7 +4048,52 @@
       "inferred": "Unconfirmed inference"
     },
     "recordedMandate": "Mandate record effective on the stated date",
-    "archivedStatus": "Historical result, not current"
+    "archivedStatus": "Historical result, not current",
+    "classificationLegend": "Eligible means a confirmed mandate in force with no incompatibility. Hypothesis means research: a public record, past activity, or a mandate with no confirmation in force. Outside criteria means the mandate rules it out.",
+    "classification": {
+      "eligible": "Eligible",
+      "hypothesis": "Research hypothesis",
+      "excluded": "Outside criteria"
+    },
+    "evidence": {
+      "confirmed_mandate": "Mandate confirmed by the manager itself",
+      "historical_activity": "Observed past activity",
+      "public_record": "Record with no confirmation in force"
+    },
+    "mandateVersion": "Mandate version {version}, confirmed on {date} ({status})",
+    "mandateUnconfirmed": "No confirmed mandate on record.",
+    "mandateStatus": {
+      "draft": "draft",
+      "confirmed": "in force",
+      "expired": "expired",
+      "withdrawn": "withdrawn"
+    },
+    "hypothesisNote": "With no confirmed mandate in force, this name is a research hypothesis. It does not indicate current interest from the manager.",
+    "incompatibilities": "Incompatible on: {items}",
+    "criterionName": {
+      "active": "taking new transactions",
+      "instrument": "instrument",
+      "ticket": "investment range",
+      "term": "tenor",
+      "sector": "sector",
+      "geography": "geography",
+      "collateral": "collateral",
+      "leverage": "leverage",
+      "dscr": "DSCR",
+      "currency": "currency"
+    },
+    "subject": {
+      "instrument": "Instrument",
+      "ticket": "Investment range",
+      "sector": "Sector",
+      "geography": "Geography",
+      "credit_profile": "Credit profile",
+      "tenor": "Tenor",
+      "collateral": "Collateral"
+    },
+    "itemOrigin": "Origin: {source} · {date}",
+    "itemOriginMissing": "Origin: this criterion is not in the manager's record.",
+    "confirmedMandateRecord": "Mandate confirmed by the manager, on the stated date"
   },
   "ProviderCaseFitForm": {
     "title": "Identify lenders for this transaction",
