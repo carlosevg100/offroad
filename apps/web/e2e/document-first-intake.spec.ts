@@ -893,14 +893,17 @@ test.describe("Document-first intake (company journey)", () => {
     expect(initialDraft.sections.titles.value).toHaveLength(2);
     expect(sql("select count(*) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_evidence' and status='open';")).not.toBe("0");
     const request = JSON.parse(sql("select jsonb_build_object('id',id,'question',question) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_fields' and status='open' order by created_at desc limit 1;"));
-    // Before the grant the organization sees exactly today's compact card and nothing is stored.
+    // While the method still misses an input the page keeps the compact card, and it does so
+    // because nothing was computed yet, not because anyone had to open a concession: no
+    // organization row exists anywhere and the release is the platform's own, under the approval.
     await page.reload();
     await expect(page.getByTestId("receivables-current-result")).toBeVisible();
     await expect(page.getByTestId("receivables-released-result")).toHaveCount(0);
-    expect(sql("select count(*) from private.receivables_released_results r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid;")).toBe("0");
-    // The operator opens the released reading for this organization; the method is not promoted.
-    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-f", join(__dirname, "support", "receivables-release-grant-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
-    await page.reload();
+    expect(sql("select count(*) from private.receivables_analytical_release_grants;")).toBe("0");
+    expect(JSON.parse(sql("select jsonb_build_object('released',released,'exposure',exposure,'maturity',method_maturity,'approvedBy',approved_by,'approvedAt',approved_at) from private.platform_capability_releases where capability_key='finance.receivables-released-analysis';"))).toMatchObject({
+      released: true, exposure: "universal", maturity: "production",
+      approvedBy: "Carlos Eduardo Galves", approvedAt: "2026-09-10",
+    });
     await page.locator('.information-request-card__selector select').selectOption(request.id);
     const answer = page.locator('article.information-request-card').filter({has: page.getByRole("heading", {name: request.question, exact: true})});
     await answer.locator('input[type="number"]').fill("50");
@@ -924,17 +927,22 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
     await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
-    // The released result is the same calculation, bound to the confirmed selection and its dataset.
+    // The released result is the same calculation, bound to the confirmed selection and its dataset,
+    // and it reached this organization with no concession of its own and no operator step.
+    expect(sql("select count(*) from private.receivables_analytical_release_grants;")).toBe("0");
     const released = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint,'scopeFingerprint',r.evidence_scope_fingerprint,'datasetHash',r.source_dataset_hash,'maturity',r.method_maturity,'maximumEffect',r.release->>'maximumEffect') from private.receivables_released_results r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
     expect(released.outputFingerprint).toBe(persisted.outputFingerprint);
     expect(released.inputFingerprint).toBe(persisted.inputFingerprint);
     expect(released.scopeFingerprint).toBe(JSON.parse(sql("select to_jsonb(fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;")));
     expect(released.datasetHash).toBe(JSON.parse(sql("select to_jsonb(source_dataset_hash) from private.receivables_method_input_assemblies where intake_session_id=:'session_id'::uuid order by created_at desc limit 1;")));
-    expect(released.maturity).toBe("tested");
+    expect(released.maturity).toBe("production");
     expect(released.maximumEffect).toBe("none");
     const releasedSection = page.getByTestId("receivables-released-result");
     await expect(releasedSection).toBeVisible();
     await expect(page.getByTestId("receivables-current-result")).toHaveCount(0);
+    // The rung the founder approved is what the reading states, with the date of that approval.
+    await expect(releasedSection).toHaveAttribute("data-method-maturity", "production");
+    await expect(releasedSection.getByTestId("receivables-released-founder-approval")).toContainText("10 de setembro de 2026");
     for (const block of ["receivables-released-base", "receivables-released-facility", "receivables-released-concentration", "receivables-released-waterfall", "receivables-released-triggers", "receivables-released-gaps", "receivables-released-coverage", "receivables-released-evidence", "receivables-released-limitations"]) {
       await expect(releasedSection.getByTestId(block)).toBeVisible();
     }

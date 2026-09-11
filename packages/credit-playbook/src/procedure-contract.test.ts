@@ -33,6 +33,14 @@ const draft = (objective = "Executar uma atividade verificável.") => canonicalP
   source: {path: "test", effectiveDate: "2026-08-25"},
 });
 
+/** A production approval is a person, a date and where the instruction was given. */
+const approvedOwner = (owner: {role: string}) => ({
+  ...owner,
+  approvedBy: "Head de Crédito",
+  approvedAt: "2026-09-10",
+  approvalSource: "reunião de aprovação registrada",
+});
+
 describe("canonical procedure contract", () => {
   it("lets a procedure start with the six-part minimum contract", () => {
     const procedure = draft();
@@ -49,12 +57,23 @@ describe("canonical procedure contract", () => {
     expect(() => canonicalProcedureSchema.parse({...candidate, maturity: "production", owner: {role: candidate.owner.role}})).toThrow(/approval|examples/i);
   });
 
+  it("refuses a founder approval that is a name without a date and a source", () => {
+    const candidate = growthCapexProcedures[0]!;
+    expect(() => canonicalProcedureSchema.parse({
+      ...candidate, maturity: "production", owner: {...candidate.owner, approvedBy: "Head de Crédito"},
+    })).toThrow(/date of the founder's approval/i);
+    expect(() => canonicalProcedureSchema.parse({
+      ...candidate, maturity: "production",
+      owner: {...candidate.owner, approvedBy: "Head de Crédito", approvedAt: "2026-09-10"},
+    })).toThrow(/where the founder's approval was given/i);
+  });
+
   it("does not promote a documented candidate without an executor, persistence and evaluation evidence", () => {
     const candidate = growthCapexProcedures[0]!;
     expect(() => canonicalProcedureSchema.parse({
       ...candidate,
       maturity: "production",
-      owner: {...candidate.owner, approvedBy: "Head de Crédito"},
+      owner: approvedOwner(candidate.owner),
     })).toThrow(/executable implementation evidence/i);
   });
 
@@ -63,7 +82,7 @@ describe("canonical procedure contract", () => {
     const production = canonicalProcedureSchema.parse({
       ...candidate,
       maturity: "production",
-      owner: {...candidate.owner, approvedBy: "Head de Crédito"},
+      owner: approvedOwner(candidate.owner),
       implementation: {
         executor: {module: "@offroad/case-engine", exportName: "runProcedure"},
         resultContract: "offroad.test.result.v1",

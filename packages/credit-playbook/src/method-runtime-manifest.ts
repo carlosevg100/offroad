@@ -10,7 +10,7 @@ export const specialistMethodRuntimeManifest = [
     procedure: {
       id: "underwrite-receivables-pool",
       version: "2026.09.06-v1",
-      maturity: "tested",
+      maturity: "production",
     },
     taskIds: ["R01"],
     requiredPackIds: ["analysis.receivables-underwriting"],
@@ -21,15 +21,16 @@ export const specialistMethodRuntimeManifest = [
     },
     resultContract: "method.underwrite-receivables-pool.v1",
     sourcePath: "receivables/underwrite-receivables-pool.md",
-    sourceHash: "51215b4cfdbf01b42edfeb23772c83cb707c544e9c8fe1faa6b048bd1747bc0c",
+    sourceHash: "9f5cf24e6751c708a7ff9825afebdd1878e2e07fc652c295df7493cb8e246264",
   },
 ] as const;
 
 /**
  * Accredited execution policy projected from the same Markdown source as the method binding.
- * Exposure allowlists are deliberately absent here: the organizations allowed to read the released
- * analytical result live in the database grant, never in source control, and an allowlisted method
- * with an empty bundled allowlist stays closed to the universal dispatcher.
+ * Exposure allowlists stay empty on purpose: under `universal` exposure no organization list exists
+ * in source control at all. Whether the released reading is open at a given moment is a database
+ * answer, not a bundled one: the platform release record can be paused by an operator without a
+ * deploy, and a single organization can be paused explicitly.
  */
 export const specialistTaskCapabilityRuntimeManifest = [
   {
@@ -37,8 +38,8 @@ export const specialistTaskCapabilityRuntimeManifest = [
     executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
     executorVersion: "2026.09.06-v1",
     procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
-    availability: "shadow",
-    exposure: "allowlisted",
+    availability: "live",
+    exposure: "universal",
     allowedUses: ["internal_validation", "customer_work"],
     allowedEvidenceRegimes: ["project_private", "mixed_governed"],
     allowedDataClasses: ["project_confidential"],
@@ -49,6 +50,21 @@ export const specialistTaskCapabilityRuntimeManifest = [
     maximumEffect: "none",
     allowlistedTenantIds: [],
     allowlistedProjectIds: [],
+  },
+] as const;
+
+/**
+ * The founder approvals that took methods to `production`, projected from the same Markdown. They
+ * live beside the routing manifest rather than inside it: the routing projection is parsed by
+ * strict runtime schemas and carries only what routing needs, while the product states who approved
+ * a method and when. An approval is a person, a date and where the instruction was given.
+ */
+export const specialistMethodApprovalManifest = [
+  {
+    procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026",
   },
 ] as const;
 

@@ -37,15 +37,15 @@ const currentRelease = receivablesReleasedResultSchema.parse({
     taskId: "R01",
     executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
     executorVersion: "2026.09.06-v1",
-    methodMaturity: "tested",
+    methodMaturity: "production",
     evidenceScope: {id: "22222222-2222-4222-8222-222222222222", fingerprint: hash("8")},
     sourceDatasetHash: hash("a"),
     inputFingerprint: content.trace.input_fingerprint,
     outputFingerprint: content.trace.output_fingerprint,
     release: {
       organizationId: "33333333-3333-4333-8333-333333333333",
-      procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1", maturity: "tested"},
-      methodMaturity: "tested",
+      procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1", maturity: "production"},
+      methodMaturity: "production",
       allowedUses: ["internal_validation", "customer_work"],
       maximumEffect: "none",
       confirmedScope: {id: "22222222-2222-4222-8222-222222222222", fingerprint: hash("8")},
@@ -98,6 +98,11 @@ describe("released receivables analysis on the project page", () => {
     expect(html).toContain(copy.limitations.noFinancierRecommendation);
     expect(html).toContain(copy.limitations.noCreditApproval);
     expect(html).toContain("underwrite-receivables-pool");
+    // The rung and the founder approval behind it are stated, never a bare internal token.
+    expect(html).toContain(copy.limitations.maturityNames.production);
+    expect(html).toContain('data-testid="receivables-released-founder-approval"');
+    expect(html).toContain(locale === "en-US" ? "September 10, 2026" : "10 de setembro de 2026");
+    expect(html).toContain('data-method-maturity="production"');
     // Internal identifiers stay internal.
     expect(html).not.toContain(content.trace.output_fingerprint);
     expect(html).not.toContain(hash("a"));
@@ -117,7 +122,7 @@ describe("released receivables analysis on the project page", () => {
     expect(html).toContain(pt.ReceivablesReleasedResult.coverage.note);
   });
 
-  it("keeps today's compact card for an organization without the grant", async () => {
+  it("keeps today's compact card while the release is paused or nothing was computed", async () => {
     const ungranted = receivablesReleasedResultSchema.parse({
       schemaVersion: "receivables-released-result.v1", state: "not_granted", result: null,
     });

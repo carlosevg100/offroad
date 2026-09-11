@@ -1,6 +1,8 @@
--- Released R01 analytical result: the organization that owns the session reads its own
--- calculation; another tenant, a revoked member and a portfolio selection that changed read
--- nothing. Synthetic, rollback-only. No policy, grant or check constraint is relaxed here.
+-- Released R01 analytical result under the universal release: every organization reads its own
+-- calculation with no concession of its own, another tenant and a revoked member read nothing, a
+-- portfolio selection that changed is superseded, and an operator pause closes the reading again,
+-- both for one organization and for the whole platform. Synthetic, rollback-only. No policy, grant
+-- or check constraint is relaxed here.
 begin;
 \ir support/execution_approval.sql
 
@@ -127,11 +129,7 @@ declare
     'findingResolutions',jsonb_build_array(),
     'input',jsonb_build_object('currency','BRL','case',jsonb_build_object('portfolio',jsonb_build_array(jsonb_build_object('id','method-1'))))
   );
-  released jsonb;
   assembly_row jsonb;
-  recorded jsonb;
-  replayed jsonb;
-  accepted boolean;
 begin
   assembly_row := public.worker_record_receivables_method_input_assembly_v1(
     '80000000-0000-4000-8000-000000000731', repeat('r',64), assembly
@@ -139,47 +137,10 @@ begin
   -- The stored assembly is reachable only through the worker RPC: the tenant role never
   -- reads a private table, so the identifier travels in a transaction-local setting.
   perform set_config('offroad.test_release_assembly_id', assembly_row ->> 'id', true);
-  released := jsonb_build_object(
-    'mode','analytical_release','taskId','R01',
-    'executorKey','@offroad/receivables-analysis#underwriteReceivablesPool',
-    'executorVersion','2026.09.06-v1','externalEffectAllowed',false,
-    'release',jsonb_build_object(
-      'organizationId','20000000-0000-4000-8000-000000000731',
-      'procedure',jsonb_build_object('id','underwrite-receivables-pool','version','2026.09.06-v1','maturity','tested'),
-      'methodMaturity','tested',
-      'allowedUses',jsonb_build_array('internal_validation','customer_work'),
-      'maximumEffect','none',
-      'confirmedScope',jsonb_build_object('id','90000000-0000-4000-8000-000000000731','fingerprint',repeat('8',64)),
-      'sourceDatasetHash',repeat('a',64)
-    ),
-    'artifact',jsonb_build_object(
-      'artifactType','receivables_pool_underwriting','schemaVersion','method.underwrite-receivables-pool.v1',
-      'status','released','inputFingerprint',repeat('b',64),'outputFingerprint',repeat('c',64),
-      'content',jsonb_build_object('decision_boundary',jsonb_build_object('externalDirectionAllowed',false)),
-      'evidenceRefs',jsonb_build_array(jsonb_build_object('section','cedentAndServicing','sourceClass','provided_document','sourceId','doc-1','anchor','page:1'))
-    ),
-    'qualityResults',jsonb_build_array(jsonb_build_object('id','trace_output_fingerprint_present','status','passed','detail','ok'))
-  );
-
-  -- Without the organization concession the release is refused, not degraded.
-  begin
-    perform public.worker_record_receivables_released_result_v1(
-      '80000000-0000-4000-8000-000000000731', repeat('r',64), (assembly_row ->> 'id')::uuid, released
-    );
-    accepted := true;
-  exception when insufficient_privilege then accepted := false;
-  end;
-  if accepted then raise exception 'released result was accepted without the organization grant'; end if;
 end;
 $$;
 
--- Operators write the concession outside the Data API; it never travels in source control.
-reset role;
-insert into private.receivables_analytical_release_grants (organization_id, granted_by, note)
-values ('20000000-0000-4000-8000-000000000731', 'sql-contract-test', 'synthetic rollback-only grant');
-set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000732","role":"authenticated","aal":"aal1"}', true);
-
+-- No concession is written for this organization: the universal release is the only authority.
 do $$
 declare
   assembly_row jsonb;
@@ -197,8 +158,8 @@ begin
     'executorVersion','2026.09.06-v1','externalEffectAllowed',false,
     'release',jsonb_build_object(
       'organizationId','20000000-0000-4000-8000-000000000731',
-      'procedure',jsonb_build_object('id','underwrite-receivables-pool','version','2026.09.06-v1','maturity','tested'),
-      'methodMaturity','tested',
+      'procedure',jsonb_build_object('id','underwrite-receivables-pool','version','2026.09.06-v1','maturity','production'),
+      'methodMaturity','production',
       'allowedUses',jsonb_build_array('internal_validation','customer_work'),
       'maximumEffect','none',
       'confirmedScope',jsonb_build_object('id','90000000-0000-4000-8000-000000000731','fingerprint',repeat('8',64)),
@@ -325,7 +286,7 @@ begin
   payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000731');
   if payload ->> 'state' <> 'current'
     or payload #>> '{result,outputFingerprint}' <> repeat('c',64)
-    or payload #>> '{result,methodMaturity}' <> 'tested'
+    or payload #>> '{result,methodMaturity}' <> 'production'
     or payload #>> '{result,evidenceScope,fingerprint}' <> repeat('8',64)
     or payload #>> '{result,sourceDatasetHash}' <> repeat('a',64)
     or payload #>> '{result,release,maximumEffect}' <> 'none' then
@@ -394,6 +355,74 @@ begin
 end;
 $$;
 
+-- Universal release: a second organization that never received any concession is inside the
+-- release too. It has no stored result yet, so it reads the explicit absent state, not not_granted.
+reset role;
+insert into public.capital_projects (id, organization_id, project_name, entry_job, created_by) values (
+  '30000000-0000-4000-8000-000000000732', '20000000-0000-4000-8000-000000000732',
+  'Other Tenant Receivables', 'capital_planning', '10000000-0000-4000-8000-000000000733'
+);
+insert into public.document_intake_sessions (
+  id, organization_id, capital_project_id, started_by, journey, locale
+) values (
+  '40000000-0000-4000-8000-000000000732', '20000000-0000-4000-8000-000000000732',
+  '30000000-0000-4000-8000-000000000732', '10000000-0000-4000-8000-000000000733',
+  'company', 'pt-BR'
+);
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000733","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare payload jsonb;
+begin
+  payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000732');
+  if payload ->> 'state' <> 'absent' or payload -> 'result' <> 'null'::jsonb then
+    raise exception 'an organization without a concession of its own was not inside the universal release: %', payload;
+  end if;
+end;
+$$;
+
+-- One organization can still be paused explicitly, and the pause reaches only that organization.
+reset role;
+insert into private.receivables_analytical_release_grants (organization_id, enabled, granted_by, note)
+values ('20000000-0000-4000-8000-000000000731', false, 'sql-contract-test', 'synthetic rollback-only pause');
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare payload jsonb;
+begin
+  payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000731');
+  if payload ->> 'state' <> 'not_granted' or payload -> 'result' <> 'null'::jsonb then
+    raise exception 'pausing one organization did not close its released reading: %', payload;
+  end if;
+end;
+$$;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000733","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare payload jsonb;
+begin
+  payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000732');
+  if payload ->> 'state' <> 'absent' then
+    raise exception 'pausing one organization closed another one: %', payload;
+  end if;
+end;
+$$;
+
+-- Lifting the pause restores the reading without a deploy.
+reset role;
+delete from private.receivables_analytical_release_grants
+  where organization_id = '20000000-0000-4000-8000-000000000731';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare payload jsonb;
+begin
+  payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000731');
+  if payload ->> 'state' <> 'current' then
+    raise exception 'lifting the pause did not restore the released reading: %', payload;
+  end if;
+end;
+$$;
+
 -- A portfolio selection confirmed afterwards supersedes the stored result; it is never current.
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}', true);
 reset role;
@@ -432,10 +461,11 @@ begin
 end;
 $$;
 
--- Withdrawing the concession restores exactly today's behaviour: no released reading at all.
+-- Pausing the platform release record closes the reading for every organization at once, with no
+-- deploy and no code change, and restores exactly the behaviour that preceded the release.
 reset role;
-update private.receivables_analytical_release_grants set enabled = false
-  where organization_id = '20000000-0000-4000-8000-000000000731';
+update private.platform_capability_releases set released = false, updated_at = now()
+  where capability_key = 'finance.receivables-released-analysis';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}', true);
 do $$
@@ -443,8 +473,25 @@ declare payload jsonb;
 begin
   payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000731');
   if payload ->> 'state' <> 'not_granted' or payload -> 'result' <> 'null'::jsonb then
-    raise exception 'withdrawing the grant did not close the released reading: %', payload;
+    raise exception 'pausing the platform release did not close the released reading: %', payload;
   end if;
+end;
+$$;
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000733","role":"authenticated","aal":"aal1"}', true);
+do $$
+declare payload jsonb; accepted boolean;
+begin
+  payload := public.read_receivables_released_result_v1('40000000-0000-4000-8000-000000000732');
+  if payload ->> 'state' <> 'not_granted' then
+    raise exception 'the platform pause did not reach every organization: %', payload;
+  end if;
+  -- The platform record is not a tenant object either: no Data API role reads or writes it.
+  begin
+    perform 1 from private.platform_capability_releases;
+    accepted := true;
+  exception when insufficient_privilege then accepted := false;
+  end;
+  if accepted then raise exception 'tenant role read the platform release record directly'; end if;
 end;
 $$;
 

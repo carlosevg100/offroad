@@ -211,7 +211,12 @@ describe("endgame program board", () => {
     expect(byTask.get("VLT-02")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(3);
     expect(byTask.get("SEC-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(2);
     expect(byTask.get("MAT-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(1);
-    expect(currentCapabilityLedger.entries.every((entry) => entry.allowedUses.every((use) => use === "internal_design" || use === "internal_validation"))).toBe(true);
+    // These foundations grant no customer or external use. The one scope that carries customer work
+    // is the released receivables analysis, promoted by the founder and unrelated to this board row.
+    expect(currentCapabilityLedger.entries
+      .filter((entry) => entry.capabilityId !== "finance.receivables-released-analysis")
+      .every((entry) => entry.allowedUses.every((use) => use === "internal_design" || use === "internal_validation"))).toBe(true);
+    expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("external_material") || entry.allowedUses.includes("external_action"))).toBe(false);
   });
 
   it("prevents one pack from promoting the aggregate specialist runtime", () => {
