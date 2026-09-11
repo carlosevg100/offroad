@@ -1,3 +1,74 @@
+## 11 September 2026: authorized distribution of the exact information pack and the market answer
+
+Gap 9 of the nine-gap plan. An information pack is now an immutable revision per project: one row per
+exported file with the fingerprint of the artifact it renders, its delivery format, the template key,
+version and origin that produced it, and the governed results behind it, all under one pack
+fingerprint. Recording the same content twice returns the same revision; changed content opens a new
+revision that supersedes the previous one and never deletes it. Neither the revision nor its files can
+be rewritten: a tenant member has no update privilege, and a caller that bypasses both the grant and
+the policy is still refused by the row itself.
+
+Distribution is an authorization with a consent record, inside the product. The issuer names
+recipients taken from its own approved shortlist; a shortlist target resolves to a registered capital
+provider organization, or the row records that it was named and that nothing was delivered to it. The
+wave limit and the policy version come from the active `market_distribution_policies` row, the
+identity policy comes from the session, and the person who authorizes leaves a written consent. A
+recipient organization receives no select privilege on the issuer pack tables at all: it reads its own
+share row and a projection that logs every read, and under a blind policy the issuer identity is
+absent from both the share row and the projection. Revoking the authorization closes every share.
+
+A qualified contact is prepared against the exact pack revision and released inside the product with
+its timestamp and the authorizing person. Release creates no delivery mechanism: there is no e-mail,
+no message and no external call anywhere in this work. A candidate classified as a research hypothesis
+can be prepared for study and can never be released, and a prepared contact and its pack share must
+name the same market participant. The recipient organization records its own answer (interested, asks
+for information, will not continue, no answer yet) with free text and structured feedback (ticket,
+tenor, pricing range, requested conditions, term objections); a correction supersedes the previous
+answer instead of erasing it, and an answer stays attached to the pack revision it read. The issuer
+sees the answers and records its own next step from a vocabulary that states work and never an
+outcome, and the structuring side reads the aggregated objections, requested conditions and observed
+ranges for the next revision.
+
+Eight additive migrations, applied to staging with security advisors at zero after each:
+`20260911020500_versioned_information_packs` (staging `20260911012528`),
+`20260911021500_authorized_pack_distribution` (staging `20260911013106`),
+`20260911023000_information_pack_fingerprint_variable_scope` (staging `20260911013814`),
+`20260911024000_information_pack_supersession_order` (staging `20260911014109`),
+`20260911025000_in_product_qualified_contact` (staging `20260911014540`),
+`20260911030000_pack_responses_and_next_steps` (staging `20260911014632`),
+`20260911031000_bind_qualified_contact_to_its_recipient` (staging `20260911014733`),
+`20260911032000_read_shared_pack_item_material` and
+`20260911033000_resolve_pack_distribution_candidates`. The repository keeps its own file stamps; the
+coordinator reconciles them with production. `apps/web/src/types/database.ts` was regenerated from
+staging and is a superset of production while other fronts remain unmerged.
+
+Evidence. `supabase/tests/authorized_pack_distribution.sql` passed on staging inside a rollback,
+returning `authorized_pack_distribution_passed`: replayed and superseded revisions, refusal of a
+content rewrite, the wave limit of the active policy, the consent requirement, refusal of a recipient
+that is not a capital provider, refusal of a direct share insert, a recipient that reads only its own
+share and nothing of the issuer project, a second financier that reads nothing, the logged pack and
+artifact reads, the released introduction and its idempotent replay, the refusal to introduce a
+research hypothesis, the refusal to point a contact at another recipient, the refusal of a changed
+pack fingerprint, the recipient answer and its correction, the issuer next step invisible to the
+recipient, revocation closing the door, the blind policy hiding the issuer identity, and earlier
+answers still attached to the superseded revision. `@offroad/market-feedback` passed 16 tests,
+`apps/web` passed 627 tests including the new pack-item, distribution-view, issuer-surface and
+recipient-form suites, and `@offroad/release-governance` passed 178 tests with the ledger at 43
+entries.
+
+Limits. Nothing leaves the product: making a pack available and recording an introduction are
+in-product acts, and no external delivery mechanism exists in this work. Without an active
+`market_distribution_policies` row no wave can be authorized, and no product path creates that row. A
+shortlist target becomes a reachable recipient only when a capital provider registered in the product
+claimed its directory entry; every other target is recorded as named and undelivered. The recipient
+opens the transaction summary, the indicative terms and the document index; the spreadsheet of the
+financial model is not served to a recipient organization. The template identity recorded in a pack
+is the Offroad house template until the per-organization template of the deliverable-format work is
+merged, at which point the same code reads the stored identity. No authenticated browser journey
+covers this capability: a new Playwright specification was deliberately not added because this
+environment has no local Supabase stack to verify it against, and an unverified specification would
+put the shared gate at risk. Production has not received these migrations.
+
 ## 10 September 2026: receivables history coverage correction (local candidate)
 
 Published baseline is main `220a37f` (PR590); prior publication checkpoints below are historical. The targeted economic review passed 67 tests against identical published sources without paid model calls. It found no arithmetic discrepancy in inspected borrowing-base and waterfall fixtures, but the R01 wrapper dropped dynamic-history coverage while retaining reported aggregate performance.
