@@ -1,0 +1,51 @@
+.distribution { display: grid; gap: 14px; padding: 16px; border: 1px solid #dce1d9; border-radius: 12px; background: #fbfcfa; font-size: 13px; line-height: 1.6; color: #30373d; }
+.distribution header { display: grid; gap: 4px; }
+.distribution header span { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #657068; }
+.distribution h3 { margin: 0; font-size: 16px; }
+.distribution h4 { margin: 0; font-size: 14px; }
+.distribution h5 { margin: 0; font-size: 12px; color: #657068; }
+.distribution p { margin: 0; }
+.distribution ul { margin: 0; padding-left: 16px; }
+
+.pack, .authorization, .list, .feedback { display: grid; gap: 10px; padding: 12px; border: 1px solid #e4e7e1; border-radius: 10px; background: white; }
+.packHead { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+.packHead div { display: grid; gap: 2px; }
+.fingerprint { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #657068; }
+
+.items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.items li { display: flex; gap: 8px; align-items: baseline; font-size: 12px; }
+.items li b { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #4d5b3d; }
+.items li small { color: #657068; }
+
+.inline { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.form { display: grid; gap: 8px; padding: 10px; border: 1px solid #e4e7e1; border-radius: 8px; background: #fbfcfa; }
+.form label { display: grid; gap: 4px; font-size: 12px; }
+.form textarea, .form input[type="text"], .form select { padding: 6px 8px; border: 1px solid #dce1d9; border-radius: 6px; font: inherit; }
+
+.recipients { display: grid; gap: 8px; border: 1px solid #e4e7e1; border-radius: 8px; padding: 10px; }
+.recipients legend { font-size: 12px; color: #657068; padding: 0 4px; }
+.recipients label { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+.recipients label span { display: grid; gap: 2px; }
+.recipients label small { color: #657068; }
+
+.consentField { display: grid; gap: 4px; font-size: 12px; }
+.consentField textarea { padding: 8px; border: 1px solid #dce1d9; border-radius: 6px; font: inherit; }
+.consent { margin: 0; padding: 8px 12px; border-left: 3px solid #7d9455; background: #f7f8f4; font-size: 12px; }
+.attestation { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+.attestation span { display: grid; gap: 2px; }
+.attestation p { color: #657068; }
+
+.recipient { display: grid; gap: 8px; padding: 10px; border: 1px solid #e4e7e1; border-radius: 8px; background: white; }
+.recipient header { display: flex; gap: 12px; justify-content: space-between; align-items: baseline; }
+.recipient header b { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #4d5b3d; }
+.recipient[data-fit="hypothesis"] { border-color: #d8cfae; background: #fdfbf3; }
+
+.counts { display: flex; flex-wrap: wrap; gap: 12px; }
+.counts span { display: grid; gap: 2px; min-width: 92px; }
+.counts small { font-size: 11px; color: #657068; }
+.counts strong { font-size: 18px; }
+
+.muted { color: #657068; font-size: 12px; }
+.ok { display: flex; gap: 6px; align-items: center; color: #4d5b3d; font-size: 12px; }
+.warn { display: flex; gap: 6px; align-items: center; color: #a66c1f; font-size: 12px; }
+.boundary { display: flex; gap: 6px; align-items: center; color: #657068; font-size: 11px; }

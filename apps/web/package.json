@@ -28,6 +28,7 @@
     "@offroad/financial-model": "workspace:*",
     "@offroad/fund-mandate": "workspace:*",
     "@offroad/investor-base": "workspace:*",
+    "@offroad/market-feedback": "workspace:*",
     "@offroad/market-reference": "workspace:*",
     "@offroad/matching-core": "workspace:*",
     "@offroad/model-gateway": "workspace:*",

@@ -2569,7 +2569,8 @@
       "body": "The form-based debt view and the origination thesis create origination work. A financier organization does its own analysis from the workspace conversation, without representing the analyzed company.",
       "cta": "Back to the analysis"
     },
-    "mandatesBack": "Back to the analysis"
+    "mandatesBack": "Back to the analysis",
+    "sharedPacks": "Shared packs"
   },
   "Demo": {
     "eyebrow": "Demonstration with synthetic data",
@@ -5059,5 +5060,220 @@
     "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection.",
     "sourcesHelp": "Where this mandate came from: a regulation, a minute, an email from the manager. A public record and a past transaction do not belong here.",
     "noSources": "No source recorded"
+  },
+  "AuthorizedDistribution": {
+    "kicker": "Authorized distribution",
+    "title": "Information pack and recipients",
+    "body": "The pack fixes the exact files a recipient can open. The authorization makes that pack available inside the product to the named organizations. Nothing is sent outside.",
+    "boundary": "The endpoint is a qualified introduction. Nothing here means approval, credit granted or funding.",
+    "packRevision": "Pack revision {number}",
+    "packBody": "These are the exact files of the approved material, with the fingerprint and the template identity that produced them.",
+    "packNone": "No pack revision recorded",
+    "packNoneBody": "Record the first revision to fix which files a recipient could open.",
+    "packCurrent": "This revision matches the current approved material.",
+    "packOutdated": "The approved material changed. Record a new revision; the previous one stays available.",
+    "packFirst": "Record the first revision from the approved material.",
+    "packRecord": "Record revision",
+    "packRecording": "Recording",
+    "deliverable": {
+      "teaser": "Transaction summary",
+      "financial_model": "Financial model",
+      "indicative_term_sheet": "Indicative terms",
+      "data_room_index": "Document index"
+    },
+    "format": {
+      "interactive": "Screen",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "authorizationActive": "Active authorization",
+    "identityPolicy": {
+      "identified_restricted": "The company is identified to the recipients.",
+      "blind_initial": "The company identity does not appear at this stage."
+    },
+    "wave": "Wave limit: {limit}. Policy {policy}.",
+    "authorizationPreviousRevision": "The live authorization points at a previous pack revision.",
+    "revoke": "Revoke access",
+    "revoking": "Revoking",
+    "recipientsLegend": "Recipients from the approved list",
+    "recipientsEmpty": "No recipient from the approved list is registered in the product.",
+    "recipientRegistered": "Organization registered in the product",
+    "recipientDirectory": "Directory entry without product access",
+    "recipientDirectoryNote": "This recipient was named but has no product access. Nothing was delivered to it.",
+    "consentLabel": "Consent of the person authorizing",
+    "consentPlaceholder": "I authorize making this pack revision available to the recipients named above.",
+    "consentAttestation": "I confirm the authorization",
+    "consentAttestationBody": "I confirm that I hold the representation recorded in this project to authorize this availability.",
+    "authorize": "Authorize availability",
+    "authorizing": "Authorizing",
+    "authorizeBlocked": "Verified representation, a current pack revision and at least one registered recipient are required.",
+    "recipientsTitle": "Recipients and answers",
+    "recipientsBody": "Every recipient with access can open the pack and record its own answer. Reads are logged.",
+    "responseState": {
+      "interested": "Interested",
+      "needs_information": "Asks for more information",
+      "declined": "Will not continue",
+      "no_response_yet": "No answer yet"
+    },
+    "reads": "Reads recorded: {count}",
+    "readsNone": "No read recorded yet.",
+    "responsePreviousRevision": "This answer refers to a previous pack revision.",
+    "fitLabel": "Candidate classification",
+    "fit": {
+      "eligible": "Eligible",
+      "hypothesis": "Research hypothesis"
+    },
+    "rationaleLabel": "Fit rationale",
+    "prepare": "Prepare contact",
+    "preparing": "Preparing",
+    "researchOnly": "Research hypothesis: it stays a study and cannot be introduced.",
+    "releaseAttestation": "I confirm the introduction",
+    "releaseAttestationBody": "The introduction is recorded in the product with its date and the person responsible. Nothing is sent from here.",
+    "release": "Record introduction",
+    "releasing": "Recording",
+    "released": "Introduction recorded in the product.",
+    "nextStepLabel": "Next step",
+    "nextStep": {
+      "prepare_information_answer": "Prepare the requested information",
+      "revise_structure": "Revise the structure",
+      "schedule_conversation": "Schedule a conversation",
+      "keep_on_hold": "Keep on hold",
+      "close_without_continuation": "Close without continuation"
+    },
+    "nextStepNote": "Note",
+    "nextStepSave": "Record step",
+    "nextStepSaving": "Recording",
+    "nextStepCurrent": "Current step: {step}",
+    "feedbackTitle": "Market answers for the next revision",
+    "feedbackBody": "What the recipients said, without turning an answer into a recommendation.",
+    "feedbackResponded": "Answered",
+    "feedbackAwaiting": "No answer",
+    "feedbackObjected": "Terms with objections",
+    "feedbackRequested": "Information requested",
+    "feedbackTenor": "Observed tenor: from {min} to {max} months",
+    "feedbackTicket": "Observed ticket in {currency}: from {min} to {max}",
+    "feedbackPricing": "Observed pricing on {basis}: from {min} to {max}",
+    "feedbackNone": "No objection and no information request recorded yet.",
+    "objection": {
+      "ticket_outside_mandate": "Ticket outside the mandate",
+      "sector_outside_mandate": "Sector outside the mandate",
+      "tenor_too_long": "Tenor above the mandate",
+      "pricing_below_mandate": "Pricing below the mandate",
+      "structure_not_supported": "Structure not supported",
+      "collateral_insufficient": "Collateral not sufficient"
+    },
+    "condition": {
+      "pool_detail_by_debtor": "Portfolio detail by debtor",
+      "updated_financials": "Updated financial statements",
+      "collateral_documents": "Collateral documents",
+      "covenant_package": "Covenant package",
+      "cash_flow_projection": "Cash flow projection",
+      "legal_documents": "Corporate and contract documents"
+    },
+    "errors": {
+      "invalid": "Check the fields and try again.",
+      "stale": "The project changed. Reload the page.",
+      "forbidden": "Your role does not allow this action in this project.",
+      "policy": "There is no distribution policy in force. Talk to the Offroad team.",
+      "consent": "The consent of the person authorizing is required.",
+      "wave": "The selection exceeds the wave limit of the policy in force.",
+      "recipient": "A selected recipient cannot receive the pack.",
+      "save": "It was not possible to record this now."
+    },
+    "contactErrors": {
+      "invalid": "Check the fields and try again.",
+      "stale": "The project changed. Reload the page.",
+      "forbidden": "Your role does not allow recording this introduction.",
+      "pack": "An authorized and live pack is required for this recipient.",
+      "hypothesis": "A research hypothesis receives no pack and no introduction.",
+      "save": "It was not possible to record this now."
+    }
+  },
+  "SharedInformationPacks": {
+    "kicker": "Shared packs",
+    "title": "Information made available to your organization",
+    "intro": "Every pack was authorized by whoever represents the company. Your organization sees only what was shared with it.",
+    "boundary": "Opening a pack and recording an answer creates no commitment for either side.",
+    "back": "Back to the packs",
+    "empty": "No pack available",
+    "emptyBody": "When a company authorizes a pack for your organization, it appears here.",
+    "identified": "Company identified",
+    "blind": "Company not identified",
+    "blindIssuer": "Company not identified at this stage",
+    "receivedOn": "Made available on",
+    "packRevision": "Pack revision {number}",
+    "identityPolicy": {
+      "identified_restricted": "The company is identified to your organization.",
+      "blind_initial": "The company chose not to identify itself at this stage."
+    },
+    "itemsTitle": "Files in the pack",
+    "artifactFingerprint": "Fingerprint",
+    "openItem": "Open file",
+    "itemNotDownloadable": "Not available for download at this stage",
+    "deliverable": {
+      "teaser": "Transaction summary",
+      "financial_model": "Financial model",
+      "indicative_term_sheet": "Indicative terms",
+      "data_room_index": "Document index"
+    },
+    "format": {
+      "interactive": "Screen",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "historyTitle": "Your answers",
+    "responseTitle": "Record your answer",
+    "responseBody": "Say what your organization will do with this information. A new answer replaces the previous one and the previous one stays on record.",
+    "responseStateLabel": "Answer",
+    "responseState": {
+      "interested": "Interested",
+      "needs_information": "Asks for more information",
+      "declined": "Will not continue",
+      "no_response_yet": "No answer yet"
+    },
+    "noteLabel": "Note",
+    "conditionsLegend": "Information you need",
+    "objectionsLegend": "Terms with objections",
+    "condition": {
+      "pool_detail_by_debtor": "Portfolio detail by debtor",
+      "updated_financials": "Updated financial statements",
+      "collateral_documents": "Collateral documents",
+      "covenant_package": "Covenant package",
+      "cash_flow_projection": "Cash flow projection",
+      "legal_documents": "Corporate and contract documents"
+    },
+    "objection": {
+      "ticket_outside_mandate": "Ticket outside the mandate",
+      "sector_outside_mandate": "Sector outside the mandate",
+      "tenor_too_long": "Tenor above the mandate",
+      "pricing_below_mandate": "Pricing below the mandate",
+      "structure_not_supported": "Structure not supported",
+      "collateral_insufficient": "Collateral not sufficient"
+    },
+    "ticketLabel": "Indicative ticket",
+    "currencyLabel": "Currency",
+    "tenorLabel": "Tenor in months",
+    "pricingBasisLabel": "Pricing basis",
+    "pricingBasis": {
+      "cdi_plus": "CDI plus",
+      "ipca_plus": "IPCA plus",
+      "fixed_rate": "Fixed rate"
+    },
+    "pricingMinLabel": "Lower bound",
+    "pricingMaxLabel": "Upper bound",
+    "save": "Record answer",
+    "saving": "Recording",
+    "saved": "Answer recorded.",
+    "responseBoundary": "An answer is a market reading. It is not a proposal, an approval or a funding commitment.",
+    "errors": {
+      "invalid": "Check the fields and try again.",
+      "unavailable": "This pack is no longer available to your organization.",
+      "content": "This answer needs a reason or an objection; no answer yet carries no content.",
+      "save": "It was not possible to record this now."
+    }
   }
 }
