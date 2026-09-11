@@ -115,6 +115,13 @@ describe("funds and mandates registry", () => {
     expect(html).toContain(en.MandateRegistry.history.replace("{count}", "1"));
   });
 
+  it("shows the sources the record was built from, and says so when there are none", () => {
+    const withSources = render("en-US", [mandate({sources: [{kind: "registration_note", reference: "Regulamento, 3a alteracao"}]})]);
+    expect(withSources).toContain('data-testid="mandate-sources"');
+    expect(withSources).toContain("Regulamento, 3a alteracao");
+    expect(render("en-US", [mandate()])).toContain(en.MandateRegistry.noSources);
+  });
+
   it("lists funds that carry no structured mandate yet", () => {
     const html = render("pt-BR", [], [{id: "50000000-0000-4000-8000-0000000000ff", name: "Fundo antigo", strategy: "Legado"}]);
     expect(html).toContain('data-testid="mandate-pending-funds"');

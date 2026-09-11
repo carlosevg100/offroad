@@ -40,6 +40,8 @@ const mandateShape = z.object({
   acceptingNewTransactions: z.boolean().default(true),
   validFrom: isoDate,
   validUntil: isoDate.nullable().default(null),
+  /** Where the record was built from, in words somebody can check. Never a public row. */
+  sources: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
   note: z.string().trim().max(2000).nullable().default(null),
 }).strict()
   .refine((value) => Number(value.ticketMax) >= Number(value.ticketMin), {path: ["ticketMax"]})
@@ -145,7 +147,7 @@ export async function registerProviderMandate(input: unknown): Promise<MandateAc
       validFrom: mandate.validFrom,
       validUntil: mandate.validUntil,
       note: mandate.note,
-      sources: [],
+      sources: mandate.sources.map((reference) => ({kind: "registration_note", reference})),
     },
   });
   if (error) return mandateError(error);

@@ -4901,7 +4901,8 @@
       "channel": "How it was confirmed",
       "documentReference": "Document reference",
       "contactRecordId": "Recorded contact identifier",
-      "contactDate": "Contact date"
+      "contactDate": "Contact date",
+      "sources": "Sources for this record (one per line)"
     },
     "instruments": {
       "debenture": "Debenture",
@@ -4969,6 +4970,8 @@
     "confirmIntro": "A confirmation records who confirmed, when, and through which origin. It sends nothing outside and contacts nobody.",
     "confirmSubmit": "Record confirmation",
     "pendingTitle": "Funds with no mandate registered",
-    "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection."
+    "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection.",
+    "sourcesHelp": "Where this mandate came from: a regulation, a minute, an email from the manager. A public record and a past transaction do not belong here.",
+    "noSources": "No source recorded"
   }
 }

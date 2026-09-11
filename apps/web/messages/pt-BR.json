@@ -4901,7 +4901,8 @@
       "channel": "Como foi confirmado",
       "documentReference": "Documento de referência",
       "contactRecordId": "Identificador do contato registrado",
-      "contactDate": "Data do contato"
+      "contactDate": "Data do contato",
+      "sources": "Fontes do registro (uma por linha)"
     },
     "instruments": {
       "debenture": "Debênture",
@@ -4969,6 +4970,8 @@
     "confirmIntro": "A confirmação registra quem confirmou, quando e por qual origem. Ela não envia nada para fora e não contata ninguém.",
     "confirmSubmit": "Registrar confirmação",
     "pendingTitle": "Fundos sem mandato cadastrado",
-    "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso."
+    "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso.",
+    "sourcesHelp": "De onde saiu este mandato: regulamento, ata, e-mail da gestora. Registro público e operação passada não entram aqui.",
+    "noSources": "Nenhuma fonte informada"
   }
 }

@@ -30,6 +30,8 @@ const numberValue = (form: FormData, field: string) => {
 };
 const splitLabels = (value: string | null) =>
   (value ?? "").split(",").map((entry) => entry.trim()).filter((entry) => entry.length > 0);
+const splitLines = (value: string | null) =>
+  (value ?? "").split("\n").map((entry) => entry.trim()).filter((entry) => entry.length > 0);
 
 /**
  * The funds and mandates registry.
@@ -89,6 +91,7 @@ export function MandateRegistry({funds, pendingFunds, locale, today}: Props) {
         acceptingNewTransactions: form.get("accepting") !== null,
         validFrom: String(form.get("valid_from") ?? today),
         validUntil: textValue(form, "valid_until"),
+        sources: splitLines(textValue(form, "sources")),
         note: textValue(form, "note"),
       },
     }), () => setOpenForm("none"));
@@ -166,6 +169,7 @@ export function MandateRegistry({funds, pendingFunds, locale, today}: Props) {
         </label>)}
       </fieldset>
       <label className={styles.inline}><input defaultChecked disabled={pending} name="accepting" type="checkbox" />{t("fields.accepting")}</label>
+      <label>{t("fields.sources")}<textarea disabled={pending} maxLength={2000} name="sources" rows={2} /><small>{t("sourcesHelp")}</small></label>
       <label>{t("fields.note")}<textarea disabled={pending} maxLength={2000} name="note" rows={2} /></label>
       <button className="button" data-testid="mandate-register-submit" disabled={pending} type="submit">{t("saveDraft")}</button>
     </form> : null}
@@ -213,6 +217,7 @@ export function MandateRegistry({funds, pendingFunds, locale, today}: Props) {
             <div><dt>{t("fields.creditProfile")}</dt><dd>{mandate.leverageCeiling || mandate.minimumDscr ? t("creditProfileValue", {leverage: mandate.leverageCeiling ?? t("unrestricted"), dscr: mandate.minimumDscr ?? t("unrestricted")}) : t("unrestricted")}</dd></div>
             <div><dt>{t("fields.accepting")}</dt><dd>{t(mandate.acceptingNewTransactions ? "yes" : "no")}</dd></div>
             <div><dt>{t("fields.confirmations")}</dt><dd>{mandate.confirmationCount}</dd></div>
+            <div><dt>{t("fields.sources")}</dt><dd data-testid="mandate-sources">{mandate.sources.length ? mandate.sources.map((source) => source.reference ?? source.note ?? source.kind).filter(Boolean).join("; ") : t("noSources")}</dd></div>
           </dl>
 
           {fund.history.length ? <details className={styles.history}>
