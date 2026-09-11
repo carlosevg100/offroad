@@ -2,22 +2,14 @@ import {createHash} from "node:crypto";
 
 import type {Material} from "@offroad/case-materials";
 import type {DocxLang, DocxMeta} from "./docx";
+import type {InstitutionalPresentationTemplate} from "./presentation-template";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import JSZip from "jszip";
 import {chartWorkbook, nativeChartXml, nativeChartFrame} from "./presentation-chart";
+import {presentationTemplateManifest} from "./presentation-template";
 
 export const institutionalPresentationRendererVersion = "2026.09.10-v2";
 
-export type InstitutionalPresentationTemplate = {
-  id: string;
-  version: string;
-  origin: "offroad_house" | "client_supplied";
-  colors: {ink: string; paper: string; accent: string; muted: string; warning: string; danger: string};
-  fonts: {display: string; body: string};
-  logo?: {data: Uint8Array; extension: "png" | "jpeg"};
-  logoOnDark?: {data: Uint8Array; extension: "png" | "jpeg"};
-  confidentialityLabel?: string;
-};
 
 export type InstitutionalPresentationInput = {
   contract: DecisionArtifactContract;
@@ -59,6 +51,7 @@ export const offroadHousePresentationTemplate: InstitutionalPresentationTemplate
   origin: "offroad_house",
   colors: {ink: "151A20", paper: "F8F8F5", accent: "7D9455", muted: "69737D", warning: "A66C1F", danger: "A23B3B"},
   fonts: {display: "Georgia", body: "Arial"},
+  pdfFonts: {display: "Times New Roman", body: "Helvetica"},
 };
 
 type PresentationView = DecisionArtifactContract["views"][number];
@@ -431,7 +424,7 @@ export async function renderInstitutionalPresentation(input: InstitutionalPresen
 export async function materialToPptx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
   const {material, lang, meta} = input;
   const title = material.title[lang];
-  const slides: SlideSpec[] = [{title, eyebrow: meta.companyName ?? "OFFROAD", kind: "cover", blockId: null, lines: [{label: `${lang === "pt" ? "Emitido em" : "Issued on"}: ${meta.issuedOn}`, traceId: "issued"}]}];
+  const slides: SlideSpec[] = [{title, eyebrow: meta.companyName ?? meta.template?.confidentialityLabel ?? (meta.template && meta.template.origin === "client_supplied" ? meta.template.id.toUpperCase() : "OFFROAD"), kind: "cover", blockId: null, lines: [{label: `${lang === "pt" ? "Emitido em" : "Issued on"}: ${meta.issuedOn}`, traceId: "issued"}]}];
   // Put the financial decision view before the full statement and evidence appendices.
   for (const chart of material.presentationCharts ?? []) {
     if (chart.series.points.some(point => point.value !== null && !Number.isFinite(point.value))) throw new Error("Non-finite material chart value");
@@ -483,6 +476,13 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
     paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: lang === "pt" ? "ANÁLISE" : "ANALYSIS", kind: "narrative", blockId: traceId, lines: page}));
   });
   if (slides.length > 120) throw new Error("material presentation exceeds the 120-slide safety limit");
-  const metadata = `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="OffroadMaterialFingerprint"><vt:lpwstr>${xml(material.artifactFingerprint ?? createHash("sha256").update(JSON.stringify(material)).digest("hex"))}</vt:lpwstr></property></Properties>`;
-  return packageSlides(slides, {title, locale: lang === "pt" ? "pt-BR" : "en-US", contract: {asOf: meta.issuedOn.slice(0, 10)}}, offroadHousePresentationTemplate, metadata);
+  const template = meta.template ?? offroadHousePresentationTemplate;
+  // The material fingerprint answers what the deck says; the template manifest answers which
+  // identity rendered it. Both travel inside the file.
+  const properties = [
+    {name: "OffroadMaterialFingerprint", value: material.artifactFingerprint ?? createHash("sha256").update(JSON.stringify(material)).digest("hex")},
+    ...presentationTemplateManifest(template, template.fingerprint ?? ""),
+  ];
+  const metadata = `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">${properties.map((property, index) => `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="${index + 2}" name="${xml(property.name)}"><vt:lpwstr>${xml(property.value)}</vt:lpwstr></property>`).join("")}</Properties>`;
+  return packageSlides(slides, {title, locale: lang === "pt" ? "pt-BR" : "en-US", contract: {asOf: meta.issuedOn.slice(0, 10)}}, template, metadata);
 }

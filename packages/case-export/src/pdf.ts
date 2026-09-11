@@ -3,13 +3,40 @@ import {unicodeFontBase64} from "./fonts/dejavu";
 import type {Material} from "@offroad/case-materials";
 import {PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage} from "pdf-lib";
 
-import type {DocxLang, DocxMeta} from "./docx";
+import {houseDocumentTemplate, type DocxLang, type DocxMeta} from "./docx";
+import {presentationTemplateManifest, type InstitutionalPresentationTemplate, type PdfRenderableFont} from "./presentation-template";
+
+/** The three families this renderer embeds. A template always names one explicitly. */
+const embeddedFonts: Record<PdfRenderableFont, {regular: StandardFonts; bold: StandardFonts}> = {
+  "Helvetica": {regular: StandardFonts.Helvetica, bold: StandardFonts.HelveticaBold},
+  "Times New Roman": {regular: StandardFonts.TimesRoman, bold: StandardFonts.TimesRomanBold},
+  "Courier New": {regular: StandardFonts.Courier, bold: StandardFonts.CourierBold},
+};
+
+/** A colour the PDF can carry, or a refusal. A wrong colour is worse than a stopped export. */
+function templateRgb(value: string) {
+  const normalized = value.replace(/^#/, "");
+  if (!/^[0-9A-Fa-f]{6}$/.test(normalized)) throw new Error(`invalid template color ${value}`);
+  const channel = (start: number) => Number.parseInt(normalized.slice(start, start + 2), 16) / 255;
+  return rgb(channel(0), channel(2), channel(4));
+}
+
+function pdfFonts(template: InstitutionalPresentationTemplate) {
+  const chosen = template.pdfFonts ?? {display: "Times New Roman" as const, body: "Helvetica" as const};
+  const body = embeddedFonts[chosen.body];
+  const display = embeddedFonts[chosen.display];
+  // The database refuses an unknown family, so an absent entry here is a contract break, not input.
+  if (!body || !display) throw new Error("template names a PDF font this renderer does not embed");
+  return {body, display};
+}
 
 export const materialPdfRendererVersion = "2026.09.10-v2";
 
 /** Render the approved blocks directly. Never calculate or summarize financial values here. */
 export async function materialToPdf(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
   const {material, lang, meta} = input;
+  const template = meta.template ?? houseDocumentTemplate;
+  const families = pdfFonts(template);
   const document = await PDFDocument.create();
   const issued = new Date(`${meta.issuedOn.slice(0, 10)}T00:00:00.000Z`);
   if (!Number.isFinite(issued.getTime())) throw new Error("PDF requires a persisted issuance date");
@@ -20,9 +47,11 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
   document.setCreator(`Offroad ${materialPdfRendererVersion}`);
   document.setProducer("Offroad Capital");
   document.setLanguage(lang === "pt" ? "pt-BR" : "en-US");
-  let regular = await document.embedFont(StandardFonts.Helvetica);
-  let bold = await document.embedFont(StandardFonts.HelveticaBold);
-  let display = await document.embedFont(StandardFonts.TimesRoman);
+  // The identity that produced this file travels inside it.
+  document.setKeywords(presentationTemplateManifest(template, template.fingerprint ?? "").map((entry) => `${entry.name}=${entry.value}`));
+  let regular = await document.embedFont(families.body.regular);
+  let bold = await document.embedFont(families.body.bold);
+  let display = await document.embedFont(families.display.regular);
   const allText = JSON.stringify({material, companyName: meta.companyName});
   const supported = new Set(regular.getCharacterSet());
   if ([...allText].some(char => !supported.has(char.codePointAt(0)!))) {
@@ -33,15 +62,22 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
     if ([...allText].some(char => !glyphs.has(char.codePointAt(0)!))) throw new Error("PDF contains characters outside the bundled Unicode font coverage");
     regular = unicode; bold = unicode; display = unicode;
   }
-  const ink = rgb(0.082, 0.102, 0.125);
-  const muted = rgb(0.41, 0.45, 0.49);
-  const accent = rgb(0.49, 0.58, 0.33);
+  const ink = templateRgb(template.colors.ink);
+  const muted = templateRgb(template.colors.muted);
+  const accent = templateRgb(template.colors.accent);
   const width = 595.28, height = 841.89, margin = 48, bodyWidth = width - margin * 2;
   let page: PDFPage;
   let y = 0;
+  const mark = template.logo
+    ? await (template.logo.extension === "png" ? document.embedPng(template.logo.data) : document.embedJpg(template.logo.data))
+    : null;
+  const markHeight = 18;
+  const markWidth = mark ? (mark.width / mark.height) * markHeight : 0;
   const newPage = () => {
     page = document.addPage([width, height]);
-    page.drawText("OFFROAD", {x: margin, y: height - 35, size: 9, font: bold, color: accent});
+    if (mark) page.drawImage(mark, {x: margin, y: height - 35 - markHeight + 9, width: markWidth, height: markHeight});
+    else if (template.origin === "offroad_house") page.drawText("OFFROAD", {x: margin, y: height - 35, size: 9, font: bold, color: accent});
+    else if (template.confidentialityLabel) page.drawText(template.confidentialityLabel, {x: margin, y: height - 35, size: 9, font: bold, color: accent});
     y = height - 64;
   };
   newPage();

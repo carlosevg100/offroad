@@ -11,6 +11,10 @@
     "./deliverable-formats": {
       "types": "./src/deliverable-formats.ts",
       "default": "./src/deliverable-formats.ts"
+    },
+    "./presentation-template": {
+      "types": "./src/presentation-template.ts",
+      "default": "./src/presentation-template.ts"
     }
   },
   "scripts": {
