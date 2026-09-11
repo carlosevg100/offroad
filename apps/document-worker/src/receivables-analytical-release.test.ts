@@ -99,7 +99,7 @@ function buildCompleteCaseInput(): Parameters<typeof buildReceivablesVertical>[0
 const builtCaseInput = buildCompleteCaseInput();
 
 describe("released analytical result inside the real case run", () => {
-  it("keeps today's behaviour when the organization holds no grant", () => {
+  it("keeps today's behaviour while an operator has the release paused", () => {
     const ungranted = buildReceivablesVertical(completeCaseInput(), "2026-09-10", false)!;
     expect(ungranted.publicReport.methodExecution).toMatchObject({status: "succeeded", mode: "internal_shadow"});
     expect(ungranted.specialistShadow).not.toBeNull();
@@ -115,7 +115,7 @@ describe("released analytical result inside the real case run", () => {
     expect(disabled.specialistShadow!.artifact.outputFingerprint).toBe(ungranted.specialistShadow!.artifact.outputFingerprint);
   });
 
-  it("releases the same calculation bound to the confirmed scope and its dataset when granted", () => {
+  it("releases the same calculation bound to the confirmed scope and its dataset when open", () => {
     const shadowOnly = buildReceivablesVertical(completeCaseInput(), "2026-09-10", false)!;
     const granted = buildReceivablesVertical(
       {...completeCaseInput(), receivables_analytical_release: {granted: true, organizationId, note: null}},
@@ -128,6 +128,9 @@ describe("released analytical result inside the real case run", () => {
     expect(release.release.allowedUses).not.toContain("external_material");
     expect(release.release.allowedUses).not.toContain("external_action");
     expect(release.release.organizationId).toBe(organizationId);
+    // The founder's approval of 10 September 2026 is what the released result carries as its rung.
+    expect(release.release.methodMaturity).toBe("production");
+    expect(release.release.procedure).toMatchObject({id: "underwrite-receivables-pool", maturity: "production"});
     // The confirmed scope travels with the released result; the coordinator can prove which
     // portfolio selection produced it, and a later selection supersedes it instead of replacing it.
     expect(release.release.confirmedScope).toEqual({id: scopeId, fingerprint: scopeFingerprint});
@@ -153,9 +156,9 @@ describe("released analytical result inside the real case run", () => {
       },
       "2026-09-10", false,
     )!;
-    // The worker never invents a tenant: the identity comes from the grant the database attached to
-    // this job, and it is the identity written into the released result. The database then refuses
-    // a payload whose organization is not the job's own, proven in the SQL contract test.
+    // The worker never invents a tenant: the identity comes from the release the database resolved
+    // for this job, and it is the identity written into the released result. The database then
+    // refuses a payload whose organization is not the job's own, proven in the SQL contract test.
     expect(crossTenant.specialistRelease!.release.organizationId).toBe(otherOrganizationId);
     expect(crossTenant.specialistRelease!.release.organizationId).not.toBe(organizationId);
     expect(crossTenant.specialistShadow).not.toBeNull();

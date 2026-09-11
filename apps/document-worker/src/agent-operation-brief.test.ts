@@ -826,11 +826,16 @@ describe("agent operation brief worker", () => {
     };
     const receivables = preflight.tasks.find((task) => task.taskId === "R01");
     expect(receivables?.executorKey).toBe("@offroad/receivables-analysis#underwriteReceivablesPool");
+    // The method is live and universally exposed since the founder's approval, so neither the
+    // availability nor the exposure blocks it any more. This objective still cannot run it: the
+    // public-only evidence regime, the public data class and the task effect are the open reasons.
     expect(receivables?.reasons.map((reason) => reason.code)).toEqual(expect.arrayContaining([
-      "capability_not_live",
       "evidence_regime_not_allowed",
       "data_class_not_allowed",
+      "effect_exceeds_capability",
     ]));
+    expect(receivables?.reasons.map((reason) => reason.code)).not.toContain("capability_not_live");
+    expect(receivables?.reasons.map((reason) => reason.code)).not.toContain("capability_exposure_denied");
     expect(receivables?.reasons.map((reason) => reason.code)).not.toContain("executor_unbound");
   });
 
