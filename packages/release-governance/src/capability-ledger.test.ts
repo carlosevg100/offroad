@@ -2,14 +2,19 @@ import {describe, expect, it} from "vitest";
 import {currentCapabilityLedger, evaluateCapabilityLedger, type CapabilityLedger} from "./index";
 
 describe("capability ledger", () => {
-  it("records current deployment and quality without promoting any analytical scope to production", () => {
+  it("records current deployment and quality, promoting only what the founder approved", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
     expect(decision.entryCount).toBe(42);
     expect(decision.blockers).toEqual([]);
-    expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
-    expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
+    // One scope is in production, on the founder approval of 10 September 2026, and it is the only
+    // one an organization may rely on for its own work. Nothing else moved with it.
+    expect(currentCapabilityLedger.entries.filter((entry) => entry.qualityMaturity === "production").map((entry) => entry.capabilityId))
+      .toEqual(["finance.receivables-released-analysis"]);
+    expect(currentCapabilityLedger.entries.filter((entry) => entry.allowedUses.includes("customer_work")).map((entry) => entry.capabilityId))
+      .toEqual(["finance.receivables-released-analysis"]);
+    expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("external_material") || entry.allowedUses.includes("external_action"))).toBe(false);
   });
 
   it("keeps preliminary documentary customer work blocked before reviewed release evidence", () => {
