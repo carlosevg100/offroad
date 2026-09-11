@@ -3,6 +3,8 @@ import {fileURLToPath} from "node:url";
 
 import {describe, expect, it} from "vitest";
 
+import {projectCapability} from "@offroad/work-plan";
+
 import {loadMethodLibrary} from "./procedure-markdown";
 import {
   specialistMethodApprovalManifest,
@@ -93,5 +95,20 @@ describe("specialist method runtime manifest", () => {
       const method = library.methods.find((entry) => entry.procedure.id === approval.procedure.id)!;
       expect(method.frontmatter.max_model_calls, approval.procedure.id).toBe(0);
     }
+  });
+
+  it("keeps the project entry's debt capability on exactly the methods that reached production", () => {
+    const library = loadMethodLibrary(
+      resolve(here, "../knowledge/procedures"),
+      resolve(here, "../knowledge/reviews"),
+    );
+    // The project work entry names the methods it executes. It lives in work-plan, which cannot
+    // import this package, so the projection is pinned here instead: promoting a method, demoting
+    // one or bumping a version fails this test rather than drifting from the entry.
+    const declared = projectCapability("debt_structure_analysis").methods ?? [];
+    const production = library.methods
+      .filter((method) => method.procedure.maturity === "production")
+      .map((method) => ({id: method.procedure.id, version: method.procedure.version}));
+    expect(declared).toEqual(production);
   });
 });

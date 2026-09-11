@@ -4727,7 +4727,7 @@
     "options": {
       "auto": {
         "title": "Identify from the objective",
-        "hint": "Offroad recognizes documentary reading, financial result or provider research from the text."
+        "hint": "Offroad recognizes documentary reading, debt structure, financial result or provider research from the text."
       },
       "documentary_reading": {
         "title": "Documentary reading",
@@ -4740,13 +4740,18 @@
       "provider_research": {
         "title": "Provider research",
         "hint": "Compare the transaction criteria with mandates and records the organization may read."
+      },
+      "debt_structure_analysis": {
+        "title": "Debt structure",
+        "hint": "Ledger per instrument, statement reconciliation, covenant definitions, maturities, indexation and exit cost, from the accepted facts."
       }
     },
     "executor": "Executor: {surface}",
     "surfaces": {
       "document-review": "documentary reading",
       "institutional-setup": "financial model configuration",
-      "provider-case-criteria": "transaction criteria and providers"
+      "provider-case-criteria": "transaction criteria and providers",
+      "debt-structure": "debt structure"
     },
     "plan": "Plan",
     "dataUsed": "Data used",
@@ -4771,7 +4776,8 @@
       "reconciled_facts": "Accepted historical facts from the documents",
       "declared_assumptions": "Assumptions declared per period",
       "case_criteria": "Confirmed transaction criteria",
-      "reference_date": "Reference date and currency"
+      "reference_date": "Reference date and currency",
+      "accepted_debt_facts": "Accepted debt facts from the documents"
     },
     "blocked": {
       "documentary_not_activated": "Documentary reading not activated",
@@ -4790,7 +4796,8 @@
     "dispatched": {
       "documentary_reading": "Request recorded. A new plan will be proposed for approval.",
       "financial_result": "Request recorded. Enter the financial configuration data to continue.",
-      "provider_research": "Request recorded. Enter the transaction criteria to continue."
+      "provider_research": "Request recorded. Enter the transaction criteria to continue.",
+      "debt_structure_analysis": "Request recorded. The debt structure work uses the debt facts already accepted in this project."
     },
     "recorded": "Request recorded. Resume when the information is available.",
     "history": "Requests in this project",

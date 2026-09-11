@@ -12,9 +12,9 @@ import {isProviderResearchRequest} from "./provider-research-plan";
  * by the project review roles enforced in Postgres; a commercial or professional profile (CFO,
  * banker, analyst, investor) grants no data access and no approval power by itself.
  */
-export const projectCapabilityRegistryVersion = "2026.09.10-project-capabilities-v1";
+export const projectCapabilityRegistryVersion = "2026.09.10-project-capabilities-v2";
 
-export const projectCapabilityIdSchema = z.enum(["documentary_reading", "financial_result", "provider_research"]);
+export const projectCapabilityIdSchema = z.enum(["documentary_reading", "financial_result", "provider_research", "debt_structure_analysis"]);
 export type ProjectCapabilityId = z.infer<typeof projectCapabilityIdSchema>;
 
 /** Deliverable families the format policy (a later step) will map to editable and final formats. */
@@ -24,6 +24,7 @@ export const projectDeliverableTypeSchema = z.enum([
   "financial_memo",
   "executive_presentation",
   "market_research",
+  "debt_structure_reading",
 ]);
 export type ProjectDeliverableType = z.infer<typeof projectDeliverableTypeSchema>;
 
@@ -42,10 +43,11 @@ export const projectWorkInputSchema = z.enum([
   "declared_assumptions",
   "case_criteria",
   "reference_date",
+  "accepted_debt_facts",
 ]);
 export type ProjectWorkInput = z.infer<typeof projectWorkInputSchema>;
 
-export const projectWorkSurfaceSchema = z.enum(["document-review", "institutional-setup", "provider-case-criteria"]);
+export const projectWorkSurfaceSchema = z.enum(["document-review", "institutional-setup", "provider-case-criteria", "debt-structure"]);
 export type ProjectWorkSurface = z.infer<typeof projectWorkSurfaceSchema>;
 
 export type ProjectCapabilityLocale = "pt-BR" | "en-US";
@@ -56,8 +58,15 @@ export type ProjectCapabilityEntry = {
   version: string;
   intention: Localized;
   summary: Localized;
+  /**
+   * The house methods this capability executes, when it executes named methods. Ids and versions
+   * are the Markdown library's own; `credit-playbook` pins this list against the methods that
+   * actually reached production, so a promotion or a version bump fails here instead of drifting.
+   * The dependency runs that way round because credit-playbook already depends on work-plan.
+   */
+  methods?: readonly {id: string; version: string}[];
   executor: {
-    key: "documentary_work_revision" | "institutional_model" | "provider_case_fit";
+    key: "documentary_work_revision" | "institutional_model" | "provider_case_fit" | "case01_debt_methods";
     version: string;
     /** Database command that owns idempotency, versions and the approval hold. */
     command: string;
@@ -188,6 +197,54 @@ export const projectCapabilityRegistry: readonly ProjectCapabilityEntry[] = [
       nextStep: {pt: "Descreva quais financiadores ou mandatos devem ser pesquisados, ou escolha outro tipo de trabalho.", en: "Describe which lenders or mandates should be researched, or choose another type of work."},
     },
   }),
+  entry({
+    id: "debt_structure_analysis",
+    version: "case01-debt-methods.v1",
+    intention: {pt: "Estrutura de dívida", en: "Debt structure"},
+    summary: {
+      pt: "Montar o ledger de dívida instrumento a instrumento, conciliar as demonstrações, ler as definições de covenant das escrituras, medir a concentração de vencimentos, projetar juros e correção e levantar o custo de saída por série.",
+      en: "Build the debt ledger instrument by instrument, reconcile the statements, read the covenant definitions from the indentures, measure maturity concentration, project interest and indexation and establish the exit cost per series.",
+    },
+    methods: [
+      {id: "build-debt-ledger", version: "2026.09.05-v15"},
+      {id: "build-interest-and-indexation-schedule", version: "2026.09.05-v7"},
+      {id: "reconcile-covenant-definitions", version: "2026.09.05-v14"},
+      {id: "reconcile-financial-statements", version: "2026.09.05-v9"},
+      {id: "compare-refinancing-before-after", version: "2026.09.05-v7"},
+      {id: "diagnose-maturity-wall", version: "2026.09.05-v8"},
+      {id: "estimate-exit-cost-by-series", version: "2026.09.05-v8"},
+    ],
+    executor: {key: "case01_debt_methods", version: "2026.09.10-v1", command: "record_capital_project_work_request_v1", surface: "debt-structure"},
+    inputs: [
+      {key: "private_access", label: {pt: "Projeto com acesso privado autorizado", en: "Project with authorized private access"}, neededBefore: "dispatch"},
+      {key: "ready_documents", label: {pt: "Documentos processados", en: "Processed documents"}, neededBefore: "dispatch"},
+      {key: "accepted_debt_facts", label: {pt: "Fatos de dívida aceitos dos documentos (nota de empréstimos, financiamentos e debêntures)", en: "Accepted debt facts from the documents (loans, financings and debentures note)"}, neededBefore: "dispatch"},
+      {key: "execution_brief", label: {pt: "Plano vigente do projeto", en: "Current project plan"}, neededBefore: "dispatch"},
+      {key: "reference_date", label: {pt: "Data-base e moeda", en: "Reference date and currency"}, neededBefore: "execution"},
+    ],
+    approval: {gate: "execution_brief", action: "approve", separationOfDuties: "project_review_roles"},
+    deliverableTypes: ["debt_structure_reading", "financial_memo"],
+    plan: [
+      {pt: "Registrar cada obrigação com saldo, moeda, indexador, vencimento, garantia e âncora, e conciliar o total com o balanço", en: "Record each obligation with balance, currency, indexer, maturity, guarantee and anchor, and reconcile the total against the balance sheet"},
+      {pt: "Recalcular as definições literais de dívida líquida e de covenant, cada uma com a sua fonte", en: "Recalculate the literal net debt and covenant definitions, each with its own source"},
+      {pt: "Medir a concentração por período, projetar juros e correção por série e levantar as regras de saída", en: "Measure concentration per period, project interest and indexation per series and establish the exit rules"},
+      {pt: "Nomear campo a campo o que a base não sustenta, em vez de preencher com zero", en: "Name field by field what the base does not support, instead of filling it with zero"},
+    ],
+    expectedResult: {pt: "Posição de dívida conciliada, definições de covenant lado a lado, vencimentos por período e custo de saída por série, cada número com a sua âncora e as lacunas nomeadas", en: "Reconciled debt position, covenant definitions side by side, maturities per period and exit cost per series, every figure with its anchor and the gaps named"},
+    limits: [
+      {pt: "Todo número vem do cálculo determinístico sobre os fatos aceitos; ausência nunca vira zero.", en: "Every figure comes from the deterministic calculation over the accepted facts; absence never becomes zero."},
+      {pt: "Não conclui rompimento de covenant, não é parecer jurídico sobre escrituras e não promete aprovação, financiamento ou fechamento.", en: "It does not conclude a covenant breach, is not a legal opinion on indentures and never promises approval, funding or closing."},
+      {pt: "Usa somente os documentos já enviados a este projeto e os fatos que a revisão aceitou.", en: "Uses only the documents already provided to this project and the facts the review accepted."},
+    ],
+    onMissingData: {
+      explanation: {pt: "A estrutura de dívida precisa de fatos de dívida aceitos a partir de documentos processados em um projeto privado, e de um plano vigente.", en: "The debt structure needs accepted debt facts from processed documents in a private project, and a current plan."},
+      nextStep: {pt: "Anexe a demonstração com a nota de empréstimos, financiamentos e debêntures, aceite os fatos de dívida na revisão e peça o trabalho de novo.", en: "Attach the statements with the loans, financings and debentures note, accept the debt facts in the review and request the work again."},
+    },
+    onUnsupported: {
+      explanation: {pt: "Este pedido não descreve um trabalho de estrutura de dívida: ledger, conciliação, covenant, vencimentos, correção ou custo de saída.", en: "This request does not describe debt structure work: ledger, reconciliation, covenant, maturities, indexation or exit cost."},
+      nextStep: {pt: "Diga qual parte da dívida deve ser levantada, ou escolha outro tipo de trabalho.", en: "Say which part of the debt should be established, or choose another type of work."},
+    },
+  }),
 ];
 
 export function projectCapability(id: ProjectCapabilityId): ProjectCapabilityEntry {
@@ -203,10 +260,21 @@ export function isFinancialResultRequest(objective: string): boolean {
   return financialPattern.test(objective.normalize("NFKC"));
 }
 
+/**
+ * Named debt-structure work, anchored on phrases that name the house methods themselves rather than
+ * on a single debt word. "Calcule os cenários de serviço da dívida" is a model, not a ledger, and
+ * stays with the financial result; "concilie as definições de covenant" is this capability.
+ */
+const debtStructurePattern = /\b(ledger de d[ií]vida|debt ledger|d[ií]vida por instrumento|debt by instrument|defini[cç][oõ]?[eé]?s? de covenant|covenant definitions?|defini[cç][aã]o de covenant|parede de vencimentos?|muro de vencimentos?|maturity wall|concentra[cç][aã]o de vencimentos?|maturity concentration|custo de sa[ií]da|exit cost|cronograma de (juros|corre[cç][aã]o|indexa[cç][aã]o)|interest and indexation schedule|concilia[cç][aã]o das demonstra[cç][oõ]es|reconcile the financial statements|estrutura de d[ií]vida|debt structure)\b/i;
+
+export function isDebtStructureRequest(objective: string): boolean {
+  return debtStructurePattern.test(objective.normalize("NFKC"));
+}
+
 export type ProjectWorkClassification = {
   capability: ProjectCapabilityId | null;
   documentaryJob: "comparison" | "meeting" | "review" | null;
-  reason: "documentary" | "financial" | "provider_research" | "calculation_in_documentary_scope" | "unrecognized";
+  reason: "documentary" | "financial" | "provider_research" | "debt_structure" | "calculation_in_documentary_scope" | "unrecognized";
 };
 
 /** Same guards as the executors: documentary jobs stay qualitative and calculations go to the model. */
@@ -215,6 +283,11 @@ export function classifyProjectWorkObjective(objective: string): ProjectWorkClas
   const documentaryJob = documentWorkJob(text);
   if (documentaryJob && canCompileStandaloneDocumentWorkRequest({objective: text, proposedDeliverable: "Preliminary documentary reading"})) {
     return {capability: "documentary_reading", documentaryJob, reason: "documentary"};
+  }
+  // Named debt-structure work is decided before the general financial pattern, which shares words
+  // with it: a request for the covenant definitions belongs to the covenant method, not to a model.
+  if (isDebtStructureRequest(text)) {
+    return {capability: "debt_structure_analysis", documentaryJob, reason: documentaryJob ? "calculation_in_documentary_scope" : "debt_structure"};
   }
   if (isFinancialResultRequest(text)) {
     return {capability: "financial_result", documentaryJob, reason: documentaryJob ? "calculation_in_documentary_scope" : "financial"};
@@ -230,6 +303,8 @@ export const projectWorkContextSchema = z.object({
   executionBriefAvailable: z.boolean(),
   institutionalSetupAvailable: z.boolean(),
   providerCaseFitAvailable: z.boolean(),
+  /** Facts under the `debt.` field paths that the project's review already accepted. */
+  acceptedDebtFactCount: z.number().int().nonnegative(),
   /** Decided server-side from the project review roles; the registry only reports it. */
   callerActions: z.object({prepare: z.boolean(), return: z.boolean(), approve: z.boolean()}).strict(),
 }).strict();
@@ -280,6 +355,7 @@ function inputAvailable(key: ProjectWorkInput, context: ProjectWorkContext): boo
     case "ready_documents": return context.readyDocumentCount > 0;
     case "execution_brief": return context.executionBriefAvailable;
     case "reconciled_facts": return context.institutionalSetupAvailable;
+    case "accepted_debt_facts": return context.acceptedDebtFactCount > 0;
     case "declared_assumptions":
     case "case_criteria":
     case "reference_date":
@@ -301,8 +377,8 @@ export function dispatchProjectWork(input: ProjectWorkRequestInput, rawContext: 
     return {
       kind: "unsupported", capability: null, reason: "unrecognized_objective",
       explanation: {
-        pt: "Nenhuma capacidade disponível reconhece este pedido como leitura documental, resultado financeiro ou pesquisa de financiadores.",
-        en: "No available capability recognizes this request as documentary reading, financial result or provider research.",
+        pt: "Nenhuma capacidade disponível reconhece este pedido como leitura documental, estrutura de dívida, resultado financeiro ou pesquisa de financiadores.",
+        en: "No available capability recognizes this request as documentary reading, debt structure, financial result or provider research.",
       },
       nextStep: {
         pt: "Escolha um tipo de trabalho explicitamente ou continue pela conversa do projeto.",
@@ -321,7 +397,7 @@ export function dispatchProjectWork(input: ProjectWorkRequestInput, rawContext: 
           en: "Documentary reading is qualitative and performs no calculations, models or reconciliations. The requested calculation belongs to the financial result.",
         },
         nextStep: {pt: "Envie o pedido como resultado financeiro ou retire o cálculo do objetivo.", en: "Send the request as a financial result or remove the calculation from the objective."},
-        suggestedCapability: "financial_result",
+        suggestedCapability: classification.capability ?? "financial_result",
       };
     }
     if (!classification.documentaryJob) {

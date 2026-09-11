@@ -49,7 +49,7 @@ import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understandi
 import {advisorActivities} from "@/lib/advisor/activity";
 import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
 import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
-import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
+import {countAcceptedDebtFacts, loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
 import {ProjectReviewRoles} from "@/components/advisor/project-review-roles";
 import {PresentationTemplateSettings} from "@/components/advisor/presentation-template-settings";
 import {loadPresentationTemplateContext} from "@/lib/advisor/presentation-template";
@@ -731,6 +731,7 @@ async function ConversationalCapitalProject({
         readyDocumentCount: (documents ?? []).filter((document) => document.processing_status === "ready").length,
         executionBriefAvailable: Boolean(executionBriefRow),
         institutionalSetupAvailable: Boolean(institutionalSetup),
+        acceptedDebtFactCount: countAcceptedDebtFacts(institutionalSetup),
         providerCaseFitAvailable: workSections.some((section) => section.id === "provider-case-criteria"),
         callerActions: reviewContext
           ? {prepare: reviewContext.caller.canPrepare, return: reviewContext.caller.canReturn, approve: reviewContext.caller.canApprove}

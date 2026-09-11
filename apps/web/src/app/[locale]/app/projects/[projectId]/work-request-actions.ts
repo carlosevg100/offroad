@@ -14,6 +14,7 @@ import {z} from "zod";
 
 import {advisorActionError, type AdvisorActionError} from "@/lib/advisor/advisor-action-error";
 import {loadInstitutionalSetupContext} from "@/lib/advisor/institutional-setup-reader";
+import {countAcceptedDebtFacts} from "@/lib/advisor/project-work-requests";
 import {loadProjectReviewContext} from "@/lib/advisor/project-review-context";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import type {Json} from "@/types/database";
@@ -76,6 +77,7 @@ export async function requestProjectWork(input: unknown): Promise<ProjectWorkReq
     executionBriefAvailable: Boolean(brief),
     institutionalSetupAvailable: Boolean(institutional),
     providerCaseFitAvailable: Boolean(plan),
+    acceptedDebtFactCount: countAcceptedDebtFacts(institutional),
     callerActions: review
       ? {prepare: review.caller.canPrepare, return: review.caller.canReturn, approve: review.caller.canApprove}
       : {prepare: false, return: false, approve: false},

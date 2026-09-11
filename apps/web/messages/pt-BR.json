@@ -4727,7 +4727,7 @@
     "options": {
       "auto": {
         "title": "Identificar pelo objetivo",
-        "hint": "A Offroad reconhece leitura documental, resultado financeiro ou pesquisa de financiadores a partir do texto."
+        "hint": "A Offroad reconhece leitura documental, estrutura de dívida, resultado financeiro ou pesquisa de financiadores a partir do texto."
       },
       "documentary_reading": {
         "title": "Leitura documental",
@@ -4740,13 +4740,18 @@
       "provider_research": {
         "title": "Pesquisa de financiadores",
         "hint": "Comparar os critérios do caso com mandatos e registros que a organização pode consultar."
+      },
+      "debt_structure_analysis": {
+        "title": "Estrutura de dívida",
+        "hint": "Ledger por instrumento, conciliação das demonstrações, definições de covenant, vencimentos, correção e custo de saída, a partir dos fatos aceitos."
       }
     },
     "executor": "Executor: {surface}",
     "surfaces": {
       "document-review": "leitura documental",
       "institutional-setup": "configuração do modelo financeiro",
-      "provider-case-criteria": "critérios do caso e financiadores"
+      "provider-case-criteria": "critérios do caso e financiadores",
+      "debt-structure": "estrutura de dívida"
     },
     "plan": "Plano",
     "dataUsed": "Dados utilizados",
@@ -4771,7 +4776,8 @@
       "reconciled_facts": "Fatos históricos aceitos dos documentos",
       "declared_assumptions": "Premissas declaradas por período",
       "case_criteria": "Critérios do caso confirmados",
-      "reference_date": "Data-base e moeda"
+      "reference_date": "Data-base e moeda",
+      "accepted_debt_facts": "Fatos de dívida aceitos dos documentos"
     },
     "blocked": {
       "documentary_not_activated": "Leitura documental não ativada",
@@ -4790,7 +4796,8 @@
     "dispatched": {
       "documentary_reading": "Pedido registrado. Um novo plano será proposto para aprovação.",
       "financial_result": "Pedido registrado. Informe os dados da configuração financeira para seguir.",
-      "provider_research": "Pedido registrado. Informe os critérios do caso para seguir."
+      "provider_research": "Pedido registrado. Informe os critérios do caso para seguir.",
+      "debt_structure_analysis": "Pedido registrado. O levantamento da estrutura de dívida usa os fatos de dívida já aceitos neste projeto."
     },
     "recorded": "Pedido registrado. Retome quando as informações estiverem disponíveis.",
     "history": "Pedidos deste projeto",
