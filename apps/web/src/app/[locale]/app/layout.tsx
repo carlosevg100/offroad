@@ -27,6 +27,8 @@ export default async function ApplicationLayout({children, params}: Props) {
   const capabilities = workspaceCapabilities(organization.organization_type);
   const showProjects = capabilities.own_analysis;
   const mandatesHref = capabilities.mandate_management ? `/${locale}/app/mandates` : undefined;
+  // A capital provider reads only the information packs shared with it; nothing else of a project.
+  const sharedPacksHref = capabilities.mandate_management ? `/${locale}/app/shared` : undefined;
   const {data: navigationSessions} = showProjects
     ? await supabase.from("document_intake_sessions")
         .select("id, capital_project_id, project_name, status, opportunity_id, updated_at, archived_at")
@@ -99,6 +101,7 @@ export default async function ApplicationLayout({children, params}: Props) {
     expand: t("expandRail"),
     folders: t("folders"),
     fundsAndMandates: t("fundsAndMandates"),
+    sharedPacks: t("sharedPacks"),
     groupActions: t("projectActions"),
     groupArchive: t("deleteProjectGroup"),
     groupArchiveConfirm: t("deleteProjectGroupConfirm"),
@@ -136,6 +139,7 @@ export default async function ApplicationLayout({children, params}: Props) {
         initialCollapsed={railCollapsed}
         locale={locale === "en-US" ? "en-US" : "pt-BR"}
         mandatesHref={mandatesHref}
+        sharedPacksHref={sharedPacksHref}
         organizationName={organization.name}
         projects={projects}
         showProjects={showProjects}

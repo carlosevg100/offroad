@@ -171,6 +171,9 @@ importers:
       '@offroad/investor-base':
         specifier: workspace:*
         version: link:../../packages/investor-base
+      '@offroad/market-feedback':
+        specifier: workspace:*
+        version: link:../../packages/market-feedback
       '@offroad/market-reference':
         specifier: workspace:*
         version: link:../../packages/market-reference

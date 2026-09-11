@@ -2569,7 +2569,8 @@
       "body": "A visão de dívida por formulário e a tese de originação criam trabalho de originação. Uma organização financiadora faz a análise própria pela conversa do workspace, sem representar a companhia analisada.",
       "cta": "Voltar à análise"
     },
-    "mandatesBack": "Voltar à análise"
+    "mandatesBack": "Voltar à análise",
+    "sharedPacks": "Pacotes compartilhados"
   },
   "Demo": {
     "eyebrow": "Demonstração com dados sintéticos",
@@ -5059,5 +5060,220 @@
     "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso.",
     "sourcesHelp": "De onde saiu este mandato: regulamento, ata, e-mail da gestora. Registro público e operação passada não entram aqui.",
     "noSources": "Nenhuma fonte informada"
+  },
+  "AuthorizedDistribution": {
+    "kicker": "Distribuicao autorizada",
+    "title": "Pacote de informacoes e destinatarios",
+    "body": "O pacote fixa os arquivos exatos que um destinatario pode abrir. A autorizacao disponibiliza esse pacote dentro do produto para as organizacoes nomeadas. Nada e enviado para fora.",
+    "boundary": "O ponto final e a introducao qualificada. Nada aqui significa aprovacao, credito concedido ou financiamento.",
+    "packRevision": "Revisao {number} do pacote",
+    "packBody": "Estes sao os arquivos exatos do material aprovado, com a impressao digital e a identidade do template que os produziu.",
+    "packNone": "Nenhuma revisao de pacote registrada",
+    "packNoneBody": "Registre a primeira revisao para fixar quais arquivos um destinatario poderia abrir.",
+    "packCurrent": "Esta revisao corresponde ao material aprovado atual.",
+    "packOutdated": "O material aprovado mudou. Registre uma nova revisao; a anterior continua disponivel.",
+    "packFirst": "Registre a primeira revisao a partir do material aprovado.",
+    "packRecord": "Registrar revisao",
+    "packRecording": "Registrando",
+    "deliverable": {
+      "teaser": "Resumo da operacao",
+      "financial_model": "Modelo financeiro",
+      "indicative_term_sheet": "Termos indicativos",
+      "data_room_index": "Indice de documentos"
+    },
+    "format": {
+      "interactive": "Tela",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "authorizationActive": "Autorizacao ativa",
+    "identityPolicy": {
+      "identified_restricted": "A companhia aparece identificada para os destinatarios.",
+      "blind_initial": "A identidade da companhia nao aparece nesta etapa."
+    },
+    "wave": "Limite da onda: {limit}. Politica {policy}.",
+    "authorizationPreviousRevision": "A autorizacao vigente aponta para uma revisao anterior do pacote.",
+    "revoke": "Revogar acesso",
+    "revoking": "Revogando",
+    "recipientsLegend": "Destinatarios da lista aprovada",
+    "recipientsEmpty": "Nenhum destinatario da lista aprovada esta registrado no produto.",
+    "recipientRegistered": "Organizacao registrada no produto",
+    "recipientDirectory": "Cadastro sem acesso ao produto",
+    "recipientDirectoryNote": "Este destinatario foi nomeado, mas nao tem acesso ao produto. Nada foi entregue a ele.",
+    "consentLabel": "Consentimento de quem autoriza",
+    "consentPlaceholder": "Autorizo disponibilizar esta revisao do pacote aos destinatarios nomeados acima.",
+    "consentAttestation": "Confirmo a autorizacao",
+    "consentAttestationBody": "Confirmo que tenho a representacao registrada neste projeto para autorizar esta disponibilizacao.",
+    "authorize": "Autorizar disponibilizacao",
+    "authorizing": "Autorizando",
+    "authorizeBlocked": "E preciso ter representacao verificada, uma revisao atual do pacote e ao menos um destinatario registrado.",
+    "recipientsTitle": "Destinatarios e retorno",
+    "recipientsBody": "Cada destinatario com acesso pode abrir o pacote e registrar a propria resposta. As leituras ficam registradas.",
+    "responseState": {
+      "interested": "Tem interesse",
+      "needs_information": "Pede mais informacao",
+      "declined": "Nao vai seguir",
+      "no_response_yet": "Sem resposta ate agora"
+    },
+    "reads": "Leituras registradas: {count}",
+    "readsNone": "Ainda sem leitura registrada.",
+    "responsePreviousRevision": "Esta resposta se refere a uma revisao anterior do pacote.",
+    "fitLabel": "Classificacao do candidato",
+    "fit": {
+      "eligible": "Elegivel",
+      "hypothesis": "Hipotese de pesquisa"
+    },
+    "rationaleLabel": "Racional da aderencia",
+    "prepare": "Preparar contato",
+    "preparing": "Preparando",
+    "researchOnly": "Hipotese de pesquisa: fica como estudo e nao pode ser introduzida.",
+    "releaseAttestation": "Confirmo a introducao",
+    "releaseAttestationBody": "A introducao fica registrada no produto, com data e responsavel. Nenhum envio e feito por aqui.",
+    "release": "Registrar introducao",
+    "releasing": "Registrando",
+    "released": "Introducao registrada no produto.",
+    "nextStepLabel": "Proximo passo",
+    "nextStep": {
+      "prepare_information_answer": "Preparar a informacao pedida",
+      "revise_structure": "Revisar a estrutura",
+      "schedule_conversation": "Marcar uma conversa",
+      "keep_on_hold": "Manter em espera",
+      "close_without_continuation": "Encerrar sem continuidade"
+    },
+    "nextStepNote": "Observacao",
+    "nextStepSave": "Registrar passo",
+    "nextStepSaving": "Registrando",
+    "nextStepCurrent": "Passo atual: {step}",
+    "feedbackTitle": "Retorno do mercado para a proxima revisao",
+    "feedbackBody": "O que foi dito pelos destinatarios, sem transformar resposta em recomendacao.",
+    "feedbackResponded": "Responderam",
+    "feedbackAwaiting": "Sem resposta",
+    "feedbackObjected": "Termos com objecao",
+    "feedbackRequested": "Informacoes pedidas",
+    "feedbackTenor": "Prazo observado: de {min} a {max} meses",
+    "feedbackTicket": "Ticket observado em {currency}: de {min} a {max}",
+    "feedbackPricing": "Preco observado em {basis}: de {min} a {max}",
+    "feedbackNone": "Ainda nao ha objecoes nem pedidos de informacao registrados.",
+    "objection": {
+      "ticket_outside_mandate": "Ticket fora do mandato",
+      "sector_outside_mandate": "Setor fora do mandato",
+      "tenor_too_long": "Prazo acima do mandato",
+      "pricing_below_mandate": "Preco abaixo do mandato",
+      "structure_not_supported": "Estrutura nao atendida",
+      "collateral_insufficient": "Garantia insuficiente"
+    },
+    "condition": {
+      "pool_detail_by_debtor": "Detalhe da carteira por sacado",
+      "updated_financials": "Demonstracoes financeiras atualizadas",
+      "collateral_documents": "Documentos da garantia",
+      "covenant_package": "Pacote de covenants",
+      "cash_flow_projection": "Projecao de caixa",
+      "legal_documents": "Documentos societarios e contratuais"
+    },
+    "errors": {
+      "invalid": "Revise os campos e tente de novo.",
+      "stale": "O projeto mudou. Recarregue a pagina.",
+      "forbidden": "Sua funcao nao permite esta acao neste projeto.",
+      "policy": "Nao ha politica de distribuicao vigente. Fale com o time do Offroad.",
+      "consent": "O consentimento de quem autoriza e obrigatorio.",
+      "wave": "A selecao ultrapassa o limite da onda da politica vigente.",
+      "recipient": "Um destinatario selecionado nao pode receber o pacote.",
+      "save": "Nao foi possivel registrar agora."
+    },
+    "contactErrors": {
+      "invalid": "Revise os campos e tente de novo.",
+      "stale": "O projeto mudou. Recarregue a pagina.",
+      "forbidden": "Sua funcao nao permite registrar esta introducao.",
+      "pack": "E preciso um pacote autorizado e vigente para este destinatario.",
+      "hypothesis": "Uma hipotese de pesquisa nao recebe pacote nem introducao.",
+      "save": "Nao foi possivel registrar agora."
+    }
+  },
+  "SharedInformationPacks": {
+    "kicker": "Pacotes compartilhados",
+    "title": "Informacoes disponibilizadas a sua organizacao",
+    "intro": "Cada pacote foi autorizado por quem representa a companhia. Sua organizacao ve apenas o que foi compartilhado com ela.",
+    "boundary": "Abrir um pacote e registrar uma resposta nao cria compromisso de nenhuma das partes.",
+    "back": "Voltar aos pacotes",
+    "empty": "Nenhum pacote disponivel",
+    "emptyBody": "Quando uma companhia autorizar a disponibilizacao de um pacote para sua organizacao, ele aparece aqui.",
+    "identified": "Companhia identificada",
+    "blind": "Companhia nao identificada",
+    "blindIssuer": "Companhia nao identificada nesta etapa",
+    "receivedOn": "Disponibilizado em",
+    "packRevision": "Revisao {number} do pacote",
+    "identityPolicy": {
+      "identified_restricted": "A companhia esta identificada para sua organizacao.",
+      "blind_initial": "A companhia optou por nao se identificar nesta etapa."
+    },
+    "itemsTitle": "Arquivos do pacote",
+    "artifactFingerprint": "Impressao digital",
+    "openItem": "Abrir arquivo",
+    "itemNotDownloadable": "Disponivel apenas na tela do produto",
+    "deliverable": {
+      "teaser": "Resumo da operacao",
+      "financial_model": "Modelo financeiro",
+      "indicative_term_sheet": "Termos indicativos",
+      "data_room_index": "Indice de documentos"
+    },
+    "format": {
+      "interactive": "Tela",
+      "xlsx": "Excel",
+      "pptx": "PowerPoint",
+      "docx": "Word",
+      "pdf": "PDF"
+    },
+    "historyTitle": "Suas respostas",
+    "responseTitle": "Registrar sua resposta",
+    "responseBody": "Diga o que sua organizacao vai fazer com esta informacao. Uma nova resposta substitui a anterior e a anterior fica registrada.",
+    "responseStateLabel": "Resposta",
+    "responseState": {
+      "interested": "Tem interesse",
+      "needs_information": "Pede mais informacao",
+      "declined": "Nao vai seguir",
+      "no_response_yet": "Sem resposta ate agora"
+    },
+    "noteLabel": "Observacao",
+    "conditionsLegend": "Informacoes que voce precisa",
+    "objectionsLegend": "Termos com objecao",
+    "condition": {
+      "pool_detail_by_debtor": "Detalhe da carteira por sacado",
+      "updated_financials": "Demonstracoes financeiras atualizadas",
+      "collateral_documents": "Documentos da garantia",
+      "covenant_package": "Pacote de covenants",
+      "cash_flow_projection": "Projecao de caixa",
+      "legal_documents": "Documentos societarios e contratuais"
+    },
+    "objection": {
+      "ticket_outside_mandate": "Ticket fora do mandato",
+      "sector_outside_mandate": "Setor fora do mandato",
+      "tenor_too_long": "Prazo acima do mandato",
+      "pricing_below_mandate": "Preco abaixo do mandato",
+      "structure_not_supported": "Estrutura nao atendida",
+      "collateral_insufficient": "Garantia insuficiente"
+    },
+    "ticketLabel": "Ticket indicativo",
+    "currencyLabel": "Moeda",
+    "tenorLabel": "Prazo em meses",
+    "pricingBasisLabel": "Base de preco",
+    "pricingBasis": {
+      "cdi_plus": "CDI mais",
+      "ipca_plus": "IPCA mais",
+      "fixed_rate": "Taxa fixa"
+    },
+    "pricingMinLabel": "Preco minimo",
+    "pricingMaxLabel": "Preco maximo",
+    "save": "Registrar resposta",
+    "saving": "Registrando",
+    "saved": "Resposta registrada.",
+    "responseBoundary": "Uma resposta e uma leitura de mercado. Nao e proposta, aprovacao nem compromisso de financiamento.",
+    "errors": {
+      "invalid": "Revise os campos e tente de novo.",
+      "unavailable": "Este pacote nao esta mais disponivel para sua organizacao.",
+      "content": "Esta resposta precisa de um motivo ou de uma objecao; sem resposta nao leva conteudo.",
+      "save": "Nao foi possivel registrar agora."
+    }
   }
 }

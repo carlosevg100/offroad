@@ -30,6 +30,7 @@ import type {AdvisorChangeProposal} from "@/components/advisor/advisor-change-pr
 import {OriginationConversationWork} from "@/components/advisor/origination-conversation-work";
 import {PrivateCaseWork} from "@/components/advisor/private-case-work";
 import {PrivateDiagnosticWork} from "@/components/advisor/private-diagnostic-work";
+import {PrivateDistributionWork} from "@/components/advisor/private-distribution-work";
 import {PrivateMarketWork} from "@/components/advisor/private-market-work";
 import {ProviderCaseFitForm} from "@/components/advisor/provider-case-fit-form";
 import {ProviderCaseFitWork} from "@/components/advisor/provider-case-fit-work";
@@ -42,6 +43,7 @@ import {IntegrationPreviewBanner} from "@/components/integration-preview/integra
 import {AdvisorDecisionWork} from "@/components/integration-preview/advisor-decision-work";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {loadProjectDistributionView} from "@/lib/advisor/distribution-context";
 import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
@@ -406,6 +408,23 @@ async function ConversationalCapitalProject({
           .eq("organization_id", organization.id).eq("intake_session_id", session.id).order("occurred_at"),
       ])
     : [{data: []}, {data: []}];
+  // Authorized distribution reads the same approved material package; it exports nothing here.
+  const distribution = governedMaterials && privateWorkbench?.packageReview?.status === "approved"
+    ? await loadProjectDistributionView({
+        governed: governedMaterials,
+        locale: locale === "en-US" ? "en-US" : "pt-BR",
+        organizationId: organization.id,
+        projectId: project.id,
+        representationVerified: session.representation_status === "verified",
+        sessionId: session.id,
+        sourceResultIds: [
+          privateWorkbench?.structureDecision?.object_fingerprint,
+          privateWorkbench?.productionPlan?.row.object_fingerprint,
+          governedMaterials.artifactFingerprint,
+        ].filter((value): value is string => typeof value === "string"),
+        supabase,
+      })
+    : null;
   const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
       ? supabase.from("agent_messages").select("id, role, content, status, error_code, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
@@ -821,6 +840,11 @@ async function ConversationalCapitalProject({
       packageApproved={privateWorkbench.packageReview?.status === "approved"}
       projectId={project.id}
       representationStatus={session.representation_status}
+      sessionId={session.id}
+    /> : null}{distribution ? <PrivateDistributionWork
+      distribution={distribution}
+      locale={locale === "en-US" ? "en-US" : "pt-BR"}
+      projectId={project.id}
       sessionId={session.id}
     /> : null}</div> : null}</>}
   />;
