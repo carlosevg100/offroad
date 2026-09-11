@@ -1,12 +1,15 @@
 ---
 id: underwrite-receivables-pool
 version: 2026.09.06-v1
-maturity: tested
+maturity: production
 title_pt: Conciliar e testar a capacidade de uma carteira de recebíveis
 title_en: Reconcile and test the capacity of a receivables pool
 role: financial_analysis
 blueprint_stage: 4
 owner_role: Head de Análise de Crédito Estruturado
+approved_by: Carlos Eduardo Galves
+approved_at: 2026-09-10
+approval_source: instrução do fundador na sessão de coordenação de 10/09/2026
 effective_date: 2026-09-06
 implementation_module: @offroad/receivables-analysis
 implementation_export: underwriteReceivablesPool
@@ -25,8 +28,8 @@ reference_data_keys: [policy.receivables.aging, policy.concentration.materiality
 task_specs: [R01]
 required_depth_pack_ids: [analysis.receivables-underwriting]
 binding_priority: 100
-capability_availability: shadow
-capability_exposure: allowlisted
+capability_availability: live
+capability_exposure: universal
 capability_allowed_uses: [internal_validation, customer_work]
 capability_allowed_evidence_regimes: [project_private, mixed_governed]
 capability_allowed_data_classes: [project_confidential]

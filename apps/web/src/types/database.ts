@@ -8613,6 +8613,10 @@ export type Database = {
         }
         Returns: string
       }
+      propagate_project_canonical_revision_v1: {
+        Args: { p_locale: string; p_project_id: string; p_request_id: string }
+        Returns: Json
+      }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
         Returns: Json

@@ -205,11 +205,17 @@ comparison) live in `packages/financial-core/src/receivables/pool-*.ts` as deter
 Decimal-based, traced and tested kernels; that migration is done (10 September 2026) and
 `analyze.ts` keeps only orchestration, gap and decision assembly. The published result is
 byte-identical to the prototype and pinned by `pool-kernel-parity.test.ts`. The method maturity
-evidence is now on record (independent review plus gold, adversarial and consistency runs under
-`packages/credit-playbook/knowledge/reviews/`), so `underwrite-receivables-pool` stands at
-`tested` and its exposure is `allowlisted`. The organizations allowed to read the released
-analytical result live in the database grant `private.receivables_analytical_release_grants`,
-never in source control; without that grant the run stays an internal shadow and the project page
-keeps the compact card. The released reading shows a calculation under declared assumptions and
-carries no external direction, no financier recommendation and no credit approval. `production`
-maturity still requires the founder's approval on record; no agent may set it.
+evidence is on record (independent review plus gold, adversarial and consistency runs under
+`packages/credit-playbook/knowledge/reviews/`), and on 10 September 2026 the founder Carlos Eduardo
+Galves approved the promotion, so `underwrite-receivables-pool` stands at `production` with
+availability `live` and exposure `universal`. The approval is recorded in the method frontmatter as
+`approved_by`, `approved_at` and `approval_source`, and the contract refuses a production method
+whose approval is a name without a date and a source. Every organization reads its own released
+result: there is no allowlist and no per-organization concession to request. What an operator keeps
+is the pause, in the database and without a deploy: `private.platform_capability_releases` holds the
+release for the capability and closing it closes the reading for everyone, while a row with
+`enabled = false` in `private.receivables_analytical_release_grants` pauses one organization. The
+released reading shows a calculation under declared assumptions and carries no external direction,
+no financier recommendation and no credit approval; extraction quality of arbitrary documents is
+unchanged. That approval covers this method only: no agent may promote another method, and nothing
+about it authorizes an external effect.

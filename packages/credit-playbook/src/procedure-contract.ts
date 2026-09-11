@@ -114,7 +114,17 @@ export const canonicalProcedureSchema = z.object({
   title: bilingualSchema,
   role: procedureRoleSchema,
   blueprintStage: procedureStageSchema,
-  owner: z.object({role: z.string().trim().min(1), approvedBy: z.string().trim().min(1).optional()}).strict(),
+  /**
+   * Who owns the method and, when it reached `production`, the founder approval on record: who
+   * approved it, on which date and where that instruction was given. The three travel together so
+   * an approval can never be a name without a moment and a source.
+   */
+  owner: z.object({
+    role: z.string().trim().min(1),
+    approvedBy: z.string().trim().min(1).optional(),
+    approvedAt: z.iso.date().optional(),
+    approvalSource: z.string().trim().min(1).optional(),
+  }).strict(),
   objective: z.string().trim().min(1),
   product: z.string().trim().min(1),
   procedure: z.array(procedureStepSchema).min(1),
@@ -220,8 +230,16 @@ export const canonicalProcedureSchema = z.object({
   if (rank >= maturityRank("ready_for_founder") && (procedure.examples.positive.length === 0 || procedure.examples.negative.length === 0)) {
     context.addIssue({code: "custom", path: ["examples"], message: `${procedure.maturity} procedures require positive and negative examples`});
   }
-  if (procedure.maturity === "production" && !procedure.owner.approvedBy) {
-    context.addIssue({code: "custom", path: ["owner", "approvedBy"], message: "production procedures require the founder's approval on record"});
+  if (procedure.maturity === "production") {
+    if (!procedure.owner.approvedBy) {
+      context.addIssue({code: "custom", path: ["owner", "approvedBy"], message: "production procedures require the founder's approval on record"});
+    }
+    if (!procedure.owner.approvedAt) {
+      context.addIssue({code: "custom", path: ["owner", "approvedAt"], message: "production procedures require the date of the founder's approval"});
+    }
+    if (!procedure.owner.approvalSource) {
+      context.addIssue({code: "custom", path: ["owner", "approvalSource"], message: "production procedures require where the founder's approval was given"});
+    }
   }
 });
 export type CanonicalProcedure = z.infer<typeof canonicalProcedureSchema>;

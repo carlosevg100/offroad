@@ -245,8 +245,9 @@ export type QueueClient = {
     resultFingerprint: string;
     replayed: boolean;
   }>;
-  /** Stores the released R01 result for a granted organization. The database re-checks the grant,
-   * the tenant, the dataset hash and the confirmed evidence scope before anything is written. */
+  /** Stores the released R01 result. The database re-checks that the release is open for this
+   * organization, the tenant, the dataset hash and the confirmed evidence scope before anything is
+   * written, so a release the worker computed but the database refuses never reaches anyone. */
   recordReceivablesReleasedResult?(job: FullCaseAnalysisJob, input: {
     inputAssemblyId: string;
     result: unknown;

@@ -27,6 +27,8 @@ const frontmatterSchema = z.object({
   blueprint_stage: z.coerce.number().int().min(1).max(12),
   owner_role: z.string().min(1),
   approved_by: z.string().min(1).optional(),
+  approved_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  approval_source: z.string().min(1).optional(),
   effective_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   house_procedure_ids: z.array(z.string().regex(/^(IN|EMP|Q|D|OP|ES|PR|MA|MK|RF|LC)-\d{2}$/)).default([]),
   authorities: z.array(z.enum(["LEI", "DEF", "CASA", "MERCADO", "HEURÍSTICA"])).default([]),
@@ -267,6 +269,8 @@ export function compileMethodDocument(text: string, sourcePath: string, lookupRe
   const examples = sections.get(SECTIONS.examples);
   const owner: CanonicalProcedure["owner"] = {role: frontmatter.owner_role};
   if (frontmatter.approved_by) owner.approvedBy = frontmatter.approved_by;
+  if (frontmatter.approved_at) owner.approvedAt = frontmatter.approved_at;
+  if (frontmatter.approval_source) owner.approvalSource = frontmatter.approval_source;
   const implementationFields = [frontmatter.implementation_module, frontmatter.implementation_export, frontmatter.result_contract, frontmatter.persistence_mode, frontmatter.persistence_target];
   const hasImplementation = implementationFields.some((field) => field !== undefined);
   if (hasImplementation && implementationFields.some((field) => field === undefined)) {

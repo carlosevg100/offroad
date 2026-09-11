@@ -394,8 +394,10 @@ const rawCaseInputSchema = z.object({
   receivables_evidence: z.array(receivablesEvidenceEnvelopeSchema).default([]),
   confirmed_receivables_scope: receivablesEvidenceScopeContextSchema.nullable().default(null),
   /**
-   * Whether this organization may read its own released R01 analysis. The concession lives in the
-   * database, never in source control, and its absence keeps the run in the internal shadow.
+   * Whether the released R01 reading is open for this organization right now. Under the universal
+   * exposure the database answers with the platform release itself, not with a per-organization
+   * concession; `granted` is the stable wire name of that answer and a paused release keeps the run
+   * in the internal shadow, exactly as before.
    */
   receivables_analytical_release: z.object({
     granted: z.boolean(),
@@ -1965,12 +1967,12 @@ export function buildReceivablesVertical(
     }
   }
   // The released analytical result is the same deterministic calculation, never a second one. It
-  // exists only when the database granted this organization the concession, and it carries the
+  // exists whenever the database reports the release open for this organization, and it carries the
   // confirmed scope so an unconfirmed portfolio selection can never be shown as an answer.
   let specialistRelease: ReceivablesSpecialistReleaseResult | null = null;
   let releaseFailureCode: string | null = null;
-  const releaseGrant = raw.receivables_analytical_release;
-  if (specialistShadow && methodAssembly && releaseGrant?.granted) {
+  const analyticalRelease = raw.receivables_analytical_release;
+  if (specialistShadow && methodAssembly && analyticalRelease?.granted) {
     const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === "R01");
     if (!capability) throw new Error("receivables_specialist_capability_not_registered");
     try {
@@ -1981,10 +1983,10 @@ export function buildReceivablesVertical(
         phaseOne: built.phaseOne,
         detection,
         assembly: methodAssembly,
-        organizationId: releaseGrant.organizationId,
-        grant: {
-          granted: true,
-          organizationId: releaseGrant.organizationId,
+        organizationId: analyticalRelease.organizationId,
+        release: {
+          open: true,
+          organizationId: analyticalRelease.organizationId,
           confirmedScope: {id: scope.id, fingerprint: scope.fingerprint},
           sourceDatasetHash: methodAssembly.source.datasetHash,
         },

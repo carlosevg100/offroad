@@ -2,14 +2,19 @@ import {describe, expect, it} from "vitest";
 import {currentCapabilityLedger, evaluateCapabilityLedger, type CapabilityLedger} from "./index";
 
 describe("capability ledger", () => {
-  it("records current deployment and quality without promoting any analytical scope to production", () => {
+  it("records current deployment and quality, promoting only what the founder approved", () => {
     const decision = evaluateCapabilityLedger(currentCapabilityLedger);
 
     expect(decision.valid).toBe(true);
-    expect(decision.entryCount).toBe(43);
+    expect(decision.entryCount).toBe(44);
     expect(decision.blockers).toEqual([]);
-    expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("customer_work"))).toBe(false);
-    expect(currentCapabilityLedger.entries.some((entry) => entry.qualityMaturity === "production")).toBe(false);
+    // One scope is in production, on the founder approval of 10 September 2026, and it is the only
+    // one an organization may rely on for its own work. Nothing else moved with it.
+    expect(currentCapabilityLedger.entries.filter((entry) => entry.qualityMaturity === "production").map((entry) => entry.capabilityId))
+      .toEqual(["finance.receivables-released-analysis"]);
+    expect(currentCapabilityLedger.entries.filter((entry) => entry.allowedUses.includes("customer_work")).map((entry) => entry.capabilityId))
+      .toEqual(["finance.receivables-released-analysis"]);
+    expect(currentCapabilityLedger.entries.some((entry) => entry.allowedUses.includes("external_material") || entry.allowedUses.includes("external_action"))).toBe(false);
   });
 
   it("keeps preliminary documentary customer work blocked before reviewed release evidence", () => {
@@ -17,6 +22,13 @@ describe("capability ledger", () => {
     expect(candidate).toMatchObject({availability:"specified",exposure:"none",qualityMaturity:"specified",evidenceRefs:[],allowedUses:[]});
     const decision = evaluateCapabilityLedger({...currentCapabilityLedger, entries:[{...candidate, allowedUses:["customer_work"]}]});
     expect(decision.blockers.some(blocker => blocker.code === "customer_reliance_requires_live_production_scope")).toBe(true);
+  });
+
+  it("records a verified mandate contract with an empty population and no live lender network", () => {
+    const byId = new Map(currentCapabilityLedger.entries.map((entry) => [entry.capabilityId, entry]));
+    expect(byId.get("capital.verified-mandate-record")).toMatchObject({availability: "live", exposure: "internal", qualityMaturity: "tested", allowedUses: ["internal_validation"]});
+    expect(byId.get("capital.verified-mandate-record")!.limitations.some((limitation) => limitation.includes("No real fund has registered"))).toBe(true);
+    expect(byId.get("capital.live-mandate-network")).toMatchObject({availability: "absent", exposure: "none", qualityMaturity: "unsupported", runtimeRefs: [], allowedUses: []});
   });
 
   it("keeps the Case 01 compiler live but allowlisted and the universal compiler specified", () => {

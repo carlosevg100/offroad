@@ -4034,11 +4034,6 @@
     "noResults": "No names match this filter. Show mismatches to inspect exclusions.",
     "empty": "No authorized mandates are available to compare.",
     "reviewBoundary": "This list is an analytical proposal. It does not authorize disclosure, contact or introduction; appetite, capacity and terms require lender confirmation.",
-    "status": {
-      "ready_for_review": "Ready for review",
-      "requires_confirmation": "Confirmations needed",
-      "excluded": "Outside criteria"
-    },
     "outcome": {
       "fits": "Compatible",
       "excluded": "Incompatible",
@@ -4053,7 +4048,56 @@
       "inferred": "Unconfirmed inference"
     },
     "recordedMandate": "Mandate record effective on the stated date",
-    "archivedStatus": "Historical result, not current"
+    "archivedStatus": "Historical result, not current",
+    "classificationLegend": "Eligible means a confirmed mandate in force with no incompatibility. Hypothesis means research: a public record, past activity, or a mandate with no confirmation in force. Outside criteria means the mandate rules it out.",
+    "classification": {
+      "eligible": "Eligible",
+      "hypothesis": "Research hypothesis",
+      "excluded": "Outside criteria"
+    },
+    "evidence": {
+      "confirmed_mandate": "Mandate confirmed by the manager itself",
+      "historical_activity": "Observed past activity",
+      "public_record": "Record with no confirmation in force"
+    },
+    "mandateVersion": "Mandate version {version}, confirmed on {date} ({status})",
+    "mandateUnconfirmed": "No confirmed mandate on record.",
+    "mandateStatus": {
+      "draft": "draft",
+      "confirmed": "in force",
+      "expired": "expired",
+      "withdrawn": "withdrawn"
+    },
+    "hypothesisNote": "With no confirmed mandate in force, this name is a research hypothesis. It does not indicate current interest from the manager.",
+    "incompatibilities": "Incompatible on: {items}",
+    "criterionName": {
+      "active": "taking new transactions",
+      "instrument": "instrument",
+      "ticket": "investment range",
+      "term": "tenor",
+      "sector": "sector",
+      "geography": "geography",
+      "collateral": "collateral",
+      "leverage": "leverage",
+      "dscr": "DSCR",
+      "currency": "currency"
+    },
+    "subject": {
+      "instrument": "Instrument",
+      "ticket": "Investment range",
+      "sector": "Sector",
+      "geography": "Geography",
+      "credit_profile": "Credit profile",
+      "tenor": "Tenor",
+      "collateral": "Collateral"
+    },
+    "itemOrigin": "Origin: {source} · {date}",
+    "itemOriginMissing": "Origin: this criterion is not in the manager's record.",
+    "confirmedMandateRecord": "Mandate confirmed by the manager, on the stated date",
+    "renewal": {
+      "due_soon": "This mandate's validity window is close to closing. Confirm it with the manager before relying on it.",
+      "expired": "This mandate's validity window has closed. It returns to the selection when the manager confirms again."
+    }
   },
   "ProviderCaseFitForm": {
     "title": "Identify lenders for this transaction",
@@ -4665,7 +4709,13 @@
       "noFinancierRecommendation": "This result carries no financier recommendation.",
       "noCreditApproval": "This result carries no credit approval.",
       "method": "Method {procedure}, version {version}, maturity {maturity}.",
-      "engine": "Result contract {schema}, currency {currency}."
+      "engine": "Result contract {schema}, currency {currency}.",
+      "founderApproval": "The method is in production under the founder's approval recorded on {approvedAt}.",
+      "maturityNames": {
+        "tested": "tested",
+        "ready_for_founder": "ready for the founder",
+        "production": "production"
+      }
     }
   },
   "NewWorkRequest": {
@@ -4889,5 +4939,125 @@
       "not_found": "The project is no longer available.",
       "save": "The identity could not be saved."
     }
+  },
+  "MandateRegistry": {
+    "title": "Funds and mandates",
+    "intro": "Register each fund and the mandate it runs today. The record enters as a draft; confirming it is a separate act, with a date and an origin.",
+    "boundary": "A confirmed mandate inside its validity window is what a case reads as current interest. A public record and a past transaction stay research, never confirmed interest.",
+    "registerAction": "Register a mandate",
+    "registerIntro": "Pick a fund already registered, or give a name and a strategy to create one. Leave blank whatever the manager does not restrict.",
+    "saveDraft": "Save draft",
+    "empty": "No fund registered yet. Until a mandate is confirmed, this manager appears as a verified candidate in no case at all.",
+    "stats": {
+      "verified": "Mandates in force",
+      "attention": "Waiting on confirmation"
+    },
+    "errors": {
+      "invalid": "A field falls outside the mandate contract. Check the investment range, the tenor and the validity window.",
+      "denied": "Your organization does not manage mandates.",
+      "not_found": "This record is no longer available.",
+      "conflict": "The record was withdrawn and cannot be confirmed again.",
+      "save": "The change could not be saved."
+    },
+    "fields": {
+      "fundId": "Fund",
+      "newFund": "New fund",
+      "fundName": "Fund name",
+      "fundStrategy": "Strategy",
+      "currency": "Currency",
+      "ticketMin": "Minimum investment",
+      "ticketMax": "Maximum investment",
+      "termMin": "Minimum tenor (months)",
+      "termMax": "Maximum tenor (months)",
+      "leverage": "Maximum leverage",
+      "dscr": "Minimum DSCR",
+      "sectors": "Sectors (comma separated)",
+      "geographies": "Geographies (comma separated)",
+      "validFrom": "Valid from",
+      "validUntil": "Valid until",
+      "instruments": "Instruments",
+      "collateral": "Collateral",
+      "accepting": "Taking new transactions",
+      "note": "Note",
+      "version": "Version",
+      "ticket": "Investment range",
+      "tenor": "Tenor",
+      "creditProfile": "Credit profile",
+      "confirmations": "Confirmations on record",
+      "channel": "How it was confirmed",
+      "documentReference": "Document reference",
+      "contactRecordId": "Recorded contact identifier",
+      "contactDate": "Contact date",
+      "sources": "Sources for this record (one per line)"
+    },
+    "instruments": {
+      "debenture": "Debenture",
+      "nota_comercial": "Commercial note",
+      "ccb": "CCB",
+      "cri": "CRI",
+      "cra": "CRA",
+      "fidc": "FIDC",
+      "direct_loan": "Direct loan",
+      "receivables_purchase": "Receivables purchase",
+      "project_finance": "Project finance",
+      "equity_kicker_debt": "Debt with equity kicker"
+    },
+    "collateral": {
+      "recebiveis": "Receivables",
+      "imovel": "Real estate",
+      "equipamento": "Equipment",
+      "estoque": "Inventory",
+      "aval_fianca": "Guarantee or surety",
+      "cessao_fiduciaria": "Fiduciary assignment",
+      "alienacao_fiduciaria_quotas": "Fiduciary transfer of quotas",
+      "conta_reserva": "Reserve account",
+      "quirografario": "Unsecured"
+    },
+    "status": {
+      "draft": "Draft",
+      "confirmed": "Confirmed",
+      "expired": "Expired",
+      "withdrawn": "Withdrawn"
+    },
+    "channels": {
+      "direct_declaration": "The manager's own declaration",
+      "official_document": "Official document",
+      "recorded_contact": "Contact recorded by Offroad"
+    },
+    "channelHelp": {
+      "direct_declaration": "The manager declares the mandate here, signed in as itself. No document and no contact are attached.",
+      "official_document": "Name the document the confirmation rests on, in words somebody else can check.",
+      "recorded_contact": "Give the identifier of the recorded contact and the date it happened."
+    },
+    "renewal": {
+      "current": "Confirmation in force.",
+      "due_soon": "The validity window is close to closing. Confirm again for the mandate to keep counting in the selection.",
+      "expired": "The validity window has closed. This mandate left the selection until it is confirmed again.",
+      "withdrawn": "Mandate withdrawn by the manager.",
+      "unconfirmed": "Not confirmed yet. While it is a draft, this fund does not enter the selection."
+    },
+    "lastConfirmed": "Last confirmed on {date}, through {channel}.",
+    "neverConfirmed": "Never confirmed.",
+    "neverConfirmedShort": "not confirmed",
+    "windowOpen": "In force since {from}, with no end date.",
+    "windowClosed": "In force from {from} to {until}.",
+    "to": "to",
+    "unrestricted": "No restriction recorded",
+    "months": "{min} to {max} months",
+    "creditProfileValue": "Leverage up to {leverage}; minimum DSCR {dscr}",
+    "yes": "Yes",
+    "no": "No",
+    "history": "Earlier versions ({count})",
+    "historyEntry": "Version {version}: {status}, {date}",
+    "confirmAction": "Confirm mandate",
+    "renewAction": "Confirm again",
+    "withdrawAction": "Withdraw mandate",
+    "withdrawnNote": "A withdrawn mandate does not come back. Register a new version to describe the current mandate.",
+    "confirmIntro": "A confirmation records who confirmed, when, and through which origin. It sends nothing outside and contacts nobody.",
+    "confirmSubmit": "Record confirmation",
+    "pendingTitle": "Funds with no mandate registered",
+    "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection.",
+    "sourcesHelp": "Where this mandate came from: a regulation, a minute, an email from the manager. A public record and a past transaction do not belong here.",
+    "noSources": "No source recorded"
   }
 }

@@ -148,26 +148,30 @@ describe("specialist method shadow runtime", () => {
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const confirmedScope = {id: "22222222-2222-4222-8222-222222222222", fingerprint: "e".repeat(64)};
-const grant = {granted: true, organizationId, confirmedScope, sourceDatasetHash: datasetHash};
+const release = {open: true, organizationId, confirmedScope, sourceDatasetHash: datasetHash};
 const releaseInput = {
   taskId: "R01",
   executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
   executorVersion: "2026.09.06-v1",
-  phaseOne, detection, assembly, organizationId, grant,
+  phaseOne, detection, assembly, organizationId, release,
 };
+/** The bundled production policy after the founder's approval of 10 September 2026. */
 const bundledMethod = {
   executor: {module: "@offroad/receivables-analysis", exportName: "underwriteReceivablesPool"},
-  procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1", maturity: "tested"},
+  procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1", maturity: "production"},
 };
 const bundledCapability = {
   executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
   executorVersion: "2026.09.06-v1",
   procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
-  availability: "shadow", exposure: "allowlisted",
+  availability: "live", exposure: "universal",
   allowedUses: ["internal_validation", "customer_work"], maximumEffect: "none",
 };
+/** The allowlisted shadow policy the method carried before the promotion; still admitted. */
+const previousCapability = {...bundledCapability, availability: "shadow", exposure: "allowlisted"};
+const previousMethod = {...bundledMethod, procedure: {...bundledMethod.procedure, maturity: "tested"}};
 
-describe("released analytical result for a granted organization", () => {
+describe("released analytical result for every organization", () => {
   it("releases the same deterministic calculation, bound to the confirmed scope and its dataset", () => {
     const shadow = executeReceivablesSpecialistShadow({
       taskId: "R01", executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
@@ -180,7 +184,7 @@ describe("released analytical result for a granted organization", () => {
       externalEffectAllowed: false,
       release: {
         organizationId,
-        methodMaturity: "tested",
+        methodMaturity: "production",
         maximumEffect: "none",
         confirmedScope,
         sourceDatasetHash: datasetHash,
@@ -195,13 +199,25 @@ describe("released analytical result for a granted organization", () => {
     expect(released.artifact.content.history_coverage?.aggregatePerformanceBasis).toBe("reported_title_aggregates");
   });
 
-  it("refuses to release without the organization grant", () => {
-    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, granted: false}}))
-      .toThrow("receivables_analytical_release_not_granted");
+  it("releases for an organization that holds no concession of its own", () => {
+    // Universal exposure: no allowlist, no per-organization row, no operator step in between.
+    const released = releaseReceivablesSpecialistAnalysis({
+      ...releaseInput,
+      organizationId: "44444444-4444-4444-8444-444444444444",
+      release: {...release, organizationId: "44444444-4444-4444-8444-444444444444"},
+    });
+    expect(released.release.organizationId).toBe("44444444-4444-4444-8444-444444444444");
+    expect(released.release.methodMaturity).toBe("production");
+    expect(released.externalEffectAllowed).toBe(false);
   });
 
-  it("refuses a grant issued to another organization", () => {
-    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, organizationId: "33333333-3333-4333-8333-333333333333"}}))
+  it("refuses to release while an operator has the release paused", () => {
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, release: {...release, open: false}}))
+      .toThrow("receivables_analytical_release_paused");
+  });
+
+  it("refuses a release resolved for another organization", () => {
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, release: {...release, organizationId: "33333333-3333-4333-8333-333333333333"}}))
       .toThrow("receivables_analytical_release_tenant_mismatch");
     expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, organizationId: ""}))
       .toThrow("receivables_analytical_release_tenant_mismatch");
@@ -210,28 +226,40 @@ describe("released analytical result for a granted organization", () => {
   it("refuses a portfolio selection the organization did not confirm", () => {
     // A different sheet or document selection produces a different dataset hash; the confirmed
     // scope travels with the grant, so the unconfirmed dataset can never be released.
-    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, sourceDatasetHash: "f".repeat(64)}}))
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, release: {...release, sourceDatasetHash: "f".repeat(64)}}))
       .toThrow("receivables_analytical_release_dataset_mismatch");
-    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, confirmedScope: {id: "", fingerprint: confirmedScope.fingerprint}}}))
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, release: {...release, confirmedScope: {id: "", fingerprint: confirmedScope.fingerprint}}}))
       .toThrow("receivables_analytical_release_scope_required");
-    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, grant: {...grant, confirmedScope: {id: confirmedScope.id, fingerprint: "not-a-fingerprint"}}}))
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, release: {...release, confirmedScope: {id: confirmedScope.id, fingerprint: "not-a-fingerprint"}}}))
       .toThrow("receivables_analytical_release_scope_required");
   });
 
   it("admits the bundled policy and refuses every policy that is not the released one", () => {
     expect(evaluateReceivablesSpecialistPolicy("internal_shadow", bundledMethod, bundledCapability)).toBeNull();
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, bundledCapability)).toBeNull();
+    // The allowlisted shadow policy the method carried before the promotion is still admitted.
+    expect(evaluateReceivablesSpecialistPolicy("internal_shadow", previousMethod, previousCapability)).toBeNull();
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", previousMethod, previousCapability)).toBeNull();
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, exposure: "internal"}))
       .toBe("receivables_specialist_release_policy_mismatch");
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, allowedUses: ["internal_validation"]}))
       .toBe("receivables_specialist_release_policy_mismatch");
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", {...bundledMethod, procedure: {...bundledMethod.procedure, maturity: "implemented"}}, bundledCapability))
       .toBe("receivables_specialist_release_policy_mismatch");
+    // Universal exposure buys reach, never an effect: every external door stays shut.
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, maximumEffect: "propose_state"}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, maximumEffect: "external"}))
       .toBe("receivables_specialist_shadow_policy_mismatch");
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, allowedUses: ["internal_validation", "customer_work", "external_action"]}))
       .toBe("receivables_specialist_shadow_policy_mismatch");
-    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, availability: "live"}))
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, allowedUses: ["internal_validation", "customer_work", "external_material"]}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, exposure: "none"}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, availability: "mocked"}))
+      .toBe("receivables_specialist_shadow_policy_mismatch");
+    expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, availability: "specified"}))
       .toBe("receivables_specialist_shadow_policy_mismatch");
   });
 });

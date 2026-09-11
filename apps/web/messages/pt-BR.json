@@ -4034,11 +4034,6 @@
     "noResults": "Nenhum nome corresponde a este filtro. Mostre as incompatibilidades para examinar as exclusões.",
     "empty": "Não há mandatos autorizados disponíveis para comparar.",
     "reviewBoundary": "Esta lista é uma proposta de análise. Não autoriza divulgação, contato ou introdução; interesse, capacidade e condições dependem de confirmação do financiador.",
-    "status": {
-      "ready_for_review": "Pronto para revisão",
-      "requires_confirmation": "Confirmações pendentes",
-      "excluded": "Fora dos critérios"
-    },
     "outcome": {
       "fits": "Compatível",
       "excluded": "Incompatível",
@@ -4053,7 +4048,56 @@
       "inferred": "Inferência não confirmada"
     },
     "recordedMandate": "Registro de mandato vigente na data indicada",
-    "archivedStatus": "Resultado histórico, não atual"
+    "archivedStatus": "Resultado histórico, não atual",
+    "classificationLegend": "Elegível é mandato confirmado e vigente sem incompatibilidade. Hipótese é pesquisa: registro público, atuação passada ou mandato sem confirmação vigente. Fora dos critérios é incompatibilidade declarada pelo mandato.",
+    "classification": {
+      "eligible": "Elegível",
+      "hypothesis": "Hipótese de pesquisa",
+      "excluded": "Fora dos critérios"
+    },
+    "evidence": {
+      "confirmed_mandate": "Mandato confirmado pela própria gestora",
+      "historical_activity": "Atuação passada observada",
+      "public_record": "Registro sem confirmação vigente"
+    },
+    "mandateVersion": "Mandato versão {version}, confirmado em {date} ({status})",
+    "mandateUnconfirmed": "Sem mandato confirmado no registro.",
+    "mandateStatus": {
+      "draft": "rascunho",
+      "confirmed": "vigente",
+      "expired": "vencido",
+      "withdrawn": "retirado"
+    },
+    "hypothesisNote": "Sem mandato confirmado e vigente, este nome é hipótese de pesquisa. Ele não indica interesse atual da gestora.",
+    "incompatibilities": "Incompatível em: {items}",
+    "criterionName": {
+      "active": "aceitação de operações novas",
+      "instrument": "instrumento",
+      "ticket": "faixa de investimento",
+      "term": "prazo",
+      "sector": "setor",
+      "geography": "geografia",
+      "collateral": "garantia",
+      "leverage": "alavancagem",
+      "dscr": "DSCR",
+      "currency": "moeda"
+    },
+    "subject": {
+      "instrument": "Instrumento",
+      "ticket": "Faixa de investimento",
+      "sector": "Setor",
+      "geography": "Geografia",
+      "credit_profile": "Perfil de crédito",
+      "tenor": "Prazo",
+      "collateral": "Garantia"
+    },
+    "itemOrigin": "Origem: {source} · {date}",
+    "itemOriginMissing": "Origem: não temos este critério no registro da gestora.",
+    "confirmedMandateRecord": "Mandato confirmado pela gestora, na data indicada",
+    "renewal": {
+      "due_soon": "A vigência deste mandato está perto do fim. Confirme com a gestora antes de contar com ele.",
+      "expired": "A vigência deste mandato terminou. Ele volta à seleção quando a gestora confirmar de novo."
+    }
   },
   "ProviderCaseFitForm": {
     "title": "Identificar financiadores para este caso",
@@ -4665,7 +4709,13 @@
       "noFinancierRecommendation": "Não há recomendação de financiador neste resultado.",
       "noCreditApproval": "Não há aprovação de crédito neste resultado.",
       "method": "Método {procedure}, versão {version}, maturidade {maturity}.",
-      "engine": "Contrato do resultado {schema}, moeda {currency}."
+      "engine": "Contrato do resultado {schema}, moeda {currency}.",
+      "founderApproval": "Método em produção pela aprovação do fundador registrada em {approvedAt}.",
+      "maturityNames": {
+        "tested": "testada",
+        "ready_for_founder": "pronta para o fundador",
+        "production": "produção"
+      }
     }
   },
   "NewWorkRequest": {
@@ -4889,5 +4939,125 @@
       "not_found": "O projeto não está mais disponível.",
       "save": "Não foi possível salvar a identidade."
     }
+  },
+  "MandateRegistry": {
+    "title": "Fundos e mandatos",
+    "intro": "Cadastre cada fundo e o mandato que ele pratica hoje. O registro entra como rascunho; a confirmação é um ato separado, com data e origem.",
+    "boundary": "Um mandato confirmado e vigente é o que a análise de um caso lê como interesse atual. Registro público e operação passada continuam sendo pesquisa, nunca interesse confirmado.",
+    "registerAction": "Cadastrar mandato",
+    "registerIntro": "Escolha um fundo já cadastrado ou informe nome e estratégia para criar um novo. Deixe em branco o que a gestora não restringe.",
+    "saveDraft": "Salvar rascunho",
+    "empty": "Nenhum fundo cadastrado ainda. Enquanto não houver mandato confirmado, esta gestora não aparece como candidata verificada em nenhum caso.",
+    "stats": {
+      "verified": "Mandatos vigentes",
+      "attention": "Precisam de confirmação"
+    },
+    "errors": {
+      "invalid": "Algum campo está fora do contrato do mandato. Confira faixa de investimento, prazo e vigência.",
+      "denied": "Sua organização não administra mandatos.",
+      "not_found": "Este registro não está mais disponível.",
+      "conflict": "O registro foi retirado e não pode ser confirmado de novo.",
+      "save": "Não foi possível gravar a alteração."
+    },
+    "fields": {
+      "fundId": "Fundo",
+      "newFund": "Novo fundo",
+      "fundName": "Nome do fundo",
+      "fundStrategy": "Estratégia",
+      "currency": "Moeda",
+      "ticketMin": "Investimento minimo",
+      "ticketMax": "Investimento maximo",
+      "termMin": "Prazo mínimo (meses)",
+      "termMax": "Prazo máximo (meses)",
+      "leverage": "Alavancagem máxima",
+      "dscr": "DSCR mínimo",
+      "sectors": "Setores (separados por vírgula)",
+      "geographies": "Geografias (separadas por vírgula)",
+      "validFrom": "Vigente a partir de",
+      "validUntil": "Vigente até",
+      "instruments": "Instrumentos",
+      "collateral": "Garantias",
+      "accepting": "Aceitando operações novas",
+      "note": "Observação",
+      "version": "Versão",
+      "ticket": "Faixa de investimento",
+      "tenor": "Prazo",
+      "creditProfile": "Perfil de crédito",
+      "confirmations": "Confirmações registradas",
+      "channel": "Como foi confirmado",
+      "documentReference": "Documento de referência",
+      "contactRecordId": "Identificador do contato registrado",
+      "contactDate": "Data do contato",
+      "sources": "Fontes do registro (uma por linha)"
+    },
+    "instruments": {
+      "debenture": "Debênture",
+      "nota_comercial": "Nota comercial",
+      "ccb": "CCB",
+      "cri": "CRI",
+      "cra": "CRA",
+      "fidc": "FIDC",
+      "direct_loan": "Empréstimo direto",
+      "receivables_purchase": "Compra de recebíveis",
+      "project_finance": "Project finance",
+      "equity_kicker_debt": "Dívida com participação"
+    },
+    "collateral": {
+      "recebiveis": "Recebíveis",
+      "imovel": "Imóvel",
+      "equipamento": "Equipamento",
+      "estoque": "Estoque",
+      "aval_fianca": "Aval ou fiança",
+      "cessao_fiduciaria": "Cessão fiduciária",
+      "alienacao_fiduciaria_quotas": "Alienação fiduciária de quotas",
+      "conta_reserva": "Conta reserva",
+      "quirografario": "Quirografário"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "confirmed": "Confirmado",
+      "expired": "Vencido",
+      "withdrawn": "Retirado"
+    },
+    "channels": {
+      "direct_declaration": "Declaração da própria gestora",
+      "official_document": "Documento oficial",
+      "recorded_contact": "Contato registrado pela Offroad"
+    },
+    "channelHelp": {
+      "direct_declaration": "A gestora declara o mandato aqui, com a própria identidade. Nenhum documento e nenhum contato são anexados.",
+      "official_document": "Informe o documento que sustenta a confirmação, em palavras que outra pessoa consegue conferir.",
+      "recorded_contact": "Informe o identificador do contato registrado e a data em que ele aconteceu."
+    },
+    "renewal": {
+      "current": "Confirmação vigente.",
+      "due_soon": "A vigência está perto do fim. Confirme de novo para o mandato continuar valendo na seleção.",
+      "expired": "A vigência terminou. Este mandato saiu da seleção até ser confirmado de novo.",
+      "withdrawn": "Mandato retirado pela gestora.",
+      "unconfirmed": "Ainda sem confirmação. Enquanto for rascunho, este fundo não entra na seleção."
+    },
+    "lastConfirmed": "Última confirmação em {date}, por {channel}.",
+    "neverConfirmed": "Nunca confirmado.",
+    "neverConfirmedShort": "sem confirmação",
+    "windowOpen": "Vigente desde {from}, sem data de término.",
+    "windowClosed": "Vigência de {from} a {until}.",
+    "to": "a",
+    "unrestricted": "Sem restrição informada",
+    "months": "{min} a {max} meses",
+    "creditProfileValue": "Alavancagem até {leverage}; DSCR mínimo {dscr}",
+    "yes": "Sim",
+    "no": "Não",
+    "history": "Versões anteriores ({count})",
+    "historyEntry": "Versão {version}: {status}, {date}",
+    "confirmAction": "Confirmar mandato",
+    "renewAction": "Confirmar de novo",
+    "withdrawAction": "Retirar mandato",
+    "withdrawnNote": "Um mandato retirado não volta a valer. Cadastre uma nova versão para descrever o mandato atual.",
+    "confirmIntro": "A confirmação registra quem confirmou, quando e por qual origem. Ela não envia nada para fora e não contata ninguém.",
+    "confirmSubmit": "Registrar confirmação",
+    "pendingTitle": "Fundos sem mandato cadastrado",
+    "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso.",
+    "sourcesHelp": "De onde saiu este mandato: regulamento, ata, e-mail da gestora. Registro público e operação passada não entram aqui.",
+    "noSources": "Nenhuma fonte informada"
   }
 }

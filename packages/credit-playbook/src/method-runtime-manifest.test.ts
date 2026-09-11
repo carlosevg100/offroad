@@ -5,6 +5,7 @@ import {describe, expect, it} from "vitest";
 
 import {loadMethodLibrary} from "./procedure-markdown";
 import {
+  specialistMethodApprovalManifest,
   specialistMethodRuntimeManifest,
   specialistMethodRuntimeManifestHash,
   specialistTaskCapabilityRuntimeManifest,
@@ -66,5 +67,26 @@ describe("specialist method runtime manifest", () => {
     });
     expect(specialistTaskCapabilityRuntimeManifest).toEqual(expected);
     expect(specialistTaskCapabilityRuntimeManifestHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("projects the founder approval of every method that reached production", () => {
+    const library = loadMethodLibrary(
+      resolve(here, "../knowledge/procedures"),
+      resolve(here, "../knowledge/reviews"),
+    );
+    const expected = library.methods
+      .filter((method) => method.procedure.maturity === "production")
+      .map((method) => ({
+        procedure: {id: method.procedure.id, version: method.procedure.version},
+        approvedBy: method.procedure.owner.approvedBy,
+        approvedAt: method.procedure.owner.approvedAt,
+        approvalSource: method.procedure.owner.approvalSource,
+      }));
+    expect(specialistMethodApprovalManifest).toEqual(expected);
+    // The contract already refuses a name without a date and a source; the projection keeps all three.
+    for (const approval of specialistMethodApprovalManifest) {
+      expect(approval.approvedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(approval.approvalSource.length).toBeGreaterThan(0);
+    }
   });
 });
