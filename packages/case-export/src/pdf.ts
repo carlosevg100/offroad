@@ -109,11 +109,13 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
     }
     y -= spaceAfter;
   };
-  const table = (head: string[], rows: string[][]) => {
+  const table = (head: string[], rows: string[][], caption?: string) => {
     if (!head.length) return;
     if (rows.some((row) => row.length !== head.length)) throw new Error("PDF table column mismatch");
-    // Wide tables use labeled records; this preserves every cell at a readable type size.
-    if (head.length > 6) {
+    // A financial statement is a table, not a list of records. Only a table too wide to stay
+    // readable at the smallest type size falls back to labeled records.
+    if (head.length > 9) {
+      if (caption) {ensure(74); text(caption, 11, bold, 7);}
       rows.forEach((row, index) => {
         ensure(40);
         text(`${lang === "pt" ? "Registro" : "Record"} ${index + 1}`, 10, bold, 6);
@@ -121,23 +123,56 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
       });
       return;
     }
-    const cellWidth = bodyWidth / head.length, size = 9, lineHeight = 13, pad = 7;
+    const size = head.length > 6 ? 7.5 : head.length > 4 ? 8.5 : 9;
+    const lineHeight = size + 4, pad = head.length > 6 ? 5 : 7;
+    // Columns share the width by what they actually carry. Each one first gets enough room for its
+    // widest indivisible word, so a number never breaks in half, and the rest is distributed
+    // towards the columns with the most text, so a label column stops being squeezed.
+    const wordWidth = (value: string, font: PDFFont) => Math.max(0, ...value.split(/\s+/).filter(Boolean).map((word) => font.widthOfTextAtSize(word, size)));
+    const column = (index: number) => [head[index]!, ...rows.map((row) => row[index]!)];
+    const need = head.map((_, index) => Math.min(bodyWidth / 2, Math.max(wordWidth(head[index]!, bold), ...rows.map((row) => wordWidth(row[index]!, regular))) + pad * 2 + 1));
+    const want = head.map((_, index) => Math.max(...column(index).map((cell, position) => (position === 0 ? bold : regular).widthOfTextAtSize(cell, size))) + pad * 2 + 1);
+    const needed = need.reduce((sum, value) => sum + value, 0);
+    let widths: number[];
+    if (needed >= bodyWidth) {
+      const scale = bodyWidth / needed;
+      widths = need.map((value) => value * scale);
+    } else {
+      const appetite = want.map((value, index) => Math.max(0, value - need[index]!));
+      const total = appetite.reduce((sum, value) => sum + value, 0);
+      const spare = bodyWidth - needed;
+      widths = need.map((value, index) => value + (total > 0 ? spare * appetite[index]! / total : spare / head.length));
+    }
+    const offsets = widths.reduce<number[]>((positions, value, index) => [...positions, (positions[index - 1] ?? 0) + (widths[index - 1] ?? 0)], []);
+    // Figures line up on their last digit, the way a statement is read.
+    const numeric = head.map((_, index) => {
+      const values = rows.map((row) => row[index]!.trim()).filter((value) => value.length > 0);
+      return values.length > 0 && values.every((value) => /^[-+(]?[\d.,\s]+[)%x]?$/.test(value));
+    });
     const paint = (cells: string[][], offset: number, count: number, header: boolean) => {
       const rowHeight = count * lineHeight + pad * 2;
       page.drawRectangle({x: margin, y: y - rowHeight, width: bodyWidth, height: rowHeight, color: header ? ink : rgb(0.965, 0.969, 0.957)});
       cells.forEach((lines, column) => lines.slice(offset, offset + count).forEach((line, index) => {
-        page.drawText(line, {x: margin + column * cellWidth + pad, y: y - pad - size - index * lineHeight, size, font: header ? bold : regular, color: header ? rgb(1, 1, 1) : ink});
+        const font = header ? bold : regular;
+        const left = margin + offsets[column]! + pad;
+        const x = numeric[column] ? margin + offsets[column]! + widths[column]! - pad - font.widthOfTextAtSize(line, size) : left;
+        page.drawText(line, {x: Math.max(left, x), y: y - pad - size - index * lineHeight, size, font, color: header ? rgb(1, 1, 1) : ink});
       }));
       y -= rowHeight + 2;
     };
-    const header = head.map((cell) => wrap(cell, bold, size, cellWidth - pad * 2));
+    const header = head.map((cell, column) => wrap(cell, bold, size, widths[column]! - pad * 2));
     const headerLines = Math.max(...header.map((lines) => lines.length));
     if (headerLines > 12) throw new Error("PDF table header exceeds readable page capacity");
     const headerHeight = headerLines * lineHeight + pad * 2 + 2;
-    ensure(headerHeight + 45);
+    // A caption and a header alone at the foot of a page are an orphan. Reserve the caption, the
+    // header and the first row together, so a table never starts on the page before its content.
+    const firstRowLines = rows.length === 0 ? 0 : Math.max(...rows[0]!.map((cell, column) => wrap(cell, regular, size, widths[column]! - pad * 2).length));
+    const captionHeight = caption ? 11 * 1.4 * wrap(caption, bold, 11, bodyWidth).length + 7 : 0;
+    ensure(captionHeight + headerHeight + firstRowLines * lineHeight + pad * 2 + 12);
+    if (caption) text(caption, 11, bold, 7);
     paint(header, 0, headerLines, true);
     for (const row of rows) {
-      const cells = row.map((cell) => wrap(cell, regular, size, cellWidth - pad * 2));
+      const cells = row.map((cell, column) => wrap(cell, regular, size, widths[column]! - pad * 2));
       const lineCount = Math.max(...cells.map((lines) => lines.length));
       // Keep ordinary records together; split only a row taller than a fresh page.
       const freshCapacity = Math.floor((height - 64 - headerHeight - 58 - pad * 2 - 2) / lineHeight);
@@ -160,21 +195,23 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
   text(material.title[lang], 27, display, 12);
   if (meta.companyName) text(meta.companyName, 12, bold, 8);
   text(`${lang === "pt" ? "Emitido em" : "Issued on"} ${meta.issuedOn.slice(0, 10)}`, 9, regular, 20, muted);
-  for (const block of material.blocks) {
+  for (const [blockIndex, block] of material.blocks.entries()) {
     switch (block.type) {
-      case "heading": ensure(58); text(block.text[lang], 17, display, 10); break;
+      // A heading keeps company with what follows it. A table needs its caption, its header and
+      // its first row, so the heading above reserves that much before it is drawn at all.
+      case "heading": ensure(material.blocks[blockIndex + 1]?.type === "table" ? 150 : 84); text(block.text[lang], 17, display, 10); break;
       case "paragraph": text(block.text[lang]); break;
       case "disclaimer": text(block.text[lang], 9, regular, 10, muted); break;
       case "list": block.items.forEach((item) => text(`• ${item[lang]}`)); break;
       case "metrics": table([lang === "pt" ? "Indicador" : "Metric", lang === "pt" ? "Valor" : "Value"], block.items.map((item) => [item.label[lang], item.formatted[lang]])); break;
-      case "table": ensure(58); text(block.caption[lang], 11, bold, 7); table(block.head.map((cell) => cell[lang]), block.rows); break;
+      case "table": table(block.head.map((cell) => cell[lang]), block.rows, block.caption[lang]); break;
       case "kv":
         if (block.rows.some(row => row.value[lang].length > 600)) {
           if (block.caption) {ensure(58); text(block.caption[lang], 11, bold, 7);}
           block.rows.forEach(row => {ensure(40); text(row.label[lang], 11, bold, 6); text(row.value[lang]); if (row.note) text(row.note[lang], 9, regular, 8, muted);});
           break;
         }
-        if (block.caption) {ensure(58); text(block.caption[lang], 11, bold, 7);} table([lang === "pt" ? "Item" : "Item", lang === "pt" ? "Descrição" : "Description"], block.rows.map((row) => [row.label[lang], `${row.value[lang]}${row.note ? `\n${row.note[lang]}` : ""}`])); break;
+        table([lang === "pt" ? "Item" : "Item", lang === "pt" ? "Descrição" : "Description"], block.rows.map((row) => [row.label[lang], `${row.value[lang]}${row.note ? `\n${row.note[lang]}` : ""}`]), block.caption?.[lang]); break;
       case "callout": ensure(58); text(block.title[lang], 13, bold, 8); block.items.forEach((item) => text(`${item.label[lang]}: ${item.value[lang]}`)); break;
     }
   }

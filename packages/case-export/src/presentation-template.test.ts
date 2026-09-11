@@ -116,9 +116,10 @@ describe("client presentation template", () => {
 
   it("keeps the Offroad house rendering byte-identical when no template is supplied", async () => {
     const house = templateOf(offroadHouseTemplateDefinition);
+    const unfingerprinted = institutionalTemplateFromDefinition(offroadHouseTemplateDefinition);
     const [withNothing, withHouse] = await Promise.all([
       materialToPdf({material, lang: "pt", meta: {issuedOn: "2026-09-11"}}),
-      materialToPdf({material, lang: "pt", meta: {issuedOn: "2026-09-11", template: {...house, fingerprint: undefined}}}),
+      materialToPdf({material, lang: "pt", meta: {issuedOn: "2026-09-11", template: unfingerprinted}}),
     ]);
     expect(Buffer.compare(withNothing, withHouse)).toBe(0);
     expect(presentationTemplateManifest(house, fingerprint).map(entry => entry.name)).toEqual([

@@ -254,6 +254,13 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: {locale:
     } else if (spec.series?.length) {
       shapes.push(shape({id: 12, name: "Chart measure and units", x: 610_000, y: 1_500_000, w: 10_600_000, h: 240_000, paragraphs: paragraph(`${spec.series[0]!.label}${spec.series[0]!.unit ? ` · ${spec.series[0]!.unit}` : ""}`, {size: 11, color: c.muted, font: template.fonts.body})}));
       shapes.push(nativeChartFrame);
+      // A chart without its source is a picture. The period is the category axis, the unit and the
+      // legend are stated above, and the source of the plotted values belongs on the same slide.
+      const attribution = spec.lines.filter((line) => line.tone === "source");
+      if (attribution.length > 0) {
+        shapes.push(shape({id: 14, name: "Chart source", x: 610_000, y: 6_120_000, w: 10_600_000, h: 300_000,
+          paragraphs: attribution.map((line) => paragraph(`${line.label}${line.value ? `: ${line.value}` : ""}`, {size: 9, color: c.muted, font: template.fonts.body})).join("")}));
+      }
     } else {
     const availableHeight = 4_500_000;
     const weights = spec.lines.map(lineWeight);
@@ -281,12 +288,25 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: {locale:
 }
 
 function tableShape(table: NonNullable<SlideSpec["table"]>, template: InstitutionalPresentationTemplate, y = 1_720_000): string {
-  const cols = table.headers.length, columnWidth = Math.floor(10_950_000 / cols);
+  const cols = table.headers.length;
   const rows = [table.headers, ...table.rows];
-  const heights = rows.map(row => Math.max(350_000, ...row.map(cell => (Math.ceil(cell.length / (120 / cols)) * 180_000) + 160_000)));
+  // Share the width by what each column carries; a label column and a year column are not equal.
+  // Each column first gets room for its widest indivisible word, so a number never breaks in half.
+  const EMU_PER_CHAR = 95_000, CELL_PADDING = 240_000, TOTAL = 10_950_000;
+  const longestWord = (values: string[]) => Math.max(1, ...values.map(value => Math.max(0, ...value.split(/\s+/).filter(Boolean).map(word => word.length))));
+  const columnCells = (index: number) => [table.headers[index] ?? "", ...table.rows.map(row => row[index] ?? "")];
+  const need = table.headers.map((_, index) => Math.min(Math.floor(TOTAL / 2), longestWord(columnCells(index)) * EMU_PER_CHAR + CELL_PADDING));
+  const want = table.headers.map((_, index) => Math.max(...columnCells(index).map(cell => cell.length)) * EMU_PER_CHAR + CELL_PADDING);
+  const needed = need.reduce((sum, value) => sum + value, 0);
+  const appetite = want.map((value, index) => Math.max(0, value - need[index]!));
+  const appetiteTotal = appetite.reduce((sum, value) => sum + value, 0);
+  const columnWidths = needed >= TOTAL
+    ? need.map(value => Math.floor(value * TOTAL / needed))
+    : need.map((value, index) => Math.floor(value + (appetiteTotal > 0 ? (TOTAL - needed) * appetite[index]! / appetiteTotal : (TOTAL - needed) / cols)));
+  const heights = rows.map(row => Math.max(350_000, ...row.map((cell, column) => (Math.ceil(cell.length / Math.max(4, Math.round((columnWidths[column]! - CELL_PADDING) / EMU_PER_CHAR))) * 180_000) + 160_000)));
   const height = heights.reduce((a, b) => a + b, 0);
   const contents = rows.map((row, index) => `<a:tr h="${heights[index]}">${row.map(cell => `<a:tc><a:txBody><a:bodyPr/><a:lstStyle/>${paragraph(cell, {size: 12, color: index === 0 ? "FFFFFF" : template.colors.ink, font: template.fonts.body, bold: index === 0})}</a:txBody><a:tcPr marL="110000" marR="110000" marT="80000" marB="80000"><a:solidFill><a:srgbClr val="${index === 0 ? template.colors.ink : index % 2 === 0 ? "EEF0ED" : "FFFFFF"}"/></a:solidFill></a:tcPr></a:tc>`).join("")}</a:tr>`).join("");
-  return `<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="10" name="Editable approved table"/><p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="610000" y="${y}"/><a:ext cx="10950000" cy="${height}"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="1"/><a:tblGrid>${Array.from({length: cols}, () => `<a:gridCol w="${columnWidth}"/>`).join("")}</a:tblGrid>${contents}</a:tbl></a:graphicData></a:graphic></p:graphicFrame>`;
+  return `<p:graphicFrame><p:nvGraphicFramePr><p:cNvPr id="10" name="Editable approved table"/><p:cNvGraphicFramePr/><p:nvPr/></p:nvGraphicFramePr><p:xfrm><a:off x="610000" y="${y}"/><a:ext cx="10950000" cy="${height}"/></p:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/table"><a:tbl><a:tblPr firstRow="1" bandRow="1"/><a:tblGrid>${columnWidths.map(value => `<a:gridCol w="${value}"/>`).join("")}</a:tblGrid>${contents}</a:tbl></a:graphicData></a:graphic></p:graphicFrame>`;
 }
 
 const rootRelationships = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/></Relationships>`;
@@ -367,7 +387,7 @@ async function packageSlides(slides: SlideSpec[], input: {title: string; locale:
     const logoPath = selectedLogo ? `${slide.kind === "cover" && template.logoOnDark ? "offroad-mark-dark" : "offroad-mark"}.${selectedLogo.extension}` : undefined;
     await addFile(zip, `ppt/slides/_rels/slide${index + 1}.xml.rels`, slideRelationships(logoPath).replace("</Relationships>", slide.series?.length ? `<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart${index+1}.xml"/></Relationships>` : "</Relationships>"));
     if (slide.series?.length) {
-      await addFile(zip, `ppt/charts/chart${index+1}.xml`, nativeChartXml(slide.series[0]!));
+      await addFile(zip, `ppt/charts/chart${index+1}.xml`, nativeChartXml(slide.series[0]!, {accent: template.colors.accent, danger: template.colors.danger, gridline: template.colors.muted}));
       await addFile(zip, `ppt/embeddings/chart${index+1}.xlsx`, chartWorkbook(slide.series[0]!));
       await addFile(zip, `ppt/charts/_rels/chart${index+1}.xml.rels`, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/package" Target="../embeddings/chart${index+1}.xlsx"/></Relationships>`);
     }
@@ -428,24 +448,39 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
   // Put the financial decision view before the full statement and evidence appendices.
   for (const chart of material.presentationCharts ?? []) {
     if (chart.series.points.some(point => point.value !== null && !Number.isFinite(point.value))) throw new Error("Non-finite material chart value");
-    slides.push({title: chart.title[lang], eyebrow: lang === "pt" ? "CENÁRIO APROVADO" : "APPROVED SCENARIO", kind: "chart", blockId: chart.series.id, lines: [], series: [chart.series]});
+    const sourceIds = [...new Set(chart.series.points.flatMap(point => point.sourceIds ?? []))];
+    const period = chart.series.points.length
+      ? `${chart.series.points[0]!.label} · ${chart.series.points.at(-1)!.label}`
+      : "";
+    const attribution: SlideSpec["lines"] = [{
+      label: `${lang === "pt" ? "Período" : "Period"}: ${period} · ${lang === "pt" ? "Fonte" : "Source"}`,
+      value: sourceIds.length ? sourceIds.join(", ") : (lang === "pt" ? "Cálculo aprovado deste projeto" : "Approved calculation of this project"),
+      tone: "source", traceId: chart.series.id,
+    }];
+    slides.push({title: chart.title[lang], eyebrow: lang === "pt" ? "CENÁRIO APROVADO" : "APPROVED SCENARIO", kind: "chart", blockId: chart.series.id, lines: attribution, series: [chart.series]});
   }
   let section = title;
+  // The last heading read. Slides whose own title comes from a caption keep it as the eyebrow, so
+  // a section heading never disappears from the deck just because a table followed it.
+  let sectionHeading = "";
+  const eyebrowFor = (slideTitle: string) => sectionHeading && sectionHeading !== slideTitle && sectionHeading.length <= 80
+    ? sectionHeading
+    : lang === "pt" ? "ANÁLISE" : "ANALYSIS";
   let tableIntroduction: string | undefined;
   material.blocks.forEach((block, index) => {
-    if (block.type === "heading") {section = block.text[lang]; return;}
+    if (block.type === "heading") {section = block.text[lang]; sectionHeading = block.text[lang]; return;}
     if(index===0 && block.type==="paragraph" && material.presentationCharts?.length && block.text[lang].length<320) {
       slides[0]!.lines.push({label:block.text[lang],traceId:"material-block-0"});return;
     }
     const nextBlock = material.blocks[index + 1];
     if (block.type === "paragraph" && block.text[lang].length <= 320 && nextBlock?.type === "table"
-      && nextBlock.head.length <= 6 && nextBlock.rows.length > 0
+      && nextBlock.head.length <= 8 && nextBlock.rows.length > 0
       && nextBlock.rows.every(row => row.length === nextBlock.head.length && row.every(cell => cell.length <= 200))) {
       tableIntroduction = block.text[lang]; return;
     }
     let lines: SlideSpec["lines"] = [];
     const traceId = `material-block-${index}`;
-    if (block.type === "table" && block.head.length <= 6 && block.rows.every(row => row.length === block.head.length && row.every(cell => cell.length <= 200))) {
+    if (block.type === "table" && block.head.length <= 8 && block.rows.every(row => row.length === block.head.length && row.every(cell => cell.length <= 200))) {
       const rowCost = (row: string[]) => Math.max(350_000, ...row.map(cell => Math.ceil(cell.length / (120 / block.head.length)) * 180_000 + 160_000));
       const maxHeight = tableIntroduction ? 3_800_000 : 4_400_000;
       let rows: string[][] = [], cost = 0;
@@ -460,7 +495,10 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
         if([...tail,candidate].reduce((sum,row)=>sum+rowCost(row),rowCost(block.head.map(head=>head[lang])))>maxHeight)break;
         tail.unshift(previous.pop()!);
       }
-      pages.forEach((pageRows, pageIndex)=>slides.push({title:block.caption[lang],eyebrow:lang==="pt"?"ANÁLISE":"ANALYSIS",kind:"table",blockId:traceId,lines:[],tableIntroduction:pageIndex===0?tableIntroduction:undefined,table:{headers:block.head.map(head=>head[lang]),rows:pageRows}}));
+      const introduction = sectionHeading && sectionHeading.length > 80
+        ? [sectionHeading, tableIntroduction].filter(Boolean).join(" · ")
+        : tableIntroduction;
+      pages.forEach((pageRows, pageIndex)=>slides.push({title:block.caption[lang],eyebrow:eyebrowFor(block.caption[lang]),kind:"table",blockId:traceId,lines:[],tableIntroduction:pageIndex===0?introduction:undefined,table:{headers:block.head.map(head=>head[lang]),rows:pageRows}}));
       tableIntroduction = undefined;
       return;
     }
@@ -473,7 +511,7 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
       case "callout": section = block.title[lang]; lines = block.items.map((item) => ({label: item.label[lang], value: item.value[lang], traceId})); break;
       case "table": section = block.caption[lang]; lines = block.rows.flatMap((row, rowIndex) => row.map((value, column) => ({label: `${rowIndex + 1} · ${block.head[column]?.[lang] ?? ""}`, value, traceId}))); break;
     }
-    paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: lang === "pt" ? "ANÁLISE" : "ANALYSIS", kind: "narrative", blockId: traceId, lines: page}));
+    paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: eyebrowFor(section), kind: "narrative", blockId: traceId, lines: page}));
   });
   if (slides.length > 120) throw new Error("material presentation exceeds the 120-slide safety limit");
   const template = meta.template ?? offroadHousePresentationTemplate;
