@@ -107,7 +107,9 @@ fontes recuperadas, chamadas de modelo, custo total e os pontos em que o sistema
 ## 3.3 Estado da fatia D (5 de setembro, noite)
 
 - Décima etapa do workflow: `A02` `write-meeting-synthesis` (método registrado na biblioteca,
-  estágio implemented, `knowledge/procedures/materials/write-meeting-synthesis.md`), depois do
+  estágio `ready_for_founder` desde 10/09/2026, com revisão independente e execuções gravadas da
+  parte determinística; a etapa assistida por modelo continua sem evidência gravada, por isso ele
+  não sobe a `production`, `knowledge/procedures/materials/write-meeting-synthesis.md`), depois do
   plano da devolutiva. Sem modelo, esqueleto: as manchetes que o plano assinou para cada objeto,
   por seção fixa. Em modo `live`, uma chamada (`preview_synthesis`, sonnet) redige a prosa das
   cinco seções só com o que os objetos afirmam; depois, a verificação determinística remove toda
