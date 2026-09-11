@@ -1,0 +1,49 @@
+.revision {border: 1px solid #e2e6de; border-radius: 14px; background: #fff; color: #20262b; overflow: hidden;}
+.revision > header, .revision > footer, .feedback, .pending, .difference, .history, .import, .proposals {padding: 0 24px;}
+.revision > header {padding-top: 24px;}
+.revision > header > span {font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #63784b;}
+.revision h2 {font-family: var(--font-newsreader), Georgia, serif; font-size: 29px; font-weight: 450; line-height: 1.2; margin: 10px 0;}
+.revision h3 {font-size: 18px; margin: 24px 0 8px;}
+.revision h4 {font-size: 15px; margin: 0;}
+.revision p {font-size: 13px; line-height: 1.65; color: #65717a;}
+
+.feedback {font-weight: 600; color: #20262b;}
+.pending {display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+.pending p {margin: 0; flex: 1 1 280px;}
+
+.current, .previous {display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 3px 10px;}
+.current {background: #eef3e6; color: #4c6236;}
+.previous {background: #f1f2f0; color: #65717a;}
+
+.tables {display: grid; gap: 20px;}
+.scroll {overflow-x: auto;}
+.revision table {width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums;}
+.revision caption {text-align: left; padding: 0 0 10px; font-weight: 600;}
+.revision th, .revision td {padding: 10px 12px; border-bottom: 1px solid #e2e6de; text-align: right; vertical-align: top;}
+.revision th:first-child {text-align: left; min-width: 160px;}
+.revision thead {background: #f3f6ef;}
+.limits {margin: 0 0 12px; padding-left: 18px; font-size: 12px; color: #65717a;}
+
+.history ol, .proposals ul, .results, .changes {list-style: none; margin: 0; padding: 0;}
+.history > ol > li, .proposals > ul > li {border-left: 3px solid #7d9455; padding: 4px 15px; margin-bottom: 16px;}
+.history header, .proposals header {display: flex; flex-wrap: wrap; align-items: center; gap: 10px;}
+.results, .changes {font-size: 12px; color: #65717a; display: grid; gap: 6px; margin-top: 8px; overflow-wrap: anywhere;}
+
+.import {display: grid; gap: 10px; margin-bottom: 8px;}
+.import label {font-size: 13px; font-weight: 600;}
+.import input {max-width: 520px; font: inherit;}
+.import p {margin: 0;}
+
+.actions {display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;}
+.revision button {border: 1px solid #cbd4c2; border-radius: 7px; background: #fff; color: #526842; font: inherit; font-size: 13px; padding: 10px 16px; cursor: pointer; transition: background-color .15s ease;}
+.revision button:hover:not(:disabled) {background: #f3f6ef;}
+.revision button:disabled {opacity: .55; cursor: default;}
+.revision button:focus-visible, .import input:focus-visible, .scroll:focus-visible {outline: 2px solid #71884f; outline-offset: 3px;}
+
+.revision > footer {padding-top: 16px; padding-bottom: 20px; margin-top: 24px; border-top: 1px solid #edf0e9; font-size: 13px;}
+
+@media (max-width: 640px) {
+  .revision > header, .revision > footer, .feedback, .pending, .difference, .history, .import, .proposals {padding-left: 16px; padding-right: 16px;}
+  .revision button {width: 100%;}
+}
+@media (prefers-reduced-motion: reduce) {.revision button {transition: none;}}

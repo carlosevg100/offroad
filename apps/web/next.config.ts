@@ -22,6 +22,14 @@ const nextConfig: NextConfig = {
    * that `withSentryConfig` turns on when it is present.
    */
   productionBrowserSourceMaps: true,
+  /**
+   * The edited institutional workbook comes back through a Server Action, which caps request
+   * bodies at 1MB by default. A v2 workbook with several scenarios is larger than that, so the
+   * import would fail on exactly the files it exists for. Twelve megabytes is well above anything
+   * this product renders and far below a payload worth accepting from a browser; the action
+   * rejects anything larger itself before reading a byte of it.
+   */
+  experimental: {serverActions: {bodySizeLimit: "12mb"}},
   transpilePackages: [
     "@offroad/financial-core",
     "@offroad/matching-core",

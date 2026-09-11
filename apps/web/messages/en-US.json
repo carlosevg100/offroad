@@ -4299,7 +4299,7 @@
     "kicker": "Financial model",
     "title": "Approved configuration results",
     "prepared": "Prepared on {date}",
-    "editableSnapshot": "The files reflect the approved assumptions. In Excel, you can change assumptions and recalculate scenarios locally. Those changes do not update the project or the other materials; to update them, revise the configuration in Offroad.",
+    "editableSnapshot": "The files reflect the approved assumptions. In Excel you can change the assumptions and recalculate scenarios locally. To bring that edit back, import the workbook under Revisions: it becomes a proposed change and goes through review.",
     "snapshot": "These files present results calculated from the approved assumptions. To change assumptions and recalculate, review the configuration in Offroad. The exported Excel contains results without local recalculation.",
     "revision": "Revision {revision} · {currency}",
     "downloads": "Download results",
@@ -5059,5 +5059,114 @@
     "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection.",
     "sourcesHelp": "Where this mandate came from: a regulation, a minute, an email from the manager. A public record and a past transaction do not belong here.",
     "noSources": "No source recorded"
+  },
+  "InstitutionalRevision": {
+    "kicker": "Approved revision",
+    "title": "Revisions, differences and import",
+    "introduction": "Every result and every file declares the approved revision of assumptions and data it was produced from. A previous revision stays identifiable and is never overwritten.",
+    "currentRevision": "Current revision: {number}",
+    "pendingChange": "An approved change has not produced a result yet. Recalculate to get the matching set.",
+    "recompute": "Recalculate the current revision",
+    "recomputeQueued": "Recalculation sent. The result appears here when it finishes.",
+    "differenceTitle": "Difference from the previous revision",
+    "noDifference": "No value changed between the two revisions.",
+    "assumptionsChanged": "Assumptions that changed",
+    "outputsChanged": "Results that changed, in {currency}",
+    "assumption": "Assumption",
+    "metric": "Metric",
+    "period": "Period",
+    "previousValue": "Previous",
+    "currentValue": "Current",
+    "movement": "Change",
+    "notPresent": "Did not exist",
+    "notComputable": "Not computable",
+    "limits": {
+      "currency_changed": "The currency changed between revisions. Results are not compared and no conversion was applied.",
+      "periods_changed": "The periods changed between revisions. Only periods present in both appear in the comparison.",
+      "scenario_changed": "The revisions use different configurations. The comparison identifies each one.",
+      "value_not_computable": "A metric could not be computed on one side and stays blank."
+    },
+    "metrics": {
+      "revenue": "Revenue",
+      "ebitda": "EBITDA",
+      "cfads": "Cash available for debt service",
+      "debtService": "Debt service",
+      "closingGrossDebt": "Closing gross debt",
+      "unrestrictedCash": "Unrestricted cash",
+      "dscr": "DSCR",
+      "netDebtToEbitda": "Net debt / EBITDA",
+      "liquidityHeadroom": "Liquidity headroom"
+    },
+    "historyTitle": "Revision history",
+    "revisionLabel": "Revision {number}",
+    "changed": "Changed: {components}",
+    "producedAt": "produced on {date}",
+    "noResultYet": "No result produced from this revision yet.",
+    "noRevisions": "No approved revision recorded on this project yet.",
+    "approvalKind": {
+      "initial": "First approved revision",
+      "institutional_configuration": "Approved assumptions and data",
+      "receivables_scope": "Confirmed receivables scope",
+      "documentary_revision": "Accepted documentary revision"
+    },
+    "components": {
+      "assumptions": "assumptions",
+      "data": "data",
+      "receivablesScope": "receivables scope",
+      "documentaryRevision": "documentary revision"
+    },
+    "standing": {
+      "current": "Current",
+      "previous": "Previous",
+      "pending": "Calculating"
+    },
+    "resultStatus": {
+      "queued": "Calculation in progress",
+      "completed": "Calculation complete",
+      "blocked": "Calculation blocked"
+    },
+    "importTitle": "Import an edited workbook",
+    "importHelp": "Send the Excel file you exported from this project and edited. The system checks that it is the product's own file, reads only the assumption cells and opens a proposed change. Nothing is applied without review.",
+    "importField": "The .xlsx file exported from this project",
+    "importSubmit": "Send as a proposal",
+    "importAccepted": "Proposal opened. Assumption changes read: {changes}.",
+    "importAlreadyOpen": "This file already has an open proposal. Assumption changes read: {changes}.",
+    "refusedAt": "Sheet {sheet}, cell {cell}.",
+    "refusals": {
+      "unreadable": "The file could not be read as a workbook.",
+      "not_a_product_workbook": "This file does not have the structure of the workbook exported by this project.",
+      "unknown_revision": "This workbook came from another approved revision or another project.",
+      "structure_changed": "A formula, a label or the layout was changed. Only the blue assumption cells may move.",
+      "historical_value_changed": "A historical number was overwritten. Historical numbers come from the documents and do not change in the workbook.",
+      "unsupported_change": "An editable cell that is not an assumption was changed. That change is made in Offroad.",
+      "value_invalid": "The proposed value is not a usable number or falls outside the assumption's declared bounds.",
+      "no_change": "The file matches the approved revision. There is no change to propose."
+    },
+    "proposalsTitle": "Imported change proposals",
+    "proposalsEmpty": "No imported proposal on this project.",
+    "proposalLabel": "Proposal. Assumption changes: {changes}",
+    "proposalOpened": "Opened on {date}",
+    "proposalStatus": {
+      "proposed": "Awaiting review",
+      "approved": "Approved",
+      "rejected": "Returned"
+    },
+    "approve": "Approve and recalculate",
+    "reject": "Return",
+    "awaitingReviewer": "Approval belongs to whoever holds the approver role on this project.",
+    "reviewedAt": "Reviewed on {date}",
+    "proposalApproved": "Proposal approved. The recalculation was sent.",
+    "proposalRejected": "Proposal returned.",
+    "errors": {
+      "invalid": "The request could not be read. Check the file and try again.",
+      "denied": "You do not have access to this action on this project.",
+      "role": "This action needs the matching role on this project.",
+      "duplicate": "This request was already recorded.",
+      "not_found": "Project not found.",
+      "save": "This could not be completed now. Try again.",
+      "processing": "There is processing in progress on this project.",
+      "stale": "The assumptions or the data changed since this file. Export the current workbook and redo the edit."
+    },
+    "boundary": "This screen records revisions of assumptions and data and recalculates results. It is not a credit approval, a funding commitment or a recommendation."
   }
 }

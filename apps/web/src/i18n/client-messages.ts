@@ -28,6 +28,7 @@ export function selectClientMessages(messages: Messages) {
     DeliverableFormats: messages.DeliverableFormats,
     PresentationTemplate: messages.PresentationTemplate,
     MandateRegistry: messages.MandateRegistry,
+    InstitutionalRevision: messages.InstitutionalRevision,
 
   };
 }

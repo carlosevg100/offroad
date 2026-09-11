@@ -27,12 +27,14 @@ function approvedScenario(mutate?: (fixture: ReturnType<typeof institutionalInpu
 }
 
 const manifest = "a".repeat(64);
+/** The fixture is read-only by design; a test that edits a premise says so out loud. */
+const editable = (values: Readonly<Record<string, string>>) => values as Record<string, string>;
 
 describe("difference between approved revisions", () => {
   it("names the assumption that moved, the year it moved in, and what it did to the outputs", async () => {
     const previousScenario = approvedScenario();
     const currentScenario = approvedScenario(fixture => {
-      fixture.configuration.assumptionBook.assumptions.find(a => a.id === "cost-ratio")!.values["2027"] = "0.45";
+      editable(fixture.configuration.assumptionBook.assumptions.find(a => a.id === "cost-ratio")!.values)["2027"] = "0.45";
     });
     const previous = await buildInstitutionalWorkbookArtifact([previousScenario], manifest);
     const current = await buildInstitutionalWorkbookArtifact([currentScenario], manifest);
@@ -90,7 +92,7 @@ describe("difference between approved revisions", () => {
     const current = await buildInstitutionalWorkbookArtifact([approvedScenario(fixture => {
       const book = fixture.configuration.assumptionBook;
       book.periods = book.periods.filter(period => period !== "2030");
-      for (const assumption of book.assumptions) delete assumption.values["2030"];
+      for (const assumption of book.assumptions) delete editable(assumption.values)["2030"];
       for (const instrument of fixture.configuration.debtInstruments) instrument.periods = instrument.periods.filter(p => p.period !== "2030");
       fixture.configuration.debtRateLineage = fixture.configuration.debtRateLineage.filter(line => line.period !== "2030");
     })], manifest);

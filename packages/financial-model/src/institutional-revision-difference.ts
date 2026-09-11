@@ -68,7 +68,7 @@ type VerifiedScenario = InstitutionalWorkbookArtifact["institutional"]["scenario
 const outputHash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 /** The approved snapshot replayed, or null when it does not reproduce its recorded fingerprint. */
-function replay(scenario: VerifiedScenario): {input: InstitutionalModelInput; periods: InstitutionalModelPeriod[]} | null {
+function replay(scenario: VerifiedScenario): {input: InstitutionalModelInput; periods: readonly InstitutionalModelPeriod[]} | null {
   try {
     const input = scenario.input as InstitutionalModelInput;
     const model = buildInstitutionalFinancialModel(input);
