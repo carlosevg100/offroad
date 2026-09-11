@@ -5,6 +5,7 @@ import {loadDocumentWorkProduct} from "@/lib/advisor/document-work-product-reade
 import {documentWorkProductLabels} from "@/lib/advisor/document-work-product-labels";
 import {documentWorkProductToDocx, documentWorkProductToPdf} from "@/lib/advisor/document-work-product-material";
 import {documentaryReadingDeliverableContext, documentaryReadingDeliverableTypes} from "@/lib/advisor/documentary-reading-formats";
+import {presentationTemplateForProject} from "@/lib/advisor/presentation-template";
 
 const media = {
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -21,7 +22,9 @@ export async function GET(_request:Request,{params}:{params:Promise<{locale:stri
   const result=await loadDocumentWorkProduct(supabase,organization.id,projectId);
   if(!result||result.product.fingerprint!==fingerprint)return new Response(null,{status:404});
   const labels=await documentWorkProductLabels(result.product.locale);
-  const input={product:result.product,labels,issuedOn:result.publishedAt.slice(0,10)};
+  // The visual identity selected for this project, with its fingerprint bound into the file.
+  const {template}=await presentationTemplateForProject(supabase,projectId);
+  const input={product:result.product,labels,issuedOn:result.publishedAt.slice(0,10),template};
   const bytes=format==="pdf"?await documentWorkProductToPdf(input):documentWorkProductToDocx(input);
   return new Response(new Uint8Array(bytes),{headers:{
     "content-type":media[format as keyof typeof media],

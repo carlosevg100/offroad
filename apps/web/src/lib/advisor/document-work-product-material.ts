@@ -1,4 +1,4 @@
-import {materialToDocx, materialToPdf, type DocxMeta} from "@offroad/case-export";
+import {materialToDocx, materialToPdf, type DocxMeta, type InstitutionalPresentationTemplate} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 import {documentWorkProductSchema, type DocumentWorkProduct} from "@offroad/domain-contracts";
 
@@ -57,12 +57,13 @@ export function documentWorkProductMaterial(product: DocumentWorkProduct, labels
   return compileDocumentWorkProductMaterial(product, labels).material;
 }
 
-type DocumentWorkProductRenderInput = {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string};
+type DocumentWorkProductRenderInput = {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string; template?: InstitutionalPresentationTemplate};
 
 function documentWorkProductRenderInput(input: DocumentWorkProductRenderInput) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issuedOn)) throw new Error("Invalid document issue date");
   const {material, referenceTargets} = compileDocumentWorkProductMaterial(input.product, input.labels);
-  return {material, lang: input.product.locale === "pt-BR" ? "pt" : "en", meta: {issuedOn: input.issuedOn, referenceTargets}} as const;
+  return {material, lang: input.product.locale === "pt-BR" ? "pt" : "en",
+    meta: {issuedOn: input.issuedOn, referenceTargets, ...(input.template ? {template: input.template} : {})}} as const;
 }
 
 export function documentWorkProductToDocx(input: DocumentWorkProductRenderInput): Uint8Array {

@@ -51,6 +51,8 @@ import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-appro
 import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
 import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
 import {ProjectReviewRoles} from "@/components/advisor/project-review-roles";
+import {PresentationTemplateSettings} from "@/components/advisor/presentation-template-settings";
+import {loadPresentationTemplateContext} from "@/lib/advisor/presentation-template";
 import type {ExecutionBriefApproval} from "@/components/advisor/execution-brief-card";
 import {openEvidenceRequirements} from "@/lib/advisor/evidence-inventory";
 import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventType} from "@/components/advisor/advisor-project-state";
@@ -712,6 +714,13 @@ async function ConversationalCapitalProject({
   if (reviewContext) {
     const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
     workSections.push({id: "project-review", title: rolesCopy("title"), status: rolesCopy(`modeLabel.${reviewContext.mode}`), content: <ProjectReviewRoles context={reviewContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
+  }
+  const templateContext = await loadPresentationTemplateContext(supabase, project.id);
+  if (templateContext) {
+    const templateCopy = await getTranslations({locale, namespace: "PresentationTemplate"});
+    workSections.push({id: "presentation-template", title: templateCopy("title"),
+      status: templateContext.effective ? templateContext.effective.definition.templateKey : templateCopy("currentHouse"),
+      content: <PresentationTemplateSettings context={templateContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
   }
 
   return <AdvisorProject

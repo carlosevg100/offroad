@@ -26,6 +26,7 @@ export function selectClientMessages(messages: Messages) {
     InstitutionalIssues: messages.InstitutionalIssues,
     InstitutionalSetupReview: messages.InstitutionalSetupReview,
     DeliverableFormats: messages.DeliverableFormats,
+    PresentationTemplate: messages.PresentationTemplate,
 
   };
 }

@@ -5,6 +5,7 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
 import {institutionalResultMaterial} from "@/lib/advisor/institutional-result-material";
 import {institutionalResultDeliverableContext, institutionalResultDeliverableTypes} from "@/lib/advisor/institutional-result-formats";
+import {presentationTemplateForProject} from "@/lib/advisor/presentation-template";
 
 const formats = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -33,8 +34,10 @@ export async function GET(_request: Request, {params}: Params) {
   if (!workbook) return new Response(deliverableFormatBlockCopy.reproduction_divergence[lang], {status: 409});
   let bytes = workbook;
   if (format !== "xlsx") {
+    // The visual identity selected for this project, with its fingerprint bound into the file.
+    const {template} = await presentationTemplateForProject(supabase, projectId);
     const material = institutionalResultMaterial(artifact, lang);
-    const input = {material, lang, meta: {issuedOn: result.createdAt.slice(0, 10)}} as const;
+    const input = {material, lang, meta: {issuedOn: result.createdAt.slice(0, 10), template}} as const;
     bytes = format === "docx" ? materialToDocx(input) : format === "pptx" ? await materialToPptx(input) : await materialToPdf(input);
   }
   return new Response(Buffer.from(bytes), {headers: {
