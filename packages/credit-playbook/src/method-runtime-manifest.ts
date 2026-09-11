@@ -20,12 +20,6 @@ export const specialistMethodRuntimeManifest = [
       exportName: "underwriteReceivablesPool",
     },
     resultContract: "method.underwrite-receivables-pool.v1",
-    /** The founder approval that took this method to `production`, projected from the Markdown. */
-    approval: {
-      approvedBy: "Carlos Eduardo Galves",
-      approvedAt: "2026-09-10",
-      approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026",
-    },
     sourcePath: "receivables/underwrite-receivables-pool.md",
     sourceHash: "9f5cf24e6751c708a7ff9825afebdd1878e2e07fc652c295df7493cb8e246264",
   },
@@ -56,6 +50,21 @@ export const specialistTaskCapabilityRuntimeManifest = [
     maximumEffect: "none",
     allowlistedTenantIds: [],
     allowlistedProjectIds: [],
+  },
+] as const;
+
+/**
+ * The founder approvals that took methods to `production`, projected from the same Markdown. They
+ * live beside the routing manifest rather than inside it: the routing projection is parsed by
+ * strict runtime schemas and carries only what routing needs, while the product states who approved
+ * a method and when. An approval is a person, a date and where the instruction was given.
+ */
+export const specialistMethodApprovalManifest = [
+  {
+    procedure: {id: "underwrite-receivables-pool", version: "2026.09.06-v1"},
+    approvedBy: "Carlos Eduardo Galves",
+    approvedAt: "2026-09-10",
+    approvalSource: "instrução do fundador na sessão de coordenação de 10/09/2026",
   },
 ] as const;
 

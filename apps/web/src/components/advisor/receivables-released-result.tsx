@@ -1,4 +1,4 @@
-import {specialistMethodRuntimeManifest} from "@offroad/credit-playbook";
+import {specialistMethodApprovalManifest} from "@offroad/credit-playbook";
 import {getTranslations} from "next-intl/server";
 
 import type {ReceivablesReleasedResult} from "@/lib/receivables/released-result";
@@ -38,8 +38,8 @@ function Pair({label, value}: {label: string; value: string}) {
 }
 
 /** The founder approval that took the method to production, read from the compiled method. */
-const methodApproval = specialistMethodRuntimeManifest
-  .find((method) => method.procedure.id === "underwrite-receivables-pool")?.approval ?? null;
+const methodApproval = specialistMethodApprovalManifest
+  .find((approval) => approval.procedure.id === "underwrite-receivables-pool") ?? null;
 
 function approvalDate(locale: Locale, isoDate: string) {
   const parsed = new Date(`${isoDate}T00:00:00Z`);
