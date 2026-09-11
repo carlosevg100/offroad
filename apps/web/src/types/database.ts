@@ -6307,6 +6307,69 @@ export type Database = {
           },
         ]
       }
+      presentation_templates: {
+        Row: {
+          capital_project_id: string | null
+          created_at: string
+          created_by: string
+          definition: Json
+          fingerprint: string
+          id: string
+          organization_id: string
+          origin: string
+          scope: string
+          template_key: string
+          template_version: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          capital_project_id?: string | null
+          created_at?: string
+          created_by: string
+          definition: Json
+          fingerprint: string
+          id?: string
+          organization_id: string
+          origin: string
+          scope: string
+          template_key: string
+          template_version: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          capital_project_id?: string | null
+          created_at?: string
+          created_by?: string
+          definition?: Json
+          fingerprint?: string
+          id?: string
+          organization_id?: string
+          origin?: string
+          scope?: string
+          template_key?: string
+          template_version?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_templates_organization_id_capital_project_id_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "presentation_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pricing_observations: {
         Row: {
           aggregate_authorized: boolean
@@ -6842,6 +6905,163 @@ export type Database = {
           },
           {
             foreignKeyName: "provider_contacts_organization_id_fund_id_fkey"
+            columns: ["organization_id", "fund_id"]
+            isOneToOne: false
+            referencedRelation: "funds"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      provider_mandate_confirmations: {
+        Row: {
+          channel: string
+          confirmed_at: string
+          confirmed_by: string
+          contact_date: string | null
+          contact_record_id: string | null
+          document_reference: string | null
+          id: string
+          mandate_id: string
+          mandate_version_number: number
+          note: string | null
+          organization_id: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          channel: string
+          confirmed_at?: string
+          confirmed_by: string
+          contact_date?: string | null
+          contact_record_id?: string | null
+          document_reference?: string | null
+          id?: string
+          mandate_id: string
+          mandate_version_number: number
+          note?: string | null
+          organization_id: string
+          valid_from: string
+          valid_until?: string | null
+        }
+        Update: {
+          channel?: string
+          confirmed_at?: string
+          confirmed_by?: string
+          contact_date?: string | null
+          contact_record_id?: string | null
+          document_reference?: string | null
+          id?: string
+          mandate_id?: string
+          mandate_version_number?: number
+          note?: string | null
+          organization_id?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_mandate_confirmation_organization_id_mandate_id_m_fkey"
+            columns: ["organization_id", "mandate_id", "mandate_version_number"]
+            isOneToOne: false
+            referencedRelation: "provider_mandates"
+            referencedColumns: ["organization_id", "id", "version_number"]
+          },
+        ]
+      }
+      provider_mandates: {
+        Row: {
+          accepting_new_transactions: boolean
+          collateral: string[]
+          confirmed_at: string | null
+          confirmed_by: string | null
+          created_at: string
+          created_by: string
+          currency: string
+          fund_id: string
+          geographies: string[]
+          id: string
+          instruments: string[]
+          leverage_ceiling: number | null
+          minimum_dscr: number | null
+          note: string | null
+          organization_id: string
+          sectors: string[]
+          sources: Json
+          status: string
+          term_months_max: number | null
+          term_months_min: number | null
+          ticket_max: number
+          ticket_min: number
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          version_number: number
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+        }
+        Insert: {
+          accepting_new_transactions?: boolean
+          collateral?: string[]
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by: string
+          currency: string
+          fund_id: string
+          geographies?: string[]
+          id?: string
+          instruments: string[]
+          leverage_ceiling?: number | null
+          minimum_dscr?: number | null
+          note?: string | null
+          organization_id: string
+          sectors?: string[]
+          sources?: Json
+          status?: string
+          term_months_max?: number | null
+          term_months_min?: number | null
+          ticket_max: number
+          ticket_min: number
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          version_number: number
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Update: {
+          accepting_new_transactions?: boolean
+          collateral?: string[]
+          confirmed_at?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          fund_id?: string
+          geographies?: string[]
+          id?: string
+          instruments?: string[]
+          leverage_ceiling?: number | null
+          minimum_dscr?: number | null
+          note?: string | null
+          organization_id?: string
+          sectors?: string[]
+          sources?: Json
+          status?: string
+          term_months_max?: number | null
+          term_months_min?: number | null
+          ticket_max?: number
+          ticket_min?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          version_number?: number
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_mandates_organization_id_fund_id_fkey"
             columns: ["organization_id", "fund_id"]
             isOneToOne: false
             referencedRelation: "funds"
@@ -8234,6 +8454,20 @@ export type Database = {
         }
         Returns: Json
       }
+      confirm_provider_mandate_v1: {
+        Args: {
+          p_channel: string
+          p_contact_date?: string
+          p_contact_record_id?: string
+          p_document_reference?: string
+          p_mandate_id: string
+          p_note?: string
+          p_organization_id: string
+          p_valid_from?: string
+          p_valid_until?: string
+        }
+        Returns: Json
+      }
       confirm_receivables_evidence_scope_v1: {
         Args: {
           p_command_id: string
@@ -8355,6 +8589,10 @@ export type Database = {
         }
         Returns: string
       }
+      list_provider_mandates_v1: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       manage_workspace_project: {
         Args: {
           p_action: string
@@ -8374,6 +8612,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: string
+      }
+      propagate_project_canonical_revision_v1: {
+        Args: { p_locale: string; p_project_id: string; p_request_id: string }
+        Returns: Json
       }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
@@ -8415,12 +8657,20 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_presentation_template_v1: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       read_processing_model_lineage: {
         Args: {
           p_organization_id: string
           p_processing_run_id?: string
           p_session_id: string
         }
+        Returns: Json
+      }
+      read_project_revision_history_v1: {
+        Args: { p_project_id: string }
         Returns: Json
       }
       read_receivables_evidence_scope_v1: {
@@ -8639,6 +8889,16 @@ export type Database = {
           p_original_name: string
           p_session_id: string
           p_sha256: string
+        }
+        Returns: Json
+      }
+      register_provider_mandate_v1: {
+        Args: {
+          p_fund_id?: string
+          p_fund_name?: string
+          p_fund_strategy?: string
+          p_mandate?: Json
+          p_organization_id: string
         }
         Returns: Json
       }
@@ -8897,6 +9157,14 @@ export type Database = {
       }
       set_organization_review_policy_v1: {
         Args: { p_organization_id: string; p_self_approval_allowed: boolean }
+        Returns: Json
+      }
+      set_presentation_template_v1: {
+        Args: {
+          p_definition: Json
+          p_organization_id: string
+          p_project_id: string
+        }
         Returns: Json
       }
       set_workspace_project_job: {
@@ -9185,6 +9453,14 @@ export type Database = {
           p_organization_id: string
           p_reason: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      withdraw_provider_mandate_v1: {
+        Args: {
+          p_mandate_id: string
+          p_note?: string
+          p_organization_id: string
         }
         Returns: Json
       }
