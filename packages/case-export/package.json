@@ -33,6 +33,6 @@
   },
   "devDependencies": {
     "@offroad/work-plan": "workspace:*",
-    "@types/node": "^20.19.43"
+    "@types/node": "^22.20.2"
   }
 }
