@@ -1,3 +1,9 @@
+## 12 September 2026: unified ACME financial case candidate
+
+PR608 was held before publication after new founder corrections. The revised advisor and five-stage journey share ACME's historical basis and a reconciled cash model. Receivables use an existing-FIDC sale, not a company described as a multi-originator fund. A compact case label replaces repeated fictitious-data badges. Full analysis opens in a native modal; sources, cash bridges, alternatives and covenant sensitivity are explorable. Other offer improvements remain in scope.
+
+The focused checks passed 27 tests; the complete web suite passed 107 files / 675 tests and the repository passed lint, typecheck and 43 build tasks. The HTTP probe passed 42 pages and five assets. Final exact-head remote gates and production verification remain required. Browser and actual-iPhone QA are still unapproved. See `docs/build/PUBLIC_WEBSITE_ACME_CASE_2026_09_12.md` for calculations, scope, claim boundaries and rollback. No private product or financial-engine implementation changed.
+
 ## 12 September 2026: offer work demonstrations candidate
 
 Candidate `feat/offer-work-demonstrations` starts from published main 90ad9e (PR607). The professional-amplification bridge and offer now show desk-level advisor questions, a 14-document/four-delivery analyst sequence with human direction and review, and a fictional creditor profile with an explained 80/100 score and a concentration exception. Forward and OffDeal are design references, not evidence of an ML implementation. Both locales use native main titles, black/gray hierarchy and finite accessible motion.

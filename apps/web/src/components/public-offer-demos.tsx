@@ -5,6 +5,8 @@ import {useEffect, useId, useRef, useState, type CSSProperties} from "react";
 import {Check, FileText, FileSpreadsheet, Presentation, ScrollText, Link2, RotateCcw, Landmark, TriangleAlert, Plus, X, CircleUserRound} from "lucide-react";
 import type {WebsiteOfferExample} from "@/lib/website-example";
 import type {FinancialBaseline} from "./public-workbench";
+import type {WebsiteAdvisorExample} from "@/lib/website-advisor-example";
+import {CapitalReceivables, CapitalBoard, CapitalCashChart, caseText, type CapitalCaseCopy} from "./public-capital-case";
 import styles from "./public-offer-demos.module.css";
 
 type Demo = typeof import("../../messages/pt-BR.json")["Website"]["offering"]["demo"];
@@ -37,23 +39,28 @@ function useDemoEntrance() {
   return ref;
 }
 
-export function PublicAdvisorDemo({copy:c,data,exampleLabel,initialTopic="receivables"}: {
-  copy:Demo["advisor"];data:WebsiteOfferExample;exampleLabel:string;initialTopic?:typeof advisorTopics[number];
+export function PublicAdvisorDemo({copy:c,data,analysis,caseCopy,initialTopic="receivables"}: {
+  copy:Demo["advisor"];data:WebsiteOfferExample;analysis:WebsiteAdvisorExample;caseCopy:CapitalCaseCopy;initialTopic?:typeof advisorTopics[number];
 }) {
   const [topic,setTopic] = useState(initialTopic);
   const id = useId();
+  const dialog=useRef<HTMLDialogElement>(null);
+  const trigger=useRef<HTMLButtonElement>(null);
   const current = c[topic];
+  const prompt=topic==="receivables"?caseText(caseCopy.receivables.prompt,analysis.receivables):topic==="board"?caseText(caseCopy.board.prompt,analysis.board):fillOfferText(current.question,data);
+  const response=topic==="receivables"?caseText(caseCopy.previewReceivables,analysis.receivables):topic==="board"?caseCopy.board.opening:current.response;
   return <div className={styles.advisor}>
     <div className={styles.topicPicker} role="group" aria-label={c.selector}>{advisorTopics.map(key => <button type="button" key={key} aria-pressed={key===topic} aria-controls={`${id}-conversation`} onClick={() => setTopic(key)}>{c[key].label}</button>)}</div>
     <div className={styles.conversation} id={`${id}-conversation`} role="region" aria-label={current.label}>
       <div className={styles.conversationPage} key={topic}>
-        <div className={styles.question}><span>{c.you}</span><p>{fillOfferText(current.question,data)}</p></div>
-        <div className={styles.response} aria-live="polite"><div className={styles.responseBrand}><Image src="/brand/offroad-symbol.png" width={512} height={520} alt=""/>{c.offroad}</div><p>{current.response}</p>
-          <ol className={styles.investigation}>{(["one","two","three"] as const).map((key,index) => <li key={key} style={{"--order":index} as CSSProperties}><span aria-hidden="true">{String(index+1).padStart(2,"0")}</span>{current[key]}</li>)}</ol>
-          <div className={styles.next}><span>{c.next}</span><p>{current.next}</p></div>
+        <div className={styles.question}><span>{c.you}</span><p>{prompt}</p></div>
+        <div className={styles.response} aria-live="polite"><div className={styles.responseBrand}><Image src="/brand/offroad-symbol.png" width={512} height={520} alt=""/>{c.offroad}</div><p>{response}</p>
+          {topic==="board"?<div className={styles.advisorPreview}><CapitalCashChart copy={caseCopy} analysis={analysis}/></div>:<ol className={styles.investigation}>{(["one","two","three"] as const).map((key,index) => <li key={key} style={{"--order":index} as CSSProperties}><span aria-hidden="true">{String(index+1).padStart(2,"0")}</span>{topic==="receivables"?caseCopy.receivables[(["fidc","discount","revolver"] as const)[index]].title:current[key]}</li>)}</ol>}
+          <button type="button" className={styles.exploreAnalysis} ref={trigger} aria-haspopup="dialog" onClick={()=>dialog.current?.showModal()}>{caseCopy.openAnalysis}<Plus size={16} aria-hidden="true"/></button>
         </div>
       </div>
-    </div><p className={styles.caption}>{exampleLabel}</p>
+    </div><p className={styles.caption}>{caseCopy.demo}</p>
+    <dialog ref={dialog} className={styles.analysisDialog} aria-labelledby={`${id}-dialog-title`} onClose={()=>trigger.current?.focus()}><div className={styles.dialogHeader}><span>{caseCopy.demo}</span><button type="button" onClick={()=>dialog.current?.close()} aria-label={caseCopy.closeAnalysis}><X size={22} aria-hidden="true"/></button></div><div className={styles.dialogBody}><h3 id={`${id}-dialog-title`}>{current.label}</h3><blockquote>{prompt}</blockquote>{topic==="receivables"?<><p>{caseCopy.receivables.opening}</p><CapitalReceivables copy={caseCopy} analysis={analysis}/></>:topic==="board"?<CapitalBoard copy={caseCopy} analysis={analysis}/>:<><p>{current.response}</p><ol>{(["one","two","three"] as const).map(key=><li key={key}>{current[key]}</li>)}</ol><p>{current.next}</p></>}</div></dialog>
   </div>;
 }
 

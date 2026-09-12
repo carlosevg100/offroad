@@ -1,3 +1,9 @@
+## 12 September 2026: unified ACME financial case candidate
+
+Twenty-seven focused checks verify the bilingual case, common baseline, fully reconciled three-year scenario outputs, EBITDA headroom, leverage sensitivity and render states. The complete web suite passed 107 files / 675 tests; repository lint/typecheck/tests and 43 build tasks passed. Read-only delivery verification passed 42 localized pages, five assets and the existing route/security boundaries. Final source-definition refinements receive another full check before push.
+
+The earlier PR608 candidate was held, not published. Browser modal operation, responsive appearance and actual iPhone validation remain unexecuted pending authorization. Exact-head CI and official-project production checks remain distinct gates. Evidence and financial definitions: `docs/build/PUBLIC_WEBSITE_ACME_CASE_2026_09_12.md`.
+
 ## 12 September 2026: offer work demonstrations candidate
 
 Twenty-two focused website tests passed: PT/EN structure, three advisor questions, four analyst previews, human direction/review, fictional creditor disclosure, hard concentration exception, illustrative score weights and dual-tone section headings. The full web suite passed 106 files / 670 tests; repository lint, typecheck, tests and 43 build tasks passed. The read-only probe passed 42 localized pages, five assets, public discovery routes, 404 and the private-app login boundary.

@@ -3,13 +3,15 @@ import {Plus} from "lucide-react";
 import type {AppLocale} from "@/i18n/routing";
 import {publicPath} from "@/lib/website-routes";
 import {websiteFinancialBaseline, websiteOfferExample} from "@/lib/website-example";
+import {websiteAdvisorExample} from "@/lib/website-advisor-example";
+import type {CapitalCaseCopy} from "./public-capital-case";
 import {PublicAdvisorDemo, PublicAnalystDemo, PublicConnectionDemo} from "./public-offer-demos";
 import styles from "./public-offering.module.css";
 
 type Copy = typeof import("../../messages/pt-BR.json")["Website"]["offering"];
 const roles = [{key:"advisor",page:"strategy"},{key:"analyst",page:"execution"},{key:"connection",page:"intelligence"}] as const;
 
-export function PublicOffering({locale, copy:c}: {locale:AppLocale; copy:Copy}) {
+export function PublicOffering({locale, copy:c,caseCopy}: {locale:AppLocale; copy:Copy;caseCopy:CapitalCaseCopy}) {
   const example = websiteOfferExample(locale);
   return <section className={styles.section} aria-labelledby="offering-title" id="offering">
     <div className={styles.inner}>
@@ -25,7 +27,7 @@ export function PublicOffering({locale, copy:c}: {locale:AppLocale; copy:Copy}) 
             <Link className={styles.link} href={publicPath(locale,page)}>{role.link}</Link>
           </div>
           <div className={styles.stage}>
-            {key === "advisor" && <PublicAdvisorDemo copy={c.demo.advisor} data={example} exampleLabel={c.demo.example}/>}
+            {key === "advisor" && <PublicAdvisorDemo copy={c.demo.advisor} data={example} caseCopy={caseCopy} analysis={websiteAdvisorExample(locale)}/>}
             {key === "analyst" && <PublicAnalystDemo copy={c.demo.analyst} data={example} exampleLabel={c.demo.example} replayLabel={c.demo.replay} financials={websiteFinancialBaseline(locale)}/>}
             {key === "connection" && <PublicConnectionDemo copy={c.demo.connection} data={example}/>}
           </div>

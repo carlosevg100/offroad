@@ -1,11 +1,12 @@
 import {calculateAdjustedEbitda, calculateLeverage} from "@offroad/financial-core";
-import {supermarketFixture, websiteOfferFixture} from "@offroad/testing-fixtures";
+import {websiteAdvisorFixture, websiteOfferFixture} from "@offroad/testing-fixtures";
 import type {AppLocale} from "@/i18n/routing";
 import type {FinancialBaseline} from "@/components/public-workbench";
 
 /** Public fictional example. Financial calculations stay in the financial core. */
 export function websiteFinancialBaseline(locale: AppLocale): FinancialBaseline {
-  const metrics = supermarketFixture.metrics;
+  const b = websiteAdvisorFixture.board;
+  const metrics = {reportedEbitda:b.reportedEbitda2025,approvedAdjustments:b.approvedEbitdaAdjustments,netDebt:b.history[2].netDebt};
   const ebitda = calculateAdjustedEbitda(metrics.reportedEbitda, [...metrics.approvedAdjustments]);
   const adjustments = calculateAdjustedEbitda("0", [...metrics.approvedAdjustments]);
   const leverage = calculateLeverage(metrics.netDebt, ebitda.value);

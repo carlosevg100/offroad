@@ -3,7 +3,7 @@ import Link from "next/link";
 import {Plus, LockKeyhole, Workflow, Calculator, Presentation, ScanSearch, ListChecks, UsersRound} from "lucide-react";
 import type {AppLocale} from "@/i18n/routing";
 import {publicPath} from "@/lib/website-routes";
-import {websiteFinancialBaseline} from "@/lib/website-example";
+import {websiteAdvisorExample} from "@/lib/website-advisor-example";
 import {PublicOffering, PublicEmpower} from "./public-offering";
 import {PublicCapitalJourney} from "./public-capital-journey";
 import {PublicAudienceShowcase} from "./public-audience-showcase";
@@ -23,7 +23,7 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
   const {audiences: a, method: m, market, journey: j, trust: t} = copy.narrative;
   return <PublicScrollEffects>
     <PublicEmpower copy={copy.offering}/>
-    <PublicOffering locale={locale} copy={copy.offering}/>
+    <PublicOffering locale={locale} copy={copy.offering} caseCopy={copy.capitalCase}/>
     <section className={`${styles.section} ${visual.audienceSection}`} id="audiences" aria-labelledby="audiences-title" data-reveal>
       <span className={styles.label}>{a.label}</span>
       <div className={`${styles.heading} ${styles.wideHeading}`}><SplitHeading id="audiences-title" title={a.title}/><p>{a.intro}</p></div>
@@ -47,7 +47,7 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
     </section>
     <section className={`${styles.journeySection} ${visual.journeySection}`} id="how-it-works" aria-labelledby="journey-title" data-reveal><div className={styles.section}>
       <span className={styles.label}>{j.label}</span><div className={styles.heading}><SplitHeading id="journey-title" title={j.title}/><p>{j.intro}</p></div>
-      <PublicCapitalJourney copy={j} financialCopy={copy.workbench} financials={websiteFinancialBaseline(locale)}/>
+      <PublicCapitalJourney copy={j} caseCopy={copy.capitalCase} analysis={websiteAdvisorExample(locale)}/>
       <div className={styles.continuity}><h3>{j.continuityTitle}</h3><div><p>{j.continuityBody}</p><Link className={styles.textLink} href={publicPath(locale,"cases")}>{j.link}</Link></div></div>
     </div></section>
     <section className={`${styles.section} ${visual.trustSection}`} id="institutional-trust" aria-labelledby="trust-title" data-reveal>

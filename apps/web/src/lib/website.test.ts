@@ -16,6 +16,8 @@ import {PublicAudienceShowcase} from "@/components/public-audience-showcase";
 import {PublicAdvisorDemo, PublicAnalystDemo, PublicConnectionDemo, advisorTopics, analystDocuments, fillOfferText} from "@/components/public-offer-demos";
 import {websiteFinancialBaseline, websiteOfferExample} from "./website-example";
 import {websiteOfferFixture} from "@offroad/testing-fixtures";
+import {websiteAdvisorExample} from "./website-advisor-example";
+import {caseText} from "@/components/public-capital-case";
 
 vi.mock("next-intl/server", () => ({
   getMessages: async ({locale}: {locale: string}) => locale === "pt-BR" ? pt : en,
@@ -131,14 +133,15 @@ describe("public website boundaries", () => {
     const copy = locale === "pt-BR" ? pt.Website : en.Website;
     const escape = (value: string) => value.replace(/&/g,"&amp;").replace(/'/g,"&#x27;");
     for (const initialStage of capitalJourneyStages) {
-      const html = renderToStaticMarkup(createElement(PublicCapitalJourney, {copy: copy.narrative.journey, financialCopy: copy.workbench, financials: websiteFinancialBaseline(locale), initialStage}));
-      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-      expect(html.match(/<button /g)).toHaveLength(5);
+      const html = renderToStaticMarkup(createElement(PublicCapitalJourney, {copy:copy.narrative.journey,caseCopy:copy.capitalCase,analysis:websiteAdvisorExample(locale),initialStage}));
+      const navigation=html.slice(0,html.indexOf(copy.narrative.journey.business));
+      expect(navigation.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(navigation.match(/<button /g)).toHaveLength(5);
       expect(html).toContain(escape(copy.narrative.journey[initialStage].prompt));
       expect(html).toContain(escape(copy.narrative.journey[initialStage].title));
       expect(html).not.toContain("undefined");
       expect(html).not.toMatch(/[↗▶Ⅱ\u2013\u2014]/);
-      if (initialStage === "investigate") expect(html).toContain(websiteFinancialBaseline(locale).adjusted);
+      if (initialStage === "investigate") expect(html).toContain(websiteAdvisorExample(locale).board.history[2].ebitda);
       if (initialStage === "connect") expect(html).toContain(copy.narrative.journey.connect.note);
     }
   });
@@ -159,19 +162,24 @@ describe("public website boundaries", () => {
     function keys(value: object, prefix = ""): string[] {
       return Object.entries(value).flatMap(([key, item]) => typeof item === "object" ? keys(item, `${prefix}${key}.`) : [`${prefix}${key}`]);
     }
-    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
+    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome", "capitalCase"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
   });
 
   it.each(routing.locales)("provides three substantive advisor conversations and four inspectable deliverables in %s", locale => {
     const c = (locale === "pt-BR" ? pt : en).Website.offering;
     const data = websiteOfferExample(locale);
+    const caseCopy=(locale==="pt-BR"?pt:en).Website.capitalCase;
+    const analysis=websiteAdvisorExample(locale);
     const escape = (value:string) => value.replace(/&/g,"&amp;").replace(/'/g,"&#x27;");
     for (const initialTopic of advisorTopics) {
-      const html = renderToStaticMarkup(createElement(PublicAdvisorDemo,{copy:c.demo.advisor,data,exampleLabel:c.demo.example,initialTopic}));
-      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
-      expect(html).toContain(escape(fillOfferText(c.demo.advisor[initialTopic].question,data)));
-      expect(html).toContain(escape(c.demo.advisor[initialTopic].next));
-      expect(html).not.toMatch(/\{(?:receivables|spread)\}/);
+      const html = renderToStaticMarkup(createElement(PublicAdvisorDemo,{copy:c.demo.advisor,data,analysis,caseCopy,initialTopic}));
+      const selector=html.slice(html.indexOf(`aria-label="${c.demo.advisor.selector}"`)).split("</div>")[0];
+      expect(selector.match(/aria-pressed="true"/g)).toHaveLength(1);
+      const prompt=initialTopic==="receivables"?caseText(caseCopy.receivables.prompt,analysis.receivables):initialTopic==="board"?caseText(caseCopy.board.prompt,analysis.board):fillOfferText(c.demo.advisor.pricing.question,data);
+      expect(html).toContain(escape(prompt));
+      expect(html).toContain('aria-haspopup="dialog"');
+      expect(html).toContain(caseCopy.openAnalysis);
+      expect(html).not.toMatch(/\{(?:face|capex|maturity|receivables|spread)\}/);
     }
     for (const initialDocument of analystDocuments) {
       const html = renderToStaticMarkup(createElement(PublicAnalystDemo,{copy:c.demo.analyst,data,financials:websiteFinancialBaseline(locale),exampleLabel:c.demo.example,replayLabel:c.demo.replay,initialDocument}));
@@ -215,7 +223,7 @@ describe("public website boundaries", () => {
   });
 
   it("uses core calculations for the fictional financial baseline", () => {
-    expect(websiteFinancialBaseline("pt-BR")).toEqual({reported:"30,4", adjustment:"0,8", adjusted:"31,2", debt:"56,4", leverage:"1,81x"});
-    expect(websiteFinancialBaseline("en-US")).toEqual({reported:"30.4", adjustment:"0.8", adjusted:"31.2", debt:"56.4", leverage:"1.81x"});
+    expect(websiteFinancialBaseline("pt-BR")).toEqual({reported:"148,5", adjustment:"1,5", adjusted:"150,0", debt:"420,0", leverage:"2,80x"});
+    expect(websiteFinancialBaseline("en-US")).toEqual({reported:"148.5", adjustment:"1.5", adjusted:"150.0", debt:"420.0", leverage:"2.80x"});
   });
 });
