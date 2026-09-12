@@ -16,9 +16,9 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.117.1",
-    "openai": "7.5.0",
-    "zod": "4.4.3"
+    "@anthropic-ai/sdk": "0.124.0",
+    "openai": "7.13.0",
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

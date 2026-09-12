@@ -33,7 +33,7 @@
     "@offroad/model-gateway": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/receivables-analysis": "workspace:*",
-    "zod": "4.4.3"
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"
