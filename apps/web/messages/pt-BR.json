@@ -1,5 +1,140 @@
 {
   "Website": {
+    "solutionDepth": {
+      "title": "O trabalho, em profundidade.", "example": "Explore uma etapa na prática", "output": "Para sua decisão",
+      "strategy": {
+        "one": {"title": "Diagnóstico e objetivo financeiro", "body": "Examine liquidez, vencimentos, custo, amortização, garantias, covenants e concentração de fontes. Relacione a estrutura atual ao que a companhia quer fazer: crescer, adquirir, refinanciar ou preservar flexibilidade.", "value": "Uma recomendação orientada ao negócio, não apenas ao produto de crédito disponível."},
+        "two": {"title": "Business plan e necessidade de capital", "body": "Revise o plano da administração ou desenvolva projeções a partir da operação. Relacione receita, margem, capital de giro, capex, resultado, balanço e caixa. Diferencie metas, dados contratados e hipóteses em discussão.", "value": "Entenda quanto capital é necessário, quando e sob quais premissas."},
+        "three": {"title": "Alternativas de estruturação", "body": "Discuta instrumentos, fontes e usos, tranches, prazos, amortização, garantias e condições. Compare custo, risco, flexibilidade e dependências, incluindo o efeito do serviço da dívida sobre o caixa.", "value": "Compare estruturas economicamente desenvolvidas, com critérios claros para escolher."},
+        "four": {"title": "Viabilidade econômica e realidade de mercado", "body": "Separe três perguntas: a estrutura é compatível com o negócio, faz sentido economicamente e encontra apetite nas condições pretendidas? Referências históricas precisam de data e contexto; não são cotações atuais.", "value": "Saiba o que a análise sustenta e o que precisa ser confirmado com o mercado."}
+      },
+      "execution": {
+        "one": {"title": "Documentos, pesquisa e conciliação", "body": "Organize informações recebidas, procure evidências, compare fontes e explicite divergências. Números reportados, ajustes propostos e premissas analíticas precisam continuar distinguíveis.", "value": "Reduza o trabalho de reconstruir a base antes de começar a análise."},
+        "two": {"title": "Construção e revisão de modelos", "body": "Desenvolva projeções operacionais, caixa, dívida, fontes e usos. Na revisão, examine vínculos, fórmulas, hardcodes, circularidades, saldos e convenções. O horizonte e a periodicidade devem acompanhar a decisão.", "value": "Discuta o modelo e suas limitações, além de receber uma planilha."},
+        "three": {"title": "Cenários e investigação dos limites", "body": "Preserve o caso da administração e identifique a referência analítica. Explore downside, sensibilidades, estresses e limites de caixa ou covenants conforme a pergunta. Premissas são discutidas antes da execução.", "value": "Entenda quais fatores alteram a recomendação e por quê."},
+        "four": {"title": "Storyline, modelos e materiais", "body": "Defina a decisão e a audiência antes de preparar o documento. Conselho, comitê, cliente e financiador pedem mensagens próprias: apresentação, credit memo, teaser, info pack ou term sheet indicativo. Templates institucionais e atualização coordenada devem ser verificados no escopo de adoção.", "value": "Leve a análise à reunião e continue a discussão com materiais revisáveis."}
+      },
+      "intelligence": {
+        "one": {"title": "Conhecimento de capital com contexto", "body": "Instituição, gestor, veículo, programa e equipe não são a mesma coisa. Instrumentos, tickets, prazos, garantias, exclusões e processo de decisão precisam de contexto e atualização. Interesse declarado, operação realizada e capacidade atual são evidências diferentes.", "value": "Evite tratar uma lista de instituições como um conjunto de mandatos confirmados."},
+        "two": {"title": "Aderência com critérios e racional", "body": "Compare a operação com o mandato, começando pelas restrições relevantes. Separe compatibilidade, condições a confirmar e impedimentos. Informação desconhecida continua desconhecida; não deve aumentar artificialmente a aderência.", "value": "Priorize a investigação e a abordagem com motivos compreensíveis."},
+        "three": {"title": "Preparação e compartilhamento autorizado", "body": "Organize o racional, os termos e o pacote apropriado ao destinatário. A escolha da contraparte e do conteúdo a compartilhar permanece com o usuário. A análise interna do investidor ou da companhia tem seu próprio contexto.", "value": "Prepare uma conversa qualificada, preservando o controle sobre a informação."},
+        "four": {"title": "Conhecimento de mercado aplicado à estrutura", "body": "O relacionamento com alocadores tem uma função no produto: esclarecer o que cada instituição avalia e traduzir esse conhecimento em estruturação, materiais e qualificação. Apetite e condições precisam ser reconfirmados no momento da abordagem.", "value": "Incorpore critérios de quem financia antes de apresentar a operação ao mercado."}
+      }
+    },
+    "narrative": {
+      "audiences": {
+        "label": "Para quem",
+        "title": "Três lados da decisão de capital.\nUma plataforma de trabalho.",
+        "intro": "Quem precisa de capital. Quem assessora e estrutura. Quem aloca. Cada perspectiva orienta uma análise própria.",
+        "companies": {"position": "Quem precisa de capital", "name": "Companhias", "roles": "CFOs e equipes financeiras", "benefit": "Conecte o plano do negócio à estrutura de capital.", "body": "Da projeção de caixa à proposta do banco, entenda as alternativas e prepare a decisão.", "link": "Explore os usos para companhias"},
+        "advisors": {"position": "Quem assessora e estrutura", "name": "Assessores e estruturadores", "roles": "Originação, DCM e equipes especializadas", "benefit": "Dedique mais capacidade ao cliente e à operação.", "body": "Desenvolva a abordagem, aprofunde a análise e execute o modelo e os materiais.", "link": "Explore os usos para assessores"},
+        "investors": {"position": "Quem aloca capital", "name": "Investidores e financiadores", "roles": "Crédito, fundos e special situations", "benefit": "Concentre a análise no que cabe no seu mandato.", "body": "Forme uma visão independente sobre risco, retorno, proteções e condições para investir.", "link": "Explore os usos para investidores"},
+        "seniority": "Do analista ao decisor. Perguntas e níveis de síntese diferentes, com o mesmo rigor financeiro.",
+        "boundary": "Cada trabalho preserva a perspectiva e as permissões de quem o conduz. Uma análise privada não se torna informação da contraparte."
+      },
+      "method": {
+        "label": "By Finance, for Finance. Enhanced by AI.",
+        "title": "O diferencial está no método.\nNão na sorte do prompt.",
+        "intro": "Experiência em investment banking, DCM e corporate finance aplicada às perguntas, às contas e à forma de executar o trabalho.",
+        "photoAlt": "Mesa de trabalho com modelo financeiro e term sheet à esquerda e a interface da Offroad à direita.",
+        "modelsTitle": "Modelos de IA ampliam a execução.",
+        "modelsBody": "Modelos de fronteira apoiam leitura, extração, pesquisa e redação. A especialização financeira orienta como essas capacidades são utilizadas.",
+        "expertiseTitle": "O conhecimento financeiro dá direção.",
+        "expertiseBody": "Contexto do negócio, papel do usuário, instrumento e critérios da instituição definem o que investigar e como interpretar.",
+        "workflow": {"title": "Workflows especializados", "body": "A intenção define o trabalho: o que examinar, em que ordem, com quais critérios e quando a informação é suficiente para avançar. Uma avaliação de crédito não segue a mesma lógica de uma abordagem comercial."},
+        "calculations": {"title": "Contas e lógicas determinísticas", "body": "Cálculos financeiros seguem regras formalizadas, fora da geração de texto. Entradas e método iguais produzem os mesmos resultados. Definições de dívida, EBITDA, cobertura e serviço da dívida precisam ser explícitas, não presumidas."},
+        "materials": {"title": "Materiais para quem decide", "body": "Conselho, comitê de crédito e financiador precisam de mensagens distintas. A análise sustenta o racional; a audiência define a estrutura, o grau de detalhe e as questões que o material precisa responder."},
+        "detail": {"title": "O detalhe que muda a conclusão", "body": "Ajustes recorrentes, definições contratuais, concentração de receitas, amortização e garantias podem alterar o caso. Esses pontos orientam a investigação, em vez de dependerem de o usuário lembrar a pergunta certa."},
+        "link": "Conheça a Offroad"
+      },
+      "market": {
+        "label": "Inteligência de capital",
+        "title": "A estrutura precisa fazer sentido\npara quem vai financiá-la.",
+        "intro": "Conhecer como o capital é avaliado melhora o desenho da operação, a preparação dos materiais e a escolha das contrapartes.",
+        "leftLabel": "Na estruturação", "leftTitle": "Prepare o caso para uma análise real.", "leftBody": "Organize a necessidade, antecipe questões de crédito e apresente o racional na forma como o mercado examina a operação.",
+        "rightLabel": "Na alocação", "rightTitle": "Identifique a aderência antes da diligência extensa.", "rightBody": "Compare a operação aos critérios do mandato antes de mobilizar a equipe para conciliar documentos e aprofundar a análise.",
+        "criteriaTitle": "Operação e mandato, comparados pelos mesmos critérios",
+        "relationshipTitle": "O conhecimento do mercado volta para a análise.",
+        "relationshipBody": "A frente de relacionamento com alocadores tem uma função no produto: entender critérios e práticas de decisão e traduzi-los em estruturação, materiais e qualificação. Apetite e condições precisam ser confirmados no momento da abordagem.",
+        "instrument": "Instrumento e finalidade", "ticket": "Ticket e prazo", "risk": "Risco e garantias", "policy": "Setor e restrições",
+        "note": "A conexão depende de aderência, informação atual e autorização para compartilhar. A decisão de crédito permanece com o financiador.",
+        "link": "Como qualificamos a conexão"
+      },
+      "journey": {
+        "label": "Como funciona",
+        "title": "De documentos dispersos\na uma operação preparada.",
+        "intro": "Comece por uma pergunta ou pelos documentos que já tem. Resolva uma tarefa ou desenvolva a operação inteira, com orientação em cada etapa.",
+        "selector": "Explore as etapas do trabalho",
+        "example": "Exemplo de trabalho · Dados fictícios",
+        "promptLabel": "Você pede", "responseLabel": "A Offroad conduz", "outputLabel": "O trabalho toma forma",
+        "start": {"label": "Começar", "prompt": "Quero financiar a expansão. Por onde começamos?", "response": "Pelo plano de investimento e pelo momento em que o negócio precisa de caixa. Podemos começar com o que você já tem e identificar juntos as informações que faltam.", "title": "Uma pergunta já é um ponto de partida.", "note": "A documentação é solicitada conforme a análise precisa dela, com o motivo de cada pedido.", "one": "Demonstrações financeiras", "two": "Mapa de endividamento", "three": "Plano de expansão"},
+        "investigate": {"label": "Investigar", "prompt": "A DRE e o mapa de dívida estão aqui. O que precisamos verificar?", "response": "Vamos reconciliar a base, distinguir ajustes aprovados de hipóteses e confrontar a dívida com o resultado. A alavancagem histórica não substitui a análise do caixa futuro.", "title": "Uma base para discutir capital.", "note": "Fontes, ajustes e definições precisam acompanhar os números.", "one": "Resultado", "two": "Ajustes", "three": "Endividamento"},
+        "model": {"label": "Modelar", "prompt": "Que premissas você mudaria para um downside e por quê?", "response": "Eu examinaria a velocidade de maturação das novas unidades, a margem e a necessidade de giro. Primeiro discutimos o racional e as premissas. A simulação vem depois da sua definição.", "title": "O cenário começa pelo negócio.", "note": "Você pode ajustar a proposta antes de calcular os efeitos sobre caixa, cobertura e liquidez.", "one": "Maturação das unidades", "two": "Margem operacional", "three": "Capital de giro"},
+        "prepare": {"label": "Preparar", "prompt": "Transforme a análise em um material para o conselho e prepare o pacote da operação.", "response": "O conselho precisa decidir a estrutura e as restrições. O financiador precisa entender o negócio, o crédito e os termos. Os materiais partem da mesma análise, com mensagens próprias.", "title": "A mesma análise. A mensagem certa.", "note": "A decisão do conselho ou do cliente pode orientar a revisão do modelo, dos termos e dos materiais.", "one": "Apresentação ao conselho", "two": "Modelo financeiro", "three": "Info pack e term sheet"},
+        "connect": {"label": "Conectar", "prompt": "Com quem faz sentido conversar sobre esta operação?", "response": "Vamos confrontar a estrutura com os critérios de capital: instrumento, ticket, prazo, risco, garantias e restrições. Cada indicação precisa de um racional de aderência e de pontos a confirmar.", "title": "Uma seleção fundamentada.", "note": "Nada neste exemplo representa uma oferta de crédito, contraparte confirmada ou garantia de captação.", "one": "Critérios compatíveis", "two": "Condições a confirmar", "three": "Compartilhamento autorizado"},
+        "business": "Rede Horizonte", "basis": "Base histórica · R$ milhões", "source": "DRE gerencial e mapa de dívida",
+        "rationale": "O que pode mudar a decisão", "modelOne": "O prazo até a nova unidade gerar caixa", "modelTwo": "A folga para absorver pressão de custo", "modelThree": "O caixa adicional consumido pelo crescimento",
+        "prepareOne": "Decisão, alternativas e restrições", "prepareTwo": "Premissas, projeções e serviço da dívida", "prepareThree": "Negócio, crédito e termos indicativos",
+        "connectOne": "Compare operação e mandato", "connectTwo": "Identifique pendências antes da abordagem", "connectThree": "Defina o que pode sair do projeto",
+        "continuityTitle": "A conversa continua. O trabalho também.",
+        "continuityBody": "Questione uma premissa, explore outra estrutura ou volte com uma decisão do comitê. A proposta da Offroad é dar continuidade à análise, sem reiniciar o raciocínio a cada pedido.",
+        "link": "Explore os casos de uso"
+      },
+      "trust": {
+        "label": "Consistência, colaboração e confiança institucional",
+        "title": "Os padrões da sua firma.\nO controle do seu trabalho.",
+        "intro": "Rigor financeiro, continuidade entre pessoas e controle sobre a informação fazem parte da mesma exigência institucional.",
+        "standards": {"title": "Consistência financeira", "benefit": "Revise a base. Entenda o resultado.", "body": "Cálculos determinísticos e definições explícitas sustentam a análise. Fontes preferidas, convenções, templates e reprodução de versões fazem parte da evolução da plataforma e do escopo a validar com cada instituição."},
+        "collaboration": {"title": "Trabalho conectado", "benefit": "Preserve o contexto entre análise e decisão.", "body": "Nossa direção de produto conecta comentários, revisões e aprovações às fontes e aos materiais. Fluxos avançados de colaboração e consolidação devem ser validados na demonstração, conforme o estágio de implementação."},
+        "security": {"title": "Enterprise trust", "benefit": "Saiba quem pode acessar e o que pode ser compartilhado.", "body": "A arquitetura utiliza controles de acesso por organização e armazenamento privado de documentos. Requisitos de identidade, retenção, provedores e compartilhamento são tratados na avaliação institucional."},
+        "more": "Conheça o escopo",
+        "status": "Controles atuais e capacidades em evolução são apresentados separadamente na avaliação da plataforma.",
+        "soc": "SOC 2 Type II integra nosso objetivo de segurança. Ainda não possuímos relatório SOC 2.",
+        "link": "Segurança e controles atuais"
+      }
+    },
+    "audienceDetail": {
+      "label": "Aplicações para sua equipe", "workLabel": "O trabalho", "valueLabel": "O benefício", "rolesLabel": "Quem usa", "seniorityTitle": "A mesma base. Responsabilidades diferentes.", "perspectiveTitle": "Seu lado da decisão permanece seu.", "exampleTitle": "Explore um caso de trabalho",
+      "companies": {
+        "roles": "CFO · Tesouraria · Finanças corporativas · FP&A · Controladoria · Relações com investidores · Founders",
+        "oneTitle": "Planeje o capital antes de buscar financiamento.", "oneWork": "Relacione o plano de negócios a investimento, capital de giro, caixa e dívida. Examine vencimentos, custo, garantias e flexibilidade.", "oneValue": "Dimensione a necessidade e o momento do capital, considerando o que a companhia quer realizar e preservar.",
+        "twoTitle": "Avalie as condições com uma visão própria.", "twoWork": "Compare propostas, indexadores, amortização, custo integral, covenants e custo de saída. Questione as consequências de cada estrutura.", "twoValue": "Negocie com compreensão das alternativas, sem decidir apenas pela taxa anunciada.",
+        "threeTitle": "Prepare o conselho e a abordagem ao mercado.", "threeWork": "Desenvolva a recomendação, o modelo, a apresentação e o pacote da operação. Relacione os termos aos critérios dos financiadores.", "threeValue": "Defenda a decisão internamente e chegue à conversa externa com um caso financeiro organizado.",
+        "juniorTitle": "Equipes financeiras", "juniorBody": "Conciliar a base, revisar modelos e preparar análises e materiais.", "seniorTitle": "CFOs e founders", "seniorBody": "Discutir alternativas, consequências, prioridades e a recomendação ao conselho.",
+        "perspective": "A análise considera custo, liquidez, prazo, garantias e flexibilidade para o negócio. Compartilhar um material não significa abrir a discussão interna com a contraparte.",
+        "guidance": "Equipes menores podem começar com mais orientação sobre o processo. Profissionais experientes podem ir direto às premissas, às análises e aos materiais."
+      },
+      "advisors": {
+        "roles": "Originação · Investment banking · DCM · Corporate banking · Crédito · Project finance · Securitização · Recebíveis · Boutiques",
+        "oneTitle": "Desenvolva a abordagem que merece a reunião.", "oneWork": "Pesquise a companhia, examine a estrutura de capital, confronte pares e eventos e formule uma hipótese de operação.", "oneValue": "Dedique a reunião à discussão financeira do cliente, com uma abordagem sustentada por análise.",
+        "twoTitle": "Aprofunde a estrutura e a análise técnica.", "twoWork": "Reconcilie informações, modele caixa e serviço da dívida, teste premissas e examine termos, garantias e restrições.", "twoValue": "Aumente a capacidade de investigar o que pode mudar o crédito ou a viabilidade da estrutura.",
+        "threeTitle": "Leve o racional aos materiais e ao mercado.", "threeWork": "Prepare modelos, apresentações, info packs e termos indicativos adequados à audiência e ao estágio da operação.", "threeValue": "Reduza a reconstrução manual entre análises e entregas. Concentre a equipe no cliente, na estrutura e na negociação.",
+        "juniorTitle": "Analistas, associados e VPs", "juniorBody": "Pesquisar, modelar, comparar, desenhar a estrutura e preparar os materiais.", "seniorTitle": "Diretores e MDs", "seniorBody": "Qualificar a demanda, desenvolver a abordagem e definir o que levar ao mercado.",
+        "perspective": "O trabalho segue o mandato de assessoria e os critérios técnicos aplicáveis. A análise privada do cliente ou da equipe não é tratada como informação livre para distribuição.",
+        "guidance": "Equipes especializadas aprofundam os mecanismos da operação: recebíveis, garantias, contratos, cronogramas e fontes de pagamento."
+      },
+      "investors": {
+        "roles": "Gestoras · Private credit · Special situations · Bancos · Financeiras · Securitizadoras · FIDCs · Seguradoras · Fundos de pensão · Family offices",
+        "oneTitle": "Verifique a aderência antes de aprofundar.", "oneWork": "Confronte instrumento, ticket, prazo, setor, risco e restrições com a política da instituição. Identifique o que ainda precisa de confirmação.", "oneValue": "Evite mobilizar a equipe para operações incompatíveis com o mandato.",
+        "twoTitle": "Construa convicção, não apenas um resumo.", "twoWork": "Revise o modelo, questione premissas, investigue fontes de pagamento e examine downside, garantias e definições contratuais.", "twoValue": "Forme uma visão independente do risco e das condições em que o retorno faz sentido.",
+        "threeTitle": "Prepare o comitê e reavalie a posição.", "threeWork": "Organize a tese, os contrapontos, os termos e a diligência. Compare novas informações com a análise que fundamentou a decisão.", "threeValue": "Concentre a discussão em risco, retorno, proteção e exposição, com evidências para sustentar a recomendação.",
+        "juniorTitle": "Analistas e equipes de crédito", "juniorBody": "Reconciliar dados, revisar modelos, aprofundar riscos e preparar o memo.", "seniorTitle": "Gestores e comitês", "seniorBody": "Debater a tese, definir condições e avaliar a compatibilidade com a carteira.",
+        "perspective": "A Offroad parte dos critérios do investidor para esse trabalho. A tese interna, os contrapontos e os limites de negociação não se confundem com os materiais do originador.",
+        "guidance": "O valor começa na análise de uma oportunidade que você já tem. Não depende de receber uma operação originada pela Offroad."
+      }
+    },
+    "offering": {
+      "label": "O que oferecemos",
+      "title": "Expertise financeira.\nCapacidade para executar.",
+      "intro": "Mais tempo para a decisão, o cliente e a alocação. Menos esforço para organizar dados, reconstruir modelos e refazer materiais.",
+      "advisor": {"title": "Expert advisor", "benefit": "Discuta a decisão antes de definir a resposta.", "body": "Conhecimento de estrutura de capital e crédito para questionar premissas, formular alternativas e recomendar o próximo passo.", "detail": "Do plano de crescimento de um CFO à abordagem de um MD ou à tese de um gestor. A Offroad ajuda a identificar o que pode mudar a decisão e explica por que aprofundar.", "link": "Explore a orientação financeira"},
+      "analyst": {"title": "Powerful hands-on analyst", "benefit": "Dê direção ao trabalho. Conte com a execução.", "body": "Documentos, pesquisa, conciliação, modelos e materiais conectados à análise, com fontes identificáveis e cálculos financeiros determinísticos.", "detail": "A Offroad organiza as etapas, explicita divergências e desenvolve as entregas. Você revisa premissas, discute os resultados e orienta o aprofundamento.", "link": "Explore a execução financeira"},
+      "connection": {"title": "Qualified capital connection", "benefit": "Saiba com quem conversar. E por quê.", "body": "A necessidade de capital encontra critérios de quem financia. O mandato de investimento orienta quais oportunidades merecem atenção.", "detail": "Instrumento, finalidade, ticket, prazo, risco e garantias ajudam a qualificar a aderência e a preparar a abordagem. Qualificação não é garantia de aprovação ou financiamento.", "link": "Explore a conexão de capital"},
+      "more": "Entenda o papel",
+      "principle": "Pense com expertise financeira. Execute com precisão. Conecte-se ao capital certo.",
+      "empowerTitle": "Mais capacidade para o profissional.\nNão menos profissionais.",
+      "empowerBody": "A Offroad amplia o que sua equipe consegue fazer. O julgamento, a relação com o cliente e a decisão continuam com você."
+    },
     "productHome": {
       "title": "Veja a Offroad no seu trabalho.",
       "body": "Escolha seu contexto. Explore a conversa, a análise e os materiais.",
@@ -512,7 +647,7 @@
       "home": "Página inicial"
     },
     "hero": {
-      "title": "Plataforma de IA agêntica especializada em estrutura de capital e financiamento por dívida.",
+      "title": "Plataforma de IA agêntica construída para quem estrutura e investe em dívida.",
       "support": "Expert Advisor com a capacidade de execução de um analista dedicado.",
       "credit": "Criada por profissionais de finanças, para profissionais de finanças.",
       "secondary": "Ver casos de uso"

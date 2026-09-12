@@ -5,6 +5,9 @@ import {brand} from "@/config/brand";
 import type {AppLocale} from "@/i18n/routing";
 import {publicPath, type PublicPage} from "@/lib/website-routes";
 import {DemoContact} from "./public-interactions";
+import {PublicAudienceDetail} from "./public-audience-detail";
+import {PublicSolutionDetail} from "./public-solution-detail";
+import {PublicCapitalJourney} from "./public-capital-journey";
 import {PublicWorkbench, type WorkbenchAudience} from "./public-workbench";
 import {websiteFinancialBaseline} from "@/lib/website-example";
 import styles from "./public-site.module.css";
@@ -28,7 +31,8 @@ export async function websiteCopy(locale: AppLocale) {
 }
 
 function AudienceList({locale, c}: {locale: AppLocale; c: Copy}) {
-  return <div className={styles.audienceList}>{audienceKeys.map((key, index) => <Link className={styles.audienceRow} href={publicPath(locale,key)} key={key}><div><span className={styles.index}>0{index+1}</span><h3>{c.who[key].name}</h3><span className={styles.roles}>{c.who[key].roles}</span></div><div><h4>{c.who[key].title}</h4><p>{c.who[key].body}</p></div></Link>)}</div>;
+  const a = c.narrative.audiences;
+  return <div className={styles.audienceList}>{audienceKeys.map((key, index) => <Link className={styles.audienceRow} href={publicPath(locale,key)} key={key}><div><span className={styles.index}>0{index+1} · {a[key].position}</span><h3>{a[key].name}</h3><span className={styles.roles}>{a[key].roles}</span></div><div><h4>{a[key].benefit}</h4><p>{a[key].body}</p><span className={styles.textLink}>{a[key].link}</span></div></Link>)}</div>;
 }
 
 function CaseList({locale, c, keys = caseKeys}: {locale: AppLocale; c: Copy; keys?: readonly typeof caseKeys[number][]}) {
@@ -62,6 +66,19 @@ export async function PublicPageContent({locale, page}: {locale: AppLocale; page
 
   const detail = c.pages[page];
   const parent = (solutionKeys as readonly string[]).includes(page) ? "solutions" : (audienceKeys as readonly string[]).includes(page) ? "audiences" : "cases";
+  if (page === "strategy" || page === "execution" || page === "intelligence") return <>
+    <PageIntro title={detail.title} intro={detail.intro} locale={locale} c={c} parent="solutions"/>
+    <section className={styles.questionBand}><div className={styles.section}><span className={styles.eyebrow}>{c.common.question}</span><blockquote>{detail.example}</blockquote><p>{detail.pain}</p></div></section>
+    <PublicSolutionDetail solution={page} copy={c.solutionDepth}/>
+    <section className={`${styles.section} ${styles.catalogSection}`}><div className={styles.sectionHeading}><h2>{c.solutionDepth.example}</h2><p>{c.common.review}</p></div><PublicCapitalJourney copy={c.narrative.journey} financialCopy={c.workbench} financials={websiteFinancialBaseline(locale)} initialStage={page === "strategy" ? "model" : page === "execution" ? "prepare" : "connect"}/><p className={styles.finePrint}>{c.common.demoNote}</p></section>
+    <section className={`${styles.section} ${styles.related}`}><div className={styles.sectionHeading}><h2>{c.common.related}</h2></div><CaseList locale={locale} c={c} keys={relatedCases[page]}/></section>
+  </>;
+  if (page === "companies" || page === "advisors" || page === "investors") return <>
+    <PageIntro title={detail.title} intro={detail.intro} locale={locale} c={c} parent="audiences"/>
+    <PublicAudienceDetail audience={page} copy={c.audienceDetail}/>
+    <section className={`${styles.section} ${styles.catalogSection}`}><details className={styles.deepExample}><summary>{c.audienceDetail.exampleTitle}</summary><PublicWorkbench locale={locale} copy={c.workbench} financials={websiteFinancialBaseline(locale)} initialAudience={page} fixedAudience/></details></section>
+    <section className={`${styles.section} ${styles.related}`}><div className={styles.sectionHeading}><h2>{c.common.related}</h2></div><CaseList locale={locale} c={c} keys={relatedCases[page]}/></section>
+  </>;
   const journeys: Partial<Record<DetailPage, WorkbenchAudience>> = {companies: "companies", advisors: "advisors", investors: "investors", growth: "companies", pitch: "advisors", investment: "investors"};
   const journey = journeys[page];
   if (journey) return <><PageIntro title={detail.title} intro={detail.intro} locale={locale} c={c} parent={parent}/><section className={`${styles.section} ${styles.catalogSection}`}><div className={styles.sectionHeading}><h2>{c.common.workflow}</h2><p>{c.common.review}</p></div><PublicWorkbench locale={locale} copy={c.workbench} financials={websiteFinancialBaseline(locale)} initialAudience={journey} fixedAudience/></section><section className={`${styles.section} ${styles.related}`}><div className={styles.sectionHeading}><h2>{c.common.related}</h2></div><CaseList locale={locale} c={c} keys={relatedCases[page]}/></section></>;

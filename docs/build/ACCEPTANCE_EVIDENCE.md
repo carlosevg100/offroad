@@ -1,3 +1,9 @@
+## 12 September 2026: institutional website narrative candidate
+
+Website tests verify the new exact bilingual hero, section order, five example stages, three audience drilldowns, matching localized key trees, route/metadata boundaries and deterministic fictional numbers. Web suite: 106 files, 665 tests. Repository lint, typecheck, tests and 43 build tasks passed; final candidate check is required before push. The read-only HTTP probe passed 42 pages, five image assets, sitemap, robots, unknown-route 404, login and unauthenticated app redirect. Source accessibility review does not establish browser/actual-iPhone rendering, which remains pending authorization.
+
+No app, database, authentication, provider or hosting configuration changed. No SOC 2 report, guaranteed funding, verified mandate database or operational completeness is claimed. Exact-head CI and production verification remain separate gates. See `docs/build/PUBLIC_WEBSITE_NARRATIVE_2026_09_12.md`.
+
 ## 12 September 2026: product-led website revision, publication authorized
 
 The founder explicitly requested publication after the local preview handoff disclosed that browser and actual-iPhone validation were still pending. This supersedes the preview-only publication hold recorded below, not the visual-validation limitation. Repository-wide checks, exact-head CI and deployment verification are required before reporting publication complete.
