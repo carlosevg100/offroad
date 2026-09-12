@@ -11,6 +11,7 @@ import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
 import {ProductHome} from "@/components/public-product-home";
 import {PublicWorkbench} from "@/components/public-workbench";
+import {PublicCapitalJourney, capitalJourneyStages} from "@/components/public-capital-journey";
 import {websiteFinancialBaseline} from "./website-example";
 
 vi.mock("next-intl/server", () => ({
@@ -67,8 +68,8 @@ describe("public website boundaries", () => {
   });
 
   it("preserves the approved hero and honest security and contact boundaries", () => {
-    expect(pt.Website.hero.title).toBe("Plataforma de IA agêntica especializada em estrutura de capital e financiamento por dívida.");
-    expect(en.Website.hero.title).toBe("Agentic AI platform purpose-built for capital structure and debt financing.");
+    expect(pt.Website.hero.title).toBe("Plataforma de IA agêntica construída para quem estrutura e investe em dívida.");
+    expect(en.Website.hero.title).toBe("Agentic AI platform purpose-built for those who structure and invest in debt.");
     expect(pt.Website.security.socBody).toContain("ainda não possui relatório SOC 2");
     expect(en.Website.security.socBody).toContain("does not currently have a SOC 2 report");
     expect(pt.Website.demo.note).toContain("Nada é enviado pelo site");
@@ -77,17 +78,61 @@ describe("public website boundaries", () => {
     expect(JSON.stringify(en.Website)).not.toMatch(/[\u2013\u2014]/);
   });
 
-  it.each(routing.locales)("replaces the rejected homepage blocks with product examples in %s", locale => {
+  it.each(routing.locales)("presents the offer, audiences, method, journey and trust in the requested order in %s", locale => {
     const copy = locale === "pt-BR" ? pt.Website : en.Website;
     const html = renderToStaticMarkup(createElement(ProductHome, {locale, copy}));
-    expect(html).toContain(copy.productHome.title);
-    expect(html).toContain(copy.workbench.companies.one.prompt);
-    expect(html).toContain(copy.workbench.synthetic);
-    expect(html).toContain("data-mobile-pane=\"document\"");
+    const sections = ["offering", "audiences", "by-finance", "capital-intelligence", "how-it-works", "institutional-trust"];
+    const positions = sections.map(id => html.indexOf(`id="${id}"`));
+    expect(positions.every(position => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a,b) => a-b));
+    expect(html).toContain(copy.offering.advisor.title);
+    expect(html).toContain(copy.offering.analyst.title);
+    expect(html).toContain(copy.offering.connection.title);
+    expect(html).toContain(copy.narrative.journey.example);
+    for (const audience of ["companies", "advisors", "investors"] as const) {
+      expect(html).toContain(`href="${publicPath(locale,audience)}"`);
+    }
+    expect(html).toContain("<details");
+    expect(html).not.toContain(copy.productHome.title);
     expect(html).not.toMatch(/[↗▶Ⅱ\u2013\u2014]/);
     expect(html).not.toContain("Da questão financeira");
     expect(html).not.toContain("Ilustração conceitual da experiência");
     expect(html).not.toContain("A menor taxa resolve");
+  });
+
+  it.each(routing.locales)("renders all five example stages with one active control and distinct artifacts in %s", locale => {
+    const copy = locale === "pt-BR" ? pt.Website : en.Website;
+    const escape = (value: string) => value.replace(/&/g,"&amp;").replace(/'/g,"&#x27;");
+    for (const initialStage of capitalJourneyStages) {
+      const html = renderToStaticMarkup(createElement(PublicCapitalJourney, {copy: copy.narrative.journey, financialCopy: copy.workbench, financials: websiteFinancialBaseline(locale), initialStage}));
+      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(html.match(/<button /g)).toHaveLength(5);
+      expect(html).toContain(escape(copy.narrative.journey[initialStage].prompt));
+      expect(html).toContain(escape(copy.narrative.journey[initialStage].title));
+      expect(html).not.toContain("undefined");
+      expect(html).not.toMatch(/[↗▶Ⅱ\u2013\u2014]/);
+      if (initialStage === "investigate") expect(html).toContain(websiteFinancialBaseline(locale).adjusted);
+      if (initialStage === "connect") expect(html).toContain(copy.narrative.journey.connect.note);
+    }
+  });
+
+  it.each(routing.locales)("gives every audience applications, benefits and role-specific depth in %s", async locale => {
+    const copy = locale === "pt-BR" ? pt.Website : en.Website;
+    for (const page of ["companies", "advisors", "investors"] as const) {
+      const html = renderToStaticMarkup(await PublicPageContent({locale,page}));
+      for (const key of ["oneTitle", "twoTitle", "threeTitle", "juniorTitle", "seniorTitle", "guidance"] as const) {
+        expect(html).toContain(copy.audienceDetail[page][key].replace(/&/g,"&amp;").replace(/'/g,"&#x27;"));
+      }
+      expect(html).toContain(copy.audienceDetail.perspectiveTitle);
+      expect(html).toContain("<details");
+    }
+  });
+
+  it("keeps matching native-language key trees for the new narrative", () => {
+    function keys(value: object, prefix = ""): string[] {
+      return Object.entries(value).flatMap(([key, item]) => typeof item === "object" ? keys(item, `${prefix}${key}.`) : [`${prefix}${key}`]);
+    }
+    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
   });
 
   it.each(routing.locales)("provides distinct, fully localized journeys for all three audiences in %s", locale => {

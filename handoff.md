@@ -1,3 +1,11 @@
+## 12 September 2026: institutional website narrative candidate
+
+Current work is `feat/institutional-website-narrative`, based on published 302fdcc. The founder's new hero, three-part offer, audience benefits, specialized method, task-to-transaction journey and institutional scope are implemented in PT/EN. Three audience and three solution pages offer deeper exploration. Existing app/auth/data and official hosting configuration are untouched. User-owned original checkout remains untouched.
+
+Repository checks, 17 focused website tests and 42-page HTTP/content validation passed; the complete final-candidate check is repeated before push. Finish exact-head CI, existing-project publication, production verification and local-main sync before claiming release complete. Browser/actual-iPhone QA and confirmation of an already operating recurring allocator-relations team remain unanswered asynchronous questions. The public copy does not claim such a team is fully operating. No browser acceptance or live mandate coverage should be inferred.
+
+Scope/evidence/rollback: `docs/build/PUBLIC_WEBSITE_NARRATIVE_2026_09_12.md`. Known unrelated PR603 database ordering flake remains out of scope. Never create another hosting project.
+
 ## 12 September 2026: product-led website revision, publication authorized
 
 The founder explicitly requested publication after the local preview handoff disclosed that browser and actual-iPhone validation were still pending. This supersedes the preview-only publication hold recorded below, not the visual-validation limitation. Repository-wide checks, exact-head CI and deployment verification are required before reporting publication complete.

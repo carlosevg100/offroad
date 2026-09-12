@@ -1,3 +1,9 @@
+## 12 September 2026: institutional website narrative candidate
+
+The founder supplied new hero wording and a detailed public-site narrative. Candidate `feat/institutional-website-narrative` starts from published main 302fdcc. The home now presents the three-part offer, professional empowerment, three capital perspectives, finance-authored methods, market intelligence, five explorable work stages and institutional scope. Audience and solution pages provide progressive detail. Current implementation, future institutional capabilities and fictional examples are distinguished. App, authentication, database and hosting configuration are unchanged.
+
+Local repository checks and the 42-page HTTP/content probe passed; web tests cover 106 files and 665 tests, including 17 website checks. Final candidate checks, exact-head CI and production verification remain separate release gates. Browser and actual-iPhone visual validation remain pending the unanswered QA authorization. See `docs/build/PUBLIC_WEBSITE_NARRATIVE_2026_09_12.md` for scope, claims, evidence and rollback.
+
 ## 12 September 2026: product-led website revision, publication authorized
 
 The founder explicitly requested publication after the local preview handoff disclosed that browser and actual-iPhone validation were still pending. This supersedes the preview-only publication hold recorded below, not the visual-validation limitation. Repository-wide checks, exact-head CI and deployment verification are required before reporting publication complete.
