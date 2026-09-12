@@ -1,4 +1,370 @@
 {
+  "Website": {
+    "common": {
+      "learn": "Conhecer a solução",
+      "explore": "Explorar o caso",
+      "audience": "Para quem",
+      "solutions": "Como a Offroad apoia o trabalho",
+      "workflow": "Como funciona",
+      "deliverables": "O que você leva para a decisão",
+      "illustrative": "Cenário ilustrativo. As entregas e os recursos aplicáveis são definidos conforme o escopo, os dados disponíveis e a revisão profissional.",
+      "backCases": "Todos os casos de uso",
+      "backSolutions": "Todas as soluções",
+      "backAudiences": "Todos os públicos",
+      "review": "Você define as premissas, revisa o trabalho e mantém a decisão.",
+      "related": "Continue explorando",
+      "question": "A pergunta",
+      "work": "O trabalho",
+      "result": "A entrega",
+      "demoNote": "Na demonstração, validamos os fluxos e recursos disponíveis para a sua equipe."
+    },
+    "benefits": {
+      "title": "Mais capacidade para o trabalho que exige a sua experiência.",
+      "body": "O valor não está em produzir mais texto. Está em chegar a uma análise melhor e conseguir avançar com ela.",
+      "one": {
+        "title": "Aprofunde a análise.",
+        "body": "Questione premissas, explore alternativas e entenda o que pode mudar a recomendação.",
+        "example": "Uma proposta parece mais barata. O cronograma de amortização conta outra história."
+      },
+      "two": {
+        "title": "Avance com menos retrabalho.",
+        "body": "Desenvolva pesquisa, modelos e materiais a partir do contexto da mesma companhia e da mesma operação.",
+        "example": "Mudou o investimento previsto? Revise o impacto no caixa, na necessidade de capital e no material de discussão."
+      },
+      "three": {
+        "title": "Concentre sua experiência onde ela mais importa.",
+        "body": "Tenha apoio na preparação e na execução para se dedicar à estrutura, à negociação e à decisão.",
+        "example": "Chegue à conversa com as perguntas relevantes, as alternativas e os pontos ainda em aberto."
+      }
+    },
+    "who": {
+      "title": "Uma plataforma. Diferentes responsabilidades.",
+      "body": "Quem busca capital, quem assessora e quem decide investir precisa de respostas diferentes. A Offroad parte do trabalho de cada um.",
+      "companies": {
+        "name": "Companhias e equipes financeiras",
+        "roles": "CFO · Tesouraria · FP&A · Controladoria",
+        "title": "Do plano da companhia às alternativas de financiamento.",
+        "body": "Entenda a necessidade de capital, avalie estruturas e prepare uma discussão fundamentada com o conselho e os financiadores."
+      },
+      "advisors": {
+        "name": "Assessores e equipes especializadas",
+        "roles": "Investment banking · DCM · Crédito · Corporate finance",
+        "title": "Mais capacidade para analisar, estruturar e assessorar.",
+        "body": "Transforme uma hipótese em uma abordagem específica. Aprofunde a análise e desenvolva o modelo e os materiais que sustentam a operação."
+      },
+      "investors": {
+        "name": "Alocadores e financiadores",
+        "roles": "Gestoras · Fundos de crédito · Bancos · Investidores",
+        "title": "Da oportunidade à sua própria convicção.",
+        "body": "Examine a aderência ao mandato, forme uma visão independente do risco e defina em quais condições faz sentido investir."
+      }
+    },
+    "why": {
+      "title": "Especialização que aparece no trabalho.",
+      "body": "Contexto financeiro, método e execução precisam conversar entre si.",
+      "one": {
+        "title": "Conhecimento aplicado à situação.",
+        "body": "A questão não é apenas explicar um instrumento. É entender se ele faz sentido para o caixa, as garantias, o momento e os objetivos da companhia."
+      },
+      "two": {
+        "title": "Os critérios da sua instituição importam.",
+        "body": "O trabalho deve refletir suas premissas, métodos de análise e padrões de materiais. A adoção começa pela definição desses critérios com a equipe."
+      },
+      "three": {
+        "title": "Continuidade entre análise e execução.",
+        "body": "Uma conclusão precisa chegar ao modelo, ao memo e à discussão com a contraparte. A Offroad foi concebida para apoiar essa continuidade."
+      }
+    },
+    "connection": {
+      "label": "INTELIGÊNCIA E CONEXÃO DE CAPITAL",
+      "title": "Entender os dois lados melhora o trabalho de cada um.",
+      "leftTitle": "Para quem busca capital",
+      "leftBody": "Avaliar a operação à luz de mandatos, restrições e critérios de financiadores ajuda a preparar uma abordagem mais aderente.",
+      "rightTitle": "Para quem aloca capital",
+      "rightBody": "Compreender a companhia, o uso dos recursos e a estrutura ajuda a selecionar oportunidades e conduzir a própria análise.",
+      "note": "Cada equipe recebe valor independentemente da presença da contraparte na plataforma. Qualquer conexão depende de aderência e autorização."
+    },
+    "casesIntro": {
+      "title": "Comece por uma situação de trabalho.",
+      "body": "Seis exemplos de como a Offroad pode apoiar uma decisão, da primeira pergunta aos materiais de discussão."
+    },
+    "lab": {
+      "label": "EXEMPLO INTERATIVO · COMPARAÇÃO DE PROPOSTAS",
+      "title": "A menor taxa resolve a sua necessidade?",
+      "body": "Mude o foco da análise. Veja como termos diferentes mudam a discussão, mesmo antes de calcular o custo efetivo.",
+      "focus": "Escolha o foco da comparação",
+      "liquidity": "Liquidez",
+      "flexibility": "Flexibilidade",
+      "cost": "Custo total",
+      "offerA": "Proposta A",
+      "offerB": "Proposta B",
+      "aTerms": "Menor spread. Amortização antecipada. Garantias mais restritivas.",
+      "bTerms": "Maior spread. Carência de principal. Maior liberdade sobre os ativos.",
+      "liquidityTitle": "O cronograma pode pesar mais que a taxa.",
+      "liquidityBody": "A proposta A começa a consumir caixa antes. A proposta B preserva liquidez durante a implantação, mas pode carregar um saldo devedor maior por mais tempo.",
+      "liquidityWork": "Compare o serviço da dívida com a geração de caixa em cada período e teste atrasos no início da operação.",
+      "flexibilityTitle": "Uma garantia também tem custo de oportunidade.",
+      "flexibilityBody": "Restrições sobre ativos e endividamento futuro podem limitar o próximo investimento. A liberdade da proposta B precisa ser confrontada com o seu preço.",
+      "flexibilityWork": "Revise garantias, covenants, restrições a novas dívidas e condições para liberação dos ativos.",
+      "costTitle": "Spread não é custo efetivo.",
+      "costBody": "Prazo, amortização, indexador, comissões e despesas alteram o custo e o risco. Não há uma vencedora sem modelar os fluxos e definir as premissas.",
+      "costWork": "Coloque os fluxos na mesma base, explicite taxas e despesas e compare também a sensibilidade ao indexador.",
+      "next": "Próximo passo da análise",
+      "note": "Comparação qualitativa e ilustrativa. Não constitui recomendação financeira nem representa uma simulação da plataforma."
+    },
+    "pages": {
+      "solutions": {
+        "title": "Orientação financeira. Análise. Execução.",
+        "intro": "Apoio especializado para entender as alternativas, desenvolver o trabalho e chegar às contrapartes adequadas."
+      },
+      "audiences": {
+        "title": "O seu papel define o trabalho.",
+        "intro": "Uma base de capacidades compartilhadas, aplicada às responsabilidades de companhias, assessores e alocadores."
+      },
+      "cases": {
+        "title": "Trabalho real começa com uma boa pergunta.",
+        "intro": "Explore situações ilustrativas de financiamento, assessoria, análise de crédito e investimento."
+      },
+      "strategy": {
+        "title": "Antes de escolher o instrumento, entenda a decisão.",
+        "intro": "Discuta estrutura de capital e financiamento a partir do negócio, do caixa e dos objetivos da companhia.",
+        "pain": "Crescer, refinanciar e preservar liquidez podem exigir estruturas muito diferentes. Começar pelo produto financeiro pode deixar de fora a questão que realmente precisa ser resolvida.",
+        "oneTitle": "Enquadre a necessidade",
+        "oneBody": "Relacione o plano de negócios com investimentos, capital de giro, vencimentos e disponibilidade de caixa.",
+        "twoTitle": "Explore as alternativas",
+        "twoBody": "Compare prazo, indexador, amortização, garantias e restrições. Identifique o que cada estrutura resolve e o que exige em troca.",
+        "threeTitle": "Construa o racional",
+        "threeBody": "Organize a recomendação, as condições necessárias e os pontos que precisam ser validados antes de avançar.",
+        "output": "Um conjunto de alternativas fundamentadas, premissas explícitas e uma pauta objetiva para a decisão.",
+        "example": "O investimento faz sentido. Qual estrutura de financiamento permite executá-lo sem comprometer a liquidez?"
+      },
+      "execution": {
+        "title": "Da análise ao modelo. Do modelo ao material.",
+        "intro": "Desenvolva o trabalho que sustenta uma recomendação, uma operação ou uma decisão de investimento.",
+        "pain": "Informações dispersas, definições divergentes e versões desencontradas tornam a execução mais difícil. O trabalho precisa manter consistência entre fontes, premissas, conclusões e entregas.",
+        "oneTitle": "Organize a base",
+        "oneBody": "Analise documentos e dados da companhia, identifique lacunas e diferencie informações reportadas de ajustes e hipóteses.",
+        "twoTitle": "Desenvolva a análise",
+        "twoBody": "Trabalhe projeções, sensibilidades e comparações a partir das premissas relevantes para a questão financeira.",
+        "threeTitle": "Prepare as entregas",
+        "threeBody": "Estruture modelos e materiais para o público da discussão: administração, cliente, comitê ou contraparte.",
+        "output": "Modelos, memos, apresentações e materiais de operação, conforme o escopo acordado e sujeitos à sua revisão.",
+        "example": "A premissa mudou. O que precisa ser revisto no modelo, na recomendação e no material?"
+      },
+      "intelligence": {
+        "title": "A operação certa para o mandato. O capital certo para a operação.",
+        "intro": "Inteligência para compreender a aderência e orientar conexões entre quem busca e quem oferece capital.",
+        "pain": "Uma lista de contatos não explica quem pode financiar a operação, sob quais condições ou por que ela merece atenção do investidor.",
+        "oneTitle": "Entenda a operação e o mandato",
+        "oneBody": "Relacione setor, porte, ticket, prazo, instrumento, garantias e critérios de investimento.",
+        "twoTitle": "Examine a aderência",
+        "twoBody": "Diferencie compatibilidades, restrições e informações ainda necessárias. A aderência orienta a análise; não equivale a aprovação.",
+        "threeTitle": "Prepare uma conexão qualificada",
+        "threeBody": "Defina o racional da abordagem e quais informações podem ser compartilhadas com cada contraparte, mediante autorização.",
+        "output": "Uma leitura fundamentada da aderência, perguntas para qualificação e materiais adequados à abordagem.",
+        "example": "Quem tem mandato para essa estrutura e o que precisa entender para avaliar a oportunidade?"
+      },
+      "companies": {
+        "title": "Entenda suas alternativas. Prepare a companhia.",
+        "intro": "Apoio para transformar o plano do negócio em uma discussão de capital bem fundamentada.",
+        "pain": "A decisão de financiamento precisa responder ao plano da companhia, não apenas à oferta disponível. Prazo, caixa, garantias e flexibilidade precisam ser avaliados em conjunto.",
+        "oneTitle": "Traduza o plano em necessidade",
+        "oneBody": "Conecte investimentos, operação e capital de giro ao caixa e ao perfil de endividamento.",
+        "twoTitle": "Discuta estruturas e implicações",
+        "twoBody": "Explore alternativas e seus efeitos sobre liquidez, serviço da dívida, garantias e capacidade de financiar os próximos passos.",
+        "threeTitle": "Prepare a conversa com o mercado",
+        "threeBody": "Desenvolva o racional e os materiais para o conselho e para contrapartes aderentes à necessidade.",
+        "output": "Uma base para decidir, defender a estrutura e negociar com melhor compreensão das alternativas.",
+        "example": "Queremos expandir. Quanto capital precisamos, quando e em quais condições?"
+      },
+      "advisors": {
+        "title": "Mais capacidade para analisar, estruturar e assessorar.",
+        "intro": "Apoio ao trabalho de investment banking, DCM, corporate finance e equipes técnicas de crédito.",
+        "pain": "A qualidade da assessoria depende da profundidade da análise e da capacidade de executá-la no ritmo da operação. A preparação não pode se limitar a um resumo da companhia.",
+        "oneTitle": "Desenvolva uma hipótese específica",
+        "oneBody": "Investigue o negócio, a estrutura de capital e os eventos que justificam uma abordagem ou recomendação.",
+        "twoTitle": "Aprofunde o trabalho técnico",
+        "twoBody": "Explore estruturas, confronte premissas e desenvolva análises de caixa, risco e crédito, conforme o mandato.",
+        "threeTitle": "Leve a análise à execução",
+        "threeBody": "Prepare modelos e materiais alinhados ao método da equipe, ao estágio da operação e ao público da discussão.",
+        "output": "Uma equipe com mais apoio para pesquisar, analisar e produzir, mantendo o julgamento e o relacionamento com os profissionais.",
+        "example": "Temos uma reunião amanhã. Qual é a hipótese de operação e como sustentá-la?"
+      },
+      "investors": {
+        "title": "Desenvolva convicção. Defina as condições para investir.",
+        "intro": "Apoio para alocadores e financiadores avaliarem oportunidades a partir do próprio mandato e da própria visão de risco.",
+        "pain": "O material do originador é um ponto de partida. A decisão exige uma análise independente da companhia, dos riscos, do retorno e da proteção oferecida pela estrutura.",
+        "oneTitle": "Faça uma primeira leitura orientada ao mandato",
+        "oneBody": "Identifique aderência, restrições e questões que merecem diligência antes de mobilizar a equipe.",
+        "twoTitle": "Construa sua própria visão",
+        "twoBody": "Confronte premissas, revise geração de caixa, analise cenários adversos e explicite os pontos de discordância.",
+        "threeTitle": "Defina condições e acompanhe a tese",
+        "threeBody": "Organize termos, proteções e questões para o comitê. Reavalie a posição quando o desempenho ou as condições mudarem.",
+        "output": "Uma visão independente para subsidiar diligência, comitê, negociação e acompanhamento. A decisão permanece com a instituição.",
+        "example": "A oportunidade se enquadra no mandato. O risco faz sentido e em quais condições?"
+      },
+      "growth": {
+        "title": "O plano de crescimento virou uma pergunta de capital.",
+        "intro": "Companhias e equipes financeiras",
+        "pain": "A companhia quer ampliar capacidade. O investimento está estimado, mas ainda falta entender o impacto do capital de giro, o ritmo de implantação e a folga de caixa necessária.",
+        "oneTitle": "Parta dos motores do negócio",
+        "oneBody": "Relacione expansão de capacidade, receitas, margens, investimento e necessidade de capital de giro.",
+        "twoTitle": "Localize a necessidade no tempo",
+        "twoBody": "Examine os períodos de maior pressão sobre o caixa e o efeito de atrasos na implantação.",
+        "threeTitle": "Discuta estruturas compatíveis",
+        "threeBody": "Compare desembolso, carência e amortização com a geração de caixa esperada e as restrições da companhia.",
+        "output": "Projeção de caixa, leitura da necessidade de capital e alternativas para discussão com o conselho e financiadores.",
+        "example": "Quanto precisamos captar para crescer sem ficar sem caixa no caminho?"
+      },
+      "terms": {
+        "title": "A proposta com menor taxa é realmente a melhor?",
+        "intro": "Companhias, assessores e equipes de tesouraria",
+        "pain": "Duas propostas financiam o mesmo projeto, mas diferem em amortização, garantias, comissões e flexibilidade. Comparar apenas o spread pode esconder a principal diferença.",
+        "oneTitle": "Normalize as condições",
+        "oneBody": "Organize as propostas na mesma base, incluindo indexadores, encargos, despesas e obrigações contratuais.",
+        "twoTitle": "Compare os efeitos no caixa",
+        "twoBody": "Modele os fluxos, o serviço da dívida e as sensibilidades relevantes antes de concluir sobre custo e capacidade de pagamento.",
+        "threeTitle": "Prepare a negociação",
+        "threeBody": "Identifique quais condições alteram a recomendação e quais mudanças valem ser discutidas com cada financiador.",
+        "output": "Comparação estruturada, pontos de negociação e racional para a decisão, com premissas e limitações explícitas.",
+        "example": "Vale pagar um spread maior para preservar caixa durante a implantação?"
+      },
+      "pitch": {
+        "title": "Uma reunião com uma tese, não com um pitch genérico.",
+        "intro": "Assessores, bankers e equipes de originação",
+        "pain": "Há uma reunião com a administração de uma companhia. A equipe precisa entender o que mudou no negócio, onde existe uma necessidade financeira e por que uma operação faria sentido agora.",
+        "oneTitle": "Investigue a companhia",
+        "oneBody": "Examine divulgações, estratégia, investimentos, endividamento e fatos relevantes para a abordagem.",
+        "twoTitle": "Teste a hipótese de operação",
+        "twoBody": "Relacione a necessidade identificada às alternativas de estrutura e às perguntas que a administração precisa responder.",
+        "threeTitle": "Prepare uma conversa objetiva",
+        "threeBody": "Desenvolva o briefing, o roteiro de perguntas e o material que apresenta a tese sem tratar hipóteses como fatos.",
+        "output": "Briefing da companhia, hipótese de operação e apresentação específica para a reunião.",
+        "example": "O que temos de relevante para discutir com essa companhia amanhã?"
+      },
+      "credit": {
+        "title": "Do pedido de financiamento ao racional de crédito.",
+        "intro": "Equipes técnicas de crédito e profissionais especializados",
+        "pain": "Os documentos chegaram. A análise precisa distinguir o desempenho reportado da geração de caixa que efetivamente sustenta a dívida, dentro dos critérios da instituição.",
+        "oneTitle": "Revise a qualidade das informações",
+        "oneBody": "Concilie fontes, identifique ajustes propostos e esclareça inconsistências ou lacunas relevantes.",
+        "twoTitle": "Examine capacidade e proteção",
+        "twoBody": "Analise caixa, endividamento, cobertura, estrutura e cenários adversos de acordo com o método aplicável.",
+        "threeTitle": "Organize o parecer",
+        "threeBody": "Explicite riscos, mitigantes, condições, exceções à política e questões pendentes para revisão da equipe.",
+        "output": "Uma base de análise e um parecer de apoio à avaliação institucional. A aprovação de crédito não é delegada à plataforma.",
+        "example": "O que sustenta a capacidade de pagamento e em quais condições essa estrutura é aceitável?"
+      },
+      "investment": {
+        "title": "Do material do originador à sua própria visão.",
+        "intro": "Gestoras, fundos de crédito e financiadores",
+        "pain": "O teaser parece aderente ao mandato. Antes de avançar, é preciso entender quais premissas sustentam a tese e se a equipe concorda com elas.",
+        "oneTitle": "Examine a aderência inicial",
+        "oneBody": "Confronte a oportunidade com critérios de instrumento, setor, ticket, prazo, garantias e retorno.",
+        "twoTitle": "Desenvolva uma leitura independente",
+        "twoBody": "Questione ajustes, reconstrua hipóteses relevantes e avalie cenários adversos sem confundir a tese do originador com a do investidor.",
+        "threeTitle": "Prepare a diligência e o comitê",
+        "threeBody": "Organize as perguntas, os documentos adicionais e as condições que podem tornar a oportunidade investível.",
+        "output": "Primeira leitura, pauta de diligência e memo de investimento orientados ao mandato e à visão da instituição.",
+        "example": "O que precisamos confirmar para formar convicção sobre essa oportunidade?"
+      },
+      "monitoring": {
+        "title": "O desempenho mudou. A tese continua de pé?",
+        "intro": "Alocadores, financiadores e equipes de acompanhamento",
+        "pain": "Uma companhia reportou desempenho abaixo do esperado ou solicitou um waiver. A equipe precisa entender o efeito no caixa, nas obrigações e na proteção da posição.",
+        "oneTitle": "Identifique o que mudou",
+        "oneBody": "Compare o desempenho reportado com a base da análise anterior e esclareça as causas dos desvios.",
+        "twoTitle": "Reavalie a posição",
+        "twoBody": "Examine liquidez, serviço da dívida, covenants e hipóteses de recuperação ou deterioração.",
+        "threeTitle": "Prepare a discussão",
+        "threeBody": "Organize o racional para acompanhamento, diligência adicional, renegociação ou análise do waiver.",
+        "output": "Análise atualizada, pontos de atenção e material para decisão do comitê ou da equipe responsável.",
+        "example": "O desvio é temporário ou muda as condições nas quais aceitamos o risco?"
+      }
+    },
+    "about": {
+      "title": "Construída por quem conhece o trabalho por dentro.",
+      "intro": "Experiência em investment banking, DCM e corporate finance aplicada ao desenvolvimento de uma plataforma de IA especializada.",
+      "whyTitle": "Uma boa resposta é apenas parte do trabalho.",
+      "whyBody": "Em finanças, a análise precisa sobreviver às perguntas da administração, ao escrutínio do comitê e à negociação. Precisa aparecer no modelo, no material e na estrutura proposta. É essa continuidade que orienta a Offroad.",
+      "experienceTitle": "Conhecimento de mercado. Compromisso com a execução.",
+      "experienceBody": "A Offroad foi fundada a partir de 20 anos de experiência profissional do fundador em investment banking, estruturação de dívida e finanças corporativas. Essa experiência orienta as perguntas que a plataforma precisa ajudar a responder e a qualidade do trabalho que precisa apoiar.",
+      "principleOne": "Especialização antes de generalização.",
+      "principleOneBody": "Estrutura de capital e financiamento por dívida exigem contexto de negócio, conhecimento técnico e atenção aos termos da operação.",
+      "principleTwo": "Capacidade de execução, com julgamento profissional.",
+      "principleTwoBody": "A IA apoia o desenvolvimento do trabalho. As premissas, a revisão, os relacionamentos e as decisões permanecem com as pessoas.",
+      "principleThree": "Valor para cada lado do mercado.",
+      "principleThreeBody": "Companhias, assessores e investidores têm necessidades próprias. Nenhum deles deve depender da participação de outro para começar a receber valor.",
+      "teamNote": "Conheça a equipe e a abordagem de adoção em uma conversa com a Offroad."
+    },
+    "security": {
+      "title": "Segurança para o trabalho institucional.",
+      "intro": "Informações financeiras exigem controle de acesso, cuidado com documentos e transparência sobre o que está implementado e o que ainda está em desenvolvimento.",
+      "oneTitle": "Acesso delimitado por organização",
+      "oneBody": "A arquitetura utiliza políticas de acesso no banco de dados e verificações no servidor para delimitar o acesso a registros conforme a organização e as permissões aplicáveis.",
+      "twoTitle": "Documentos em armazenamento privado",
+      "twoBody": "O armazenamento de documentos é privado, com acesso associado ao contexto de organização e às autorizações da aplicação.",
+      "threeTitle": "Telemetria com coleta limitada",
+      "threeBody": "A configuração de telemetria web desabilita gravação de sessões e captura automática de eventos. Os eventos de produto usam campos permitidos, e o monitoramento de erros inclui tratamento de dados sensíveis.",
+      "fourTitle": "Verificações no desenvolvimento",
+      "fourBody": "O processo de desenvolvimento inclui verificações automatizadas de código e dependências. Esses controles apoiam a prevenção e a identificação de problemas, sem eliminar a necessidade de avaliação contínua.",
+      "socTitle": "SOC 2: objetivo do programa, não uma certificação atual.",
+      "socBody": "Nosso programa de segurança inclui como objetivo uma avaliação independente SOC 2 Type II. A Offroad ainda não possui relatório SOC 2.",
+      "reviewTitle": "A avaliação da sua instituição merece uma conversa específica.",
+      "reviewBody": "Requisitos de identidade, retenção, fornecedores, tratamento de dados e escopo de uso devem ser verificados no processo de avaliação. Não presumimos que uma configuração atenda a todas as políticas institucionais.",
+      "boundary": "As descrições acima apresentam controles da arquitetura e do processo de desenvolvimento. Não constituem garantia de adequação a um requisito específico ou declaração de certificação.",
+      "cta": "Conversar sobre segurança"
+    },
+    "demo": {
+      "title": "Vamos partir do trabalho da sua equipe.",
+      "intro": "Conte o que você quer analisar, estruturar ou executar. A conversa será sobre como a Offroad pode apoiar esse trabalho e quais recursos estão disponíveis para o seu escopo.",
+      "name": "Nome",
+      "email": "E-mail profissional",
+      "institution": "Instituição",
+      "role": "Seu contexto",
+      "choose": "Selecione",
+      "message": "Qual situação você gostaria de explorar?",
+      "optional": "Opcional. Não inclua informações confidenciais ou documentos de operações.",
+      "submit": "Continuar por e-mail",
+      "note": "Este formulário prepara um e-mail para a Offroad. Nada é enviado pelo site: revise e envie no seu aplicativo de e-mail.",
+      "direct": "Prefere escrever diretamente?",
+      "prepared": "Seu aplicativo de e-mail foi solicitado. Se não abrir, escreva para o endereço abaixo. Seu pedido só será enviado quando você confirmar o envio no e-mail.",
+      "subject": "Solicitação de demonstração da Offroad",
+      "privacy": "Saiba como tratamos informações de contato.",
+      "stepsTitle": "O que vamos discutir",
+      "stepOne": "Seu fluxo de trabalho e as decisões que precisa apoiar.",
+      "stepTwo": "Os dados, métodos e materiais utilizados pela equipe.",
+      "stepThree": "O escopo de adoção e os requisitos da sua instituição."
+    },
+    "privacy": {
+      "title": "Privacidade no site",
+      "intro": "Esta página descreve o contato pelo site público. O uso da plataforma e o tratamento de informações de uma instituição dependem também dos termos e condições aplicáveis à relação com a Offroad.",
+      "oneTitle": "Informações de contato",
+      "oneBody": "O formulário de demonstração prepara uma mensagem no seu aplicativo de e-mail. Os campos não são enviados a um servidor pelo formulário. Ao enviar a mensagem, você compartilha com a Offroad as informações que decidiu incluir.",
+      "twoTitle": "Uso das informações",
+      "twoBody": "As informações enviadas por e-mail são utilizadas para responder ao contato e discutir a solicitação. Evite enviar documentos financeiros, dados pessoais de terceiros ou informações confidenciais antes de estabelecer o escopo e as condições de uso.",
+      "threeTitle": "Funcionamento e monitoramento",
+      "threeBody": "O site e sua infraestrutura podem processar dados técnicos necessários à entrega das páginas, segurança e diagnóstico de erros. A aplicação possui configuração de telemetria com captura automática e gravação de sessões desabilitadas.",
+      "fourTitle": "Dúvidas e solicitações",
+      "fourBody": "Para esclarecer o tratamento das suas informações ou solicitar acesso, correção ou exclusão de dados de contato, escreva para o endereço abaixo. Requisitos de tratamento de dados da plataforma devem ser discutidos antes da adoção institucional."
+    },
+    "legal": {
+      "title": "Termos de uso do site",
+      "intro": "O site apresenta a Offroad, suas áreas de atuação e exemplos de aplicação. Não substitui uma demonstração do escopo disponível nem os instrumentos contratuais de contratação da plataforma.",
+      "oneTitle": "Conteúdo informativo",
+      "oneBody": "As descrições e os exemplos têm finalidade informativa. Não constituem recomendação de investimento, oferta de valores mobiliários, compromisso de financiamento ou aprovação de crédito.",
+      "twoTitle": "Exemplos e disponibilidade",
+      "twoBody": "Os casos e as imagens conceituais são ilustrativos e não representam resultados de clientes. Funcionalidades, entregas, condições comerciais e requisitos institucionais devem ser confirmados com a Offroad.",
+      "threeTitle": "Julgamento e responsabilidade profissional",
+      "threeBody": "O uso de IA não dispensa a validação das fontes, das premissas, dos cálculos e dos materiais por profissionais responsáveis. Decisões de financiamento e investimento permanecem com as partes competentes.",
+      "fourTitle": "Contato",
+      "fourBody": "Dúvidas sobre o site, demonstrações e condições de uso podem ser encaminhadas à Offroad pelo endereço abaixo."
+    },
+    "nav": {"solutions":"Soluções","audiences":"Para quem","cases":"Casos de uso","about":"Sobre","security":"Segurança","demo":"Solicitar demonstração","login":"Entrar","menu":"Menu","close":"Fechar menu","skip":"Ir para o conteúdo","language":"Idioma","home":"Página inicial"},
+    "hero": {"title":"Plataforma de IA agêntica especializada em estrutura de capital e financiamento por dívida.","support":"Expert Advisor com a capacidade de execução de um analista dedicado.","credit":"Criada por profissionais de finanças, para profissionais de finanças.","secondary":"Ver casos de uso","motion":"Pausar ou retomar o movimento do cenário"},
+    "intro": {"title":"Da questão financeira ao trabalho que precisa ser feito.","body":"Discuta alternativas, analise empresas e oportunidades, desenvolva modelos e materiais e conecte-se às contrapartes certas.","caption":"Ilustração conceitual da experiência. Exemplos e dados fictícios.","alt":"Mesa de trabalho com modelo financeiro e term sheet à esquerda e a interface Offroad à direita."},
+    "footer": {"title":"Qual é a próxima decisão de capital?","body":"Traga uma situação real. Conheça como a Offroad pode apoiar o trabalho da sua equipe.","privacy":"Privacidade","legal":"Termos de uso","rights":"Todos os direitos reservados."}
+  },
   "Errors": {
     "notFoundTitle": "Página não encontrada",
     "notFoundBody": "O endereço não existe ou não está disponível neste ambiente.",

@@ -1,3 +1,9 @@
+## 11 September 2026: public Studio website implementation
+
+Founder-authorized public-site replacement implemented on isolated branch feat/studio-public-website from main da3157b. The new site contains 42 localized public URLs, the exact approved hero, original Offroad logo assets, separate hero/product photography, audience and solution pages, six illustrative use cases, About, Security and explicit email-based demo contact. App/auth routes, financial workflows, authorization, database and deployment flags are unchanged. SOC 2 is a future objective, not a current report. No investor endorsement or customer outcome is implied.
+
+Final local pnpm check passed lint, typecheck, tests and all 43 build tasks. The web suite passed 106 files and 655 tests, including seven focused website tests. Read-only HTTP verification passed all 42 localized pages, five assets, sitemap, robots and the unknown-route 404 boundary. Exact-head remote CI and production verification remain pending at this checkpoint; no production publication is claimed yet. See docs/build/PUBLIC_WEBSITE_RELEASE_2026_09_11.md for scope, claim boundaries, contact limitations, evidence and rollback.
+
 ## 10 September 2026: receivables history coverage correction (local candidate)
 
 Published baseline is main `220a37f` (PR590); prior publication checkpoints below are historical. The targeted economic review passed 67 tests against identical published sources without paid model calls. It found no arithmetic discrepancy in inspected borrowing-base and waterfall fixtures, but the R01 wrapper dropped dynamic-history coverage while retaining reported aggregate performance.
