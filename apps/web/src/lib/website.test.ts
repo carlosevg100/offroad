@@ -13,7 +13,9 @@ import {ProductHome} from "@/components/public-product-home";
 import {PublicWorkbench} from "@/components/public-workbench";
 import {PublicCapitalJourney, capitalJourneyStages} from "@/components/public-capital-journey";
 import {PublicAudienceShowcase} from "@/components/public-audience-showcase";
-import {websiteFinancialBaseline} from "./website-example";
+import {PublicAdvisorDemo, PublicAnalystDemo, PublicConnectionDemo, advisorTopics, analystDocuments, fillOfferText} from "@/components/public-offer-demos";
+import {websiteFinancialBaseline, websiteOfferExample} from "./website-example";
+import {websiteOfferFixture} from "@offroad/testing-fixtures";
 
 vi.mock("next-intl/server", () => ({
   getMessages: async ({locale}: {locale: string}) => locale === "pt-BR" ? pt : en,
@@ -86,9 +88,10 @@ describe("public website boundaries", () => {
     const positions = sections.map(id => html.indexOf(`id="${id}"`));
     expect(positions.every(position => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((a,b) => a-b));
-    expect(html).toContain(copy.offering.advisor.title);
-    expect(html).toContain(copy.offering.analyst.title);
-    expect(html).toContain(copy.offering.connection.title);
+    const text = html.replace(/<[^>]*>/g, "").replace(/&#x27;/g,"'");
+    expect(text).toContain(copy.offering.advisor.title);
+    expect(text).toContain(copy.offering.analyst.title);
+    expect(text).toContain(copy.offering.connection.title);
     expect(html).toContain(copy.narrative.journey.example);
     expect(html).toContain(copy.offering.empowerTitle);
     expect(html).toContain(copy.offering.empowerAccent);
@@ -96,8 +99,10 @@ describe("public website boundaries", () => {
     expect(html).not.toContain("Not fewer of them");
     expect(html).toContain(`href="${publicPath(locale,"companies")}"`);
     expect(html).toContain(copy.visualHome.audienceSelector);
-    expect(html).toContain(copy.offering.visualAnalyst);
-    expect(html).toContain(websiteFinancialBaseline(locale).adjusted);
+    expect(html).toContain(copy.offering.demo.analyst.modelTitle);
+    expect(html).toContain(copy.offering.demo.connection.conditional);
+    expect((html.match(/data-tone="muted"/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    expect(html).not.toContain("Alongar a dívida ou financiar a expansão?");
     expect(html).not.toContain('data-motion="active"');
     expect(html).toContain("<details");
     expect(html).not.toContain(copy.productHome.title);
@@ -155,6 +160,46 @@ describe("public website boundaries", () => {
       return Object.entries(value).flatMap(([key, item]) => typeof item === "object" ? keys(item, `${prefix}${key}.`) : [`${prefix}${key}`]);
     }
     for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
+  });
+
+  it.each(routing.locales)("provides three substantive advisor conversations and four inspectable deliverables in %s", locale => {
+    const c = (locale === "pt-BR" ? pt : en).Website.offering;
+    const data = websiteOfferExample(locale);
+    const escape = (value:string) => value.replace(/&/g,"&amp;").replace(/'/g,"&#x27;");
+    for (const initialTopic of advisorTopics) {
+      const html = renderToStaticMarkup(createElement(PublicAdvisorDemo,{copy:c.demo.advisor,data,exampleLabel:c.demo.example,initialTopic}));
+      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(html).toContain(escape(fillOfferText(c.demo.advisor[initialTopic].question,data)));
+      expect(html).toContain(escape(c.demo.advisor[initialTopic].next));
+      expect(html).not.toMatch(/\{(?:receivables|spread)\}/);
+    }
+    for (const initialDocument of analystDocuments) {
+      const html = renderToStaticMarkup(createElement(PublicAnalystDemo,{copy:c.demo.analyst,data,financials:websiteFinancialBaseline(locale),exampleLabel:c.demo.example,replayLabel:c.demo.replay,initialDocument}));
+      expect(html.match(/aria-expanded="true"/g)).toHaveLength(1);
+      expect(html).toContain(fillOfferText(c.demo.analyst.received,data));
+      expect(html.match(new RegExp(c.demo.analyst.source,"g"))).toHaveLength(4);
+      expect(html).toContain(escape(c.demo.analyst[`${initialDocument}Detail`]));
+      if (initialDocument === "model") expect(html).toContain(websiteFinancialBaseline(locale).adjusted);
+      expect(html).not.toContain('data-play="true"');
+    }
+    const fit = renderToStaticMarkup(createElement(PublicConnectionDemo,{copy:c.demo.connection,data}));
+    expect(fit).toContain(c.demo.connection.fictional);
+    expect(fit).toContain(c.demo.connection.conditional);
+    expect(fit).toContain(fillOfferText(c.demo.connection.concentrationValue,data));
+    expect(fit).toContain(c.demo.connection.scoreNote);
+    expect(fit).toContain('data-outcome="adjust"');
+    expect(fit).not.toContain('data-play="true"');
+  });
+
+  it("discloses a synthetic score with explicit weights and never presents the concentration exception as a fit", () => {
+    const f = websiteOfferFixture;
+    expect(f.synthetic).toBe(true);
+    expect(f.criteria.reduce((sum,item)=>sum+item.earned,0)).toBe(f.score);
+    expect(f.criteria.reduce((sum,item)=>sum+item.weight,0)).toBe(f.scoreMaximum);
+    expect(f.transaction.debtorConcentrationPercent).toBeGreaterThan(f.lender.maxDebtorConcentrationPercent);
+    expect(f.criteria.find(item=>item.key==="concentration")).toMatchObject({outcome:"adjust",earned:0});
+    expect(pt.Website.offering.analyst.title).toBe("Um analista que faz o trabalho inteiro.");
+    expect(pt.Website.offering.connection.title).toBe("A operação chega a quem compra esse risco.");
   });
 
   it.each(routing.locales)("provides distinct, fully localized journeys for all three audiences in %s", locale => {

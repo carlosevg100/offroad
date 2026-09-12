@@ -1,3 +1,11 @@
+## 12 September 2026: offer work demonstrations candidate
+
+Current revision is `feat/offer-work-demonstrations`, based on published 90ad9e (PR607). The founder clarified the references as Forward and OffDeal. The offer combines three realistic advisor conversations, human-directed analyst execution into four explorable materials and a fictional fund profile with score/rationale and a visible concentration restriction. Empowerment remains directly after the hero. Copy, grayscale hierarchy and finite motion are implemented in PT/EN; the approved hero is unchanged.
+
+Local repository checks passed, with 22 website tests, 106 web files / 670 tests and 43 build tasks. Read-only HTTP verification passed 42 pages and five assets. Finish exact-head Quality/Security/Vercel gates, production verification and clean-main synchronization. Browser/actual-iPhone QA remains unapproved and must not be described as complete. Do not create another hosting project or mix in PR603. The original user-owned checkout is untouched.
+
+Scope, evidence, claim boundaries and rollback: `docs/build/PUBLIC_WEBSITE_OFFER_DEMOS_2026_09_12.md`.
+
 ## 12 September 2026: visual website cards candidate
 
 Current revision is `feat/visual-website-cards`, based on published 8fc6ec (PR606). The founder asked for professional empowerment immediately after the hero, a stronger affirmative line, visual section design and a less silver hero. Implemented in both locales with cards, audience selection, expandable methods, progressive motion and restored blue/amber photo treatment. No new image or private application change was necessary.

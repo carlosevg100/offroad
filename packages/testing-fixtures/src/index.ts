@@ -30,6 +30,7 @@ export const supermarketFixture = {
 } as const;
 
 export * from "./document-intake";
+export * from "./website-offer";
 export * from "./m0-governance";
 export * from "./m0-closeout";
 export * from "./camil-management/truth";
