@@ -90,10 +90,12 @@ describe("public website boundaries", () => {
     const positions = sections.map(id => html.indexOf(`id="${id}"`));
     expect(positions.every(position => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((a,b) => a-b));
-    const text = html.replace(/<[^>]*>/g, "").replace(/&#x27;/g,"'");
-    expect(text).toContain(copy.offering.advisor.title);
-    expect(text).toContain(copy.offering.analyst.title);
-    expect(text).toContain(copy.offering.connection.title);
+    for (const key of ["advisor", "analyst", "connection"] as const) {
+      const role = copy.offering[key];
+      const heading = renderToStaticMarkup(createElement("h3", {id:`offer-${key}-title`},
+        role.title.slice(0,-role.accent.length), createElement("span", null, role.accent)));
+      expect(html).toContain(heading);
+    }
     expect(html).toContain(copy.narrative.journey.example);
     expect(html).toContain(copy.offering.empowerTitle);
     expect(html).toContain(copy.offering.empowerAccent);
