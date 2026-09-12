@@ -397,6 +397,31 @@ begin
 end;
 $$;
 
+-- Both events were recorded in this transaction, so they share the exact same `confirmed_at`
+-- (`now()` is the transaction timestamp). The reading must still name the renewal as the last
+-- confirmation: the tie is broken by the insertion sequence, never by a random id.
+do $$
+declare listed jsonb;
+begin
+  if (select count(distinct confirmed_at) from public.provider_mandate_confirmations
+      where mandate_id = (select value from mandate_state where key = 'expired')) <> 1 then
+    raise exception 'this check needs both confirmations to share confirmed_at, the case the tiebreak exists for';
+  end if;
+  if (select channel from public.provider_mandate_confirmations
+      where mandate_id = (select value from mandate_state where key = 'expired')
+      order by sequence desc limit 1) is distinct from 'recorded_contact' then
+    raise exception 'the renewal must carry the greater sequence';
+  end if;
+  listed := public.list_provider_mandates_v1('20000000-0000-4000-8000-000000000e01'::uuid);
+  if not exists (
+    select 1 from jsonb_array_elements(listed) entry
+    where entry->>'id' = (select value from mandate_state where key = 'expired')::text
+      and entry->'lastConfirmation'->>'channel' = 'recorded_contact') then
+    raise exception 'the last confirmation must be the one recorded last, not a coin flip, got %', listed;
+  end if;
+end;
+$$;
+
 -- ---------------------------------------------------------------------------------------------
 -- 6. Withdrawal is terminal and leaves matching in the same transaction
 -- ---------------------------------------------------------------------------------------------
@@ -431,6 +456,11 @@ begin
     '20000000-0000-4000-8000-000000000e01'::uuid,
     (select value from mandate_state where key = 'expired_fund'))->>'effectiveStatus' is distinct from 'withdrawn' then
     raise exception 'the surface must say the mandate was withdrawn';
+  end if;
+  if pg_temp.projected_record(
+    '20000000-0000-4000-8000-000000000e01'::uuid,
+    (select value from mandate_state where key = 'expired_fund'))->>'channel' is distinct from 'recorded_contact' then
+    raise exception 'the projection must name the renewal as the last confirmation, same tiebreak as the listing';
   end if;
 end;
 $$;

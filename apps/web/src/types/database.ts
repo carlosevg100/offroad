@@ -6925,6 +6925,7 @@ export type Database = {
           mandate_version_number: number
           note: string | null
           organization_id: string
+          sequence: number
           valid_from: string
           valid_until: string | null
         }
@@ -6940,6 +6941,7 @@ export type Database = {
           mandate_version_number: number
           note?: string | null
           organization_id: string
+          sequence?: number
           valid_from: string
           valid_until?: string | null
         }
@@ -6955,6 +6957,7 @@ export type Database = {
           mandate_version_number?: number
           note?: string | null
           organization_id?: string
+          sequence?: number
           valid_from?: string
           valid_until?: string | null
         }
