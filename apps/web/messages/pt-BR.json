@@ -1,5 +1,11 @@
 {
   "Website": {
+    "visualHome": {
+      "audienceSelector": "Escolha sua perspectiva", "example": "Uma pergunta da sua equipe", "outputs": "Exemplos de entregas",
+      "companies": {"one": "Plano de capital", "two": "Projeção de caixa", "three": "Material do conselho"},
+      "advisors": {"one": "Briefing do cliente", "two": "Modelo e termos", "three": "Info pack da operação"},
+      "investors": {"one": "Análise independente", "two": "Pauta de diligência", "three": "Memo para o comitê"}
+    },
     "solutionDepth": {
       "title": "O trabalho, em profundidade.", "example": "Explore uma etapa na prática", "output": "Para sua decisão",
       "strategy": {
@@ -132,8 +138,13 @@
       "connection": {"title": "Qualified capital connection", "benefit": "Saiba com quem conversar. E por quê.", "body": "A necessidade de capital encontra critérios de quem financia. O mandato de investimento orienta quais oportunidades merecem atenção.", "detail": "Instrumento, finalidade, ticket, prazo, risco e garantias ajudam a qualificar a aderência e a preparar a abordagem. Qualificação não é garantia de aprovação ou financiamento.", "link": "Explore a conexão de capital"},
       "more": "Entenda o papel",
       "principle": "Pense com expertise financeira. Execute com precisão. Conecte-se ao capital certo.",
-      "empowerTitle": "Mais capacidade para o profissional.\nNão menos profissionais.",
-      "empowerBody": "A Offroad amplia o que sua equipe consegue fazer. O julgamento, a relação com o cliente e a decisão continuam com você."
+      "empowerTitle": "Seu julgamento financeiro.",
+      "empowerAccent": "Sua capacidade de execução, ampliada.",
+      "empowerBody": "Mais profundidade para analisar. Mais capacidade para executar. O relacionamento e a decisão continuam com você.",
+      "human": "Sua expertise", "platform": "Offroad",
+      "visualAdvisor": "Uma decisão em discussão", "visualQuestion": "Alongar a dívida ou financiar a expansão?", "visualAdvisorOne": "Liquidez", "visualAdvisorTwo": "Garantias", "visualAdvisorThree": "Flexibilidade",
+      "visualAnalyst": "Uma base reconciliada", "visualReported": "EBITDA reportado", "visualAdjustment": "Ajustes aprovados", "visualAdjusted": "EBITDA ajustado", "visualUnit": "Exemplo fictício · R$ milhões",
+      "visualConnection": "Operação × mandato", "visualConnectionOne": "Instrumento", "visualConnectionTwo": "Prazo e ticket", "visualConnectionThree": "Risco e garantias", "visualFit": "Critérios de aderência"
     },
     "productHome": {
       "title": "Veja a Offroad no seu trabalho.",

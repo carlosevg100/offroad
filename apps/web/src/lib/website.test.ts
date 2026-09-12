@@ -12,6 +12,7 @@ import robots from "@/app/robots";
 import {ProductHome} from "@/components/public-product-home";
 import {PublicWorkbench} from "@/components/public-workbench";
 import {PublicCapitalJourney, capitalJourneyStages} from "@/components/public-capital-journey";
+import {PublicAudienceShowcase} from "@/components/public-audience-showcase";
 import {websiteFinancialBaseline} from "./website-example";
 
 vi.mock("next-intl/server", () => ({
@@ -81,7 +82,7 @@ describe("public website boundaries", () => {
   it.each(routing.locales)("presents the offer, audiences, method, journey and trust in the requested order in %s", locale => {
     const copy = locale === "pt-BR" ? pt.Website : en.Website;
     const html = renderToStaticMarkup(createElement(ProductHome, {locale, copy}));
-    const sections = ["offering", "audiences", "by-finance", "capital-intelligence", "how-it-works", "institutional-trust"];
+    const sections = ["professional-capacity", "offering", "audiences", "by-finance", "capital-intelligence", "how-it-works", "institutional-trust"];
     const positions = sections.map(id => html.indexOf(`id="${id}"`));
     expect(positions.every(position => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((a,b) => a-b));
@@ -89,15 +90,36 @@ describe("public website boundaries", () => {
     expect(html).toContain(copy.offering.analyst.title);
     expect(html).toContain(copy.offering.connection.title);
     expect(html).toContain(copy.narrative.journey.example);
-    for (const audience of ["companies", "advisors", "investors"] as const) {
-      expect(html).toContain(`href="${publicPath(locale,audience)}"`);
-    }
+    expect(html).toContain(copy.offering.empowerTitle);
+    expect(html).toContain(copy.offering.empowerAccent);
+    expect(html).not.toContain("Não menos profissionais");
+    expect(html).not.toContain("Not fewer of them");
+    expect(html).toContain(`href="${publicPath(locale,"companies")}"`);
+    expect(html).toContain(copy.visualHome.audienceSelector);
+    expect(html).toContain(copy.offering.visualAnalyst);
+    expect(html).toContain(websiteFinancialBaseline(locale).adjusted);
+    expect(html).not.toContain('data-motion="active"');
     expect(html).toContain("<details");
     expect(html).not.toContain(copy.productHome.title);
     expect(html).not.toMatch(/[↗▶Ⅱ\u2013\u2014]/);
     expect(html).not.toContain("Da questão financeira");
     expect(html).not.toContain("Ilustração conceitual da experiência");
     expect(html).not.toContain("A menor taxa resolve");
+  });
+
+  it.each(routing.locales)("offers three selectable audience cards and the correct detail link in %s", locale => {
+    const copy = locale === "pt-BR" ? pt.Website : en.Website;
+    const labels = {companies:copy.workbench.companies.label,advisors:copy.workbench.advisors.label,investors:copy.workbench.investors.label};
+    const examples = {companies:copy.pages.companies.example,advisors:copy.pages.advisors.example,investors:copy.pages.investors.example};
+    for (const initialAudience of ["companies", "advisors", "investors"] as const) {
+      const html = renderToStaticMarkup(createElement(PublicAudienceShowcase, {locale, audiences:copy.narrative.audiences, labels, examples, visuals:copy.visualHome, initialAudience}));
+      expect(html.match(/<button /g)).toHaveLength(3);
+      expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
+      expect(html).toContain(`href="${publicPath(locale,initialAudience)}"`);
+      expect(html).toContain(copy.visualHome[initialAudience].three);
+      expect(html).toContain(copy.narrative.audiences[initialAudience].benefit);
+      expect(html).not.toContain("undefined");
+    }
   });
 
   it.each(routing.locales)("renders all five example stages with one active control and distinct artifacts in %s", locale => {
@@ -132,7 +154,7 @@ describe("public website boundaries", () => {
     function keys(value: object, prefix = ""): string[] {
       return Object.entries(value).flatMap(([key, item]) => typeof item === "object" ? keys(item, `${prefix}${key}.`) : [`${prefix}${key}`]);
     }
-    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
+    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
   });
 
   it.each(routing.locales)("provides distinct, fully localized journeys for all three audiences in %s", locale => {
