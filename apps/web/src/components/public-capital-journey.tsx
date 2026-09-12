@@ -19,7 +19,7 @@ export function PublicCapitalJourney({copy: c, financialCopy: f, financials, ini
   return <div className={styles.journey}>
     <div className={styles.steps} role="group" aria-label={c.selector}>{capitalJourneyStages.map((key, i) => <button type="button" key={key} id={`${id}-${key}`} aria-pressed={stage === key} aria-controls={`${id}-panel`} onClick={() => setStage(key)}><span aria-hidden="true">0{i + 1}</span>{c[key].label}</button>)}</div>
     <div className={styles.exampleBar}><span><FolderClosed size={16} aria-hidden="true"/>{c.business}</span><span>{c.example}</span></div>
-    <div className={styles.stage} id={`${id}-panel`} role="region" aria-labelledby={`${id}-${stage}`} aria-live="polite" aria-atomic="true">
+    <div key={stage} className={styles.stage} id={`${id}-panel`} role="region" aria-labelledby={`${id}-${stage}`} aria-live="polite" aria-atomic="true">
       <div className={styles.discussion}>
         <span className={styles.meta}>{c.promptLabel}</span><blockquote>{s.prompt}</blockquote>
         <div className={styles.replyLabel}><Image src="/brand/offroad-symbol.png" width={512} height={520} alt=""/><span>{c.responseLabel}</span></div><p>{s.response}</p>

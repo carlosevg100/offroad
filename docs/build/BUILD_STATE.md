@@ -1,3 +1,9 @@
+## 12 September 2026: visual website cards candidate
+
+Candidate `feat/visual-website-cards` starts from published main 8fc6ec (PR606). Professional empowerment now sits immediately after the hero with affirmative PT/EN copy. Offer examples, an audience switcher, expandable method tiles, market/trust cards and restrained progressive motion replace repeated document-like sections. The original hero photo regains its blue/amber color through CSS; no raster asset or private product flow changed.
+
+Nineteen focused website tests and the 42-page HTTP/content probe passed. The web suite passed 106 files and 667 tests. Final repository lint/typecheck/tests/build passed with 43 build tasks; exact-head remote gates and production verification remain release requirements. Browser/actual-iPhone visual QA was requested and remains unapproved; HTTP and render tests do not establish visual acceptance. Scope, claim boundaries and rollback are recorded in `docs/build/PUBLIC_WEBSITE_VISUAL_CARDS_2026_09_12.md`.
+
 ## 12 September 2026: institutional website narrative candidate
 
 The founder supplied new hero wording and a detailed public-site narrative. Candidate `feat/institutional-website-narrative` starts from published main 302fdcc. The home now presents the three-part offer, professional empowerment, three capital perspectives, finance-authored methods, market intelligence, five explorable work stages and institutional scope. Audience and solution pages provide progressive detail. Current implementation, future institutional capabilities and fictional examples are distinguished. App, authentication, database and hosting configuration are unchanged.

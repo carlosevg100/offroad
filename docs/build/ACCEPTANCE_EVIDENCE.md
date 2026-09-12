@@ -1,3 +1,9 @@
+## 12 September 2026: visual website cards candidate
+
+Nineteen website tests passed: revised empowerment placement/copy, matched PT/EN keys, all three audience selections with real detail links, deterministic fictional values and visible server-rendered content. The web suite passed 106 files and 667 tests. Read-only HTTP verification passed 42 localized pages, five assets, sitemap/robots, the 404 boundary, login/app boundary and delivered hero-color/reduced-motion rules.
+
+Final repository lint, typecheck, tests and all 43 build tasks passed. Exact-head CI and official-project production verification remain distinct gates. Source accessibility review is not browser or actual-iPhone visual evidence; the QA authorization question remains unanswered. No app, auth, database, provider, financial-engine, telemetry or hosting configuration changed. See `docs/build/PUBLIC_WEBSITE_VISUAL_CARDS_2026_09_12.md` for scope, claims and rollback.
+
 ## 12 September 2026: institutional website narrative candidate
 
 Website tests verify the new exact bilingual hero, section order, five example stages, three audience drilldowns, matching localized key trees, route/metadata boundaries and deterministic fictional numbers. Web suite: 106 files, 665 tests. Repository lint, typecheck, tests and 43 build tasks passed; final candidate check is required before push. The read-only HTTP probe passed 42 pages, five image assets, sitemap, robots, unknown-route 404, login and unauthenticated app redirect. Source accessibility review does not establish browser/actual-iPhone rendering, which remains pending authorization.

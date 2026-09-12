@@ -1,3 +1,11 @@
+## 12 September 2026: visual website cards candidate
+
+Current revision is `feat/visual-website-cards`, based on published 8fc6ec (PR606). The founder asked for professional empowerment immediately after the hero, a stronger affirmative line, visual section design and a less silver hero. Implemented in both locales with cards, audience selection, expandable methods, progressive motion and restored blue/amber photo treatment. No new image or private application change was necessary.
+
+Focused website tests (19), the web suite (106 files/667 tests), 42-page HTTP/content verification and the final repository check (lint/types/tests/43 build tasks) passed. Finish exact-head Quality/Security/Vercel gates, production verification and clean-main sync before reporting publication. Browser and actual-iPhone visual QA remain unapproved. Preserve that limitation in the handoff. Do not create another hosting project or mix in the unrelated PR603 SQL correction.
+
+Scope/evidence/rollback: `docs/build/PUBLIC_WEBSITE_VISUAL_CARDS_2026_09_12.md`. The user-owned original checkout remains untouched.
+
 ## 12 September 2026: institutional website narrative candidate
 
 Current work is `feat/institutional-website-narrative`, based on published 302fdcc. The founder's new hero, three-part offer, audience benefits, specialized method, task-to-transaction journey and institutional scope are implemented in PT/EN. Three audience and three solution pages offer deeper exploration. Existing app/auth/data and official hosting configuration are untouched. User-owned original checkout remains untouched.

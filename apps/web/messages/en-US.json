@@ -1,5 +1,11 @@
 {
   "Website": {
+    "visualHome": {
+      "audienceSelector": "Choose your perspective", "example": "A question from your team", "outputs": "Example deliverables",
+      "companies": {"one": "Capital plan", "two": "Cash flow projections", "three": "Board materials"},
+      "advisors": {"one": "Client briefing", "two": "Model and terms", "three": "Transaction info pack"},
+      "investors": {"one": "Independent analysis", "two": "Diligence agenda", "three": "Committee memo"}
+    },
     "solutionDepth": {
       "title": "A closer look at the work.", "example": "Explore a step in practice", "output": "For your decision",
       "strategy": {
@@ -132,8 +138,13 @@
       "connection": {"title": "Qualified capital connection", "benefit": "Know whom to approach. And why.", "body": "Capital needs meet financing criteria. Investment mandates inform which opportunities deserve a closer look.", "detail": "Instrument, purpose, ticket size, tenor, risk and collateral inform fit and preparation. Qualification does not guarantee approval or financing.", "link": "Explore capital connection"},
       "more": "Understand the role",
       "principle": "Think with financial expertise. Execute with precision. Connect with the right capital.",
-      "empowerTitle": "More capable professionals.\nNot fewer of them.",
-      "empowerBody": "Offroad expands what your team can accomplish. Judgment, client relationships and the decision remain yours."
+      "empowerTitle": "Your financial judgment.",
+      "empowerAccent": "Your capacity to execute, amplified.",
+      "empowerBody": "More depth to analyze. More capacity to execute. The relationships and the decision remain yours.",
+      "human": "Your expertise", "platform": "Offroad",
+      "visualAdvisor": "A decision under discussion", "visualQuestion": "Extend the debt or finance the expansion?", "visualAdvisorOne": "Liquidity", "visualAdvisorTwo": "Collateral", "visualAdvisorThree": "Flexibility",
+      "visualAnalyst": "A reconciled baseline", "visualReported": "Reported EBITDA", "visualAdjustment": "Approved adjustments", "visualAdjusted": "Adjusted EBITDA", "visualUnit": "Fictional example · BRL millions",
+      "visualConnection": "Transaction × mandate", "visualConnectionOne": "Instrument", "visualConnectionTwo": "Tenor and ticket", "visualConnectionThree": "Risk and collateral", "visualFit": "Criteria for fit"
     },
     "productHome": {
       "title": "See Offroad in your workflow.",
