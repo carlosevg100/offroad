@@ -1,3 +1,19 @@
+## 12 September 2026: unified ACME financial case candidate
+
+PR608 remains the publication vehicle but was returned to draft before release after the founder corrected the examples. ACME now connects advisor analysis, all five journey stages and the existing public workbench baseline. Detailed analysis uses native dialogs, numerical alternatives, cash charts, inspectable bridges and indicator definitions. Repeated fictitious-data badges are removed without representing a real client or offer.
+
+Current local evidence:27 focused checks,107 web files / 675 tests, full repository lint/types/tests/43 build tasks and 42-page/five-asset HTTP verification. Repeat the full check after final copy refinement, update PR608, require all exact-head remote gates and verify production before claiming release. No earlier PR608 head was merged. Browser/actual-iPhone QA remains unapproved. The original dirty checkout is untouched; do not create another hosting project.
+
+Scope, calculations and rollback: `docs/build/PUBLIC_WEBSITE_ACME_CASE_2026_09_12.md`. This supersedes the previous advisor/journey descriptions below, not unrelated product work.
+
+## 12 September 2026: offer work demonstrations candidate
+
+Current revision is `feat/offer-work-demonstrations`, based on published 90ad9e (PR607). The founder clarified the references as Forward and OffDeal. The offer combines three realistic advisor conversations, human-directed analyst execution into four explorable materials and a fictional fund profile with score/rationale and a visible concentration restriction. Empowerment remains directly after the hero. Copy, grayscale hierarchy and finite motion are implemented in PT/EN; the approved hero is unchanged.
+
+Local repository checks passed, with 22 website tests, 106 web files / 670 tests and 43 build tasks. Read-only HTTP verification passed 42 pages and five assets. Finish exact-head Quality/Security/Vercel gates, production verification and clean-main synchronization. Browser/actual-iPhone QA remains unapproved and must not be described as complete. Do not create another hosting project or mix in PR603. The original user-owned checkout is untouched.
+
+Scope, evidence, claim boundaries and rollback: `docs/build/PUBLIC_WEBSITE_OFFER_DEMOS_2026_09_12.md`.
+
 ## 12 September 2026: visual website cards candidate
 
 Current revision is `feat/visual-website-cards`, based on published 8fc6ec (PR606). The founder asked for professional empowerment immediately after the hero, a stronger affirmative line, visual section design and a less silver hero. Implemented in both locales with cards, audience selection, expandable methods, progressive motion and restored blue/amber photo treatment. No new image or private application change was necessary.

@@ -10,6 +10,7 @@ import {PublicSolutionDetail} from "./public-solution-detail";
 import {PublicCapitalJourney} from "./public-capital-journey";
 import {PublicWorkbench, type WorkbenchAudience} from "./public-workbench";
 import {websiteFinancialBaseline} from "@/lib/website-example";
+import {websiteAdvisorExample} from "@/lib/website-advisor-example";
 import styles from "./public-site.module.css";
 
 type Copy = typeof import("../../messages/pt-BR.json")["Website"];
@@ -70,7 +71,7 @@ export async function PublicPageContent({locale, page}: {locale: AppLocale; page
     <PageIntro title={detail.title} intro={detail.intro} locale={locale} c={c} parent="solutions"/>
     <section className={styles.questionBand}><div className={styles.section}><span className={styles.eyebrow}>{c.common.question}</span><blockquote>{detail.example}</blockquote><p>{detail.pain}</p></div></section>
     <PublicSolutionDetail solution={page} copy={c.solutionDepth}/>
-    <section className={`${styles.section} ${styles.catalogSection}`}><div className={styles.sectionHeading}><h2>{c.solutionDepth.example}</h2><p>{c.common.review}</p></div><PublicCapitalJourney copy={c.narrative.journey} financialCopy={c.workbench} financials={websiteFinancialBaseline(locale)} initialStage={page === "strategy" ? "model" : page === "execution" ? "prepare" : "connect"}/><p className={styles.finePrint}>{c.common.demoNote}</p></section>
+    <section className={`${styles.section} ${styles.catalogSection}`}><div className={styles.sectionHeading}><h2>{c.solutionDepth.example}</h2><p>{c.common.review}</p></div><PublicCapitalJourney copy={c.narrative.journey} caseCopy={c.capitalCase} analysis={websiteAdvisorExample(locale)} initialStage={page === "strategy" ? "model" : page === "execution" ? "prepare" : "connect"}/><p className={styles.finePrint}>{c.common.demoNote}</p></section>
     <section className={`${styles.section} ${styles.related}`}><div className={styles.sectionHeading}><h2>{c.common.related}</h2></div><CaseList locale={locale} c={c} keys={relatedCases[page]}/></section>
   </>;
   if (page === "companies" || page === "advisors" || page === "investors") return <>

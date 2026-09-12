@@ -1,3 +1,15 @@
+## 12 September 2026: unified ACME financial case candidate
+
+Twenty-seven focused checks verify the bilingual case, common baseline, fully reconciled three-year scenario outputs, EBITDA headroom, leverage sensitivity and render states. The complete web suite passed 107 files / 675 tests; repository lint/typecheck/tests and 43 build tasks passed. Read-only delivery verification passed 42 localized pages, five assets and the existing route/security boundaries. Final source-definition refinements receive another full check before push.
+
+The earlier PR608 candidate was held, not published. Browser modal operation, responsive appearance and actual iPhone validation remain unexecuted pending authorization. Exact-head CI and official-project production checks remain distinct gates. Evidence and financial definitions: `docs/build/PUBLIC_WEBSITE_ACME_CASE_2026_09_12.md`.
+
+## 12 September 2026: offer work demonstrations candidate
+
+Twenty-two focused website tests passed: PT/EN structure, three advisor questions, four analyst previews, human direction/review, fictional creditor disclosure, hard concentration exception, illustrative score weights and dual-tone section headings. The full web suite passed 106 files / 670 tests; repository lint, typecheck, tests and 43 build tasks passed. The read-only probe passed 42 localized pages, five assets, public discovery routes, 404 and the private-app login boundary.
+
+Native controls, keyboard focus return, finite/reduced motion and server-visible content were reviewed in source. Browser interaction, responsive rendering and actual iPhone appearance remain unverified because browser QA authorization is unanswered. Exact-head CI and production checks remain separate gates. No private app, matching algorithm, financial engine, data authorization or hosting configuration changed. See `docs/build/PUBLIC_WEBSITE_OFFER_DEMOS_2026_09_12.md`.
+
 ## 12 September 2026: visual website cards candidate
 
 Nineteen website tests passed: revised empowerment placement/copy, matched PT/EN keys, all three audience selections with real detail links, deterministic fictional values and visible server-rendered content. The web suite passed 106 files and 667 tests. Read-only HTTP verification passed 42 localized pages, five assets, sitemap/robots, the 404 boundary, login/app boundary and delivered hero-color/reduced-motion rules.
