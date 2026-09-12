@@ -20,6 +20,6 @@
     "@offroad/public-research": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^22.20.2"
   }
 }
