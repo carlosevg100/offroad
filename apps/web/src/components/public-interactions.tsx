@@ -9,16 +9,6 @@ import styles from "./public-site.module.css";
 
 type Copy = typeof import("../../messages/pt-BR.json")["Website"];
 
-export function ComparisonExample({copy}: {copy: Copy["lab"]}) {
-  const [focus, setFocus] = useState<"liquidity" | "flexibility" | "cost">("liquidity");
-  return <div className={styles.lab}>
-    <div className={styles.labHeading}><span className={styles.eyebrow}>{copy.label}</span><h2>{copy.title}</h2><p>{copy.body}</p></div>
-    <div className={styles.labBody}><div className={styles.offers}><article><span>{copy.offerA}</span><p>{copy.aTerms}</p></article><article><span>{copy.offerB}</span><p>{copy.bTerms}</p></article></div>
-      <div className={styles.segmented} role="group" aria-label={copy.focus}>{(["liquidity", "flexibility", "cost"] as const).map(key => <button type="button" key={key} aria-pressed={focus === key} onClick={() => setFocus(key)}>{copy[key]}</button>)}</div>
-      <div className={styles.labAnswer} aria-live="polite" aria-atomic="true"><h3>{copy[`${focus}Title`]}</h3><p>{copy[`${focus}Body`]}</p><div className={styles.labNext}><span>{copy.next}</span><p>{copy[`${focus}Work`]}</p></div></div>
-    </div><p className={styles.finePrint}>{copy.note}</p>
-  </div>;
-}
 
 export function DemoContact({locale, copy, audiences}: {locale: AppLocale; copy: Copy["demo"]; audiences: Copy["who"]}) {
   const [prepared, setPrepared] = useState(false);
@@ -34,7 +24,7 @@ export function DemoContact({locale, copy, audiences}: {locale: AppLocale; copy:
     <label htmlFor="demo-role">{copy.role}<select id="demo-role" name="role" defaultValue="" required><option value="" disabled>{copy.choose}</option>{(["companies", "advisors", "investors"] as const).map(key => <option key={key}>{audiences[key].name}</option>)}</select></label>
     <label htmlFor="demo-message">{copy.message}<textarea id="demo-message" name="message" maxLength={800} rows={4} aria-describedby="demo-message-help" /></label><p className={styles.finePrint} id="demo-message-help">{copy.optional}</p>
     <p className={styles.finePrint}>{copy.note} <Link href={publicPath(locale,"privacy")}>{copy.privacy}</Link></p>
-    <button className={styles.button} type="submit">{copy.submit}<span aria-hidden="true">↗</span></button>
+    <button className={styles.button} type="submit">{copy.submit}</button>
     {prepared && <p className={styles.contactStatus} role="status">{copy.prepared}</p>}
-  </form><div className={styles.directContact}><p>{copy.direct}</p><a href={`mailto:${brand.email}`}>{brand.email} ↗</a></div></div>;
+  </form><div className={styles.directContact}><p>{copy.direct}</p><a href={`mailto:${brand.email}`}>{brand.email}</a></div></div>;
 }

@@ -1,5 +1,205 @@
 {
   "Website": {
+    "productHome": {
+      "title": "See Offroad in your workflow.",
+      "body": "Choose your perspective. Explore the conversation, analysis and deliverables.",
+      "executionTitle": "The analysis does not end in the conversation.",
+      "executionBody": "The financial model, term sheet and presentation need to reflect the same structure, assumptions and latest discussion.",
+      "outputOne": "Financial model",
+      "outputTwo": "Term sheet",
+      "outputThree": "Decision materials",
+      "benefitTitle": "More capacity for your team.",
+      "benefitOne": "Less manual preparation.",
+      "benefitOneBody": "Document review, financial reconciliation and material preparation in the context of the project.",
+      "benefitTwo": "More depth in every assessment.",
+      "benefitTwoBody": "Assumptions challenged, alternatives discussed and diligence priorities identified before the decision.",
+      "benefitThree": "Less work repeated.",
+      "benefitThreeBody": "Client or committee feedback informs the next revision of the analysis and materials.",
+      "connectionTitle": "Whose mandate fits this transaction?",
+      "connectionBody": "A qualified connection starts with the fit between a funding need and the criteria of those providing capital.",
+      "criteria": "Fit criteria",
+      "instrument": "Instrument",
+      "ticket": "Investment size",
+      "tenor": "Tenor",
+      "collateral": "Collateral",
+      "sector": "Sector",
+      "restrictions": "Restrictions",
+      "connectionNote": "You control sharing. The analysis creates value even without a counterparty connection.",
+      "teamTitle": "Investment banking. DCM. Corporate finance.",
+      "teamBody": "Experience structuring transactions informs how Offroad analyzes, asks questions and executes.",
+      "teamLink": "Meet Offroad",
+      "securityTitle": "Confidential information needs controls.",
+      "securityBody": "Organization-scoped access, private documents and development controls. Explore current controls and the security program.",
+      "securityLink": "Institutional security"
+    },
+    "workbench": {
+      "title": "Deeper analysis. More capacity to execute.",
+      "body": "Explore how Offroad supports capital decisions, client advisory and credit underwriting.",
+      "audienceLabel": "Choose your perspective",
+      "stageLabel": "Explore the work",
+      "example": "Use case",
+      "synthetic": "Fictional data",
+      "user": "You",
+      "sources": "Project sources",
+      "preview": "Working material",
+      "model": "Financial baseline",
+      "million": "BRL millions",
+      "period": "Last twelve months",
+      "reported": "Reported EBITDA",
+      "adjustment": "Approved adjustments",
+      "adjusted": "Adjusted EBITDA",
+      "debt": "Net debt",
+      "leverage": "Net debt / EBITDA",
+      "sourceNote": "Management P&L and debt schedule. Calculations use the example dataset.",
+      "sourceOne": "Management P&L",
+      "sourceTwo": "Cash flow statement",
+      "sourceThree": "Debt schedule",
+      "explore": "Explore this use case",
+      "current": "For discussion",
+      "fileLabel": "Document preview",
+      "evidence": "Analysis and sources in the same context",
+      "companies": {
+        "label": "Companies",
+        "role": "CFO · Treasury · FP&A",
+        "title": "Build the capital plan you need to take to the board.",
+        "benefit": "Explore the options. Develop the model. Present your recommendation.",
+        "file": "Capital plan.pptx",
+        "one": {
+          "label": "Understand the plan",
+          "prompt": "We are expanding the store network. Before raising debt, I want to understand what we need to finance and take to the board.",
+          "reply": "Let's separate new-store investment, expansion working capital and refinancing of existing debt. Is the opening schedule agreed? It determines when cash is needed and how long the financing must cover the ramp-up.",
+          "title": "Three funding needs. Different structures.",
+          "rowOne": "New stores",
+          "detailOne": "Investment and ramp-up period",
+          "rowTwo": "Working capital",
+          "detailTwo": "Cash absorbed by the expansion",
+          "rowThree": "Existing debt",
+          "detailThree": "Maturities and pledged collateral",
+          "note": "Understand the uses of funds before discussing the structure."
+        },
+        "two": {
+          "label": "Build the analysis",
+          "prompt": "Use the P&L and debt schedule. I want a consistent baseline before discussing debt capacity.",
+          "reply": "Adjusted EBITDA starts with reported earnings and approved adjustments. Historical leverage is a starting point, not a measure of expansion financing capacity. We need to assess debt service against available cash during the rollout.",
+          "title": "A reconciled baseline for capital decisions.",
+          "rowOne": "Historical earnings",
+          "detailOne": "Reconcile the P&L and adjustments",
+          "rowTwo": "Available cash",
+          "detailTwo": "Investment, working capital and debt service",
+          "rowThree": "Debt capacity",
+          "detailThree": "Assess once assumptions are agreed",
+          "note": "Every figure tied to its source."
+        },
+        "three": {
+          "label": "Prepare for the board",
+          "prompt": "Prepare the board materials. Show the financing alternatives and make the outstanding decisions clear.",
+          "reply": "The materials should cover the expansion plan, uses of funds and financing alternatives. I will distinguish approved assumptions from open decisions, including timing, collateral and minimum liquidity.",
+          "title": "A structured board discussion.",
+          "rowOne": "01 · The plan",
+          "detailOne": "Expansion, investment and funding needs",
+          "rowTwo": "02 · The alternatives",
+          "detailTwo": "Structure, tenor, collateral and cash impact",
+          "rowThree": "03 · The decisions",
+          "detailThree": "Assumptions to approve and next steps",
+          "note": "Board feedback informs the next version."
+        }
+      },
+      "advisors": {
+        "label": "Advisors",
+        "role": "Investment banking · DCM · Corporate finance",
+        "title": "Meet your client with a financing thesis, not a company summary.",
+        "benefit": "From meeting preparation to the transaction model and materials.",
+        "file": "Client approach.pptx",
+        "one": {
+          "label": "Prepare the approach",
+          "prompt": "I am meeting Rede Horizonte. I want to discuss its expansion and bring a financing hypothesis.",
+          "reply": "I would start with the relationship between store openings and cash generation during ramp-up. The hypothesis is to separate investment financing from expansion working capital. We need to confirm timing and understand how existing collateral limits a new structure.",
+          "title": "A hypothesis for the client discussion.",
+          "rowOne": "The event",
+          "detailOne": "Regional store expansion",
+          "rowTwo": "The hypothesis",
+          "detailTwo": "Separate investment from working capital",
+          "rowThree": "What to confirm",
+          "detailThree": "Timing, cash flow and available collateral",
+          "note": "The thesis guides the meeting. It does not replace the assessment."
+        },
+        "two": {
+          "label": "Develop the thesis",
+          "prompt": "Organize the numbers that support this discussion and highlight what we cannot conclude yet.",
+          "reply": "The historical baseline supports a consistent discussion of earnings and debt. It does not yet support a financing amount: we still need the investment schedule, cash flow projections and available collateral.",
+          "title": "Evidence behind the thesis. Gaps made explicit.",
+          "rowOne": "Documented",
+          "detailOne": "Historical earnings and debt",
+          "rowTwo": "Confirm with the client",
+          "detailTwo": "Capex, timing and cash generation",
+          "rowThree": "Before structuring",
+          "detailThree": "Collateral, restrictions and objectives",
+          "note": "A commercial hypothesis is not an approved financing structure."
+        },
+        "three": {
+          "label": "Develop the transaction",
+          "prompt": "The client confirmed the priority. Organize the work on the model, term sheet and transaction materials.",
+          "reply": "Let's incorporate the meeting feedback into the same project. The model should reflect the uses of funds and agreed assumptions; the term sheet should translate the structure; and the presentation should explain the company, transaction and credit rationale.",
+          "title": "One rationale. Three consistent deliverables.",
+          "rowOne": "XLSX · Financial model",
+          "detailOne": "Assumptions, projections and debt service",
+          "rowTwo": "DOCX · Term sheet",
+          "detailTwo": "Indicative terms and negotiation points",
+          "rowThree": "PPTX · Transaction presentation",
+          "detailThree": "Company, structure and credit rationale",
+          "note": "Client feedback updates the work without restarting the analysis."
+        }
+      },
+      "investors": {
+        "label": "Investors",
+        "role": "Asset managers · Private credit · Lenders",
+        "title": "Build your own underwriting. Do not inherit the originator's conclusion.",
+        "benefit": "Challenge assumptions, focus due diligence and prepare for investment committee.",
+        "file": "Credit assessment.docx",
+        "one": {
+          "label": "Form a view",
+          "prompt": "I received Rede Horizonte's teaser and model. What warrants diligence before we move forward?",
+          "reply": "I would focus the first review on EBITDA quality, cash generation during expansion and structural protections. The analysis needs to distinguish documented evidence from assumptions made by the originator.",
+          "title": "Three priorities for due diligence.",
+          "rowOne": "Earnings quality",
+          "detailOne": "Recurring nature of EBITDA adjustments",
+          "rowTwo": "Cash generation",
+          "detailTwo": "Working capital and store ramp-up",
+          "rowThree": "Structural protection",
+          "detailThree": "Collateral, covenants and restrictions",
+          "note": "Mandate fit is necessary. It is not an underwriting conclusion."
+        },
+        "two": {
+          "label": "Challenge assumptions",
+          "prompt": "Before building a downside case, which assumptions would you change and why?",
+          "reply": "I would test slower store ramp-up, higher working capital absorption and margin pressure. These factors can reduce cash available for debt service. Before calculating, we need to agree on the severity and duration of each stress.",
+          "title": "A downside grounded in the business.",
+          "rowOne": "Slower ramp-up",
+          "detailOne": "Revenue takes longer to reach plan",
+          "rowTwo": "Higher working capital",
+          "detailTwo": "Inventory and receivables absorb more cash",
+          "rowThree": "Margin pressure",
+          "detailThree": "Less cash generated per unit sold",
+          "note": "Agree on the rationale first. Calculate when you ask."
+        },
+        "three": {
+          "label": "Prepare for committee",
+          "prompt": "Prepare a memo with our view, outstanding diligence and the conditions for continuing the assessment.",
+          "reply": "The memo should distinguish the originator's thesis from our assessment. I will organize identified risks, available evidence, open diligence and protections to discuss. The investment decision remains with the committee.",
+          "title": "Your credit view, documented.",
+          "rowOne": "Thesis and risks",
+          "detailOne": "What supports the investment and what could change it",
+          "rowTwo": "Outstanding diligence",
+          "detailTwo": "Assumptions, documents and open questions",
+          "rowThree": "Conditions to proceed",
+          "detailThree": "Protections and terms to discuss",
+          "note": "A memo for your decision. Not a retelling of the pitch."
+        }
+      },
+      "conversationTab": "Conversation",
+      "documentTab": "Document",
+      "paneLabel": "Choose a view"
+    },
     "common": {
       "learn": "Explore the solution",
       "explore": "Explore the use case",
@@ -17,25 +217,6 @@
       "work": "The work",
       "result": "The deliverable",
       "demoNote": "In the demo, we confirm the workflows and capabilities available for your team."
-    },
-    "benefits": {
-      "title": "More capacity for the work that needs your expertise.",
-      "body": "The value is not more text. It is a better analysis and the ability to act on it.",
-      "one": {
-        "title": "Go deeper in your analysis.",
-        "body": "Challenge assumptions, explore alternatives and understand what could change the recommendation.",
-        "example": "One offer looks cheaper. Its amortization schedule tells a different story."
-      },
-      "two": {
-        "title": "Move forward with less rework.",
-        "body": "Develop research, models and materials around the same company and transaction context.",
-        "example": "The investment plan changed. Revisit the cash impact, the funding need and the discussion materials."
-      },
-      "three": {
-        "title": "Put your experience where it matters most.",
-        "body": "Get support with preparation and execution so you can focus on structure, negotiation and judgment.",
-        "example": "Enter the conversation with the relevant questions, alternatives and unresolved issues."
-      }
     },
     "who": {
       "title": "One platform. Different responsibilities.",
@@ -59,22 +240,6 @@
         "body": "Assess mandate fit, build an independent view of risk and define the conditions under which you would invest."
       }
     },
-    "why": {
-      "title": "Specialization that shows up in the work.",
-      "body": "Financial context, method and execution need to work together.",
-      "one": {
-        "title": "Expertise applied to the situation.",
-        "body": "The question is not simply how an instrument works. It is whether it fits the company's cash flow, collateral, timing and objectives."
-      },
-      "two": {
-        "title": "Your institution's criteria matter.",
-        "body": "The work should reflect your assumptions, analytical methods and material standards. Adoption starts by defining those criteria with the team."
-      },
-      "three": {
-        "title": "Continuity from analysis to execution.",
-        "body": "A conclusion needs to make its way into the model, the memo and the counterparty discussion. Offroad is designed to support that continuity."
-      }
-    },
     "connection": {
       "label": "CAPITAL INTELLIGENCE AND CONNECTIONS",
       "title": "Understanding both sides improves the work of each.",
@@ -83,34 +248,6 @@
       "rightTitle": "For teams allocating capital",
       "rightBody": "Understanding the company, use of proceeds and structure helps screen opportunities and conduct an independent assessment.",
       "note": "Each team can benefit whether or not its counterparty uses the platform. Any connection depends on fit and authorization."
-    },
-    "casesIntro": {
-      "title": "Start with a situation from your work.",
-      "body": "Six examples of how Offroad can support a decision, from the first question to the discussion materials."
-    },
-    "lab": {
-      "label": "INTERACTIVE EXAMPLE · COMPARING OFFERS",
-      "title": "Does the lowest rate solve your funding need?",
-      "body": "Change the focus of the analysis. See how different terms change the discussion, even before calculating the effective cost.",
-      "focus": "Choose the focus of the comparison",
-      "liquidity": "Liquidity",
-      "flexibility": "Flexibility",
-      "cost": "Total cost",
-      "offerA": "Offer A",
-      "offerB": "Offer B",
-      "aTerms": "Lower spread. Earlier amortization. More restrictive collateral requirements.",
-      "bTerms": "Higher spread. Principal grace period. Greater flexibility over assets.",
-      "liquidityTitle": "The repayment schedule can matter more than the rate.",
-      "liquidityBody": "Offer A starts consuming cash earlier. Offer B preserves liquidity during implementation, but may carry a larger outstanding balance for longer.",
-      "liquidityWork": "Compare debt service with cash generation in each period and test delays in the start of operations.",
-      "flexibilityTitle": "Collateral has an opportunity cost, too.",
-      "flexibilityBody": "Restrictions on assets and future borrowing may constrain the next investment. The flexibility in offer B needs to be weighed against its price.",
-      "flexibilityWork": "Review collateral, covenants, additional debt restrictions and asset release conditions.",
-      "costTitle": "Spread is not the effective cost.",
-      "costBody": "Tenor, amortization, benchmark rates, fees and expenses change cost and risk. There is no winner before cash flows are modeled and assumptions are defined.",
-      "costWork": "Put the cash flows on a consistent basis, make fees and expenses explicit, and compare benchmark-rate sensitivity.",
-      "next": "Next analytical step",
-      "note": "Qualitative, illustrative comparison. This is not financial advice or a simulation running on the platform."
     },
     "about": {
       "title": "Built by people who know the work from the inside.",
@@ -192,20 +329,20 @@
     },
     "pages": {
       "solutions": {
-        "title": "Financial guidance. Analysis. Execution.",
-        "intro": "Specialist support to understand the alternatives, develop the work and reach the right counterparties."
+        "title": "Capital strategy, analysis and execution.",
+        "intro": "Explore financing alternatives, develop models and materials, and assess counterparties whose mandates fit the transaction."
       },
       "audiences": {
-        "title": "Your role defines the work.",
-        "intro": "Shared capabilities applied to the responsibilities of companies, advisors and capital allocators."
+        "title": "Companies. Advisors. Investors.",
+        "intro": "Prepare a board capital plan, develop a client transaction or build your own credit assessment."
       },
       "cases": {
-        "title": "Real work starts with a good question.",
-        "intro": "Explore illustrative financing, advisory, credit and investment situations."
+        "title": "What do you need to prepare?",
+        "intro": "Explore capital planning, client approaches, credit underwriting, negotiation and monitoring."
       },
       "strategy": {
-        "title": "Before choosing the instrument, understand the decision.",
-        "intro": "Explore capital structure and debt financing in the context of the business, its cash flow and its objectives.",
+        "title": "Develop the company's capital strategy.",
+        "intro": "Connect the business plan to investment, working capital and existing debt. Explore structures that address each funding need.",
         "pain": "Growth, refinancing and liquidity protection may call for very different structures. Starting with a financial product can miss the question that actually needs answering.",
         "oneTitle": "Frame the funding need",
         "oneBody": "Connect the business plan to investment, working capital, debt maturities and available cash.",
@@ -217,21 +354,21 @@
         "example": "The investment makes sense. Which financing structure lets us execute it without compromising liquidity?"
       },
       "execution": {
-        "title": "From analysis to model. From model to materials.",
-        "intro": "Develop the work behind a recommendation, a transaction or an investment decision.",
+        "title": "Develop models, term sheets and materials.",
+        "intro": "Prepare the financial model, transaction presentation or credit memo using the project's sources and assumptions.",
         "pain": "Scattered information, inconsistent definitions and conflicting versions make execution harder. Sources, assumptions, conclusions and deliverables need to stay aligned.",
         "oneTitle": "Establish the analytical base",
         "oneBody": "Analyze company documents and data, identify gaps and distinguish reported information from adjustments and assumptions.",
         "twoTitle": "Develop the analysis",
-        "twoBody": "Work through projections, sensitivities and comparisons using assumptions relevant to the financial question.",
+        "twoBody": "Develop projections, debt service and sensitivities using assumptions discussed with the team.",
         "threeTitle": "Prepare the deliverables",
         "threeBody": "Structure models and materials for the audience: management, a client, a committee or a counterparty.",
         "output": "Models, memos, presentations and transaction materials, as agreed within scope and subject to your review.",
         "example": "An assumption changed. What needs to be revised in the model, the recommendation and the materials?"
       },
       "intelligence": {
-        "title": "The right transaction for the mandate. The right capital for the transaction.",
-        "intro": "Intelligence to understand fit and guide connections between teams seeking capital and teams providing it.",
+        "title": "Assess the fit between the transaction and the mandate.",
+        "intro": "Instrument, investment size, tenor, sector and collateral inform counterparty selection and opportunity assessment.",
         "pain": "A contact list does not explain who could finance a transaction, on what terms or why an investor should pay attention.",
         "oneTitle": "Understand the transaction and the mandate",
         "oneBody": "Connect sector, company size, ticket, tenor, instrument, collateral and investment criteria.",
@@ -243,8 +380,8 @@
         "example": "Who has a mandate for this structure, and what do they need to understand to assess it?"
       },
       "companies": {
-        "title": "Understand your alternatives. Prepare your company.",
-        "intro": "Support for turning the business plan into a well-grounded capital discussion.",
+        "title": "From the business plan to the capital plan.",
+        "intro": "Discuss funding needs, prepare the board analysis and develop materials for conversations with the market.",
         "pain": "A financing decision needs to serve the company's plan, not just the available offer. Tenor, cash flow, collateral and flexibility need to be assessed together.",
         "oneTitle": "Translate the plan into a funding need",
         "oneBody": "Connect investment, operations and working capital to cash flow and the debt profile.",
@@ -256,8 +393,8 @@
         "example": "We want to expand. How much capital do we need, when and on what terms?"
       },
       "advisors": {
-        "title": "More capacity to analyze, structure and advise.",
-        "intro": "Support for investment banking, DCM, corporate finance and specialist credit teams.",
+        "title": "From the client thesis to transaction execution.",
+        "intro": "Company research, meeting preparation, modeling and materials for investment banking, DCM and corporate finance teams.",
         "pain": "The quality of advice depends on analytical depth and the ability to execute at the pace of a transaction. Preparation needs to go beyond a company summary.",
         "oneTitle": "Develop a specific hypothesis",
         "oneBody": "Investigate the business, capital structure and events that justify an approach or recommendation.",
@@ -269,8 +406,8 @@
         "example": "We have a meeting tomorrow. What is the transaction hypothesis, and how do we support it?"
       },
       "investors": {
-        "title": "Build conviction. Define the conditions for investing.",
-        "intro": "Support for allocators and lenders evaluating opportunities through their own mandate and risk perspective.",
+        "title": "Credit analysis from your institution's perspective.",
+        "intro": "Assess the opportunity, challenge the originator's assumptions and prepare diligence and investment committee materials.",
         "pain": "The originator's materials are a starting point. The decision requires an independent view of the company, risk, return and protection provided by the structure.",
         "oneTitle": "Start with a mandate-led first look",
         "oneBody": "Identify fit, constraints and issues worth investigating before committing the team's time.",
@@ -282,8 +419,8 @@
         "example": "The opportunity fits the mandate. Does the risk make sense, and on what terms?"
       },
       "growth": {
-        "title": "The growth plan became a capital question.",
-        "intro": "Companies and finance teams",
+        "title": "Prepare the financing for expansion.",
+        "intro": "Investment, working capital and cash during ramp-up, in one capital plan.",
         "pain": "The company wants to expand capacity. Investment is estimated, but working capital needs, implementation timing and the required cash cushion remain unclear.",
         "oneTitle": "Start with the business drivers",
         "oneBody": "Connect capacity expansion, revenue, margins, investment and working capital requirements.",
@@ -295,9 +432,9 @@
         "example": "How much do we need to raise to grow without running short of cash along the way?"
       },
       "terms": {
-        "title": "Is the lowest-rate offer really the best one?",
-        "intro": "Companies, advisors and treasury teams",
-        "pain": "Two offers finance the same project but differ in amortization, collateral, fees and flexibility. Comparing spreads alone may conceal the most important difference.",
+        "title": "Compare proposals. Prepare the negotiation.",
+        "intro": "Term sheets, payment schedules, collateral and covenants assessed against the company's plan.",
+        "pain": "The decision needs to account for what each proposal enables. Organize tenor, drawdowns, amortization, collateral and obligations to understand the impact on cash and the capacity to fund the plan.",
         "oneTitle": "Normalize the terms",
         "oneBody": "Put the offers on a consistent basis, including benchmark rates, charges, expenses and contractual obligations.",
         "twoTitle": "Compare the cash impact",
@@ -305,11 +442,11 @@
         "threeTitle": "Prepare the negotiation",
         "threeBody": "Identify which terms would change the recommendation and which changes are worth discussing with each lender.",
         "output": "A structured comparison, negotiation points and a decision rationale with explicit assumptions and limitations.",
-        "example": "Is a higher spread worth paying to preserve cash during implementation?"
+        "example": "We received two term sheets. Compare the terms and prepare the points we need to negotiate."
       },
       "pitch": {
-        "title": "A meeting with a thesis, not a generic pitch.",
-        "intro": "Advisors, bankers and origination teams",
+        "title": "Prepare a thesis for the client meeting.",
+        "intro": "An approach grounded in the business, company events and capital structure.",
         "pain": "A meeting with company management is coming up. The team needs to understand what changed in the business, where a financial need exists and why a transaction might make sense now.",
         "oneTitle": "Investigate the company",
         "oneBody": "Review disclosures, strategy, investment, debt and developments relevant to the approach.",
@@ -321,8 +458,8 @@
         "example": "What do we have that is relevant to discuss with this company tomorrow?"
       },
       "credit": {
-        "title": "From the financing request to the credit rationale.",
-        "intro": "Technical credit teams and specialist professionals",
+        "title": "Develop the credit assessment.",
+        "intro": "Reconciled sources, cash generation, risks, mitigants and exceptions to institutional policy.",
         "pain": "The documents have arrived. The analysis needs to distinguish reported performance from the cash generation that actually supports the debt, within the institution's criteria.",
         "oneTitle": "Review information quality",
         "oneBody": "Reconcile sources, identify proposed adjustments and clarify material inconsistencies or gaps.",
@@ -334,8 +471,8 @@
         "example": "What supports repayment capacity, and under what conditions is this structure acceptable?"
       },
       "investment": {
-        "title": "From the originator's materials to your own view.",
-        "intro": "Asset managers, credit funds and lenders",
+        "title": "Build your own assessment of the opportunity.",
+        "intro": "An independent view to guide diligence and investment committee discussion.",
         "pain": "The teaser appears to fit the mandate. Before proceeding, the team needs to understand which assumptions support the thesis and whether it agrees with them.",
         "oneTitle": "Examine initial fit",
         "oneBody": "Compare the opportunity with instrument, sector, ticket, tenor, collateral and return criteria.",
@@ -347,8 +484,8 @@
         "example": "What do we need to confirm to build conviction in this opportunity?"
       },
       "monitoring": {
-        "title": "Performance changed. Does the thesis still hold?",
-        "intro": "Allocators, lenders and monitoring teams",
+        "title": "Reassess the credit. Prepare the waiver review.",
+        "intro": "Compare performance with the original thesis and assess the implications for cash, covenants and structural protection.",
         "pain": "A company reported weaker-than-expected results or requested a waiver. The team needs to understand the effect on cash flow, obligations and protection of the position.",
         "oneTitle": "Identify what changed",
         "oneBody": "Compare reported performance with the previous analytical base and clarify the causes of the deviations.",
@@ -360,10 +497,37 @@
         "example": "Is the deviation temporary, or does it change the conditions under which we accepted the risk?"
       }
     },
-    "nav": {"solutions":"Solutions","audiences":"Who it's for","cases":"Use cases","about":"About","security":"Security","demo":"Request a demo","login":"Log in","menu":"Menu","close":"Close menu","skip":"Skip to content","language":"Language","home":"Home"},
-    "hero": {"title":"Agentic AI platform purpose-built for capital structure and debt financing.","support":"Your expert advisor and powerful hands-on analyst.","credit":"Built by finance professionals, for finance professionals.","secondary":"See use cases","motion":"Pause or resume background motion"},
-    "intro": {"title":"From the financial question to the work it takes to answer it.","body":"Explore alternatives, analyze companies and opportunities, develop models and materials, and connect with the right counterparties.","caption":"Conceptual illustration of the experience. Fictional examples and data.","alt":"A desk with a financial model and term sheet on the left monitor and the Offroad interface on the right."},
-    "footer": {"title":"What's your next capital decision?","body":"Bring a real situation. See how Offroad can support your team's work.","privacy":"Privacy","legal":"Terms of use","rights":"All rights reserved."}
+    "nav": {
+      "solutions": "Solutions",
+      "audiences": "Who it's for",
+      "cases": "Use cases",
+      "about": "About",
+      "security": "Security",
+      "demo": "Request a demo",
+      "login": "Log in",
+      "menu": "Menu",
+      "close": "Close menu",
+      "skip": "Skip to content",
+      "language": "Language",
+      "home": "Home"
+    },
+    "hero": {
+      "title": "Agentic AI platform purpose-built for capital structure and debt financing.",
+      "support": "Your expert advisor and powerful hands-on analyst.",
+      "credit": "Built by finance professionals, for finance professionals.",
+      "secondary": "See use cases"
+    },
+    "intro": {
+      "body": "Explore alternatives, analyze companies and opportunities, develop models and materials, and connect with the right counterparties.",
+      "alt": "A desk with a financial model and term sheet on the left monitor and the Offroad interface on the right."
+    },
+    "footer": {
+      "title": "Explore Offroad for your team.",
+      "body": "Bring a capital plan, a transaction or a credit assessment to the demonstration.",
+      "privacy": "Privacy",
+      "legal": "Terms of use",
+      "rights": "All rights reserved."
+    }
   },
   "Errors": {
     "notFoundTitle": "Page not found",

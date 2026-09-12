@@ -1,5 +1,6 @@
 import {describe, expect, it, vi} from "vitest";
 import {renderToStaticMarkup} from "react-dom/server";
+import {createElement} from "react";
 import pt from "../../messages/pt-BR.json";
 import en from "../../messages/en-US.json";
 import {routing} from "@/i18n/routing";
@@ -8,6 +9,9 @@ import {websiteMetadata} from "./website-metadata";
 import {PublicPageContent} from "@/components/public-content";
 import sitemap from "@/app/sitemap";
 import robots from "@/app/robots";
+import {ProductHome} from "@/components/public-product-home";
+import {PublicWorkbench} from "@/components/public-workbench";
+import {websiteFinancialBaseline} from "./website-example";
 
 vi.mock("next-intl/server", () => ({
   getMessages: async ({locale}: {locale: string}) => locale === "pt-BR" ? pt : en,
@@ -48,6 +52,7 @@ describe("public website boundaries", () => {
       expect(html).not.toContain("Website.");
       expect(html).not.toContain("Offroad Capital");
       expect(html).not.toMatch(/[\u2013\u2014]/);
+      expect(html).not.toMatch(/[↗▶Ⅱ]/);
     }
   });
 
@@ -70,5 +75,35 @@ describe("public website boundaries", () => {
     expect(en.Website.demo.note).toContain("Nothing is sent by the website");
     expect(JSON.stringify(pt.Website)).not.toMatch(/[\u2013\u2014]/);
     expect(JSON.stringify(en.Website)).not.toMatch(/[\u2013\u2014]/);
+  });
+
+  it.each(routing.locales)("replaces the rejected homepage blocks with product examples in %s", locale => {
+    const copy = locale === "pt-BR" ? pt.Website : en.Website;
+    const html = renderToStaticMarkup(createElement(ProductHome, {locale, copy}));
+    expect(html).toContain(copy.productHome.title);
+    expect(html).toContain(copy.workbench.companies.one.prompt);
+    expect(html).toContain(copy.workbench.synthetic);
+    expect(html).toContain("data-mobile-pane=\"document\"");
+    expect(html).not.toMatch(/[↗▶Ⅱ\u2013\u2014]/);
+    expect(html).not.toContain("Da questão financeira");
+    expect(html).not.toContain("Ilustração conceitual da experiência");
+    expect(html).not.toContain("A menor taxa resolve");
+  });
+
+  it.each(routing.locales)("provides distinct, fully localized journeys for all three audiences in %s", locale => {
+    const copy = (locale === "pt-BR" ? pt.Website : en.Website).workbench;
+    for (const audience of ["companies", "advisors", "investors"] as const) {
+      const html = renderToStaticMarkup(createElement(PublicWorkbench, {locale, copy, financials: websiteFinancialBaseline(locale), initialAudience: audience, fixedAudience: true}));
+      expect(html).toContain(copy[audience].title.replace(/'/g,"&#x27;"));
+      expect(html).not.toContain("undefined");
+      for (const stage of ["one", "two", "three"] as const) {
+        for (const value of Object.values(copy[audience][stage])) expect(value.trim().length).toBeGreaterThan(5);
+      }
+    }
+  });
+
+  it("uses core calculations for the fictional financial baseline", () => {
+    expect(websiteFinancialBaseline("pt-BR")).toEqual({reported:"30,4", adjustment:"0,8", adjusted:"31,2", debt:"56,4", leverage:"1,81x"});
+    expect(websiteFinancialBaseline("en-US")).toEqual({reported:"30.4", adjustment:"0.8", adjusted:"31.2", debt:"56.4", leverage:"1.81x"});
   });
 });

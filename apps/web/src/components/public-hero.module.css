@@ -1,0 +1,41 @@
+.hero {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: 740px;
+  height: min(900px, 100svh);
+  padding: 148px 48px 72px;
+  overflow: hidden;
+  background: #171b20;
+  color: #fff;
+}
+.image { position: absolute; inset: 0; animation: arrival 3s ease-out both; }
+.image img { object-fit: cover; object-position: center 64%; filter: saturate(.25) brightness(1.35); }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #070b10a6, #070b1052 65%, #070b100d), linear-gradient(0deg, #080b10a6, transparent 40%); pointer-events: none; }
+.content { position: relative; z-index: 1; width: min(1080px, 100%); margin: auto; }
+.content h1 { max-width: 1060px; font-size: clamp(42px, 4.5vw, 68px); line-height: 1.08; letter-spacing: -.055em; text-wrap: balance; color: #fff; }
+.support { max-width: 680px; margin-top: 28px !important; font-size: 23px; line-height: 1.4; color: #fff; }
+.credit { margin-top: 15px !important; font-size: 14px; line-height: 1.5; color: #dedfe1; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 28px; margin-top: 30px; }
+.primary, .secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; font-size: 14px; font-weight: 500; }
+.primary { padding: 12px 24px; border-radius: 999px; background: #fff; color: #17191b; transition: background .2s; }
+.primary:hover { background: #e5e7e8; }
+.secondary { color: #fff; text-decoration: underline !important; text-underline-offset: 5px; text-decoration-color: #ffffff70 !important; }
+@keyframes arrival { from { transform: scale(1.035); } to { transform: scale(1); } }
+@media (max-width: 800px) {
+  .hero { min-height: 700px; height: auto; padding: 140px 24px 64px; }
+  .content h1 { font-size: clamp(32px, 5.5vw, 44px); max-width: 650px; text-wrap: initial; }
+  .support { margin-top: 24px !important; font-size: 18px; max-width: 480px; }
+  .credit { max-width: 310px; font-size: 13px; }
+  .image img { object-position: 64% center; filter: saturate(.2) brightness(1.5); }
+  .hero::after { background: linear-gradient(90deg, #090d1299, #090d1259), linear-gradient(0deg, #090d12b3, transparent 40%); }
+  .actions { margin-top: 26px; gap: 16px; }
+}
+@media (max-width: 430px) {
+  .hero { padding-top: 126px; min-height: 710px; }
+  .content h1 { font-size: 32px; line-height: 1.08; }
+  .support { font-size: 17px; }
+  .actions { align-items: flex-start; flex-direction: column; gap: 6px; }
+  .secondary { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .image { animation: none; } }
