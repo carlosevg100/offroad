@@ -20,7 +20,7 @@
   "dependencies": {
     "@offroad/case-runner": "workspace:*",
     "@offroad/case-understanding": "workspace:*",
-    "zod": "4.4.3"
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

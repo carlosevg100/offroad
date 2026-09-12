@@ -18,7 +18,7 @@
   "dependencies": {
     "@offroad/work-plan": "workspace:*",
     "decimal.js": "10.6.0",
-    "zod": "4.4.3"
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"

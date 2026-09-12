@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "csv-parse": "7.0.2",
-    "jszip": "3.10.1",
-    "zod": "4.4.3"
+    "jszip": "3.10.2",
+    "zod": "4.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"
