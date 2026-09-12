@@ -2,16 +2,13 @@ import type {MetadataRoute} from "next";
 
 import {brand} from "@/config/brand";
 import {routing} from "@/i18n/routing";
+import {publicPages, publicPath} from "@/lib/website-routes";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const languages = Object.fromEntries(
-    routing.locales.map((locale) => [locale, `${brand.url}/${locale}`]),
-  );
-
-  return routing.locales.map((locale) => ({
-    url: `${brand.url}/${locale}`,
-    changeFrequency: "weekly",
-    priority: locale === routing.defaultLocale ? 1 : 0.9,
-    alternates: {languages},
-  }));
+  return publicPages.flatMap(page => routing.locales.map(locale => ({
+    url: `${brand.url}${publicPath(locale,page)}`,
+    changeFrequency: "monthly" as const,
+    priority: page === "home" ? 1 : 0.7,
+    alternates: {languages: Object.fromEntries(routing.locales.map(language => [language, `${brand.url}${publicPath(language,page)}`]))},
+  })));
 }
