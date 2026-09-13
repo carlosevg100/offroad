@@ -24,12 +24,6 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
   return <PublicScrollEffects>
     <PublicEmpower copy={copy.offering}/>
     <PublicOffering locale={locale} copy={copy.offering} caseCopy={copy.capitalCase}/>
-    <section className={`${styles.section} ${visual.audienceSection}`} id="audiences" aria-labelledby="audiences-title" data-reveal>
-      <span className={styles.label}>{a.label}</span>
-      <div className={`${styles.heading} ${styles.wideHeading}`}><SplitHeading id="audiences-title" title={a.title}/><p>{a.intro}</p></div>
-      <PublicAudienceShowcase locale={locale} audiences={a} visuals={copy.visualHome} labels={{companies:copy.workbench.companies.label,advisors:copy.workbench.advisors.label,investors:copy.workbench.investors.label}} examples={{companies:copy.pages.companies.example,advisors:copy.pages.advisors.example,investors:copy.pages.investors.example}}/>
-      <div className={styles.audienceFoot}><p>{a.seniority}</p><p>{a.boundary}</p></div>
-    </section>
     <section className={`${styles.method} ${visual.methodSection}`} id="by-finance" aria-labelledby="method-title" data-reveal>
       <div className={styles.section}>
         <span className={styles.label}>{m.label}</span>
@@ -37,6 +31,12 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
         <div className={visual.methodShowcase}><div className={visual.photoFrame}><Image src={`/website/product-${locale === "pt-BR" ? "pt" : "en"}.png`} width={1672} height={941} sizes="(max-width: 1000px) 100vw, 760px" alt={m.photoAlt}/></div><div className={visual.methodTiles}>{methodTiles.map(({key,Icon}) => <details key={key} className={visual.methodTile}><summary><Icon size={25} strokeWidth={1.35} aria-hidden="true"/><span>{m[key].title}</span><Plus size={18} aria-hidden="true"/></summary><p>{m[key].body}</p></details>)}</div></div>
         <div className={visual.intelligenceLayers}><div><h3>{m.modelsTitle}</h3><p>{m.modelsBody}</p></div><div><h3>{m.expertiseTitle}</h3><p>{m.expertiseBody}</p></div></div><Link className={styles.textLink} href={publicPath(locale,"about")}>{m.link}</Link>
       </div>
+    </section>
+    <section className={`${styles.section} ${visual.audienceSection}`} id="audiences" aria-labelledby="audiences-title" data-reveal>
+      <span className={styles.label}>{a.label}</span>
+      <div className={`${styles.heading} ${styles.wideHeading}`}><SplitHeading id="audiences-title" title={a.title}/><p>{a.intro}</p></div>
+      <PublicAudienceShowcase locale={locale} audiences={a} visuals={copy.visualHome} labels={{companies:copy.workbench.companies.label,advisors:copy.workbench.advisors.label,investors:copy.workbench.investors.label}} examples={{companies:copy.pages.companies.example,advisors:copy.pages.advisors.example,investors:copy.pages.investors.example}}/>
+      <div className={styles.audienceFoot}><p>{a.seniority}</p><p>{a.boundary}</p></div>
     </section>
     <section className={`${styles.section} ${visual.marketSection}`} id="capital-intelligence" aria-labelledby="market-title" data-reveal>
       <span className={styles.label}>{market.label}</span><div className={styles.heading}><SplitHeading id="market-title" title={market.title}/><p>{market.intro}</p></div>
@@ -53,7 +53,7 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
     <section className={`${styles.section} ${visual.trustSection}`} id="institutional-trust" aria-labelledby="trust-title" data-reveal>
       <span className={styles.label}>{t.label}</span><div className={styles.heading}><SplitHeading id="trust-title" title={t.title}/><p>{t.intro}</p></div>
       <div className={visual.trustCards}>{trustTiles.map(({key,Icon}) => <article key={key}><div className={visual.trustIcon}><Icon size={28} strokeWidth={1.25} aria-hidden="true"/></div><h3>{t[key].title}</h3><p>{t[key].benefit}</p><details className={styles.expand}><summary>{t.more}<Plus size={18} aria-hidden="true"/></summary><p>{t[key].body}</p></details></article>)}</div>
-      <div className={styles.trustFoot}><LockKeyhole size={24} strokeWidth={1.5} aria-hidden="true"/><div><p>{t.status}</p><p>{t.soc}</p></div><Link className={styles.textLink} href={publicPath(locale,"security")}>{t.link}</Link></div>
+      <div className={styles.trustFoot}><LockKeyhole size={24} strokeWidth={1.5} aria-hidden="true"/><p>{t.status}</p><Link className={styles.textLink} href={publicPath(locale,"security")}>{t.link}</Link></div>
     </section>
   </PublicScrollEffects>;
 }

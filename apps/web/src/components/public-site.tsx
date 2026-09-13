@@ -6,6 +6,7 @@ import type {AppLocale} from "@/i18n/routing";
 import {publicPath, type PublicPage} from "@/lib/website-routes";
 import {websiteCopy} from "./public-content";
 import {ProductHome} from "./public-product-home";
+import {PublicHeroMotion} from "./public-hero-motion";
 import styles from "./public-site.module.css";
 import hero from "./public-hero.module.css";
 
@@ -19,7 +20,7 @@ export async function PublicShell({locale, page, children}: {locale: AppLocale; 
     <header key={page} className={`${styles.header} ${dark ? styles.headerDark : ""}`}>
       <Link href={publicPath(locale, "home")} aria-label={`Offroad: ${t("nav.home")}`} className={styles.logo}><Image src={`/brand/offroad-lockup${dark ? "-inverted" : ""}.png`} width={1600} height={482} alt="Offroad" priority /></Link>
       <nav className={styles.desktopNav} aria-label={t("nav.menu")}>{nav}</nav>
-      <div className={styles.headerActions}><Link href={publicPath(otherLocale, page)} hrefLang={otherLocale} aria-label={t("nav.language")}>{locale === "pt-BR" ? "EN" : "PT"}</Link><Link className={styles.login} href={`/${locale}/login`}>{t("nav.login")}</Link></div>
+      <div className={styles.headerActions}><Link href={publicPath(otherLocale, page)} hrefLang={otherLocale} aria-label={t("nav.language")}>{locale === "pt-BR" ? "EN" : "PT"}</Link><Link className={styles.login} href={`/${locale}/login`}>{t("nav.login")}</Link>{dark && <Link className={styles.headerDemo} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link>}</div>
       <details className={styles.mobileNav}><summary>{t("nav.menu")}</summary><nav aria-label={t("nav.menu")}>{nav}<Link href={publicPath(locale, "demo")}>{t("nav.demo")}</Link><Link href={`/${locale}/login`}>{t("nav.login")}</Link></nav></details>
     </header>
     <main id="content">{children}</main>
@@ -36,7 +37,16 @@ export async function PublicHome({locale}: {locale: AppLocale}) {
   return <PublicShell locale={locale} page="home">
     <section className={hero.hero} aria-labelledby="hero-title">
       <div className={hero.image}><Image src="/website/hero-city.png" alt="" fill priority sizes="100vw" /></div>
-      <div className={hero.content}><h1 id="hero-title">{t("hero.title")}</h1><p className={hero.support}>{t("hero.support")}</p><p className={hero.credit}>{t("hero.credit")}</p><div className={hero.actions}><Link className={hero.primary} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link><Link className={hero.secondary} href={publicPath(locale,"cases")}>{t("hero.secondary")}</Link></div></div>
+      <PublicHeroMotion pause={t("hero.pause")} play={t("hero.play")}/>
+      <div className={hero.content}>
+        <a className={hero.pill} href="#professional-capacity">{t("hero.pill")}</a>
+        <h1 id="hero-title"><span>{t("hero.firstLine")}</span>{" "}<span className={hero.accent}>{t("hero.secondLine")}</span></h1>
+        <p className={hero.support}>{t("hero.support")}</p>
+        <p className={hero.credit}>{t("hero.credit")}</p>
+        <div className={hero.actions}><Link className={hero.primary} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link><Link className={hero.secondary} href={publicPath(locale,"cases")}>{t("hero.secondary")}</Link></div>
+        <p className={hero.investor}>{t("hero.investorQuestion")} <Link href={`${publicPath(locale,"investors")}#mandate`}>{t("hero.investorLink")}</Link></p>
+        <div className={hero.benefits}>{(["expertise","execution","capital","control"] as const).map(key => <div key={key}><h2>{t(`hero.benefits.${key}.title`)}</h2><p>{t(`hero.benefits.${key}.body`)}</p></div>)}</div>
+      </div>
     </section>
     <ProductHome locale={locale} copy={copy}/>
   </PublicShell>;

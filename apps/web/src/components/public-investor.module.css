@@ -1,0 +1,4 @@
+.intake{scroll-margin-top:32px;padding-top:64px!important;border-top:1px solid #d7dcdf}
+.intake h2{font-size:clamp(36px,3.7vw,54px);line-height:1.12!important;letter-spacing:-.045em;max-width:580px}
+.intake h3{font-size:19px;line-height:1.4!important}
+.intake form{scroll-margin-top:24px}

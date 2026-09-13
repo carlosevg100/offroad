@@ -36,17 +36,17 @@
         "advisors": {"position": "Those who advise and structure", "name": "Advisors and structuring teams", "roles": "Origination, DCM and specialist teams", "benefit": "Bring more capacity to the client and the transaction.", "body": "Develop the approach, deepen the analysis and execute the model and materials.", "link": "Explore use cases for advisors"},
         "investors": {"position": "Those who allocate capital", "name": "Investors and lenders", "roles": "Credit, funds and special situations", "benefit": "Focus the analysis on what fits your mandate.", "body": "Form an independent view of risk, return, protection and the conditions for investing.", "link": "Explore use cases for investors"},
         "seniority": "From analyst to decision-maker. Different questions and levels of synthesis, with the same financial rigor.",
-        "boundary": "Each engagement retains the perspective and permissions of the team conducting it. A private assessment does not become counterparty information."
+        "boundary": "Your role defines the perspective of the analysis. Organization permissions govern access to information."
       },
       "method": {
         "label": "By Finance, for Finance. Enhanced by AI.",
-        "title": "The difference is in the method.\nNot the luck of the prompt.",
-        "intro": "Investment banking, DCM and corporate finance experience applied to the questions, the calculations and the way the work gets done.",
+        "title": "Applied financial expertise.\nAgentic AI execution.",
+        "intro": "Work with a platform built on investment banking, DCM and corporate finance experience. Financial expertise directs the work; AI expands the capacity to execute it.",
         "photoAlt": "A workstation with a financial model and term sheet on the left monitor and the Offroad interface on the right.",
-        "modelsTitle": "AI models extend execution.",
-        "modelsBody": "Frontier models support reading, extraction, research and drafting. Financial specialization directs how those capabilities are used.",
-        "expertiseTitle": "Financial expertise provides direction.",
-        "expertiseBody": "Business context, the user's role, the instrument and institutional criteria determine what to investigate and how to interpret it.",
+        "modelsTitle": "Frontier AI, where it makes a difference.",
+        "modelsBody": "Document reading, extraction, research and drafting. Models selected for each step, within a financial workflow.",
+        "expertiseTitle": "The method does not depend on the prompt.",
+        "expertiseBody": "Specialized workflows, explicit financial definitions and deterministic calculations. Your institution's context guides the questions and interpretation.",
         "workflow": {"title": "Specialized workflows", "body": "Intent defines the work: what to examine, in which order, against which criteria and when the evidence is sufficient to proceed. A credit assessment does not follow the same logic as a client approach."},
         "calculations": {"title": "Deterministic financial logic", "body": "Financial calculations follow formalized rules outside text generation. Identical inputs and methodology produce identical results. Definitions of debt, EBITDA, coverage and debt service must be explicit, not assumed."},
         "materials": {"title": "Materials built for the decision-maker", "body": "A board, a credit committee and a lender need different messages. The analysis supports the rationale; the audience determines the structure, the level of detail and the questions the materials must answer."},
@@ -63,7 +63,7 @@
         "relationshipTitle": "Market knowledge feeds back into the analysis.",
         "relationshipBody": "Allocator relationships have a role in the product: understanding criteria and decision practices, then translating them into structuring, materials and qualification. Appetite and terms need confirmation at the time of approach.",
         "instrument": "Instrument and purpose", "ticket": "Ticket size and tenor", "risk": "Risk and collateral", "policy": "Sector and restrictions",
-        "note": "Connection depends on fit, current information and permission to share. The credit decision remains with the lender.",
+        "note": "Understand the fit, resolve open questions and decide what to share before approaching a counterparty.",
         "link": "How we qualify capital connection"
       },
       "journey": {
@@ -73,7 +73,7 @@
         "selector": "Explore the stages of work",
         "example": "Demonstration case · ACME",
         "promptLabel": "You ask",
-        "responseLabel": "Offroad guides the work",
+        "responseLabel": "Offroad",
         "outputLabel": "The work takes shape",
         "start": {
           "label": "Start",
@@ -128,20 +128,20 @@
         "connectTwo": "Identify open questions before the approach",
         "connectThree": "Decide what can leave the project",
         "continuityTitle": "The conversation continues. So does the work.",
-        "continuityBody": "Challenge an assumption, explore another structure or return with a committee decision. Offroad is designed to carry the analysis forward, without restarting the reasoning with each request.",
+        "continuityBody": "Challenge an assumption, explore another structure or return with a committee decision. Continue from the analysis, documents and choices already discussed.",
         "link": "Explore use cases"
       },
       "trust": {
         "label": "Consistency, collaboration and institutional trust",
         "title": "Your standards. Connected work.\nClear control.",
-        "intro": "Financial rigor, continuity across people and control over information are part of the same institutional requirement.",
-        "standards": {"title": "Financial consistency", "benefit": "Review the basis. Understand the result.", "body": "Deterministic calculations and explicit definitions support the analysis. Preferred sources, conventions, templates and reproducible versions are part of the platform's development and the scope to validate with each institution."},
-        "collaboration": {"title": "Connected work", "benefit": "Preserve context from analysis to decision.", "body": "Our product direction connects comments, reviews and approvals to sources and materials. Advanced collaboration and consolidation workflows should be validated in a demonstration against their implementation status."},
+        "intro": "Analysis should be consistent. Information should be protected. And you should be able to understand the basis of every result.",
+        "standards": {"title": "Financial consistency", "benefit": "Review the basis. Understand the result.", "body": "Review sources, assumptions and definitions. Financial calculations follow deterministic rules, so you can examine how each result was built."},
+        "collaboration": {"title": "Connected work", "benefit": "Preserve context from analysis to decision.", "body": "Keep documents, analyses and materials in the context of the work. In a demonstration, explore how this environment supports your team's preparation and review."},
         "security": {"title": "Enterprise trust", "benefit": "Know who has access and what can be shared.", "body": "The architecture uses organization-level access controls and private document storage. Identity, retention, provider and sharing requirements are addressed during institutional evaluation."},
         "more": "Understand the scope",
-        "status": "Current controls and evolving capabilities are presented separately during platform evaluation.",
+        "status": "Organization-scoped access. Private documents. Limited telemetry collection.",
         "soc": "SOC 2 Type II is an objective of our security program. We do not yet have a SOC 2 report.",
-        "link": "Security and current controls"
+        "link": "Explore our security controls"
       }
     },
     "audienceDetail": {
@@ -177,7 +177,7 @@
     "offering": {
       "label": "What we offer",
       "title": "Financial expertise.\nThe capacity to execute.",
-      "intro": "Expertise to discuss the decision, execution to develop the work and intelligence to find the capital that fits.",
+      "intro": "Think through a decision. Execute the work behind it. Find the right capital. Explore a few of the ways you can use the platform.",
       "advisor": {
         "label": "EXPERT ADVISOR",
         "title": "An experienced advisor to think it through.",
@@ -207,9 +207,9 @@
       },
       "more": "Explore the role",
       "principle": "Think with someone who has sat on your side of the table. Execute with precision. Reach lenders who invest in your kind of risk.",
-      "empowerTitle": "Your team, amplified.",
-      "empowerAccent": "Not replaced.",
-      "empowerBody": "More depth in every analysis. More cases per professional. More time for the decision. Judgment, counterparty relationships and decisions remain with the people doing the work.",
+      "empowerTitle": "More time for the work",
+      "empowerAccent": "that needs your judgment.",
+      "empowerBody": "Go deeper into each analysis and take on more with the same team. You keep the client relationship, the investment judgment and the decision.",
       "demo": {
         "example": "Explore the delivery",
         "replay": "Replay sequence",
@@ -289,9 +289,9 @@
           "debtThree": "Collateral and covenants"
         },
         "connection": {
-          "fictional": "Fictional profile",
+          "fictional": "Connection example",
           "strategy": "Structured credit",
-          "mandate": "Example mandate",
+          "mandate": "Investment profile",
           "ticket": "Ticket",
           "ticketValue": "BRL {ticketMin} to {ticketMax} million",
           "tenor": "Tenor",
@@ -301,7 +301,7 @@
           "deal": "Transaction under review",
           "dealValue": "BRL {amount} million · {years} years · receivables",
           "score": "Fit score",
-          "scoreNote": "Illustrative score, not an approval probability.",
+          "scoreNote": "See what fits and what needs to change.",
           "conditional": "Adjustment needed before approaching",
           "fits": "Fits",
           "adjust": "Adjust",
@@ -314,7 +314,7 @@
           "rationale": "Understand the score rationale",
           "weights": "Weights in this example",
           "explanation": "Instrument and tenor/ticket meet the criteria. Concentration exceeds the mandate limit and must be resolved before presenting the transaction.",
-          "disclosure": "The fund, transaction, criteria and score are fictional. This is not a credit offer or confirmed appetite."
+          "disclosure": "A demonstration of compatibility with mandate criteria, without consulting an actual lender. The index does not measure approval probability."
         }
       }
     },
@@ -735,9 +735,19 @@
       "principleThreeBody": "Companies, advisors and investors have distinct needs. None should depend on another party's participation to start receiving value.",
       "teamNote": "Meet the team and discuss the adoption approach in a conversation with Offroad."
     },
+    "investorContact": {
+      "title": "Your next opportunity starts with your mandate.",
+      "intro": "Introduce your institution and the credit profile you seek. Start with instruments, ticket size, tenor, collateral and restrictions.",
+      "message": "What opportunities does your institution seek?",
+      "subject": "Introduction of an investment mandate",
+      "stepsTitle": "Let's understand your investment profile",
+      "stepOne": "Instruments, sectors and structures of interest.",
+      "stepTwo": "Ticket sizes, tenors and accepted collateral.",
+      "stepThree": "Assessment criteria and decision process."
+    },
     "security": {
       "title": "Security for institutional workflows.",
-      "intro": "Financial information calls for access controls, careful document handling and transparency about what is implemented and what is still being developed.",
+      "intro": "Organization-scoped access, private documents and development controls. Protection built into the architecture and the working process.",
       "oneTitle": "Organization-scoped access",
       "oneBody": "The architecture uses database access policies and server-side checks to scope access to records according to the organization and applicable permissions.",
       "twoTitle": "Private document storage",
@@ -746,11 +756,11 @@
       "threeBody": "Web telemetry configuration disables session recording and automatic event capture. Product events use permitted fields, and error monitoring includes sensitive-data handling.",
       "fourTitle": "Development checks",
       "fourBody": "The development process includes automated code and dependency checks. These controls support prevention and detection without replacing ongoing assessment.",
-      "socTitle": "SOC 2: a program objective, not a current certification.",
-      "socBody": "Our security program includes an independent SOC 2 Type II assessment as an objective. Offroad does not currently have a SOC 2 report.",
+      "socTitle": "Independent assessment and certifications",
+      "socBody": "SOC 2 Type II is an objective of the security program. No report has been issued to date. Existing controls can be reviewed as part of your institution's assessment.",
       "reviewTitle": "Your institution's assessment deserves a specific discussion.",
-      "reviewBody": "Identity, retention, vendor, data-handling and usage requirements should be reviewed during evaluation. We do not assume a configuration meets every institution's policies.",
-      "boundary": "These descriptions cover architectural and development-process controls. They are not a guarantee of suitability for a particular requirement or a claim of certification.",
+      "reviewBody": "Bring your identity, retention, provider and data-handling requirements. We will examine the scope, configuration and evidence relevant to your assessment.",
+      "boundary": "Speak with our team to assess the controls and how they apply to your institution's requirements.",
       "cta": "Discuss security"
     },
     "demo": {
@@ -983,7 +993,20 @@
       "home": "Home"
     },
     "hero": {
-      "title": "Agentic AI platform purpose-built for those who structure and invest in debt.",
+      "title": "A platform for those who raise, structure and provide capital.",
+      "firstLine": "A platform for those who",
+      "secondLine": "raise, structure and provide capital.",
+      "pill": "Your team, amplified. Not replaced.",
+      "pause": "Pause background video",
+      "play": "Play background video",
+      "investorQuestion": "Invest in private credit?",
+      "investorLink": "Introduce your mandate",
+      "benefits": {
+        "expertise": {"title": "Deeper analysis", "body": "Challenge assumptions. Compare alternatives."},
+        "execution": {"title": "Less manual work", "body": "Documents, models and materials, connected."},
+        "capital": {"title": "Better capital fit", "body": "Understand who could finance the deal and why."},
+        "control": {"title": "Your judgment, intact", "body": "Sources, calculations and decisions in your control."}
+      },
       "support": "Your expert advisor and powerful hands-on analyst.",
       "credit": "Built by finance professionals, for finance professionals.",
       "secondary": "See use cases"

@@ -10,7 +10,7 @@ import styles from "./public-site.module.css";
 type Copy = typeof import("../../messages/pt-BR.json")["Website"];
 
 
-export function DemoContact({locale, copy, audiences}: {locale: AppLocale; copy: Copy["demo"]; audiences: Copy["who"]}) {
+export function DemoContact({locale, copy, audiences, investor = false}: {locale: AppLocale; copy: Copy["demo"]; audiences: Copy["who"]; investor?: boolean}) {
   const [prepared, setPrepared] = useState(false);
   function prepareEmail(data: FormData) {
     const body = (["name", "email", "institution", "role", "message"] as const)
@@ -21,7 +21,7 @@ export function DemoContact({locale, copy, audiences}: {locale: AppLocale; copy:
   return <div className={styles.contactPanel}><form action={prepareEmail} className={styles.contactForm}>
     <div className={styles.formPair}><label htmlFor="demo-name">{copy.name}<input id="demo-name" name="name" autoComplete="name" maxLength={100} required /></label><label htmlFor="demo-email">{copy.email}<input id="demo-email" name="email" autoComplete="email" type="email" maxLength={160} required /></label></div>
     <label htmlFor="demo-institution">{copy.institution}<input id="demo-institution" name="institution" autoComplete="organization" maxLength={160} required /></label>
-    <label htmlFor="demo-role">{copy.role}<select id="demo-role" name="role" defaultValue="" required><option value="" disabled>{copy.choose}</option>{(["companies", "advisors", "investors"] as const).map(key => <option key={key}>{audiences[key].name}</option>)}</select></label>
+    <label htmlFor="demo-role">{copy.role}<select id="demo-role" name="role" defaultValue={investor ? audiences.investors.name : ""} required><option value="" disabled>{copy.choose}</option>{(["companies", "advisors", "investors"] as const).map(key => <option key={key}>{audiences[key].name}</option>)}</select></label>
     <label htmlFor="demo-message">{copy.message}<textarea id="demo-message" name="message" maxLength={800} rows={4} aria-describedby="demo-message-help" /></label><p className={styles.finePrint} id="demo-message-help">{copy.optional}</p>
     <p className={styles.finePrint}>{copy.note} <Link href={publicPath(locale,"privacy")}>{copy.privacy}</Link></p>
     <button className={styles.button} type="submit">{copy.submit}</button>
