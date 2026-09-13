@@ -41,7 +41,16 @@ describe("public website boundaries", () => {
     expect(html).toContain(c.hero.secondLine);
     expect(html).toContain(c.hero.pill);
     expect(html).toContain(`href="${publicPath(locale,"investors")}#mandate"`);
-    for (const item of Object.values(c.hero.benefits)) expect(html).toContain(item.title);
+    expect(Object.keys(c.hero.benefits)).toEqual(["expertise", "method", "execution", "capital"]);
+    const benefitPositions = Object.values(c.hero.benefits).map(item => {
+      expect(html).toContain(item.title);
+      expect(html).toContain(item.body);
+      return html.indexOf(item.title);
+    });
+    expect(benefitPositions).toEqual([...benefitPositions].sort((a, b) => a - b));
+    expect(html).toContain(c.hero.investorLink);
+    expect(html).not.toContain("Apresente seu mandato");
+    expect(html).not.toContain("Introduce your mandate");
     expect(html).toContain("<video");
     const investor = renderToStaticMarkup(await PublicPageContent({locale,page:"investors"}));
     expect(investor).toContain('id="mandate"');

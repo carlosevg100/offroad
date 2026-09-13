@@ -45,7 +45,7 @@ export async function PublicHome({locale}: {locale: AppLocale}) {
         <p className={hero.credit}>{t("hero.credit")}</p>
         <div className={hero.actions}><Link className={hero.primary} href={publicPath(locale,"demo")}>{t("nav.demo")}</Link><Link className={hero.secondary} href={publicPath(locale,"cases")}>{t("hero.secondary")}</Link></div>
         <p className={hero.investor}>{t("hero.investorQuestion")} <Link href={`${publicPath(locale,"investors")}#mandate`}>{t("hero.investorLink")}</Link></p>
-        <div className={hero.benefits}>{(["expertise","execution","capital","control"] as const).map(key => <div key={key}><h2>{t(`hero.benefits.${key}.title`)}</h2><p>{t(`hero.benefits.${key}.body`)}</p></div>)}</div>
+        <div className={hero.benefits}>{(["expertise","method","execution","capital"] as const).map(key => <div key={key}><h2>{t(`hero.benefits.${key}.title`)}</h2><p>{t(`hero.benefits.${key}.body`)}</p></div>)}</div>
       </div>
     </section>
     <ProductHome locale={locale} copy={copy}/>
