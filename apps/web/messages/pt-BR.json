@@ -36,18 +36,18 @@
         "advisors": {"position": "Quem assessora e estrutura", "name": "Assessores e estruturadores", "roles": "Originação, DCM e equipes especializadas", "benefit": "Dedique mais capacidade ao cliente e à operação.", "body": "Desenvolva a abordagem, aprofunde a análise e execute o modelo e os materiais.", "link": "Explore os usos para assessores"},
         "investors": {"position": "Quem aloca capital", "name": "Investidores e financiadores", "roles": "Crédito, fundos e special situations", "benefit": "Concentre a análise no que cabe no seu mandato.", "body": "Forme uma visão independente sobre risco, retorno, proteções e condições para investir.", "link": "Explore os usos para investidores"},
         "seniority": "Do analista ao decisor. Perguntas e níveis de síntese diferentes, com o mesmo rigor financeiro.",
-        "boundary": "Cada trabalho preserva a perspectiva e as permissões de quem o conduz. Uma análise privada não se torna informação da contraparte."
+        "boundary": "Seu papel define a perspectiva da análise. As permissões da organização delimitam o acesso à informação."
       },
       "method": {
         "label": "By Finance, for Finance. Enhanced by AI.",
-        "title": "O diferencial está no método.\nNão na sorte do prompt.",
-        "intro": "Experiência em investment banking, DCM e corporate finance aplicada às perguntas, às contas e à forma de executar o trabalho.",
+        "title": "Inteligência financeira aplicada.\nExecução de IA agêntica.",
+        "intro": "A experiência de bankers, CFOs e investidores está no método: interpretar o seu pedido, conduzir a análise e preparar a entrega. A IA agêntica executa as etapas dentro desse contexto financeiro.",
         "photoAlt": "Mesa de trabalho com modelo financeiro e term sheet à esquerda e a interface da Offroad à direita.",
-        "modelsTitle": "Modelos de IA ampliam a execução.",
-        "modelsBody": "Modelos de fronteira apoiam leitura, extração, pesquisa e redação. A especialização financeira orienta como essas capacidades são utilizadas.",
-        "expertiseTitle": "O conhecimento financeiro dá direção.",
-        "expertiseBody": "Contexto do negócio, papel do usuário, instrumento e critérios da instituição definem o que investigar e como interpretar.",
-        "workflow": {"title": "Workflows especializados", "body": "A intenção define o trabalho: o que examinar, em que ordem, com quais critérios e quando a informação é suficiente para avançar. Uma avaliação de crédito não segue a mesma lógica de uma abordagem comercial."},
+        "modelsTitle": "IA de fronteira, onde faz diferença.",
+        "modelsBody": "Leitura de documentos, extração, pesquisa e redação. Modelos selecionados para cada etapa, dentro de um fluxo de trabalho financeiro.",
+        "expertiseTitle": "Seu pedido tem um contexto. E um método.",
+        "expertiseBody": "Desenvolver a abordagem de um MD, revisar um modelo e avaliar uma operação de crédito exigem trabalhos diferentes. Seu objetivo e os critérios da instituição orientam as perguntas, a análise e a entrega.",
+        "workflow": {"title": "Workflows especializados", "body": "O analista precisa reconciliar e modelar. O MD quer preparar a abordagem ao cliente. O CFO precisa avaliar o plano de capital. Cada intenção orienta o que examinar, em que ordem e quais evidências permitem avançar."},
         "calculations": {"title": "Contas e lógicas determinísticas", "body": "Cálculos financeiros seguem regras formalizadas, fora da geração de texto. Entradas e método iguais produzem os mesmos resultados. Definições de dívida, EBITDA, cobertura e serviço da dívida precisam ser explícitas, não presumidas."},
         "materials": {"title": "Materiais para quem decide", "body": "Conselho, comitê de crédito e financiador precisam de mensagens distintas. A análise sustenta o racional; a audiência define a estrutura, o grau de detalhe e as questões que o material precisa responder."},
         "detail": {"title": "O detalhe que muda a conclusão", "body": "Ajustes recorrentes, definições contratuais, concentração de receitas, amortização e garantias podem alterar o caso. Esses pontos orientam a investigação, em vez de dependerem de o usuário lembrar a pergunta certa."},
@@ -63,7 +63,7 @@
         "relationshipTitle": "O conhecimento do mercado volta para a análise.",
         "relationshipBody": "A frente de relacionamento com alocadores tem uma função no produto: entender critérios e práticas de decisão e traduzi-los em estruturação, materiais e qualificação. Apetite e condições precisam ser confirmados no momento da abordagem.",
         "instrument": "Instrumento e finalidade", "ticket": "Ticket e prazo", "risk": "Risco e garantias", "policy": "Setor e restrições",
-        "note": "A conexão depende de aderência, informação atual e autorização para compartilhar. A decisão de crédito permanece com o financiador.",
+        "note": "Entenda a aderência, resolva os pontos pendentes e decida o que compartilhar antes da abordagem.",
         "link": "Como qualificamos a conexão"
       },
       "journey": {
@@ -73,7 +73,7 @@
         "selector": "Explore as etapas do trabalho",
         "example": "Caso demonstrativo · ACME",
         "promptLabel": "Você pede",
-        "responseLabel": "A Offroad conduz",
+        "responseLabel": "Offroad",
         "outputLabel": "O trabalho toma forma",
         "start": {
           "label": "Começar",
@@ -128,20 +128,20 @@
         "connectTwo": "Identifique pendências antes da abordagem",
         "connectThree": "Defina o que pode sair do projeto",
         "continuityTitle": "A conversa continua. O trabalho também.",
-        "continuityBody": "Questione uma premissa, explore outra estrutura ou volte com uma decisão do comitê. A proposta da Offroad é dar continuidade à análise, sem reiniciar o raciocínio a cada pedido.",
+        "continuityBody": "Questione uma premissa, explore outra estrutura ou volte com uma decisão do comitê. Continue a partir da análise, dos documentos e das escolhas já discutidas.",
         "link": "Explore os casos de uso"
       },
       "trust": {
         "label": "Consistência, colaboração e confiança institucional",
         "title": "Os padrões da sua firma.\nO controle do seu trabalho.",
-        "intro": "Rigor financeiro, continuidade entre pessoas e controle sobre a informação fazem parte da mesma exigência institucional.",
-        "standards": {"title": "Consistência financeira", "benefit": "Revise a base. Entenda o resultado.", "body": "Cálculos determinísticos e definições explícitas sustentam a análise. Fontes preferidas, convenções, templates e reprodução de versões fazem parte da evolução da plataforma e do escopo a validar com cada instituição."},
-        "collaboration": {"title": "Trabalho conectado", "benefit": "Preserve o contexto entre análise e decisão.", "body": "Nossa direção de produto conecta comentários, revisões e aprovações às fontes e aos materiais. Fluxos avançados de colaboração e consolidação devem ser validados na demonstração, conforme o estágio de implementação."},
+        "intro": "A análise precisa ser consistente. A informação, protegida. E você precisa entender a base de cada resultado.",
+        "standards": {"title": "Consistência financeira", "benefit": "Revise a base. Entenda o resultado.", "body": "Revise fontes, premissas e definições. Os cálculos financeiros seguem regras determinísticas, permitindo examinar como cada resultado foi construído."},
+        "collaboration": {"title": "Trabalho conectado", "benefit": "Preserve o contexto entre análise e decisão.", "body": "Mantenha documentos, análises e materiais no contexto do trabalho. Na demonstração, explore como esse ambiente se adapta à preparação e à revisão feitas pela sua equipe."},
         "security": {"title": "Confiança institucional", "benefit": "Saiba quem pode acessar e o que pode ser compartilhado.", "body": "A arquitetura utiliza controles de acesso por organização e armazenamento privado de documentos. Requisitos de identidade, retenção, provedores e compartilhamento são tratados na avaliação institucional."},
         "more": "Conheça o escopo",
-        "status": "Controles atuais e capacidades em evolução são apresentados separadamente na avaliação da plataforma.",
+        "status": "Acesso por organização. Documentos privados. Coleta limitada de telemetria.",
         "soc": "SOC 2 Type II integra nosso objetivo de segurança. Ainda não possuímos relatório SOC 2.",
-        "link": "Segurança e controles atuais"
+        "link": "Conheça os controles de segurança"
       }
     },
     "audienceDetail": {
@@ -177,7 +177,7 @@
     "offering": {
       "label": "O que oferecemos",
       "title": "Expertise financeira.\nCapacidade para executar.",
-      "intro": "Conhecimento para discutir a decisão, execução para desenvolver o trabalho e inteligência para encontrar o capital que faz sentido.",
+      "intro": "Discuta uma decisão. Execute o trabalho que a sustenta. Encontre o capital adequado. Explore abaixo alguns dos usos da plataforma.",
       "advisor": {
         "label": "EXPERT ADVISOR",
         "title": "Experiência de mesa para pensar com você.",
@@ -207,9 +207,9 @@
       },
       "more": "Aprofunde o papel",
       "principle": "Pense com quem já esteve do seu lado. Execute com precisão. Chegue a quem compra esse risco.",
-      "empowerTitle": "Sua equipe, potencializada.",
-      "empowerAccent": "Não substituída.",
-      "empowerBody": "Mais profundidade em cada análise, mais casos por pessoa, mais tempo para a decisão. O julgamento, a relação com a contraparte e a decisão continuam com quem está no trabalho.",
+      "empowerTitle": "Mais tempo para o que",
+      "empowerAccent": "exige o seu julgamento.",
+      "empowerBody": "Aprofunde cada análise e conduza mais trabalho com a mesma equipe. Você mantém a relação com o cliente, o critério de investimento e a decisão.",
       "demo": {
         "example": "Explore as entregas",
         "replay": "Rever sequência",
@@ -289,9 +289,9 @@
           "debtThree": "Garantias e covenants"
         },
         "connection": {
-          "fictional": "Perfil fictício",
+          "fictional": "Exemplo de conexão",
           "strategy": "Crédito estruturado",
-          "mandate": "Mandato do exemplo",
+          "mandate": "Perfil de investimento",
           "ticket": "Ticket",
           "ticketValue": "R$ {ticketMin} a {ticketMax} milhões",
           "tenor": "Prazo",
@@ -301,7 +301,7 @@
           "deal": "Operação em análise",
           "dealValue": "R$ {amount} milhões · {years} anos · recebíveis",
           "score": "Score de aderência",
-          "scoreNote": "Score ilustrativo, não probabilidade de aprovação.",
+          "scoreNote": "Veja o que encaixa e o que precisa mudar.",
           "conditional": "Requer ajuste antes da abordagem",
           "fits": "Cabe",
           "adjust": "Ajustar",
@@ -314,7 +314,7 @@
           "rationale": "Entenda o racional do score",
           "weights": "Pesos deste exemplo",
           "explanation": "Instrumento e prazo/ticket atendem aos critérios. A concentração supera o limite do mandato: esse ponto precisa ser resolvido antes de apresentar a operação.",
-          "disclosure": "Fundo, operação, critérios e score são fictícios. O exemplo não representa oferta de crédito ou apetite confirmado."
+          "disclosure": "Demonstração de compatibilidade com critérios de um mandato, sem consulta a um credor real. O índice não mede probabilidade de aprovação."
         }
       }
     },
@@ -905,9 +905,19 @@
       "principleThreeBody": "Companhias, assessores e investidores têm necessidades próprias. Nenhum deles deve depender da participação de outro para começar a receber valor.",
       "teamNote": "Conheça a equipe e a abordagem de adoção em uma conversa com a Offroad."
     },
+    "investorContact": {
+      "title": "Vamos conversar sobre o que você busca.",
+      "intro": "Conte ao nosso time que operações fazem sentido para sua instituição. Instrumentos, ticket, prazo e critérios de crédito são o ponto de partida.",
+      "message": "Que operações sua instituição busca?",
+      "subject": "Conversa com o time Offroad sobre oportunidades de crédito",
+      "stepsTitle": "Vamos conhecer seu perfil",
+      "stepOne": "Instrumentos, setores e estruturas de interesse.",
+      "stepTwo": "Faixas de ticket, prazo e garantias aceitas.",
+      "stepThree": "Critérios de análise e processo de decisão."
+    },
     "security": {
       "title": "Segurança para o trabalho institucional.",
-      "intro": "Informações financeiras exigem controle de acesso, cuidado com documentos e transparência sobre o que está implementado e o que ainda está em desenvolvimento.",
+      "intro": "Acesso delimitado por organização, documentos privados e controles de desenvolvimento. Proteção que faz parte da arquitetura e do processo de trabalho.",
       "oneTitle": "Acesso delimitado por organização",
       "oneBody": "A arquitetura utiliza políticas de acesso no banco de dados e verificações no servidor para delimitar o acesso a registros conforme a organização e as permissões aplicáveis.",
       "twoTitle": "Documentos em armazenamento privado",
@@ -916,11 +926,11 @@
       "threeBody": "A configuração de telemetria web desabilita gravação de sessões e captura automática de eventos. Os eventos de produto usam campos permitidos, e o monitoramento de erros inclui tratamento de dados sensíveis.",
       "fourTitle": "Verificações no desenvolvimento",
       "fourBody": "O processo de desenvolvimento inclui verificações automatizadas de código e dependências. Esses controles apoiam a prevenção e a identificação de problemas, sem eliminar a necessidade de avaliação contínua.",
-      "socTitle": "SOC 2: objetivo do programa, não uma certificação atual.",
-      "socBody": "Nosso programa de segurança inclui como objetivo uma avaliação independente SOC 2 Type II. A Offroad ainda não possui relatório SOC 2.",
+      "socTitle": "Avaliação independente e certificações",
+      "socBody": "SOC 2 Type II é um objetivo do programa de segurança. Não há relatório emitido até o momento. Os controles existentes podem ser examinados na avaliação da sua instituição.",
       "reviewTitle": "A avaliação da sua instituição merece uma conversa específica.",
-      "reviewBody": "Requisitos de identidade, retenção, fornecedores, tratamento de dados e escopo de uso devem ser verificados no processo de avaliação. Não presumimos que uma configuração atenda a todas as políticas institucionais.",
-      "boundary": "As descrições acima apresentam controles da arquitetura e do processo de desenvolvimento. Não constituem garantia de adequação a um requisito específico ou declaração de certificação.",
+      "reviewBody": "Traga seus requisitos de identidade, retenção, provedores e tratamento de dados. Vamos examinar o escopo, a configuração e as evidências relevantes para sua avaliação.",
+      "boundary": "Converse com nosso time para avaliar os controles e sua aplicação aos requisitos da sua instituição.",
       "cta": "Conversar sobre segurança"
     },
     "demo": {
@@ -983,7 +993,20 @@
       "home": "Página inicial"
     },
     "hero": {
-      "title": "Plataforma de IA agêntica construída para quem estrutura e investe em dívida.",
+      "title": "Plataforma dedicada a quem capta, estrutura e financia.",
+      "firstLine": "Plataforma dedicada a quem",
+      "secondLine": "capta, estrutura e financia.",
+      "pill": "Sua equipe potencializada, não substituída.",
+      "pause": "Pausar vídeo de fundo",
+      "play": "Reproduzir vídeo de fundo",
+      "investorQuestion": "Investe em crédito privado?",
+      "investorLink": "Fale com nosso time",
+      "benefits": {
+        "expertise": {"title": "Feita por quem fez o trabalho.", "body": "Experiência de bankers, CFOs e investidores em cada fluxo."},
+        "method": {"title": "Cada pedido, o método certo.", "body": "O que examinar, em que ordem e o que entregar."},
+        "execution": {"title": "Mais tempo para a decisão.", "body": "Documentos analisados. Modelos e materiais para revisar."},
+        "capital": {"title": "Capital com aderência.", "body": "Estrutura e materiais no padrão de quem financia."}
+      },
       "support": "Expert Advisor com a capacidade de execução de um analista dedicado.",
       "credit": "Criada por profissionais de finanças, para profissionais de finanças.",
       "secondary": "Ver casos de uso"

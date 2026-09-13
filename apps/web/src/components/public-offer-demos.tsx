@@ -10,7 +10,7 @@ import {CapitalReceivables, CapitalBoard, CapitalCashChart, caseText, type Capit
 import styles from "./public-offer-demos.module.css";
 
 type Demo = typeof import("../../messages/pt-BR.json")["Website"]["offering"]["demo"];
-export const advisorTopics = ["receivables","board","pricing"] as const;
+export const advisorTopics = ["board","pricing","receivables"] as const;
 export const analystDocuments = ["model","deck","memo","debt"] as const;
 type DocumentKind = typeof analystDocuments[number];
 const documentIcons = {model:FileSpreadsheet,deck:Presentation,memo:FileText,debt:ScrollText};
@@ -39,7 +39,7 @@ function useDemoEntrance() {
   return ref;
 }
 
-export function PublicAdvisorDemo({copy:c,data,analysis,caseCopy,initialTopic="receivables"}: {
+export function PublicAdvisorDemo({copy:c,data,analysis,caseCopy,initialTopic="board"}: {
   copy:Demo["advisor"];data:WebsiteOfferExample;analysis:WebsiteAdvisorExample;caseCopy:CapitalCaseCopy;initialTopic?:typeof advisorTopics[number];
 }) {
   const [topic,setTopic] = useState(initialTopic);
@@ -99,7 +99,7 @@ export function PublicConnectionDemo({copy:c,data}: {copy:Demo["connection"];dat
       <div className={styles.scoreRow}><div className={styles.scoreRing}><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="43" pathLength="100"/><circle className={styles.scoreArc} cx="50" cy="50" r="43" pathLength="100" strokeDasharray="100" strokeDashoffset={data.scoreMaximum-data.score}/></svg><span><strong>{data.score}</strong><small>/{data.scoreMaximum}</small></span></div><div><span className={styles.smallLabel}>{c.score}</span><strong>{c.conditional}</strong><p>{c.scoreNote}</p></div></div>
       <div className={styles.transaction}><span>{c.deal}</span><strong>{fillOfferText(c.dealValue,data)}</strong></div>
       <ul className={styles.fitCriteria}>{data.criteria.map(item=><li key={item.key} data-outcome={item.outcome}><div className={styles.criterionStatus}>{item.outcome==="fits"?<Check size={15} aria-hidden="true"/>:<TriangleAlert size={15} aria-hidden="true"/>}<span>{item.outcome==="fits"?c.fits:c.adjust}</span></div><div><strong>{c[item.key]}</strong><p>{fillOfferText(c[`${item.key}Value`],data)}</p></div></li>)}</ul>
-      <details className={styles.rationale}><summary>{c.rationale}<Plus size={17} aria-hidden="true"/></summary><p>{c.explanation}</p><span className={styles.smallLabel}>{c.weights}</span><ul>{data.criteria.map(item=><li key={item.key}><span>{c[item.key]}</span><strong>{item.earned}/{item.weight}</strong></li>)}</ul></details>
-    </div><p className={styles.caption}>{c.disclosure}</p>
+      <details className={styles.rationale}><summary>{c.rationale}<Plus size={17} aria-hidden="true"/></summary><p>{c.explanation}</p><span className={styles.smallLabel}>{c.weights}</span><ul>{data.criteria.map(item=><li key={item.key}><span>{c[item.key]}</span><strong>{item.earned}/{item.weight}</strong></li>)}</ul><p>{c.disclosure}</p></details>
+    </div>
   </div>;
 }

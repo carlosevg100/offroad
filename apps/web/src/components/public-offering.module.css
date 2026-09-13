@@ -1,4 +1,4 @@
-.empower { background:linear-gradient(120deg,#e6e6e6,#f2f2f2);border-bottom:1px solid #d9d9d9; }
+.empower { background:#f6f5f2;border-bottom:1px solid #dedbd5; }
 .empowerInner { width:min(1280px,calc(100% - 96px));margin:auto;padding:90px 0;display:grid;grid-template-columns:1.2fr 1fr;gap:80px;align-items:center; }
 .empower h2 { font-size:clamp(38px,4.2vw,64px);line-height:1.08!important;letter-spacing:-.055em!important; }
 .empower h2>span { display:block;color:#7e7e7e;margin-top:8px; }

@@ -17,7 +17,9 @@ import {PublicAdvisorDemo, PublicAnalystDemo, PublicConnectionDemo, advisorTopic
 import {websiteFinancialBaseline, websiteOfferExample} from "./website-example";
 import {websiteOfferFixture} from "@offroad/testing-fixtures";
 import {websiteAdvisorExample} from "./website-advisor-example";
-import {caseText} from "@/components/public-capital-case";
+import {caseText, CapitalCashChart} from "@/components/public-capital-case";
+import {PublicHome, PublicShell} from "@/components/public-site";
+import {PublicHeroMotion} from "@/components/public-hero-motion";
 
 vi.mock("next-intl/server", () => ({
   getMessages: async ({locale}: {locale: string}) => locale === "pt-BR" ? pt : en,
@@ -30,6 +32,53 @@ vi.mock("next-intl/server", () => ({
 }));
 
 describe("public website boundaries", () => {
+  it.each(routing.locales)("renders the cinematic hero and investor entry in %s", async locale => {
+    const c = (locale === "pt-BR" ? pt : en).Website;
+    const home = await PublicHome({locale});
+    const html = renderToStaticMarkup(await PublicShell(home.props));
+    expect(c.hero.title).toBe(`${c.hero.firstLine} ${c.hero.secondLine}`);
+    expect(html).toContain(c.hero.firstLine);
+    expect(html).toContain(c.hero.secondLine);
+    expect(html).toContain(c.hero.pill);
+    expect(html).toContain(`href="${publicPath(locale,"investors")}#mandate"`);
+    expect(Object.keys(c.hero.benefits)).toEqual(["expertise", "method", "execution", "capital"]);
+    const benefitPositions = Object.values(c.hero.benefits).map(item => {
+      expect(html).toContain(item.title);
+      expect(html).toContain(item.body);
+      return html.indexOf(item.title);
+    });
+    expect(benefitPositions).toEqual([...benefitPositions].sort((a, b) => a - b));
+    expect(html).toContain(c.hero.investorLink);
+    expect(html).not.toContain("Apresente seu mandato");
+    expect(html).not.toContain("Introduce your mandate");
+    expect(html).toContain("<video");
+    const investor = renderToStaticMarkup(await PublicPageContent({locale,page:"investors"}));
+    expect(investor).toContain('id="mandate"');
+    expect(investor).toContain(c.investorContact.message);
+    expect(investor).toContain(`<option selected="">${c.who.investors.name}</option>`);
+    expect(investor).toContain(c.demo.submit);
+    expect(investor).toContain(c.demo.note);
+  });
+
+  it("starts with a static fallback and an accessible video control", () => {
+    const html = renderToStaticMarkup(createElement(PublicHeroMotion,{pause:pt.Website.hero.pause,play:pt.Website.hero.play}));
+    expect(html).toContain('preload="none"');
+    expect(html).toContain('muted=""');
+    expect(html).toContain('loop=""');
+    expect(html).toContain('playsInline=""');
+    expect(html).not.toContain('src=');
+    expect(html).toContain(`aria-label="${pt.Website.hero.play}"`);
+  });
+
+  it("renders the chart accessible title as a single text value without hydration warnings", () => {
+    const errors = vi.spyOn(console,"error");
+    try {
+      const html = renderToStaticMarkup(createElement(CapitalCashChart,{copy:pt.Website.capitalCase,analysis:websiteAdvisorExample("pt-BR")}));
+      expect(html).toContain(pt.Website.capitalCase.board.chartTitle);
+      expect(errors).not.toHaveBeenCalled();
+    } finally { errors.mockRestore(); }
+  });
+
   it("keeps 42 unique localized routes and resolves only the allowlist", () => {
     const paths = routing.locales.flatMap(locale => publicPages.map(page => publicPath(locale,page)));
     expect(new Set(paths).size).toBe(42);
@@ -73,10 +122,10 @@ describe("public website boundaries", () => {
   });
 
   it("preserves the approved hero and honest security and contact boundaries", () => {
-    expect(pt.Website.hero.title).toBe("Plataforma de IA agêntica construída para quem estrutura e investe em dívida.");
-    expect(en.Website.hero.title).toBe("Agentic AI platform purpose-built for those who structure and invest in debt.");
-    expect(pt.Website.security.socBody).toContain("ainda não possui relatório SOC 2");
-    expect(en.Website.security.socBody).toContain("does not currently have a SOC 2 report");
+    expect(pt.Website.hero.title).toBe("Plataforma dedicada a quem capta, estrutura e financia.");
+    expect(en.Website.hero.title).toBe("A platform for those who raise, structure and provide capital.");
+    expect(pt.Website.security.socBody).toContain("Não há relatório emitido até o momento");
+    expect(en.Website.security.socBody).toContain("No report has been issued to date");
     expect(pt.Website.demo.note).toContain("Nada é enviado pelo site");
     expect(en.Website.demo.note).toContain("Nothing is sent by the website");
     expect(JSON.stringify(pt.Website)).not.toMatch(/[\u2013\u2014]/);
@@ -86,7 +135,7 @@ describe("public website boundaries", () => {
   it.each(routing.locales)("presents the offer, audiences, method, journey and trust in the requested order in %s", locale => {
     const copy = locale === "pt-BR" ? pt.Website : en.Website;
     const html = renderToStaticMarkup(createElement(ProductHome, {locale, copy}));
-    const sections = ["professional-capacity", "offering", "audiences", "by-finance", "capital-intelligence", "how-it-works", "institutional-trust"];
+    const sections = ["professional-capacity", "offering", "by-finance", "audiences", "capital-intelligence", "how-it-works", "institutional-trust"];
     const positions = sections.map(id => html.indexOf(`id="${id}"`));
     expect(positions.every(position => position >= 0)).toBe(true);
     expect(positions).toEqual([...positions].sort((a,b) => a-b));
@@ -114,6 +163,7 @@ describe("public website boundaries", () => {
     expect(html).not.toContain("Da questão financeira");
     expect(html).not.toContain("Ilustração conceitual da experiência");
     expect(html).not.toContain("A menor taxa resolve");
+    expect(html).not.toContain("SOC 2");
   });
 
   it.each(routing.locales)("offers three selectable audience cards and the correct detail link in %s", locale => {
@@ -164,7 +214,7 @@ describe("public website boundaries", () => {
     function keys(value: object, prefix = ""): string[] {
       return Object.entries(value).flatMap(([key, item]) => typeof item === "object" ? keys(item, `${prefix}${key}.`) : [`${prefix}${key}`]);
     }
-    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome", "capitalCase"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
+    for (const section of ["offering", "narrative", "audienceDetail", "solutionDepth", "visualHome", "capitalCase", "hero", "investorContact"] as const) expect(keys(pt.Website[section])).toEqual(keys(en.Website[section]));
   });
 
   it.each(routing.locales)("provides three substantive advisor conversations and four inspectable deliverables in %s", locale => {

@@ -1,3 +1,9 @@
+## 13 September 2026: cinematic website candidate
+
+The founder approved browser QA and requested an OffDeal-inspired hero: glass navigation, white/champagne two-line heading, office/city motion, four benefits and an investor entry. The candidate starts from published 7c8d4f6 on feat/public-cinematic-hero. Agentic AI moves into a dark product section; board analysis is the initial example; repeated caveats are consolidated and security claims remain evidence-bound. Investor intake prepares an email, not a server-received registration. The chart title hydration defect was corrected without changing financial calculations.
+
+Thirty-one focused tests, the full repository check (107 web files / 679 tests and 43 build tasks) and the 42-page/five-image/new-video HTTP probe passed. Authorized desktop/mobile browser QA covers the hero, playback, mobile menu, investor entry, method disclosure, advisor modal/scenarios and focus return; this supersedes the historical QA holds below. Physical iPhone/Safari was not tested. Exact-head remote gates, production proof and clean-main synchronization remain required before reporting publication. No private app, database, authorization, telemetry, provider or hosting configuration changes. Scope, claim boundaries and rollback: docs/build/PUBLIC_WEBSITE_CINEMATIC_HERO_2026_09_13.md.
+
 ## 12 September 2026: unified ACME financial case candidate
 
 PR608 was held before publication after new founder corrections. The revised advisor and five-stage journey share ACME's historical basis and a reconciled cash model. Receivables use an existing-FIDC sale, not a company described as a multi-originator fund. A compact case label replaces repeated fictitious-data badges. Full analysis opens in a native modal; sources, cash bridges, alternatives and covenant sensitivity are explorable. Other offer improvements remain in scope.

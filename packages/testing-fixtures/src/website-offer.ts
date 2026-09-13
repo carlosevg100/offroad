@@ -6,7 +6,7 @@ export const websiteOfferFixture = {
   receivablesBrlMillions: 30,
   ccbSpreadPercentagePoints: 3.2,
   lender: {
-    name: "Fundo Horizonte I",
+    name: "ACME Credit",
     ticketMinBrlMillions: 20,
     ticketMaxBrlMillions: 80,
     minYears: 2,
