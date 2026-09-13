@@ -28,7 +28,7 @@ export function ProductHome({locale, copy}: {locale: AppLocale; copy: Copy}) {
       <div className={styles.section}>
         <span className={styles.label}>{m.label}</span>
         <div className={styles.heading}><SplitHeading id="method-title" title={m.title}/><p>{m.intro}</p></div>
-        <div className={visual.methodShowcase}><div className={visual.photoFrame}><Image src={`/website/product-${locale === "pt-BR" ? "pt" : "en"}.png`} width={1672} height={941} sizes="(max-width: 1000px) 100vw, 760px" alt={m.photoAlt}/></div><div className={visual.methodTiles}>{methodTiles.map(({key,Icon}) => <details key={key} className={visual.methodTile}><summary><Icon size={25} strokeWidth={1.35} aria-hidden="true"/><span>{m[key].title}</span><Plus size={18} aria-hidden="true"/></summary><p>{m[key].body}</p></details>)}</div></div>
+        <div className={visual.methodShowcase}><div className={visual.photoFrame}><Image src={`/website/product-${locale === "pt-BR" ? "pt" : "en"}.png`} width={1672} height={941} sizes="(max-width: 800px) calc(100vw - 40px), (max-width: 1336px) calc(100vw - 96px), 1240px" alt={m.photoAlt}/></div><div className={visual.methodTiles}>{methodTiles.map(({key,Icon}) => <details key={key} className={visual.methodTile}><summary><Icon size={25} strokeWidth={1.35} aria-hidden="true"/><span>{m[key].title}</span><Plus size={18} aria-hidden="true"/></summary><p>{m[key].body}</p></details>)}</div></div>
         <div className={visual.intelligenceLayers}><div><h3>{m.modelsTitle}</h3><p>{m.modelsBody}</p></div><div><h3>{m.expertiseTitle}</h3><p>{m.expertiseBody}</p></div></div><Link className={styles.textLink} href={publicPath(locale,"about")}>{m.link}</Link>
       </div>
     </section>
