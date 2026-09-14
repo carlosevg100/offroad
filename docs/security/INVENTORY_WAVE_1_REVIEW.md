@@ -1,4 +1,4 @@
-# Revalidação do conteúdo do inventário — onda 1
+# Revalidação do conteúdo do inventário: onda 1
 
 Baseline remota revalidada em 14/09/2026: `8bdc26d9df96af713d2769599bb0fdd5234eb6d0`. Baseline anterior: `b2e389757995859cf6a0b250e051d83ba0b53163`. Esta revisão registra arquitetura observada em código e limites das consultas; não declara remediação ou auditoria de produção.
 
