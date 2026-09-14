@@ -1,0 +1,137 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-09-14T21:41:19.418739Z",
+  "validThrough": null,
+  "source": "Codex read-only repository and GitHub API observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-github-observation",
+    "version": "1",
+    "principalClass": "repository automation using the existing local GitHub session"
+  },
+  "scope": "worker deployment diagnostics evidence available during wave 1 baseline review",
+  "observation": "GitHub API returns completed successful deployment runs. The latest inspected run reports unavailable_aws_read for the safe boot evidence step; a successful step does not establish diagnostic access. The local AWS CLI has no credentials. Effective deployment-role permissions remain unknown because no current role policy or simulation receipt was collected.",
+  "verificationState": "unverified_operator_observation",
+  "collection": {
+    "baselineCommit": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "githubReadOnly": {
+      "latestRuns": [
+        {
+          "id": 34551966644,
+          "head_sha": "da3157b74ea93b49212774d0337931567ec695b7",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-09-11T01:45:53Z",
+          "updated_at": "2026-09-11T01:52:05Z",
+          "html_url": "https://github.com/carlosevg100/offroad/actions/runs/34551966644"
+        },
+        {
+          "id": 34551108596,
+          "head_sha": "3c1e20a7e5f03b615ea699b1f039340667d0efd4",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-09-11T01:32:54Z",
+          "updated_at": "2026-09-11T01:39:22Z",
+          "html_url": "https://github.com/carlosevg100/offroad/actions/runs/34551108596"
+        },
+        {
+          "id": 34550247481,
+          "head_sha": "540ea1408a41bfe5c0b0fb7cc3cb4da2dda58160",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-09-11T01:20:07Z",
+          "updated_at": "2026-09-11T01:26:37Z",
+          "html_url": "https://github.com/carlosevg100/offroad/actions/runs/34550247481"
+        }
+      ],
+      "latestRunJobs": [
+        {
+          "id": 103116569330,
+          "name": "Build, push and roll out",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Configure AWS credentials (OIDC, no stored key)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Log in to Amazon ECR",
+              "conclusion": "success"
+            },
+            {
+              "name": "Build and push the image",
+              "conclusion": "success"
+            },
+            {
+              "name": "Register the task definition with the new image",
+              "conclusion": "success"
+            },
+            {
+              "name": "Roll out to the service",
+              "conclusion": "success"
+            },
+            {
+              "name": "Read safe worker boot flag evidence",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Log in to Amazon ECR",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Configure AWS credentials (OIDC, no stored key)",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "latestRunSafeBootRecords": [
+        {
+          "documentaryWorkPlanningEnabled": null,
+          "bootProof": "unavailable_aws_read",
+          "bootAt": null
+        }
+      ]
+    },
+    "localAwsReadOnly": {
+      "command": "aws sts get-caller-identity --output json",
+      "exitCode": 253,
+      "outcome": "credentials_not_available_in_local_session"
+    }
+  },
+  "actionsRequiringEffectivePermissionVerification": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents"
+  ],
+  "requiredNextEvidence": "Role policy and policy simulation receipts for each named action and representative in-scope and out-of-scope resources; live diagnostic reads when available.",
+  "redaction": "No credentials, account identifiers, role identifiers, task identifiers, customer payloads, or raw worker logs are retained. GitHub run and commit identifiers refer only to the repository delivery history.",
+  "limitations": [
+    "Local credential absence is not an IAM denial result.",
+    "A past successful deployment run does not establish the current running worker commit.",
+    "The original operator observation is retained as a historical artifact, not relabelled as a new human observation."
+  ],
+  "freshness": "wave_bound",
+  "waveId": "wave-1"
+}

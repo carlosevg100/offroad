@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "b2e389757995859cf6a0b250e051d83ba0b53163";
-const capturedAt = "2026-09-07T09:43:00.000-03:00";
+const baselineCommit = "8bdc26d9df96af713d2769599bb0fdd5234eb6d0";
+const capturedAt = "2026-09-14T21:45:33.165Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -106,7 +106,18 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-LOCKFILE", "configuration", "pnpm-lock.yaml", "Pinned dependency resolution, including external package sources."),
   evidence("SEV-CASE-RENDER", "repository_file", "packages/case-render/src/html.ts", "Generated HTML material and its external font-loading boundary."),
   evidence("SEV-ROLLOUT-ORDER", "repository_file", "docs/build/ACCEPTANCE_EVIDENCE.md", "Recorded rollout where hosted migrations had to be reconciled before the worker could safely continue."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-07.json", "Unverified operator observation about an earlier rollout diagnostic failure; effective IAM permissions remain unknown until a policy and simulation receipt are collected."),
+  evidence("SEV-EVAL-DOCUMENT-WORK", "configuration", ".github/workflows/document-work-product-live.yml", "Synthetic documentary, synthesis and advisor-response evaluations through the existing evaluation OIDC role."),
+  evidence("SEV-EVAL-DOCUMENT-CONTINUATION", "configuration", ".github/workflows/document-work-product-continuation.yml", "One-time continuation consumes an earlier synthetic evaluation receipt and a bounded Anthropic call."),
+  evidence("SEV-CI-SCANNER", "configuration", ".github/workflows/documentary-scanner.yml", "Synthetic clean and EICAR controls for the isolated CI scanner."),
+  evidence("SEV-CI-SCANNER-START", "repository_file", "scripts/ci/start-documentary-scanner.sh", "Ubuntu packages, freshclam definition updates and loopback clamd under the packaged AppArmor profile."),
+  evidence("SEV-DEPLOY-BOOT-PROOF", "repository_file", "scripts/ci/verify-worker-boot-flag.py", "Read-only diagnostic helper returns success on unavailable AWS reads and fails on a contradictory boot flag."),
+  evidence("SEV-ORG-AUTHORITY-SQL", "repository_file", "supabase/migrations/20260815014649_platform_foundation.sql", "Historical definition grants organization management through created_by independently of active membership."),
+  evidence("SEV-PROJECT-ACCESS-SQL", "repository_file", "supabase/migrations/20260901035248_universal_capital_projects.sql", "Historical capital-project helper accepts active organization membership without project-specific read authority."),
+  evidence("SEV-INTAKE-ACCESS-SQL", "repository_file", "supabase/migrations/20260817202038_document_first_intake.sql", "Historical intake helper accepts broad active organization membership."),
+  evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Prompt calibrates response using professional context; wave 1C removes role-dependent analytical depth."),
+  evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Professional-profile calibration remains in the origination prompt on this baseline."),
+  evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Professional-profile calibration remains in capital planning on this baseline."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-14.json", "Codex read-only observation: the inspected deployment log reports unavailable AWS boot diagnostics and local AWS credentials are absent; effective IAM permissions remain unknown."),
 ];
 
 const environments = [
@@ -200,18 +211,18 @@ const systems = [
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
-    gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT"], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
+    gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", "SG-CREATOR-RESIDUAL-AUTHORITY", "SG-PROJECT-MEMBERSHIP-READ"], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis and artifact generation.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", "SG-PROFILE-ANALYTICAL-DEPTH"], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
-    environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN"],
-    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE"],
+    environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-UBUNTU-PACKAGES", "VEN-CLAMAV-DEFINITIONS"],
+    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE", "SG-VENDOR-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03", "TRUST-AI-01"],
   },
   {
@@ -245,7 +256,7 @@ const dataStores = [
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "Organization and project policies plus private database commands; live completeness is unverified.",
     retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
-    gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS"], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
+    gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", "SG-PROJECT-MEMBERSHIP-READ"], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
     storeId: "STORE-OBJECTS", title: "Supabase private object storage", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
@@ -288,10 +299,25 @@ const dataStores = [
 
 const dataFlows = [
   {
+    flowId: "FLOW-CI-SCANNER-PACKAGES", title: "CI scanner package acquisition", sourceRef: "VEN-UBUNTU-PACKAGES", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
+    dataClassIds: ["public", "internal_operational"], purpose: "Install clamav and clamav-daemon on disposable runners using apt repositories.", authorizationBoundary: "Runner sudo installs packages; exact repository mirror, package versions and update provenance are not pinned by this script.", direction: "inbound",
+    owner: owner("Platform security owner", "Engineering governance owner"), evidenceRefs: ["SEV-CI-SCANNER", "SEV-CI-SCANNER-START"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    flowId: "FLOW-CI-SCANNER-DEFINITIONS", title: "CI scanner definition updates", sourceRef: "VEN-CLAMAV-DEFINITIONS", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
+    dataClassIds: ["public", "internal_operational"], purpose: "Refresh malware definitions before clean and EICAR synthetic controls; no customer document is uploaded to the definition service.", authorizationBoundary: "freshclam must succeed; clamd listens on loopback under the packaged AppArmor profile.", direction: "inbound",
+    owner: owner("Platform security owner", "Document platform owner"), evidenceRefs: ["SEV-CI-SCANNER-START"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-DOC-01", "TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    flowId: "FLOW-GITHUB-WORKER-DIAGNOSTICS", title: "Deployment diagnostic reads from AWS", sourceRef: "VEN-AWS", destinationRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-PRODUCTION", "ENV-EXTERNAL"],
+    dataClassIds: ["internal_operational", "security_evidence"], purpose: "Read task inventory and filtered worker.boot records after rollout; retain only task identity, flag, timestamp and diagnostic status.", authorizationBoundary: "Deployment OIDC role; missing read permission produces unavailable evidence rather than proof of a flag or permission.", direction: "inbound",
+    owner: owner("Cloud security owner", "Security operations owner"), evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-DEPLOY-BOOT-PROOF", "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"], gapRefs: ["SG-DEPLOY-DIAGNOSTICS", "SG-LOGGING-CONTENT-SAFETY"], controlIds: ["TRUST-CLOUD-01", "TRUST-OPS-01", "TRUST-DATA-02"],
+  },
+  {
     flowId: "FLOW-WEB-DATA", title: "Web application to Supabase", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and signed storage operations.",
     authorizationBoundary: "Publishable client plus authenticated session; database and storage policies remain authoritative.", direction: "internal", owner: owner("Application security owner", "Data security owner"),
-    evidenceRefs: ["SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION"], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", "SG-CREATOR-RESIDUAL-AUTHORITY", "SG-PROJECT-MEMBERSHIP-READ"], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
   },
   {
     flowId: "FLOW-UPLOAD", title: "Browser document upload", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["customer_confidential", "restricted_financial"],
@@ -302,19 +328,19 @@ const dataFlows = [
     flowId: "FLOW-DATA-WORKER", title: "Supabase job and document access to worker", sourceRef: "SYS-SUPABASE", destinationRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"],
     dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "security_evidence"], purpose: "Claim one job and deliver capability-scoped records and short-lived document access.",
     authorizationBoundary: "Worker credential claims; per-job capability authorizes subsequent commands.", direction: "internal", owner: owner("Data security owner", "Document platform owner"),
-    evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG"], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROJECT-MEMBERSHIP-READ"], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     flowId: "FLOW-WORKER-ANTHROPIC", title: "Worker to Anthropic", sourceRef: "SYS-WORKER", destinationRef: "VEN-ANTHROPIC", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"],
     dataClassIds: ["public", "customer_confidential", "restricted_financial"], purpose: "Task-specific model inference.", authorizationBoundary: "Gateway model allowlist, task policy, budget and optional data-assurance enforcement.",
     direction: "outbound", owner: owner("AI governance owner", "Data security owner"), evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-MODEL-DATA-POLICY", "SEV-MODEL-POLICY"],
-    gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-LIVE-CONFIG"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04"],
+    gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-LIVE-CONFIG", "SG-PROFILE-ANALYTICAL-DEPTH"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04"],
   },
   {
     flowId: "FLOW-WORKER-OPENAI", title: "Worker to OpenAI", sourceRef: "SYS-WORKER", destinationRef: "VEN-OPENAI", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"],
     dataClassIds: ["public", "customer_confidential", "restricted_financial"], purpose: "Task-specific primary, shadow, fallback or optional public-search calls.", authorizationBoundary: "Gateway policy and per-job capability boundary.",
     direction: "outbound", owner: owner("AI governance owner", "Data security owner"), evidenceRefs: ["SEV-MODEL-POLICY", "SEV-MODEL-DATA-POLICY"],
-    gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-LIVE-CONFIG"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04"],
+    gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-LIVE-CONFIG", "SG-PROFILE-ANALYTICAL-DEPTH"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04"],
   },
   {
     flowId: "FLOW-WORKER-RESEARCH", title: "Worker public research", sourceRef: "SYS-WORKER", destinationRef: "VEN-PERPLEXITY", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"], dataClassIds: ["public"],
@@ -340,28 +366,28 @@ const dataFlows = [
   {
     flowId: "FLOW-GITHUB-AWS", title: "GitHub deployment to AWS", sourceRef: "SYS-GITHUB", destinationRef: "VEN-AWS", environmentRefs: ["ENV-CI", "ENV-PRODUCTION", "ENV-EXTERNAL"],
     dataClassIds: ["internal_operational", "credential_secret", "security_evidence"], purpose: "Exchange OIDC identity for a short-lived AWS session, publish the image and update ECS.", authorizationBoundary: "Named AWS role and no stored AWS key in the workflow.",
-    direction: "outbound", owner: owner("Platform engineering owner", "Engineering governance owner"), evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-WORKER-TASK"],
+    direction: "outbound", owner: owner("Platform engineering owner", "Engineering governance owner"), evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-WORKER-TASK", "SEV-DEPLOY-BOOT-PROOF"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE"], controlIds: ["TRUST-DATA-03", "TRUST-CLOUD-01", "TRUST-SDLC-01"],
   },
   {
     flowId: "FLOW-GITHUB-EVAL-SECRETS", title: "GitHub evaluations to AWS Secrets Manager", sourceRef: "SYS-GITHUB", destinationRef: "VEN-AWS", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
     dataClassIds: ["credential_secret", "internal_operational", "security_evidence"], purpose: "Exchange a dedicated evaluation OIDC identity for a short-lived AWS session and retrieve named model-provider credentials during selected workflows.",
     authorizationBoundary: "Dedicated offroadGitHubEvalsRole is named in repository workflows; its trust policy, effective grants, use history and recertification are not independently verified.", direction: "outbound",
-    owner: owner("AI governance owner", "Cloud security owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE"],
+    owner: owner("AI governance owner", "Cloud security owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-ID-01", "TRUST-DATA-03", "TRUST-AI-01", "TRUST-SDLC-01"],
   },
   {
     flowId: "FLOW-GITHUB-EVAL-ANTHROPIC", title: "GitHub evaluations to Anthropic", sourceRef: "SYS-GITHUB", destinationRef: "VEN-ANTHROPIC", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
-    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Run extraction, routing, classification, gold-baseline, probe and live-preview evaluation workloads against Anthropic.",
+    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Run synthetic extraction, routing, classification, documentary, synthesis, advisor-response and bounded continuation evaluations against Anthropic.",
     authorizationBoundary: "Workflow-scoped OIDC session and provider secret retrieved at run time; provider assurance, retention and complete prompt-content policy are not verified here.", direction: "outbound",
-    owner: owner("AI governance owner", "Engineering governance owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE"],
+    owner: owner("AI governance owner", "Engineering governance owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
     flowId: "FLOW-GITHUB-EVAL-OPENAI", title: "GitHub evaluations to OpenAI", sourceRef: "SYS-GITHUB", destinationRef: "VEN-OPENAI", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"],
-    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Run extraction, routing, classification, gold-baseline and independent code-review workloads against OpenAI.",
+    dataClassIds: ["public", "internal_operational", "security_evidence"], purpose: "Run synthetic extraction, routing, classification, documentary, synthesis, advisor-response and independent code-review workloads against OpenAI.",
     authorizationBoundary: "Workflow-scoped OIDC session and provider secret retrieved at run time; provider assurance, retention and complete prompt-content policy are not verified here.", direction: "outbound",
-    owner: owner("AI governance owner", "Engineering governance owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX"],
+    owner: owner("AI governance owner", "Engineering governance owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX", "SEV-EVAL-DOCUMENT-WORK"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-AI-03", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
@@ -435,9 +461,14 @@ const dataFlows = [
 
 const identities = [
   {
+    identityId: "ID-CI-CLAMD", title: "CI local scanner process", kind: "service_role", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI"], privilege: "workload_scoped",
+    authentication: "Runner sudo creates the service and clamd runs as the local clamav user on loopback; it has no tenant membership or model-provider credential.", lifecycleState: "partial",
+    owner: owner("Platform security owner", "Engineering governance owner"), evidenceRefs: ["SEV-CI-SCANNER-START"], gapRefs: ["SG-ASSET-DISCOVERY"], controlIds: ["TRUST-DOC-01", "TRUST-ID-01", "TRUST-CLOUD-02"],
+  },
+  {
     identityId: "ID-END-USER", title: "Authenticated end user", kind: "end_user", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-PREVIEW", "ENV-DEVELOPMENT"], privilege: "tenant_scoped",
     authentication: "Supabase Auth session after email verification; MFA and enterprise lifecycle are not proven.", lifecycleState: "partial", owner: owner("Identity owner", "Application security owner"),
-    evidenceRefs: ["SEV-SUPABASE-CONFIG", "SEV-RLS-TEST"], gapRefs: ["SG-PRIVILEGED-ACCESS"], controlIds: ["TRUST-ID-01", "TRUST-APP-01"],
+    evidenceRefs: ["SEV-SUPABASE-CONFIG", "SEV-RLS-TEST"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-CREATOR-RESIDUAL-AUTHORITY"], controlIds: ["TRUST-ID-01", "TRUST-APP-01"],
   },
   {
     identityId: "ID-ANON-ROLE", title: "Supabase anonymous role", kind: "database_role", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], privilege: "public",
@@ -462,7 +493,7 @@ const identities = [
   {
     identityId: "ID-GITHUB-EVALS-OIDC", title: "GitHub evaluation OIDC principal", kind: "oidc_principal", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], privilege: "workload_scoped",
     authentication: "GitHub OIDC is exchanged for a short-lived AWS session under the dedicated offroadGitHubEvalsRole named by evaluation workflows; effective trust and grants are unverified.", lifecycleState: "partial",
-    owner: owner("AI governance owner", "Cloud security owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE"],
+    owner: owner("AI governance owner", "Cloud security owner"), evidenceRefs: ["SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-ID-01", "TRUST-DATA-03", "TRUST-AI-01", "TRUST-SDLC-01"],
   },
   {
@@ -499,6 +530,16 @@ type VendorInput = Pick<SecurityCurrentStateInventory["vendors"][number],
 
 const vendors: VendorInput[] = [
   {
+    vendorId: "VEN-UBUNTU-PACKAGES", title: "Ubuntu package repositories", service: "CI operating-system packages including clamd", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown",
+    owner: owner("Vendor risk owner", "Platform security owner"), evidenceRefs: ["SEV-CI-SCANNER-START"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY", "SG-REGION-MAP"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
+    vendorId: "VEN-CLAMAV-DEFINITIONS", title: "ClamAV definition distribution", service: "Malware signature updates consumed by freshclam", role: "supply_chain", environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational"],
+    activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "unknown",
+    owner: owner("Vendor risk owner", "Platform security owner"), evidenceRefs: ["SEV-CI-SCANNER-START"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-ASSET-DISCOVERY", "SG-REGION-MAP"], controlIds: ["TRUST-SDLC-02", "TRUST-VENDOR-01"],
+  },
+  {
     vendorId: "VEN-SUPABASE", title: "Supabase", service: "Managed Auth, Postgres and object storage", role: "processor", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI", "ENV-EXTERNAL"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"], activationState: "observed_in_code", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "partial",
     owner: owner("Vendor risk owner", "Data platform owner"), evidenceRefs: ["SEV-AGENTS-SCOPE", "SEV-SUPABASE-CONFIG"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-BACKUP-RESTORE", "SG-REGION-MAP"], controlIds: ["TRUST-VENDOR-01", "TRUST-DATA-02", "TRUST-OPS-02"],
@@ -506,7 +547,7 @@ const vendors: VendorInput[] = [
   {
     vendorId: "VEN-AWS", title: "Amazon Web Services", service: "ECR, ECS Fargate, IAM, Secrets Manager and CloudWatch", role: "infrastructure", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"],
     dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"], activationState: "observed_in_deployment_config", contractState: "unknown", retentionState: "unknown", trainingUseState: "not_applicable", regionState: "partial",
-    owner: owner("Vendor risk owner", "Cloud security owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-DEPLOY-WORKER", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-LIVE-CONFIG", "SG-REGION-MAP", "SG-DEPLOY-DIAGNOSTICS", "SG-PRIVILEGED-ACCESS", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-VENDOR-01", "TRUST-CLOUD-01", "TRUST-DATA-03", "TRUST-AI-01"],
+    owner: owner("Vendor risk owner", "Cloud security owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-DEPLOY-WORKER", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"], gapRefs: ["SG-VENDOR-ASSURANCE", "SG-LIVE-CONFIG", "SG-REGION-MAP", "SG-DEPLOY-DIAGNOSTICS", "SG-PRIVILEGED-ACCESS", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-VENDOR-01", "TRUST-CLOUD-01", "TRUST-DATA-03", "TRUST-AI-01"],
   },
   {
     vendorId: "VEN-VERCEL", title: "Vercel", service: "Web build, preview and production hosting", role: "infrastructure", environmentRefs: ["ENV-PRODUCTION", "ENV-PREVIEW", "ENV-CI", "ENV-EXTERNAL"],
@@ -521,12 +562,12 @@ const vendors: VendorInput[] = [
   {
     vendorId: "VEN-ANTHROPIC", title: "Anthropic", service: "Language-model inference", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "security_evidence"],
     activationState: "observed_in_deployment_config", contractState: "unknown", retentionState: "unknown", trainingUseState: "unknown", regionState: "unknown",
-    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
+    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
     vendorId: "VEN-OPENAI", title: "OpenAI", service: "Language-model inference and optional public web search", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "security_evidence"],
     activationState: "observed_in_deployment_config", contractState: "unknown", retentionState: "unknown", trainingUseState: "unknown", regionState: "unknown",
-    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-MODEL-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
+    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-MODEL-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX", "SEV-EVAL-DOCUMENT-WORK"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
     vendorId: "VEN-PERPLEXITY", title: "Perplexity", service: "Public web research", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "security_evidence"],
@@ -587,6 +628,18 @@ const vendors: VendorInput[] = [
 
 const gaps = [
   {
+    gapId: "SG-CREATOR-RESIDUAL-AUTHORITY", title: "Creator-based organization authority persists outside active membership", severity: "critical", owner: owner("Product security owner", "Engineering governance owner"),
+    targetRefs: ["SYS-SUPABASE", "ID-END-USER", "FLOW-WEB-DATA"], evidenceRefs: ["SEV-ORG-AUTHORITY-SQL"], controlIds: ["TRUST-ID-01", "TRUST-DATA-01"], nextAction: "Wave 1A: reproduce in staging, remove permanent creator authority, test revocation and production catalogue; this static finding is not an exploit reproduction.",
+  },
+  {
+    gapId: "SG-PROJECT-MEMBERSHIP-READ", title: "Organization membership grants broad project and intake reading", severity: "critical", owner: owner("Product security owner", "Engineering governance owner"),
+    targetRefs: ["SYS-SUPABASE", "STORE-POSTGRES", "FLOW-WEB-DATA", "FLOW-DATA-WORKER"], evidenceRefs: ["SEV-PROJECT-ACCESS-SQL", "SEV-INTAKE-ACCESS-SQL"], controlIds: ["TRUST-DATA-01", "TRUST-APP-01"], nextAction: "Wave 1B: explicit project access with automatic creator/admin backfill and client administration; prove denial and revocation without restoring broad membership fallback.",
+  },
+  {
+    gapId: "SG-PROFILE-ANALYTICAL-DEPTH", title: "Professional profile still modulates analytical response instructions", severity: "high", owner: owner("Product security owner", "Engineering governance owner"),
+    targetRefs: ["SYS-WORKER", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI"], evidenceRefs: ["SEV-DEBT-VIEW-PROMPT", "SEV-ORIGINATION-PROMPT", "SEV-CAPITAL-PLANNING-PROMPT"], controlIds: ["TRUST-AI-01", "TRUST-AI-03"], nextAction: "Wave 1C: remove role-based depth instructions and demonstrate equivalent analytical contracts for role variations; no empirical output disparity is asserted by the static finding.",
+  },
+  {
     gapId: "SG-LIVE-CONFIG", title: "Live configuration snapshot missing", severity: "critical", owner: owner("Cloud security owner", "Security governance owner"),
     targetRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-CI", "SYS-WEB", "SYS-SUPABASE", "SYS-WORKER", "SYS-GITHUB", "SYS-OBSERVABILITY", "SYS-AUTH-EMAIL", "STORE-POSTGRES", "STORE-OBJECTS", "STORE-CLOUDWATCH", "STORE-TELEMETRY", "STORE-AWS-SECRETS", "STORE-ECR", "FLOW-WEB-DATA", "FLOW-UPLOAD", "FLOW-DATA-WORKER", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI", "FLOW-WORKER-RESEARCH", "FLOW-WORKER-FIRECRAWL", "FLOW-WEB-TELEMETRY", "FLOW-AUTH-EMAIL", "FLOW-GITHUB-AWS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "FLOW-GITHUB-VERCEL", "ID-ANON-ROLE", "ID-AUTH-ROLE", "ID-WORKER-ACCOUNT", "ID-GITHUB-OIDC", "ID-GITHUB-EVALS-OIDC", "ID-AWS-WORKER-ROLES", "ID-PROVIDER-CREDENTIALS", "ID-VERCEL-SOURCE-INTEGRATION", "VEN-AWS", "VEN-VERCEL", "VEN-SMTP-UNKNOWN"],
     evidenceRefs: ["SEV-SECURITY-PLAN"], controlIds: ["TRUST-CLOUD-01", "TRUST-CLOUD-02", "TRUST-OPS-01"], nextAction: "Collect read-only, dated configuration snapshots from each material platform and attach time-bound evidence.",
@@ -608,13 +661,13 @@ const gaps = [
   },
   {
     gapId: "SG-VENDOR-ASSURANCE", title: "Vendor and subprocessor assurance incomplete", severity: "high", owner: owner("Vendor risk owner", "Privacy owner"),
-    targetRefs: ["ENV-CI", "ENV-EXTERNAL", "SYS-GITHUB", "SYS-AUTH-EMAIL", "STORE-SOURCE", "STORE-ECR", "FLOW-WORKER-RESEARCH", "FLOW-WORKER-FIRECRAWL", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "FLOW-AUTH-EMAIL", "FLOW-GITHUB-VERCEL", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "ID-VERCEL-SOURCE-INTEGRATION", ...vendors.map((item) => item.vendorId)], evidenceRefs: ["SEV-SECURITY-PLAN"],
+    targetRefs: ["ENV-CI", "ENV-EXTERNAL", "SYS-GITHUB", "SYS-AUTH-EMAIL", "STORE-SOURCE", "STORE-ECR", "FLOW-WORKER-RESEARCH", "FLOW-WORKER-FIRECRAWL", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "FLOW-AUTH-EMAIL", "FLOW-GITHUB-VERCEL", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "ID-VERCEL-SOURCE-INTEGRATION", ...vendors.map((item) => item.vendorId), "FLOW-CI-SCANNER-PACKAGES", "FLOW-CI-SCANNER-DEFINITIONS"], evidenceRefs: ["SEV-SECURITY-PLAN", "SEV-CI-SCANNER-START"],
     controlIds: ["TRUST-VENDOR-01", "TRUST-DATA-04"], nextAction: "Collect current contract, DPA, retention, region, incident, notice and exit evidence for every material vendor.",
   },
   {
     gapId: "SG-PROVIDER-ASSURANCE", title: "Provider data-policy enforcement is disabled in deployment configuration", severity: "critical", owner: owner("AI governance owner", "Privacy owner"),
     targetRefs: ["ENV-CI", "ENV-EXTERNAL", "customer_confidential", "restricted_financial", "SYS-WORKER", "SYS-GITHUB", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI", "FLOW-WORKER-FIRECRAWL", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], evidenceRefs: ["SEV-MODEL-DATA-POLICY", "SEV-MODEL-DATA-POLICY-TEST", "SEV-WORKER-CONFIG", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE"],
-    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Set and prove fail-closed provider assurance for non-public model routes; separately review Firecrawl retention before promotion because live acquisition is enabled while zero-data-retention is false.",
+    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Stage 16: record current account/model/resource terms, non-training and bounded retention, then enforce eligibility; zero retention is a future commercial option, not a prerequisite. Repository flags do not establish live terms or enforcement.",
   },
   {
     gapId: "SG-TELEMETRY-ASSURANCE", title: "Telemetry activation and handling not live-verified", severity: "high", owner: owner("Security operations owner", "Privacy owner"),
@@ -648,7 +701,7 @@ const gaps = [
   },
   {
     gapId: "SG-DEPLOY-DIAGNOSTICS", title: "Worker rollout diagnostic permissions are not independently verified", severity: "high", owner: owner("Cloud security owner", "Security operations owner"),
-    targetRefs: ["SYS-GITHUB", "FLOW-GITHUB-AWS", "ID-GITHUB-OIDC", "ID-AWS-WORKER-ROLES", "VEN-AWS"], evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"],
+    targetRefs: ["SYS-GITHUB", "FLOW-GITHUB-AWS", "ID-GITHUB-OIDC", "ID-AWS-WORKER-ROLES", "VEN-AWS", "FLOW-GITHUB-WORKER-DIAGNOSTICS"], evidenceRefs: ["SEV-DEPLOY-WORKER", "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "SEV-DEPLOY-BOOT-PROOF"],
     controlIds: ["TRUST-CLOUD-01", "TRUST-OPS-01", "TRUST-SDLC-01"], nextAction: "Collect a dated IAM policy and simulate-principal-policy receipt for the exact rollout role and actions. Only after proving an actual denial, design the minimum resource-scoped grant and prove both intended success and out-of-scope denial.",
   },
   {
@@ -669,20 +722,20 @@ const gaps = [
   },
   {
     gapId: "SG-LOGGING-CONTENT-SAFETY", title: "Worker logging is not comprehensively content-safe", severity: "high", owner: owner("Security operations owner", "Platform engineering owner"),
-    targetRefs: ["SYS-WORKER", "STORE-CLOUDWATCH"], evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], controlIds: ["TRUST-OPS-01", "TRUST-DATA-02", "TRUST-APP-02"],
+    targetRefs: ["SYS-WORKER", "STORE-CLOUDWATCH", "FLOW-GITHUB-WORKER-DIAGNOSTICS"], evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], controlIds: ["TRUST-OPS-01", "TRUST-DATA-02", "TRUST-APP-02"],
     nextAction: "Route operational logs through a typed allowlisted logger and test every failure path against prompts, document text, signed URLs, personal data and financial values.",
   },
   {
     gapId: "SG-ASSET-DISCOVERY", title: "Security asset and external dependency discovery is incomplete", severity: "high", owner: owner("Security governance owner", "Platform security owner"),
-    targetRefs: ["ENV-CI", "SYS-WEB", "SYS-WORKER", "SYS-GITHUB", "STORE-AWS-SECRETS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "FLOW-NPM-SUPPLY", "FLOW-GITHUB-ACTIONS-SUPPLY", "FLOW-SUPABASE-LOCAL-IMAGES", "FLOW-PLAYWRIGHT-BROWSERS", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-GOOGLE-FONTS", "VEN-NPM-REGISTRY", "VEN-GITHUB-ACTIONS", "VEN-SUPABASE-LOCAL-IMAGES", "VEN-PLAYWRIGHT-DOWNLOADS"], evidenceRefs: ["SEV-WEB-DEPENDENCIES", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-LOCKFILE", "SEV-SECURITY-PLAN"], controlIds: ["TRUST-GOV-02", "TRUST-SDLC-02", "TRUST-VENDOR-01", "TRUST-AI-01", "TRUST-DATA-03"],
+    targetRefs: ["ENV-CI", "SYS-WEB", "SYS-WORKER", "SYS-GITHUB", "STORE-AWS-SECRETS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "FLOW-SHEETJS-SUPPLY", "FLOW-MATERIAL-GOOGLE-FONTS", "FLOW-NPM-SUPPLY", "FLOW-GITHUB-ACTIONS-SUPPLY", "FLOW-SUPABASE-LOCAL-IMAGES", "FLOW-PLAYWRIGHT-BROWSERS", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-GOOGLE-FONTS", "VEN-NPM-REGISTRY", "VEN-GITHUB-ACTIONS", "VEN-SUPABASE-LOCAL-IMAGES", "VEN-PLAYWRIGHT-DOWNLOADS", "FLOW-CI-SCANNER-PACKAGES", "FLOW-CI-SCANNER-DEFINITIONS", "VEN-UBUNTU-PACKAGES", "VEN-CLAMAV-DEFINITIONS", "ID-CI-CLAMD"], evidenceRefs: ["SEV-WEB-DEPENDENCIES", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-LOCKFILE", "SEV-SECURITY-PLAN", "SEV-CI-SCANNER-START"], controlIds: ["TRUST-GOV-02", "TRUST-SDLC-02", "TRUST-VENDOR-01", "TRUST-AI-01", "TRUST-DATA-03"],
     nextAction: "Inventory Secrets Manager, ECR and container artifacts, provider credentials, Vercel source integration, npm and GitHub Actions supply, exact Supabase local image registries and digests, Playwright browser downloads, browser CDNs and external fonts before claiming external-boundary completeness.",
   },
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.07-sec01-v1",
+  inventoryVersion: "2026.09.14-wave-1-v1",
   generatedAt: capturedAt,
-  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: "2026-09-14T09:43:00.000-03:00"},
+  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-1", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
   scopeRelationship: {
     semantics: "environment_and_data_class_refs_are_independent_unions",
@@ -695,7 +748,7 @@ const currentSecurityInventoryDeclaration = {
     "Functional owner roles are recorded, but named primary and backup assignments are not evidenced.",
     "Vendor contract, retention, region and training-use statements remain unknown without current evidence.",
     "Environment and data-class references are independent scope unions, not a Cartesian authorization matrix; that matrix remains an explicit critical gap.",
-    "The deployed worker configuration omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false.",
+    "The repository task definition omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false; account-specific retention terms are reviewed in stage 16, and zero retention is not a prerequisite for this wave.",
     "Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.",
     "The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.",
     "External-assurance and regulatory claims are represented only by the governed assurance section; this inventory is not their evidence.",
