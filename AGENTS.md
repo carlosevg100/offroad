@@ -1,4 +1,4 @@
-# Offroad Capital: operating rules for coding agents
+# Offroad: operating rules for coding agents
 
 These rules apply to every agent working in this repository (Claude Code, Codex, or a
 human). They exist so that two agents can work in parallel without duplicating flows,
@@ -24,9 +24,28 @@ execution roadmap. Architecture decisions live in
 historical product specification: its origination-first positioning is superseded by Constitution
 2.2 and ADR 0019. It may inform implementation history but never current company identity.
 
+## Architecture roadmap and current execution authority
+
+The approved architecture roadmap is recorded in `docs/build/arcabouco-stage0/ROADMAP.md`.
+The current-state object map, catalogue evidence and legacy dispositions are in
+`docs/build/arcabouco-stage0/README.md`. This roadmap supersedes conflicting historical
+intake-first or profile-dependent product assumptions; existing code is diagnostic evidence,
+not a restriction on the approved architecture. Wave 1 comprises stage 0 followed by 1A, 1B
+and 1C. Do not start a later wave without the founder's OK. A stage closes only after its
+technical gates, main merge, production migrations where applicable, and web/worker deployment
+proof. Preserve useful motors and published methods while replacing the documented access paths.
+
+The founder's two required acts are approval of the first procedure's professional content
+and OK per wave. Stage 1B backfill is automatic: the project creator receives revocable access,
+and the active organization administrator administers its projects; do not reactivate revoked
+identities. Thereafter each customer administrator manages people, profiles and access in the
+product without Offroad intervention. Stage 16 verifies actual provider non-training and limited
+retention terms per account/model/resource; zero retention is a future commercial option.
+The two early authoring deliverables do not publish a method or authorize its execution.
+
 ## 1. What this repository is
 
-A pnpm + Turborepo monorepo for **Offroad Capital**, the AI-native debt advisor that helps
+A pnpm + Turborepo monorepo for **Offroad**, the AI-native debt advisor that helps
 companies and market professionals think, investigate, analyze, decide, structure, and execute
 debt-related work. Origination, materials and qualified introductions are downstream capabilities,
 not the product identity. One Next.js 16 app (`apps/web`) plus small
@@ -152,9 +171,10 @@ the `private` schema, `set search_path = ''`, revoked from `public`, granted nar
   never merely a private-credit origination platform. Do not promise approval, funding or work
   reserved to a lender. “Origination” is valid only for the specific job or activity it names.
 - **Documents:** uploads are private, hashed (SHA-256), scoped by organization and
-  opportunity/intake session; nothing is sent to market during intake. Extraction today is
-  the content-hash-verified Rede Horizonte fixture; unknown documents must produce an honest
-  "no fields proposed" state, never fabricated candidates.
+  opportunity/intake session; nothing is sent to market during intake. Parsers, worker extraction
+  and governed model paths exist in code; their presence does not establish universal document
+  support or production quality. Synthetic fixture extraction is a test path. Unsupported inputs
+  and insufficient evidence must produce honest outcomes, never fabricated candidates.
 
 ## 8. Testing expectations
 

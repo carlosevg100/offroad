@@ -1,3 +1,28 @@
+## 14 September 2026: applied schema recovery candidate
+
+## Stage 0 replay bootstrap diagnosis, 14 September 2026
+
+PR 614 is merged as `8ae3772c3b268f29c019b744f18fcfe3b575c06a`; its Quality, Security and preview gates passed. The recovery CI correctly rejected 355 grant differences between the local replay and hosted catalogue. All concern `service_role`; the pinned CLI changed default grants at bootstrap. `supabase/config.toml` now explicitly reproduces the hosted bootstrap before historical migrations. No comparison exception, post-replay grant patch or remote DDL was introduced. Full corrected CI remains required. Details and immutable CI source: `docs/build/arcabouco-stage0/README.md` and `REPLAY-BOOTSTRAP-DIAGNOSIS.json`.
+
+
+## Wave 1 stage 0 integration, 14 September 2026
+
+The governance and mandate reconciliation prerequisite is published in main at `d88683df`; its PR and main Quality/Security checks passed. Production web returned HTTP 200 and worker deployment verified task definition revision 322. The 20 previous PRs are closed; PR 613 is absorbed by 612. See `docs/build/arcabouco-stage0/PR-DISPOSITIONS.md` and its execution receipt.
+
+This candidate restores seven already-applied production migrations and archives nine staging-only files outside replay. All sixteen hashes and live journal records passed the recovery verifier; 22 functions and four tables agree within the documented comparison. Both recovered SQL suites passed rollback-only staging execution, followed by zero reserved fixtures. The object checker passed for production (1,284 objects) and staging (1,345); fifteen Python regression tests passed. `ROADMAP.md` records the approved sequence and founder acts. CI replay, candidate merge and production deployment remain required before stage 0 completion. No historical migration is reapplied and no security stage is declared complete.
+
+
+Seven production-applied migrations are restored with their exact journal text and production
+versions. Nine staging-only distribution migrations are preserved outside replay in
+`docs/build/schema-history/`; no distribution surface or method publication is promoted.
+The recovery manifest and checker validate sixteen file hashes, both environment journals,
+22 installed functions (three comment-only differences), and four identical table/policy catalogs.
+Read-only live catalog verification passed at 2026-09-14T21:44:14Z. Five checker regression tests
+passed locally. Two recovered SQL suites are wired into the existing database CI loop; they
+have not yet run in this candidate. The proposal test's row count now scopes its synthetic project.
+No remote mutation, migration replay, merge, deploy, or stage completion is claimed. Required
+remaining gates are recorded in `docs/build/schema-history/TEST-REVIEW.md`.
+
 ## 14 September 2026: wave 1 procedure authoring foundation
 
 The prerequisite correction and inventory renewal are published in main at `d88683df88829cc50fe92f3b7694477630308499` (PR612); the wave coordinator verified web and worker publication, including worker task revision 322. This checkpoint preserves that published baseline and delivers only authorship preparation. The historical prerequisite note below predates that publication.

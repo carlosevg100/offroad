@@ -1,0 +1,368 @@
+[
+  {
+    "id": "function:private.authorize_pack_distribution(p_organization_id uuid, p_session_id uuid, p_pack_revision_id uuid, p_pack_fingerprint text, p_consent_statement text, p_recipients jsonb)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.enforce_information_pack_item_immutability()",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "0, 23"
+  },
+  {
+    "id": "function:private.enforce_information_pack_revision_immutability()",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "0, 23"
+  },
+  {
+    "id": "function:private.enforce_qualified_contact_recipient_binding()",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "0, 23"
+  },
+  {
+    "id": "function:private.open_shared_information_pack_item(p_share_id uuid, p_item_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.pack_response_codes_valid(p_entries jsonb)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.pack_share_live_for_recipient(p_organization_id uuid, p_share_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.prepare_qualified_contact(p_target_id uuid, p_share_id uuid, p_candidate_fit text, p_rationale text)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "0, 3, 23"
+  },
+  {
+    "id": "function:private.read_shared_information_pack(p_share_id uuid)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "0, 3, 23"
+  },
+  {
+    "id": "function:private.read_shared_pack_item_material(p_share_id uuid, p_item_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.record_information_pack_revision(p_organization_id uuid, p_session_id uuid, p_items jsonb)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.record_pack_distribution_next_step(p_share_id uuid, p_step_code text, p_note text)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.record_pack_recipient_response(p_share_id uuid, p_response_state text, p_note text, p_ticket_amount numeric, p_ticket_currency text, p_tenor_months integer, p_pricing_basis text, p_pricing_min numeric, p_pricing_max numeric, p_requested_conditions jsonb, p_term_objections jsonb, p_supersedes_response_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:private.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
+    "difference": "staging_only",
+    "decision": "consolidar",
+    "stage": "3, 4, 22"
+  },
+  {
+    "id": "function:private.resolve_pack_distribution_candidates(p_organization_id uuid, p_session_id uuid)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "8, 9, 15"
+  },
+  {
+    "id": "function:private.revoke_pack_distribution(p_authorization_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.authorize_pack_distribution(p_organization_id uuid, p_session_id uuid, p_pack_revision_id uuid, p_pack_fingerprint text, p_consent_statement text, p_recipients jsonb)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.open_shared_information_pack_item(p_share_id uuid, p_item_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.prepare_qualified_contact(p_target_id uuid, p_candidate_fit text, p_rationale text, p_share_id uuid)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "0, 3, 23"
+  },
+  {
+    "id": "function:public.read_shared_information_pack(p_share_id uuid)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "0, 3, 23"
+  },
+  {
+    "id": "function:public.read_shared_pack_item_material(p_share_id uuid, p_item_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.record_information_pack_revision(p_organization_id uuid, p_session_id uuid, p_items jsonb)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.record_pack_distribution_next_step(p_share_id uuid, p_step_code text, p_note text)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.record_pack_recipient_response(p_share_id uuid, p_response_state text, p_note text, p_ticket_amount numeric, p_ticket_currency text, p_tenor_months integer, p_pricing_basis text, p_pricing_min numeric, p_pricing_max numeric, p_requested_conditions jsonb, p_term_objections jsonb, p_supersedes_response_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "function:public.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
+    "difference": "staging_only",
+    "decision": "consolidar",
+    "stage": "3, 4, 22"
+  },
+  {
+    "id": "function:public.resolve_pack_distribution_candidates(p_organization_id uuid, p_session_id uuid)",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "8, 9, 15"
+  },
+  {
+    "id": "function:public.revoke_pack_distribution(p_authorization_id uuid)",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "policy:public.information_pack_items.information_pack_items_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.information_pack_revisions.information_pack_revisions_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_access_events.pack_access_events_issuer_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_access_events.pack_access_events_recipient_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_distribution_authorizations.pack_distribution_authorizations_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_distribution_next_steps.pack_distribution_next_steps_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_distribution_shares.pack_distribution_shares_issuer_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_distribution_shares.pack_distribution_shares_recipient_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_recipient_responses.pack_recipient_responses_issuer_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.pack_recipient_responses.pack_recipient_responses_recipient_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "policy:public.qualified_contact_preparations.qualified_contact_preparations_select",
+    "difference": "staging_only",
+    "decision": "refatorar",
+    "stage": "1B, 3"
+  },
+  {
+    "id": "r:public.information_pack_items",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.information_pack_revisions",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.pack_access_events",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.pack_distribution_authorizations",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.pack_distribution_next_steps",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.pack_distribution_shares",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.pack_recipient_responses",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "r:public.qualified_contact_preparations",
+    "difference": "staging_only",
+    "decision": "congelar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.information_pack_items.information_pack_items_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.information_pack_items.information_pack_items_immutable",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.information_pack_revisions.information_pack_revisions_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.information_pack_revisions.information_pack_revisions_immutable",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.information_pack_revisions.information_pack_revisions_set_updated_at",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_access_events.pack_access_events_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_distribution_authorizations.pack_distribution_authorizations_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_distribution_authorizations.pack_distribution_authorizations_set_updated_at",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_distribution_next_steps.pack_distribution_next_steps_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_distribution_shares.pack_distribution_shares_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_distribution_shares.pack_distribution_shares_set_updated_at",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.pack_recipient_responses.pack_recipient_responses_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.qualified_contact_preparations.qualified_contact_preparations_audit",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.qualified_contact_preparations.qualified_contact_preparations_recipient_binding",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  },
+  {
+    "id": "trigger:public.qualified_contact_preparations.qualified_contact_preparations_set_updated_at",
+    "difference": "staging_only",
+    "decision": "preservar",
+    "stage": "1B, 23 / posterior"
+  }
+]

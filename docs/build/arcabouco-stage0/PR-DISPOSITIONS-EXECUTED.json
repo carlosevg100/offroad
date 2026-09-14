@@ -1,0 +1,289 @@
+{
+  "recordedAt": "2026-09-14T23:11:27.999386+00:00",
+  "responsible": "Codex",
+  "records": [
+    {
+      "headRefOid": "1171fb4ec7f1c9a3e677c85333cc6ce904f3cf6a",
+      "number": 610,
+      "state": "OPEN",
+      "title": "chore(deps-dev): bump the development group with 6 updates",
+      "url": "https://github.com/carlosevg100/offroad/pull/610",
+      "decision": "fechar",
+      "reason": "Lote de atualização de ferramentas descartado nesta conciliação; majors exigem migração deliberada e não serão incorporados à onda de segurança.",
+      "after": {
+        "closedAt": "2026-09-14T23:05:52Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "fefa3db34329bf2e2e9be9bd7100c665a56d6269",
+      "number": 609,
+      "state": "OPEN",
+      "title": "chore(deps): bump the production group with 16 updates",
+      "url": "https://github.com/carlosevg100/offroad/pull/609",
+      "decision": "fechar",
+      "reason": "Lote de dependências descartado nesta conciliação. A baseline de regressão permanece fixada; este lote não ficará aguardando publicação.",
+      "after": {
+        "closedAt": "2026-09-14T23:05:55Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "db0d7d2a41c72739e14b44949506af1047ecb6c3",
+      "number": 602,
+      "state": "OPEN",
+      "title": "Authorized distribution of the exact information pack, the in-product introduction and the market answer",
+      "url": "https://github.com/carlosevg100/offroad/pull/602",
+      "decision": "absorver",
+      "reason": "Histórico de nove migrações de staging preservado fora do replay na Etapa0. Distribuição e intercâmbio entre organizações ficam congelados para o incremento posterior ao núcleo; nenhuma ativação é promovida.",
+      "after": {
+        "closedAt": "2026-09-14T23:05:58Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "e034b1a234170fbc671385d9898aad4c387a9515",
+      "number": 601,
+      "state": "OPEN",
+      "title": "The ten Case 01 methods up the maturity ladder, seven to production",
+      "url": "https://github.com/carlosevg100/offroad/pull/601",
+      "decision": "absorver",
+      "reason": "Arquivo project_debt_structure_capability já aplicado em produção será publicado na recuperação da Etapa0. Conteúdo e executores ficam como insumos das Etapas14/15, sem promoção automática de métodos.",
+      "after": {
+        "closedAt": "2026-09-14T23:06:00Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "6b2889fc7ef256e661ee5975abcf47501d72dc75",
+      "number": 600,
+      "state": "OPEN",
+      "title": "Canonical revision of approved assumptions and data, and the propagation of an approved change",
+      "url": "https://github.com/carlosevg100/offroad/pull/600",
+      "decision": "absorver",
+      "reason": "Seis arquivos históricos já aplicados em produção e seus testes serão publicados na recuperação da Etapa0. UI e importação são insumos das Etapas18/20/21, sem antecipação de capacidades.",
+      "after": {
+        "closedAt": "2026-09-14T23:06:03Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "b7ec3e0790bc0b99f623786a40ae9d0a7d9b201e",
+      "number": 551,
+      "state": "OPEN",
+      "title": "feat: add opt-in contractual coverage to refinancing diagnostics",
+      "url": "https://github.com/carlosevg100/offroad/pull/551",
+      "decision": "absorver",
+      "reason": "Regras e regressões de cobertura contratual preservadas como insumos da Etapa15; execução privada não é promovida nesta conciliação.",
+      "after": {
+        "closedAt": "2026-09-14T23:06:06Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "8705cc997533f4bb96d8523f8b5fc8cc7f76a369",
+      "number": 530,
+      "state": "OPEN",
+      "title": "CTRL-03: add trusted fail-closed evidence and claims registry",
+      "url": "https://github.com/carlosevg100/offroad/pull/530",
+      "decision": "absorver",
+      "reason": "Requisitos e testes de evidência confiável incorporados ao roteiro da Etapa22; evitar inventário paralelo. Renovação do inventário atual foi entregue pela612.",
+      "after": {
+        "closedAt": "2026-09-14T23:06:08Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "2a86386a83e5ddc514234337dd36355dc887bc02",
+      "number": 498,
+      "state": "OPEN",
+      "title": "feat(web): surface receivables analysis depth in advisor",
+      "url": "https://github.com/carlosevg100/offroad/pull/498",
+      "decision": "absorver",
+      "reason": "Requisitos de progresso preservados para o contrato de execução da Etapa17; perfil profissional não determinará profundidade.",
+      "after": {
+        "closedAt": "2026-09-14T23:06:11Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "a1f7a603c81d2ab5c6d84c75dbdc47e7d8d1fa79",
+      "number": 497,
+      "state": "OPEN",
+      "title": "feat(receivables): collect governed assumptions in bulk",
+      "url": "https://github.com/carlosevg100/offroad/pull/497",
+      "decision": "absorver",
+      "reason": "Respostas em lote e hipóteses governadas: insumos das etapas 9/21.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:09Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "3155f1c3e7c4d1102c2d0ea930424e8bad9b251d",
+      "number": 496,
+      "state": "OPEN",
+      "title": "feat(receivables): expose progressive underwriting workbench",
+      "url": "https://github.com/carlosevg100/offroad/pull/496",
+      "decision": "absorver",
+      "reason": "Apresentação de bloqueios: insumo do contrato único de execução da etapa 17.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:12Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "743fea669fef6b5d99f921aca37379497c335dc5",
+      "number": 495,
+      "state": "OPEN",
+      "title": "feat: expose progressive R01 readiness",
+      "url": "https://github.com/carlosevg100/offroad/pull/495",
+      "decision": "absorver",
+      "reason": "Regressões de draft parcial e conflito: adoção na etapa 9.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:15Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "6c28115d7df2b0445ed1a43640d58e14a14aaf51",
+      "number": 494,
+      "state": "OPEN",
+      "title": "fix: accept governed financial input notation",
+      "url": "https://github.com/carlosevg100/offroad/pull/494",
+      "decision": "absorver",
+      "reason": "Notação financeira governada: preservar regressões para a etapa 9.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:17Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "a1eb0804637fb0e5c9a416e2df5c55cb6e75d25f",
+      "number": 493,
+      "state": "OPEN",
+      "title": "test: gate the complete R01 lifecycle",
+      "url": "https://github.com/carlosevg100/offroad/pull/493",
+      "decision": "absorver",
+      "reason": "Cenários expand/retract: insumos da etapa 17.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:20Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "300074a9eebbdb563a1a01aa1094afb51b6f6650",
+      "number": 492,
+      "state": "OPEN",
+      "title": "feat: guide R01 evidence with a governed workbook",
+      "url": "https://github.com/carlosevg100/offroad/pull/492",
+      "decision": "absorver",
+      "reason": "Workbook guiado: insumo do protocolo de importação/exportação da etapa 21.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:23Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "e9923833f9248464685b23d04acba8830186ebda",
+      "number": 491,
+      "state": "OPEN",
+      "title": "feat: compile receivables documents into governed drafts",
+      "url": "https://github.com/carlosevg100/offroad/pull/491",
+      "decision": "absorver",
+      "reason": "Retração de perguntas satisfeitas: requisito de fonte e adoção nas etapas 6/9.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:26Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "952230390fff551359d18bd5855a6eded5bd5f9b",
+      "number": 464,
+      "state": "OPEN",
+      "title": "build(deps): bump supabase/setup-cli from 1.7.1 to 3.0.0",
+      "url": "https://github.com/carlosevg100/offroad/pull/464",
+      "decision": "fechar",
+      "reason": "Atualização major de setup-cli descartada nesta conciliação.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:29Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "ca1c588a3a4ebda926c1e520c243a11332634935",
+      "number": 463,
+      "state": "OPEN",
+      "title": "build(deps): bump actions/upload-artifact from 4.6.2 to 7.0.1",
+      "url": "https://github.com/carlosevg100/offroad/pull/463",
+      "decision": "fechar",
+      "reason": "Atualização major de upload-artifact descartada nesta conciliação.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:31Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "b73c1531f02521900353f883e8d10a748955faa9",
+      "number": 462,
+      "state": "OPEN",
+      "title": "build(deps): bump aws-actions/configure-aws-credentials from 5.1.1 to 6.2.4",
+      "url": "https://github.com/carlosevg100/offroad/pull/462",
+      "decision": "fechar",
+      "reason": "Atualização major de configure-aws-credentials descartada nesta conciliação.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:34Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "headRefOid": "d819f4315bbcd0bc285251c1d346919df96b2c54",
+      "number": 207,
+      "state": "OPEN",
+      "title": "feat(worker): pipeline on recorded answers, no keys needed",
+      "url": "https://github.com/carlosevg100/offroad/pull/207",
+      "decision": "absorver",
+      "reason": "Replay sintético: insumo da etapa 17, sem gravação de prompts privados.",
+      "after": {
+        "closedAt": "2026-09-14T23:10:37Z",
+        "state": "CLOSED"
+      }
+    },
+    {
+      "closedAt": "2026-09-14T22:58:32Z",
+      "headRefOid": "c8eb2a7dc7222be8b2575f5099382ce6b7470f0f",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "number": 603,
+      "state": "CLOSED",
+      "title": "Deterministic last confirmation for provider mandates (fixes the Database gate flake)",
+      "url": "https://github.com/carlosevg100/offroad/pull/603",
+      "decision": "substituída pela 612"
+    },
+    {
+      "closedAt": "2026-09-14T22:58:30Z",
+      "headRefOid": "f2f78234ed2ebcd0a77812e4d64bf27317b6f64e",
+      "mergeCommit": null,
+      "mergedAt": null,
+      "number": 613,
+      "state": "CLOSED",
+      "title": "Renew security inventory and review it by implementation wave",
+      "url": "https://github.com/carlosevg100/offroad/pull/613",
+      "decision": "absorvida pela 612"
+    },
+    {
+      "closedAt": "2026-09-14T22:57:14Z",
+      "headRefOid": "86b9687e871927139aac0f443826927623a8dfa6",
+      "mergeCommit": {
+        "oid": "d88683df88829cc50fe92f3b7694477630308499"
+      },
+      "mergedAt": "2026-09-14T22:57:14Z",
+      "number": 612,
+      "state": "MERGED",
+      "title": "Reconcile main with production: mandate confirmation fix and renewed security inventory",
+      "url": "https://github.com/carlosevg100/offroad/pull/612",
+      "decision": "concluir e publicar"
+    }
+  ],
+  "openPullRequests": []
+}

@@ -1,5 +1,10 @@
 ## 14 September 2026: wave 1 procedure authoring foundation
 
+## Stage 0 replay bootstrap diagnosis, 14 September 2026
+
+PR 614 is merged as `8ae3772c3b268f29c019b744f18fcfe3b575c06a`; its Quality, Security and preview gates passed. The recovery CI correctly rejected 355 grant differences between the local replay and hosted catalogue. All concern `service_role`; the pinned CLI changed default grants at bootstrap. `supabase/config.toml` now explicitly reproduces the hosted bootstrap before historical migrations. No comparison exception, post-replay grant patch or remote DDL was introduced. Full corrected CI remains required. Details and immutable CI source: `docs/build/arcabouco-stage0/README.md` and `REPLAY-BOOTSTRAP-DIAGNOSIS.json`.
+
+
 The prerequisite correction and inventory renewal are published in main at `d88683df88829cc50fe92f3b7694477630308499` (PR612); the wave coordinator verified web and worker publication, including worker task revision 322. This checkpoint preserves that published baseline and delivers only authorship preparation. The historical prerequisite note below predates that publication.
 
 Stage 0 now includes `packages/credit-playbook/knowledge/AUTHORING.md` and the editorial candidate `knowledge/procedures/capital/prepare-capital-structure-decision.md`. The first work is capital structure alternatives for a decision; proposal comparison follows later. The guide explains the current Markdown parser, separates professional specification from executable components, and records the scope approved for parallel authorship.
@@ -10,11 +15,30 @@ Local verification on the published d88683df baseline, using Node 24.19.0 and pn
 
 ## 14 September 2026: wave 1 security inventory renewal
 
+## Wave 1 stage 0 integration, 14 September 2026
+
+The governance and mandate reconciliation prerequisite is published in main at `d88683df`; its PR and main Quality/Security checks passed. Production web returned HTTP 200 and worker deployment verified task definition revision 322. The 20 previous PRs are closed; PR 613 is absorbed by 612. See `docs/build/arcabouco-stage0/PR-DISPOSITIONS.md` and its execution receipt.
+
+This candidate restores seven already-applied production migrations and archives nine staging-only files outside replay. All sixteen hashes and live journal records passed the recovery verifier; 22 functions and four tables agree within the documented comparison. Both recovered SQL suites passed rollback-only staging execution, followed by zero reserved fixtures. The object checker passed for production (1,284 objects) and staging (1,345); fifteen Python regression tests passed. `ROADMAP.md` records the approved sequence and founder acts. CI replay, candidate merge and production deployment remain required before stage 0 completion. No historical migration is reapplied and no security stage is declared complete.
+
+
 Founder authorization replaces the seven-day inventory review cadence with review at wave boundaries and whenever a material security change occurs. The reviewed scope is wave 1 (stages 0, 1A, 1B and 1C). Closed or mismatched waves and material changes awaiting review fail closed; time-bound contracts and attestations retain real expiry checks. Evidence is re-collected and repository sources re-examined against main, not renewed by changing a date. The fresh Codex read-only observation keeps effective IAM and unavailable worker boot diagnostics unverified. This review is not a security certification or remediation of the separately scheduled access defects.
 
 This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.
 
 Local verification on Node 24.19.0 and pnpm 10.32.1: `pnpm check` passed lint, types, all package tests and 43 build tasks. Release-governance passed 188 tests; web passed 679 and worker passed 559. Trusted inventory and program-board renderers passed with real clock and resolved bytes. Independent review found no new expiry, hash or authority bypass. Remote CI, merge and exact-commit web/worker deployment remain release gates.
+## 14 September 2026: applied schema recovery candidate
+
+Seven production-applied migrations are restored with their exact journal text and production
+versions. Nine staging-only distribution migrations are preserved outside replay in
+`docs/build/schema-history/`; no distribution surface or method publication is promoted.
+The recovery manifest and checker validate sixteen file hashes, both environment journals,
+22 installed functions (three comment-only differences), and four identical table/policy catalogs.
+Read-only live catalog verification passed at 2026-09-14T21:44:14Z. Five checker regression tests
+passed locally. Two recovered SQL suites are wired into the existing database CI loop; they
+have not yet run in this candidate. The proposal test's row count now scopes its synthetic project.
+No remote mutation, migration replay, merge, deploy, or stage completion is claimed. Required
+remaining gates are recorded in `docs/build/schema-history/TEST-REVIEW.md`.
 
 ## 13 September 2026: cinematic website candidate
 
