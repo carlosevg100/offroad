@@ -5,6 +5,18 @@ Founder authorization replaces the seven-day inventory review cadence with revie
 This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.
 
 Local verification on Node 24.19.0 and pnpm 10.32.1: `pnpm check` passed lint, types, all package tests and 43 build tasks. Release-governance passed 188 tests; web passed 679 and worker passed 559. Trusted inventory and program-board renderers passed with real clock and resolved bytes. Independent review found no new expiry, hash or authority bypass. Remote CI, merge and exact-commit web/worker deployment remain release gates.
+## 14 September 2026: applied schema recovery candidate
+
+Seven production-applied migrations are restored with their exact journal text and production
+versions. Nine staging-only distribution migrations are preserved outside replay in
+`docs/build/schema-history/`; no distribution surface or method publication is promoted.
+The recovery manifest and checker validate sixteen file hashes, both environment journals,
+22 installed functions (three comment-only differences), and four identical table/policy catalogs.
+Read-only live catalog verification passed at 2026-09-14T21:44:14Z. Five checker regression tests
+passed locally. Two recovered SQL suites are wired into the existing database CI loop; they
+have not yet run in this candidate. The proposal test's row count now scopes its synthetic project.
+No remote mutation, migration replay, merge, deploy, or stage completion is claimed. Required
+remaining gates are recorded in `docs/build/schema-history/TEST-REVIEW.md`.
 
 ## 13 September 2026: cinematic website candidate
 

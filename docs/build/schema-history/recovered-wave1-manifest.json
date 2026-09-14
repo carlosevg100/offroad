@@ -1,0 +1,151 @@
+{
+  "verified_at": "2026-09-14",
+  "production": "ifnogpksgdadruooqydi",
+  "staging": "gjkkjtbfnssdsbmlhmwk",
+  "records": [
+    {
+      "name": "project_canonical_revisions",
+      "production_version": "20260911020707",
+      "staging_version": "20260911003226",
+      "file": "supabase/migrations/20260911020707_project_canonical_revisions.sql",
+      "sha256": "c100f4f4e092e2e9d313ffca5a2ecb78609e2a4d0ff22d7c84500729ebbccc17",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "project_revision_propagation",
+      "production_version": "20260911020808",
+      "staging_version": "20260911003805",
+      "file": "supabase/migrations/20260911020808_project_revision_propagation.sql",
+      "sha256": "5ce2c133cf58e349c9063f6d9d5a9e49f2b746979fb412dbd9b155644897e7c8",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "institutional_revision_proposals",
+      "production_version": "20260911020925",
+      "staging_version": "20260911005319",
+      "file": "supabase/migrations/20260911020925_institutional_revision_proposals.sql",
+      "sha256": "08bdefe3c008e4a0d3bb10d514b00de355959bad4d5d4759798cc27ecc6a3239",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "revision_proposal_variable_scope",
+      "production_version": "20260911021002",
+      "staging_version": "20260911005643",
+      "file": "supabase/migrations/20260911021002_revision_proposal_variable_scope.sql",
+      "sha256": "975017a13b342530163992b2d70806d0d916f7fc74f9d735fb70adbeec83779e",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "canonical_revision_variable_scope",
+      "production_version": "20260911021039",
+      "staging_version": "20260911010011",
+      "file": "supabase/migrations/20260911021039_canonical_revision_variable_scope.sql",
+      "sha256": "fd9346951c813aba224404b37fa949d228e18864114fce4c9758bb429e277a2f",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "restore_institutional_review_role_gate",
+      "production_version": "20260911115509",
+      "staging_version": "20260911013028",
+      "file": "supabase/migrations/20260911115509_restore_institutional_review_role_gate.sql",
+      "sha256": "1d4c383e775ddd6a6ef72f6ae3fbf991f0420ba41b26900ee19edc18d4ff8a69",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "project_debt_structure_capability",
+      "production_version": "20260911115624",
+      "staging_version": "20260911013239",
+      "file": "supabase/migrations/20260911115624_project_debt_structure_capability.sql",
+      "sha256": "6d088020ad087a81833b78c6e2e457b28c2f9c61a08fe9f5c65018bc91289db4",
+      "decision": "recover_applied_production_history",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "versioned_information_packs",
+      "production_version": null,
+      "staging_version": "20260911012528",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911012528_versioned_information_packs.sql",
+      "sha256": "30e73a6bd75a4022dc116ebeb6db949857bb17409499dad90496ce7ccc5d2f0c",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "authorized_pack_distribution",
+      "production_version": null,
+      "staging_version": "20260911013106",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql",
+      "sha256": "00700188d6e9097e21cc55421438370a6710d68429b7a8baf77b7e8990ec4d72",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "information_pack_fingerprint_variable_scope",
+      "production_version": null,
+      "staging_version": "20260911013814",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911013814_information_pack_fingerprint_variable_scope.sql",
+      "sha256": "8856a5dfbbafb329417019a38d3b2d10b07fa12545ec231e81ce2209c76ea3b3",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "information_pack_supersession_order",
+      "production_version": null,
+      "staging_version": "20260911014109",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911014109_information_pack_supersession_order.sql",
+      "sha256": "807fc1625f78cf44877bb07075028aeb7202ab2a14c6a15a670d4c83ab3a5944",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "in_product_qualified_contact",
+      "production_version": null,
+      "staging_version": "20260911014540",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql",
+      "sha256": "ad0c83434f356745e3c55a062fbebd5a9681132b7fac06a171c42aa1197e646c",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "pack_responses_and_next_steps",
+      "production_version": null,
+      "staging_version": "20260911014632",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql",
+      "sha256": "bdadd425c6b7c9950ca53ac65ab4021ced39abb3ab1a906c13188edefc8b0fb5",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "bind_qualified_contact_to_its_recipient",
+      "production_version": null,
+      "staging_version": "20260911014733",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911014733_bind_qualified_contact_to_its_recipient.sql",
+      "sha256": "e0d4ba965e78844a2e97960a5b5ef672f92f4357bb718eeab2520e063f97e153",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "read_shared_pack_item_material",
+      "production_version": null,
+      "staging_version": "20260911020048",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911020048_read_shared_pack_item_material.sql",
+      "sha256": "fa2f03893050d2681c8dd3ce4c036e124702e8f90a9ea6081d88faf289fc4fd7",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    },
+    {
+      "name": "resolve_pack_distribution_candidates",
+      "production_version": null,
+      "staging_version": "20260911020229",
+      "file": "docs/build/schema-history/staging-only-distribution/20260911020229_resolve_pack_distribution_candidates.sql",
+      "sha256": "02fa1f4d9e6eb5b57d94d132e54c0ed6ba3de07e85aa49bdcd6a00339664ca88",
+      "decision": "archive_staging_only_do_not_replay",
+      "journal_match": "exact_after_trimming_final_whitespace"
+    }
+  ]
+}

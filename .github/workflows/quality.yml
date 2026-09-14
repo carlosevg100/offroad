@@ -54,6 +54,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Verify recovered schema history and archive isolation
+        run: |
+          python3 scripts/ci/verify-recovered-schema.py
+          python3 scripts/ci/test_verify_recovered_schema.py
+
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
         with:

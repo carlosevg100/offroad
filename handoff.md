@@ -1,3 +1,16 @@
+## 14 September 2026: applied schema recovery candidate
+
+Seven production-applied migrations are restored with their exact journal text and production
+versions. Nine staging-only distribution migrations are preserved outside replay in
+`docs/build/schema-history/`; no distribution surface or method publication is promoted.
+The recovery manifest and checker validate sixteen file hashes, both environment journals,
+22 installed functions (three comment-only differences), and four identical table/policy catalogs.
+Read-only live catalog verification passed at 2026-09-14T21:44:14Z. Five checker regression tests
+passed locally. Two recovered SQL suites are wired into the existing database CI loop; they
+have not yet run in this candidate. The proposal test's row count now scopes its synthetic project.
+No remote mutation, migration replay, merge, deploy, or stage completion is claimed. Required
+remaining gates are recorded in `docs/build/schema-history/TEST-REVIEW.md`.
+
 ## 14 September 2026: wave 1 security inventory renewal
 
 Founder authorization replaces the seven-day inventory review cadence with review at wave boundaries and whenever a material security change occurs. The reviewed scope is wave 1 (stages 0, 1A, 1B and 1C). Closed or mismatched waves and material changes awaiting review fail closed; time-bound contracts and attestations retain real expiry checks. Evidence is re-collected and repository sources re-examined against main, not renewed by changing a date. The fresh Codex read-only observation keeps effective IAM and unavailable worker boot diagnostics unverified. This review is not a security certification or remediation of the separately scheduled access defects.
