@@ -94,8 +94,21 @@ def main():
     data = json.loads(args.catalogue.read_text())
     if isinstance(data, list):
         data = data[0]['catalogue']
-    errors = check(json.loads(MANIFEST.read_text()), data, environment=args.environment)
-    print(json.dumps({'environment': args.environment, 'objects': len(data['objects']), 'errors': errors}, ensure_ascii=False))
+    manifest = json.loads(MANIFEST.read_text())
+    errors = check(manifest, data, environment=args.environment)
+    target = 'production' if args.environment == 'replay' else args.environment
+    reviewed = {row['id']: row for row in manifest['objects']}
+    differences = []
+    for actual in data['objects']:
+        expected = reviewed.get(actual['id'], {}).get('catalogues', {}).get(target)
+        if expected is not None and normalized(expected) != normalized(actual):
+            differences.append({'id': actual['id'], 'fields': {
+                key: {'expected': expected.get(key), 'actual': actual.get(key)}
+                for key in sorted(set(expected) | set(actual))
+                if normalized(expected.get(key)) != normalized(actual.get(key))
+            }})
+    print(json.dumps({'environment': args.environment, 'objects': len(data['objects']),
+                      'errors': errors, 'differences': differences}, ensure_ascii=False))
     return bool(errors)
 
 if __name__ == '__main__':

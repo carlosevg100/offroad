@@ -108,6 +108,14 @@ jobs:
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
           python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay
 
+      - name: Preserve stage-zero replay catalogue for drift diagnosis
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: stage0-replay-catalogue
+          path: ${{ runner.temp }}/stage0-replay-catalogue.json
+          if-no-files-found: ignore
+
       # Every SQL contract is a gate by default. A newly added workspace, cache or
       # RLS regression test must not depend on someone remembering to register it here.
       - name: Run all database contract tests
