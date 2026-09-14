@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 import shutil
 import tempfile
+import sys
 import unittest
+
+sys.dont_write_bytecode = True
 
 SPEC = importlib.util.spec_from_file_location('recovered_schema', Path(__file__).with_name('verify-recovered-schema.py'))
 CHECKER = importlib.util.module_from_spec(SPEC)
