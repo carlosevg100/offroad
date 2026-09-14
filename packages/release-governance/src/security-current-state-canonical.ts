@@ -11,7 +11,8 @@ export type CanonicalSecurityEvidenceManifestEntry = {
   kind: "repository_file" | "automated_test" | "configuration" | "external_snapshot" | "contract_record" | "operator_observation" | "design_reference";
   ref: string;
   capturedAt: string;
-  freshness: "immutable" | "time_bound";
+  freshness: "immutable" | "time_bound" | "wave_bound";
+  waveId: string | null;
   validThrough: string | null;
   immutableFingerprint: string | null;
   contentFingerprint: `sha256:${string}`;
@@ -39,11 +40,14 @@ export type CanonicalSecurityGapRelationship = {
  * dates. A runtime caller may present a snapshot, but cannot redefine this trust root.
  */
 const inventorySnapshotContract = {
-  inventoryFingerprint: "8853438ae3f8db7b71e5d56a3dc92dfb8265b38f138f079a352b820157a91e36",
-  generatedAt: "2026-09-07T09:43:00.000-03:00",
-  evidenceCutoff: "2026-09-07T09:43:00.000-03:00",
-  reviewDueAt: "2026-09-14T09:43:00.000-03:00",
-  maximumReviewWindowMs: 7 * 24 * 60 * 60 * 1000,
+  inventoryFingerprint: "f05978a6a691993ff3f6ad3ee5c25e46a3ff937f551f524e9c883863fb2af94d",
+  generatedAt: "2026-09-14T21:45:33.165Z",
+  evidenceCutoff: "2026-09-14T21:45:33.165Z",
+  reviewDueAt: null,
+  reviewCadence: "per_wave",
+  waveId: "wave-1",
+  waveStatus: "open",
+  materialChangeState: "reviewed",
 } as const;
 
 const evidenceManifest = [
@@ -51,365 +55,538 @@ const evidenceManifest = [
     "evidenceId": "SEV-AGENTS-SCOPE",
     "kind": "repository_file",
     "ref": "AGENTS.md",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:acd472c3e4b9fe20ddec3961b7113bd94cfd47d6286962988414a1c392501ddd",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:4f4717ab4d66673ac6a389394dd6636bf55b45cf326cb03718c7f41b048e8ec7",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-SECURITY-PLAN",
     "kind": "design_reference",
     "ref": "docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:113cd5ec4d2c194718b4445d1f54f17e6def847d6e6fde32592685c83b9bb2d5",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:66dfb5d88ec405dba6540ccaae091db1fbc03f5b2f6ac0f727595117813efd3b",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-ENV-NAMES",
     "kind": "configuration",
     "ref": ".env.example",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:b4bc582b5fb4fe6608c4b9bbf48e362d46620e427c5a77428127268aaaee82af",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:a46f64be02956d05f01fb5368291c03d3eee2940972037b606ed2ee376a4204f",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WORKER-TASK",
     "kind": "configuration",
     "ref": "apps/document-worker/task-definition.json",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:0543611c87c156b861b807641247a23dcb99a19023b20913f8dffff951c987d3",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:16ff863671513d999fafce3b5d6fd47f7f6117139ff03a2708b1d7f454d56e51",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WORKER-RUNTIME",
     "kind": "repository_file",
     "ref": "apps/document-worker/src/main.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:45283403d0b4276eab21e17beaf7d7a5cab8a0a1396942a29614f3c9d53051dc",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:be973e66ef564e8d752cbd4af128a8f473eb3ecc2fbc705c45a72af818659350",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WORKER-CONFIG",
     "kind": "repository_file",
     "ref": "apps/document-worker/src/config.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:f7032b56f70c698834ae5837edfaff589d6983ec54f0c9ae86141757eba95a0c",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:956e4f51ac3eaed214a4e8c5d51aa87c8b5a44f301bb4078a3438f3a6235591a",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-DEPLOY-WORKER",
     "kind": "configuration",
     "ref": ".github/workflows/deploy-worker.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:5020eba9f5815790f0d451b3aac14fc9c2008c9110ebf47273f4f5bcefe26e54",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:91f4f8a66ba7b49ab4dfda0e35a26fe33865f2e6a846d89d93350761dc70b501",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-EXTRACTION",
     "kind": "configuration",
     "ref": ".github/workflows/measure-extraction.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:aea104a1eb0f29392c62f03cbe4033a3d9e0c8f2b92e06628b0c080c8afea7e8",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:41da24524f28ec5a220eeaf88fdb31483968fe3be5791c92e1a70e8f093154dc",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-INTENT",
     "kind": "configuration",
     "ref": ".github/workflows/intent-router-gold.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:a464d49e2ecefd8cf0e526509b4dbc8c212834141232b8b8bc46f2284c4b04f3",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:f01f91770063d9a939f4c95d7e689de27f0754b4ab0c0a6058143113c206bccb",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-CLASSIFICATION",
     "kind": "configuration",
     "ref": ".github/workflows/measure-classification.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:7bf8e071b53800aba9868922410b3e3044b6bba2de69f34d868e111324527b31",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:de9c38e47d635aea1224aa9eee9dbadfac537d52d1bb7365abb172e91428b8b0",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-GOLD",
     "kind": "configuration",
     "ref": ".github/workflows/gold-baseline.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:cc098860b8b50676623d334b9833c523c9de6f210add3dd4eac2cc10ece53f34",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:43cae31f6b37655cf150ae2a44ab07c3267a240c08403d3020b6236229f9f27e",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-PROBE",
     "kind": "configuration",
     "ref": ".github/workflows/probe-structured-output.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:8dd7a57cfe40d9b65ede721667101579af5555153bf32acd1201c0abc8f3e393",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:be99868be6efc016e72eea9b92c70d04111dc1c3984b2e589d078ac049fd76e3",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-CODEX",
     "kind": "configuration",
     "ref": ".github/workflows/codex-review.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:5b25049ba14fefb2542d99e224a728976cb0b76ea739a8a76d838ddc5d15ef0d",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:a723b8b394f3fdc064257054760c3e6ebfc6bed36014a4321e1a7bf228a52ff3",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-EVAL-LIVE-GATE",
     "kind": "configuration",
     "ref": ".github/workflows/live-preview-gate.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:62927bab96374eebefae9ce7524c3b6016f01d9e25b993673fea7ceb6387f58a",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:77f009aa244ca9ada95f9730b3468d85ae0cee0b2d6f442e860bc206051c65d0",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-QUALITY-WORKFLOW",
     "kind": "configuration",
     "ref": ".github/workflows/quality.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:d08c79ee455a30ab3699a43b7eb9240c4e0eae1334c0153eaa6c5b9bfd0b27fd",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:de160c304b6c5bd1bb11500d2bf7254ca7ef835a32ff8f331ffb1376b789abbf",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-CODEOWNERS",
     "kind": "configuration",
     "ref": ".github/CODEOWNERS",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:857ea6d9e85324e9d745ed26c74dd66700677bc80ab3e49f4ca2bffa121d2bc4",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-SECURITY-WORKFLOW",
     "kind": "configuration",
     "ref": ".github/workflows/security.yml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:e9470928fac9f56fe8f4743ca6e93fba4122cff8887288dd45ab23b3ec6fe0f0",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-SUPABASE-CONFIG",
     "kind": "configuration",
     "ref": "supabase/config.toml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:66f742c8286d7bccb365044a9ac9d80a4babc1a6c953d439631ce537dfae7093",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-RLS-TEST",
     "kind": "automated_test",
     "ref": "supabase/tests/rls_non_interference.sql",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:4d1fbeaf9b358efbb9480eba8f6a4ecdc30b660d94902cd86da0c58c3dde2850",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:c823b1c2dee0a0b8c355026ea18b6685b590c052b93b30c42ce52d1937e16bfb",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-MODEL-DATA-POLICY",
     "kind": "repository_file",
     "ref": "packages/model-gateway/src/data-policy.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:10fbb047ff892af41e2eaa69a94bd7a8d81896732eb20abc38a71346abe961ea",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-MODEL-DATA-POLICY-TEST",
     "kind": "automated_test",
     "ref": "packages/model-gateway/src/index.test.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:db2079b346706fd697df1956d1df03ec7123a12ef3db0e4ca75a27a9b662442d",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:ba1ce0acd1b18b16777323f36ef148b9ba49ff779f0be72aba4ae7655f7390a2",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-MODEL-POLICY",
     "kind": "configuration",
     "ref": "packages/model-gateway/src/policy.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:00e273614ff42837f6aba595c472f973d022d226992c2339aa22c7f228b14898",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:4bd5d315e33e25b3b526742b7298cbde8305519cdcc59f64e14bb1884af9dcb9",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-PUBLIC-RESEARCH",
     "kind": "repository_file",
     "ref": "packages/public-research/src/source-registry.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:b4a4ab4c4879135f6d287b4d5c0ff1d2be8e9a6cb8333cbaed19616d366d86b2",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WEB-OBSERVABILITY",
     "kind": "configuration",
     "ref": "apps/web/src/instrumentation-client.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:579d1f33c30b57cd2c46916b67821813d4f3f15dbe184db56dfa632c615d0742",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WEB-UPLOAD",
     "kind": "repository_file",
     "ref": "apps/web/src/lib/intake/upload-client.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:29574865f9ac4f3e9a52d7621f4e93218ea650b9247509b35fee2f150e92376a",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-WEB-DEPENDENCIES",
     "kind": "repository_file",
     "ref": "apps/web/package.json",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:bf993d19ffec9479e618ecb63611759556bca327d82ea8eb5100240bb2632fcc",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:4f506b42f2d0354fcbca3d179a1ed7f6cf816b284094b6740892b563c86e3f98",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-LOCKFILE",
     "kind": "configuration",
     "ref": "pnpm-lock.yaml",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:d5decfb97c5ecc4162e6486a8178873ea181e6a451e0a1bb3778876b6a61557c",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:54d1eded0c877566fcb1509680b28021bf62139c6a195f3e95c72ede466580e5",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-CASE-RENDER",
     "kind": "repository_file",
     "ref": "packages/case-render/src/html.ts",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
     "contentFingerprint": "sha256:9227e1db4e54a0c0fa66502027dc234cc7ced8cf8f9b2ba26c71ca21d15a64b9",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-ROLLOUT-ORDER",
     "kind": "repository_file",
     "ref": "docs/build/ACCEPTANCE_EVIDENCE.md",
-    "capturedAt": "2026-09-07T09:43:00.000-03:00",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
     "freshness": "immutable",
     "validThrough": null,
-    "immutableFingerprint": "b2e389757995859cf6a0b250e051d83ba0b53163",
-    "contentFingerprint": "sha256:a13b5778edf4cf661dc48776a882ddc6c62e391ebe9d3f0b73fa1255d92fd69e",
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:dc84f1dd669048f592d6cc1f3d4dab0a81bb3e8038913056b018131b8bc6e630",
     "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
-    "collector": null
+    "collector": null,
+    "waveId": null
   },
   {
     "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
     "kind": "operator_observation",
-    "ref": "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-07.json",
-    "capturedAt": "2026-09-07T09:20:00.000-03:00",
-    "freshness": "time_bound",
-    "validThrough": "2026-09-14T09:20:00.000-03:00",
+    "ref": "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-14.json",
+    "capturedAt": "2026-09-14T21:41:19.418739Z",
+    "freshness": "wave_bound",
+    "validThrough": null,
     "immutableFingerprint": null,
-    "contentFingerprint": "sha256:eee921b75a3b879cd6790163cb370efe7294fec808fee95bc0e0bd492babbf8b",
+    "contentFingerprint": "sha256:2ca8cf4f4f6e243d06ec0fabcb7cfc4505d331a4fc92e9e145f106e755d9e715",
     "authorityRef": "AUTH-OPERATOR-OBSERVATION-ONLY",
     "collector": {
-      "name": "operator-authored-observation",
+      "name": "codex-read-only-github-observation",
       "version": "1",
-      "principalClass": "authorized cloud administrator"
-    }
+      "principalClass": "repository automation using the existing local GitHub session"
+    },
+    "waveId": "wave-1"
+  },
+  {
+    "evidenceId": "SEV-EVAL-DOCUMENT-WORK",
+    "kind": "configuration",
+    "ref": ".github/workflows/document-work-product-live.yml",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:80e8f93ed6ab2b393f701d13663eda6eec7511eeae2d354967226020e2cb01e3",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-EVAL-DOCUMENT-CONTINUATION",
+    "kind": "configuration",
+    "ref": ".github/workflows/document-work-product-continuation.yml",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:62b7512adff8d6d21ddcb0f9e4aa6cf1004281236bfa07d20cd637ced6585eab",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-CI-SCANNER",
+    "kind": "configuration",
+    "ref": ".github/workflows/documentary-scanner.yml",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:3085403912d5f15249ce980defb260229757eedbb5540857b7a3b25857315804",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-CI-SCANNER-START",
+    "kind": "repository_file",
+    "ref": "scripts/ci/start-documentary-scanner.sh",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:dc5d650377450a162c74a062e3780aae7997b516d5b1aff58187aadbb4ac8b77",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-DEPLOY-BOOT-PROOF",
+    "kind": "repository_file",
+    "ref": "scripts/ci/verify-worker-boot-flag.py",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:75de84d2a98dd1ae86fc097b5e3e2b3a096723b2102641a431448d64066584d0",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-ORG-AUTHORITY-SQL",
+    "kind": "repository_file",
+    "ref": "supabase/migrations/20260815014649_platform_foundation.sql",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:ff4f010fe53984acfc2974fe1427f650c16cce5ec403066b6bcea4e3bf02ac1f",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-PROJECT-ACCESS-SQL",
+    "kind": "repository_file",
+    "ref": "supabase/migrations/20260901035248_universal_capital_projects.sql",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:af51e2995af8a4d346c135dac7196cc0265be174b7f048ba80b5ca8c8abb5009",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-INTAKE-ACCESS-SQL",
+    "kind": "repository_file",
+    "ref": "supabase/migrations/20260817202038_document_first_intake.sql",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:b44555d38f1b5521bfce7cc7aa841f5df08e7f5b1e5e39beb9df8ebefe272f2f",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-DEBT-VIEW-PROMPT",
+    "kind": "repository_file",
+    "ref": "apps/document-worker/src/company-debt-view.ts",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:afcbf1e3c51b6dc6d4555c5733381010063b9969f90a5e7a0cd256900e553eb9",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-ORIGINATION-PROMPT",
+    "kind": "repository_file",
+    "ref": "apps/document-worker/src/origination-thesis.ts",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:5547e8d0e624bbee66ec9fccb28299284a5749e1488ec100af23911573c03139",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
+  },
+  {
+    "evidenceId": "SEV-CAPITAL-PLANNING-PROMPT",
+    "kind": "repository_file",
+    "ref": "apps/document-worker/src/capital-planning.ts",
+    "capturedAt": "2026-09-14T21:45:33.165Z",
+    "freshness": "immutable",
+    "waveId": null,
+    "validThrough": null,
+    "immutableFingerprint": "8bdc26d9df96af713d2769599bb0fdd5234eb6d0",
+    "contentFingerprint": "sha256:da95e89df6c7f219d07087f99fd774ef2274f5e4a068c6ae7707d732171ef83b",
+    "authorityRef": "AUTH-TRUSTED-GIT-BASELINE",
+    "collector": null
   }
 ] satisfies CanonicalSecurityEvidenceManifestEntry[];
 
@@ -647,7 +824,9 @@ const entityRelationships = {
       "SG-SCHEMA-BEFORE-CODE",
       "SG-ENV-SEPARATION",
       "SG-PRIVACY-RECORDS",
-      "SG-OWNER-ASSIGNMENT"
+      "SG-OWNER-ASSIGNMENT",
+      "SG-CREATOR-RESIDUAL-AUTHORITY",
+      "SG-PROJECT-MEMBERSHIP-READ"
     ],
     "controlIds": [
       "TRUST-DATA-01",
@@ -667,7 +846,8 @@ const entityRelationships = {
       "SG-SCHEMA-BEFORE-CODE",
       "SG-OWNER-ASSIGNMENT",
       "SG-LOGGING-CONTENT-SAFETY",
-      "SG-ASSET-DISCOVERY"
+      "SG-ASSET-DISCOVERY",
+      "SG-PROFILE-ANALYTICAL-DEPTH"
     ],
     "controlIds": [
       "TRUST-DOC-01",
@@ -687,7 +867,12 @@ const entityRelationships = {
       "SEV-EVAL-GOLD",
       "SEV-EVAL-PROBE",
       "SEV-EVAL-CODEX",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION",
+      "SEV-DEPLOY-BOOT-PROOF",
+      "SEV-CI-SCANNER",
+      "SEV-CI-SCANNER-START"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -779,7 +964,8 @@ const entityRelationships = {
       "SG-DATA-LIFECYCLE",
       "SG-BACKUP-RESTORE",
       "SG-LIVE-CONFIG",
-      "SG-PRIVACY-RECORDS"
+      "SG-PRIVACY-RECORDS",
+      "SG-PROJECT-MEMBERSHIP-READ"
     ],
     "controlIds": [
       "TRUST-DATA-01",
@@ -902,6 +1088,50 @@ const entityRelationships = {
       "TRUST-OPS-01"
     ]
   },
+  "FLOW-CI-SCANNER-PACKAGES": {
+    "evidenceRefs": [
+      "SEV-CI-SCANNER",
+      "SEV-CI-SCANNER-START"
+    ],
+    "gapRefs": [
+      "SG-VENDOR-ASSURANCE",
+      "SG-ASSET-DISCOVERY"
+    ],
+    "controlIds": [
+      "TRUST-SDLC-02",
+      "TRUST-VENDOR-01"
+    ]
+  },
+  "FLOW-CI-SCANNER-DEFINITIONS": {
+    "evidenceRefs": [
+      "SEV-CI-SCANNER-START"
+    ],
+    "gapRefs": [
+      "SG-VENDOR-ASSURANCE",
+      "SG-ASSET-DISCOVERY"
+    ],
+    "controlIds": [
+      "TRUST-DOC-01",
+      "TRUST-SDLC-02",
+      "TRUST-VENDOR-01"
+    ]
+  },
+  "FLOW-GITHUB-WORKER-DIAGNOSTICS": {
+    "evidenceRefs": [
+      "SEV-DEPLOY-WORKER",
+      "SEV-DEPLOY-BOOT-PROOF",
+      "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"
+    ],
+    "gapRefs": [
+      "SG-DEPLOY-DIAGNOSTICS",
+      "SG-LOGGING-CONTENT-SAFETY"
+    ],
+    "controlIds": [
+      "TRUST-CLOUD-01",
+      "TRUST-OPS-01",
+      "TRUST-DATA-02"
+    ]
+  },
   "FLOW-WEB-DATA": {
     "evidenceRefs": [
       "SEV-RLS-TEST",
@@ -909,7 +1139,9 @@ const entityRelationships = {
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
-      "SG-ENV-SEPARATION"
+      "SG-ENV-SEPARATION",
+      "SG-CREATOR-RESIDUAL-AUTHORITY",
+      "SG-PROJECT-MEMBERSHIP-READ"
     ],
     "controlIds": [
       "TRUST-APP-01",
@@ -936,7 +1168,8 @@ const entityRelationships = {
       "SEV-RLS-TEST"
     ],
     "gapRefs": [
-      "SG-LIVE-CONFIG"
+      "SG-LIVE-CONFIG",
+      "SG-PROJECT-MEMBERSHIP-READ"
     ],
     "controlIds": [
       "TRUST-DATA-01",
@@ -952,7 +1185,8 @@ const entityRelationships = {
     ],
     "gapRefs": [
       "SG-PROVIDER-ASSURANCE",
-      "SG-LIVE-CONFIG"
+      "SG-LIVE-CONFIG",
+      "SG-PROFILE-ANALYTICAL-DEPTH"
     ],
     "controlIds": [
       "TRUST-AI-01",
@@ -967,7 +1201,8 @@ const entityRelationships = {
     ],
     "gapRefs": [
       "SG-PROVIDER-ASSURANCE",
-      "SG-LIVE-CONFIG"
+      "SG-LIVE-CONFIG",
+      "SG-PROFILE-ANALYTICAL-DEPTH"
     ],
     "controlIds": [
       "TRUST-AI-01",
@@ -1039,7 +1274,8 @@ const entityRelationships = {
   "FLOW-GITHUB-AWS": {
     "evidenceRefs": [
       "SEV-DEPLOY-WORKER",
-      "SEV-WORKER-TASK"
+      "SEV-WORKER-TASK",
+      "SEV-DEPLOY-BOOT-PROOF"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -1061,7 +1297,9 @@ const entityRelationships = {
       "SEV-EVAL-GOLD",
       "SEV-EVAL-PROBE",
       "SEV-EVAL-CODEX",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -1083,7 +1321,9 @@ const entityRelationships = {
       "SEV-EVAL-CLASSIFICATION",
       "SEV-EVAL-GOLD",
       "SEV-EVAL-PROBE",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -1104,7 +1344,8 @@ const entityRelationships = {
       "SEV-EVAL-INTENT",
       "SEV-EVAL-CLASSIFICATION",
       "SEV-EVAL-GOLD",
-      "SEV-EVAL-CODEX"
+      "SEV-EVAL-CODEX",
+      "SEV-EVAL-DOCUMENT-WORK"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -1288,13 +1529,27 @@ const entityRelationships = {
       "TRUST-VENDOR-01"
     ]
   },
+  "ID-CI-CLAMD": {
+    "evidenceRefs": [
+      "SEV-CI-SCANNER-START"
+    ],
+    "gapRefs": [
+      "SG-ASSET-DISCOVERY"
+    ],
+    "controlIds": [
+      "TRUST-DOC-01",
+      "TRUST-ID-01",
+      "TRUST-CLOUD-02"
+    ]
+  },
   "ID-END-USER": {
     "evidenceRefs": [
       "SEV-SUPABASE-CONFIG",
       "SEV-RLS-TEST"
     ],
     "gapRefs": [
-      "SG-PRIVILEGED-ACCESS"
+      "SG-PRIVILEGED-ACCESS",
+      "SG-CREATOR-RESIDUAL-AUTHORITY"
     ],
     "controlIds": [
       "TRUST-ID-01",
@@ -1362,7 +1617,9 @@ const entityRelationships = {
       "SEV-EVAL-GOLD",
       "SEV-EVAL-PROBE",
       "SEV-EVAL-CODEX",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION"
     ],
     "gapRefs": [
       "SG-LIVE-CONFIG",
@@ -1450,6 +1707,34 @@ const entityRelationships = {
       "TRUST-CLOUD-02"
     ]
   },
+  "VEN-UBUNTU-PACKAGES": {
+    "evidenceRefs": [
+      "SEV-CI-SCANNER-START"
+    ],
+    "gapRefs": [
+      "SG-VENDOR-ASSURANCE",
+      "SG-ASSET-DISCOVERY",
+      "SG-REGION-MAP"
+    ],
+    "controlIds": [
+      "TRUST-SDLC-02",
+      "TRUST-VENDOR-01"
+    ]
+  },
+  "VEN-CLAMAV-DEFINITIONS": {
+    "evidenceRefs": [
+      "SEV-CI-SCANNER-START"
+    ],
+    "gapRefs": [
+      "SG-VENDOR-ASSURANCE",
+      "SG-ASSET-DISCOVERY",
+      "SG-REGION-MAP"
+    ],
+    "controlIds": [
+      "TRUST-SDLC-02",
+      "TRUST-VENDOR-01"
+    ]
+  },
   "VEN-SUPABASE": {
     "evidenceRefs": [
       "SEV-AGENTS-SCOPE",
@@ -1471,7 +1756,9 @@ const entityRelationships = {
       "SEV-WORKER-TASK",
       "SEV-DEPLOY-WORKER",
       "SEV-EVAL-GOLD",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION"
     ],
     "gapRefs": [
       "SG-VENDOR-ASSURANCE",
@@ -1529,7 +1816,9 @@ const entityRelationships = {
       "SEV-EVAL-CLASSIFICATION",
       "SEV-EVAL-GOLD",
       "SEV-EVAL-PROBE",
-      "SEV-EVAL-LIVE-GATE"
+      "SEV-EVAL-LIVE-GATE",
+      "SEV-EVAL-DOCUMENT-WORK",
+      "SEV-EVAL-DOCUMENT-CONTINUATION"
     ],
     "gapRefs": [
       "SG-PROVIDER-ASSURANCE",
@@ -1553,7 +1842,8 @@ const entityRelationships = {
       "SEV-EVAL-INTENT",
       "SEV-EVAL-CLASSIFICATION",
       "SEV-EVAL-GOLD",
-      "SEV-EVAL-CODEX"
+      "SEV-EVAL-CODEX",
+      "SEV-EVAL-DOCUMENT-WORK"
     ],
     "gapRefs": [
       "SG-PROVIDER-ASSURANCE",
@@ -1747,6 +2037,55 @@ const entityRelationships = {
 } satisfies Record<string, CanonicalSecurityEntityRelationship>;
 
 const gapRelationships = {
+  "SG-CREATOR-RESIDUAL-AUTHORITY": {
+    "severity": "critical",
+    "targetRefs": [
+      "SYS-SUPABASE",
+      "ID-END-USER",
+      "FLOW-WEB-DATA"
+    ],
+    "evidenceRefs": [
+      "SEV-ORG-AUTHORITY-SQL"
+    ],
+    "controlIds": [
+      "TRUST-ID-01",
+      "TRUST-DATA-01"
+    ]
+  },
+  "SG-PROJECT-MEMBERSHIP-READ": {
+    "severity": "critical",
+    "targetRefs": [
+      "SYS-SUPABASE",
+      "STORE-POSTGRES",
+      "FLOW-WEB-DATA",
+      "FLOW-DATA-WORKER"
+    ],
+    "evidenceRefs": [
+      "SEV-PROJECT-ACCESS-SQL",
+      "SEV-INTAKE-ACCESS-SQL"
+    ],
+    "controlIds": [
+      "TRUST-DATA-01",
+      "TRUST-APP-01"
+    ]
+  },
+  "SG-PROFILE-ANALYTICAL-DEPTH": {
+    "severity": "high",
+    "targetRefs": [
+      "SYS-WORKER",
+      "FLOW-WORKER-ANTHROPIC",
+      "FLOW-WORKER-OPENAI"
+    ],
+    "evidenceRefs": [
+      "SEV-DEBT-VIEW-PROMPT",
+      "SEV-ORIGINATION-PROMPT",
+      "SEV-CAPITAL-PLANNING-PROMPT"
+    ],
+    "controlIds": [
+      "TRUST-AI-01",
+      "TRUST-AI-03"
+    ]
+  },
   "SG-LIVE-CONFIG": {
     "severity": "critical",
     "targetRefs": [
@@ -1883,6 +2222,8 @@ const gapRelationships = {
       "FLOW-SHEETJS-SUPPLY",
       "FLOW-MATERIAL-GOOGLE-FONTS",
       "ID-VERCEL-SOURCE-INTEGRATION",
+      "VEN-UBUNTU-PACKAGES",
+      "VEN-CLAMAV-DEFINITIONS",
       "VEN-SUPABASE",
       "VEN-AWS",
       "VEN-VERCEL",
@@ -1899,10 +2240,13 @@ const gapRelationships = {
       "VEN-NPM-REGISTRY",
       "VEN-GITHUB-ACTIONS",
       "VEN-SUPABASE-LOCAL-IMAGES",
-      "VEN-PLAYWRIGHT-DOWNLOADS"
+      "VEN-PLAYWRIGHT-DOWNLOADS",
+      "FLOW-CI-SCANNER-PACKAGES",
+      "FLOW-CI-SCANNER-DEFINITIONS"
     ],
     "evidenceRefs": [
-      "SEV-SECURITY-PLAN"
+      "SEV-SECURITY-PLAN",
+      "SEV-CI-SCANNER-START"
     ],
     "controlIds": [
       "TRUST-VENDOR-01",
@@ -2022,6 +2366,8 @@ const gapRelationships = {
       "ENV-PRODUCTION",
       "ENV-EXTERNAL",
       "FLOW-MATERIAL-GOOGLE-FONTS",
+      "VEN-UBUNTU-PACKAGES",
+      "VEN-CLAMAV-DEFINITIONS",
       "VEN-SUPABASE",
       "VEN-AWS",
       "VEN-VERCEL",
@@ -2093,11 +2439,13 @@ const gapRelationships = {
       "FLOW-GITHUB-AWS",
       "ID-GITHUB-OIDC",
       "ID-AWS-WORKER-ROLES",
-      "VEN-AWS"
+      "VEN-AWS",
+      "FLOW-GITHUB-WORKER-DIAGNOSTICS"
     ],
     "evidenceRefs": [
       "SEV-DEPLOY-WORKER",
-      "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"
+      "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+      "SEV-DEPLOY-BOOT-PROOF"
     ],
     "controlIds": [
       "TRUST-CLOUD-01",
@@ -2172,7 +2520,8 @@ const gapRelationships = {
     "severity": "high",
     "targetRefs": [
       "SYS-WORKER",
-      "STORE-CLOUDWATCH"
+      "STORE-CLOUDWATCH",
+      "FLOW-GITHUB-WORKER-DIAGNOSTICS"
     ],
     "evidenceRefs": [
       "SEV-WORKER-RUNTIME",
@@ -2212,7 +2561,12 @@ const gapRelationships = {
       "VEN-NPM-REGISTRY",
       "VEN-GITHUB-ACTIONS",
       "VEN-SUPABASE-LOCAL-IMAGES",
-      "VEN-PLAYWRIGHT-DOWNLOADS"
+      "VEN-PLAYWRIGHT-DOWNLOADS",
+      "FLOW-CI-SCANNER-PACKAGES",
+      "FLOW-CI-SCANNER-DEFINITIONS",
+      "VEN-UBUNTU-PACKAGES",
+      "VEN-CLAMAV-DEFINITIONS",
+      "ID-CI-CLAMD"
     ],
     "evidenceRefs": [
       "SEV-WEB-DEPENDENCIES",
@@ -2222,7 +2576,8 @@ const gapRelationships = {
       "SEV-QUALITY-WORKFLOW",
       "SEV-SECURITY-WORKFLOW",
       "SEV-LOCKFILE",
-      "SEV-SECURITY-PLAN"
+      "SEV-SECURITY-PLAN",
+      "SEV-CI-SCANNER-START"
     ],
     "controlIds": [
       "TRUST-GOV-02",

@@ -29,11 +29,14 @@ describe("security current-state inventory", () => {
   it("keeps synchronous validation declaration-only and never treats it as current-state truth", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
+    expect(currentSecurityInventory.baseline).toMatchObject({
+      waveId: "wave-1", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+    });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.assuranceReady).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 25, identities: 11, vendors: 17, openGaps: 18, coverageClaims: 8});
+    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 28, identities: 12, vendors: 19, openGaps: 21, coverageClaims: 8});
     expect(decision.warnings).toContainEqual({code: "operator_observation_not_independently_verified", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
   });
 
@@ -349,20 +352,20 @@ describe("security current-state inventory", () => {
     })).toThrow();
 
     const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, trusted);
-    expect(rendered).toContain("| Lacunas abertas | 18 |");
+    expect(rendered).toContain("| Lacunas abertas | 21 |");
     expect(rendered).toContain("| Assurance ready | não |");
     expect(countsRead).toBe(0);
     expect(assuranceRead).toBe(0);
   });
 
-  it("derives the evidence cutoff and enforces the bounded review window", () => {
+  it("derives the evidence cutoff and refuses an invented review deadline", () => {
     const inventory = copyInventory();
     inventory.baseline.evidenceCutoff = "2026-09-07T09:42:59.000-03:00";
     inventory.baseline.reviewDueAt = "2026-09-15T09:43:00.000-03:00";
     const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
     expect(decision.blockers).toEqual(expect.arrayContaining([
       {code: "evidence_cutoff_not_derived_from_manifest", subjectRef: inventory.baseline.commit},
-      {code: "baseline_review_window_exceeds_policy", subjectRef: inventory.inventoryVersion},
+      {code: "canonical_review_due_at_mismatch", subjectRef: inventory.baseline.commit},
     ]));
   });
 
@@ -431,7 +434,7 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
     expect(decision.blockers).toEqual(expect.arrayContaining([
       {code: "repository_evidence_commit_mismatch", subjectRef: "SEV-WEB-UPLOAD"},
-      {code: "external_evidence_must_be_time_bound", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"},
+      {code: "operator_observation_requires_bounded_freshness", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"},
     ]));
   });
 
@@ -497,11 +500,66 @@ describe("security current-state inventory", () => {
     expect(decision.blockers).toContainEqual({code: "gap_target_backref_missing:SG-DATA-LIFECYCLE", subjectRef: "SYS-WEB"});
   });
 
-  it("fails closed once the inventory review SLA has elapsed using the internal clock", () => {
+  it("still rejects an elapsed explicit review deadline using the internal clock", () => {
     const inventory = copyInventory();
     inventory.baseline.reviewDueAt = "2020-09-15T09:20:00.000-03:00";
     const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
     expect(decision.blockers).toContainEqual({code: "baseline_review_overdue", subjectRef: inventory.baseline.commit});
+  });
+
+  it.each([
+    ["closed wave", (inventory: SecurityCurrentStateInventory) => { inventory.baseline.waveStatus = "closed"; }, "baseline_wave_closed"],
+    ["unknown wave", (inventory: SecurityCurrentStateInventory) => { inventory.baseline.waveId = "wave-not-authorized"; }, "baseline_wave_unknown"],
+    ["material change pending review", (inventory: SecurityCurrentStateInventory) => { inventory.baseline.materialChangeState = "review_required"; }, "baseline_material_change_requires_review"],
+  ] as const)("blocks %s without relying on a calendar deadline", (_label, mutate, code) => {
+    const inventory = copyInventory();
+    mutate(inventory);
+    const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+    expect(decision.structurallyValid).toBe(false);
+    expect(decision.blockers).toContainEqual({code, subjectRef: inventory.baseline.waveId});
+  });
+
+  it("refuses fabricated renewal of both baseline and observation into a future wave", async () => {
+    const inventory = copyInventory();
+    inventory.baseline.waveId = "wave-2";
+    inventory.baseline.waveStatus = "open";
+    inventory.baseline.materialChangeState = "reviewed";
+    const observation = inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!;
+    observation.waveId = "wave-2";
+    const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
+    expect(decision.currentStateTruthVerified).toBe(false);
+    expect(decision.blockers).toEqual(expect.arrayContaining([
+      {code: "baseline_wave_unknown", subjectRef: "wave-2"},
+      {code: "canonical_inventory_snapshot_mismatch", subjectRef: inventory.inventoryVersion},
+      {code: "evidence_wave_mismatch", subjectRef: observation.evidenceId},
+      {code: "external_evidence_declaration_not_allowlisted", subjectRef: observation.evidenceId},
+    ]));
+  });
+
+  it("refuses borrowing a wave binding to remove a contract or snapshot expiry", () => {
+    for (const kind of ["contract_record", "external_snapshot"] as const) {
+      const inventory = copyInventory();
+      const observation = inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!;
+      observation.kind = kind;
+      const decision = evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue);
+      expect(decision.blockers).toEqual(expect.arrayContaining([
+        {code: "external_evidence_must_be_time_bound", subjectRef: observation.evidenceId},
+        {code: "wave_bound_evidence_requires_operator_observation", subjectRef: observation.evidenceId},
+      ]));
+    }
+  });
+
+  it("requires a real expiry for time-bound evidence and keeps expired evidence blocked", () => {
+    const inventory = copyInventory();
+    const observation = inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!;
+    observation.freshness = "time_bound";
+    observation.waveId = null;
+    observation.validThrough = null;
+    expect(evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue).blockers)
+      .toContainEqual({code: "time_bound_evidence_requires_expiry", subjectRef: observation.evidenceId});
+    observation.validThrough = "2020-01-01T00:00:00.000Z";
+    expect(evaluateSecurityCurrentStateInventory(inventory, masterTrustControlCatalogue).blockers)
+      .toContainEqual({code: "evidence_expired", subjectRef: observation.evidenceId});
   });
 
   it("fails closed on an invalid declared date and exposes no caller-controlled clock", () => {
@@ -533,6 +591,8 @@ describe("security current-state inventory", () => {
 
   it.each([
     ["collector", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.collector = {name: "invented", version: "9", principalClass: "self-declared"}; }],
+    ["waveId", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.waveId = "wave-2"; }],
+    ["freshness", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.freshness = "time_bound"; }],
     ["capturedAt", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.capturedAt = "2026-09-07T09:21:00.000-03:00"; }],
     ["validThrough", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.validThrough = "2026-09-13T09:20:00.000-03:00"; }],
     ["authorityRef", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.authorityRef = "AUTH-TRUSTED-GIT-BASELINE"; }],

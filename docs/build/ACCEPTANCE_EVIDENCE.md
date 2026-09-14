@@ -1,3 +1,11 @@
+## 14 September 2026: wave 1 security inventory renewal
+
+Founder authorization replaces the seven-day inventory review cadence with review at wave boundaries and whenever a material security change occurs. The reviewed scope is wave 1 (stages 0, 1A, 1B and 1C). Closed or mismatched waves and material changes awaiting review fail closed; time-bound contracts and attestations retain real expiry checks. Evidence is re-collected and repository sources re-examined against main, not renewed by changing a date. The fresh Codex read-only observation keeps effective IAM and unavailable worker boot diagnostics unverified. This review is not a security certification or remediation of the separately scheduled access defects.
+
+This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.
+
+Local verification on Node 24.19.0 and pnpm 10.32.1: `pnpm check` passed lint, types, all package tests and 43 build tasks. Release-governance passed 188 tests; web passed 679 and worker passed 559. Trusted inventory and program-board renderers passed with real clock and resolved bytes. Independent review found no new expiry, hash or authority bypass. Remote CI, merge and exact-commit web/worker deployment remain release gates.
+
 ## 13 September 2026: cinematic website candidate
 
 The founder approved browser QA and requested an OffDeal-inspired hero: glass navigation, white/champagne two-line heading, office/city motion, four benefits and an investor entry. The candidate starts from published 7c8d4f6 on feat/public-cinematic-hero. Agentic AI moves into a dark product section; board analysis is the initial example; repeated caveats are consolidated and security claims remain evidence-bound. Investor intake prepares an email, not a server-received registration. The chart title hydration defect was corrected without changing financial calculations.
