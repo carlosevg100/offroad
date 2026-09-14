@@ -106746,6 +106746,24 @@
       "decision": "preservar",
       "stage": "2, 23",
       "reason": "Boundary de sessão e locale; leitura de conteúdo continua sujeita à autorização do recurso."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260911115726_provider_mandate_confirmation_clock_timestamp.sql",
+      "decision": "preservar",
+      "stage": "0",
+      "reason": "Conciliação de confirmação mesclada em main; preservar bytes e carimbo do histórico aplicado.",
+      "source_commit": "d88683df88829cc50fe92f3b7694477630308499",
+      "source_sha256": "ff56ac7d076dfe04aa33504f34a8a10eed00713cf5fa689c5caa34d48bc94bac"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260914213242_provider_mandate_confirmation_sequence.sql",
+      "decision": "preservar",
+      "stage": "0",
+      "reason": "Conciliação de confirmação mesclada em main; preservar bytes e carimbo do histórico aplicado.",
+      "source_commit": "d88683df88829cc50fe92f3b7694477630308499",
+      "source_sha256": "e4c7a17a77d0fc7af72151451e1229af0c92e566383eacf7934144da898023be"
     }
   ],
   "staging_archive": [
@@ -106794,5 +106812,6 @@
       "sha256": "02fa1f4d9e6eb5b57d94d132e54c0ed6ba3de07e85aa49bdcd6a00339664ca88",
       "name": "resolve_pack_distribution_candidates"
     }
-  ]
+  ],
+  "confirmation_history_main_commit": "d88683df88829cc50fe92f3b7694477630308499"
 }

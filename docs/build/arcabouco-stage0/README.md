@@ -31,6 +31,6 @@ Dez testes Python passaram: catálogo aprovado coberto; sobrecarga nova; concess
 
 O replay CI, merge e deploy são gates distintos e ainda precisam de evidência na conclusão da etapa. O registro final das PRs abertas/encerradas será incorporado pela execução principal após conferir as ações remotas; esta preparação não afirma que foram fechadas.
 
-## Contradições documentais a encerrar na entrega
+## Contradições documentais tratadas nesta entrega
 
-AGENTS.md precisa deixar de afirmar extração exclusiva por fixture sem alegar suporte universal; comentários antigos de sete comandos e 27 migrações não são inventário. Manter separados R01 publicado, executores implementados, preview e métodos candidatos. Busca SQL real não depende de retrieveGoverned ser usado; testes de resolveMethodology não provam aplicação no worker. XLSX com fórmulas não equivale a Office nativo. Essas correções precisam constar na integração final da etapa, junto dos atos e marcos atualizados do fundador.
+AGENTS.md deixa de afirmar extração exclusiva por fixture sem alegar suporte universal. O comentário da fila deixa de fixar sete comandos; o comentário de CI identifica 27 migrações como baseline histórica. Manter separados R01 publicado, executores implementados, preview e métodos candidatos. Busca SQL real não depende de retrieveGoverned ser usado; testes de resolveMethodology não provam aplicação no worker. XLSX com fórmulas não equivale a Office nativo. ROADMAP.md e FOUNDER-ACTS.md registram os atos e marcos atualizados. A correção de comportamentos de acesso e perfil permanece nas etapas 1A/1B/1C.

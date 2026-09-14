@@ -1,5 +1,12 @@
 ## 14 September 2026: wave 1 security inventory renewal
 
+## Wave 1 stage 0 integration, 14 September 2026
+
+The governance and mandate reconciliation prerequisite is published in main at `d88683df`; its PR and main Quality/Security checks passed. Production web returned HTTP 200 and worker deployment verified task definition revision 322. The 20 previous PRs are closed; PR 613 is absorbed by 612. See `docs/build/arcabouco-stage0/PR-DISPOSITIONS.md` and its execution receipt.
+
+This candidate restores seven already-applied production migrations and archives nine staging-only files outside replay. All sixteen hashes and live journal records passed the recovery verifier; 22 functions and four tables agree within the documented comparison. Both recovered SQL suites passed rollback-only staging execution, followed by zero reserved fixtures. The object checker passed for production (1,284 objects) and staging (1,345); fifteen Python regression tests passed. `ROADMAP.md` records the approved sequence and founder acts. CI replay, candidate merge and production deployment remain required before stage 0 completion. No historical migration is reapplied and no security stage is declared complete.
+
+
 Founder authorization replaces the seven-day inventory review cadence with review at wave boundaries and whenever a material security change occurs. The reviewed scope is wave 1 (stages 0, 1A, 1B and 1C). Closed or mismatched waves and material changes awaiting review fail closed; time-bound contracts and attestations retain real expiry checks. Evidence is re-collected and repository sources re-examined against main, not renewed by changing a date. The fresh Codex read-only observation keeps effective IAM and unavailable worker boot diagnostics unverified. This review is not a security certification or remediation of the separately scheduled access defects.
 
 This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.

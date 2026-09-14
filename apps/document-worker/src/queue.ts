@@ -7,7 +7,7 @@ import type {DcmAgentAssessment} from "@offroad/agent-contracts";
 import {jobFailureRecordSchema} from "./job-failure";
 
 /**
- * The worker's only vocabulary against the database: the seven commands created in
+ * The worker's database vocabulary, extended through versioned contracts since
  * `20260818171246`. It never issues a plain insert or update, never holds a service-role key,
  * and never passes an `organization_id` — scope always comes from the job it claimed
  * (P1 plan §13.4, ADR 0008 decision 7).

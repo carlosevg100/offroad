@@ -1763,3 +1763,5 @@ A detecção usa specifiers exatos de import/export/require. `apps/web`, cujo no
 | `apps/web/src/app/[locale]/signup/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/signup/verify/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/proxy.ts` | entrypoint | preservar | 2, 23 | Boundary de sessão e locale; leitura de conteúdo continua sujeita à autorização do recurso. |
+| `supabase/migrations/20260911115726_provider_mandate_confirmation_clock_timestamp.sql` | migration | preservar | 0 | Conciliação de confirmação mesclada em main; preservar bytes e carimbo do histórico aplicado. |
+| `supabase/migrations/20260914213242_provider_mandate_confirmation_sequence.sql` | migration | preservar | 0 | Conciliação de confirmação mesclada em main; preservar bytes e carimbo do histórico aplicado. |

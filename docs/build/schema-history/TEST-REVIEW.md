@@ -1,7 +1,7 @@
 # Recovered SQL: independent pre-execution review
 
 Reviewed in full on 14 September 2026. This is a static and read-only catalog review,
-not a claim that either SQL suite passed execution.
+followed by complete rollback-only execution in staging. Both suites returned their success markers; an independent query found zero reserved fixture users, organizations and projects. See `../arcabouco-stage0/STAGING-RECOVERED-SQL-EVAL.json`.
 
 ## Staging execution boundary
 
@@ -67,7 +67,7 @@ recovery scope and do not certify the entire database.
 - Governance prerequisite and remote triage authorized by the wave owner.
 - Clean replay of main plus this candidate, with both recovered SQL suites and all
   existing database tests passing in CI; database lint and required security checks.
-- Authorized complete rollback-only staging runs, success markers, and fixture absence proof.
+- Staging rollback-only runs and fixture absence proof passed; CI replay remains a separate gate.
 - Required full repository quality, E2E, and Vercel checks on the actual submitted head.
 - Fresh read-only production/staging journal and catalog reconciliation after all concurrent work.
 - Main merge, production web and worker deployment proof, and the fixed-format Etapa 0 report.
