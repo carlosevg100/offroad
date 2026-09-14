@@ -1,10 +1,13 @@
+import {createHash} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {describe, expect, it} from "vitest";
 import {
   currentCapabilityLedger,
   currentEndgameProgramBoard,
+  currentSecurityInventory,
   evaluateEndgameProgramBoard,
+  evaluateSecurityCurrentStateInventoryTrusted,
   masterTrustControlCatalogue,
   renderEndgameProgramBoard,
   type EndgameProgramBoard,
@@ -27,6 +30,25 @@ describe("endgame program board", () => {
     expect(decision.taskCounts.blocked).toBe(0);
     expect(currentEndgameProgramBoard.tasks).toHaveLength(70);
     expect(currentEndgameProgramBoard.tasks.find(task => task.taskId === "JOB-01")?.state).toBe("in_progress");
+  });
+
+  it("keeps the immutable documentary snapshot separate from the current security gate", async () => {
+    const evidence = currentEndgameProgramBoard.evidenceIndex.find((item) => item.evidenceId === "EV-SEC01-INVENTORY")!;
+    const bytes = readFileSync(fileURLToPath(new URL(`../../../${evidence.ref}`, import.meta.url)));
+    expect(evidence.kind).toBe("document");
+    expect(evidence.validThrough).toBeNull();
+    expect(evidence.immutableFingerprint).toBe(createHash("sha256").update(bytes).digest("hex"));
+    const boardDecision = evaluateEndgameProgramBoard(currentEndgameProgramBoard, currentCapabilityLedger, masterTrustControlCatalogue);
+    expect(boardDecision.valid).toBe(true);
+    expect(boardDecision.readyForNextPromotion).toBe(false);
+
+    // This negative gate runs in the same CI package suite. A valid historical document cannot
+    // turn a closed current inventory into a trusted current-state receipt.
+    const closedInventory = structuredClone(currentSecurityInventory);
+    closedInventory.baseline.waveStatus = "closed";
+    const inventoryDecision = await evaluateSecurityCurrentStateInventoryTrusted(closedInventory, masterTrustControlCatalogue);
+    expect(inventoryDecision.currentStateTruthVerified).toBe(false);
+    expect(inventoryDecision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: closedInventory.baseline.waveId});
   });
 
   it("rejects a board evaluated against a different ledger version", () => {
@@ -209,7 +231,8 @@ describe("endgame program board", () => {
       capabilityTransition: {from: "unsupported", to: "implemented", status: "recorded"},
     });
     expect(byTask.get("VLT-02")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(3);
-    expect(byTask.get("SEC-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(2);
+    expect(byTask.get("SEC-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(1);
+    expect(byTask.get("SEC-01")?.blockers.find((blocker) => blocker.blockerId === "BL-SEC01-REFRESH")?.status).toBe("resolved");
     expect(byTask.get("MAT-01")?.blockers.filter((blocker) => blocker.status === "open")).toHaveLength(1);
     // These foundations grant no customer or external use. The one scope that carries customer work
     // is the released receivables analysis, promoted by the founder and unrelated to this board row.

@@ -58,7 +58,8 @@ export const securityInventoryEvidenceSchema = z.object({
   kind: z.enum(["repository_file", "automated_test", "configuration", "external_snapshot", "contract_record", "operator_observation", "design_reference"]),
   ref: z.string().min(1),
   capturedAt: dateTimeSchema,
-  freshness: z.enum(["immutable", "time_bound"]),
+  freshness: z.enum(["immutable", "time_bound", "wave_bound"]),
+  waveId: z.string().min(1).nullable(),
   validThrough: dateTimeSchema.nullable(),
   immutableFingerprint: z.string().regex(/^[a-f0-9]{7,64}$/).nullable(),
   contentFingerprint: z.string().regex(/^sha256:[a-f0-9]{64}$/),
@@ -235,6 +236,8 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-DATA-PROTECTION", domain: "data",
     criterion: "Tenant isolation, storage, lifecycle, recovery and content-safe logging are separately covered and never inferred from one another.",
     evidenceRequirements: [
+      {evidenceRef: "SEV-PROJECT-ACCESS-SQL", criterion: "The pinned project helper admits active organization members and requires the stage 1B project access boundary."},
+      {evidenceRef: "SEV-INTAKE-ACCESS-SQL", criterion: "The pinned intake helper admits organization membership; this static definition does not prove a live exploit."},
       {evidenceRef: "SEV-SUPABASE-CONFIG", criterion: "Local platform configuration identifies declared Auth, database and storage behavior."},
       {evidenceRef: "SEV-RLS-TEST", criterion: "The tenant non-interference suite is present at the pinned repository commit."},
       {evidenceRef: "SEV-WEB-UPLOAD", criterion: "The browser upload implementation identifies the private object-storage path."},
@@ -242,6 +245,7 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-WORKER-CONFIG", criterion: "Worker configuration identifies fail-closed parsing and declared provider switches."},
     ],
     requiredGaps: [
+      {gapRef: "SG-PROJECT-MEMBERSHIP-READ", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-DATA-LIFECYCLE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-BACKUP-RESTORE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-LOGGING-CONTENT-SAFETY", severity: "high", requiredStatus: "open"},
@@ -251,10 +255,13 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-IDENTITY-ACCESS", domain: "identity",
     criterion: "Human, workload and deployment identities are inventoried without inferring effective permissions from configuration or operator recollection.",
     evidenceRequirements: [
+      {evidenceRef: "SEV-ORG-AUTHORITY-SQL", criterion: "The pinned SQL retains creator-based authority; active membership and revocation must be proven by stage 1A."},
+      {evidenceRef: "SEV-DEPLOY-BOOT-PROOF", criterion: "The diagnostic helper treats missing AWS reads as unavailable evidence, not a successful diagnostic proof."},
       {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "OIDC and named deployment roles are visible in the pinned workflow."},
       {evidenceRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", criterion: "The unverified operator observation records only the need for effective-permission evidence."},
     ],
     requiredGaps: [
+      {gapRef: "SG-CREATOR-RESIDUAL-AUTHORITY", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-PRIVILEGED-ACCESS", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENDPOINTS", severity: "high", requiredStatus: "open"},
       {gapRef: "SG-DEPLOY-DIAGNOSTICS", severity: "high", requiredStatus: "open"},
@@ -276,6 +283,9 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-AI-PROVIDER-BOUNDARY", domain: "ai",
     criterion: "Model routing, provider data policy and the privileged Codex executor are distinct boundaries with explicit credential and prompt-injection risk.",
     evidenceRequirements: [
+      {evidenceRef: "SEV-DEBT-VIEW-PROMPT", criterion: "The debt-view prompt retains professional-context calibration pending stage 1C."},
+      {evidenceRef: "SEV-ORIGINATION-PROMPT", criterion: "The origination prompt retains professional-context calibration pending stage 1C."},
+      {evidenceRef: "SEV-CAPITAL-PLANNING-PROMPT", criterion: "The planning prompt retains professional-context calibration pending stage 1C."},
       {evidenceRef: "SEV-MODEL-DATA-POLICY", criterion: "The provider data-policy contract is present at the pinned commit."},
       {evidenceRef: "SEV-MODEL-DATA-POLICY-TEST", criterion: "Provider policy regressions are represented by pinned tests."},
       {evidenceRef: "SEV-MODEL-POLICY", criterion: "The model routing policy identifies allowlists, fallback and workload limits."},
@@ -283,6 +293,7 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-EVAL-CODEX", criterion: "The Codex workflow identifies its agentic workspace, credential and egress boundary."},
     ],
     requiredGaps: [
+      {gapRef: "SG-PROFILE-ANALYTICAL-DEPTH", severity: "high", requiredStatus: "open"},
       {gapRef: "SG-PROVIDER-ASSURANCE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-CODEX-CI-AGENT-BOUNDARY", severity: "critical", requiredStatus: "open"},
     ],
@@ -303,6 +314,10 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-SUPPLY-CHAIN-COVERAGE", domain: "supply_chain",
     criterion: "CI, evaluation, package, action, container, browser and browser-CDN acquisition paths are all represented and remain subject to asset discovery.",
     evidenceRequirements: [
+      {evidenceRef: "SEV-EVAL-DOCUMENT-WORK", criterion: "Documentary, synthesis and advisor-response evaluations use the existing bounded evaluation OIDC and provider paths."},
+      {evidenceRef: "SEV-EVAL-DOCUMENT-CONTINUATION", criterion: "A one-time continuation reads prior synthetic receipts and permits only the outstanding bounded model call."},
+      {evidenceRef: "SEV-CI-SCANNER", criterion: "The scanner workflow exercises clean and EICAR synthetic controls on disposable runners."},
+      {evidenceRef: "SEV-CI-SCANNER-START", criterion: "The scanner script installs Ubuntu packages, updates ClamAV definitions, and binds clamd to loopback under AppArmor."},
       {evidenceRef: "SEV-SECURITY-WORKFLOW", criterion: "Security CI identifies CodeQL, dependency, SBOM and image scanning."},
       {evidenceRef: "SEV-WEB-DEPENDENCIES", criterion: "Direct web dependencies are recorded at the pinned commit."},
       {evidenceRef: "SEV-LOCKFILE", criterion: "Resolved JavaScript package sources are pinned in the repository."},
@@ -336,7 +351,11 @@ export const securityCurrentStateInventorySchema = z.object({
     branch: z.literal("main"),
     commit: z.string().regex(/^[a-f0-9]{7,40}$/),
     evidenceCutoff: dateTimeSchema,
-    reviewDueAt: dateTimeSchema,
+    reviewDueAt: dateTimeSchema.nullable(),
+    waveId: z.string().min(1),
+    reviewCadence: z.literal("per_wave"),
+    waveStatus: z.enum(["open", "closed"]),
+    materialChangeState: z.enum(["reviewed", "review_required"]),
   }),
   scopeStatement: z.string().min(1),
   scopeRelationship: z.object({
@@ -582,7 +601,8 @@ function evaluateDeclaredInventory(
   const allEntityIds = new Map<string, string>();
 
   const nowMs = now.getTime();
-  const reviewDueAtMs = checkedDate(parsed.baseline.reviewDueAt, "baseline_review_due_at", parsed.baseline.commit, blockers);
+  const reviewDueAtMs = parsed.baseline.reviewDueAt === null ? null
+    : checkedDate(parsed.baseline.reviewDueAt, "baseline_review_due_at", parsed.baseline.commit, blockers);
   const evidenceCutoffMs = checkedDate(parsed.baseline.evidenceCutoff, "baseline_evidence_cutoff", parsed.baseline.commit, blockers);
   if (!Number.isFinite(nowMs)) blockers.push({code: "trusted_clock_invalid", subjectRef: null});
   if (reviewDueAtMs !== null && Number.isFinite(nowMs) && reviewDueAtMs < nowMs) {
@@ -624,8 +644,22 @@ function evaluateDeclaredInventory(
     if (evidence.freshness === "time_bound" && !evidence.validThrough) {
       blockers.push({code: "time_bound_evidence_requires_expiry", subjectRef: evidence.evidenceId});
     }
-    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && evidence.freshness !== "time_bound") {
+    if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record") && evidence.freshness !== "time_bound") {
       blockers.push({code: "external_evidence_must_be_time_bound", subjectRef: evidence.evidenceId});
+    }
+    if (evidence.kind === "operator_observation" && !["time_bound", "wave_bound"].includes(evidence.freshness)) {
+      blockers.push({code: "operator_observation_requires_bounded_freshness", subjectRef: evidence.evidenceId});
+    }
+    if (evidence.freshness === "wave_bound") {
+      if (evidence.kind !== "operator_observation") blockers.push({code: "wave_bound_evidence_requires_operator_observation", subjectRef: evidence.evidenceId});
+      if (evidence.waveId !== parsed.baseline.waveId || evidence.waveId !== canonicalSecurityInventorySnapshotContract.waveId) {
+        blockers.push({code: "evidence_wave_mismatch", subjectRef: evidence.evidenceId});
+      }
+      if (evidence.validThrough !== null || evidence.immutableFingerprint !== null) {
+        blockers.push({code: "wave_bound_evidence_invalid_validity_metadata", subjectRef: evidence.evidenceId});
+      }
+    } else if (evidence.waveId !== null) {
+      blockers.push({code: "non_wave_evidence_has_wave_binding", subjectRef: evidence.evidenceId});
     }
     if ((evidence.kind === "external_snapshot" || evidence.kind === "contract_record" || evidence.kind === "operator_observation") && !evidence.collector) {
       blockers.push({code: "external_evidence_requires_collector", subjectRef: evidence.evidenceId});
@@ -774,12 +808,14 @@ const trustedExternalEvidenceAuthorities = {
   "SEV-AWS-DEPLOY-ROLE-SNAPSHOT": {
     authorityRef: "AUTH-OPERATOR-OBSERVATION-ONLY",
     kind: "operator_observation",
-    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-07.json",
-    capturedAt: "2026-09-07T09:20:00.000-03:00",
-    validThrough: "2026-09-14T09:20:00.000-03:00",
-    contentFingerprint: "sha256:eee921b75a3b879cd6790163cb370efe7294fec808fee95bc0e0bd492babbf8b",
-    source: "unverified operator observation",
-    collector: {name: "operator-authored-observation", version: "1", principalClass: "authorized cloud administrator"},
+    freshness: "wave_bound",
+    waveId: "wave-1",
+    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-14.json",
+    capturedAt: "2026-09-14T21:41:19.418739Z",
+    validThrough: null,
+    contentFingerprint: "sha256:2ca8cf4f4f6e243d06ec0fabcb7cfc4505d331a4fc92e9e145f106e755d9e715",
+    source: "Codex read-only repository and GitHub API observation",
+    collector: {name: "codex-read-only-github-observation", version: "1", principalClass: "repository automation using the existing local GitHub session"},
     origin: {
       repository: canonicalRepository,
       environmentRef: "ENV-PRODUCTION",
@@ -1048,6 +1084,8 @@ function validateExternalEvidenceAuthority(
     kind: evidence.kind,
     ref: evidence.ref,
     capturedAt: evidence.capturedAt,
+    freshness: evidence.freshness,
+    waveId: evidence.waveId,
     validThrough: evidence.validThrough,
     collector: evidence.collector,
     contentFingerprint: evidence.contentFingerprint,
@@ -1057,6 +1095,8 @@ function validateExternalEvidenceAuthority(
     kind: authority.kind,
     ref: authority.ref,
     capturedAt: authority.capturedAt,
+    freshness: authority.freshness,
+    waveId: authority.waveId,
     validThrough: authority.validThrough,
     collector: authority.collector,
     contentFingerprint: authority.contentFingerprint,
@@ -1067,6 +1107,8 @@ function validateExternalEvidenceAuthority(
   const payloadMetadata = {
     evidenceId: record.evidenceId,
     capturedAt: record.capturedAt,
+    freshness: record.freshness,
+    waveId: record.waveId,
     validThrough: record.validThrough,
     source: record.source,
     collector: record.collector,
@@ -1075,6 +1117,8 @@ function validateExternalEvidenceAuthority(
   const expectedPayloadMetadata = {
     evidenceId: evidence.evidenceId,
     capturedAt: authority.capturedAt,
+    freshness: authority.freshness,
+    waveId: authority.waveId,
     validThrough: authority.validThrough,
     source: authority.source,
     collector: authority.collector,
@@ -1110,6 +1154,7 @@ function validateCanonicalEvidenceManifest(
       ref: actual.ref,
       capturedAt: actual.capturedAt,
       freshness: actual.freshness,
+      waveId: actual.waveId,
       validThrough: actual.validThrough,
       immutableFingerprint: actual.immutableFingerprint,
       contentFingerprint: actual.contentFingerprint,
@@ -1149,9 +1194,23 @@ function validateCanonicalInventorySnapshot(
     blockers.push({code: "canonical_review_due_at_mismatch", subjectRef: inventory.baseline.commit});
   }
 
+  if (inventory.baseline.waveId !== contract.waveId) {
+    blockers.push({code: "baseline_wave_unknown", subjectRef: inventory.baseline.waveId});
+  }
+  if (inventory.baseline.reviewCadence !== contract.reviewCadence) {
+    blockers.push({code: "baseline_review_cadence_mismatch", subjectRef: inventory.inventoryVersion});
+  }
+  if (inventory.baseline.waveStatus !== "open" || contract.waveStatus !== "open") {
+    blockers.push({code: "baseline_wave_closed", subjectRef: inventory.baseline.waveId});
+  }
+  if (inventory.baseline.materialChangeState !== "reviewed" || contract.materialChangeState !== "reviewed") {
+    blockers.push({code: "baseline_material_change_requires_review", subjectRef: inventory.baseline.waveId});
+  }
+
   const generatedAt = checkedDate(inventory.generatedAt, "generated_at", inventory.inventoryVersion, blockers);
   const evidenceCutoff = checkedDate(inventory.baseline.evidenceCutoff, "baseline_evidence_cutoff", inventory.baseline.commit, blockers);
-  const reviewDueAt = checkedDate(inventory.baseline.reviewDueAt, "baseline_review_due_at", inventory.baseline.commit, blockers);
+  const reviewDueAt = inventory.baseline.reviewDueAt === null ? null
+    : checkedDate(inventory.baseline.reviewDueAt, "baseline_review_due_at", inventory.baseline.commit, blockers);
   const trustedNow = now.getTime();
   if (generatedAt !== null && Number.isFinite(trustedNow) && generatedAt > trustedNow) {
     blockers.push({code: "snapshot_generated_in_future", subjectRef: inventory.inventoryVersion});
@@ -1163,8 +1222,8 @@ function validateCanonicalInventorySnapshot(
     blockers.push({code: "evidence_cutoff_after_generation", subjectRef: inventory.inventoryVersion});
   }
   if (generatedAt !== null && reviewDueAt !== null
-    && (reviewDueAt <= generatedAt || reviewDueAt - generatedAt > contract.maximumReviewWindowMs)) {
-    blockers.push({code: "baseline_review_window_exceeds_policy", subjectRef: inventory.inventoryVersion});
+    && reviewDueAt <= generatedAt) {
+    blockers.push({code: "baseline_review_deadline_invalid", subjectRef: inventory.inventoryVersion});
   }
   const latestEvidenceCapture = Math.max(...inventory.evidenceIndex.map((evidence) => new Date(evidence.capturedAt).getTime()));
   if (evidenceCutoff !== null && Number.isFinite(latestEvidenceCapture) && evidenceCutoff !== latestEvidenceCapture) {

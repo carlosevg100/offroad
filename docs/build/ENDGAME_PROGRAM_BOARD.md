@@ -6,7 +6,7 @@ Atualizado em: 2026-09-09T07:20:19.652-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 Capability Ledger: `2026.09.09-v18-candidate`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `21f3fbcbd7269f03c251b19f3ee9325abfb3a3cf3cb4aed77e34808334d2960b`
+Fingerprint do board: `1808f9593f74ee6bccfe64065994da5a26ac8eea3889b9c665b64de4028de055`
 
 ## Leitura executiva
 
@@ -18,7 +18,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 |---|---|---|---|---|
 | PF-NO-CUSTOMER-RELIANCE | high | open | Capability governance owner | Nenhuma capability do ledger atual autoriza customer_work, external_material ou external_action; o produto permanece em validação interna. |
 | PF-ENDGAME-INCOMPLETE | high | open | Program integrator | Dispatcher universal, data room arbitrário, modelo institucional, template suite, journeys G2-G8, rede real de capital e assurance externo não estão promovidos. |
-| PF-SECURITY-SNAPSHOT-STALE | medium | open | Security program owner | O inventário SEC-01 é uma base válida, porém está fixado em b2e3897 e não representa mudanças posteriores da main; precisa de refresh governado antes de servir como current state do baseline b6da287. |
+| PF-SECURITY-SNAPSHOT-STALE | medium | resolved | Security program owner | A revisão governada wave-1 atualizou o snapshot documental SEC-01 para a main inspecionada, com 41 evidências e 21 lacunas explícitas. Resolve a desatualização documental deste finding; não fecha lacunas, não atesta o estado operacional completo e não promove capabilities. |
 | PF-FOUNDATIONS-NOT-PROMOTION | high | open | Capability governance owner | SEC-01, VLT-02 e a fundação Office possuem código e testes delimitados, mas não fornecem evidência operacional ou autorização para uso de cliente, material externo ou claim de assurance. |
 
 ## Sequência de releases
@@ -30,7 +30,7 @@ Este quadro mede gates comprovados, não volume de código. `Gate passed` exige 
 | CTRL-01 | Em implementação | Baseline único de código, PRs, deploy, banco, ledger e documentos, sem claims conflitantes. | sem vínculo | sem dependência | sem blocker |
 | CTRL-02 | Code complete | Fonte machine-readable com tarefas, dependências, owners, aceite, evidência, bloqueadores e transições de maturidade. | sem vínculo | sem dependência | sem blocker |
 | CTRL-03 | Backlog | Cada claim de capacidade resolve a evidência vigente, ambiente, gate e validade. | sem vínculo | CTRL-01, CTRL-02 | sem blocker |
-| SEC-01 | Code complete | Um snapshot validado e conservador representa ambientes, sistemas, dados, fluxos, identities, vendors, evidências, gaps e claims externos sem inferir operação live. | trust.security-current-state-inventory | CTRL-01 | BL-SEC01-LIVE-EVIDENCE, BL-SEC01-REFRESH |
+| SEC-01 | Code complete | Um snapshot validado e conservador representa ambientes, sistemas, dados, fluxos, identities, vendors, evidências, gaps e claims externos sem inferir operação live. | trust.security-current-state-inventory | CTRL-01 | BL-SEC01-LIVE-EVIDENCE |
 | SEC-02 | Backlog | Tenancy, documentos, IA, tools, exports, effects, supply chain e insider access têm ameaças e controles. | sem vínculo | SEC-01 | sem blocker |
 | SEC-03 | Backlog | PR, testes, deploy, acessos, providers, exports, vulnerabilities, backup e incidentes geram evidência contínua. | sem vínculo | CTRL-03, SEC-01 | sem blocker |
 
