@@ -1,5 +1,10 @@
 ## 14 September 2026: wave 1 procedure authoring foundation
 
+## Stage 0 replay bootstrap diagnosis, 14 September 2026
+
+PR 614 is merged as `8ae3772c3b268f29c019b744f18fcfe3b575c06a`; its Quality, Security and preview gates passed. The recovery CI correctly rejected 355 grant differences between the local replay and hosted catalogue. All concern `service_role`; the pinned CLI changed default grants at bootstrap. `supabase/config.toml` now explicitly reproduces the hosted bootstrap before historical migrations. No comparison exception, post-replay grant patch or remote DDL was introduced. Full corrected CI remains required. Details and immutable CI source: `docs/build/arcabouco-stage0/README.md` and `REPLAY-BOOTSTRAP-DIAGNOSIS.json`.
+
+
 The prerequisite correction and inventory renewal are published in main at `d88683df88829cc50fe92f3b7694477630308499` (PR612); the wave coordinator verified web and worker publication, including worker task revision 322. This checkpoint preserves that published baseline and delivers only authorship preparation. The historical prerequisite note below predates that publication.
 
 Stage 0 now includes `packages/credit-playbook/knowledge/AUTHORING.md` and the editorial candidate `knowledge/procedures/capital/prepare-capital-structure-decision.md`. The first work is capital structure alternatives for a decision; proposal comparison follows later. The guide explains the current Markdown parser, separates professional specification from executable components, and records the scope approved for parallel authorship.

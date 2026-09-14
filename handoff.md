@@ -1,5 +1,10 @@
 ## 14 September 2026: applied schema recovery candidate
 
+## Stage 0 replay bootstrap diagnosis, 14 September 2026
+
+PR 614 is merged as `8ae3772c3b268f29c019b744f18fcfe3b575c06a`; its Quality, Security and preview gates passed. The recovery CI correctly rejected 355 grant differences between the local replay and hosted catalogue. All concern `service_role`; the pinned CLI changed default grants at bootstrap. `supabase/config.toml` now explicitly reproduces the hosted bootstrap before historical migrations. No comparison exception, post-replay grant patch or remote DDL was introduced. Full corrected CI remains required. Details and immutable CI source: `docs/build/arcabouco-stage0/README.md` and `REPLAY-BOOTSTRAP-DIAGNOSIS.json`.
+
+
 ## Wave 1 stage 0 integration, 14 September 2026
 
 The governance and mandate reconciliation prerequisite is published in main at `d88683df`; its PR and main Quality/Security checks passed. Production web returned HTTP 200 and worker deployment verified task definition revision 322. The 20 previous PRs are closed; PR 613 is absorbed by 612. See `docs/build/arcabouco-stage0/PR-DISPOSITIONS.md` and its execution receipt.

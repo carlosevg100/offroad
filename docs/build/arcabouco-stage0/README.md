@@ -34,3 +34,13 @@ O replay CI, merge e deploy são gates distintos e ainda precisam de evidência 
 ## Contradições documentais tratadas nesta entrega
 
 AGENTS.md deixa de afirmar extração exclusiva por fixture sem alegar suporte universal. O comentário da fila deixa de fixar sete comandos; o comentário de CI identifica 27 migrações como baseline histórica. Manter separados R01 publicado, executores implementados, preview e métodos candidatos. Busca SQL real não depende de retrieveGoverned ser usado; testes de resolveMethodology não provam aplicação no worker. XLSX com fórmulas não equivale a Office nativo. ROADMAP.md e FOUNDER-ACTS.md registram os atos e marcos atualizados. A correção de comportamentos de acesso e perfil permanece nas etapas 1A/1B/1C.
+
+## Bootstrap do CLI reconciliado com os projetos existentes
+
+O replay inicial da PR 615 encontrou 355 diferenças, todas em grants de `service_role`: EXECUTE em 249 funções e DML em 106 tabelas. Nenhuma diferença ocorreu em `anon`, `authenticated`, proprietário, RLS, definer, search_path, políticas ou triggers. Produção e staging coincidem entre si.
+
+A causa está em `ApplyApiPrivileges` do CLI fixado em 2.114.0: sem `api.auto_expose_new_tables`, o CLI retira grants padrão de novas tabelas, sequências e funções para as três roles Data API. Os ambientes hospedados conservam o bootstrap anterior. As migrações de hardening já removem o acesso de `anon` e limitam `authenticated`; `service_role` permanece com os grants registrados no catálogo remoto. Não é uma migração remota ausente.
+
+`supabase/config.toml` fixa `auto_expose_new_tables = true` para reproduzir esse bootstrap local antes de aplicar todo o histórico. Nenhum grant é acrescentado depois do replay para acomodar o teste. O checker continua comparando todas as roles, sem exceção ou remoção de campo. Os contratos negativos SQL continuam obrigatórios, incluindo ausência de acesso de `anon`. O ajuste não altera configuração ou SQL de produção/staging e não entrega uma chave service_role ao app ou worker.
+
+O flag é transitório no fornecedor e será retirado em versão futura; o CLI permanece fixado. Antes de atualizar o CLI, a engenharia deve revisar o bootstrap explícito e provar novamente o catálogo completo. Fonte: [implementação fixada do Supabase CLI](https://github.com/supabase/cli/blob/v2.114.0/apps/cli-go/internal/db/start/start.go#L400). O recibo `REPLAY-BOOTSTRAP-DIAGNOSIS.json` registra o diagnóstico e os grants padrão conferidos nos dois ambientes. O replay corrigido ainda exige CI verde.
