@@ -18,6 +18,16 @@ have not yet run in this candidate. The proposal test's row count now scopes its
 No remote mutation, migration replay, merge, deploy, or stage completion is claimed. Required
 remaining gates are recorded in `docs/build/schema-history/TEST-REVIEW.md`.
 
+## 14 September 2026: wave 1 procedure authoring foundation
+
+The prerequisite correction and inventory renewal are published in main at `d88683df88829cc50fe92f3b7694477630308499` (PR612); the wave coordinator verified web and worker publication, including worker task revision 322. This checkpoint preserves that published baseline and delivers only authorship preparation. The historical prerequisite note below predates that publication.
+
+Stage 0 now includes `packages/credit-playbook/knowledge/AUTHORING.md` and the editorial candidate `knowledge/procedures/capital/prepare-capital-structure-decision.md`. The first work is capital structure alternatives for a decision; proposal comparison follows later. The guide explains the current Markdown parser, separates professional specification from executable components, and records the scope approved for parallel authorship.
+
+The candidate has no TaskSpec binding, executor, approval, capability or deployment release. `capital-structure-authoring.test.ts` checks compilation, staging exclusion, absence from runtime/approval manifests and rejection of maturity-only promotion. This source delivery does not implement Stage 13 or claim a published capital-structure procedure. The founder's remaining acts are approval of the first procedure content and approval of each wave; customer access administration belongs to the customer, and zero retention is a future commercial item.
+
+Local verification on the published d88683df baseline, using Node 24.19.0 and pnpm 10.32.1 with a frozen lockfile: `pnpm check` passed lint, typecheck, tests and build, with 43 successful tasks in each phase. The test summaries report 3,287 passing tests; credit-playbook passed 42 files / 338 tests, including both authoring-boundary regressions, release-governance passed 188, web passed 679 and worker passed 559. The local run is recorded in `/tmp/offroad-wave1-authoring-check.log`. Final remote CI, merge and exact-commit web/worker deployment remain required and are not claimed for this authorship delivery. No schema or application runtime changes are included here; no migration or production data operation is needed for these files. Stage 0 completion remains dependent on the reconciled migration inventory and open-work dispositions owned by the wave coordinator.
+
 ## 14 September 2026: wave 1 security inventory renewal
 
 Founder authorization replaces the seven-day inventory review cadence with review at wave boundaries and whenever a material security change occurs. The reviewed scope is wave 1 (stages 0, 1A, 1B and 1C). Closed or mismatched waves and material changes awaiting review fail closed; time-bound contracts and attestations retain real expiry checks. Evidence is re-collected and repository sources re-examined against main, not renewed by changing a date. The fresh Codex read-only observation keeps effective IAM and unavailable worker boot diagnostics unverified. This review is not a security certification or remediation of the separately scheduled access defects.
@@ -25,6 +35,7 @@ Founder authorization replaces the seven-day inventory review cadence with revie
 This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.
 
 Local verification on Node 24.19.0 and pnpm 10.32.1: `pnpm check` passed lint, types, all package tests and 43 build tasks. Release-governance passed 188 tests; web passed 679 and worker passed 559. Trusted inventory and program-board renderers passed with real clock and resolved bytes. Independent review found no new expiry, hash or authority bypass. Remote CI, merge and exact-commit web/worker deployment remain release gates.
+
 
 ## 13 September 2026: cinematic website candidate
 
