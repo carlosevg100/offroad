@@ -1,6 +1,8 @@
 # Etapa 1A: autoridade ativa e revogável
 
-Status: candidata; aplicada somente em staging como `20260915120825_active_organization_authority` e `20260915121913_organization_profile_authority`. Produção permanece inalterada até a verificação dos contratos SQL e da concorrência na CI. O gate de paridade de produção permanece obrigatório e bloqueia o merge enquanto o journal e o inventário não estiverem conciliados.
+Implementação aplicada em produção como `20260915123202_active_organization_authority` e `20260915123205_organization_profile_authority`; staging registra `20260915120825` e `20260915121913`. A primeira CI confirmou replay, todos os contratos SQL e concorrência antes da promoção. Os 308 arquivos agora correspondem ao journal de produção; o inventário passou para 1.291 objetos de produção e 1.352 de staging. O completion da onda registra os gates finais, o merge e os deploys efetivos.
+
+`etapa-1a-production-proof.json` registra 14 definições de funções idênticas nos dois ambientes, zero lints de segurança e a mesma impressão das duas memberships de produção antes/depois. `creator-authority-production-read-only.sql` verificou autoridade legítima e negativas de identidade/entrada usando registros reais em transação somente de leitura. Não criou organização nem transferiu propriedade. Os tipos foram regenerados de produção: além dos dois RPCs novos, recuperam três assinaturas de revisão institucional que já estavam instaladas, sem introduzir novos consumidores.
 
 ## Contrato
 
@@ -18,7 +20,7 @@ O probe `creator-authority-before-after.sql` usa somente fixtures sintéticas e 
 
 `supabase/tests/creator_authority_revocation.sql` passou em staging: suspensão, revogação, rebaixamento, remoção, negativa de reinserção/autopromoção, administração legítima, transferência auditada, bloqueio de segunda transferência pelo antigo owner, cadastro atômico/idempotente e bloqueio de bootstrap anônimo/direto. `rls_non_interference.sql` também recebe regressão de revogação com JWT inalterado.
 
-O conector de staging serializou a tentativa de concorrência: uma transferência passou e a seguinte foi negada, sem provar espera por lock. A prova concorrente é feita na CI por `scripts/ci/test-owner-transfer-concurrency.py`, com duas conexões, barreira explícita e observação de `pg_stat_activity.wait_event_type='Lock'`. Ela só aceita um vencedor e um owner ativo. O runner recusa banco remoto.
+O conector de staging serializou a tentativa de concorrência: uma transferência passou e a seguinte foi negada, sem provar espera por lock. A prova concorrente passou na CI por `scripts/ci/test-owner-transfer-concurrency.py`, com duas conexões, barreira explícita e observação de `pg_stat_activity.wait_event_type='Lock'`: um vencedor, uma negativa e um owner ativo. O runner recusa banco remoto.
 
 Fixtures do teste concorrente foram removidas de staging; zero usuários e organizações reservados permaneceram. A limpeza usa uma sessão de teste com triggers suspensos para IDs reservados porque o trigger histórico de DELETE da organização tenta auditar uma organização já removida. Isso não altera o schema, RLS ou execução da aplicação; não é usado em produção.
 
@@ -30,4 +32,4 @@ A inspeção somente de contagens confirmou duas organizações de produção e 
 
 A publicação exige CI, journal/catálogo conciliados, tipos gerados, advisors, web e worker no commit entregue. O rollback de aplicação mantém os comandos compatíveis e a fronteira nova. Nunca restaurar o ramo de autoridade por criador ou o INSERT de bootstrap antigo para corrigir falha operacional.
 
-O completion externo da onda registra commits, runs, carimbos e resultados efetivos. Este documento não declara uma publicação ainda pendente.
+O completion externo da onda registra commits, runs, carimbos e resultados efetivos de publicação; este documento mantém o contrato técnico e as evidências de banco.

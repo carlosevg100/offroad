@@ -1,6 +1,6 @@
 ## Stage 1A: active organization authority
 
-The creator-authority exploit is reproduced and denied after migration in staging. Atomic bootstrap preserves the existing signup RPC; ownership transfer revalidates the active owner after acquiring its organization lock. Revocation SQL and signup contract regressions are added, with a real two-connection concurrency test in Database CI. Production, journal parity, types, CI and deployment remain required before completion. See `docs/build/arcabouco/etapa-1a.md`; no permanent creator authority is restored by rollback.
+The creator-authority exploit and two privileged profile-write bypasses were reproduced and denied after correction in staging. Production migrations `20260915123202` and `20260915123205` are applied; fourteen function definitions match staging, security advisors have zero lints, and real memberships are unchanged. Atomic bootstrap preserves signup, and a two-connection CI test proved serialized ownership transfer with one winner. The 308 production file versions, reviewed object inventory and generated types are reconciled. See `docs/build/arcabouco/etapa-1a.md` and its production proof; the wave completion records final CI, merge and deployments. Rollback preserves the new authority boundary.
 
 ## Stage 0 production journal parity correction
 

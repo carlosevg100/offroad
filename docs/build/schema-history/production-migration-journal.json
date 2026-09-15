@@ -1,6 +1,6 @@
 {
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-15T00:29:05.942Z",
+  "captured_at": "2026-09-15T12:32:56.419Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1531,6 +1531,16 @@
       "version": "20260914213242",
       "name": "provider_mandate_confirmation_sequence",
       "sql_md5": "7acd7b23052399964a8ee935fe82f9d4"
+    },
+    {
+      "version": "20260915123202",
+      "name": "active_organization_authority",
+      "sql_md5": "3481ac4a2d3f00180dabd021b486d76d"
+    },
+    {
+      "version": "20260915123205",
+      "name": "organization_profile_authority",
+      "sql_md5": "6833010f1a907596ca6cbd3ca677cf74"
     }
   ]
 }

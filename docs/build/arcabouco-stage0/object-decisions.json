@@ -2317,6 +2317,138 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
+          "kind": "function",
+          "name": "can_administer_membership_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_user_id uuid, p_role text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
+          "kind": "function",
+          "name": "can_administer_membership_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_user_id uuid, p_role text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 24,
+          "anchor": "create function private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
+    },
+    {
+      "id": "function:private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)",
+          "kind": "function",
+          "name": "can_assign_organization_role_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_role text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)",
+          "kind": "function",
+          "name": "can_assign_organization_role_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_role text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 13,
+          "anchor": "create function private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
+    },
+    {
       "id": "function:private.can_manage_fund(p_fund_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -2435,8 +2567,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
+      "reason": "1A: autoridade corrigida e verificada; autoridade exige vínculo ativo; bootstrap explícito e atômico",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 4,
+          "anchor": "create or replace function private.can_manage_organization(p_organization_id uuid)",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 597,
@@ -2444,7 +2582,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:private.can_read_completed_capital_project_material(p_organization_id uuid, p_capital_project_id uuid, p_object_path text)",
@@ -3084,6 +3223,62 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.capture_organization_authority_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_organization_authority_event_v1()",
+          "kind": "function",
+          "name": "capture_organization_authority_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_organization_authority_event_v1()",
+          "kind": "function",
+          "name": "capture_organization_authority_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 72,
+          "anchor": "create function private.capture_organization_authority_event_v1()",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
+    },
+    {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
       "kind": "function",
       "catalogues": {
@@ -3601,6 +3796,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+          "kind": "function",
+          "name": "create_organization_with_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+          "kind": "function",
+          "name": "create_organization_with_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 95,
+          "anchor": "create function private.create_organization_with_owner_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:private.create_release_cohort(p_cohort_kind text, p_pipeline_version text, p_model_policy_version text)",
@@ -16088,8 +16349,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "5, 7, 14",
-      "reason": "separar entidade/dossiê e regra de mandato com escopo e direito de uso",
+      "reason": "1A: autoridade corrigida e verificada; separar entidade/dossiê e regra de mandato com escopo e direito de uso",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123205_organization_profile_authority.sql",
+          "line": 10,
+          "anchor": "foreach target in array array['private.save_guided_company_profile','private.save_project_company_profile'] loop",
+          "mechanism": "dynamic_definition_transform"
+        },
         {
           "path": "supabase/migrations/20260826232107_start_onboarding_intake_atomic.sql",
           "line": 254,
@@ -16103,7 +16370,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:private.save_organization_methodology(p_organization_id uuid, p_content jsonb, p_source_kind text)",
@@ -16295,8 +16563,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "5, 7, 14",
-      "reason": "separar entidade/dossiê e regra de mandato com escopo e direito de uso",
+      "reason": "1A: autoridade corrigida e verificada; separar entidade/dossiê e regra de mandato com escopo e direito de uso",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123205_organization_profile_authority.sql",
+          "line": 10,
+          "anchor": "foreach target in array array['private.save_guided_company_profile','private.save_project_company_profile'] loop",
+          "mechanism": "dynamic_definition_transform"
+        },
         {
           "path": "supabase/migrations/20260830165116_session_company_gate.sql",
           "line": 45,
@@ -16310,7 +16584,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
@@ -19236,6 +19511,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+          "kind": "function",
+          "name": "transfer_organization_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+          "kind": "function",
+          "name": "transfer_organization_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 132,
+          "anchor": "create function private.transfer_organization_owner_v1(p_organization_id uuid,p_new_owner_user_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
@@ -30270,8 +30611,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "reason": "1A: autoridade corrigida e verificada; adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 250,
+          "anchor": "create or replace function public.complete_onboarding(",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815015458_application_commands.sql",
           "line": 3,
@@ -30279,7 +30626,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:public.confirm_document_intake(p_organization_id uuid, p_session_id uuid, p_output_locale text)",
@@ -30691,6 +31039,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+          "kind": "function",
+          "name": "create_organization_with_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+          "kind": "function",
+          "name": "create_organization_with_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 124,
+          "anchor": "create function public.create_organization_with_owner_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:public.create_workspace_project_group(p_name text)",
@@ -31716,8 +32130,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1C, 2",
-      "reason": "compatibilidade sem fornecer cargo ao raciocínio ou à profundidade",
+      "reason": "1A: autoridade corrigida e verificada; compatibilidade sem fornecer cargo ao raciocínio ou à profundidade",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 172,
+          "anchor": "create or replace function public.initialize_professional_onboarding(",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260816151535_professional_onboarding.sql",
           "line": 113,
@@ -31725,7 +32145,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:public.list_provider_mandates_v1(p_organization_id uuid)",
@@ -40065,6 +40486,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+          "kind": "function",
+          "name": "transfer_organization_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+          "kind": "function",
+          "name": "transfer_organization_owner_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 166,
+          "anchor": "create function public.transfer_organization_owner_v1(p_organization_id uuid,p_new_owner_user_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
     },
     {
       "id": "function:public.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
@@ -56178,7 +56665,7 @@
           "id": "policy:public.organization_invites.organization_invites_manage",
           "kind": "policy",
           "name": "organization_invites_manage",
-          "qual": "( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization)",
+          "qual": "( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56186,13 +56673,13 @@
           "schema": "public",
           "command": "ALL",
           "permissive": "PERMISSIVE",
-          "with_check": "(( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization) AND (invited_by = ( SELECT auth.uid() AS uid)))"
+          "with_check": "(( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1) AND (invited_by = ( SELECT auth.uid() AS uid)))"
         },
         "staging": {
           "id": "policy:public.organization_invites.organization_invites_manage",
           "kind": "policy",
           "name": "organization_invites_manage",
-          "qual": "( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization)",
+          "qual": "( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56200,14 +56687,20 @@
           "schema": "public",
           "command": "ALL",
           "permissive": "PERMISSIVE",
-          "with_check": "(( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization) AND (invited_by = ( SELECT auth.uid() AS uid)))"
+          "with_check": "(( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1) AND (invited_by = ( SELECT auth.uid() AS uid)))"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "separar cadastro/control plane de leitura de conteúdo",
+      "reason": "1A: autoridade corrigida e verificada; separar cadastro/control plane de leitura de conteúdo",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 60,
+          "anchor": "create policy organization_invites_manage on public.organization_invites for all to authenticated",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 895,
@@ -56215,7 +56708,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organization_legal_acceptances.organization_legal_acceptances_select",
@@ -56272,7 +56766,7 @@
           "id": "policy:public.organization_memberships.memberships_delete_admin",
           "kind": "policy",
           "name": "memberships_delete_admin",
-          "qual": "(( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND (user_id <> ( SELECT auth.uid() AS uid)))",
+          "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56286,7 +56780,7 @@
           "id": "policy:public.organization_memberships.memberships_delete_admin",
           "kind": "policy",
           "name": "memberships_delete_admin",
-          "qual": "(( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND (user_id <> ( SELECT auth.uid() AS uid)))",
+          "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56300,8 +56794,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "substituir",
       "stage": "1A",
-      "reason": "eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
+      "reason": "1A: autoridade corrigida e verificada; eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 53,
+          "anchor": "create policy memberships_delete_admin on public.organization_memberships",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 892,
@@ -56309,7 +56809,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organization_memberships.memberships_insert_authorized",
@@ -56327,7 +56828,7 @@
           "schema": "public",
           "command": "INSERT",
           "permissive": "PERMISSIVE",
-          "with_check": "((( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND ((role <> 'owner'::text) OR (user_id = ( SELECT auth.uid() AS uid)) OR ( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization))) OR ((user_id = ( SELECT auth.uid() AS uid)) AND (role = 'owner'::text) AND (status = 'active'::text) AND (EXISTS ( SELECT 1\n   FROM organizations organization\n  WHERE ((organization.id = organization_memberships.organization_id) AND (organization.created_by = ( SELECT auth.uid() AS uid)))))))"
+          "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
         },
         "staging": {
           "id": "policy:public.organization_memberships.memberships_insert_authorized",
@@ -56341,14 +56842,20 @@
           "schema": "public",
           "command": "INSERT",
           "permissive": "PERMISSIVE",
-          "with_check": "((( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND ((role <> 'owner'::text) OR (user_id = ( SELECT auth.uid() AS uid)) OR ( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization))) OR ((user_id = ( SELECT auth.uid() AS uid)) AND (role = 'owner'::text) AND (status = 'active'::text) AND (EXISTS ( SELECT 1\n   FROM organizations organization\n  WHERE ((organization.id = organization_memberships.organization_id) AND (organization.created_by = ( SELECT auth.uid() AS uid)))))))"
+          "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "substituir",
       "stage": "1A",
-      "reason": "eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
+      "reason": "1A: autoridade corrigida e verificada; eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 46,
+          "anchor": "create policy memberships_insert_authorized on public.organization_memberships",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260817151303_consolidate_membership_insert_policy.sql",
           "line": 7,
@@ -56356,7 +56863,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organization_memberships.memberships_select_org",
@@ -56413,7 +56921,7 @@
           "id": "policy:public.organization_memberships.memberships_update_admin",
           "kind": "policy",
           "name": "memberships_update_admin",
-          "qual": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)",
+          "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56421,13 +56929,13 @@
           "schema": "public",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)"
+          "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
         },
         "staging": {
           "id": "policy:public.organization_memberships.memberships_update_admin",
           "kind": "policy",
           "name": "memberships_update_admin",
-          "qual": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)",
+          "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
           "roles": [
             "authenticated"
           ],
@@ -56435,14 +56943,20 @@
           "schema": "public",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)"
+          "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "substituir",
       "stage": "1A",
-      "reason": "eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
+      "reason": "1A: autoridade corrigida e verificada; eliminar bootstrap recriável por created_by e privilégio residual; comandos explícitos",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 49,
+          "anchor": "create policy memberships_update_admin on public.organization_memberships",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 889,
@@ -56450,7 +56964,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organization_methodologies.organization_methodologies_select",
@@ -56737,41 +57252,18 @@
     {
       "id": "policy:public.organizations.organizations_insert_creator",
       "kind": "policy",
-      "catalogues": {
-        "production": {
-          "id": "policy:public.organizations.organizations_insert_creator",
-          "kind": "policy",
-          "name": "organizations_insert_creator",
-          "qual": null,
-          "roles": [
-            "authenticated"
-          ],
-          "table": "organizations",
-          "schema": "public",
-          "command": "INSERT",
-          "permissive": "PERMISSIVE",
-          "with_check": "((created_by = ( SELECT auth.uid() AS uid)) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
-        },
-        "staging": {
-          "id": "policy:public.organizations.organizations_insert_creator",
-          "kind": "policy",
-          "name": "organizations_insert_creator",
-          "qual": null,
-          "roles": [
-            "authenticated"
-          ],
-          "table": "organizations",
-          "schema": "public",
-          "command": "INSERT",
-          "permissive": "PERMISSIVE",
-          "with_check": "((created_by = ( SELECT auth.uid() AS uid)) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1A, 2",
-      "reason": "separar cadastro/control plane de leitura de conteúdo",
+      "decision": "apagar",
+      "stage": "1A",
+      "reason": "Retirado dos dois ambientes; bootstrap existe somente no comando atômico.",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 69,
+          "anchor": "drop policy if exists organizations_insert_creator on public.organizations;",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 872,
@@ -56785,7 +57277,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Retired by active_organization_authority; no installed policy remains.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organizations.organizations_select_member",
@@ -56795,7 +57288,7 @@
           "id": "policy:public.organizations.organizations_select_member",
           "kind": "policy",
           "name": "organizations_select_member",
-          "qual": "((created_by = ( SELECT auth.uid() AS uid)) OR ( SELECT private.is_org_member(organizations.id) AS is_org_member))",
+          "qual": "( SELECT private.is_org_member(organizations.id) AS is_org_member)",
           "roles": [
             "authenticated"
           ],
@@ -56809,7 +57302,7 @@
           "id": "policy:public.organizations.organizations_select_member",
           "kind": "policy",
           "name": "organizations_select_member",
-          "qual": "((created_by = ( SELECT auth.uid() AS uid)) OR ( SELECT private.is_org_member(organizations.id) AS is_org_member))",
+          "qual": "( SELECT private.is_org_member(organizations.id) AS is_org_member)",
           "roles": [
             "authenticated"
           ],
@@ -56823,8 +57316,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "separar cadastro/control plane de leitura de conteúdo",
+      "reason": "1A: autoridade corrigida e verificada; separar cadastro/control plane de leitura de conteúdo",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 67,
+          "anchor": "create policy organizations_select_member on public.organizations for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 870,
@@ -56832,7 +57331,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "policy:public.organizations.organizations_update_admin",
@@ -81997,11 +82497,6 @@
               false
             ],
             [
-              "authenticated",
-              "UPDATE",
-              false
-            ],
-            [
               "service_role",
               "DELETE",
               false
@@ -82107,11 +82602,6 @@
               false
             ],
             [
-              "authenticated",
-              "UPDATE",
-              false
-            ],
-            [
               "service_role",
               "DELETE",
               false
@@ -82159,8 +82649,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "separar vínculo ativo, contexto e administração de leitura de conteúdo",
+      "reason": "1A: autoridade corrigida e verificada; separar vínculo ativo, contexto e administração de leitura de conteúdo",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 56,
+          "anchor": "revoke update on public.organization_memberships from authenticated;",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 30,
@@ -82168,7 +82664,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "r:public.organization_methodologies",
@@ -82849,11 +83346,6 @@
             ],
             [
               "authenticated",
-              "INSERT",
-              false
-            ],
-            [
-              "authenticated",
               "SELECT",
               false
             ],
@@ -82949,11 +83441,6 @@
             ],
             [
               "authenticated",
-              "INSERT",
-              false
-            ],
-            [
-              "authenticated",
               "SELECT",
               false
             ],
@@ -83005,8 +83492,14 @@
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
       "stage": "1A, 2",
-      "reason": "separar vínculo ativo, contexto e administração de leitura de conteúdo",
+      "reason": "1A: autoridade corrigida e verificada; separar vínculo ativo, contexto e administração de leitura de conteúdo",
       "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 70,
+          "anchor": "revoke insert on public.organizations from authenticated;",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 17,
@@ -83014,7 +83507,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "1A"
     },
     {
       "id": "r:public.output_artifacts",
@@ -96677,6 +97171,46 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.organization_memberships.organization_memberships_authority_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organization_memberships.organization_memberships_authority_audit",
+          "kind": "trigger",
+          "name": "organization_memberships_authority_audit",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_organization_authority_event_v1()",
+          "definition": "CREATE TRIGGER organization_memberships_authority_audit AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_organization_authority_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.organization_memberships.organization_memberships_authority_audit",
+          "kind": "trigger",
+          "name": "organization_memberships_authority_audit",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_organization_authority_event_v1()",
+          "definition": "CREATE TRIGGER organization_memberships_authority_audit AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_organization_authority_event_v1()"
+        }
+      },
+      "owner": "Codex, primeira onda",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+          "line": 91,
+          "anchor": "create trigger organization_memberships_authority_audit",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
+      "last_review_stage": "1A"
+    },
+    {
       "id": "trigger:public.organization_methodologies.organization_methodologies_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -106764,6 +107298,20 @@
       "reason": "Conciliação de confirmação mesclada em main; preservar bytes e carimbo do histórico aplicado.",
       "source_commit": "d88683df88829cc50fe92f3b7694477630308499",
       "source_sha256": "e4c7a17a77d0fc7af72151451e1229af0c92e566383eacf7934144da898023be"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Correção de autoridade aplicada; histórico imutável com carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260915123205_organization_profile_authority.sql",
+      "decision": "preservar",
+      "stage": "1A",
+      "reason": "Correção de autoridade aplicada; histórico imutável com carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -106813,5 +107361,14 @@
       "name": "resolve_pack_distribution_candidates"
     }
   ],
-  "confirmation_history_main_commit": "d88683df88829cc50fe92f3b7694477630308499"
+  "confirmation_history_main_commit": "d88683df88829cc50fe92f3b7694477630308499",
+  "stage_1a_revision": {
+    "base_commit": "2119cf7f7246fadb51f7073146553552b6a2e874",
+    "production_captured_at": "2026-09-15T12:32:52.705691+00:00",
+    "staging_captured_at": "2026-09-15T12:32:58.455641+00:00",
+    "migrations": [
+      "supabase/migrations/20260915123202_active_organization_authority.sql",
+      "supabase/migrations/20260915123205_organization_profile_authority.sql"
+    ]
+  }
 }

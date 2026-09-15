@@ -764,6 +764,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
+      "kind": "function",
+      "name": "can_administer_membership_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_user_id uuid, p_role text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)",
+      "kind": "function",
+      "name": "can_assign_organization_role_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_role text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_manage_fund(p_fund_id uuid)",
       "kind": "function",
       "name": "can_manage_fund",
@@ -1018,6 +1064,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_organization_authority_event_v1()",
+      "kind": "function",
+      "name": "capture_organization_authority_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
       "kind": "function",
       "name": "claim_case_brief",
@@ -1181,6 +1245,29 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid, p_primary_support_sheets text[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "kind": "function",
+      "name": "create_organization_with_owner_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
       "security_definer": true
     },
     {
@@ -6366,6 +6453,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+      "kind": "function",
+      "name": "transfer_organization_owner_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
       "kind": "function",
       "name": "update_workspace_project",
@@ -10136,6 +10246,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "kind": "function",
+      "name": "create_organization_with_owner_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.create_workspace_project_group(p_name text)",
       "kind": "function",
       "name": "create_workspace_project_group",
@@ -13478,6 +13611,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_proposal_id uuid, p_payload jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
+      "kind": "function",
+      "name": "transfer_organization_owner_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
       "security_definer": false
     },
     {
@@ -18666,7 +18822,7 @@
       "id": "policy:public.organization_invites.organization_invites_manage",
       "kind": "policy",
       "name": "organization_invites_manage",
-      "qual": "( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization)",
+      "qual": "( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1)",
       "roles": [
         "authenticated"
       ],
@@ -18674,7 +18830,7 @@
       "schema": "public",
       "command": "ALL",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_manage_organization(organization_invites.organization_id) AS can_manage_organization) AND (invited_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "(( SELECT private.can_assign_organization_role_v1(organization_invites.organization_id, organization_invites.role) AS can_assign_organization_role_v1) AND (invited_by = ( SELECT auth.uid() AS uid)))"
     },
     {
       "id": "policy:public.organization_legal_acceptances.organization_legal_acceptances_select",
@@ -18694,7 +18850,7 @@
       "id": "policy:public.organization_memberships.memberships_delete_admin",
       "kind": "policy",
       "name": "memberships_delete_admin",
-      "qual": "(( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND (user_id <> ( SELECT auth.uid() AS uid)))",
+      "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
       "roles": [
         "authenticated"
       ],
@@ -18716,7 +18872,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "((( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization) AND ((role <> 'owner'::text) OR (user_id = ( SELECT auth.uid() AS uid)) OR ( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization))) OR ((user_id = ( SELECT auth.uid() AS uid)) AND (role = 'owner'::text) AND (status = 'active'::text) AND (EXISTS ( SELECT 1\n   FROM organizations organization\n  WHERE ((organization.id = organization_memberships.organization_id) AND (organization.created_by = ( SELECT auth.uid() AS uid)))))))"
+      "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
     },
     {
       "id": "policy:public.organization_memberships.memberships_select_org",
@@ -18736,7 +18892,7 @@
       "id": "policy:public.organization_memberships.memberships_update_admin",
       "kind": "policy",
       "name": "memberships_update_admin",
-      "qual": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)",
+      "qual": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)",
       "roles": [
         "authenticated"
       ],
@@ -18744,7 +18900,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_manage_organization(organization_memberships.organization_id) AS can_manage_organization)"
+      "with_check": "( SELECT private.can_administer_membership_v1(organization_memberships.organization_id, organization_memberships.user_id, organization_memberships.role) AS can_administer_membership_v1)"
     },
     {
       "id": "policy:public.organization_methodologies.organization_methodologies_select",
@@ -18831,24 +18987,10 @@
       "with_check": null
     },
     {
-      "id": "policy:public.organizations.organizations_insert_creator",
-      "kind": "policy",
-      "name": "organizations_insert_creator",
-      "qual": null,
-      "roles": [
-        "authenticated"
-      ],
-      "table": "organizations",
-      "schema": "public",
-      "command": "INSERT",
-      "permissive": "PERMISSIVE",
-      "with_check": "((created_by = ( SELECT auth.uid() AS uid)) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
-    },
-    {
       "id": "policy:public.organizations.organizations_select_member",
       "kind": "policy",
       "name": "organizations_select_member",
-      "qual": "((created_by = ( SELECT auth.uid() AS uid)) OR ( SELECT private.is_org_member(organizations.id) AS is_org_member))",
+      "qual": "( SELECT private.is_org_member(organizations.id) AS is_org_member)",
       "roles": [
         "authenticated"
       ],
@@ -29760,11 +29902,6 @@
           false
         ],
         [
-          "authenticated",
-          "UPDATE",
-          false
-        ],
-        [
           "service_role",
           "DELETE",
           false
@@ -30137,11 +30274,6 @@
         [
           "postgres",
           "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "INSERT",
           false
         ],
         [
@@ -35529,6 +35661,16 @@
       "definition": "CREATE TRIGGER memberships_set_updated_at BEFORE UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.organization_memberships.organization_memberships_authority_audit",
+      "kind": "trigger",
+      "name": "organization_memberships_authority_audit",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_organization_authority_event_v1()",
+      "definition": "CREATE TRIGGER organization_memberships_authority_audit AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_organization_authority_event_v1()"
+    },
+    {
       "id": "trigger:public.organization_methodologies.organization_methodologies_set_updated_at",
       "kind": "trigger",
       "name": "organization_methodologies_set_updated_at",
@@ -36744,5 +36886,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-14T22:51:46.815636+00:00"
+  "captured_at": "2026-09-15T12:32:58.455641+00:00"
 }

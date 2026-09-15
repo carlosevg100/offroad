@@ -131,3 +131,29 @@ Os 75 registros de função e dez tabelas sem fonte no inventário anterior têm
 | `public.pack_distribution_shares` | `docs/build/schema-history/staging-only-distribution/20260911013106_authorized_pack_distribution.sql:55` | direct_ddl |
 | `public.pack_recipient_responses` | `docs/build/schema-history/staging-only-distribution/20260911014632_pack_responses_and_next_steps.sql:6` | direct_ddl |
 | `public.qualified_contact_preparations` | `docs/build/schema-history/staging-only-distribution/20260911014540_in_product_qualified_contact.sql:7` | direct_ddl |
+
+## Fronteira de autoridade 1A
+
+| Objeto | Fonte vigente | Mecanismo |
+|---|---|---|
+| `function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:24` | direct_ddl |
+| `function:private.can_assign_organization_role_v1(p_organization_id uuid, p_role text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:13` | direct_ddl |
+| `function:private.can_manage_organization(p_organization_id uuid)` | `supabase/migrations/20260915123202_active_organization_authority.sql:4` | direct_ddl |
+| `function:private.capture_organization_authority_event_v1()` | `supabase/migrations/20260915123202_active_organization_authority.sql:72` | direct_ddl |
+| `function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:95` | direct_ddl |
+| `function:private.save_guided_company_profile(p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text)` | `supabase/migrations/20260915123205_organization_profile_authority.sql:10` | dynamic_definition_transform |
+| `function:private.save_project_company_profile(p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text)` | `supabase/migrations/20260915123205_organization_profile_authority.sql:10` | dynamic_definition_transform |
+| `function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)` | `supabase/migrations/20260915123202_active_organization_authority.sql:132` | direct_ddl |
+| `function:public.complete_onboarding(p_journey text, p_name text, p_legal_name text, p_country_code text, p_website text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:250` | direct_ddl |
+| `function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:124` | direct_ddl |
+| `function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)` | `supabase/migrations/20260915123202_active_organization_authority.sql:172` | direct_ddl |
+| `function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)` | `supabase/migrations/20260915123202_active_organization_authority.sql:166` | direct_ddl |
+| `policy:public.organization_invites.organization_invites_manage` | `supabase/migrations/20260915123202_active_organization_authority.sql:60` | direct_ddl |
+| `policy:public.organization_memberships.memberships_delete_admin` | `supabase/migrations/20260915123202_active_organization_authority.sql:53` | direct_ddl |
+| `policy:public.organization_memberships.memberships_insert_authorized` | `supabase/migrations/20260915123202_active_organization_authority.sql:46` | direct_ddl |
+| `policy:public.organization_memberships.memberships_update_admin` | `supabase/migrations/20260915123202_active_organization_authority.sql:49` | direct_ddl |
+| `policy:public.organizations.organizations_insert_creator` | `supabase/migrations/20260915123202_active_organization_authority.sql:69` | direct_ddl |
+| `policy:public.organizations.organizations_select_member` | `supabase/migrations/20260915123202_active_organization_authority.sql:67` | direct_ddl |
+| `r:public.organization_memberships` | `supabase/migrations/20260915123202_active_organization_authority.sql:56` | direct_ddl |
+| `r:public.organizations` | `supabase/migrations/20260915123202_active_organization_authority.sql:70` | direct_ddl |
+| `trigger:public.organization_memberships.organization_memberships_authority_audit` | `supabase/migrations/20260915123202_active_organization_authority.sql:91` | direct_ddl |
