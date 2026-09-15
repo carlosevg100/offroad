@@ -58,11 +58,14 @@ export async function initializeRegistrationWorkspace(supabase: NonNullable<Supa
 
   if (!parsed.success) return {error: "registration" as const};
 
-  const {data, error} = await supabase.rpc("initialize_professional_onboarding", {
+  // This command creates the organization and its first active owner in one
+  // transaction. Never restore client-side organization/membership bootstrap.
+  const workspaceCommand: Database["public"]["Functions"]["initialize_professional_onboarding"]["Args"] = {
     p_full_name: parsed.data.full_name,
     p_journey: parsed.data.registration_role,
     p_locale: parsed.data.locale,
-  } as Database["public"]["Functions"]["initialize_professional_onboarding"]["Args"]);
+  };
+  const {data, error} = await supabase.rpc("initialize_professional_onboarding", workspaceCommand);
 
   if (error || !data) return {error: "workspace" as const};
   return {organizationId: data, journey: parsed.data.registration_role};

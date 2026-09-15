@@ -1,8 +1,9 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
 import {
   canContinuePendingRegistration,
   defaultRegistrationJourney,
+  initializeRegistrationWorkspace,
   registrationSchema,
 } from "./registration";
 
@@ -14,6 +15,45 @@ const validRegistration = {
   password: "Capital@",
   confirmPassword: "Capital@",
 };
+
+describe("atomic registration authority", () => {
+  function client() {
+    const getUser = vi.fn().mockResolvedValue({data: {user: {
+      id: "verified-user", user_metadata: {
+        registration_role: "company", full_name: "Synthetic registration", locale: "pt-BR",
+        role: "owner", created_by: "untrusted-user", organization_id: "untrusted-organization",
+      },
+    }}, error: null});
+    const rpc = vi.fn().mockResolvedValue({data: "new-organization", error: null});
+    const from = vi.fn();
+    const supabase = {auth: {getUser}, rpc, from};
+    return {getUser, rpc, from, supabase: supabase as unknown as Parameters<typeof initializeRegistrationWorkspace>[0]};
+  }
+
+  it("uses one atomic command without forwarding metadata authority", async () => {
+    const c = client();
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({organizationId: "new-organization", journey: "company"});
+    expect(c.rpc).toHaveBeenCalledExactlyOnceWith("initialize_professional_onboarding", {
+      p_full_name: "Synthetic registration", p_journey: "company", p_locale: "pt-BR",
+    });
+    expect(c.from).not.toHaveBeenCalled();
+  });
+
+  it("does not fall back to direct bootstrap when the command is denied", async () => {
+    const c = client();
+    c.rpc.mockResolvedValue({data: null, error: {code: "42501"}});
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({error: "workspace"});
+    expect(c.rpc).toHaveBeenCalledTimes(1);
+    expect(c.from).not.toHaveBeenCalled();
+  });
+
+  it("requires verified identity before creating authority", async () => {
+    const c = client();
+    c.getUser.mockResolvedValue({data: {user: null}, error: {message: "expired"}});
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({error: "identity"});
+    expect(c.rpc).not.toHaveBeenCalled();
+  });
+});
 
 describe("registrationSchema", () => {
   it.each(["company", "originator", "capital_provider"] as const)("accepts the %s journey", (journey) => {

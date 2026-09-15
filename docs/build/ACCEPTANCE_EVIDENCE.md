@@ -1,3 +1,7 @@
+## Stage 1A: active organization authority
+
+The creator-authority exploit is reproduced and denied after migration in staging. Atomic bootstrap preserves the existing signup RPC; ownership transfer revalidates the active owner after acquiring its organization lock. Revocation SQL and signup contract regressions are added, with a real two-connection concurrency test in Database CI. Production, journal parity, types, CI and deployment remain required before completion. See `docs/build/arcabouco/etapa-1a.md`; no permanent creator authority is restored by rollback.
+
 ## Stage 0 production journal parity correction
 
 The remaining fourteen file/version gaps are reconciled: eleven files now use the production stamps with unchanged SQL; three journal-only repairs record bodies already installed by the schema-gap consolidation. Both environments were repaired without replay, and before/after function, column and policy fingerprints are unchanged. See `docs/build/schema-history/JOURNAL-PARITY.md` for the evidence and CI contract. The stage-zero inventory checker now rejects every local migration version absent from the production journal receipt, including same SQL under a different stamp. Both checkers run in the Database CI job now. Merge, main CI and deployment results are recorded in the wave completion report; this source entry does not claim those pending results.

@@ -101,6 +101,21 @@ jobs:
           fi
           echo "url=$DB_URL" >> "$GITHUB_OUTPUT"
 
+      # Every SQL contract is a gate by default. A newly added workspace, cache or
+      # RLS regression test must not depend on someone remembering to register it here.
+      - name: Run all database contract tests
+        run: |
+          set -euo pipefail
+          for test_file in supabase/tests/*.sql; do
+            echo "Running ${test_file}"
+            psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f "${test_file}"
+          done
+
+      - name: Verify competing ownership transfers serialize without residual authority
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-owner-transfer-concurrency.py
+
       - name: Check stage-zero access surface and every file version against production journal
         run: |
           set -euo pipefail
@@ -115,16 +130,6 @@ jobs:
           name: stage0-replay-catalogue
           path: ${{ runner.temp }}/stage0-replay-catalogue.json
           if-no-files-found: ignore
-
-      # Every SQL contract is a gate by default. A newly added workspace, cache or
-      # RLS regression test must not depend on someone remembering to register it here.
-      - name: Run all database contract tests
-        run: |
-          set -euo pipefail
-          for test_file in supabase/tests/*.sql; do
-            echo "Running ${test_file}"
-            psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f "${test_file}"
-          done
 
       - name: Schema lint (public, private)
         run: supabase db lint --local --schema public,private --level warning --fail-on error
