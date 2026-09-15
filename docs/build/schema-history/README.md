@@ -1,5 +1,10 @@
 # Wave 1 applied schema reconciliation
 
+The later fourteen-version correction is documented in [JOURNAL-PARITY.md](JOURNAL-PARITY.md).
+It includes eleven byte-preserving filename renames and three explicitly authorized journal-only
+repairs in both environments. The statements below about no repair concern the original sixteen
+recovered files, not that later correction.
+
 This directory preserves the staging-only distribution SQL recovered on 14 September 2026.
 Files under `staging-only-distribution/` are historical evidence and are deliberately outside
 `supabase/migrations/`: replaying them would introduce distribution and cross-organization

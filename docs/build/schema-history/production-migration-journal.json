@@ -1,0 +1,1536 @@
+{
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-09-15T00:29:05.942Z",
+  "rows": [
+    {
+      "version": "20260815014649",
+      "name": "platform_foundation",
+      "sql_md5": "4bd1753652f37be762b168ffe2befa78"
+    },
+    {
+      "version": "20260815014831",
+      "name": "schema_hardening",
+      "sql_md5": "34ba9df222c236cab8f21c4cbe1add43"
+    },
+    {
+      "version": "20260815015458",
+      "name": "application_commands",
+      "sql_md5": "59234869cbbb444c09b59f85c0bed15c"
+    },
+    {
+      "version": "20260815022143",
+      "name": "data_api_privilege_hardening",
+      "sql_md5": "99368ef351e9e54d196825b498d72fde"
+    },
+    {
+      "version": "20260816151535",
+      "name": "professional_onboarding",
+      "sql_md5": "e1b5e9527a67217bb520551170037194"
+    },
+    {
+      "version": "20260817151210",
+      "name": "allow_creator_owner_membership",
+      "sql_md5": "2b7da8441077a05704ba8be4fd9fabfd"
+    },
+    {
+      "version": "20260817151303",
+      "name": "consolidate_membership_insert_policy",
+      "sql_md5": "b52ff6a5697f27eda5fc9ff6ad4ac587"
+    },
+    {
+      "version": "20260817202038",
+      "name": "document_first_intake",
+      "sql_md5": "24879ded52294239e493759a8daee3c4"
+    },
+    {
+      "version": "20260817202807",
+      "name": "document_first_intake_indexes",
+      "sql_md5": "eb5e3ac51a867b7ae35dfc5774d93769"
+    },
+    {
+      "version": "20260817203931",
+      "name": "scope_document_hash_uniqueness",
+      "sql_md5": "4bf936dedfa46985f237f634ce1564b1"
+    },
+    {
+      "version": "20260817232443",
+      "name": "hardening_force_rls_and_org_type_guard",
+      "sql_md5": "ce0d9d07f29aaa914fd410538c5299ec"
+    },
+    {
+      "version": "20260818033220",
+      "name": "atomic_intake_commands",
+      "sql_md5": "43f4874e000dc20d58bb802ad26d10f0"
+    },
+    {
+      "version": "20260818034457",
+      "name": "intake_document_removal_and_verification",
+      "sql_md5": "61319228e311e55424ed2d6d5a019c36"
+    },
+    {
+      "version": "20260818043539",
+      "name": "intake_session_policies_membership",
+      "sql_md5": "26bd3edb223918bd37e6a9a09b873367"
+    },
+    {
+      "version": "20260818171246",
+      "name": "intelligence_runs_profiles_layers",
+      "sql_md5": "4fb81b0fdcef859042bc79efd7e3631b"
+    },
+    {
+      "version": "20260818172243",
+      "name": "privilege_hardening_no_anon_and_private_commands",
+      "sql_md5": "51c43294783247749fa837afb2772790"
+    },
+    {
+      "version": "20260818172357",
+      "name": "pipeline_foreign_key_indexes",
+      "sql_md5": "feacb12cb287b0621a8eb7e0510ad764"
+    },
+    {
+      "version": "20260819115701",
+      "name": "document_layers_insert_policy",
+      "sql_md5": "9b3c235729e2a085aa68726e86ac4e4a"
+    },
+    {
+      "version": "20260820104922",
+      "name": "worker_record_candidates",
+      "sql_md5": "0be67eeea8141f2dc12f000174fe1059"
+    },
+    {
+      "version": "20260820111237",
+      "name": "organization_pipeline_flag",
+      "sql_md5": "f8ab1f225a549d2648f73627658571bc"
+    },
+    {
+      "version": "20260820111258",
+      "name": "organization_pipeline_flag_not_tenant_writable",
+      "sql_md5": "b01a1c1f2efac7437202014061f80ec3"
+    },
+    {
+      "version": "20260820111528",
+      "name": "organization_pipeline_default_on",
+      "sql_md5": "61ab42f79eceefc1b6066024e50a8e56"
+    },
+    {
+      "version": "20260820123143",
+      "name": "intake_session_archetype",
+      "sql_md5": "87f452336476e78305aad3ea81ab0e81"
+    },
+    {
+      "version": "20260820133211",
+      "name": "intake_information_answers",
+      "sql_md5": "e33cf80b3698a7db5ddba5d928c6cffe"
+    },
+    {
+      "version": "20260820143434",
+      "name": "extraction_feedback",
+      "sql_md5": "da289f9c3ec3c07bddfd8f66bf65065f"
+    },
+    {
+      "version": "20260820143525",
+      "name": "extraction_feedback_foreign_key_indexes",
+      "sql_md5": "88a05f32c72a2ed032f48050bf9ba7a5"
+    },
+    {
+      "version": "20260820145017",
+      "name": "intake_requirement_responses",
+      "sql_md5": "a875c672c9c6ee6a87ba43fb382b38a8"
+    },
+    {
+      "version": "20260820174040",
+      "name": "fund_directory",
+      "sql_md5": "cdf6f3151c8d58eca550f98db45ed612"
+    },
+    {
+      "version": "20260820175243",
+      "name": "intake_deal_brief",
+      "sql_md5": "bc19392ab4bc218fe0321919050be5b2"
+    },
+    {
+      "version": "20260820185152",
+      "name": "intake_expected_rate",
+      "sql_md5": "fc589ecf65ba1aa631fa4e5a70742232"
+    },
+    {
+      "version": "20260820205229",
+      "name": "case_brief_claim",
+      "sql_md5": "47cc601a472ad80d12ec7230c7daa17f"
+    },
+    {
+      "version": "20260820213534",
+      "name": "evidence_is_not_tenant_writable",
+      "sql_md5": "abeb77114396e9623b8c1ef6b0849ba8"
+    },
+    {
+      "version": "20260820213802",
+      "name": "worker_record_candidates_reachable",
+      "sql_md5": "7f61b1500182860a9e8026e93974dec4"
+    },
+    {
+      "version": "20260820214048",
+      "name": "grant_private_implementations",
+      "sql_md5": "a9686eef66cceb9160cf19bf9588b4a9"
+    },
+    {
+      "version": "20260820215101",
+      "name": "source_documents_insert_id",
+      "sql_md5": "9b96582b58af682eabd031b02f3b0a45"
+    },
+    {
+      "version": "20260820215904",
+      "name": "pipeline_urls_bound_to_document",
+      "sql_md5": "74ba9b618dcd918333c8a72144909241"
+    },
+    {
+      "version": "20260820220813",
+      "name": "drop_dead_source_document_kind",
+      "sql_md5": "35d6099d7d620dd03620d1702d51a44b"
+    },
+    {
+      "version": "20260820221929",
+      "name": "pipeline_spend_recorded_and_capped",
+      "sql_md5": "e44b703d1ec0a802c1473c0ef7ce45f2"
+    },
+    {
+      "version": "20260820222749",
+      "name": "complete_intake_processing_is_private",
+      "sql_md5": "8cc02613b75a96da19ae8b142ab7c06a"
+    },
+    {
+      "version": "20260820224304",
+      "name": "intake_session_state_not_tenant_writable",
+      "sql_md5": "531aed0daf9b0bf9981174d458374e60"
+    },
+    {
+      "version": "20260820225418",
+      "name": "intake_session_commands_are_private",
+      "sql_md5": "fbee80682e84ea5a1eb788e5df076b51"
+    },
+    {
+      "version": "20260821114132",
+      "name": "worker_complete_job_moves_the_session_again",
+      "sql_md5": "1c5ade492aa19ecc74e07f9c40c52739"
+    },
+    {
+      "version": "20260821165707",
+      "name": "venture_debt_archetype_and_missing_document_kinds",
+      "sql_md5": "64946271554624411b70054df95f5806"
+    },
+    {
+      "version": "20260822012109",
+      "name": "sounding_tables",
+      "sql_md5": "5857db94ef8354c0a8184ba01050a86b"
+    },
+    {
+      "version": "20260824170318",
+      "name": "case_artifact_manifests",
+      "sql_md5": "5678ac317e65200cd968feffc16c714c"
+    },
+    {
+      "version": "20260824170329",
+      "name": "worker_case_analysis",
+      "sql_md5": "d28ca352586fe776a0a80d4cbeed4d76"
+    },
+    {
+      "version": "20260824180255",
+      "name": "claim_decision_registry",
+      "sql_md5": "a5ad1208dd9d0e7ee7433a086a0cec4e"
+    },
+    {
+      "version": "20260824180448",
+      "name": "claim_decision_command_private",
+      "sql_md5": "a322c9004f665cb3e8d556ffc3ef9003"
+    },
+    {
+      "version": "20260824180822",
+      "name": "claim_decision_foreign_key_indexes",
+      "sql_md5": "1efb02cb184fedc317569b38feca713c"
+    },
+    {
+      "version": "20260824232722",
+      "name": "governed_retrieval",
+      "sql_md5": "b8eece8328bd65e6b795994f24d701a1"
+    },
+    {
+      "version": "20260824232920",
+      "name": "retrieval_foreign_key_indexes",
+      "sql_md5": "aaf7d778b204bbf34ee667e460f18586"
+    },
+    {
+      "version": "20260824235937",
+      "name": "controlled_production_rollout",
+      "sql_md5": "6428668c457c72ce0dbfbe41e3dec38e"
+    },
+    {
+      "version": "20260825000110",
+      "name": "controlled_production_foreign_key_indexes",
+      "sql_md5": "ed12e6bb42bb6b620bfc32487d5fa426"
+    },
+    {
+      "version": "20260825000811",
+      "name": "controlled_release_commands",
+      "sql_md5": "c37c7be0d16a15e160e155ca2bcbffa1"
+    },
+    {
+      "version": "20260825001020",
+      "name": "fix_controlled_case_input_variable",
+      "sql_md5": "3197a1682abe24491adf021e221b5e23"
+    },
+    {
+      "version": "20260825001758",
+      "name": "make_controlled_results_immutable",
+      "sql_md5": "14fdf7aea2d3c1586ac96b83e472a443"
+    },
+    {
+      "version": "20260825023240",
+      "name": "add_intake_unavailable_response",
+      "sql_md5": "a002fff138f9f1f65d1602d785bde3c8"
+    },
+    {
+      "version": "20260825160750",
+      "name": "m0_intake_event_ledger",
+      "sql_md5": "ea1b0d6687873457cdf4568228bc262f"
+    },
+    {
+      "version": "20260825160803",
+      "name": "m0_intake_projection_terminal_guard",
+      "sql_md5": "d8682ee6e38607c217cb57992bc5c509"
+    },
+    {
+      "version": "20260825171945",
+      "name": "m0_capital_need_documents",
+      "sql_md5": "d42964c657aea902f4ff9b5f27f54282"
+    },
+    {
+      "version": "20260825180214",
+      "name": "m0_request_ladder_commands",
+      "sql_md5": "7dae6d6f5fee07084742fa75059a11f9"
+    },
+    {
+      "version": "20260825185143",
+      "name": "m0_scope_authorization_triage",
+      "sql_md5": "2262bc38ed1eac06f3179fd0fc96aa1b"
+    },
+    {
+      "version": "20260825194419",
+      "name": "m0_scope_authorization_lifecycle_contract",
+      "sql_md5": "a5a70e94d0ef6ac28ef6e55c027c6cc9"
+    },
+    {
+      "version": "20260825195659",
+      "name": "m0_scope_authorization_lifecycle_contract",
+      "sql_md5": "07b3f7354f10563b66aa4115396ecbf5"
+    },
+    {
+      "version": "20260825200211",
+      "name": "m0_scope_authorization_lifecycle_contract",
+      "sql_md5": "6bce02d9e39b87293b8362cd44c02349"
+    },
+    {
+      "version": "20260825200444",
+      "name": "m0_scope_authorization_lifecycle_contract",
+      "sql_md5": "f615c41bb952a621cc48cd60594c0fc2"
+    },
+    {
+      "version": "20260825201341",
+      "name": "m0_scope_authorization_lifecycle_contract_final",
+      "sql_md5": "f12ff028ff9fd0a0de1ccead0d9f270e"
+    },
+    {
+      "version": "20260825203300",
+      "name": "m0_scope_authorization_lifecycle_contract",
+      "sql_md5": "354c71536ecce208e1fae95933a99b80"
+    },
+    {
+      "version": "20260826013647",
+      "name": "m6_pricing_registry",
+      "sql_md5": "58a6297196fe5416194ea8d8bd15a094"
+    },
+    {
+      "version": "20260826013815",
+      "name": "m6_pricing_registry_advisor_hardening",
+      "sql_md5": "dedf969105092246220fa8df90c4f380"
+    },
+    {
+      "version": "20260826032043",
+      "name": "m8_qualified_introductions",
+      "sql_md5": "b950b6538114d5a0238a66d9b056e534"
+    },
+    {
+      "version": "20260826032703",
+      "name": "m8_qualified_introduction_advisor_hardening",
+      "sql_md5": "e98df7295646a0f0c206ff5f518d8bb1"
+    },
+    {
+      "version": "20260826035526",
+      "name": "m9_red_flag_governance",
+      "sql_md5": "05cbfd2f3b8d4cc02fa09074f1cdfda5"
+    },
+    {
+      "version": "20260826041244",
+      "name": "m10_language_conduct_governance",
+      "sql_md5": "20477d0a37443fce2ec6c41e5ec93cb4"
+    },
+    {
+      "version": "20260826200143",
+      "name": "agent_workspace_foundation",
+      "sql_md5": "63493792b4f5cd3da9150321b6bb50a0"
+    },
+    {
+      "version": "20260826200443",
+      "name": "agent_workspace_index_hardening",
+      "sql_md5": "7b8de4d77c837b33b2c2898f33b54109"
+    },
+    {
+      "version": "20260826203944",
+      "name": "agent_operation_brief_vertical",
+      "sql_md5": "74373c552ccd7653560d4e399da355b1"
+    },
+    {
+      "version": "20260826204254",
+      "name": "agent_operation_brief_index_hardening",
+      "sql_md5": "a5e015e08b6a06be1932ba8a9ded8dd7"
+    },
+    {
+      "version": "20260826204338",
+      "name": "agent_accept_and_apply",
+      "sql_md5": "dac478fbeb6ca093bb4720ce70064184"
+    },
+    {
+      "version": "20260826205046",
+      "name": "agent_job_failure_isolation",
+      "sql_md5": "1c642c21d55722af02533086111ae769"
+    },
+    {
+      "version": "20260826221128",
+      "name": "restart_onboarding_intake",
+      "sql_md5": "017cb51a77b6a6b474e6a7fb98601828"
+    },
+    {
+      "version": "20260826232107",
+      "name": "start_onboarding_intake_atomic",
+      "sql_md5": "7572b39fd685fb31b609d3e64bf36ef3"
+    },
+    {
+      "version": "20260826232140",
+      "name": "guided_company_profile_collecting_status",
+      "sql_md5": "6e5ab239e50b8d7ead633d4adeb5c287"
+    },
+    {
+      "version": "20260827005724",
+      "name": "private_project_authorization_gate",
+      "sql_md5": "b93ca63d2eb51d7f58531ff211dae15a"
+    },
+    {
+      "version": "20260827020950",
+      "name": "refine_private_workspace_terms",
+      "sql_md5": "fa66c2223db76eaa722cde5419b228c1"
+    },
+    {
+      "version": "20260827162103",
+      "name": "legal_acceptance_v3_legacy_compatible",
+      "sql_md5": "f56af7993746e7789bfb546abd47b4d3"
+    },
+    {
+      "version": "20260827221500",
+      "name": "configure_existing_onboarding_intake",
+      "sql_md5": "03bd250de8834da67f50483d66ec2468"
+    },
+    {
+      "version": "20260827224000",
+      "name": "start_workspace_intake_atomic",
+      "sql_md5": "7a98207707edfb9869d6c7c4fde256b3"
+    },
+    {
+      "version": "20260828005129",
+      "name": "onboarding_bootstrap_snapshot",
+      "sql_md5": "7e2d597efe7f2a818f81a0be1288b80d"
+    },
+    {
+      "version": "20260828005248",
+      "name": "move_preparation_authority_to_legal_gate_reconcile",
+      "sql_md5": "3ebedc69b286a4f920552bdd0ca67c90"
+    },
+    {
+      "version": "20260828005251",
+      "name": "receivables_provider_programs",
+      "sql_md5": "a8562d788a661ea32d32ca9c27f14dc8"
+    },
+    {
+      "version": "20260828191314",
+      "name": "receivables_production_evidence_rail",
+      "sql_md5": "cce86b5f992aa1ebefda212283f08c9c"
+    },
+    {
+      "version": "20260828191325",
+      "name": "receivables_evidence_fk_indexes",
+      "sql_md5": "988601b8ec1108121af8032cc86e43f5"
+    },
+    {
+      "version": "20260828194341",
+      "name": "allow_nfe_zip_uploads",
+      "sql_md5": "1cb4dc1f1d56a58a1bcceb50e108d13b"
+    },
+    {
+      "version": "20260828195518",
+      "name": "normalize_llm_extraction_method",
+      "sql_md5": "3f2b009dfd1f583179920d753a5983cf"
+    },
+    {
+      "version": "20260828210211",
+      "name": "preserve_unparseable_worker_candidates",
+      "sql_md5": "d40b719ca4844da820d62f1e732a351b"
+    },
+    {
+      "version": "20260828220516",
+      "name": "batch_governed_retrieval_chunks",
+      "sql_md5": "16d6939c961e40eff7fc0b091c093868"
+    },
+    {
+      "version": "20260828225157",
+      "name": "bound_large_retrieval_index",
+      "sql_md5": "2e54ece52eec08bf50f87722bb0b306c"
+    },
+    {
+      "version": "20260828231205",
+      "name": "allow_production_scale_retrieval_window",
+      "sql_md5": "19245f49c705baeb057aa2e7d903a54f"
+    },
+    {
+      "version": "20260829003002",
+      "name": "economic_pipeline_guardrails",
+      "sql_md5": "7c325394c9250352d86abeac77f3a9ba"
+    },
+    {
+      "version": "20260829141835",
+      "name": "qualified_introduction_feedback",
+      "sql_md5": "2e3415015ba9f2749561158ec711a4b5"
+    },
+    {
+      "version": "20260829141838",
+      "name": "qualified_introduction_feedback_advisor_hardening",
+      "sql_md5": "bccdff77dcea24f4504ce140baf5c42d"
+    },
+    {
+      "version": "20260829141841",
+      "name": "qualified_introduction_feedback_supersession_ordering",
+      "sql_md5": "ed34c1325a6891bac912c430a04ad638"
+    },
+    {
+      "version": "20260829154103",
+      "name": "deal_state_foundation",
+      "sql_md5": "49d77f4717d0efa2dee442384fa37429"
+    },
+    {
+      "version": "20260829154114",
+      "name": "deal_state_advisor_hardening",
+      "sql_md5": "5bfc558ff78b7c142cd3aa7e44a6f19d"
+    },
+    {
+      "version": "20260829154126",
+      "name": "deal_state_idempotence",
+      "sql_md5": "c98c9673b257dc39ecff1e845776d4be"
+    },
+    {
+      "version": "20260829184738",
+      "name": "task_dag_prior_report",
+      "sql_md5": "c658afa626c01150d4bbc3f40eeda70a"
+    },
+    {
+      "version": "20260829203906",
+      "name": "load_deal_state_context",
+      "sql_md5": "553ca38a1f7a4b10dfd9644422047b04"
+    },
+    {
+      "version": "20260829204142",
+      "name": "prevent_stale_deal_state_resurrection",
+      "sql_md5": "d4ab0503a9d4d5a5837fb6749fcb5937"
+    },
+    {
+      "version": "20260829204945",
+      "name": "bind_structure_decision_to_exact_proposal",
+      "sql_md5": "355336da6b408c6b0e12ce99e4a6d2c5"
+    },
+    {
+      "version": "20260829205848",
+      "name": "enqueue_incremental_deal_state_analysis",
+      "sql_md5": "e4504a708df72f5cb4f320c55e966f79"
+    },
+    {
+      "version": "20260829211621",
+      "name": "enqueue_material_production_from_approved_plan",
+      "sql_md5": "a40d47c07d05f9f5087a245399cc20fa"
+    },
+    {
+      "version": "20260829212338",
+      "name": "bind_package_review_to_material_artifact",
+      "sql_md5": "34e1d161c459990f2567aff9223e1547"
+    },
+    {
+      "version": "20260829212414",
+      "name": "lock_package_review_trigger_privileges",
+      "sql_md5": "e0db1dc0822347726d113041181829dc"
+    },
+    {
+      "version": "20260829220610",
+      "name": "load_match_provider_context",
+      "sql_md5": "475f872d8857d6a80dfd3954dd6868d4"
+    },
+    {
+      "version": "20260829220739",
+      "name": "govern_match_review_before_release",
+      "sql_md5": "32b45be7bc07b51e26f62fb0c05ffd7c"
+    },
+    {
+      "version": "20260829221750",
+      "name": "preserve_match_provider_identity",
+      "sql_md5": "7f3fe122921c82255f46139de2897b5a"
+    },
+    {
+      "version": "20260829222406",
+      "name": "build_exact_introduction_plan_from_shortlist",
+      "sql_md5": "8109a7f4a67930b244269820d7517f6f"
+    },
+    {
+      "version": "20260829223055",
+      "name": "separate_shortlist_from_distribution_policy",
+      "sql_md5": "0945ef0dd6dbdc5232963af1d95eac94"
+    },
+    {
+      "version": "20260829223811",
+      "name": "resolve_exact_qualified_introduction_recipients",
+      "sql_md5": "efb267bb9bf3fa1753811306b384b6af"
+    },
+    {
+      "version": "20260829224111",
+      "name": "authorize_exact_recipient_material_plan",
+      "sql_md5": "c53264aa986ad61b141fbf606d80fdb4"
+    },
+    {
+      "version": "20260829225056",
+      "name": "index_exact_introduction_relations",
+      "sql_md5": "a1c7f9071a6264ef37507cf0e771cc0f"
+    },
+    {
+      "version": "20260829225306",
+      "name": "record_exact_qualified_introduction_release",
+      "sql_md5": "8291be67dc381589618844f211d839c3"
+    },
+    {
+      "version": "20260830155729",
+      "name": "instant_workspace_entry",
+      "sql_md5": "a2d3a855c8826e0cfc1c69222d45bfdf"
+    },
+    {
+      "version": "20260830160719",
+      "name": "terminal_processing_state",
+      "sql_md5": "e6371fa41a1f6d2475231a077f28f16b"
+    },
+    {
+      "version": "20260830165102",
+      "name": "canonical_workspace_project_setup",
+      "sql_md5": "8bd0bdb7716c524f01ce323607ec2f9d"
+    },
+    {
+      "version": "20260830165116",
+      "name": "session_company_gate",
+      "sql_md5": "26985fc06d5d073bb23578b42c2a42fc"
+    },
+    {
+      "version": "20260830214933",
+      "name": "workspace_project_management",
+      "sql_md5": "28f0eb5fc239a7cba409411958bfb9e4"
+    },
+    {
+      "version": "20260831092552",
+      "name": "project_scoped_company_profile",
+      "sql_md5": "26087c76f9a31e1c7ce83d5a91150b3d"
+    },
+    {
+      "version": "20260831133035",
+      "name": "idempotent_intake_document_upload",
+      "sql_md5": "e34a90db4d18d9434ebbea8e5887c4e5"
+    },
+    {
+      "version": "20260901035241",
+      "name": "preliminary_understanding_gate",
+      "sql_md5": "bef404c9245bda344d034d8e8b222c5a"
+    },
+    {
+      "version": "20260901035248",
+      "name": "universal_capital_projects",
+      "sql_md5": "90b330cafb92716a85b9385b994750af"
+    },
+    {
+      "version": "20260901035256",
+      "name": "complete_fallback_analysis_lineage",
+      "sql_md5": "767a42c90320101b207806032648be98"
+    },
+    {
+      "version": "20260901035305",
+      "name": "capital_project_access_basis",
+      "sql_md5": "92cf2fc9f2c63bdc6955a8ac19bcb660"
+    },
+    {
+      "version": "20260901035308",
+      "name": "capital_project_plan_runtime",
+      "sql_md5": "b0cf2be722291f36de7ba8e09f38e542"
+    },
+    {
+      "version": "20260901035312",
+      "name": "capital_task_run_lifecycle",
+      "sql_md5": "397983da3ecd4a2ffb1d8f3cce62c379"
+    },
+    {
+      "version": "20260901035316",
+      "name": "capital_project_artifacts",
+      "sql_md5": "12672f0de952b442d47e581504c3ba05"
+    },
+    {
+      "version": "20260901035319",
+      "name": "origination_thesis_vertical",
+      "sql_md5": "35d0e2583dd87473b8b6f6b28218ed26"
+    },
+    {
+      "version": "20260901035442",
+      "name": "capital_project_fk_index_hardening",
+      "sql_md5": "4f8b1a8f44489cd86a339c0a254eef50"
+    },
+    {
+      "version": "20260901044903",
+      "name": "company_debt_view_vertical",
+      "sql_md5": "84fed712b9fc34b931c238e3ba208e8b"
+    },
+    {
+      "version": "20260901112115",
+      "name": "conversational_advisor_workspace",
+      "sql_md5": "6b1f649a54d6a394af33b6005e40b226"
+    },
+    {
+      "version": "20260901112122",
+      "name": "advisor_turn_queue",
+      "sql_md5": "97ac6684c028de672f5627f5967e1f3b"
+    },
+    {
+      "version": "20260901112129",
+      "name": "advisor_initial_turn_identity",
+      "sql_md5": "8c883f5ab95254ca4ddd3723adc9767b"
+    },
+    {
+      "version": "20260901122420",
+      "name": "advisor_semantic_dag_activation",
+      "sql_md5": "0e86fd17d4e8850a64b85441b4f484ce"
+    },
+    {
+      "version": "20260901125416",
+      "name": "advisor_specialized_completion_message",
+      "sql_md5": "6a3e0f004783615fd0aa8daafa85d772"
+    },
+    {
+      "version": "20260902035113",
+      "name": "advisor_related_project_memory",
+      "sql_md5": "cacd7f50877bc99d3640a9e4a671dac7"
+    },
+    {
+      "version": "20260902035116",
+      "name": "persist_operating_controls_and_invalidation",
+      "sql_md5": "e0054b0b4a6f85be422698f17b353581"
+    },
+    {
+      "version": "20260902035119",
+      "name": "public_research_public_cache",
+      "sql_md5": "493a9c5e46c6c1250ce038499e6b9476"
+    },
+    {
+      "version": "20260902035123",
+      "name": "capital_planning_dag",
+      "sql_md5": "bf01747dc002e7a418b469d2a372ed63"
+    },
+    {
+      "version": "20260902035127",
+      "name": "advisor_private_preliminary_context",
+      "sql_md5": "c52d137ac620cd8983f01bf6871b126f"
+    },
+    {
+      "version": "20260902035130",
+      "name": "confirm_advisor_preliminary",
+      "sql_md5": "e592ed0f44cdc4b7559bd16e6da36f60"
+    },
+    {
+      "version": "20260902050257",
+      "name": "resume_capital_project_dag",
+      "sql_md5": "12870ff4bf3444989c560c12e192a9d4"
+    },
+    {
+      "version": "20260902071953",
+      "name": "public_research_cache_v2",
+      "sql_md5": "3492213c4a8dd63ce5c1b269f477a45d"
+    },
+    {
+      "version": "20260902105618",
+      "name": "advisor_project_name_collision",
+      "sql_md5": "2bbe26f0a595cc723b9c42baa4d85b33"
+    },
+    {
+      "version": "20260902113518",
+      "name": "fallback_preliminary_initial_request",
+      "sql_md5": "b4bc5038ba9ff3cbbafbf9b4677df5b3"
+    },
+    {
+      "version": "20260902175803",
+      "name": "workspace_project_groups",
+      "sql_md5": "f6ba6e2b41f14368eb0f5e46952e661d"
+    },
+    {
+      "version": "20260903034438",
+      "name": "agentic_dcm_work_system",
+      "sql_md5": "a70e1b857b57b6fae3cca37819bac3be"
+    },
+    {
+      "version": "20260903034442",
+      "name": "agentic_dcm_work_system_index_hardening",
+      "sql_md5": "b3dd92807a3192515a69e9b027ee711c"
+    },
+    {
+      "version": "20260903034445",
+      "name": "agentic_dcm_runtime_events",
+      "sql_md5": "82bf422f214ef429b7849745380f126c"
+    },
+    {
+      "version": "20260903034449",
+      "name": "agentic_dcm_assessment_projection",
+      "sql_md5": "03da3e0922aa8b3fd7e1c25ff834ff40"
+    },
+    {
+      "version": "20260903034452",
+      "name": "agent_decision_actor_hardening",
+      "sql_md5": "4ce09cdf5a2d0482a3b27ec20fc8fd29"
+    },
+    {
+      "version": "20260903034454",
+      "name": "agent_assessment_variable_resolution",
+      "sql_md5": "2c93837de6f4a6ae4f9dce4253ac5cde"
+    },
+    {
+      "version": "20260903034457",
+      "name": "agent_stage_event_variable_resolution",
+      "sql_md5": "c7d0c1e6220b38ca4f17fed92270e1b6"
+    },
+    {
+      "version": "20260903034529",
+      "name": "workspace_project_group_actor_indexes",
+      "sql_md5": "b45e93995daa84bad236bd214e151a29"
+    },
+    {
+      "version": "20260903125201",
+      "name": "professional_capability_context",
+      "sql_md5": "d9634d137969afed32bdd22ba3d70fcd"
+    },
+    {
+      "version": "20260903125204",
+      "name": "professional_capability_context_index_hardening",
+      "sql_md5": "2860d910968c9d09602dee1a9ab024dd"
+    },
+    {
+      "version": "20260903125207",
+      "name": "personal_institution_context",
+      "sql_md5": "a3cbccb58a94ff67907fd9f695668aae"
+    },
+    {
+      "version": "20260903134811",
+      "name": "advisor_specialized_professional_context",
+      "sql_md5": "95044a6fc14c69a843352d97c7d64517"
+    },
+    {
+      "version": "20260903134819",
+      "name": "public_company_source_memory",
+      "sql_md5": "f3ae90d820b0371407a06df67eb53e03"
+    },
+    {
+      "version": "20260903182045",
+      "name": "expand_professional_functions",
+      "sql_md5": "15102c71fe62aab3ca7aea08f6ee87c2"
+    },
+    {
+      "version": "20260903213233",
+      "name": "origination_runtime_budget",
+      "sql_md5": "2c2feb7f1edef99067706497875fc9be"
+    },
+    {
+      "version": "20260903215610",
+      "name": "origination_completion_headroom",
+      "sql_md5": "00f4dc75e4230a503320099d5f6dcd83"
+    },
+    {
+      "version": "20260904005430",
+      "name": "preserve_failed_user_message_memory",
+      "sql_md5": "eba6deba3d8535b7b6df21db7e4a592f"
+    },
+    {
+      "version": "20260904011351",
+      "name": "retry_failed_specialized_analysis",
+      "sql_md5": "040f9b9e99b1b2294ab261805e53faa9"
+    },
+    {
+      "version": "20260904015543",
+      "name": "capital_task_retry_feedback",
+      "sql_md5": "b1f8e3445008f7d8b1e526e43b5879fe"
+    },
+    {
+      "version": "20260904022353",
+      "name": "advisor_chat_artifact_revision",
+      "sql_md5": "85ede3decd9761058336f9681ecc3b33"
+    },
+    {
+      "version": "20260904040355",
+      "name": "preliminary_understanding_completion_budget",
+      "sql_md5": "1cbc272ac77fb5bb7e05687fe73b129c"
+    },
+    {
+      "version": "20260904041325",
+      "name": "preliminary_input_project_binding",
+      "sql_md5": "8d619b45682f335bc7c861097df26964"
+    },
+    {
+      "version": "20260904055915",
+      "name": "fix_advisor_preliminary_confirmation",
+      "sql_md5": "78bb864ea902c55181c1dcae522727c6"
+    },
+    {
+      "version": "20260904061619",
+      "name": "full_case_project_binding",
+      "sql_md5": "3e26816459480b8cad817bb078309a08"
+    },
+    {
+      "version": "20260904121149",
+      "name": "mark_auto_created_project_folders",
+      "sql_md5": "93845c1a8cff3354e6a854ef6ca1b276"
+    },
+    {
+      "version": "20260904121217",
+      "name": "clear_auto_created_on_folder_rename",
+      "sql_md5": "4e20a0aa4b23fbc82353d8557466cdfc"
+    },
+    {
+      "version": "20260904164935",
+      "name": "professional_context_multi_select",
+      "sql_md5": "0df38bdb7a26334ab7d19d7df5b0d6f0"
+    },
+    {
+      "version": "20260904201650",
+      "name": "job_failure_causes_and_run_metrics",
+      "sql_md5": "7801dc294bf4e44ff4edfd87c154aaf0"
+    },
+    {
+      "version": "20260904210147",
+      "name": "organization_methodology",
+      "sql_md5": "162832274e87a73b4726b10e9dfbd09b"
+    },
+    {
+      "version": "20260904210542",
+      "name": "job_failure_contract",
+      "sql_md5": "1d75cb17b0a96ad797bf959903c620fc"
+    },
+    {
+      "version": "20260904213420",
+      "name": "intent_envelopes_shadow",
+      "sql_md5": "3dce4243fc7fd8c9ac6a39d8eddf1174"
+    },
+    {
+      "version": "20260904214625",
+      "name": "intent_envelopes_project_lookup",
+      "sql_md5": "75da0a7c01959e0827e6b96f5d18bc64"
+    },
+    {
+      "version": "20260904215105",
+      "name": "intent_envelopes_session_table",
+      "sql_md5": "e7f847efb3d32783faea333f139b0f2d"
+    },
+    {
+      "version": "20260904220851",
+      "name": "intent_envelopes_variable_names",
+      "sql_md5": "5e30613f19dc52b9d3198a6c2bfdf0da"
+    },
+    {
+      "version": "20260904231340",
+      "name": "gold_case_bindings",
+      "sql_md5": "10c3cb774b5a81aa6399b1ca893558aa"
+    },
+    {
+      "version": "20260905115322",
+      "name": "integration_preview_mode",
+      "sql_md5": "c86df2600c142ab588a933e0f5a10776"
+    },
+    {
+      "version": "20260905115407",
+      "name": "integration_preview_runtime",
+      "sql_md5": "c73bc7adbd786c311a0dcc985c184d80"
+    },
+    {
+      "version": "20260905125447",
+      "name": "integration_preview_prior_artifacts_across_plans",
+      "sql_md5": "0c9bddbf1d98b3ebca2abc41e1988259"
+    },
+    {
+      "version": "20260905125837",
+      "name": "integration_preview_artifacts_across_plans",
+      "sql_md5": "13c857ef973acdf064b531e7e291aba3"
+    },
+    {
+      "version": "20260905132604",
+      "name": "integration_preview_replay_runs",
+      "sql_md5": "152a5da944413c47c90b130a57deecde"
+    },
+    {
+      "version": "20260905140755",
+      "name": "integration_preview_project_scope",
+      "sql_md5": "5cf9dc8d007e745b896cb82dadc95fcc"
+    },
+    {
+      "version": "20260905142549",
+      "name": "integration_preview_live_mode",
+      "sql_md5": "289ed40b0eac550585678b98dbc5f41d"
+    },
+    {
+      "version": "20260905143704",
+      "name": "integration_preview_run_budget",
+      "sql_md5": "c5a36bf967aa5ddd548d72302595a964"
+    },
+    {
+      "version": "20260905175807",
+      "name": "integration_preview_run_budget_v2",
+      "sql_md5": "a8f74a2d1287e15b1399f0659dd93e4c"
+    },
+    {
+      "version": "20260907044208",
+      "name": "execution_brief_foundation",
+      "sql_md5": "eca860b74a68751cca839eafea3ff768"
+    },
+    {
+      "version": "20260907044213",
+      "name": "execution_brief_narrative",
+      "sql_md5": "0f3af176853d28fc054034e64744e429"
+    },
+    {
+      "version": "20260907044216",
+      "name": "governed_execution_brief_edits",
+      "sql_md5": "a5db511dc410c48fe8b790274a26b96c"
+    },
+    {
+      "version": "20260907044220",
+      "name": "governed_information_request_responses",
+      "sql_md5": "d1f0e25a8c17fd9ef753d477916e38f9"
+    },
+    {
+      "version": "20260907044225",
+      "name": "project_information_request_projection",
+      "sql_md5": "11fb32dfdff2c50d9c9353e5024b04a9"
+    },
+    {
+      "version": "20260907044240",
+      "name": "objective_plan_preflight",
+      "sql_md5": "59fe5cefeb7df37596553c56c69deaea"
+    },
+    {
+      "version": "20260907044243",
+      "name": "objective_specialization_shadow",
+      "sql_md5": "583fec125c3ad91b49b17160fe73fb07"
+    },
+    {
+      "version": "20260907044246",
+      "name": "objective_method_binding_shadow",
+      "sql_md5": "428d1d0c51f865dc1be1108ce5266d2e"
+    },
+    {
+      "version": "20260907044249",
+      "name": "receivables_method_input_assembly_store",
+      "sql_md5": "fe6c104892632b51c3041970136df35a"
+    },
+    {
+      "version": "20260907044252",
+      "name": "case_analysis_information_request_projection",
+      "sql_md5": "eda272f3ad7f9d3c6106d774072d4a35"
+    },
+    {
+      "version": "20260907044313",
+      "name": "receivables_method_supplement_store",
+      "sql_md5": "7f165afcacd6d0d555cebe0e1ab08593"
+    },
+    {
+      "version": "20260907044316",
+      "name": "objective_workflow_selection_shadow",
+      "sql_md5": "8d3ec85eaf73033b14d75a9ddf7c9363"
+    },
+    {
+      "version": "20260907044319",
+      "name": "integration_preview_workflow_selection_enforcement",
+      "sql_md5": "42f7b5550d5c28f85eedb3eeeb8cce38"
+    },
+    {
+      "version": "20260907044322",
+      "name": "integration_preview_workflow_continuity_anchor",
+      "sql_md5": "1eddba1596f809dbec32e2147a82f4c9"
+    },
+    {
+      "version": "20260907044325",
+      "name": "integration_preview_workflow_continuity_grant_parity",
+      "sql_md5": "8756a3fcae829bfff5574aa8241c09e2"
+    },
+    {
+      "version": "20260907051254",
+      "name": "receivables_information_request_bindings",
+      "sql_md5": "84672e132170b2e99a3bb954415e3fed"
+    },
+    {
+      "version": "20260907051611",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "50ff68d275ae35293c94fd811b6ad05d"
+    },
+    {
+      "version": "20260907054112",
+      "name": "receivables_method_complete_refresh",
+      "sql_md5": "8573360f0f0f3cdf8d29c577297d8a8b"
+    },
+    {
+      "version": "20260907054118",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "203561e6f4af85c78a6a8d8108cb46dd"
+    },
+    {
+      "version": "20260907062224",
+      "name": "intent_objective_routing_metrics",
+      "sql_md5": null
+    },
+    {
+      "version": "20260907070000",
+      "name": "governed_capital_material_storage",
+      "sql_md5": null
+    },
+    {
+      "version": "20260907095418",
+      "name": "preserve_decision_contract_and_method_artifacts",
+      "sql_md5": null
+    },
+    {
+      "version": "20260907122628",
+      "name": "universal_dispatch_candidate_shadow",
+      "sql_md5": "46aecef54a5a1672814ff4ecebef7d78"
+    },
+    {
+      "version": "20260907122635",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "eea2f30834057f77f064c779d132c37b"
+    },
+    {
+      "version": "20260908035022",
+      "name": "platform_ledgers_explicit_default_deny",
+      "sql_md5": "6b702258b8f7ad7a96eaa0a8a6447cf5"
+    },
+    {
+      "version": "20260908035026",
+      "name": "explicit_execution_brief_approval",
+      "sql_md5": "54cbff5affc9615469b99af593363756"
+    },
+    {
+      "version": "20260908035029",
+      "name": "execution_approval_trigger_record_scope",
+      "sql_md5": "c1160eeb55f310e4ce1c748670619e7b"
+    },
+    {
+      "version": "20260908035032",
+      "name": "execution_approval_unbound_revision_metadata",
+      "sql_md5": "ab632beefa627b0389d0ea36fa65c4db"
+    },
+    {
+      "version": "20260908035035",
+      "name": "execution_brief_bounded_workstreams",
+      "sql_md5": "da660094dfcfe3f6373035e1790f5697"
+    },
+    {
+      "version": "20260908035038",
+      "name": "reconcile_preexisting_main_schema_gaps",
+      "sql_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6"
+    },
+    {
+      "version": "20260908035044",
+      "name": "reconcile_rejected_file_failure_classification",
+      "sql_md5": "91a405bb973cdefe2cc7b8275f9d9450"
+    },
+    {
+      "version": "20260908035048",
+      "name": "correct_infected_failure_precedence",
+      "sql_md5": "b1f929d3c47bcfd30d20cfe57ee0d54c"
+    },
+    {
+      "version": "20260908035050",
+      "name": "capital_material_upload_grant_fk_indexes",
+      "sql_md5": "11e21c4c132ae10509006d2c7c87129b"
+    },
+    {
+      "version": "20260908035053",
+      "name": "execution_proposal_company_label",
+      "sql_md5": "fc27bdaa0011dce64e7ccf226e6ccb68"
+    },
+    {
+      "version": "20260908035058",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "8c83911195c398b3034984f7185ae7c5"
+    },
+    {
+      "version": "20260908145938",
+      "name": "governed_sector_context_inputs",
+      "sql_md5": "19889b24344a40ada1d7158deba3000c"
+    },
+    {
+      "version": "20260908145941",
+      "name": "sector_planning_context_object_limit",
+      "sql_md5": "0859ec1f90e47be7a516f131adf0ab52"
+    },
+    {
+      "version": "20260908145944",
+      "name": "sector_planning_job_knowledge_date",
+      "sql_md5": "4283aecb89f33663e9b46d285fb1b100"
+    },
+    {
+      "version": "20260908145947",
+      "name": "sector_planning_review_timestamp_utc",
+      "sql_md5": "1f65589b2650cab9f231f445d15770d0"
+    },
+    {
+      "version": "20260908155133",
+      "name": "execution_proposal_revision_parent",
+      "sql_md5": "ca1a02dd059ef739f1f31e9bc2023b75"
+    },
+    {
+      "version": "20260908161137",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "6c746d243e2d6477f65cf132f957eff5"
+    },
+    {
+      "version": "20260908181846",
+      "name": "confirmed_receivables_evidence_scope",
+      "sql_md5": "a391595b5c6e0a516dbbb8675fe5b3d0"
+    },
+    {
+      "version": "20260908181849",
+      "name": "confirmed_receivables_scope_context_consistency",
+      "sql_md5": "78e493abaf20e916fab51096b96e387d"
+    },
+    {
+      "version": "20260908181852",
+      "name": "confirmed_receivables_scope_reader_fence",
+      "sql_md5": "71239afa881ad434224d939f10b1318e"
+    },
+    {
+      "version": "20260908181855",
+      "name": "confirmed_receivables_scope_brief_binding",
+      "sql_md5": "4d23ba66b867d08bf1ba42ccc6ce4dbf"
+    },
+    {
+      "version": "20260908181900",
+      "name": "confirmed_receivables_scope_reader_lock",
+      "sql_md5": "26bf6a0716f71551c882b66ab7420570"
+    },
+    {
+      "version": "20260908182325",
+      "name": "confirmed_receivables_scope_brief_session",
+      "sql_md5": "1e0da3126d8229b5c0be1c4b20c161f6"
+    },
+    {
+      "version": "20260908182328",
+      "name": "confirmed_receivables_scope_invoker_parity",
+      "sql_md5": "c2419f287a8ca303c88906c3e04e4d56"
+    },
+    {
+      "version": "20260908183823",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "334d3232af77307f8a9ece1fd9980150"
+    },
+    {
+      "version": "20260909005407",
+      "name": "document_work_product_request_binding",
+      "sql_md5": "ca6b20a8c07881591d9ecae6ea1b993d"
+    },
+    {
+      "version": "20260909005415",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "af6f27371e8db817c7693312027903b7"
+    },
+    {
+      "version": "20260909005423",
+      "name": "documentary_execution_scope_binding",
+      "sql_md5": "d3479334fbbfa0b8e3d3d7447d23b897"
+    },
+    {
+      "version": "20260909005431",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "bc486d025686737973c3d4691c9f3030"
+    },
+    {
+      "version": "20260909005438",
+      "name": "documentary_execution_progress",
+      "sql_md5": "e89d302c05217a5c395cd8ff02577138"
+    },
+    {
+      "version": "20260909005445",
+      "name": "atomic_documentary_execution_commit",
+      "sql_md5": "4a1e88c6214c53980fa0674acd19c166"
+    },
+    {
+      "version": "20260909005451",
+      "name": "document_work_request_loader_guards",
+      "sql_md5": "aca7fee7a3f3b444018140e09f6d65fc"
+    },
+    {
+      "version": "20260909005500",
+      "name": "worker_runtime_schema_contract",
+      "sql_md5": "3515833d44b357ecb627b2dfec79d9cd"
+    },
+    {
+      "version": "20260909005540",
+      "name": "documentary_plan_job_projection",
+      "sql_md5": "f0ed5e752a65093d8e5a0c3f324a1d15"
+    },
+    {
+      "version": "20260910013934",
+      "name": "case_engine_v16_operating_scope",
+      "sql_md5": "5ed53d581feccd78ef9f8e3a8d609b5f"
+    },
+    {
+      "version": "20260910033410",
+      "name": "strict_documentary_plan_persistence",
+      "sql_md5": "fc0f898bc184e74c0c75afc022f0f110"
+    },
+    {
+      "version": "20260910033425",
+      "name": "documentary_work_request_context",
+      "sql_md5": "94c578fdb7569c22687d8a0785a809ce"
+    },
+    {
+      "version": "20260910033433",
+      "name": "compact_documentary_plan_contract",
+      "sql_md5": "6dfd3a60b1c92cd0253293c44cad711f"
+    },
+    {
+      "version": "20260910033442",
+      "name": "reviewed_documentary_plan_contract",
+      "sql_md5": "7fbbcdeb1f25b1dc96ccd76f1d27f9f1"
+    },
+    {
+      "version": "20260910033449",
+      "name": "documentary_entity_plan_contract",
+      "sql_md5": "e6bea5943ae1eed5a8ddeb46ee22238e"
+    },
+    {
+      "version": "20260910033507",
+      "name": "documentary_diligence_plan_contract",
+      "sql_md5": "c27b195ab6dff403e1e37cb5d96225e4"
+    },
+    {
+      "version": "20260910033516",
+      "name": "documentary_comparison_review_contract",
+      "sql_md5": "7f359362e1cbb050c05857ea9220da4c"
+    },
+    {
+      "version": "20260910033526",
+      "name": "provider_research_persisted_bridge",
+      "sql_md5": "36a4f6458755ed8c35ead6f26bf994e8"
+    },
+    {
+      "version": "20260910033542",
+      "name": "institutional_model_assumption_answers",
+      "sql_md5": "a922c8b9f421d0e2753faacc40bcb5da"
+    },
+    {
+      "version": "20260910033550",
+      "name": "institutional_private_explicit_rls",
+      "sql_md5": "be971ace3f071ca9dbf303a0f86f7af7"
+    },
+    {
+      "version": "20260910072024",
+      "name": "provider_case_fit_persisted_workflow",
+      "sql_md5": "3386ae664dbc930b0884bda5ffa1da16"
+    },
+    {
+      "version": "20260910072039",
+      "name": "provider_case_fit_message_alias_fix",
+      "sql_md5": "1d914b396c61e42279eeabb494e678f8"
+    },
+    {
+      "version": "20260910072054",
+      "name": "institutional_model_setup_and_source_bindings",
+      "sql_md5": "a8e526bcfd2f0eea54832f0dd9c6bfcb"
+    },
+    {
+      "version": "20260910072110",
+      "name": "institutional_setup_binding_guards",
+      "sql_md5": "15903d2316ca6bbd562c24f52263ebbe"
+    },
+    {
+      "version": "20260910072126",
+      "name": "institutional_setup_candidate_variable_fix",
+      "sql_md5": "0e04e024968b37d2561dd12b513b7978"
+    },
+    {
+      "version": "20260910072135",
+      "name": "institutional_approved_model_results",
+      "sql_md5": "3b6d9fdc67935d8dd4bf6954383b0a0c"
+    },
+    {
+      "version": "20260910072146",
+      "name": "case_engine_v17_institutional_scope",
+      "sql_md5": "125d92da8a5d72af647e43aa1cdff674"
+    },
+    {
+      "version": "20260910072157",
+      "name": "institutional_result_terminal_status",
+      "sql_md5": "bf66a27d36662b93319032c15599b985"
+    },
+    {
+      "version": "20260910100522",
+      "name": "documentary_field_assessments_contract",
+      "sql_md5": "ff411379a8846996a6bba81f28b95d0a"
+    },
+    {
+      "version": "20260910134302",
+      "name": "governed_business_dimensions",
+      "sql_md5": "c5ed2372bb83a5e5aa7d1975202b85b4"
+    },
+    {
+      "version": "20260910134318",
+      "name": "institutional_reviewed_result_comparison",
+      "sql_md5": "6eb744827e765ca4d550de708b52e559"
+    },
+    {
+      "version": "20260910134705",
+      "name": "institutional_editable_workbook_contract",
+      "sql_md5": "71b54c47e80ad4adad391ebd28183efa"
+    },
+    {
+      "version": "20260910135224",
+      "name": "explicit_documentary_work_revision",
+      "sql_md5": "5155e10a427da402a6bff489e6710455"
+    },
+    {
+      "version": "20260910135636",
+      "name": "documentary_revision_private_admission",
+      "sql_md5": "a20a03c2453f49a4bc8d75be8f99bea5"
+    },
+    {
+      "version": "20260910151957",
+      "name": "provider_research_public_catalog_v2",
+      "sql_md5": "b9d9e16b7bfc249fdd1db9bf4d389741"
+    },
+    {
+      "version": "20260910153117",
+      "name": "confirmed_receivables_support_sheets_v2",
+      "sql_md5": "aacad2b5edbe1e7e8eedb4154f91a442"
+    },
+    {
+      "version": "20260910153338",
+      "name": "support_sheet_runtime_invoker_contract",
+      "sql_md5": "d2ce480530b952cd7b8cde6dc07c72b5"
+    },
+    {
+      "version": "20260910160700",
+      "name": "documentary_progress_persisted_scope_guard",
+      "sql_md5": "e1d0e15de47aa1626bf4836b066161dc"
+    },
+    {
+      "version": "20260910164327",
+      "name": "preserve_open_decision_history",
+      "sql_md5": "e410b802339ea15feda3c069d93bd5a3"
+    },
+    {
+      "version": "20260910171808",
+      "name": "preserve_specialist_information_requests",
+      "sql_md5": "0deeba8a0a5a9c5aa2552ec4731466da"
+    },
+    {
+      "version": "20260910174141",
+      "name": "revise_receivables_request_bindings",
+      "sql_md5": "2350a282d0963618af90cb07a51f3d21"
+    },
+    {
+      "version": "20260910230211",
+      "name": "project_review_roles",
+      "sql_md5": "fd853f5b17f1cff8add367b17879c3b4"
+    },
+    {
+      "version": "20260910230401",
+      "name": "receivables_analytical_release",
+      "sql_md5": "95fc74155bc30bb9bf4d252ada4f9c56"
+    },
+    {
+      "version": "20260910230430",
+      "name": "receivables_released_results_fk_indexes",
+      "sql_md5": "28875c9e3e0d0b4e6282605d84244a2f"
+    },
+    {
+      "version": "20260910232821",
+      "name": "financier_analytical_workspace",
+      "sql_md5": "e56a3330f3f0b67be95c534c8e045753"
+    },
+    {
+      "version": "20260911010715",
+      "name": "receivables_universal_release",
+      "sql_md5": "4e4f3b26205874d9c96984162178f8d5"
+    },
+    {
+      "version": "20260911011830",
+      "name": "verified_provider_mandates",
+      "sql_md5": "66deadb7092a3becf058f12837288a66"
+    },
+    {
+      "version": "20260911011934",
+      "name": "client_presentation_templates",
+      "sql_md5": "5aea266da3df1187e80cefcd285693cc"
+    },
+    {
+      "version": "20260911020707",
+      "name": "project_canonical_revisions",
+      "sql_md5": "1b72234e8470b29fad93e7fa91df091d"
+    },
+    {
+      "version": "20260911020808",
+      "name": "project_revision_propagation",
+      "sql_md5": "ea99fbd35880c75af289f70cf697e5cb"
+    },
+    {
+      "version": "20260911020925",
+      "name": "institutional_revision_proposals",
+      "sql_md5": "39465267418edf267605bb7af9a8dd1e"
+    },
+    {
+      "version": "20260911021002",
+      "name": "revision_proposal_variable_scope",
+      "sql_md5": "bdbe1516d049e45504a77a25a39e4526"
+    },
+    {
+      "version": "20260911021039",
+      "name": "canonical_revision_variable_scope",
+      "sql_md5": "10f20bc4588fa0e320e0a4fb4b96518e"
+    },
+    {
+      "version": "20260911115509",
+      "name": "restore_institutional_review_role_gate",
+      "sql_md5": "bf5b684b6f0c29ddcefafc7501f92ec4"
+    },
+    {
+      "version": "20260911115624",
+      "name": "project_debt_structure_capability",
+      "sql_md5": "f75f72b30a6c1ffe33daac92e9fdc558"
+    },
+    {
+      "version": "20260911115726",
+      "name": "provider_mandate_confirmation_clock_timestamp",
+      "sql_md5": "b7f58e8d5a556d68466aab5b9bc8a297"
+    },
+    {
+      "version": "20260914213242",
+      "name": "provider_mandate_confirmation_sequence",
+      "sql_md5": "7acd7b23052399964a8ee935fe82f9d4"
+    }
+  ]
+}

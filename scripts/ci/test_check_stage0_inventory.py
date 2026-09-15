@@ -78,5 +78,39 @@ class CoverageTest(unittest.TestCase):
         f['function'] = 'private.unreviewed_trigger()'
         self.assertIn('catalogue_contract_drift:' + f['id'], self.errors(c))
 
+class ProductionJournalTest(unittest.TestCase):
+    def setUp(self):
+        self.journal = json.loads(checker.PRODUCTION_JOURNAL.read_text())
+
+    def test_every_file_version_exists_in_production_journal(self):
+        self.assertEqual(checker.check_production_journal(self.journal), [])
+
+    def test_missing_production_version_is_rejected(self):
+        path = next((checker.ROOT / 'supabase/migrations').glob('*.sql'))
+        self.journal['rows'] = [r for r in self.journal['rows'] if r['version'] != path.name.split('_')[0]]
+        self.assertIn('migration_absent_from_production_journal:' + path.name,
+                      checker.check_production_journal(self.journal))
+
+    def test_same_sql_name_under_another_stamp_is_not_coverage(self):
+        row = next(r for r in self.journal['rows'] if r['name'] == 'public_company_source_memory')
+        row['version'] = '20260903141000'
+        self.assertIn('migration_absent_from_production_journal:20260903134819_public_company_source_memory.sql',
+                      checker.check_production_journal(self.journal))
+
+    def test_matching_version_with_wrong_name_is_rejected(self):
+        row = next(r for r in self.journal['rows'] if r['name'] == 'public_company_source_memory')
+        row['name'] = 'unrelated_change'
+        self.assertIn('production_journal_name_mismatch:20260903134819_public_company_source_memory.sql',
+                      checker.check_production_journal(self.journal))
+
+    def test_staging_receipt_cannot_attest_production(self):
+        self.journal['project_id'] = 'gjkkjtbfnssdsbmlhmwk'
+        self.assertIn('invalid_production_journal_provenance', checker.check_production_journal(self.journal))
+
+    def test_duplicate_journal_version_is_rejected(self):
+        self.journal['rows'].append(copy.deepcopy(self.journal['rows'][0]))
+        self.assertIn('duplicate_production_journal_version', checker.check_production_journal(self.journal))
+
+
 if __name__ == '__main__':
     unittest.main()

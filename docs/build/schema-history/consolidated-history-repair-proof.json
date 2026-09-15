@@ -1,0 +1,77 @@
+{
+  "captured_at": "2026-09-15T00:29:08.080Z",
+  "consolidation_trimmed_sha256": "74e1034fcdf890852c02585a29b8bb50a9f5085a638afe4044567bfb476c7739",
+  "embedded_bodies_exact": true,
+  "production": {
+    "before": [
+      {
+        "consolidation_version": "20260908035038",
+        "consolidation_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6",
+        "metrics_exists": true,
+        "metrics_options": [
+          "security_invoker=true"
+        ],
+        "upload_grants_exists": true,
+        "artifact_distinct": true,
+        "artifact_inner_order": true,
+        "artifact_outer_order": true,
+        "functions_md5": "7a1154f78c16c31f0537497c4b645f37",
+        "columns_md5": "4d11eb71e7065cb538869d0a37e90d5e",
+        "policies_md5": "a77d27234489c1fd099735ae4f94e1fe"
+      }
+    ],
+    "after": [
+      {
+        "consolidation_version": "20260908035038",
+        "consolidation_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6",
+        "metrics_exists": true,
+        "metrics_options": [
+          "security_invoker=true"
+        ],
+        "upload_grants_exists": true,
+        "artifact_distinct": true,
+        "artifact_inner_order": true,
+        "artifact_outer_order": true,
+        "functions_md5": "7a1154f78c16c31f0537497c4b645f37",
+        "columns_md5": "4d11eb71e7065cb538869d0a37e90d5e",
+        "policies_md5": "a77d27234489c1fd099735ae4f94e1fe"
+      }
+    ]
+  },
+  "staging": {
+    "before": [
+      {
+        "consolidation_version": "20260908024019",
+        "consolidation_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6",
+        "metrics_exists": true,
+        "metrics_options": [
+          "security_invoker=true"
+        ],
+        "upload_grants_exists": true,
+        "artifact_distinct": true,
+        "artifact_inner_order": true,
+        "artifact_outer_order": true,
+        "functions_md5": "c6607b1c84eeb47720e91f5da6ae45ac",
+        "columns_md5": "a7d9e3ccca672c8c7e8eadce258a0edf",
+        "policies_md5": "c95724f5fc0b43e746591e79f07d1962"
+      }
+    ],
+    "after": [
+      {
+        "consolidation_version": "20260908024019",
+        "consolidation_md5": "9396d6b89ea1a89fca99dae5c1b5cfd6",
+        "metrics_exists": true,
+        "metrics_options": [
+          "security_invoker=true"
+        ],
+        "upload_grants_exists": true,
+        "artifact_distinct": true,
+        "artifact_inner_order": true,
+        "artifact_outer_order": true,
+        "functions_md5": "c6607b1c84eeb47720e91f5da6ae45ac",
+        "columns_md5": "a7d9e3ccca672c8c7e8eadce258a0edf",
+        "policies_md5": "c95724f5fc0b43e746591e79f07d1962"
+      }
+    ]
+  }
+}

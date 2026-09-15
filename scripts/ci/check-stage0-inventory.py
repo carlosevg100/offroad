@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / 'docs/build/arcabouco-stage0/object-decisions.json'
+PRODUCTION_JOURNAL = ROOT / 'docs/build/schema-history/production-migration-journal.json'
 ALLOWED = {'preservar', 'consolidar', 'refatorar', 'substituir', 'apagar', 'congelar'}
 
 
@@ -86,16 +87,45 @@ def check(manifest, catalogue, root=ROOT, environment='replay'):
     return errors
 
 
+def check_production_journal(journal, root=ROOT):
+    """Every replay file must have a production version, even when SQL exists under another stamp."""
+    errors = []
+    if journal.get('project_id') != 'ifnogpksgdadruooqydi' or not journal.get('captured_at'):
+        errors.append('invalid_production_journal_provenance')
+    rows = journal.get('rows', [])
+    versions = {row['version']: row for row in rows}
+    if len(versions) != len(rows):
+        errors.append('duplicate_production_journal_version')
+    files = list((root / 'supabase/migrations').glob('*.sql'))
+    if not files:
+        errors.append('missing_migration_files')
+    file_versions = set()
+    for path in sorted(files):
+        version, name = path.stem.split('_', 1)
+        if version in file_versions:
+            errors.append('duplicate_file_version:' + version)
+        file_versions.add(version)
+        row = versions.get(version)
+        if row is None:
+            errors.append('migration_absent_from_production_journal:' + path.name)
+        elif row['name'] != name:
+            errors.append('production_journal_name_mismatch:' + path.name)
+    return errors
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--catalogue', required=True, type=Path)
     parser.add_argument('--environment', choices=['replay', 'production', 'staging'], default='replay')
+    parser.add_argument('--production-journal', type=Path, default=PRODUCTION_JOURNAL,
+                        help='Production journal receipt, collected live before publication')
     args = parser.parse_args()
     data = json.loads(args.catalogue.read_text())
     if isinstance(data, list):
         data = data[0]['catalogue']
     manifest = json.loads(MANIFEST.read_text())
     errors = check(manifest, data, environment=args.environment)
+    errors += check_production_journal(json.loads(args.production_journal.read_text()))
     target = 'production' if args.environment == 'replay' else args.environment
     reviewed = {row['id']: row for row in manifest['objects']}
     differences = []

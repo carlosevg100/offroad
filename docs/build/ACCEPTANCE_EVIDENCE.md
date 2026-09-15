@@ -1,3 +1,7 @@
+## Stage 0 production journal parity correction
+
+The remaining fourteen file/version gaps are reconciled: eleven files now use the production stamps with unchanged SQL; three journal-only repairs record bodies already installed by the schema-gap consolidation. Both environments were repaired without replay, and before/after function, column and policy fingerprints are unchanged. See `docs/build/schema-history/JOURNAL-PARITY.md` for the evidence and CI contract. The stage-zero inventory checker now rejects every local migration version absent from the production journal receipt, including same SQL under a different stamp. Both checkers run in the Database CI job now. Merge, main CI and deployment results are recorded in the wave completion report; this source entry does not claim those pending results.
+
 ## 14 September 2026: wave 1 procedure authoring foundation
 
 ## Stage 0 replay bootstrap diagnosis, 14 September 2026
