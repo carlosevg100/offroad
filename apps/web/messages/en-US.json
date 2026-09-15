@@ -6107,7 +6107,7 @@
       "compliance": "Compliance"
     },
     "members": "Organization members",
-    "owner": "Owner · transfer through ownership administration",
+    "owner": "Organization owner",
     "status": "Status",
     "active": "Active",
     "suspended": "Suspended",

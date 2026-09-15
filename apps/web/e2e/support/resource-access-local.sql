@@ -33,7 +33,7 @@ begin
  values('a11e0000-0000-4000-9000-000000000007',o,c,s,'user','completed','Synthetic confidential question','pt-BR',a);
 end $$;
 
-update auth.users set instance_id='00000000-0000-0000-0000-000000000000',email_confirmed_at=now(),encrypted_password=extensions.crypt('Synthetic-Access!2026',extensions.gen_salt('bf')),raw_app_meta_data='{"provider":"email","providers":["email"]}' where id in ('a11e0000-0000-4000-8000-000000000001','a11e0000-0000-4000-8000-000000000002');
+update auth.users set instance_id='00000000-0000-0000-0000-000000000000',email_confirmed_at=now(),confirmation_token='',recovery_token='',email_change_token_new='',email_change='',encrypted_password=extensions.crypt('Synthetic-Access!2026',extensions.gen_salt('bf')),raw_app_meta_data='{"provider":"email","providers":["email"]}' where id in ('a11e0000-0000-4000-8000-000000000001','a11e0000-0000-4000-8000-000000000002');
 insert into auth.identities(id,user_id,provider_id,provider,identity_data,created_at,updated_at)
 select gen_random_uuid(),id,id::text,'email',jsonb_build_object('sub',id::text,'email',email),now(),now() from auth.users where id in ('a11e0000-0000-4000-8000-000000000001','a11e0000-0000-4000-8000-000000000002');
 insert into public.organizations(id,organization_type,name,created_by) values('a11e0000-0000-4000-9000-000000000020','originator','Synthetic second organization','a11e0000-0000-4000-8000-000000000002');

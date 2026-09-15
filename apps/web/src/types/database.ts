@@ -4517,6 +4517,155 @@ export type Database = {
         }
         Relationships: []
       }
+      information_pack_items: {
+        Row: {
+          artifact_fingerprint: string
+          created_at: string
+          deliverable_id: string
+          format: string
+          id: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids: Json
+          template_fingerprint: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Insert: {
+          artifact_fingerprint: string
+          created_at?: string
+          deliverable_id: string
+          format: string
+          id?: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Update: {
+          artifact_fingerprint?: string
+          created_at?: string
+          deliverable_id?: string
+          format?: string
+          id?: string
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key?: string
+          template_origin?: string
+          template_version?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_items_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      information_pack_revisions: {
+        Row: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status: string
+          superseded_at: string | null
+          superseded_by_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at?: string
+          created_by: string
+          id?: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capital_project_id?: string
+          case_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          intake_session_id?: string
+          manifest?: Json
+          material_fingerprint?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          revision_number?: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_capital_project_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_intake_session__fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_superseded_by_fkey"
+            columns: ["organization_id", "superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       institution_capability_profiles: {
         Row: {
           capability_notes: string | null
@@ -6136,6 +6285,466 @@ export type Database = {
           },
         ]
       }
+      pack_access_events: {
+        Row: {
+          access_kind: string
+          accessed_at: string
+          accessed_by: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Insert: {
+          access_kind: string
+          accessed_at?: string
+          accessed_by: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id?: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Update: {
+          access_kind?: string
+          accessed_at?: string
+          accessed_by?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_item_id?: string | null
+          pack_revision_id?: string
+          recipient_organization_id?: string
+          share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_access_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_item_id_fkey"
+            columns: ["organization_id", "pack_item_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_authorizations: {
+        Row: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at: string
+          consented_by: string
+          created_at: string
+          id: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+          wave_limit: number
+        }
+        Insert: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at?: string
+          consented_by: string
+          created_at?: string
+          id?: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit: number
+        }
+        Update: {
+          capital_project_id?: string
+          consent_basis?: string
+          consent_statement?: string
+          consented_at?: string
+          consented_by?: string
+          created_at?: string
+          id?: string
+          identity_policy?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          pack_revision_id?: string
+          policy_version?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_next_steps: {
+        Row: {
+          id: string
+          intake_session_id: string
+          note: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Insert: {
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at?: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Update: {
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          organization_id?: string
+          pack_revision_id?: string
+          recorded_at?: string
+          recorded_by?: string
+          share_id?: string
+          step_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_intake_sessio_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_pack_revision_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      pack_distribution_shares: {
+        Row: {
+          authorization_id: string
+          created_at: string
+          created_by: string
+          delivery_state: string
+          id: string
+          intake_session_id: string
+          issuer_display_name: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          authorization_id: string
+          created_at?: string
+          created_by: string
+          delivery_state: string
+          id?: string
+          intake_session_id: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id?: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          authorization_id?: string
+          created_at?: string
+          created_by?: string
+          delivery_state?: string
+          id?: string
+          intake_session_id?: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed?: boolean
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          recipient_directory_id?: string | null
+          recipient_kind?: string
+          recipient_label?: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_authorization_id_fkey"
+            columns: ["organization_id", "authorization_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_authorizations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_directory_id_fkey"
+            columns: ["recipient_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_recipient_responses: {
+        Row: {
+          created_at: string
+          id: string
+          intake_session_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis: string | null
+          pricing_max: number | null
+          pricing_min: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id: string | null
+          tenor_months: number | null
+          term_objections: Json
+          ticket_amount: number | null
+          ticket_currency: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          occurred_at?: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions?: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          pack_revision_id?: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id?: string
+          recorded_by?: string
+          requested_conditions?: Json
+          response_state?: string
+          share_id?: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_supersedes_respon_fkey"
+            columns: ["organization_id", "supersedes_response_id"]
+            isOneToOne: false
+            referencedRelation: "pack_recipient_responses"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_legal_documents: {
         Row: {
           acceptance_statement: string
@@ -6538,6 +7147,9 @@ export type Database = {
       processing_jobs: {
         Row: {
           attempts: number
+          authorization_resource_id: string | null
+          authorization_revision: number | null
+          authorization_subject_id: string | null
           available_at: string
           capability_sha256: string | null
           controlled_execution_id: string | null
@@ -6547,6 +7159,7 @@ export type Database = {
           kind: string
           last_error: Json | null
           lease_expires_at: string | null
+          leased_account_user_id: string | null
           leased_by: string | null
           max_attempts: number
           model_calls: number
@@ -6555,12 +7168,16 @@ export type Database = {
           payload: Json
           processing_run_id: string
           result: Json | null
+          review_execution_authorization_id: string | null
           source_document_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
           attempts?: number
+          authorization_resource_id?: string | null
+          authorization_revision?: number | null
+          authorization_subject_id?: string | null
           available_at?: string
           capability_sha256?: string | null
           controlled_execution_id?: string | null
@@ -6570,6 +7187,7 @@ export type Database = {
           kind: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
           model_calls?: number
@@ -6578,12 +7196,16 @@ export type Database = {
           payload?: Json
           processing_run_id: string
           result?: Json | null
+          review_execution_authorization_id?: string | null
           source_document_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           attempts?: number
+          authorization_resource_id?: string | null
+          authorization_revision?: number | null
+          authorization_subject_id?: string | null
           available_at?: string
           capability_sha256?: string | null
           controlled_execution_id?: string | null
@@ -6593,6 +7215,7 @@ export type Database = {
           kind?: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
           model_calls?: number
@@ -6601,6 +7224,7 @@ export type Database = {
           payload?: Json
           processing_run_id?: string
           result?: Json | null
+          review_execution_authorization_id?: string | null
           source_document_id?: string | null
           status?: string
           updated_at?: string
@@ -7289,6 +7913,106 @@ export type Database = {
             columns: ["organization_id", "source_output_version_id"]
             isOneToOne: false
             referencedRelation: "output_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      qualified_contact_preparations: {
+        Row: {
+          candidate_fit: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string | null
+          pack_revision_id: string | null
+          plan_id: string
+          prepared_at: string
+          prepared_by: string
+          rationale: string
+          released_at: string | null
+          released_by: string | null
+          share_id: string | null
+          status: string
+          target_id: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_fit: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id: string
+          prepared_at?: string
+          prepared_by: string
+          rationale: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_fit?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id?: string
+          prepared_at?: string
+          prepared_by?: string
+          rationale?: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_target_id_fkey"
+            columns: ["organization_id", "target_id"]
+            isOneToOne: true
+            referencedRelation: "qualified_introduction_targets"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -8320,14 +9044,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      invite_workspace_member_v1: {Args: {p_email: string; p_role: string}; Returns: string};
-      list_my_workspace_invites_v1: {Args: Record<PropertyKey, never>; Returns: Json};
-      accept_workspace_invite_v1: {Args: {p_invite_id: string}; Returns: string};
-      set_workspace_member_v1: {Args: {p_user_id: string; p_role: string; p_status: string}; Returns: undefined};
-      read_workspace_access_v1: {Args: Record<PropertyKey, never>; Returns: Json};
-      grant_resource_access_v1: {Args: {p_resource_id: string; p_subject_user_id: string; p_action: string; p_expires_at?: string}; Returns: string};
-      revoke_resource_access_v1: {Args: {p_resource_id: string; p_subject_user_id: string}; Returns: undefined};
-      list_my_workspaces_v1: { Args: Record<PropertyKey, never>; Returns: Json };
       accept_and_apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string
@@ -8352,6 +9068,10 @@ export type Database = {
           p_signatory_title: string
           p_terms_agreed: boolean
         }
+        Returns: string
+      }
+      accept_workspace_invite_v1: {
+        Args: { p_invite_id: string }
         Returns: string
       }
       append_advisor_message_v1: {
@@ -8410,6 +9130,17 @@ export type Database = {
         Args: { p_information_rights_declared: boolean; p_project_id: string }
         Returns: string
       }
+      authorize_pack_distribution: {
+        Args: {
+          p_consent_statement: string
+          p_organization_id: string
+          p_pack_fingerprint: string
+          p_pack_revision_id: string
+          p_recipients: Json
+          p_session_id: string
+        }
+        Returns: Json
+      }
       authorize_qualified_introduction_plan: {
         Args: { p_material_fingerprint: string; p_plan_id: string }
         Returns: string
@@ -8436,6 +9167,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: boolean
+      }
+      claim_storage_rotation_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
       }
       complete_intake_processing: {
         Args: {
@@ -8601,6 +9336,15 @@ export type Database = {
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: { Args: { p_locale: string }; Returns: Json }
+      grant_resource_access_v1: {
+        Args: {
+          p_action: string
+          p_expires_at?: string
+          p_resource_id: string
+          p_subject_user_id: string
+        }
+        Returns: string
+      }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -8610,6 +9354,12 @@ export type Database = {
         }
         Returns: string
       }
+      invite_workspace_member_v1: {
+        Args: { p_email: string; p_role: string }
+        Returns: string
+      }
+      list_my_workspace_invites_v1: { Args: never; Returns: Json }
+      list_my_workspaces_v1: { Args: never; Returns: Json }
       list_provider_mandates_v1: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -8625,6 +9375,19 @@ export type Database = {
       manage_workspace_project_group: {
         Args: { p_action: string; p_group_id: string; p_name?: string }
         Returns: Json
+      }
+      open_shared_information_pack_item: {
+        Args: { p_item_id: string; p_share_id: string }
+        Returns: Json
+      }
+      prepare_qualified_contact: {
+        Args: {
+          p_candidate_fit: string
+          p_rationale: string
+          p_share_id?: string
+          p_target_id: string
+        }
+        Returns: string
       }
       prepare_qualified_introduction_plan: {
         Args: {
@@ -8710,6 +9473,15 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      read_shared_information_pack: {
+        Args: { p_share_id: string }
+        Returns: Json
+      }
+      read_shared_pack_item_material: {
+        Args: { p_item_id: string; p_share_id: string }
+        Returns: Json
+      }
+      read_workspace_access_v1: { Args: never; Returns: Json }
       record_agent_change_proposal: {
         Args: {
           p_organization_id: string
@@ -8829,6 +9601,10 @@ export type Database = {
         }
         Returns: string
       }
+      record_information_pack_revision: {
+        Args: { p_items: Json; p_organization_id: string; p_session_id: string }
+        Returns: Json
+      }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
@@ -8886,6 +9662,27 @@ export type Database = {
         }
         Returns: string
       }
+      record_pack_distribution_next_step: {
+        Args: { p_note?: string; p_share_id: string; p_step_code: string }
+        Returns: string
+      }
+      record_pack_recipient_response: {
+        Args: {
+          p_note?: string
+          p_pricing_basis?: string
+          p_pricing_max?: number
+          p_pricing_min?: number
+          p_requested_conditions?: Json
+          p_response_state: string
+          p_share_id: string
+          p_supersedes_response_id?: string
+          p_tenor_months?: number
+          p_term_objections?: Json
+          p_ticket_amount?: number
+          p_ticket_currency?: string
+        }
+        Returns: string
+      }
       record_qualified_introduction_feedback: {
         Args: {
           p_amount?: number
@@ -8901,6 +9698,16 @@ export type Database = {
           p_verification_state: string
         }
         Returns: string
+      }
+      record_storage_rotation_v1: {
+        Args: {
+          p_byte_length: number
+          p_capability: string
+          p_complete: boolean
+          p_rotation_id: string
+          p_sha256: string
+        }
+        Returns: undefined
       }
       register_intake_document_command: {
         Args: {
@@ -8926,6 +9733,10 @@ export type Database = {
           p_organization_id: string
         }
         Returns: Json
+      }
+      release_qualified_contact: {
+        Args: { p_pack_fingerprint: string; p_preparation_id: string }
+        Returns: string
       }
       remove_intake_document_command: {
         Args: {
@@ -8983,6 +9794,10 @@ export type Database = {
           p_suggestion_event_id: string
           p_suggestion_id: string
         }
+        Returns: Json
+      }
+      resolve_pack_distribution_candidates: {
+        Args: { p_organization_id: string; p_session_id: string }
         Returns: Json
       }
       restart_onboarding_intake: {
@@ -9064,9 +9879,17 @@ export type Database = {
         }
         Returns: Json
       }
+      revoke_pack_distribution: {
+        Args: { p_authorization_id: string }
+        Returns: string
+      }
       revoke_qualified_introduction_plan: {
         Args: { p_plan_id: string }
         Returns: string
+      }
+      revoke_resource_access_v1: {
+        Args: { p_resource_id: string; p_subject_user_id: string }
+        Returns: number
       }
       save_guided_company_profile: {
         Args: {
@@ -9201,6 +10024,10 @@ export type Database = {
           p_project_id: string
         }
         Returns: Json
+      }
+      set_workspace_member_v1: {
+        Args: { p_role: string; p_status: string; p_user_id: string }
+        Returns: undefined
       }
       set_workspace_project_job: {
         Args: { p_entry_job: string; p_session_id: string }
@@ -9535,6 +10362,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_authorize_document_storage_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_bind_receivables_information_request_fields_v1: {
         Args: {
           p_capability_token: string
@@ -9548,6 +10379,10 @@ export type Database = {
         Returns: Json
       }
       worker_claim_job_v2: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
+      worker_claim_job_v3: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
       }

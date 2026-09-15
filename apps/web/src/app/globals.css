@@ -2841,3 +2841,20 @@ summary:focus-visible {
 .workspace-access input,.workspace-access select,.workspace-access button {min-height:2.75rem;padding:.5rem .75rem;font:inherit;}
 .workspace-access h2 {margin-top:2rem;}
 .workspace-access form p {flex:1 1 100%;}
+
+.workspace-access {color:var(--ink);font-size:.9375rem;line-height:1.55;}
+.workspace-access h1 {font-size:1.75rem;font-weight:600;letter-spacing:-.025em;margin-bottom:.75rem;}
+.workspace-access h2 {font-size:1.125rem;font-weight:600;margin-bottom:.5rem;}
+.workspace-access form {background:var(--paper);}
+.workspace-access label {min-width:0;font-size:.875rem;font-weight:500;}
+.workspace-access input,.workspace-access select {width:100%;min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);}
+.workspace-access button {border:1px solid var(--ink);border-radius:6px;background:var(--ink);color:var(--paper);cursor:pointer;font-weight:500;}
+.workspace-access :is(input,select,button,a):focus-visible {outline:2px solid #547047;outline-offset:3px;}
+.workspace-access p {overflow-wrap:anywhere;}
+.workspace-access [role="status"] {padding:.75rem 1rem;border-left:3px solid #547047;background:#f5f8f1;}
+@media(max-width:600px) {
+ .workspace-access {padding:1rem;}
+ .workspace-access form {padding:.75rem;}
+ .workspace-access form button {width:100%;}
+ .workspace-context-navigation {padding:1rem;gap:.5rem;}
+}

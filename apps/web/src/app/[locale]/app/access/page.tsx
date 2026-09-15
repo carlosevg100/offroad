@@ -27,7 +27,7 @@ export default async function AccessPage({params, searchParams}: {params:Promise
    <button type="submit">{t("invite")}</button>
   </form>
   <h2>{t("members")}</h2>
-  {access.members.map(member=><div key={member.id}><p>{member.name} · {member.email}</p>
+  {access.members.map(member=><div key={member.id}><p>{member.name}{member.email !== member.name && <> · {member.email}</>}</p>
    {member.role === "owner" ? <p>{t("owner")}</p> : <form action={action}>
     <input type="hidden" name="command" value="member"/><input type="hidden" name="user" value={member.id}/>
     <label>{t("role")}<select name="role" defaultValue={member.role}>{roles.map(r=><option key={r} value={r}>{t(`roles.${r}`)}</option>)}</select></label>
