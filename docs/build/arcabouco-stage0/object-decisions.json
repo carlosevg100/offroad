@@ -3791,7 +3791,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904054530_fix_advisor_preliminary_confirmation.sql",
+          "path": "supabase/migrations/20260904055915_fix_advisor_preliminary_confirmation.sql",
           "line": 6,
           "anchor": "create or replace function private.decide_advisor_preliminary_v1(",
           "mechanism": "direct_ddl"
@@ -4886,7 +4886,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904035311_preliminary_understanding_completion_budget.sql",
+          "path": "supabase/migrations/20260904040355_preliminary_understanding_completion_budget.sql",
           "line": 4,
           "anchor": "create or replace function private.enqueue_primary_case_analysis(",
           "mechanism": "direct_ddl"
@@ -9018,13 +9018,13 @@
       "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
       "sources": [
         {
-          "path": "supabase/migrations/20260903193000_origination_runtime_budget.sql",
+          "path": "supabase/migrations/20260903213233_origination_runtime_budget.sql",
           "line": 7,
           "anchor": "create or replace function private.normalize_origination_runtime_budget_v1()",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260903215000_origination_completion_headroom.sql",
+          "path": "supabase/migrations/20260903215610_origination_completion_headroom.sql",
           "line": 5,
           "anchor": "create or replace function private.normalize_origination_runtime_budget_v1()",
           "mechanism": "direct_ddl"
@@ -18577,13 +18577,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260904023000_advisor_chat_artifact_revision.sql",
+          "path": "supabase/migrations/20260904022353_advisor_chat_artifact_revision.sql",
           "line": 6,
           "anchor": "create or replace function private.submit_advisor_artifact_revision_turn_v1(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904023000_advisor_chat_artifact_revision.sql",
+          "path": "supabase/migrations/20260904022353_advisor_chat_artifact_revision.sql",
           "line": 216,
           "anchor": "create or replace function public.submit_advisor_artifact_revision_turn_v1(",
           "mechanism": "direct_ddl"
@@ -23121,7 +23121,7 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260904062000_full_case_project_binding.sql",
+          "path": "supabase/migrations/20260904061619_full_case_project_binding.sql",
           "line": 5,
           "anchor": "create or replace function private.worker_load_case_project_binding(",
           "mechanism": "direct_ddl"
@@ -24442,7 +24442,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904041204_preliminary_input_project_binding.sql",
+          "path": "supabase/migrations/20260904041325_preliminary_input_project_binding.sql",
           "line": 6,
           "anchor": "create or replace function private.worker_load_preliminary_input_v2(",
           "mechanism": "direct_ddl"
@@ -24901,13 +24901,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 59,
           "anchor": "create or replace function private.worker_load_public_company_memory(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 219,
           "anchor": "create or replace function public.worker_load_public_company_memory(",
           "mechanism": "direct_ddl"
@@ -25524,7 +25524,7 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 34,
           "anchor": "create or replace function private.worker_public_company_memory_job(",
           "mechanism": "direct_ddl"
@@ -25950,7 +25950,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904005640_retry_failed_specialized_analysis.sql",
+          "path": "supabase/migrations/20260904011351_retry_failed_specialized_analysis.sql",
           "line": 276,
           "anchor": "create or replace function private.worker_record_agent_response_and_activate_v2(",
           "mechanism": "direct_ddl"
@@ -28224,7 +28224,7 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260904005640_retry_failed_specialized_analysis.sql",
+          "path": "supabase/migrations/20260904011351_retry_failed_specialized_analysis.sql",
           "line": 6,
           "anchor": "create or replace function private.worker_retry_failed_advisor_specialized_job_v1(",
           "mechanism": "direct_ddl"
@@ -28425,13 +28425,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 105,
           "anchor": "create or replace function private.worker_store_public_company_memory(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 227,
           "anchor": "create or replace function public.worker_store_public_company_memory(",
           "mechanism": "direct_ddl"
@@ -30846,7 +30846,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904054530_fix_advisor_preliminary_confirmation.sql",
+          "path": "supabase/migrations/20260904055915_fix_advisor_preliminary_confirmation.sql",
           "line": 6,
           "anchor": "create or replace function private.decide_advisor_preliminary_v1(",
           "mechanism": "direct_ddl"
@@ -39566,13 +39566,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260904023000_advisor_chat_artifact_revision.sql",
+          "path": "supabase/migrations/20260904022353_advisor_chat_artifact_revision.sql",
           "line": 6,
           "anchor": "create or replace function private.submit_advisor_artifact_revision_turn_v1(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904023000_advisor_chat_artifact_revision.sql",
+          "path": "supabase/migrations/20260904022353_advisor_chat_artifact_revision.sql",
           "line": 216,
           "anchor": "create or replace function public.submit_advisor_artifact_revision_turn_v1(",
           "mechanism": "direct_ddl"
@@ -44033,7 +44033,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904041204_preliminary_input_project_binding.sql",
+          "path": "supabase/migrations/20260904041325_preliminary_input_project_binding.sql",
           "line": 6,
           "anchor": "create or replace function private.worker_load_preliminary_input_v2(",
           "mechanism": "direct_ddl"
@@ -44351,13 +44351,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 59,
           "anchor": "create or replace function private.worker_load_public_company_memory(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 219,
           "anchor": "create or replace function public.worker_load_public_company_memory(",
           "mechanism": "direct_ddl"
@@ -45329,7 +45329,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260904005640_retry_failed_specialized_analysis.sql",
+          "path": "supabase/migrations/20260904011351_retry_failed_specialized_analysis.sql",
           "line": 276,
           "anchor": "create or replace function private.worker_record_agent_response_and_activate_v2(",
           "mechanism": "direct_ddl"
@@ -48083,13 +48083,13 @@
       "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 105,
           "anchor": "create or replace function private.worker_store_public_company_memory(",
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 227,
           "anchor": "create or replace function public.worker_store_public_company_memory(",
           "mechanism": "direct_ddl"
@@ -62293,7 +62293,7 @@
       "reason": "manter origem e bytes; vincular versão, direitos e escopo autorizado",
       "sources": [
         {
-          "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+          "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 5,
           "anchor": "create table private.public_company_source_memory (",
           "mechanism": "direct_ddl"
@@ -97735,7 +97735,7 @@
       "reason": "Preservar vínculo de trigger e função instalada; mudanças seguem a autoridade e linhagem da tabela public.processing_jobs.",
       "sources": [
         {
-          "path": "supabase/migrations/20260903193000_origination_runtime_budget.sql",
+          "path": "supabase/migrations/20260903213233_origination_runtime_budget.sql",
           "line": 39,
           "anchor": "create trigger processing_jobs_origination_budget_v1",
           "mechanism": "direct_ddl"
@@ -105433,14 +105433,14 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260903132355_advisor_specialized_professional_context.sql",
+      "path": "supabase/migrations/20260903134811_advisor_specialized_professional_context.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260903141000_public_company_source_memory.sql",
+      "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
@@ -105454,28 +105454,28 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260903193000_origination_runtime_budget.sql",
+      "path": "supabase/migrations/20260903213233_origination_runtime_budget.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260903215000_origination_completion_headroom.sql",
+      "path": "supabase/migrations/20260903215610_origination_completion_headroom.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904003853_preserve_failed_user_message_memory.sql",
+      "path": "supabase/migrations/20260904005430_preserve_failed_user_message_memory.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904005640_retry_failed_specialized_analysis.sql",
+      "path": "supabase/migrations/20260904011351_retry_failed_specialized_analysis.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
@@ -105489,35 +105489,35 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904023000_advisor_chat_artifact_revision.sql",
+      "path": "supabase/migrations/20260904022353_advisor_chat_artifact_revision.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904035311_preliminary_understanding_completion_budget.sql",
+      "path": "supabase/migrations/20260904040355_preliminary_understanding_completion_budget.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904041204_preliminary_input_project_binding.sql",
+      "path": "supabase/migrations/20260904041325_preliminary_input_project_binding.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904054530_fix_advisor_preliminary_confirmation.sql",
+      "path": "supabase/migrations/20260904055915_fix_advisor_preliminary_confirmation.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260904062000_full_case_project_binding.sql",
+      "path": "supabase/migrations/20260904061619_full_case_project_binding.sql",
       "decision": "preservar",
       "stage": "0",
       "reason": "Histórico aplicado ou migração versionada; alterar efeitos somente em migração nova."
