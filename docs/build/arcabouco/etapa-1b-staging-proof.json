@@ -262,5 +262,24 @@
     "after": "PASS: read cannot insert/update/delete; explicit work can update"
   },
   "fixture_namespace": "a11f",
-  "fixture_cleanup": "pending after browser verification"
+  "fixture_cleanup": {
+    "synthetic_users": 0,
+    "synthetic_organizations": 0,
+    "synthetic_objects": 0,
+    "synthetic_resources": 0,
+    "synthetic_worker_tokens": 0
+  },
+  "production_rollout": {
+    "status": "blocked_rolled_back",
+    "applied_migrations": 0,
+    "error": "execution_brief_approval_required",
+    "historical_completed_jobs_without_current_dispatch": 12
+  },
+  "proposed_preflight_eval": {
+    "mode": "staging transaction with rollback",
+    "metadata_update": "PASS",
+    "requeue_without_current_approval": "DENIED",
+    "payload_change": "DENIED",
+    "persistently_applied": false
+  }
 }
