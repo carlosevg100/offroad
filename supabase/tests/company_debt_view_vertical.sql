@@ -168,7 +168,7 @@ declare
   v_final_fingerprint text;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('v', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('v', 64), 600);
   if claim #>> '{payload,analysis_scope}' <> 'company_debt_view'
     or jsonb_array_length(claim #> '{payload,capital_task_ids}') <> 24
     or claim #>> '{payload,model_budget,max_cost_usd}' <> '0.95'
@@ -253,7 +253,7 @@ begin
   end if;
 
   perform pg_temp.fixture_approve_pending_executions();
-  revision_claim := public.worker_claim_job(repeat('v', 64), 600);
+  revision_claim := public.worker_claim_job_v3(repeat('v', 64), 600);
   if revision_claim #>> '{payload,analysis_scope}' <> 'company_debt_view'
     or revision_claim #>> '{payload,capital_task_ids,0}' <> 'C11'
     or jsonb_array_length(revision_claim #> '{payload,capital_task_ids}') <> 1

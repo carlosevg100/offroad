@@ -24,7 +24,7 @@ begin
       <> 'document-worker-runtime.2026-09-08.execution-approval.v1' then
     raise exception 'unexpected worker runtime schema version: %', contract;
   end if;
-  if not (contract -> 'capabilities' @> '["integration-preview-workflow-continuity.v1", "receivables-information-request-bindings.v1", "receivables-complete-draft-refresh.v1", "universal-dispatch-candidate-shadow.v1", "explicit-execution-brief-approval.v1", "execution-brief-proposal.v1"]'::jsonb) then
+  if not (contract -> 'capabilities' @> '["explicit-resource-access.v1", "explicit-workspace-context.v1", "authenticated-document-storage.v1", "review-bound-execution.v1", "legacy-storage-rotation.v1", "integration-preview-workflow-continuity.v1", "receivables-information-request-bindings.v1", "receivables-complete-draft-refresh.v1", "universal-dispatch-candidate-shadow.v1", "explicit-execution-brief-approval.v1", "execution-brief-proposal.v1"]'::jsonb) then
     raise exception 'worker runtime capabilities are incomplete: %', contract;
   end if;
 end;

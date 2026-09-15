@@ -609,7 +609,7 @@ declare
   decision_id uuid;
   rejected boolean;
 begin
-  claim := public.worker_claim_job(repeat('q', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('q', 64), 600);
   if claim ->> 'kind' <> 'preliminary_analysis' then
     raise exception 'capital TaskRun test did not claim its scoped processing job: %', claim;
   end if;

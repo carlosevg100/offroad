@@ -371,7 +371,7 @@ begin
   begin
     perform public.read_capital_project_execution_brief_narrative_v1(brief_id);
     accepted := true;
-  exception when no_data_found then accepted := false;
+  exception when no_data_found or insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'workstream narrative crossed the tenant boundary'; end if;
   begin
@@ -381,7 +381,7 @@ begin
       'pt-BR', 'Tentar alterar o plano de outra organização.'
     );
     accepted := true;
-  exception when no_data_found then accepted := false;
+  exception when no_data_found or insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'governed brief edit crossed the tenant boundary'; end if;
 end;

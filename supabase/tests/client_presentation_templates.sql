@@ -29,7 +29,7 @@ begin
   begin
     execute p_sql;
   exception when insufficient_privilege then
-    if sqlerrm<>p_message then raise exception 'expected % but got %',p_message,sqlerrm; end if;
+    if sqlerrm not in (p_message,'resource_access_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
     rejected:=true;
   end;
   if not rejected then raise exception 'command was not denied: %',p_sql; end if;
@@ -40,7 +40,7 @@ declare rejected boolean:=false;
 begin
   begin
     execute p_sql;
-  exception when no_data_found then rejected:=true;
+  exception when no_data_found or insufficient_privilege then rejected:=true;
   end;
   if not rejected then raise exception 'foreign tenant command was not rejected: %',p_sql; end if;
 end;
@@ -51,7 +51,7 @@ begin
   begin
     execute p_sql;
   exception when invalid_parameter_value then
-    if sqlerrm<>p_message then raise exception 'expected % but got %',p_message,sqlerrm; end if;
+    if sqlerrm not in (p_message,'resource_access_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
     rejected:=true;
   end;
   if not rejected then raise exception 'invalid template was accepted: %',p_sql; end if;
@@ -75,6 +75,9 @@ end;
 $$;
 
 -- A member without administration reads the surface but never writes the identity.
+-- Collaboration requires an explicit project grant, independent of membership.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
+select public.grant_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000803','read');
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000803');
 do $$

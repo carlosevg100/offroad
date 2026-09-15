@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {materialToDocx, materialToPdf, materialToPptx} from "@offroad/case-export";
 import {deliverableFormatAllowed, deliverableFormatBlockCopy} from "@offroad/case-export/deliverable-formats";
 import {renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
@@ -18,7 +19,8 @@ type Params = {params: Promise<{locale: string; projectId: string; resultId: str
 export async function GET(_request: Request, {params}: Params) {
   const {locale, projectId, resultId, format} = await params;
   if (!Object.hasOwn(formats, format)) return new Response("Not found", {status: 404});
-  const {supabase} = await requireWorkspace(locale);
+  const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const result = await loadInstitutionalModelResult(supabase, projectId);
   const lang = locale === "en-US" ? "en" : "pt";
   if (!result || result.id !== resultId) {
@@ -40,6 +42,7 @@ export async function GET(_request: Request, {params}: Params) {
     const input = {material, lang, meta: {issuedOn: result.createdAt.slice(0, 10), template}} as const;
     bytes = format === "docx" ? materialToDocx(input) : format === "pptx" ? await materialToPptx(input) : await materialToPdf(input);
   }
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   return new Response(Buffer.from(bytes), {headers: {
     "content-type": formats[format as keyof typeof formats],
     "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${result.createdAt.slice(0,10)}.${format}"`,

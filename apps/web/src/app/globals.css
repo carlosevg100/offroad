@@ -2832,3 +2832,12 @@ summary:focus-visible {
     flex-direction: column;
   }
 }
+
+/* Workspace selection stays visible without sharing context between browser tabs. */
+.workspace-context-navigation {display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;padding:1rem 1.5rem;border-bottom:1px solid var(--line,#e5e7eb);font-size:.875rem;}
+.workspace-access {max-width:64rem;margin:auto;padding:clamp(1rem,3vw,2.5rem);}
+.workspace-access form {display:flex;flex-wrap:wrap;align-items:end;gap:1rem;margin:1rem 0;padding:1rem;border:1px solid var(--line,#e5e7eb);border-radius:.5rem;}
+.workspace-access label {display:flex;flex:1 1 12rem;flex-direction:column;gap:.4rem;}
+.workspace-access input,.workspace-access select,.workspace-access button {min-height:2.75rem;padding:.5rem .75rem;font:inherit;}
+.workspace-access h2 {margin-top:2rem;}
+.workspace-access form p {flex:1 1 100%;}

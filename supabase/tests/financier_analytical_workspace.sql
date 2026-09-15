@@ -199,7 +199,7 @@ $$;
 -- The entry is not repeatable once onboarding is complete.
 select pg_temp.expect_sqlstate(
   $$select public.start_financier_analytical_workspace_v1('pt-BR', 'Ana Analista', 'Analista de crédito', true, true)$$,
-  array['P0002'], 'repeated financier entry'
+  array['P0002','42501'], 'repeated financier entry'
 );
 
 set local role postgres;
@@ -436,11 +436,12 @@ select pg_temp.expect_sqlstate(
 -- 4. Financier analyst: reads the tenant's work, cannot accept terms for it; revoked afterwards
 -- ---------------------------------------------------------------------------------------------
 
+select public.grant_resource_access_v1((select value from financier_state where key='session'),'10000000-0000-4000-8000-000000000f02','read');
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000f02","role":"authenticated","aal":"aal1"}', true);
 do $$
 begin
   if (select count(*) from public.document_intake_sessions where id = (select value from financier_state where key = 'session')) <> 1 then
-    raise exception 'an active analyst of the financier tenant must read its sessions';
+    raise exception 'an explicitly authorized analyst must read the granted session';
   end if;
 end;
 $$;
@@ -455,7 +456,7 @@ where organization_id = '20000000-0000-4000-8000-000000000f01' and user_id = '10
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000f02","role":"authenticated","aal":"aal1"}', true);
 
-select pg_temp.expect_sqlstate($$select public.get_workspace_bootstrap()$$, array['P0002'], 'revoked member bootstrap');
+select pg_temp.expect_sqlstate($$select public.get_workspace_bootstrap()$$, array['P0002','42501'], 'revoked member bootstrap');
 select pg_temp.expect_sqlstate(
   format($$select public.register_intake_document_command('20000000-0000-4000-8000-000000000f01', %L, gen_random_uuid(), gen_random_uuid(), 'opportunity-documents', '20000000-0000-4000-8000-000000000f01/' || %L || '/revoked.pdf', 'revoked.pdf', 'application/pdf', 10, repeat('f', 64))$$,
     (select value from financier_state where key = 'session'), (select value from financier_state where key = 'session')),
@@ -494,15 +495,15 @@ select pg_temp.expect_sqlstate(
 select pg_temp.expect_sqlstate(
   format($$select public.record_intake_information_command('20000000-0000-4000-8000-000000000f02', %L, gen_random_uuid(), 'case_review_feedback', 'Outra organização', 'provided', null)$$,
     (select value from financier_state where key = 'session')),
-  array['P0002'], 'other tenant answering with its own tenant id and a foreign session id'
+  array['P0002','42501'], 'other tenant answering with its own tenant id and a foreign session id'
 );
 select pg_temp.expect_sqlstate(
   format($$select public.authorize_capital_project_private_work(%L, true)$$, (select value from financier_state where key = 'project')),
-  array['P0002'], 'other tenant authorizing the financier project'
+  array['P0002','42501'], 'other tenant authorizing the financier project'
 );
 select pg_temp.expect_sqlstate(
   format($$select public.manage_workspace_project(%L, 'rename', 'Sequestro')$$, (select value from financier_state where key = 'session')),
-  array['P0002'], 'other tenant renaming the financier project'
+  array['P0002','42501'], 'other tenant renaming the financier project'
 );
 
 -- Legacy financier workspace (onboarding completed through the mandate path, no acceptance):
@@ -575,6 +576,7 @@ $$;
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000f06","role":"authenticated","aal":"aal1"}', true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000f01"}',true);
 do $$
 declare
   bootstrap jsonb := public.get_workspace_bootstrap();
@@ -582,7 +584,7 @@ declare
   folder_id uuid;
 begin
   if bootstrap #>> '{organization,id}' <> '20000000-0000-4000-8000-000000000f01' then
-    raise exception 'oldest membership must be the displayed workspace: %', bootstrap;
+    raise exception 'explicitly selected membership must be the displayed workspace: %', bootstrap;
   end if;
   started := public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f06', 'pt-BR', 'Planejamento no financiador', 'capital_planning',
@@ -602,13 +604,14 @@ select pg_temp.expect_sqlstate(
 );
 
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000f07","role":"authenticated","aal":"aal1"}', true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000f03"}',true);
 do $$
 declare
   bootstrap jsonb := public.get_workspace_bootstrap();
   started jsonb;
 begin
   if bootstrap #>> '{organization,id}' <> '20000000-0000-4000-8000-000000000f03' then
-    raise exception 'oldest membership must be the displayed workspace (company first): %', bootstrap;
+    raise exception 'explicitly selected membership must be the displayed workspace (company first): %', bootstrap;
   end if;
   started := public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f07', 'pt-BR', 'Planejamento na companhia', 'capital_planning',
@@ -625,6 +628,7 @@ $$;
 -- 7. Company and advisor regressions: terms, representation and origination unchanged
 -- ---------------------------------------------------------------------------------------------
 
+select set_config('request.headers','{}',true);
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000f04","role":"authenticated","aal":"aal1"}', true);
 do $$
 declare

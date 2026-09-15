@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {deskEvidence} from "@offroad/case-understanding";
 import {buildFinancialModel, renderApprovedFinancialWorkbook, renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
 import type {ArchetypeId} from "@offroad/credit-playbook";
@@ -24,6 +25,7 @@ type Params = {params: Promise<{locale: string; sessionId: string}>};
 export async function GET(_request: Request, {params}: Params) {
   const {locale, sessionId} = await params;
   const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const lang = locale === "en-US" ? "en" : "pt";
 
   const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
@@ -39,6 +41,7 @@ export async function GET(_request: Request, {params}: Params) {
     }
     const bytes = await renderApprovedInstitutionalFinancialWorkbook(artifact, lang);
     if (!bytes) return new Response(lang === "pt" ? "O modelo precisa ser preparado novamente." : "The model must be prepared again.", {status: 409});
+    if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
     return new Response(Buffer.from(bytes), {headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${governed!.issuedOn.slice(0,10)}.xlsx"`,
@@ -80,6 +83,8 @@ export async function GET(_request: Request, {params}: Params) {
   }
   const stamp = governed!.issuedOn.slice(0, 10);
   const filename = `${lang === "pt" ? "Modelo_de_credito" : "Credit_model"}_${stamp}.xlsx`;
+
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
 
   return new Response(bytes as unknown as BodyInit, {
     headers: {

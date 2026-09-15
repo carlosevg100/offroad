@@ -1,109 +1,29 @@
 import {describe, expect, it} from "vitest";
 
 import {
-  layerObjectPath,
   pipelineEnabledFor,
   readRunResult,
-  signPipelineDocuments,
+  preparePipelineDocuments,
   startProcessingRun,
   DEFAULT_RUN_BUDGET,
   PIPELINE_VERSION,
-  PIPELINE_LINK_TTL_SECONDS,
 } from "./pipeline-run";
 
 const ORG = "20000000-0000-4000-8000-000000000001";
 const SESSION = "40000000-0000-4000-8000-000000000003";
 const DOCUMENT = "50000000-0000-4000-8000-000000000003";
 
-/**
- * A Storage double that records what was asked of it.
- *
- * The URLs it returns carry the real Storage shape (`/storage/v1/object/sign/<bucket>/<path>`)
- * rather than a convenient placeholder, because that shape is now load-bearing: the database
- * refuses a link whose Storage path does not contain the object it claims to carry. A double
- * that returned something tidier would let this suite pass while every real run was refused. The real client is not exercised here —
- * whether a signed URL is actually accepted is a question for the policy, and
- * `supabase/tests/rls_non_interference.sql` answers it against a real database.
- */
-function storageDouble(options: {failDownload?: boolean; failUpload?: boolean} = {}) {
-  const calls: {bucket: string; kind: "download" | "upload"; path: string; expiresIn?: number; upsert?: boolean}[] = [];
-  const supabase = {
-    storage: {
-      from(bucket: string) {
-        return {
-          async createSignedUrl(path: string, expiresIn: number) {
-            calls.push({bucket, kind: "download", path, expiresIn});
-            if (options.failDownload) return {data: null, error: {message: "denied"}};
-            return {data: {signedUrl: `https://storage.invalid/storage/v1/object/sign/${bucket}/${path}?token=download`}, error: null};
-          },
-          async createSignedUploadUrl(path: string, uploadOptions?: {upsert?: boolean}) {
-            calls.push({bucket, kind: "upload", path, upsert: uploadOptions?.upsert});
-            if (options.failUpload) return {data: null, error: {message: "denied"}};
-            return {data: {signedUrl: `https://storage.invalid/storage/v1/object/upload/sign/${bucket}/${path}?token=upload`, token: "upload", path}, error: null};
-          },
-        };
-      },
-    },
-  };
-  return {supabase, calls};
+function storageDouble() {
+  const calls: string[] = [];
+  return {calls, supabase: {storage: {from() {
+    calls.push("forbidden storage request");
+    throw new Error("the web must not mint worker bearer access");
+  }}}};
 }
 
-describe("pipeline run links", () => {
-  it("keeps the tenant and the session as the first two path segments", () => {
-    const path = layerObjectPath({organizationId: ORG, sessionId: SESSION, sourceDocumentId: DOCUMENT, attemptId: "attempt-1"});
-    expect(path).toBe(`${ORG}/${SESSION}/${DOCUMENT}/attempt-1.json`);
-    // The storage policies read folder 1 as the organization and folder 2 as the scope; if
-    // this order ever changes, one tenant can mint an upload link into another's prefix.
-    expect(path.split("/")[0]).toBe(ORG);
-    expect(path.split("/")[1]).toBe(SESSION);
-  });
-
-  it("gives every attempt its own object, so the bucket never needs update rights", () => {
-    const first = layerObjectPath({organizationId: ORG, sessionId: SESSION, sourceDocumentId: DOCUMENT, attemptId: "a"});
-    const second = layerObjectPath({organizationId: ORG, sessionId: SESSION, sourceDocumentId: DOCUMENT, attemptId: "b"});
-    expect(first).not.toBe(second);
-  });
-
-  it("signs a download and an upload link per document, in the right buckets", async () => {
-    const {supabase, calls} = storageDouble();
-    let attempt = 0;
-    const result = await signPipelineDocuments({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- narrow double of the Storage surface used here
-      supabase: supabase as any,
-      organizationId: ORG,
-      sessionId: SESSION,
-      documents: [
-        {id: DOCUMENT, object_path: `${ORG}/${SESSION}/one.pdf`},
-        {id: "50000000-0000-4000-8000-000000000004", object_path: `${ORG}/${SESSION}/two.xlsx`},
-      ],
-      newAttemptId: () => `attempt-${++attempt}`,
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.value).toHaveLength(2);
-    expect(result.value[0]?.layer_object_path).toBe(`${ORG}/${SESSION}/${DOCUMENT}/attempt-1.json`);
-    expect(result.value[0]?.download_url).toContain("opportunity-documents");
-    expect(result.value[0]?.layer_upload_url).toContain("document-layers");
-
-    expect(calls.filter((call) => call.kind === "download").every((call) => call.bucket === "opportunity-documents")).toBe(true);
-    expect(calls.filter((call) => call.kind === "upload").every((call) => call.bucket === "document-layers")).toBe(true);
-    expect(calls.filter((call) => call.kind === "upload").every((call) => call.upsert === true)).toBe(true);
-    expect(calls.find((call) => call.kind === "download")?.expiresIn).toBe(PIPELINE_LINK_TTL_SECONDS);
-  });
-
-  it("refuses the whole run when a single link cannot be signed", async () => {
-    for (const failure of [{failDownload: true}, {failUpload: true}]) {
-      const {supabase} = storageDouble(failure);
-      const result = await signPipelineDocuments({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- narrow double of the Storage surface used here
-        supabase: supabase as any,
-        organizationId: ORG,
-        sessionId: SESSION,
-        documents: [{id: DOCUMENT, object_path: `${ORG}/${SESSION}/one.pdf`}],
-      });
-      expect(result).toEqual({ok: false, error: "processing"});
-    }
+describe("pipeline resource references", () => {
+  it("never forwards storage locations or bearer tokens to the job", () => {
+    expect(preparePipelineDocuments([{id: DOCUMENT, object_path: "http://169.254.170.2/credentials"}])).toEqual([{source_document_id: DOCUMENT}]);
   });
 });
 
@@ -168,7 +88,7 @@ function runDouble(input: {documents: Array<{id: string; object_path: string; pr
 }
 
 describe("incremental processing", () => {
-  it("does not sign or repay ready immutable documents under the same pipeline contract", async () => {
+  it("does not schedule or repay ready immutable documents under the same pipeline contract", async () => {
     const runtime = runDouble({
       documents: [{id: DOCUMENT, object_path: `${ORG}/${SESSION}/ready.pdf`, processing_status: "ready"}],
       pipelineVersion: PIPELINE_VERSION,
@@ -185,51 +105,17 @@ describe("incremental processing", () => {
     expect(runtime.rpcCalls[0]?.args).toMatchObject({p_documents: [], p_budget: DEFAULT_RUN_BUDGET});
   });
 
-  it("signs only failed or new documents, unless the pipeline contract changed", async () => {
+  it("schedules only failed or new documents, unless the pipeline contract changed", async () => {
     const ready = {id: DOCUMENT, object_path: `${ORG}/${SESSION}/ready.pdf`, processing_status: "ready"};
     const failed = {id: "50000000-0000-4000-8000-000000000004", object_path: `${ORG}/${SESSION}/failed.pdf`, processing_status: "failed"};
     const incremental = runDouble({documents: [ready, failed], pipelineVersion: PIPELINE_VERSION});
     await startProcessingRun({supabase: incremental.supabase as never, organizationId: ORG, sessionId: SESSION, trigger: "reprocess"});
-    expect(incremental.storageCalls.filter((call) => call.kind === "download").map((call) => call.path)).toEqual([failed.object_path]);
+    expect(incremental.storageCalls).toHaveLength(0);
+    expect(incremental.rpcCalls[0]?.args.p_documents).toEqual([{source_document_id: failed.id}]);
 
     const rebuild = runDouble({documents: [ready, failed], pipelineVersion: "older-contract"});
     await startProcessingRun({supabase: rebuild.supabase as never, organizationId: ORG, sessionId: SESSION, trigger: "reprocess"});
-    expect(rebuild.storageCalls.filter((call) => call.kind === "download")).toHaveLength(2);
-  });
-});
-
-describe("the links satisfy the rule the database enforces", () => {
-  /**
-   * `begin_processing_run` refuses a link whose Storage path does not contain the object it
-   * claims to carry, and refuses a layer path outside `<organization>/<session>/`. That check
-   * is what stops a tenant pointing the worker at the ECS credential endpoint, and it means the
-   * naming here is no longer a private convention: rename a bucket or reorder a path segment
-   * and every real run is refused, with nothing in this suite noticing. So the rule is asserted
-   * on this side too, in the same words.
-   */
-  const carriesObject = (url: string, objectPath: string) => {
-    const storageAt = url.indexOf("/storage/v1/");
-    return storageAt !== -1 && url.indexOf(objectPath) > storageAt;
-  };
-
-  it("names the document in the download link and the layer in the upload link", async () => {
-    const {supabase} = storageDouble();
-    const objectPath = `${ORG}/${SESSION}/one.pdf`;
-    const result = await signPipelineDocuments({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- narrow double of the Storage surface used here
-      supabase: supabase as any,
-      organizationId: ORG,
-      sessionId: SESSION,
-      documents: [{id: DOCUMENT, object_path: objectPath}],
-      newAttemptId: () => "70000000-0000-4000-8000-000000000001",
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const [entry] = result.value;
-    expect(entry).toBeDefined();
-    expect(carriesObject(entry!.download_url, objectPath)).toBe(true);
-    expect(carriesObject(entry!.layer_upload_url, entry!.layer_object_path)).toBe(true);
-    expect(entry!.layer_object_path.startsWith(`${ORG}/${SESSION}/`)).toBe(true);
+    expect(rebuild.storageCalls).toHaveLength(0);
+    expect(rebuild.rpcCalls[0]?.args.p_documents).toEqual([{source_document_id: ready.id}, {source_document_id: failed.id}]);
   });
 });

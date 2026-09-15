@@ -97,7 +97,7 @@ declare
   rejected boolean := false;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   query_id := encode(extensions.digest(convert_to('identity:' || query_text, 'utf8'), 'sha256'), 'hex');
   entries := jsonb_build_array(jsonb_build_object(
     'schemaVersion', 'public-research-cache.v2', 'queryId', query_id,

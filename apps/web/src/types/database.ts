@@ -8320,6 +8320,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      invite_workspace_member_v1: {Args: {p_email: string; p_role: string}; Returns: string};
+      list_my_workspace_invites_v1: {Args: Record<PropertyKey, never>; Returns: Json};
+      accept_workspace_invite_v1: {Args: {p_invite_id: string}; Returns: string};
+      set_workspace_member_v1: {Args: {p_user_id: string; p_role: string; p_status: string}; Returns: undefined};
+      read_workspace_access_v1: {Args: Record<PropertyKey, never>; Returns: Json};
+      grant_resource_access_v1: {Args: {p_resource_id: string; p_subject_user_id: string; p_action: string; p_expires_at?: string}; Returns: string};
+      revoke_resource_access_v1: {Args: {p_resource_id: string; p_subject_user_id: string}; Returns: undefined};
+      list_my_workspaces_v1: { Args: Record<PropertyKey, never>; Returns: Json };
       accept_and_apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string

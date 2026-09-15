@@ -18,6 +18,11 @@ describe("worker runtime schema preflight", () => {
       data: {
         schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
         capabilities: [
+          "explicit-resource-access.v1",
+          "explicit-workspace-context.v1",
+          "authenticated-document-storage.v1",
+          "review-bound-execution.v1",
+          "legacy-storage-rotation.v1",
           "integration-preview-workflow-continuity.v1",
           "receivables-information-request-bindings.v1",
           "receivables-complete-draft-refresh.v1",
@@ -72,7 +77,12 @@ describe("worker runtime schema preflight", () => {
     expect(contractMigration).toBeDefined();
     const sql = readFileSync(`${migrationsDirectory}/${contractMigration}`, "utf8");
     expect(sql.replace(/,\s*/g, ",")).toContain(`'schemaVersion','${WORKER_RUNTIME_SCHEMA_VERSION}'`);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "confirmed-receivables-support-sheets.v1")) {
+    const accessExtension = readdirSync(migrationsDirectory).find((name) => name.endsWith("_explicit_legacy_resource_access.sql"));
+    expect(accessExtension).toBeDefined();
+    const accessSql = readFileSync(`${migrationsDirectory}/${accessExtension}`, "utf8");
+    const accessCapabilities = ["explicit-resource-access.v1", "explicit-workspace-context.v1", "authenticated-document-storage.v1", "review-bound-execution.v1", "legacy-storage-rotation.v1"];
+    for (const capability of accessCapabilities) expect(accessSql).toContain(capability);
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);

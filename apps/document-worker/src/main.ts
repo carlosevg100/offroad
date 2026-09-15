@@ -25,7 +25,8 @@ import {
   createSecEdgarEntityResolver,
   type PublicSearchProvider,
 } from "@offroad/public-research";
-import {createStorageUrlGuard} from "./storage-url";
+import {rotateLegacyStorage} from "./storage-rotation";
+import {createJobStorageClient} from "./job-storage";
 import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
@@ -46,9 +47,8 @@ import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./mat
  *
  * It owns no secrets of the tenants and no service-role key: it signs in as a dedicated
  * service account that belongs to no organization, claims one job at a time with the hashed
- * worker credential, and does everything else with the per-job capability token. Documents
- * reach it through short-lived signed URLs carried in the job payload, so it needs no Storage
- * credential either.
+ * worker credential, and uses a per-job capability token. Its authenticated Storage requests
+ * are scoped to a leased job and revalidate the responsible person's current authorization.
  *
  * Logs are structured and content-free: ids, stages, durations and counts. No document text,
  * no financial value, no token ever reaches a log line (AGENTS.md §2.8).
@@ -86,6 +86,8 @@ async function main(): Promise<void> {
     schemaVersion: runtimeSchema.schemaVersion,
     capabilities: runtimeSchema.capabilities.length,
   });
+
+  await rotateLegacyStorage(supabase, config.OFFROAD_WORKER_TOKEN, () => log("worker.storage_rotation_completed"));
 
   const queue = createQueueClient(supabase, {
     workerToken: config.OFFROAD_WORKER_TOKEN,
@@ -236,9 +238,8 @@ async function main(): Promise<void> {
     return {gateway, calls, researchReserveUsd};
   };
 
-  // The payload's URLs are input, `SUPABASE_URL` is configuration, and the two are not
-  // allowed to disagree. See `storage-url.ts` for what a worker that trusted them would be.
-  const guardStorageUrl = createStorageUrlGuard(config.SUPABASE_URL);
+  // Storage paths come from the authorized database command, never a payload URL.
+  const jobStorage = createJobStorageClient(supabase);
 
   const dependenciesFor = ({gateway, calls}: ReturnType<typeof newGateway>): PipelineDependencies => ({
     queue,
@@ -253,23 +254,8 @@ async function main(): Promise<void> {
       timeoutMs: config.OCR_TIMEOUT_MS,
       version: tesseractVersion,
     }),
-    download: async (url) => {
-      const response = await fetch(guardStorageUrl("download_url", url));
-      if (!response.ok) throw new Error(`the document could not be downloaded (${response.status})`);
-      return new Uint8Array(await response.arrayBuffer());
-    },
-    uploadLayer: async (url, body) => {
-      const response = await fetch(guardStorageUrl("layer_upload_url", url), {
-        method: "PUT",
-        // The URL was minted with an upsert-scoped token. Replaying the same deterministic
-        // layer after a later stage failed must be idempotent, while the token remains bound
-        // to this one run-scoped object path.
-        headers: {"content-type": "application/json", "x-upsert": "true"},
-        // Node's fetch wants a BodyInit; a copy into a Buffer is the cheapest way there.
-        body: Buffer.from(body),
-      });
-      if (!response.ok) throw new Error(`the layer could not be stored (${response.status})`);
-    },
+    download: jobStorage.download,
+    uploadLayer: jobStorage.uploadLayer,
     log,
     spend: () => gateway.spent(),
     lineage: () => calls.map((call) => ({...call})),

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type {Metadata} from "next";
 import {cookies} from "next/headers";
 import {getTranslations} from "next-intl/server";
@@ -19,8 +20,10 @@ type Props = {children: React.ReactNode; params: Promise<{locale: string}>};
 
 export default async function ApplicationLayout({children, params}: Props) {
   const {locale} = await params;
+  const accessCopy = await getTranslations({locale, namespace: "WorkspaceAccess"});
+  const contextCopy = await getTranslations({locale, namespace: "WorkspaceContext"});
   const t = await getTranslations({locale, namespace: "App"});
-  const {organization, email, supabase, userId} = await requireWorkspace(locale);
+  const {organization, membership, email, supabase, userId} = await requireWorkspace(locale);
   // Projects and folders follow the own-analysis capability, which every workspace type has.
   // The mandates entry follows mandate management. Origination is a separate capability and
   // no longer decides what the navigation shows.
@@ -142,6 +145,7 @@ export default async function ApplicationLayout({children, params}: Props) {
         signOutAction={signOut}
       />
       <div className="app-main">
+      <nav className="workspace-context-navigation" aria-label={contextCopy("switch")}><Link href={`/${locale}/workspaces`}>{organization.name} · {contextCopy("switch")}</Link> {["owner","admin"].includes(membership.role) && <Link href={`/${locale}/app/access?workspace=${organization.id}`}>{accessCopy("title")}</Link>}</nav>
         {integrationPreview.enabled && integrationPreview.scope === "organization" ? <IntegrationPreviewBanner
           copy={{
             kicker: t("integrationPreview.kicker"),

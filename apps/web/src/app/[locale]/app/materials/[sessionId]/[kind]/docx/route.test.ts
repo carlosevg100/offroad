@@ -3,6 +3,7 @@ import {materialDocumentXml} from "@offroad/case-export";
 import {GET} from "./route";
 
 const mocks = vi.hoisted(() => ({workspace: vi.fn(), load: vi.fn()}));
+vi.mock("@/lib/auth/resource-download", () => ({resourceStillReadable: async () => true}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 vi.mock("@/lib/deal-state/materials", async (original) => ({
   ...await original<typeof import("@/lib/deal-state/materials")>(), loadGovernedMaterialPackage: mocks.load,

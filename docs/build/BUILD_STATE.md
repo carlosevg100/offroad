@@ -1,3 +1,9 @@
+## Stage 1B: explicit resource access (candidate, not completed)
+
+The founder approved moving only explicit active-workspace selection/validation from stage 2 into 1B. This candidate replaces membership-wide private case access with revocable resource grants and current human authority for queued/leased jobs; customer administrators manage members and project access in the product. Source downloads are authenticated and rechecked; signed URL minting is denied and existing private object paths have a bounded integrity-checked rotation manifest. Cross-project implicit memory is retired pending explicit source/dependency contracts. Reviewers receive bounded execution authorization for their approved review, not general write permission.
+
+Local `pnpm check` passes. Staging rollback-only SQL evaluations and the original exploit reproduction are recorded separately. Persistent staging/production migration, HTTP after-reproduction, CI, merged commit and both deployments remain required; none is claimed by this candidate entry. See `docs/build/arcabouco/etapa-1b.md` for scope, rollout and containment.
+
 ## Stage 1A: active organization authority
 
 The creator-authority exploit and two privileged profile-write bypasses were reproduced and denied after correction in staging. Production migrations `20260915123202` and `20260915123205` are applied; fourteen function definitions match staging, security advisors have zero lints, and real memberships are unchanged. Atomic bootstrap preserves signup, and a two-connection CI test proved serialized ownership transfer with one winner. The 308 production file versions, reviewed object inventory and generated types are reconciled. See `docs/build/arcabouco/etapa-1a.md` and its production proof; the wave completion records final CI, merge and deployments. Rollback preserves the new authority boundary.

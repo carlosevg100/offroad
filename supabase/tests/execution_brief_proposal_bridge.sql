@@ -35,7 +35,7 @@ begin
   if exists(select 1 from public.capital_project_plans where capital_project_id='a8000000-0000-4000-8000-000000000007') then
     raise exception 'no-plan bridge fixture unexpectedly has a plan';
   end if;
-  claim:=public.worker_claim_job_v2(repeat('b',64),600);
+  claim:=public.worker_claim_job_v3(repeat('b',64),600);
   if claim->>'kind'<>'execution_brief_proposal' or claim#>>'{payload,approval_target_job_id}'<>'a8000000-0000-4000-8000-000000000006' then
     raise exception 'held case did not produce claimable planner: %',claim;
   end if;
@@ -72,7 +72,7 @@ begin
   if approval->>'processing_job_id'<>'a8000000-0000-4000-8000-000000000006' or approval->>'status'<>'queued' then
     raise exception 'planner brief did not approve its exact target';
   end if;
-  claim:=public.worker_claim_job_v2(repeat('b',64),600);
+  claim:=public.worker_claim_job_v3(repeat('b',64),600);
   if claim->>'job_id'<>'a8000000-0000-4000-8000-000000000006' or claim->>'kind'<>'case_analysis' then
     raise exception 'approved real planner target was not resumed: %',claim;
   end if;

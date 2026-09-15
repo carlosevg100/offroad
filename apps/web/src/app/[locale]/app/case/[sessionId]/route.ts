@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {caseDiagnosisMarkdown} from "@/lib/intake/case-markdown";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
@@ -7,6 +8,7 @@ type Params = {params: Promise<{locale: string; sessionId: string}>};
 export async function GET(_request: Request, {params}: Params) {
   const {locale, sessionId} = await params;
   const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const {data: session} = await supabase
     .from("document_intake_sessions")
     .select("id, project_name, capital_currency")
@@ -24,6 +26,7 @@ export async function GET(_request: Request, {params}: Params) {
     title: session.project_name || (lang === "pt" ? "Case Offroad" : "Offroad case"),
     currency: session.capital_currency,
   });
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   return new Response(markdown, {
     headers: {
       "content-type": "text/markdown; charset=utf-8",

@@ -42,7 +42,7 @@ begin
   begin
     execute p_sql;
   exception when insufficient_privilege then
-    if sqlerrm<>p_message then raise exception 'expected % but got %',p_message,sqlerrm; end if;
+    if sqlerrm not in (p_message,'resource_access_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
     rejected:=true;
   end;
   if not rejected then raise exception 'command was not denied: %',p_sql; end if;
@@ -53,7 +53,7 @@ declare rejected boolean:=false;
 begin
   begin
     execute p_sql;
-  exception when no_data_found then rejected:=true;
+  exception when no_data_found or insufficient_privilege then rejected:=true;
   end;
   if not rejected then raise exception 'foreign tenant command was not rejected: %',p_sql; end if;
 end;
@@ -66,6 +66,7 @@ begin
   select * into strict d from public.capital_project_execution_brief_dispatches where processing_job_id='80000000-0000-4000-8000-000000000901';
   select brief_fingerprint into strict fp from public.capital_project_execution_briefs where id=d.execution_brief_id;
   perform set_config('test.project_id',s.capital_project_id::text,true);
+  perform set_config('test.org_id',s.organization_id::text,true);
   perform set_config('test.brief_id',d.execution_brief_id::text,true);
   perform set_config('test.brief_fingerprint',fp,true);
   perform set_config('test.dispatch_id',d.id::text,true);
@@ -82,8 +83,14 @@ begin
 end;
 $$;
 
--- Open mode: no assignment yet, so an active member keeps every action (compatibility policy),
+-- Open mode: no assignment yet, so a member explicitly granted work access keeps every action,
 -- and the approval record is persisted even then. The approval itself is rolled back.
+-- Collaboration requires an explicit project grant, independent of membership.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000901');
+select public.grant_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000905','work');
+create function pg_temp.assert_job_authority(p_job uuid,p_expected boolean) returns void language plpgsql security definer set search_path='' as $$ begin
+ if private.job_authority_is_current_v1(p_job) is distinct from p_expected then raise exception 'review job authority differs from expected'; end if;
+end $$;
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000905');
 do $$
@@ -210,7 +217,7 @@ begin
     perform public.request_documentary_work_revision_v1(current_setting('test.project_id')::uuid,current_setting('test.brief_id')::uuid,current_setting('test.brief_fingerprint'),'90000000-0000-4000-8000-000000000916','pt-BR','Compare estas propostas.','{}'::jsonb);
   exception when insufficient_privilege then rejected:=true; message:=sqlerrm;
   end;
-  if not rejected or message<>'documentary_work_scope_invalid' then raise exception 'documentary scope guard changed: %',message; end if;
+  if not rejected or message not in ('documentary_work_scope_invalid','resource_access_denied') then raise exception 'documentary scope guard changed: %',message; end if;
   rejected:=false;
   begin
     perform public.submit_institutional_model_setup_v1(current_setting('test.project_id')::uuid,repeat('a',64),'{}'::jsonb,'[]'::jsonb,'c0000000-0000-4000-8000-000000000902','pt-BR');
@@ -237,11 +244,17 @@ begin
   begin
     result:=public.submit_advisor_execution_brief_edit_v1(current_setting('test.project_id')::uuid,current_setting('test.brief_id')::uuid,current_setting('test.brief_fingerprint'),'90000000-0000-4000-8000-000000000903','pt-BR','Devolvo o plano: inclua a base de cálculo antes de aprovar.');
     if result->>'status'<>'queued' then raise exception 'reviewer return was not accepted: %',result; end if;
+    if private.can_access_resource_v1(current_setting('test.org_id')::uuid,current_setting('test.project_id')::uuid,'work') then raise exception 'reviewer acquired general editing authority'; end if;
+    perform pg_temp.assert_job_authority((result->>'job_id')::uuid,true);
+
     select * into strict d from public.capital_project_execution_brief_dispatches where id=current_setting('test.dispatch_id')::uuid;
     if d.review_decision<>'returned' or d.reviewed_by<>'10000000-0000-4000-8000-000000000903' or d.prepared_by<>'10000000-0000-4000-8000-000000000901' or d.accepted_at is not null then
       raise exception 'return was not recorded on the approval record: %',to_jsonb(d);
     end if;
     if public.read_advisor_execution_brief_approval_v1(current_setting('test.project_id')::uuid,current_setting('test.brief_id')::uuid)->>'status'<>'superseded' then raise exception 'returned version remained approvable'; end if;
+    perform pg_temp.as_user('10000000-0000-4000-8000-000000000901');
+    perform public.revoke_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000903');
+    perform pg_temp.assert_job_authority((result->>'job_id')::uuid,false);
     raise exception using errcode='ZX001',message='rollback reviewer return';
   exception when sqlstate 'ZX001' then null;
   end;

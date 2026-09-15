@@ -190,7 +190,7 @@ declare
   rejected boolean := false;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,analysis_scope}' <> 'origination_thesis' then
     raise exception 'origination worker did not claim the bounded job: %', claim;
@@ -338,7 +338,7 @@ begin
   end if;
 
   perform pg_temp.fixture_approve_pending_executions();
-  revision_claim := public.worker_claim_job(repeat('w', 64), 600);
+  revision_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if revision_claim ->> 'job_id' <> revision_result ->> 'job_id'
     or revision_claim #>> '{payload,capital_task_ids,0}' <> 'M07'
     or jsonb_array_length(revision_claim #> '{payload,capital_task_ids}') <> 1

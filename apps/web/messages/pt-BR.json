@@ -6083,5 +6083,48 @@
     "pendingBody": "Estes fundos existem no seu cadastro e ainda não têm um mandato estruturado. Sem mandato confirmado, eles não entram na seleção de nenhum caso.",
     "sourcesHelp": "De onde saiu este mandato: regulamento, ata, e-mail da gestora. Registro público e operação passada não entram aqui.",
     "noSources": "Nenhuma fonte informada"
+  },
+  "WorkspaceContext": {
+    "title": "Escolha a organização",
+    "description": "Cada aba mantém a organização escolhida para suas ações.",
+    "empty": "Você não tem vínculo ativo com uma organização.",
+    "switch": "Trocar organização",
+    "invitations": "Convites pendentes",
+    "accept": "Aceitar convite",
+    "denied": "Você não tem autorização para esta alteração."
+  },
+  "WorkspaceAccess": {
+    "title": "Pessoas e acessos",
+    "invite": "Convidar pessoa",
+    "inviteHelp": "A pessoa aceita o convite em Escolha a organização, usando uma conta com o e-mail verificado. O convite vale por sete dias. Compartilhe o endereço da plataforma com ela.",
+    "email": "E-mail",
+    "role": "Perfil de acesso",
+    "roles": {
+      "admin": "Administrador",
+      "member": "Membro",
+      "analyst": "Analista",
+      "relationship_manager": "Relacionamento",
+      "compliance": "Compliance"
+    },
+    "members": "Pessoas da organização",
+    "owner": "Proprietário · transferência pela administração de titularidade",
+    "status": "Situação",
+    "active": "Ativo",
+    "suspended": "Suspenso",
+    "save": "Salvar",
+    "grant": "Conceder acesso",
+    "person": "Pessoa",
+    "project": "Projeto",
+    "permission": "Permissão",
+    "actions": {
+      "read": "Ler",
+      "work": "Trabalhar",
+      "manage": "Administrar"
+    },
+    "currentGrants": "Concessões individuais",
+    "revoke": "Revogar acesso ao projeto",
+    "saved": "Alteração salva.",
+    "invalid": "Confira os campos informados.",
+    "denied": "Você não tem autorização para esta alteração."
   }
 }

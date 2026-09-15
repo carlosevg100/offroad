@@ -6,7 +6,7 @@ export type IntakeContext = "onboarding" | "workspace";
 export type IntakeSession = Database["public"]["Tables"]["document_intake_sessions"]["Row"];
 export type IntakeCandidate = Database["public"]["Tables"]["intake_field_candidates"]["Row"];
 export type IntakeIssue = Database["public"]["Tables"]["intake_issues"]["Row"];
-export type IntakeDocument = Pick<Database["public"]["Tables"]["source_documents"]["Row"], "id" | "original_name" | "byte_size" | "object_path"> & {signedUrl?: string};
+export type IntakeDocument = Pick<Database["public"]["Tables"]["source_documents"]["Row"], "id" | "original_name" | "byte_size" | "object_path"> & {downloadUrl?: string};
 export type IntakeDocumentSummary = Pick<Database["public"]["Tables"]["source_documents"]["Row"], "id" | "original_name" | "byte_size">;
 
 export type IntakeCandidateInsert = Database["public"]["Tables"]["intake_field_candidates"]["Insert"];

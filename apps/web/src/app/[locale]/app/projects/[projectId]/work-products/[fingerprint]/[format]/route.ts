@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {deliverableFormatAllowed, deliverableFormatBlockCopy} from "@offroad/case-export/deliverable-formats";
 import {z} from "zod";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -19,6 +20,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{locale:stri
   const policy=deliverableFormatAllowed(documentaryReadingDeliverableTypes,format,documentaryReadingDeliverableContext());
   if(!policy.allowed)return new Response(policy.block==="format_not_in_policy"?null:deliverableFormatBlockCopy[policy.block][locale==="en-US"?"en":"pt"],{status:policy.block==="format_not_in_policy"?404:409});
   const {supabase,organization}=await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const result=await loadDocumentWorkProduct(supabase,organization.id,projectId);
   if(!result||result.product.fingerprint!==fingerprint)return new Response(null,{status:404});
   const labels=await documentWorkProductLabels(result.product.locale);
@@ -26,6 +28,7 @@ export async function GET(_request:Request,{params}:{params:Promise<{locale:stri
   const {template}=await presentationTemplateForProject(supabase,projectId);
   const input={product:result.product,labels,issuedOn:result.publishedAt.slice(0,10),template};
   const bytes=format==="pdf"?await documentWorkProductToPdf(input):documentWorkProductToDocx(input);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   return new Response(new Uint8Array(bytes),{headers:{
     "content-type":media[format as keyof typeof media],
     "content-disposition":`attachment; filename="offroad-${result.product.job}-${fingerprint.slice(0,12)}.${format}"`,

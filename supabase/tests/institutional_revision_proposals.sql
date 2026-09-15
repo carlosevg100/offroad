@@ -75,6 +75,8 @@ create function pg_temp.as_user(p_user uuid) returns void language sql as $$
 $$;
 
 -- 1. A member with project access but no preparer role cannot open a proposal.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000b01');
+select public.grant_resource_access_v1('30000000-0000-4000-8000-000000000b01','10000000-0000-4000-8000-000000000b03','read');
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000b03');
 do $$ declare rejected boolean:=false; begin
@@ -188,7 +190,7 @@ select pg_temp.as_user('10000000-0000-4000-8000-000000000b04');
 do $$ declare rejected boolean:=false; begin
   begin perform public.read_institutional_revision_proposals_v1('30000000-0000-4000-8000-000000000b01');
   exception when insufficient_privilege then
-    if sqlerrm<>'institutional_revision_proposal_forbidden' then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true; end;
+    if sqlerrm not in ('institutional_revision_proposal_forbidden','resource_access_denied') then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true; end;
   if not rejected then raise exception 'a foreign tenant read the proposals'; end if;
   rejected:=false;
   begin perform public.review_institutional_revision_proposal_v1('62000000-0000-4000-8000-000000000b01','rejected',repeat('e',64),null,null);

@@ -63,7 +63,7 @@ begin
   if not exists(select 1 from jsonb_array_elements(f.frozen->'providers') p where p->>'sourceClass'='directory') then raise exception 'owned directory absent'; end if;
   perform pg_temp.fixture_approve_execution(f.job_id);
   update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
-  claim:=public.worker_claim_job(repeat('v',64),600);
+  claim:=public.worker_claim_job_v3(repeat('v',64),600);
   if claim->>'job_id' is distinct from f.job_id::text then raise exception 'research claim mismatch'; end if;
   cap:=claim->>'capability_token';
   context:=public.worker_load_provider_research_context(f.job_id,cap);

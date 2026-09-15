@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {materialToDocx} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 
@@ -53,6 +54,7 @@ export async function GET(request: Request, {params}: Params) {
   const requestedFormat = new URL(request.url).searchParams.get("format");
   const format = requestedFormat === "xlsx" || requestedFormat === "pptx" ? requestedFormat : "docx";
   const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const status = await loadIntegrationPreviewStatus(supabase, organization.id);
   if (!integrationPreviewCoversProject(status, projectId)) return new Response("Not found", {status: 404});
 
@@ -90,6 +92,7 @@ export async function GET(request: Request, {params}: Params) {
     } catch {
       return new Response(lang === "pt" ? "O material armazenado não corresponde ao manifesto governado." : "The stored material does not match its governed manifest.", {status: 409});
     }
+    if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
     return new Response(bytes, {headers: {
       "content-type": manifest.mimeType,
       "content-disposition": `attachment; filename="${manifest.fileName}"`,
@@ -143,5 +146,6 @@ export async function GET(request: Request, {params}: Params) {
   }});
   const document: Material = {kind: "credit_memo", title: {pt: "Síntese interna do Caso 01 (validação)", en: "Case 01 internal synthesis (validation)"}, blocks, dependsOn: [material.artifact_fingerprint]};
   const bytes = materialToDocx({material: document, lang, meta: {issuedOn: new Date().toISOString().slice(0, 10), preparedBy: "Offroad Capital, validação interna"}});
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   return new Response(new Uint8Array(bytes), {headers: {...headers, "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "content-disposition": `attachment; filename="material-preview-${projectId.slice(0, 8)}-v${material.artifact_version}.docx"`}});
 }
