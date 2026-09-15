@@ -5577,6 +5577,22 @@ begin
 end;
 $$;
 
+-- Revoking the original creator removes management even while the JWT is unchanged.
+reset role;
+update public.organization_memberships set status='suspended'
+where organization_id='20000000-0000-4000-8000-000000000001'
+  and user_id='10000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
+do $$ begin
+  if private.can_manage_organization('20000000-0000-4000-8000-000000000001') then
+    raise exception 'suspended creator retains organization authority';
+  end if;
+  update public.organization_memberships set status='active'
+  where organization_id='20000000-0000-4000-8000-000000000001'
+    and user_id=auth.uid();
+  if found then raise exception 'suspended creator reactivated own membership'; end if;
+end $$;
 rollback;
 
 do $$

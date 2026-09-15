@@ -1,3 +1,7 @@
+## Stage 1A: active organization authority
+
+The creator-authority exploit and two privileged profile-write bypasses were reproduced and denied after correction in staging. Production migrations `20260915123202` and `20260915123205` are applied; fourteen function definitions match staging, security advisors have zero lints, and real memberships are unchanged. Atomic bootstrap preserves signup, and a two-connection CI test proved serialized ownership transfer with one winner. The 308 production file versions, reviewed object inventory and generated types are reconciled. See `docs/build/arcabouco/etapa-1a.md` and its production proof; the wave completion records final CI, merge and deployments. Rollback preserves the new authority boundary.
+
 ## Stage 0 production journal parity correction
 
 The remaining fourteen file/version gaps are reconciled: eleven files now use the production stamps with unchanged SQL; three journal-only repairs record bodies already installed by the schema-gap consolidation. Both environments were repaired without replay, and before/after function, column and policy fingerprints are unchanged. See `docs/build/schema-history/JOURNAL-PARITY.md` for the evidence and CI contract. The stage-zero inventory checker now rejects every local migration version absent from the production journal receipt, including same SQL under a different stamp. Both checkers run in the Database CI job now. Merge, main CI and deployment results are recorded in the wave completion report; this source entry does not claim those pending results.
