@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {materialToPptx} from "@offroad/case-export";
 import type {MaterialKind} from "@offroad/case-materials";
 
@@ -13,6 +14,7 @@ export async function GET(_request: Request, {params}: Params) {
   if (!kinds.includes(kind as MaterialKind)) return new Response("Not found", {status: 404});
 
   const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const lang = locale === "en-US" ? "en" : "pt";
 
   const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
@@ -26,6 +28,7 @@ export async function GET(_request: Request, {params}: Params) {
     meta: {issuedOn: governed.issuedOn},
   });
   const filename = `${kind}-${sessionId.slice(0, 8)}.pptx`;
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   return new Response(Buffer.from(bytes), {
     headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",

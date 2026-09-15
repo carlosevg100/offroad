@@ -150,7 +150,7 @@ declare
     )
   );
 begin
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'the conversational job was not claimed: %', claim;
   end if;
@@ -251,7 +251,7 @@ begin
   where project.organization_id = '20000000-0000-4000-8000-000000000251'
   limit 1;
   perform public.submit_advisor_turn_v1(project_id, message_id, 'pt-BR', 'Pode seguir com a leitura de refinanciamento.');
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' or not (claim ->> 'integration_preview')::boolean then
     raise exception 'the granted claim did not carry integration_preview: %', claim;
   end if;
@@ -319,7 +319,7 @@ declare
   conversation_state text;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,analysis_scope}' <> 'integration_preview'
     or claim #>> '{payload,preview,composition}' <> 'prepare_meeting'
@@ -407,7 +407,7 @@ begin
   where project.organization_id = '20000000-0000-4000-8000-000000000251'
   limit 1;
   perform public.submit_advisor_turn_v1(project_id, message_id, 'pt-BR', 'De onde saiu a alavancagem?');
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'the follow-up turn was not claimed: %', claim;
   end if;
@@ -449,7 +449,7 @@ begin
     raise exception 'the later turn reused the plan that already holds task runs: %', recorded;
   end if;
   perform pg_temp.fixture_approve_pending_executions();
-  preview_claim := public.worker_claim_job(repeat('p', 64), 600);
+  preview_claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if preview_claim ->> 'kind' <> 'capital_project_analysis'
     or preview_claim #>> '{payload,analysis_scope}' <> 'integration_preview'
     or (preview_claim #>> '{payload,capital_project_plan_id}')::uuid = first_plan_id then
@@ -492,7 +492,7 @@ begin
   );
   -- A question on the next turn still finds the object although its plan is no longer active.
   perform public.submit_advisor_turn_v1(project_id, later_message_id, 'pt-BR', 'De onde saiu a dívida bruta?');
-  later_claim := public.worker_claim_job(repeat('p', 64), 600);
+  later_claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if later_claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'the question turn was not claimed: %', later_claim;
   end if;
@@ -544,7 +544,7 @@ begin
     raise exception 'the project-scoped status is wrong before any project is listed: %', status;
   end if;
   perform public.submit_advisor_turn_v1(project_id, unlisted_message_id, 'pt-BR', 'Vamos preparar a reunião com a Camil.');
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' or (claim ->> 'integration_preview')::boolean then
     raise exception 'an unlisted project was claimed as integration_preview: %', claim;
   end if;
@@ -595,7 +595,7 @@ begin
     raise exception 'the listed project is not named by the status: %', status;
   end if;
   perform public.submit_advisor_turn_v1(project_id, listed_message_id, 'pt-BR', 'Vamos preparar a reunião com a Camil, de novo.');
-  claim := public.worker_claim_job(repeat('p', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('p', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' or not (claim ->> 'integration_preview')::boolean then
     raise exception 'the listed project was not claimed as integration_preview: %', claim;
   end if;

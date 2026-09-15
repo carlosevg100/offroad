@@ -140,6 +140,8 @@ create function pg_temp.as_user(p_user uuid) returns void language sql as $$
 $$;
 
 -- 7. The project reads its own revision history, with the previous output still identifiable.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000a01');
+select public.grant_resource_access_v1('30000000-0000-4000-8000-000000000a01','10000000-0000-4000-8000-000000000a04','read');
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000a01');
 do $$ declare body jsonb; current_result jsonb; previous_result jsonb; begin
@@ -196,13 +198,13 @@ select pg_temp.as_user('10000000-0000-4000-8000-000000000a03');
 do $$ declare rejected boolean:=false; begin
   begin perform public.read_project_revision_history_v1('30000000-0000-4000-8000-000000000a01');
   exception when insufficient_privilege then
-    if sqlerrm<>'project_revision_forbidden' then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
+    if sqlerrm not in ('project_revision_forbidden','resource_access_denied') then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
   end;
   if not rejected then raise exception 'a foreign tenant read the revision history'; end if;
   rejected:=false;
   begin perform public.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a03','pt-BR');
   exception when insufficient_privilege then
-    if sqlerrm<>'project_revision_forbidden' then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
+    if sqlerrm not in ('project_revision_forbidden','resource_access_denied') then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
   end;
   if not rejected then raise exception 'a foreign tenant propagated a revision'; end if;
   rejected:=false;

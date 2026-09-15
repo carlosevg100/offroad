@@ -2,7 +2,8 @@ import {beforeEach, describe, expect, it, vi} from "vitest";
 import {syntheticDocumentWorkProduct} from "@offroad/testing-fixtures/document-work-product";
 import {documentWorkProductSchema} from "@offroad/domain-contracts";
 import {GET} from "./route";
-const mocks = vi.hoisted(() => ({workspace: vi.fn(), read: vi.fn(), labels: vi.fn(), docx: vi.fn(), pdf: vi.fn(), rpc: vi.fn(), download: vi.fn()}));
+const mocks = vi.hoisted(() => ({readable: vi.fn(), workspace: vi.fn(), read: vi.fn(), labels: vi.fn(), docx: vi.fn(), pdf: vi.fn(), rpc: vi.fn(), download: vi.fn()}));
+vi.mock("@/lib/auth/resource-download", () => ({resourceStillReadable:mocks.readable}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 vi.mock("@/lib/advisor/document-work-product-reader", () => ({loadDocumentWorkProduct: mocks.read}));
 vi.mock("@/lib/advisor/document-work-product-labels", () => ({documentWorkProductLabels: mocks.labels}));
@@ -29,6 +30,7 @@ const params = {locale: "en-US", projectId, fingerprint: product.fingerprint, fo
 const request = (overrides = {}) => GET(new Request("https://offroad.test/material"), {params: Promise.resolve({...params, ...overrides})});
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.readable.mockResolvedValue(true);
   mocks.workspace.mockResolvedValue({supabase, organization: {id: "authenticated-organization"}});
   mocks.read.mockResolvedValue({product, publishedAt: "2026-09-08T12:05:00Z"});
   mocks.labels.mockResolvedValue(labels);
@@ -37,6 +39,14 @@ beforeEach(() => {
   mocks.rpc.mockResolvedValue({data: templateContext(null), error: null});
 });
 describe("document work product download route", () => {
+  it("withholds a rendered file when access was revoked during rendering", async () => {
+    mocks.readable.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    const response = await request({format:"pdf"});
+    expect(mocks.pdf).toHaveBeenCalled();
+    expect(response.status).toBe(404);
+    expect((await response.arrayBuffer()).byteLength).toBe(0);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
   it("downloads exact authorized persisted version using content locale and publication date", async () => {
     const response = await request();
     expect(response.status).toBe(200);

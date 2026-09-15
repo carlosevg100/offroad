@@ -5,33 +5,13 @@ import type {Database, Json} from "@/types/database";
 import type {IntakeErrorCode} from "./types";
 
 /**
- * The missing link between "the user asked for processing" and "the worker has a job"
- * (P1 plan §13, handoff §5 item 4).
- *
- * `begin_processing_run` builds the job payload from the document row, but two fields it
- * cannot produce: the URL the worker downloads the file from and the URL it PUTs the parsed
- * layer to. Storage links can only be signed by someone Storage trusts, and the worker is
- * deliberately not that someone — it holds no service-role key and no storage credential, so
- * the app mints both links as the authenticated user and they travel inside the job payload,
- * a column organization members cannot read.
- *
- * The links are short-lived on purpose. A leaked payload is worth minutes, not forever, and
- * a worker that sits on a job past its lease has to be handed fresh links rather than reuse
- * stale ones.
- *
- * Which organizations get this is decided per organization, in the database
- * (`organizations.pipeline_enabled`): promotion is gradual and reversible, and it is not a
- * deployment. Everyone else stays on the content-hash-verified fixture.
+ * Opens work with document IDs. The database binds the responsible person and authorization
+ * revision; the signed-in worker reads Storage only while that job remains authorized.
+ * The browser never mints bearer access for background execution.
  */
 
 /** Pipeline contract version recorded on the run. Must match what the worker reports. */
 export const PIPELINE_VERSION = "f2-2026.08.24";
-
-/**
- * How long the job's links live. One hour covers a cold worker (ClamAV loading signatures,
- * LibreOffice starting) plus a large scanned PDF, and expires well before a lease could.
- */
-export const PIPELINE_LINK_TTL_SECONDS = 3_600;
 
 /**
  * Economic contract for a production case. The database persists and distributes it to jobs;
@@ -86,84 +66,10 @@ export function pipelineEnabledFor(organization: {
   return organization?.pipeline_enabled === true;
 }
 
-/**
- * Where a document's parsed layer is stored: `<organization>/<session>/<document>/<attempt>`.
- *
- * The first two segments are what the Storage policies read (`private.storage_organization_id`
- * and `private.storage_opportunity_id` take folder 1 and folder 2), so the path itself is what
- * keeps one tenant from writing into another's prefix.
- *
- * The last segment is unique per processing run rather than per document version. A retry of
- * the same job reuses that exact object path, while a later reprocess writes a new object and
- * repoints the `document_layers` row at it. The signed token permits idempotent replacement of
- * only that one run-scoped object; it does not grant general update access to the bucket.
- */
-export function layerObjectPath(input: {
-  organizationId: string;
-  sessionId: string;
-  sourceDocumentId: string;
-  attemptId: string;
-}): string {
-  return `${input.organizationId}/${input.sessionId}/${input.sourceDocumentId}/${input.attemptId}.json`;
-}
-
-export type PipelineDocument = {
-  id: string;
-  object_path: string;
-  processing_status?: string | null;
-};
-
-export type SignedDocumentEntry = {
-  source_document_id: string;
-  download_url: string;
-  layer_object_path: string;
-  layer_upload_url: string;
-};
-
-/**
- * Signs both links for every document of the session.
- *
- * All-or-nothing on purpose: a run started with half its documents unreachable would report
- * failures that say nothing about the documents themselves. If any link cannot be signed the
- * caller is told before a run exists.
- */
-export async function signPipelineDocuments(input: {
-  supabase: SupabaseClient<Database>;
-  organizationId: string;
-  sessionId: string;
-  documents: PipelineDocument[];
-  newAttemptId?: () => string;
-}): Promise<Outcome<SignedDocumentEntry[]>> {
-  const newAttemptId = input.newAttemptId ?? (() => crypto.randomUUID());
-  const entries = await Promise.all(input.documents.map(async (document): Promise<SignedDocumentEntry | null> => {
-    const attemptId = newAttemptId();
-    const download = await input.supabase.storage
-      .from("opportunity-documents")
-      .createSignedUrl(document.object_path, PIPELINE_LINK_TTL_SECONDS);
-    if (download.error || !download.data?.signedUrl) return null;
-
-    const objectPath = layerObjectPath({
-      organizationId: input.organizationId,
-      sessionId: input.sessionId,
-      sourceDocumentId: document.id,
-      attemptId,
-    });
-    // A worker retry must be able to store the same deterministic layer again after a later
-    // stage failed. Without an upsert-scoped token, Storage rejects the second PUT before the
-    // worker can reach the failed stage, turning a recoverable database timeout into poison.
-    const upload = await input.supabase.storage.from("document-layers").createSignedUploadUrl(objectPath, {upsert: true});
-    if (upload.error || !upload.data?.signedUrl) return null;
-
-    return {
-      source_document_id: document.id,
-      download_url: download.data.signedUrl,
-      layer_object_path: objectPath,
-      layer_upload_url: upload.data.signedUrl,
-    };
-  }));
-
-  if (entries.some((entry) => entry === null)) return {ok: false, error: "processing"};
-  return {ok: true, value: entries as SignedDocumentEntry[]};
+/** Documents are references; storage locations and authority are resolved by the database. */
+export type PipelineDocument = {id: string; object_path: string; processing_status?: string | null};
+export function preparePipelineDocuments(documents: PipelineDocument[]): Array<{source_document_id: string}> {
+  return documents.map((document) => ({source_document_id: document.id}));
 }
 
 /**
@@ -178,7 +84,6 @@ export async function startProcessingRun(input: {
   sessionId: string;
   trigger: ProcessingTrigger;
   budget?: Record<string, number>;
-  newAttemptId?: () => string;
 }): Promise<Outcome<ProcessingRunStarted>> {
   const [{data: documents, error: documentsError}, {data: session, error: sessionError}] = await Promise.all([
     input.supabase
@@ -201,25 +106,18 @@ export async function startProcessingRun(input: {
   // Reuse is only legal under the same pipeline contract. A ready immutable document with the
   // same version already has a verified layer and candidates; paying a provider to read it
   // again would change neither evidence nor answer. A pipeline-version change is an explicit
-  // full rebuild and signs every document.
+  // full rebuild and schedules every document.
   const documentsToProcess = session.pipeline_version === PIPELINE_VERSION
     ? sourceDocuments.filter((document) => document.processing_status !== "ready")
     : sourceDocuments;
 
-  const signed = await signPipelineDocuments({
-    supabase: input.supabase,
-    organizationId: input.organizationId,
-    sessionId: input.sessionId,
-    documents: documentsToProcess,
-    ...(input.newAttemptId ? {newAttemptId: input.newAttemptId} : {}),
-  });
-  if (!signed.ok) return signed;
+  const documentsForRun = preparePipelineDocuments(documentsToProcess);
 
   const {data, error} = await input.supabase.rpc("begin_processing_run", {
     p_organization_id: input.organizationId,
     p_session_id: input.sessionId,
     p_trigger: input.trigger,
-    p_documents: signed.value as unknown as Json,
+    p_documents: documentsForRun as unknown as Json,
     p_pipeline_version: PIPELINE_VERSION,
     p_budget: (input.budget ?? DEFAULT_RUN_BUDGET) as unknown as Json,
   });

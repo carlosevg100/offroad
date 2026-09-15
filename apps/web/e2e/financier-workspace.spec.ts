@@ -361,7 +361,7 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
     documentArgs(organizationId, `${organizationId}/${sessionId}/other.pdf`), ["42501"], otherToken);
   await expectRefusal(request, "other tenant renaming the financier project", "manage_workspace_project", {
     p_session_id: sessionId, p_action: "rename", p_project_name: "Sequestro",
-  }, ["P0002"], otherToken);
+  }, ["P0002", "42501"], otherToken);
   expect(await rest(request, `provider_mandates?select=id&organization_id=eq.${organizationId}`, otherToken)).toHaveLength(0);
   expect(await rest(request, `provider_mandate_confirmations?select=id&organization_id=eq.${organizationId}`, otherToken)).toHaveLength(0);
   await expectRefusal(request, "other tenant confirming the financier mandate", "confirm_provider_mandate_v1", {
@@ -369,7 +369,7 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   }, ["42501"], otherToken);
   await expectRefusal(request, "other tenant answering the financier gap", "submit_advisor_information_response_v1", {
     ...staleAnswer, p_message_id: randomUUID(), p_expected_updated_at: requests[0]!.updated_at,
-  }, ["P0002"], otherToken);
+  }, ["P0002", "42501"], otherToken);
   expect(otherOrganizationId).not.toBe(organizationId);
 
   // 13. No identity at all.
@@ -383,7 +383,7 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   // 14. A revoked membership loses the workspace, its reads and its commands.
   setup("revoke", email);
   const revokedToken = await accessToken(request, email, password);
-  await expectRefusal(request, "revoked member bootstrap", "get_workspace_bootstrap", {}, ["P0002"], revokedToken);
+  await expectRefusal(request, "revoked member bootstrap", "get_workspace_bootstrap", {}, ["P0002", "42501"], revokedToken);
   expect(await rest(request, `document_intake_sessions?select=id&id=eq.${sessionId}`, revokedToken)).toHaveLength(0);
   await expectRefusal(request, "revoked member document registration", "register_intake_document_command",
     documentArgs(organizationId, `${organizationId}/${sessionId}/revoked.pdf`), ["42501"], revokedToken);

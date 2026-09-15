@@ -136,7 +136,7 @@ declare
   rejected boolean := false;
   identity_rejected boolean := false;
 begin
-  claim := public.worker_claim_job(repeat('s', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'semantic router did not claim the conversational job: %', claim;
   end if;
@@ -331,6 +331,9 @@ begin
   update public.processing_jobs
   set status = 'failed', last_error = '{"code":"fixture_failure","stage":"test","retryable":false,"cause":{"name":"Error","class":"worker_error","message":"synthetic failure raised by the contract test"}}'::jsonb
   where id = failed_job.id;
+  -- This fixture jumps directly to failed execution, so its unprocessed proposal is obsolete.
+  update public.processing_jobs set status='cancelled' where kind='execution_brief_proposal'
+   and payload->>'approval_target_job_id'=failed_job.id::text and status='queued';
   update public.processing_runs set status = 'failed' where id = failed_job.processing_run_id;
   update public.document_intake_sessions set status = 'failed' where id = session_id;
 end;
@@ -367,7 +370,7 @@ begin
     'pt-BR',
     'A conversa é com CFO e tesouraria. Não temos exposição. Retome usando este contexto.'
   );
-  claim := public.worker_claim_job(repeat('s', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief'
     or claim ->> 'job_id' <> submitted ->> 'job_id' then
     raise exception 'failed-analysis retry did not claim the advisor turn: %', claim;
@@ -449,7 +452,7 @@ declare
   context jsonb;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('s', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('s', 64), 600);
   if claim ->> 'kind' <> 'capital_project_analysis'
     or claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route'
     or claim #>> '{payload,trigger_event,reason}' <> 'failed_analysis_retry' then

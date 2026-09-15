@@ -1,6 +1,8 @@
 -- Destructive-safe tenant isolation smoke test: every fixture is rolled back.
 
 begin;
+-- Emulate the Storage API operation for direct SQL policy assertions.
+select set_config('storage.operation','object.upload',true);
 \ir support/execution_approval.sql
 
 insert into auth.users (
@@ -73,6 +75,11 @@ insert into public.companies (
   ('30000000-0000-4000-8000-000000000001', '20000000-0000-4000-8000-000000000001', 'Tenant A Company', 'BR', 'BRL', '10000000-0000-4000-8000-000000000001'),
   ('30000000-0000-4000-8000-000000000002', '20000000-0000-4000-8000-000000000002', 'Tenant B Company', 'BR', 'BRL', '10000000-0000-4000-8000-000000000002');
 
+create function pg_temp.assert_safe_document_job_references(p_session uuid) returns void language plpgsql security definer set search_path='' as $$ begin
+ if exists(select 1 from public.processing_jobs j join public.source_documents d on d.organization_id=j.organization_id and d.id=j.source_document_id
+ where j.intake_session_id=p_session and (j.payload ? 'download_url' or j.payload ? 'layer_upload_url' or j.payload->>'object_path' is distinct from d.object_path
+ or j.payload->>'layer_object_path' not like j.organization_id::text||'/'||j.intake_session_id::text||'/%')) then raise exception 'caller-controlled storage reference reached the worker'; end if;
+end $$;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -1011,13 +1018,13 @@ begin
 
   -- an unknown credential cannot claim
   begin
-    perform public.worker_claim_job(repeat('x', 64));
+    perform public.worker_claim_job_v3(repeat('x', 64));
     raise exception 'worker_claim_job accepted an unknown credential';
   exception
     when insufficient_privilege then null;
   end;
 
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if not (claim->>'claimed')::boolean then
     raise exception 'worker could not claim the queued job';
   end if;
@@ -1026,7 +1033,7 @@ begin
   if capability is null or char_length(capability) < 32 then
     raise exception 'claim did not issue a capability token';
   end if;
-  if claim->'payload'->>'download_url' is null then
+  if claim->'payload'->>'object_path' is null or claim->'payload' ? 'download_url' or claim->'payload' ? 'layer_upload_url' then
     raise exception 'job payload did not reach the worker';
   end if;
 
@@ -1334,7 +1341,7 @@ begin
     when insufficient_privilege then null;
   end;
 
-  case_claim := public.worker_claim_job(repeat('w', 64), 600);
+  case_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if case_claim->>'kind' <> 'preliminary_analysis'
     or case_claim->'payload'->>'analysis_scope' <> 'preliminary_understanding' then
     raise exception 'the first run did not claim the isolated preliminary-analysis job: %', case_claim;
@@ -1460,7 +1467,7 @@ begin
   );
 
   perform pg_temp.fixture_approve_pending_executions();
-  case_claim := public.worker_claim_job(repeat('w', 64), 600);
+  case_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if case_claim->>'kind' <> 'case_analysis'
     or case_claim->'payload'->>'analysis_scope' <> 'full_case' then
     raise exception 'the post-P0 run did not claim the governed full case-analysis job';
@@ -1830,7 +1837,7 @@ begin
       '{"name":"forged cross-tenant company"}'::jsonb
     );
   exception
-    when sqlstate 'P0002' then accepted := false;
+    when sqlstate 'P0002' or insufficient_privilege then accepted := false;
   end;
   if accepted then
     raise exception 'tenant B changed tenant A draft company context';
@@ -1887,7 +1894,7 @@ declare
   job_id uuid;
   capability text;
 begin
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   job_id := (claim->>'job_id')::uuid;
   capability := claim->>'capability_token';
 
@@ -2470,7 +2477,7 @@ select set_config(
 --
 -- `begin_processing_run` is granted to `authenticated`, so `download_url` and
 -- `layer_upload_url` are, in the worst case, written by a tenant member calling the Data API
--- rather than by the application that signs them. A worker that acted on them as given would
+-- rather than by the application. The command now ignores these fields entirely. A worker that acted on them as given would
 -- be a request forwarder inside our AWS account with a task role attached, and
 -- `http://169.254.170.2/v2/credentials/...` is where that role is handed out.
 do $$
@@ -2498,7 +2505,8 @@ begin
         'download_url', 'http://169.254.170.2/v2/credentials/abc')), 'test');
   exception when others then accepted := false;
   end;
-  if accepted then raise exception 'begin_processing_run accepted a download_url pointing at the metadata endpoint'; end if;
+  if not accepted then raise exception 'legacy URL fields should be ignored during the client transition'; end if;
+  perform pg_temp.assert_safe_document_job_references(session_id);
 
   -- The expected object path smuggled into a query string on somebody else's host: the check
   -- has to read the Storage part of the URL, not merely find the text somewhere in it.
@@ -2509,7 +2517,8 @@ begin
         'download_url', 'https://evil.example/?p=' || path)), 'test');
   exception when others then accepted := false;
   end;
-  if accepted then raise exception 'begin_processing_run accepted a foreign host carrying the object path in its query string'; end if;
+  if not accepted then raise exception 'legacy URL fields should be ignored during the client transition'; end if;
+  perform pg_temp.assert_safe_document_job_references(session_id);
 
   -- A layer written outside `<organization>/<session>/`, which is the prefix the Storage
   -- policies parse into a tenant.
@@ -2521,7 +2530,8 @@ begin
         'layer_upload_url', 'https://p.supabase.co/storage/v1/object/upload/sign/l/someone-else/session/x.json')), 'test');
   exception when others then accepted := false;
   end;
-  if accepted then raise exception 'begin_processing_run accepted a layer path outside the session prefix'; end if;
+  if not accepted then raise exception 'legacy URL fields should be ignored during the client transition'; end if;
+  perform pg_temp.assert_safe_document_job_references(session_id);
 
   -- And the links the application actually signs still start a run, or this check would have
   -- closed the hole by breaking the product.
@@ -2883,7 +2893,7 @@ begin
   );
 
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the isolated case snapshot job';
   end if;
@@ -3129,6 +3139,7 @@ declare
   accepted boolean;
 begin
   set local role postgres;
+  perform set_config('request.jwt.claims','{}',true);
   insert into public.document_intake_sessions (
     id, organization_id, started_by, journey, locale, status, current_run_id, pipeline_version
   ) values (
@@ -3166,7 +3177,7 @@ begin
     true
   );
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim ->> 'kind' <> 'case_analysis' then raise exception 'controlled case job was not claimed'; end if;
   job_id := (claim ->> 'job_id')::uuid;
   capability := claim ->> 'capability_token';
@@ -3213,6 +3224,7 @@ begin
   ));
 
   set local role postgres;
+  perform set_config('request.jwt.claims','{}',true);
   insert into public.processing_runs (
     id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by
   ) values (
@@ -3246,7 +3258,7 @@ begin
     true
   );
   perform pg_temp.fixture_approve_pending_executions();
-  claim_two := public.worker_claim_job(repeat('w', 64), 600);
+  claim_two := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim_two ->> 'kind' <> 'case_analysis' then raise exception 'incremental case job was not claimed'; end if;
   job_id_two := (claim_two ->> 'job_id')::uuid;
   capability_two := claim_two ->> 'capability_token';
@@ -4716,6 +4728,7 @@ declare
   accepted boolean;
 begin
   set local role postgres;
+  perform set_config('request.jwt.claims','{}',true);
   insert into public.document_intake_sessions (id, organization_id, started_by, journey, locale)
   values (session_id, org_a, '10000000-0000-4000-8000-000000000001', 'company', 'pt-BR');
   insert into public.processing_runs (
@@ -4735,7 +4748,7 @@ begin
     true
   );
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the public-research fixture';
   end if;
@@ -4859,31 +4872,6 @@ begin
 end;
 $$;
 
--- Related project memory is deliberately resolved inside the capability-scoped worker context.
--- Keep the tenant predicate and current-project exclusion explicit so a later refactor cannot
--- turn authorized workspace memory into a cross-organization discovery surface.
-do $$
-declare
-  definition text;
-begin
-  select pg_get_functiondef(
-    'private.worker_load_agent_context(uuid,text)'::regprocedure
-  ) || pg_get_functiondef(
-    'private.worker_load_agent_context_before_professional_context_v1(uuid,text)'::regprocedure
-  ) into definition;
-
-  if position('prior.organization_id = job_row.organization_id' in definition) = 0 then
-    raise exception 'related project memory lost its capability-bound organization predicate';
-  end if;
-  if position('prior.id is distinct from project_row.id' in definition) = 0 then
-    raise exception 'related project memory no longer excludes the current project';
-  end if;
-  if position('position(lower(identity.company_name) in lower(message_row.content))' in definition) = 0 then
-    raise exception 'related project memory is no longer scoped to the company named in the request';
-  end if;
-end;
-$$;
-
 set local role postgres;
 
 -- Agent Offroad vertical: a tenant message becomes a capability-bound job and a preview. The
@@ -4948,7 +4936,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'worker did not claim the Agent Offroad job: %', claim;
   end if;
@@ -4957,6 +4945,7 @@ begin
   end if;
   capability := claim ->> 'capability_token';
   context := public.worker_load_agent_context(job_id, capability);
+  if coalesce(jsonb_array_length(context->'related_project_memory'),0)<>0 then raise exception 'worker imported private memory from another project without a source contract'; end if;
   snapshot := context ->> 'snapshot_fingerprint';
   perform public.worker_record_agent_response(
     job_id,
@@ -5019,7 +5008,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
-  failure_claim := public.worker_claim_job(repeat('w', 64), 600);
+  failure_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if failure_claim ->> 'kind' <> 'agent_operation_brief' then
     raise exception 'worker did not claim the Agent failure fixture';
   end if;
@@ -5058,7 +5047,7 @@ begin
     '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
     true
   );
-  retry_claim := public.worker_claim_job(repeat('w', 64), 600);
+  retry_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   retry_context := public.worker_load_agent_context(
     (retry_claim ->> 'job_id')::uuid, retry_claim ->> 'capability_token'
   );
@@ -5218,7 +5207,7 @@ begin
     true
   );
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('w', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('w', 64), 600);
   if claim->>'kind' <> 'case_analysis' or (claim->>'processing_run_id')::uuid <> run_id then
     raise exception 'worker did not claim the deal-state context fixture';
   end if;

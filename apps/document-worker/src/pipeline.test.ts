@@ -372,10 +372,10 @@ describe("failures are classified by whether retrying could ever help", () => {
     expect(calls.failed[0]?.error.reason).toBe("transient_error");
   });
 
-  it("treats an expired signed URL as retryable, because the next run mints a new one", async () => {
+  it("processes without a bearer URL using live job storage authority", async () => {
     const {deps, calls} = fakes();
-    await processDocumentJob(job({download_url: undefined}), deps);
-    expect(calls.failed[0]?.options?.retryable).toBe(true);
+    await processDocumentJob(job({download_url: undefined, layer_upload_url: undefined}), deps);
+    expect(calls.failed).toHaveLength(0);
   });
 
   it("never lets a classifier failure lose the work already done", async () => {

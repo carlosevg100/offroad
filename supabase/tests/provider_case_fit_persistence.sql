@@ -74,7 +74,7 @@ begin
  if jsonb_array_length(f.frozen->'providers')<>1 or f.frozen::text like '%MUST NOT LEAK%' or f.frozen::text like '%private@example.invalid%' or f.frozen::text like '%other tenant%' then raise exception 'owned source projection failed'; end if;
  perform pg_temp.fixture_approve_execution(f.job_id);
  update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
- claim:=public.worker_claim_job(repeat('u',64),600);if claim->>'job_id' is distinct from f.job_id::text then raise exception 'fit claim mismatch'; end if;cap:=claim->>'capability_token';
+ claim:=public.worker_claim_job_v3(repeat('u',64),600);if claim->>'job_id' is distinct from f.job_id::text then raise exception 'fit claim mismatch'; end if;cap:=claim->>'capability_token';
  context:=public.worker_load_provider_case_fit_context(f.job_id,cap);
  update public.mandate_versions set constraints='{"currencies":["USD"]}' where fund_id='40000000-0000-4000-8000-000000000971';
  if public.worker_load_provider_case_fit_context(f.job_id,cap) is distinct from context then raise exception 'frozen mandate changed'; end if;

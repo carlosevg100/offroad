@@ -63,6 +63,7 @@ insert into public.capital_project_information_requests (
 
 select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000741',true);
 
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000742' where status='leased';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000742","role":"authenticated","aal":"aal1"}', true);
 

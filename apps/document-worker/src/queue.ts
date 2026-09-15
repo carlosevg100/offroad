@@ -417,7 +417,7 @@ export function createQueueClient(
 
   return {
     async claim() {
-      const data = await call("worker_claim_job_v2", {
+      const data = await call("worker_claim_job_v3", {
         p_worker_token: options.workerToken,
         p_lease_seconds: options.leaseSeconds,
       });

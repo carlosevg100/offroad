@@ -1,3 +1,4 @@
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {renderMaterialHtml} from "@offroad/case-render";
 import type {MaterialKind} from "@offroad/case-materials";
 
@@ -28,6 +29,7 @@ export async function GET(request: Request, {params}: Params) {
   if (!kinds.includes(kind as MaterialKind)) return new Response("Not found", {status: 404});
 
   const {supabase, organization} = await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const lang = locale === "en-US" ? "en" : "pt";
 
   const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
@@ -67,6 +69,8 @@ export async function GET(request: Request, {params}: Params) {
       ...(organization.name ? {companyName: organization.name} : {}),
     },
   });
+
+  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
 
   return new Response(html, {
     headers: {

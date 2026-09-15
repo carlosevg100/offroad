@@ -6538,6 +6538,9 @@ export type Database = {
       processing_jobs: {
         Row: {
           attempts: number
+          authorization_resource_id: string | null
+          authorization_revision: number | null
+          authorization_subject_id: string | null
           available_at: string
           capability_sha256: string | null
           controlled_execution_id: string | null
@@ -6547,6 +6550,7 @@ export type Database = {
           kind: string
           last_error: Json | null
           lease_expires_at: string | null
+          leased_account_user_id: string | null
           leased_by: string | null
           max_attempts: number
           model_calls: number
@@ -6555,12 +6559,16 @@ export type Database = {
           payload: Json
           processing_run_id: string
           result: Json | null
+          review_execution_authorization_id: string | null
           source_document_id: string | null
           status: string
           updated_at: string
         }
         Insert: {
           attempts?: number
+          authorization_resource_id?: string | null
+          authorization_revision?: number | null
+          authorization_subject_id?: string | null
           available_at?: string
           capability_sha256?: string | null
           controlled_execution_id?: string | null
@@ -6570,6 +6578,7 @@ export type Database = {
           kind: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
           model_calls?: number
@@ -6578,12 +6587,16 @@ export type Database = {
           payload?: Json
           processing_run_id: string
           result?: Json | null
+          review_execution_authorization_id?: string | null
           source_document_id?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           attempts?: number
+          authorization_resource_id?: string | null
+          authorization_revision?: number | null
+          authorization_subject_id?: string | null
           available_at?: string
           capability_sha256?: string | null
           controlled_execution_id?: string | null
@@ -6593,6 +6606,7 @@ export type Database = {
           kind?: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
           model_calls?: number
@@ -6601,6 +6615,7 @@ export type Database = {
           payload?: Json
           processing_run_id?: string
           result?: Json | null
+          review_execution_authorization_id?: string | null
           source_document_id?: string | null
           status?: string
           updated_at?: string
@@ -8346,6 +8361,10 @@ export type Database = {
         }
         Returns: string
       }
+      accept_workspace_invite_v1: {
+        Args: { p_invite_id: string }
+        Returns: string
+      }
       append_advisor_message_v1: {
         Args: {
           p_content: string
@@ -8428,6 +8447,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: boolean
+      }
+      claim_storage_rotation_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
       }
       complete_intake_processing: {
         Args: {
@@ -8593,6 +8616,15 @@ export type Database = {
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
       get_workspace_project_setup: { Args: { p_locale: string }; Returns: Json }
+      grant_resource_access_v1: {
+        Args: {
+          p_action: string
+          p_expires_at?: string
+          p_resource_id: string
+          p_subject_user_id: string
+        }
+        Returns: string
+      }
       initialize_professional_onboarding: {
         Args: {
           p_full_name: string
@@ -8602,6 +8634,12 @@ export type Database = {
         }
         Returns: string
       }
+      invite_workspace_member_v1: {
+        Args: { p_email: string; p_role: string }
+        Returns: string
+      }
+      list_my_workspace_invites_v1: { Args: never; Returns: Json }
+      list_my_workspaces_v1: { Args: never; Returns: Json }
       list_provider_mandates_v1: {
         Args: { p_organization_id: string }
         Returns: Json
@@ -8702,6 +8740,7 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      read_workspace_access_v1: { Args: never; Returns: Json }
       record_agent_change_proposal: {
         Args: {
           p_organization_id: string
@@ -8894,6 +8933,16 @@ export type Database = {
         }
         Returns: string
       }
+      record_storage_rotation_v1: {
+        Args: {
+          p_byte_length: number
+          p_capability: string
+          p_complete: boolean
+          p_rotation_id: string
+          p_sha256: string
+        }
+        Returns: undefined
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
@@ -9060,6 +9109,10 @@ export type Database = {
         Args: { p_plan_id: string }
         Returns: string
       }
+      revoke_resource_access_v1: {
+        Args: { p_resource_id: string; p_subject_user_id: string }
+        Returns: number
+      }
       save_guided_company_profile: {
         Args: {
           p_description: string
@@ -9193,6 +9246,10 @@ export type Database = {
           p_project_id: string
         }
         Returns: Json
+      }
+      set_workspace_member_v1: {
+        Args: { p_role: string; p_status: string; p_user_id: string }
+        Returns: undefined
       }
       set_workspace_project_job: {
         Args: { p_entry_job: string; p_session_id: string }
@@ -9527,6 +9584,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_authorize_document_storage_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_bind_receivables_information_request_fields_v1: {
         Args: {
           p_capability_token: string
@@ -9540,6 +9601,10 @@ export type Database = {
         Returns: Json
       }
       worker_claim_job_v2: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
+      worker_claim_job_v3: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
       }

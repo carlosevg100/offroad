@@ -134,7 +134,7 @@ do $$
 declare
   claim jsonb;
 begin
-  claim := public.worker_claim_job(repeat('g', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('g', 64), 600);
   if (claim ->> 'claimed')::boolean is not true then
     raise exception 'no job was claimed: %', claim;
   end if;

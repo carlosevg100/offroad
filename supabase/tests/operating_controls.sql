@@ -177,7 +177,7 @@ declare
   base_snapshot jsonb;
 begin
   perform pg_temp.fixture_approve_pending_executions();
-  claim := public.worker_claim_job(repeat('k', 64), 600);
+  claim := public.worker_claim_job_v3(repeat('k', 64), 600);
   job_id := (claim ->> 'job_id')::uuid;
   capability := claim ->> 'capability_token';
   if job_id <> '95000000-0000-4000-8000-000000000001' or capability is null then

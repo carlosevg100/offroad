@@ -117,7 +117,7 @@ begin
   begin
     perform private.record_execution_proposal_plan_as_actor(project,p,'10000000-0000-4000-8000-000000000972');
     raise exception 'actor crossed tenant';
-  exception when no_data_found then null; end;
+  exception when no_data_found or insufficient_privilege then null; end;
   begin
     perform private.record_execution_proposal_plan_as_actor(project,jsonb_set(p,'{taskSpecs,1,effect}','"commit"'),'10000000-0000-4000-8000-000000000971');
     raise exception 'actor accepted altered graph';
@@ -129,7 +129,7 @@ begin
   begin
     perform private.record_capital_project_plan(project,p);
     raise exception 'user recorder crossed tenant';
-  exception when no_data_found then null; end;
+  exception when no_data_found or insufficient_privilege then null; end;
 end;
 $$;
 rollback;

@@ -326,6 +326,8 @@ begin
 end;
 $$;
 
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}', true);
+select public.grant_resource_access_v1('40000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000734','read');
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000734","role":"authenticated","aal":"aal1"}', true);
 do $$
 declare payload jsonb; accepted boolean;

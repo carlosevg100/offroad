@@ -56,6 +56,7 @@ export const requireWorkspace = cache(async (locale: string) => {
     // active membership is not a safe workspace-selection policy for multi-organization users.
     // Database migrations must land before application code during production rollouts.
     if (error?.code === "PGRST202" || error?.code === "42883") redirect(`/${locale}/login?error=provider`);
+    if (error?.message === "workspace_context_required" || error?.message === "workspace_context_denied") redirect(`/${locale}/workspaces`);
     if (error?.code === "42501") redirect(`/${locale}/login`);
     redirect(`/${locale}/onboarding`);
   }

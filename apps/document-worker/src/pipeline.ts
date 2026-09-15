@@ -58,8 +58,8 @@ export type Extractor = (input: {
 
 export type PipelineDependencies = {
   queue: QueueClient;
-  download: (url: string) => Promise<Uint8Array>;
-  uploadLayer: (url: string, body: Uint8Array) => Promise<void>;
+  download: (job: DocumentJob) => Promise<Uint8Array>;
+  uploadLayer: (job: DocumentJob, body: Uint8Array) => Promise<void>;
   scanner: Scanner | null;
   converter?: DocumentConverter;
   ocr?: OcrEngine;
@@ -107,12 +107,8 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
   };
 
   try {
-    if (!payload.download_url) {
-      throw new GateError("the job carries no download URL; the signed link expired", "scanner_unavailable", true);
-    }
-
     // ---- E0 gate ---------------------------------------------------------------------
-    const bytes = await stage("download", () => deps.download(payload.download_url!));
+    const bytes = await stage("download", () => deps.download(job));
 
     if (!payload.sha256 || payload.byte_size === undefined) {
       throw new GateError("the job is missing the immutable upload hash or byte size", "invalid_binding", false);
@@ -227,9 +223,7 @@ export async function processDocumentJob(job: DocumentJob, deps: PipelineDepende
       payloadBase64: receivablesEvidence.payloadBase64,
     }));
 
-    if (payload.layer_upload_url && payload.layer_object_path) {
-      await stage("store_layer", () => deps.uploadLayer(payload.layer_upload_url!, layerBody));
-    }
+    await stage("store_layer", () => deps.uploadLayer(job, layerBody));
 
     // ---- E1 profile ------------------------------------------------------------------
     const classified = await stage("profile", () =>

@@ -96,7 +96,7 @@ export async function loadIntakeCollection(runtime: IntakeRuntime): Promise<{ses
   return {session: sessionResult.data, documents: documentsResult.data ?? []};
 }
 
-/** Session, documents (with 15-minute evidence links), candidates and issues for the review UI. */
+/** Session, documents (with authorization-checked evidence routes), candidates and issues for the review UI. */
 export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session: IntakeSession | null; documents: IntakeDocument[]; candidates: IntakeCandidate[]; issues: IntakeIssue[]}> {
   const {supabase, organizationId, sessionId} = runtime;
 
@@ -111,14 +111,9 @@ export async function loadIntakeReview(runtime: IntakeRuntime): Promise<{session
     supabase.from("intake_issues").select("*").eq("organization_id", organizationId).eq("intake_session_id", sessionId).order("priority").order("created_at"),
   ]);
   const baseDocuments: IntakeDocument[] = documentsResult.data ?? [];
-  const signedEntries = await Promise.all(baseDocuments.map(async (document) => {
-    const {data} = await supabase.storage.from("opportunity-documents").createSignedUrl(document.object_path, 900);
-    return [document.id, data?.signedUrl] as const;
-  }));
-  const signedById = new Map(signedEntries);
   return {
     session: sessionResult.data,
-    documents: baseDocuments.map((document) => ({...document, signedUrl: signedById.get(document.id)})),
+    documents: baseDocuments.map((document) => ({...document, downloadUrl: `/${runtime.locale}/app/documents/${document.id}`})),
     candidates: candidatesResult.data ?? [],
     issues: issuesResult.data ?? [],
   };

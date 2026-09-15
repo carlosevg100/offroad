@@ -55,6 +55,7 @@ do $$ begin
  if private.institutional_config_hash(current_setting('test.institutional_configuration')::jsonb) is distinct from current_setting('test.institutional_application')::jsonb->>'expectedConfigurationFingerprint' then raise exception 'JS/Postgres hash mismatch'; end if;
  if private.institutional_config_hash(current_setting('test.institutional_application')::jsonb->'nextConfiguration') is distinct from current_setting('test.institutional_application')::jsonb->>'nextConfigurationFingerprint' then raise exception 'candidate hash mismatch'; end if;
 end $$;
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000872' where status='leased';
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000872","role":"authenticated"}',true);
 select public.worker_sync_institutional_information_requests_v1('80000000-0000-4000-8000-000000000871',repeat('u',64),jsonb_build_array(current_setting('test.institutional_request')::jsonb));

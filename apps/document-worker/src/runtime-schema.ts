@@ -5,6 +5,11 @@ export const WORKER_RUNTIME_SCHEMA_VERSION =
   "document-worker-runtime.2026-09-08.execution-approval.v1" as const;
 
 export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
+  "explicit-resource-access.v1",
+  "explicit-workspace-context.v1",
+  "authenticated-document-storage.v1",
+  "review-bound-execution.v1",
+  "legacy-storage-rotation.v1",
   "integration-preview-workflow-continuity.v1",
   "receivables-information-request-bindings.v1",
   "receivables-complete-draft-refresh.v1",

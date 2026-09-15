@@ -8,6 +8,7 @@ import {institutionalResultMaterial} from "@/lib/advisor/institutional-result-ma
 import {GET} from "./route";
 
 const mocks = vi.hoisted(() => ({workspace: vi.fn(), rpc: vi.fn()}));
+vi.mock("@/lib/auth/resource-download", () => ({resourceStillReadable: async () => true}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 // Committed fixture is emitted by the real reviewed-source/configuration/calculation producer.
 const sql = readFileSync(resolve(process.cwd(), "../../supabase/tests/support/institutional_setup_fixture.sql"), "utf8");

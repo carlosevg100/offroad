@@ -757,7 +757,7 @@ begin
       '90000000-0000-4000-8000-000000000395', 'pt-BR', 'custom', 'Cross tenant.'
     );
     accepted := true;
-  exception when no_data_found then accepted := false;
+  exception when no_data_found or insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'question answer crossed the tenant boundary'; end if;
 end;

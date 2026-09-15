@@ -6083,5 +6083,48 @@
     "pendingBody": "These funds exist in your registry and have no structured mandate yet. With no confirmed mandate they enter no case selection.",
     "sourcesHelp": "Where this mandate came from: a regulation, a minute, an email from the manager. A public record and a past transaction do not belong here.",
     "noSources": "No source recorded"
+  },
+  "WorkspaceContext": {
+    "title": "Choose your organization",
+    "description": "Each tab keeps its selected organization for your actions.",
+    "empty": "You have no active organization membership.",
+    "switch": "Switch organization",
+    "invitations": "Pending invitations",
+    "accept": "Accept invitation",
+    "denied": "You are not authorized to make this change."
+  },
+  "WorkspaceAccess": {
+    "title": "People and access",
+    "invite": "Invite person",
+    "inviteHelp": "The recipient accepts under Choose your organization using an account with a verified email. Invitations expire after seven days. Share the platform address with them.",
+    "email": "Email",
+    "role": "Access role",
+    "roles": {
+      "admin": "Administrator",
+      "member": "Member",
+      "analyst": "Analyst",
+      "relationship_manager": "Relationship manager",
+      "compliance": "Compliance"
+    },
+    "members": "Organization members",
+    "owner": "Organization owner",
+    "status": "Status",
+    "active": "Active",
+    "suspended": "Suspended",
+    "save": "Save",
+    "grant": "Grant access",
+    "person": "Person",
+    "project": "Project",
+    "permission": "Permission",
+    "actions": {
+      "read": "Read",
+      "work": "Work",
+      "manage": "Manage"
+    },
+    "currentGrants": "Individual grants",
+    "revoke": "Revoke project access",
+    "saved": "Changes saved.",
+    "invalid": "Check the submitted fields.",
+    "denied": "You are not authorized to make this change."
   }
 }

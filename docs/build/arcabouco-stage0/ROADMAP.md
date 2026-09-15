@@ -55,6 +55,8 @@ O pronto da etapa exige replay, testes SQL com rollback em staging, journals e c
 
 ### 1B. Fechar leitura ampla por membership, inclusive seus atalhos
 
+**Ajuste aprovado em 15/09/2026.** Antecipar de 2 somente seleção explícita e validação da organização ativa, incluindo isolamento entre abas, para viabilizar administração de pessoas pelo cliente. Conta comercial e demais objetos de 2 permanecem na onda original.
+
 **Objetivo e conceito.** Tornar acesso a conteúdo uma concessão explícita e revogável, incluindo o legado.
 
 **Reprodução em staging.** A e B pertencem à mesma organização; somente A deve acessar o projeto, a sessão e seus documentos. Testar como B lista/título, leitura de sessão, `agent_messages`, consulta de chunks, busca, `output_versions`, artefato, download e uma RPC de loader. Repetir após revogação de A com job enfileirado e job leased. Registrar o que passa indevidamente antes da correção.

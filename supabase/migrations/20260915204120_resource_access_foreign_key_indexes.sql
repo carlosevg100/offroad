@@ -1,0 +1,20 @@
+-- Cover the authorization foreign keys used by revocation and cascading cleanup.
+-- These tables are new in 1B; no historical application index is changed.
+create index access_resources_project_fk_idx on private.access_resources(organization_id,capital_project_id);
+create index access_resources_session_fk_idx on private.access_resources(organization_id,intake_session_id);
+create index access_resources_opportunity_fk_idx on private.access_resources(organization_id,opportunity_id);
+create index access_resources_group_fk_idx on private.access_resources(organization_id,workspace_group_id);
+create index access_resources_company_fk_idx on private.access_resources(organization_id,company_id);
+create index authorization_revisions_subject_fk_idx on private.authorization_revisions(subject_user_id);
+create index resource_access_grants_grantor_fk_idx on private.resource_access_grants(granted_by);
+create index resource_access_grants_revoker_fk_idx on private.resource_access_grants(revoked_by);
+create index review_execution_authorizations_config_fk_idx on private.review_execution_authorizations(organization_id,configuration_id);
+create index review_execution_authorizations_brief_fk_idx on private.review_execution_authorizations(organization_id,execution_brief_id);
+create index review_execution_authorizations_resource_fk_idx on private.review_execution_authorizations(organization_id,resource_id);
+create index review_execution_authorizations_subject_fk_idx on private.review_execution_authorizations(subject_user_id);
+create index storage_path_rotations_resource_fk_idx on private.storage_path_rotations(organization_id,resource_id);
+create index storage_path_rotations_responsible_fk_idx on private.storage_path_rotations(responsible_user_id);
+create index storage_path_rotations_worker_fk_idx on private.storage_path_rotations(worker_account_id);
+create index processing_jobs_review_execution_fk_idx on public.processing_jobs(review_execution_authorization_id);
+create index processing_jobs_authority_subject_fk_idx on public.processing_jobs(authorization_subject_id);
+create index processing_jobs_lease_account_fk_idx on public.processing_jobs(leased_account_user_id);

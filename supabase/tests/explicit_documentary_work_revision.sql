@@ -99,7 +99,7 @@ do $$ declare c record; begin
   begin
     perform public.request_documentary_work_revision_v1(c.project_id,c.brief_id,c.fingerprint,c.command_id,'pt-BR','Compare estas propostas.',pg_temp.documentary_plan_fixture(c.entry));
     raise exception 'revision crossed tenant';
-  exception when no_data_found then null; end;
+  exception when no_data_found or insufficient_privilege then null; end;
 end $$;
 reset role;
 do $$ declare c record; target uuid; planner uuid; token text:=repeat('r',64); context jsonb; begin
