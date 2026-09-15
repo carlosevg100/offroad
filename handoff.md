@@ -2,7 +2,7 @@
 
 The founder approved moving only explicit active-workspace selection/validation from stage 2 into 1B. This candidate replaces membership-wide private case access with revocable resource grants and current human authority for queued/leased jobs; customer administrators manage members and project access in the product. Source downloads are authenticated and rechecked; signed URL minting is denied and existing private object paths have a bounded integrity-checked rotation manifest. Cross-project implicit memory is retired pending explicit source/dependency contracts. Reviewers receive bounded execution authorization for their approved review, not general write permission.
 
-Local `pnpm check` passes. Staging rollback-only SQL evaluations and the original exploit reproduction are recorded separately. Persistent staging/production migration, HTTP after-reproduction, CI, merged commit and both deployments remain required; none is claimed by this candidate entry. See `docs/build/arcabouco/etapa-1b.md` for scope, rollout and containment.
+Local `pnpm check` passes. The 54 existing SQL suites and the new read-only mutation regression passed on installed staging schema. Staging migrations `20260915195255`, `20260915195930` and `20260915201024` are applied. Actual HTTP reproduction changed from 200 to denial, including the old bearer link after integrity-checked rotation. Browser grant/revoke and independent workspace tabs passed against staging. Production migration, complete CI, merged commit and both deployments remain required; none is claimed by this candidate entry. See `docs/build/arcabouco/etapa-1b.md` for scope, rollout and containment.
 
 ## Stage 1A: active organization authority
 
