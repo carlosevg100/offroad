@@ -1,4 +1,6 @@
-# Etapa 1B — bloqueio de promoção, 15/09/2026
+> Retomada: a pausa foi excessiva; a correção é interna à etapa 1B e não exigia nova autorização. A migração preparatória e as três migrações da etapa foram aplicadas em produção. O registro abaixo preserva o diagnóstico anterior; não representa o estado corrente.
+
+# Etapa 1B - bloqueio de promoção, 15/09/2026
 
 **Status: não concluída. Promoção interrompida; produção permanece na 1A.**
 

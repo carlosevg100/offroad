@@ -1,7 +1,7 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
   "commit_tested": "42e1512c",
-  "production_changed": false,
+  "production_changed": true,
   "complete": false,
   "sql_tests": [
     {
@@ -270,16 +270,22 @@
     "synthetic_worker_tokens": 0
   },
   "production_rollout": {
-    "status": "blocked_rolled_back",
-    "applied_migrations": 0,
+    "status": "database_applied_application_rollout_pending",
+    "applied_migrations": 4,
     "error": "execution_brief_approval_required",
-    "historical_completed_jobs_without_current_dispatch": 12
+    "historical_completed_jobs_without_current_dispatch": 12,
+    "versions": [
+      "20260915204111",
+      "20260915204116",
+      "20260915204120",
+      "20260915204124"
+    ]
   },
   "proposed_preflight_eval": {
     "mode": "staging transaction with rollback",
     "metadata_update": "PASS",
     "requeue_without_current_approval": "DENIED",
     "payload_change": "DENIED",
-    "persistently_applied": false
+    "persistently_applied": true
   }
 }

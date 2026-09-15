@@ -157,3 +157,203 @@ Os 75 registros de função e dez tabelas sem fonte no inventário anterior têm
 | `r:public.organization_memberships` | `supabase/migrations/20260915123202_active_organization_authority.sql:56` | direct_ddl |
 | `r:public.organizations` | `supabase/migrations/20260915123202_active_organization_authority.sql:70` | direct_ddl |
 | `trigger:public.organization_memberships.organization_memberships_authority_audit` | `supabase/migrations/20260915123202_active_organization_authority.sql:91` | direct_ddl |
+
+## Acesso explícito 1B
+
+| Objeto | Fonte vigente | Mecanismo |
+|---|---|---|
+| `function:private.accept_workspace_invite_v1(p_invite_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:737` | direct_ddl |
+| `function:private.advance_authorization_revision_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:183` | direct_ddl |
+| `function:private.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:445` | dynamic_definition_transform |
+| `function:private.authorize_capital_project_private_work(p_project_id uuid, p_information_rights_declared boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:445` | dynamic_definition_transform |
+| `function:private.begin_processing_run(p_organization_id uuid, p_session_id uuid, p_trigger text, p_documents jsonb, p_pipeline_version text, p_budget jsonb)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:554` | dynamic_definition_transform |
+| `function:private.bind_job_authority_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:351` | direct_ddl |
+| `function:private.can_access_capital_project(p_organization_id uuid, p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:234` | direct_ddl |
+| `function:private.can_access_capital_request_v1(p_organization_id uuid, p_request_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:295` | direct_ddl |
+| `function:private.can_access_company_v1(p_organization_id uuid, p_company_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:283` | direct_ddl |
+| `function:private.can_access_document_scope(p_organization_id uuid, p_scope_id uuid, p_permission text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:251` | direct_ddl |
+| `function:private.can_access_intake_session(p_organization_id uuid, p_session_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:238` | direct_ddl |
+| `function:private.can_access_opportunity(p_organization_id uuid, p_opportunity_id uuid, p_permission text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:246` | direct_ddl |
+| `function:private.can_access_resource_v1(p_organization_id uuid, p_resource_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:96` | direct_ddl |
+| `function:private.can_access_workspace_project_group(p_organization_id uuid, p_group_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:242` | direct_ddl |
+| `function:private.can_review_intake_claims(p_organization_id uuid, p_session_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:642` | direct_ddl |
+| `function:private.can_work_intake_session_v1(p_organization_id uuid, p_session_id uuid)` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:2` | direct_ddl |
+| `function:private.canonical_job_storage_payload_v1(p_job_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:575` | direct_ddl |
+| `function:private.capital_project_review_action_allowed(p_organization_id uuid, p_project_id uuid, p_action text, p_preparer uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:929` | dynamic_definition_transform |
+| `function:private.capital_project_review_roles(p_organization_id uuid, p_project_id uuid, p_user_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:901` | dynamic_definition_transform |
+| `function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.claim_storage_rotation_v1(p_worker_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:830` | direct_ddl |
+| `function:private.confirm_document_intake(p_organization_id uuid, p_session_id uuid, p_output_locale text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.create_opportunity_intake(p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1000` | direct_ddl |
+| `function:private.decide_advisor_preliminary_v1(p_project_id uuid, p_object_fingerprint text, p_decision text, p_correction text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:445` | dynamic_definition_transform |
+| `function:private.decide_capital_project_artifact(p_artifact_id uuid, p_artifact_fingerprint text, p_decision text, p_note text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:194` | direct_ddl |
+| `function:private.guard_execution_approval_queue()` | `supabase/migrations/20260915204111_terminal_job_authorization_metadata.sql:2` | direct_ddl |
+| `function:private.intake_session_for_update(p_organization_id uuid, p_session_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:418` | direct_ddl |
+| `function:private.invite_workspace_member_v1(p_email text, p_role text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:716` | direct_ddl |
+| `function:private.job_authority_is_current_v1(p_job_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:331` | direct_ddl |
+| `function:private.job_for_capability(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:405` | dynamic_definition_transform |
+| `function:private.job_for_failure_capability(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:625` | direct_ddl |
+| `function:private.list_my_workspace_invites_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:730` | direct_ddl |
+| `function:private.list_my_workspaces_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:614` | direct_ddl |
+| `function:private.lock_job_authority_v1(p_job_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:339` | direct_ddl |
+| `function:private.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:446` | dynamic_definition_transform |
+| `function:private.manage_workspace_project_group(p_group_id uuid, p_action text, p_name text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:446` | dynamic_definition_transform |
+| `function:private.prepare_qualified_introduction_plan(p_organization_id uuid, p_session_id uuid, p_match_screen_fingerprint text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.queue_advisor_initial_turn_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:446` | dynamic_definition_transform |
+| `function:private.read_capital_project_review_context_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:450` | dynamic_definition_transform |
+| `function:private.read_institutional_configuration_reviews_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:450` | dynamic_definition_transform |
+| `function:private.read_institutional_model_results_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:450` | dynamic_definition_transform |
+| `function:private.read_institutional_model_setup_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:451` | dynamic_definition_transform |
+| `function:private.read_institutional_revision_proposals_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:451` | dynamic_definition_transform |
+| `function:private.read_presentation_template_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:452` | dynamic_definition_transform |
+| `function:private.read_processing_model_lineage(p_organization_id uuid, p_session_id uuid, p_processing_run_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.read_project_revision_history_v1(p_project_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:451` | dynamic_definition_transform |
+| `function:private.read_workspace_access_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:776` | direct_ddl |
+| `function:private.record_capital_project_plan(p_project_id uuid, p_snapshot jsonb)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:446` | dynamic_definition_transform |
+| `function:private.record_case_model_spend(p_organization_id uuid, p_session_id uuid, p_cost_usd numeric, p_calls integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.record_execution_proposal_plan_as_actor(p_project_id uuid, p_snapshot jsonb, p_actor_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:898` | dynamic_definition_transform |
+| `function:private.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:841` | direct_ddl |
+| `function:private.register_access_resource_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:150` | direct_ddl |
+| `function:private.request_capital_planning_revision_v1(p_artifact_id uuid, p_artifact_fingerprint text, p_note text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.request_company_debt_view_revision_v1(p_artifact_id uuid, p_artifact_fingerprint text, p_note text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.request_documentary_work_revision_v1(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text, p_plan jsonb)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:447` | dynamic_definition_transform |
+| `function:private.request_origination_thesis_revision_v1(p_artifact_id uuid, p_artifact_fingerprint text, p_note text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.require_artifact_access_v1(p_artifact_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:874` | direct_ddl |
+| `function:private.require_resource_access_v1(p_resource_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:428` | direct_ddl |
+| `function:private.resource_access_as_subject_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid, p_action text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:83` | direct_ddl |
+| `function:private.resource_root_v1(p_organization_id uuid, p_resource_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:78` | direct_ddl |
+| `function:private.restart_onboarding_intake(p_organization_id uuid, p_session_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.review_execution_authority_current_v1(p_id uuid, p_resource_id uuid, p_subject uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:954` | direct_ddl |
+| `function:private.review_institutional_configuration_and_calculate_v1(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:975` | dynamic_definition_transform |
+| `function:private.revoke_membership_resources_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:380` | direct_ddl |
+| `function:private.revoke_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:214` | direct_ddl |
+| `function:private.save_guided_company_profile(p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:449` | dynamic_definition_transform |
+| `function:private.save_project_company_context(p_session_id uuid, p_profile jsonb)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:447` | dynamic_definition_transform |
+| `function:private.save_project_company_profile(p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:449` | dynamic_definition_transform |
+| `function:private.seed_resource_authority_v1(p_organization_id uuid, p_resource_id uuid, p_creator_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:104` | direct_ddl |
+| `function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:452` | dynamic_definition_transform |
+| `function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:886` | dynamic_definition_transform |
+| `function:private.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:760` | direct_ddl |
+| `function:private.set_workspace_project_job(p_session_id uuid, p_entry_job text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:447` | dynamic_definition_transform |
+| `function:private.storage_operation_is_revocable_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:532` | direct_ddl |
+| `function:private.submit_advisor_artifact_revision_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:448` | dynamic_definition_transform |
+| `function:private.submit_advisor_execution_brief_edit_v1(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:448` | dynamic_definition_transform |
+| `function:private.submit_advisor_information_response_v1(p_project_id uuid, p_request_id uuid, p_expected_updated_at timestamp with time zone, p_message_id uuid, p_locale text, p_answer_source text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:448` | dynamic_definition_transform |
+| `function:private.submit_advisor_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:448` | dynamic_definition_transform |
+| `function:private.submit_review_execution_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:971` | dynamic_definition_transform |
+| `function:private.sync_review_resource_access_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:908` | direct_ddl |
+| `function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:449` | dynamic_definition_transform |
+| `function:private.worker_authorize_document_storage_v1(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:514` | direct_ddl |
+| `function:private.worker_can_access_capital_project_material(p_object_path text, p_write boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:668` | direct_ddl |
+| `function:private.worker_can_access_document_storage_v1(p_bucket text, p_object_path text, p_write boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:505` | direct_ddl |
+| `function:private.worker_can_rotate_storage_v1(p_bucket text, p_path text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:860` | direct_ddl |
+| `function:private.worker_claim_job(p_worker_token text, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:409` | dynamic_definition_transform |
+| `function:private.worker_claim_job_v2(p_worker_token text, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:409` | dynamic_definition_transform |
+| `function:private.worker_load_agent_context_before_professional_context_v1(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1078` | dynamic_definition_transform |
+| `function:private.worker_runtime_schema_contract_before_resource_access_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1106` | dynamic_definition_transform |
+| `function:private.workspace_membership_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:593` | direct_ddl |
+| `function:public.accept_workspace_invite_v1(p_invite_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:772` | direct_ddl |
+| `function:public.claim_storage_rotation_v1(p_worker_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:869` | direct_ddl |
+| `function:public.create_opportunity_intake(p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1068` | direct_ddl |
+| `function:public.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:211` | direct_ddl |
+| `function:public.invite_workspace_member_v1(p_email text, p_role text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:770` | direct_ddl |
+| `function:public.list_my_workspace_invites_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:771` | direct_ddl |
+| `function:public.list_my_workspaces_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:620` | direct_ddl |
+| `function:public.read_workspace_access_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:791` | direct_ddl |
+| `function:public.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:870` | direct_ddl |
+| `function:public.revoke_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:229` | direct_ddl |
+| `function:public.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:773` | direct_ddl |
+| `function:public.worker_authorize_document_storage_v1(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:525` | direct_ddl |
+| `function:public.worker_claim_job(p_worker_token text, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:572` | direct_ddl |
+| `function:public.worker_claim_job_v2(p_worker_token text, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:570` | direct_ddl |
+| `function:public.worker_claim_job_v3(p_worker_token text, p_lease_seconds integer)` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:566` | direct_ddl |
+| `function:public.worker_runtime_schema_contract_v1()` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1111` | direct_ddl |
+| `policy:private.access_resources.access_resources_deny_clients` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:74` | direct_ddl |
+| `policy:private.authorization_revisions.authorization_revisions_deny_clients` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:76` | direct_ddl |
+| `policy:private.resource_access_grants.resource_access_grants_deny_clients` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:75` | direct_ddl |
+| `policy:private.review_execution_authorizations.review_execution_authorizations_deny_clients` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:949` | direct_ddl |
+| `policy:private.storage_path_rotations.storage_path_rotations_deny_clients` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:813` | direct_ddl |
+| `policy:public.access_requests.access_requests_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1088` | direct_ddl |
+| `policy:public.access_requests.access_requests_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1093` | direct_ddl |
+| `policy:public.capital_requests.capital_requests_insert` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:308` | direct_ddl |
+| `policy:public.capital_requests.capital_requests_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:304` | direct_ddl |
+| `policy:public.capital_requests.capital_requests_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:306` | direct_ddl |
+| `policy:public.case_execution_comparisons.case_execution_comparisons_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:312` | direct_ddl |
+| `policy:public.case_retrieval_chunks.case_retrieval_chunks_select_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:270` | direct_ddl |
+| `policy:public.companies.companies_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:292` | direct_ddl |
+| `policy:public.companies.companies_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:294` | direct_ddl |
+| `policy:public.disclosure_grants.disclosure_grants_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:1099` | direct_ddl |
+| `policy:public.document_intake_sessions.document_intake_sessions_insert` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:267` | direct_ddl |
+| `policy:public.document_intake_sessions.document_intake_sessions_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:259` | direct_ddl |
+| `policy:public.document_intake_sessions.document_intake_sessions_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:262` | direct_ddl |
+| `policy:public.extraction_feedback.extraction_feedback_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_field_candidates.intake_field_candidates_delete` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_field_candidates.intake_field_candidates_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_field_candidates.intake_field_candidates_update` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_issues.intake_issues_delete` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_issues.intake_issues_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intake_issues.intake_issues_update` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.intent_envelopes.intent_envelopes_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:310` | direct_ddl |
+| `policy:public.match_results.match_results_all` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:470` | dynamic_definition_transform |
+| `policy:public.match_results.match_results_delete_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:478` | direct_ddl |
+| `policy:public.match_results.match_results_insert_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:473` | direct_ddl |
+| `policy:public.match_results.match_results_select_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:471` | direct_ddl |
+| `policy:public.match_results.match_results_update_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:475` | direct_ddl |
+| `policy:public.output_versions.output_versions_all` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:691` | dynamic_definition_transform |
+| `policy:public.output_versions.output_versions_delete_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:703` | direct_ddl |
+| `policy:public.output_versions.output_versions_insert_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:695` | direct_ddl |
+| `policy:public.output_versions.output_versions_select_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:692` | direct_ddl |
+| `policy:public.output_versions.output_versions_update_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:698` | direct_ddl |
+| `policy:public.published_opportunity_projections.published_projections_insert` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:501` | direct_ddl |
+| `policy:public.published_opportunity_projections.published_projections_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:498` | direct_ddl |
+| `policy:public.published_opportunity_projections.published_projections_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:503` | direct_ddl |
+| `policy:public.scenario_versions.scenario_versions_all` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:480` | dynamic_definition_transform |
+| `policy:public.scenario_versions.scenario_versions_delete_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:488` | direct_ddl |
+| `policy:public.scenario_versions.scenario_versions_insert_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:483` | direct_ddl |
+| `policy:public.scenario_versions.scenario_versions_select_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:481` | direct_ddl |
+| `policy:public.scenario_versions.scenario_versions_update_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:485` | direct_ddl |
+| `policy:public.sounding_events.sounding_events_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.sounding_investors.sounding_investors_delete` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.sounding_investors.sounding_investors_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.sounding_investors.sounding_investors_update` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.soundings.soundings_delete` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.soundings.soundings_insert` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.soundings.soundings_update` | `supabase/migrations/20260915204124_require_work_for_legacy_mutations.sql:10` | dynamic_definition_transform |
+| `policy:public.source_documents.source_documents_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:274` | direct_ddl |
+| `policy:public.source_documents.source_documents_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:278` | direct_ddl |
+| `policy:public.workflow_runs.workflow_runs_all` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:491` | dynamic_definition_transform |
+| `policy:public.workflow_runs.workflow_runs_delete_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:495` | direct_ddl |
+| `policy:public.workflow_runs.workflow_runs_insert_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:493` | direct_ddl |
+| `policy:public.workflow_runs.workflow_runs_select_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:492` | direct_ddl |
+| `policy:public.workflow_runs.workflow_runs_update_scoped` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:494` | direct_ddl |
+| `policy:storage.objects.job_document_layer_storage_insert` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:545` | direct_ddl |
+| `policy:storage.objects.job_document_layer_storage_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:547` | direct_ddl |
+| `policy:storage.objects.job_document_storage_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:543` | direct_ddl |
+| `policy:storage.objects.private_storage_no_bearer_signing` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:541` | direct_ddl |
+| `policy:storage.objects.storage_rotation_insert` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:868` | direct_ddl |
+| `policy:storage.objects.storage_rotation_select` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:866` | direct_ddl |
+| `policy:storage.objects.storage_rotation_update` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:867` | direct_ddl |
+| `r:private.access_resources` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:3` | direct_ddl |
+| `r:private.authorization_revisions` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:55` | direct_ddl |
+| `r:private.resource_access_grants` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:32` | direct_ddl |
+| `r:private.review_execution_authorizations` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:935` | direct_ddl |
+| `r:private.storage_path_rotations` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:797` | direct_ddl |
+| `trigger:private.access_resources.access_resources_audit` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:466` | direct_ddl |
+| `trigger:private.access_resources.access_resources_updated_at` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:463` | direct_ddl |
+| `trigger:private.authorization_revisions.authorization_revisions_audit` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:468` | direct_ddl |
+| `trigger:private.authorization_revisions.authorization_revisions_updated_at` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:465` | direct_ddl |
+| `trigger:private.resource_access_grants.resource_access_grants_audit` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:467` | direct_ddl |
+| `trigger:private.resource_access_grants.resource_access_grants_updated_at` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:464` | direct_ddl |
+| `trigger:private.review_execution_authorizations.review_execution_authorizations_audit` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:951` | direct_ddl |
+| `trigger:private.review_execution_authorizations.review_execution_authorizations_updated_at` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:950` | direct_ddl |
+| `trigger:private.storage_path_rotations.storage_path_rotations_audit` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:815` | direct_ddl |
+| `trigger:private.storage_path_rotations.storage_path_rotations_updated_at` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:814` | direct_ddl |
+| `trigger:public.capital_project_review_assignments.capital_project_review_assignments_access` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:926` | direct_ddl |
+| `trigger:public.capital_projects.capital_projects_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:177` | direct_ddl |
+| `trigger:public.companies.companies_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:178` | direct_ddl |
+| `trigger:public.document_intake_sessions.intake_sessions_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:180` | direct_ddl |
+| `trigger:public.opportunities.opportunities_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:181` | direct_ddl |
+| `trigger:public.organization_memberships.organization_memberships_resource_revocation` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:396` | direct_ddl |
+| `trigger:public.processing_jobs.processing_jobs_bind_authority` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:378` | direct_ddl |
+| `trigger:public.workspace_project_groups.workspace_groups_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:179` | direct_ddl |

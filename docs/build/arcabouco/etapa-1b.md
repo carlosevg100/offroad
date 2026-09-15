@@ -1,6 +1,6 @@
 # Stage 1B: explicit resource access
 
-Status: candidate under technical verification. No completion claim.
+Status: database boundary applied to staging and production; CI and application rollout pending. No completion claim.
 
 ## Boundary and compatibility
 

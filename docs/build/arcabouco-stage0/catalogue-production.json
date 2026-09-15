@@ -88,6 +88,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.accept_workspace_invite_v1(p_invite_id uuid)",
+      "kind": "function",
+      "name": "accept_workspace_invite_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_invite_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.adopt_confirmed_preliminary_company()",
       "kind": "function",
       "name": "adopt_confirmed_preliminary_company",
@@ -103,6 +126,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.advance_authorization_revision_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid)",
+      "kind": "function",
+      "name": "advance_authorization_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid",
       "security_definer": true
     },
     {
@@ -567,6 +608,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.bind_job_authority_v1()",
+      "kind": "function",
+      "name": "bind_job_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.bind_workspace_group_after_capital_project_insert()",
       "kind": "function",
       "name": "bind_workspace_group_after_capital_project_insert",
@@ -649,6 +708,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_access_capital_request_v1(p_organization_id uuid, p_request_id uuid, p_action text)",
+      "kind": "function",
+      "name": "can_access_capital_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_request_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_access_company_v1(p_organization_id uuid, p_company_id uuid, p_action text)",
+      "kind": "function",
+      "name": "can_access_company_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_company_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_access_document_scope(p_organization_id uuid, p_scope_id uuid, p_permission text)",
       "kind": "function",
       "name": "can_access_document_scope",
@@ -715,6 +820,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_opportunity_id uuid, p_permission text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_access_resource_v1(p_organization_id uuid, p_resource_id uuid, p_action text)",
+      "kind": "function",
+      "name": "can_access_resource_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_resource_id uuid, p_action text",
       "security_definer": true
     },
     {
@@ -876,6 +1004,47 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_work_intake_session_v1(p_organization_id uuid, p_session_id uuid)",
+      "kind": "function",
+      "name": "can_work_intake_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.canonical_job_storage_payload_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "canonical_job_storage_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
       "security_definer": true
     },
     {
@@ -1087,6 +1256,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.claim_storage_rotation_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "claim_storage_rotation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.complete_intake_processing(p_organization_id uuid, p_session_id uuid, p_candidates jsonb, p_issues jsonb, p_summary jsonb)",
       "kind": "function",
       "name": "complete_intake_processing",
@@ -1222,6 +1414,29 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid, p_primary_support_sheets text[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.create_opportunity_intake(p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text)",
+      "kind": "function",
+      "name": "create_opportunity_intake",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text",
       "security_definer": true
     },
     {
@@ -1920,6 +2135,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "grant_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone",
+      "security_definer": true
+    },
+    {
       "id": "function:private.guard_execution_approval_queue()",
       "kind": "function",
       "name": "guard_execution_approval_queue",
@@ -2470,6 +2708,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.invite_workspace_member_v1(p_email text, p_role text)",
+      "kind": "function",
+      "name": "invite_workspace_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_email text, p_role text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.is_offroad_member()",
       "kind": "function",
       "name": "is_offroad_member",
@@ -2683,6 +2944,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.job_authority_is_current_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "job_authority_is_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.job_failure_class(p_error jsonb)",
       "kind": "function",
       "name": "job_failure_class",
@@ -2778,6 +3057,52 @@
       "security_definer": false
     },
     {
+      "id": "function:private.list_my_workspace_invites_v1()",
+      "kind": "function",
+      "name": "list_my_workspace_invites_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.list_my_workspaces_v1()",
+      "kind": "function",
+      "name": "list_my_workspaces_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.lock_execution_approval_context()",
       "kind": "function",
       "name": "lock_execution_approval_context",
@@ -2811,6 +3136,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_job_authority_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "lock_job_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
       "security_definer": true
     },
     {
@@ -3700,6 +4043,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_workspace_access_v1()",
+      "kind": "function",
+      "name": "read_workspace_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.receivables_analytical_release_enabled(p_organization_id uuid)",
       "kind": "function",
       "name": "receivables_analytical_release_enabled",
@@ -4429,6 +4795,47 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)",
+      "kind": "function",
+      "name": "record_storage_rotation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.register_access_resource_v1()",
+      "kind": "function",
+      "name": "register_access_resource_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.register_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text)",
       "kind": "function",
       "name": "register_intake_document_command",
@@ -4680,6 +5087,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.require_artifact_access_v1(p_artifact_id uuid, p_action text)",
+      "kind": "function",
+      "name": "require_artifact_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_artifact_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.require_authorized_private_document()",
       "kind": "function",
       "name": "require_authorized_private_document",
@@ -4731,6 +5156,24 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_resource_access_v1(p_resource_id uuid, p_action text)",
+      "kind": "function",
+      "name": "require_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_action text",
       "security_definer": true
     },
     {
@@ -4816,6 +5259,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.resource_access_as_subject_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid, p_action text)",
+      "kind": "function",
+      "name": "resource_access_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.resource_root_v1(p_organization_id uuid, p_resource_id uuid)",
+      "kind": "function",
+      "name": "resource_root_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_resource_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.restart_onboarding_intake(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "restart_onboarding_intake",
@@ -4882,6 +5361,24 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_intake_session_id uuid, p_case_fingerprint text, p_status text, p_counterparties jsonb, p_rationale text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_execution_authority_current_v1(p_id uuid, p_resource_id uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "review_execution_authority_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_resource_id uuid, p_subject uuid",
       "security_definer": true
     },
     {
@@ -5036,6 +5533,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.revoke_membership_resources_v1()",
+      "kind": "function",
+      "name": "revoke_membership_resources_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.revoke_qualified_introduction_plan(p_plan_id uuid)",
       "kind": "function",
       "name": "revoke_qualified_introduction_plan",
@@ -5056,6 +5571,29 @@
         "search_path=\"\""
       ],
       "signature": "p_plan_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.revoke_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid)",
+      "kind": "function",
+      "name": "revoke_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_subject_user_id uuid",
       "security_definer": true
     },
     {
@@ -5148,6 +5686,24 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.seed_resource_authority_v1(p_organization_id uuid, p_resource_id uuid, p_creator_id uuid)",
+      "kind": "function",
+      "name": "seed_resource_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_resource_id uuid, p_creator_id uuid",
       "security_definer": true
     },
     {
@@ -5341,6 +5897,29 @@
       ],
       "signature": "",
       "security_definer": false
+    },
+    {
+      "id": "function:private.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)",
+      "kind": "function",
+      "name": "set_workspace_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_user_id uuid, p_role text, p_status text",
+      "security_definer": true
     },
     {
       "id": "function:private.set_workspace_project_job(p_session_id uuid, p_entry_job text)",
@@ -5821,6 +6400,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.storage_operation_is_revocable_v1()",
+      "kind": "function",
+      "name": "storage_operation_is_revocable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.storage_opportunity_id(p_object_name text)",
       "kind": "function",
       "name": "storage_opportunity_id",
@@ -6028,6 +6630,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.submit_review_execution_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
+      "kind": "function",
+      "name": "submit_review_execution_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_message_id uuid, p_locale text, p_content text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.supersede_previous_institutional_results()",
       "kind": "function",
       "name": "supersede_previous_institutional_results",
@@ -6085,6 +6705,24 @@
       "id": "function:private.sync_intake_session_after_processing_run_terminal()",
       "kind": "function",
       "name": "sync_intake_session_after_processing_run_terminal",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.sync_review_resource_access_v1()",
+      "kind": "function",
+      "name": "sync_review_resource_access_v1",
       "grants": [
         [
           "postgres",
@@ -6451,6 +7089,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_authorize_document_storage_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_authorize_document_storage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_bind_receivables_information_request_fields_v1(p_job_id uuid, p_capability_token text, p_projection jsonb)",
       "kind": "function",
       "name": "worker_bind_receivables_information_request_fields_v1",
@@ -6494,6 +7155,52 @@
         "search_path=\"\""
       ],
       "signature": "p_object_path text, p_write boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_can_access_document_storage_v1(p_bucket text, p_object_path text, p_write boolean)",
+      "kind": "function",
+      "name": "worker_can_access_document_storage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_object_path text, p_write boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_can_rotate_storage_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "name": "worker_can_rotate_storage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text",
       "security_definer": true
     },
     {
@@ -9052,6 +9759,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_runtime_schema_contract_before_resource_access_v1()",
+      "kind": "function",
+      "name": "worker_runtime_schema_contract_before_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.worker_runtime_schema_contract_before_support_sheets()",
       "kind": "function",
       "name": "worker_runtime_schema_contract_before_support_sheets",
@@ -9361,6 +10091,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.accept_workspace_invite_v1(p_invite_id uuid)",
+      "kind": "function",
+      "name": "accept_workspace_invite_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_invite_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
       "kind": "function",
       "name": "append_advisor_message_v1",
@@ -9666,6 +10419,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.claim_storage_rotation_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "claim_storage_rotation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": false
     },
     {
@@ -10224,6 +11000,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "grant_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone",
+      "security_definer": false
+    },
+    {
       "id": "function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)",
       "kind": "function",
       "name": "initialize_professional_onboarding",
@@ -10249,6 +11048,75 @@
         "search_path=\"\""
       ],
       "signature": "p_journey text, p_full_name text, p_job_title text, p_locale text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.invite_workspace_member_v1(p_email text, p_role text)",
+      "kind": "function",
+      "name": "invite_workspace_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_email text, p_role text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.list_my_workspace_invites_v1()",
+      "kind": "function",
+      "name": "list_my_workspace_invites_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.list_my_workspaces_v1()",
+      "kind": "function",
+      "name": "list_my_workspaces_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": false
     },
     {
@@ -10868,6 +11736,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.read_workspace_access_v1()",
+      "kind": "function",
+      "name": "read_workspace_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:public.record_agent_change_proposal(p_organization_id uuid, p_session_id uuid, p_proposal jsonb)",
       "kind": "function",
       "name": "record_agent_change_proposal",
@@ -11367,6 +12258,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)",
+      "kind": "function",
+      "name": "record_storage_rotation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean",
+      "security_definer": false
+    },
+    {
       "id": "function:public.register_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text)",
       "kind": "function",
       "name": "register_intake_document_command",
@@ -11843,6 +12757,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.revoke_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid)",
+      "kind": "function",
+      "name": "revoke_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_subject_user_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.save_guided_company_profile(p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text)",
       "kind": "function",
       "name": "save_guided_company_profile",
@@ -12194,6 +13131,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)",
+      "kind": "function",
+      "name": "set_workspace_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_user_id uuid, p_role text, p_status text",
       "security_definer": false
     },
     {
@@ -13144,6 +14104,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_authorize_document_storage_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_authorize_document_storage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_bind_receivables_information_request_fields_v1(p_job_id uuid, p_capability_token text, p_projection jsonb)",
       "kind": "function",
       "name": "worker_bind_receivables_information_request_fields_v1",
@@ -13188,6 +14171,29 @@
         ],
         [
           "service_role",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_claim_job_v3(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "worker_claim_job_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
           "EXECUTE",
           false
         ]
@@ -15888,6 +16894,34 @@
       "security_definer": false
     },
     {
+      "id": "policy:private.access_resources.access_resources_deny_clients",
+      "kind": "policy",
+      "name": "access_resources_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_resources",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.authorization_revisions.authorization_revisions_deny_clients",
+      "kind": "policy",
+      "name": "authorization_revisions_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "authorization_revisions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.human_intervention_ledger.human_intervention_ledger_deny_clients",
       "kind": "policy",
       "name": "human_intervention_ledger_deny_clients",
@@ -16310,6 +17344,48 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.resource_access_grants.resource_access_grants_deny_clients",
+      "kind": "policy",
+      "name": "resource_access_grants_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "resource_access_grants",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_execution_authorizations.review_execution_authorizations_deny_clients",
+      "kind": "policy",
+      "name": "review_execution_authorizations_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_execution_authorizations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.storage_path_rotations.storage_path_rotations_deny_clients",
+      "kind": "policy",
+      "name": "storage_path_rotations_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "storage_path_rotations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:public.access_requests.access_requests_insert",
       "kind": "policy",
       "name": "access_requests_insert",
@@ -16327,7 +17403,7 @@
       "id": "policy:public.access_requests.access_requests_select",
       "kind": "policy",
       "name": "access_requests_select",
-      "qual": "(( SELECT private.is_org_member(access_requests.organization_id) AS is_org_member) OR ( SELECT private.is_org_member(access_requests.source_organization_id) AS is_org_member))",
+      "qual": "(((requested_by = ( SELECT auth.uid() AS uid)) AND ( SELECT private.is_org_member(access_requests.organization_id) AS is_org_member)) OR (EXISTS ( SELECT 1\n   FROM published_opportunity_projections p\n  WHERE ((p.id = access_requests.projection_id) AND (p.organization_id = access_requests.source_organization_id) AND private.can_access_resource_v1(p.organization_id, p.opportunity_id, 'manage'::text)))))",
       "roles": [
         "authenticated"
       ],
@@ -16341,7 +17417,7 @@
       "id": "policy:public.access_requests.access_requests_update",
       "kind": "policy",
       "name": "access_requests_update",
-      "qual": "(( SELECT private.is_org_member(access_requests.organization_id) AS is_org_member) OR ( SELECT private.can_manage_organization(access_requests.source_organization_id) AS can_manage_organization))",
+      "qual": "(EXISTS ( SELECT 1\n   FROM published_opportunity_projections p\n  WHERE ((p.id = access_requests.projection_id) AND (p.organization_id = access_requests.source_organization_id) AND private.can_access_resource_v1(p.organization_id, p.opportunity_id, 'manage'::text))))",
       "roles": [
         "authenticated"
       ],
@@ -16349,7 +17425,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.is_org_member(access_requests.organization_id) AS is_org_member) OR ( SELECT private.can_manage_organization(access_requests.source_organization_id) AS can_manage_organization))"
+      "with_check": "(EXISTS ( SELECT 1\n   FROM published_opportunity_projections p\n  WHERE ((p.id = access_requests.projection_id) AND (p.organization_id = access_requests.source_organization_id) AND private.can_access_resource_v1(p.organization_id, p.opportunity_id, 'manage'::text))))"
     },
     {
       "id": "policy:public.agent_change_proposals.agent_change_proposals_select",
@@ -16979,13 +18055,13 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.is_org_type_member(capital_requests.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member) AND (created_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "((created_by = ( SELECT auth.uid() AS uid)) AND ( SELECT private.can_access_company_v1(capital_requests.organization_id, capital_requests.company_id, 'work'::text) AS can_access_company_v1))"
     },
     {
       "id": "policy:public.capital_requests.capital_requests_select",
       "kind": "policy",
       "name": "capital_requests_select",
-      "qual": "( SELECT private.is_org_member(capital_requests.organization_id) AS is_org_member)",
+      "qual": "( SELECT private.can_access_capital_request_v1(capital_requests.organization_id, capital_requests.id, 'read'::text) AS can_access_capital_request_v1)",
       "roles": [
         "authenticated"
       ],
@@ -16999,7 +18075,7 @@
       "id": "policy:public.capital_requests.capital_requests_update",
       "kind": "policy",
       "name": "capital_requests_update",
-      "qual": "( SELECT private.is_org_type_member(capital_requests.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member)",
+      "qual": "( SELECT private.can_access_capital_request_v1(capital_requests.organization_id, capital_requests.id, 'work'::text) AS can_access_capital_request_v1)",
       "roles": [
         "authenticated"
       ],
@@ -17007,7 +18083,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_type_member(capital_requests.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member)"
+      "with_check": "( SELECT private.can_access_capital_request_v1(capital_requests.organization_id, capital_requests.id, 'work'::text) AS can_access_capital_request_v1)"
     },
     {
       "id": "policy:public.case_artifact_manifests.case_artifact_manifests_select",
@@ -17027,7 +18103,7 @@
       "id": "policy:public.case_execution_comparisons.case_execution_comparisons_select",
       "kind": "policy",
       "name": "case_execution_comparisons_select",
-      "qual": "( SELECT private.is_org_member(case_execution_comparisons.organization_id) AS is_org_member)",
+      "qual": "((EXISTS ( SELECT 1\n   FROM controlled_case_executions e\n  WHERE ((e.organization_id = case_execution_comparisons.organization_id) AND (e.id = case_execution_comparisons.baseline_execution_id) AND private.can_access_intake_session(e.organization_id, e.intake_session_id)))) AND (EXISTS ( SELECT 1\n   FROM controlled_case_executions e\n  WHERE ((e.organization_id = case_execution_comparisons.organization_id) AND (e.id = case_execution_comparisons.candidate_execution_id) AND private.can_access_intake_session(e.organization_id, e.intake_session_id)))))",
       "roles": [
         "authenticated"
       ],
@@ -17055,7 +18131,7 @@
       "id": "policy:public.case_retrieval_chunks.case_retrieval_chunks_select_scoped",
       "kind": "policy",
       "name": "case_retrieval_chunks_select_scoped",
-      "qual": "\nCASE\n    WHEN (opportunity_id IS NOT NULL) THEN ( SELECT private.can_access_opportunity(case_retrieval_chunks.organization_id, case_retrieval_chunks.opportunity_id, 'evidence.read'::text) AS can_access_opportunity)\n    ELSE ( SELECT private.is_org_member(case_retrieval_chunks.organization_id) AS is_org_member)\nEND",
+      "qual": "(( SELECT private.can_access_intake_session(case_retrieval_chunks.organization_id, case_retrieval_chunks.intake_session_id) AS can_access_intake_session) AND ((opportunity_id IS NULL) OR ( SELECT private.can_access_opportunity(case_retrieval_chunks.organization_id, case_retrieval_chunks.opportunity_id, 'evidence.read'::text) AS can_access_opportunity)))",
       "roles": [
         "authenticated"
       ],
@@ -17111,7 +18187,7 @@
       "id": "policy:public.companies.companies_select",
       "kind": "policy",
       "name": "companies_select",
-      "qual": "( SELECT private.is_org_member(companies.organization_id) AS is_org_member)",
+      "qual": "( SELECT private.can_access_company_v1(companies.organization_id, companies.id, 'read'::text) AS can_access_company_v1)",
       "roles": [
         "authenticated"
       ],
@@ -17125,7 +18201,7 @@
       "id": "policy:public.companies.companies_update",
       "kind": "policy",
       "name": "companies_update",
-      "qual": "( SELECT private.is_org_type_member(companies.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member)",
+      "qual": "( SELECT private.can_access_company_v1(companies.organization_id, companies.id, 'work'::text) AS can_access_company_v1)",
       "roles": [
         "authenticated"
       ],
@@ -17133,7 +18209,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_type_member(companies.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member)"
+      "with_check": "( SELECT private.can_access_company_v1(companies.organization_id, companies.id, 'work'::text) AS can_access_company_v1)"
     },
     {
       "id": "policy:public.conduct_policies.conduct_policies_service_only",
@@ -17279,7 +18355,7 @@
       "id": "policy:public.disclosure_grants.disclosure_grants_select",
       "kind": "policy",
       "name": "disclosure_grants_select",
-      "qual": "(( SELECT private.is_org_member(disclosure_grants.organization_id) AS is_org_member) OR ( SELECT private.is_org_member(disclosure_grants.recipient_organization_id) AS is_org_member))",
+      "qual": "(( SELECT private.can_access_resource_v1(disclosure_grants.organization_id, disclosure_grants.opportunity_id, 'manage'::text) AS can_access_resource_v1) OR ( SELECT private.can_manage_organization(disclosure_grants.recipient_organization_id) AS can_manage_organization))",
       "roles": [
         "authenticated"
       ],
@@ -17315,13 +18391,13 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "((started_by = ( SELECT auth.uid() AS uid)) AND ((( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member) AND (journey = ANY (ARRAY['company'::text, 'originator'::text]))) OR (( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['capital_provider'::text]) AS is_org_type_member) AND (journey = 'capital_provider'::text))))"
+      "with_check": "((started_by = ( SELECT auth.uid() AS uid)) AND ((( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['company'::text, 'originator'::text, 'offroad'::text]) AS is_org_type_member) AND (journey = ANY (ARRAY['company'::text, 'originator'::text]))) OR (( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['capital_provider'::text]) AS is_org_type_member) AND (journey = 'capital_provider'::text))) AND ((capital_project_id IS NULL) OR ( SELECT private.can_access_resource_v1(document_intake_sessions.organization_id, document_intake_sessions.capital_project_id, 'work'::text) AS can_access_resource_v1)))"
     },
     {
       "id": "policy:public.document_intake_sessions.document_intake_sessions_select",
       "kind": "policy",
       "name": "document_intake_sessions_select",
-      "qual": "( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['company'::text, 'originator'::text, 'capital_provider'::text, 'offroad'::text]) AS is_org_type_member)",
+      "qual": "( SELECT private.can_access_resource_v1(document_intake_sessions.organization_id, COALESCE(document_intake_sessions.capital_project_id, document_intake_sessions.id), 'read'::text) AS can_access_resource_v1)",
       "roles": [
         "authenticated"
       ],
@@ -17335,7 +18411,7 @@
       "id": "policy:public.document_intake_sessions.document_intake_sessions_update",
       "kind": "policy",
       "name": "document_intake_sessions_update",
-      "qual": "( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['company'::text, 'originator'::text, 'capital_provider'::text, 'offroad'::text]) AS is_org_type_member)",
+      "qual": "( SELECT private.can_access_resource_v1(document_intake_sessions.organization_id, document_intake_sessions.id, 'work'::text) AS can_access_resource_v1)",
       "roles": [
         "authenticated"
       ],
@@ -17343,7 +18419,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_type_member(document_intake_sessions.organization_id, ARRAY['company'::text, 'originator'::text, 'capital_provider'::text, 'offroad'::text]) AS is_org_type_member)"
+      "with_check": "(( SELECT private.can_access_resource_v1(document_intake_sessions.organization_id, document_intake_sessions.id, 'work'::text) AS can_access_resource_v1) AND ((capital_project_id IS NULL) OR ( SELECT private.can_access_resource_v1(document_intake_sessions.organization_id, document_intake_sessions.capital_project_id, 'work'::text) AS can_access_resource_v1)))"
     },
     {
       "id": "policy:public.document_layers.document_layers_select",
@@ -17455,7 +18531,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_access_intake_session(extraction_feedback.organization_id, extraction_feedback.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "(( SELECT private.can_work_intake_session_v1(extraction_feedback.organization_id, extraction_feedback.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
     },
     {
       "id": "policy:public.extraction_feedback.extraction_feedback_select",
@@ -17685,7 +18761,7 @@
       "id": "policy:public.intake_field_candidates.intake_field_candidates_delete",
       "kind": "policy",
       "name": "intake_field_candidates_delete",
-      "qual": "( SELECT private.can_access_intake_session(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -17707,7 +18783,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_access_intake_session(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "(( SELECT private.can_work_intake_session_v1(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
     },
     {
       "id": "policy:public.intake_field_candidates.intake_field_candidates_select",
@@ -17727,7 +18803,7 @@
       "id": "policy:public.intake_field_candidates.intake_field_candidates_update",
       "kind": "policy",
       "name": "intake_field_candidates_update",
-      "qual": "( SELECT private.can_access_intake_session(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -17735,7 +18811,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(intake_field_candidates.organization_id, intake_field_candidates.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.intake_information_answers.intake_information_answers_delete",
@@ -17797,7 +18873,7 @@
       "id": "policy:public.intake_issues.intake_issues_delete",
       "kind": "policy",
       "name": "intake_issues_delete",
-      "qual": "( SELECT private.can_access_intake_session(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -17819,7 +18895,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.intake_issues.intake_issues_select",
@@ -17839,7 +18915,7 @@
       "id": "policy:public.intake_issues.intake_issues_update",
       "kind": "policy",
       "name": "intake_issues_update",
-      "qual": "( SELECT private.can_access_intake_session(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -17847,13 +18923,13 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(intake_issues.organization_id, intake_issues.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.intent_envelopes.intent_envelopes_select",
       "kind": "policy",
       "name": "intent_envelopes_select",
-      "qual": "( SELECT private.is_org_member(intent_envelopes.organization_id) AS is_org_member)",
+      "qual": "( SELECT private.can_access_capital_project(intent_envelopes.organization_id, intent_envelopes.capital_project_id) AS can_access_capital_project)",
       "roles": [
         "authenticated"
       ],
@@ -17920,18 +18996,60 @@
       "with_check": "true"
     },
     {
-      "id": "policy:public.match_results.match_results_all",
+      "id": "policy:public.match_results.match_results_delete_scoped",
       "kind": "policy",
-      "name": "match_results_all",
-      "qual": "( SELECT private.is_org_member(match_results.organization_id) AS is_org_member)",
+      "name": "match_results_delete_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM match_runs r\n  WHERE ((r.organization_id = match_results.organization_id) AND (r.id = match_results.match_run_id) AND private.can_access_resource_v1(r.organization_id, r.opportunity_id, 'work'::text))))",
       "roles": [
         "authenticated"
       ],
       "table": "match_results",
       "schema": "public",
-      "command": "ALL",
+      "command": "DELETE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_member(match_results.organization_id) AS is_org_member)"
+      "with_check": null
+    },
+    {
+      "id": "policy:public.match_results.match_results_insert_scoped",
+      "kind": "policy",
+      "name": "match_results_insert_scoped",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "match_results",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM match_runs r\n  WHERE ((r.organization_id = match_results.organization_id) AND (r.id = match_results.match_run_id) AND private.can_access_resource_v1(r.organization_id, r.opportunity_id, 'work'::text))))"
+    },
+    {
+      "id": "policy:public.match_results.match_results_select_scoped",
+      "kind": "policy",
+      "name": "match_results_select_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM match_runs r\n  WHERE ((r.organization_id = match_results.organization_id) AND (r.id = match_results.match_run_id) AND private.can_access_opportunity(r.organization_id, r.opportunity_id, 'opportunity.read'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "match_results",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.match_results.match_results_update_scoped",
+      "kind": "policy",
+      "name": "match_results_update_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM match_runs r\n  WHERE ((r.organization_id = match_results.organization_id) AND (r.id = match_results.match_run_id) AND private.can_access_resource_v1(r.organization_id, r.opportunity_id, 'work'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "match_results",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM match_runs r\n  WHERE ((r.organization_id = match_results.organization_id) AND (r.id = match_results.match_run_id) AND private.can_access_resource_v1(r.organization_id, r.opportunity_id, 'work'::text))))"
     },
     {
       "id": "policy:public.match_runs.match_runs_all",
@@ -18340,18 +19458,60 @@
       "with_check": "( SELECT private.can_access_opportunity(output_artifacts.organization_id, output_artifacts.opportunity_id, 'output.write'::text) AS can_access_opportunity)"
     },
     {
-      "id": "policy:public.output_versions.output_versions_all",
+      "id": "policy:public.output_versions.output_versions_delete_scoped",
       "kind": "policy",
-      "name": "output_versions_all",
-      "qual": "( SELECT private.is_org_member(output_versions.organization_id) AS is_org_member)",
+      "name": "output_versions_delete_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM output_artifacts a\n  WHERE ((a.organization_id = output_versions.organization_id) AND (a.id = output_versions.output_artifact_id) AND private.can_access_opportunity(a.organization_id, a.opportunity_id, 'output.write'::text))))",
       "roles": [
         "authenticated"
       ],
       "table": "output_versions",
       "schema": "public",
-      "command": "ALL",
+      "command": "DELETE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_member(output_versions.organization_id) AS is_org_member)"
+      "with_check": null
+    },
+    {
+      "id": "policy:public.output_versions.output_versions_insert_scoped",
+      "kind": "policy",
+      "name": "output_versions_insert_scoped",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "output_versions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM output_artifacts a\n  WHERE ((a.organization_id = output_versions.organization_id) AND (a.id = output_versions.output_artifact_id) AND private.can_access_opportunity(a.organization_id, a.opportunity_id, 'output.write'::text))))"
+    },
+    {
+      "id": "policy:public.output_versions.output_versions_select_scoped",
+      "kind": "policy",
+      "name": "output_versions_select_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM output_artifacts a\n  WHERE ((a.organization_id = output_versions.organization_id) AND (a.id = output_versions.output_artifact_id) AND private.can_access_opportunity(a.organization_id, a.opportunity_id, 'output.read'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "output_versions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.output_versions.output_versions_update_scoped",
+      "kind": "policy",
+      "name": "output_versions_update_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM output_artifacts a\n  WHERE ((a.organization_id = output_versions.organization_id) AND (a.id = output_versions.output_artifact_id) AND private.can_access_opportunity(a.organization_id, a.opportunity_id, 'output.write'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "output_versions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM output_artifacts a\n  WHERE ((a.organization_id = output_versions.organization_id) AND (a.id = output_versions.output_artifact_id) AND private.can_access_opportunity(a.organization_id, a.opportunity_id, 'output.write'::text))))"
     },
     {
       "id": "policy:public.platform_legal_documents.platform_legal_documents_active_select",
@@ -18745,13 +19905,13 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_member(published_opportunity_projections.organization_id) AS is_org_member)"
+      "with_check": "(( SELECT private.can_access_resource_v1(published_opportunity_projections.organization_id, published_opportunity_projections.opportunity_id, 'work'::text) AS can_access_resource_v1) AND ((status <> ALL (ARRAY['approved'::text, 'published'::text])) OR ( SELECT private.has_aal2() AS has_aal2)))"
     },
     {
       "id": "policy:public.published_opportunity_projections.published_projections_select",
       "kind": "policy",
       "name": "published_projections_select",
-      "qual": "(( SELECT private.is_org_member(published_opportunity_projections.organization_id) AS is_org_member) OR ((status = 'published'::text) AND ((expires_at IS NULL) OR (expires_at > now()))))",
+      "qual": "(((status = 'published'::text) AND ((expires_at IS NULL) OR (expires_at > now()))) OR ( SELECT private.can_access_opportunity(published_opportunity_projections.organization_id, published_opportunity_projections.opportunity_id, 'opportunity.read'::text) AS can_access_opportunity))",
       "roles": [
         "authenticated"
       ],
@@ -18765,7 +19925,7 @@
       "id": "policy:public.published_opportunity_projections.published_projections_update",
       "kind": "policy",
       "name": "published_projections_update",
-      "qual": "( SELECT private.is_org_member(published_opportunity_projections.organization_id) AS is_org_member)",
+      "qual": "( SELECT private.can_access_resource_v1(published_opportunity_projections.organization_id, published_opportunity_projections.opportunity_id, 'work'::text) AS can_access_resource_v1)",
       "roles": [
         "authenticated"
       ],
@@ -18773,7 +19933,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.is_org_member(published_opportunity_projections.organization_id) AS is_org_member) AND ((status <> ALL (ARRAY['approved'::text, 'published'::text])) OR ( SELECT private.has_aal2() AS has_aal2)))"
+      "with_check": "(( SELECT private.can_access_resource_v1(published_opportunity_projections.organization_id, published_opportunity_projections.opportunity_id, 'work'::text) AS can_access_resource_v1) AND ((status <> ALL (ARRAY['approved'::text, 'published'::text])) OR ( SELECT private.has_aal2() AS has_aal2)))"
     },
     {
       "id": "policy:public.qualified_introduction_feedback_events.qualified_introduction_feedback_select",
@@ -18860,18 +20020,60 @@
       "with_check": "false"
     },
     {
-      "id": "policy:public.scenario_versions.scenario_versions_all",
+      "id": "policy:public.scenario_versions.scenario_versions_delete_scoped",
       "kind": "policy",
-      "name": "scenario_versions_all",
-      "qual": "( SELECT private.is_org_member(scenario_versions.organization_id) AS is_org_member)",
+      "name": "scenario_versions_delete_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM structure_scenarios s\n  WHERE ((s.organization_id = scenario_versions.organization_id) AND (s.id = scenario_versions.structure_scenario_id) AND private.can_access_resource_v1(s.organization_id, s.opportunity_id, 'manage'::text))))",
       "roles": [
         "authenticated"
       ],
       "table": "scenario_versions",
       "schema": "public",
-      "command": "ALL",
+      "command": "DELETE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.is_org_member(scenario_versions.organization_id) AS is_org_member)"
+      "with_check": null
+    },
+    {
+      "id": "policy:public.scenario_versions.scenario_versions_insert_scoped",
+      "kind": "policy",
+      "name": "scenario_versions_insert_scoped",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scenario_versions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((created_by = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM structure_scenarios s\n  WHERE ((s.organization_id = scenario_versions.organization_id) AND (s.id = scenario_versions.structure_scenario_id) AND private.can_access_resource_v1(s.organization_id, s.opportunity_id, 'work'::text)))))"
+    },
+    {
+      "id": "policy:public.scenario_versions.scenario_versions_select_scoped",
+      "kind": "policy",
+      "name": "scenario_versions_select_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM structure_scenarios s\n  WHERE ((s.organization_id = scenario_versions.organization_id) AND (s.id = scenario_versions.structure_scenario_id) AND private.can_access_opportunity(s.organization_id, s.opportunity_id, 'opportunity.read'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scenario_versions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.scenario_versions.scenario_versions_update_scoped",
+      "kind": "policy",
+      "name": "scenario_versions_update_scoped",
+      "qual": "(EXISTS ( SELECT 1\n   FROM structure_scenarios s\n  WHERE ((s.organization_id = scenario_versions.organization_id) AND (s.id = scenario_versions.structure_scenario_id) AND private.can_access_resource_v1(s.organization_id, s.opportunity_id, 'work'::text))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "scenario_versions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "(EXISTS ( SELECT 1\n   FROM structure_scenarios s\n  WHERE ((s.organization_id = scenario_versions.organization_id) AND (s.id = scenario_versions.structure_scenario_id) AND private.can_access_resource_v1(s.organization_id, s.opportunity_id, 'work'::text))))"
     },
     {
       "id": "policy:public.sounding_events.sounding_events_insert",
@@ -18885,7 +20087,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_access_intake_session(sounding_events.organization_id, sounding_events.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "(( SELECT private.can_work_intake_session_v1(sounding_events.organization_id, sounding_events.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
     },
     {
       "id": "policy:public.sounding_events.sounding_events_select",
@@ -18905,7 +20107,7 @@
       "id": "policy:public.sounding_investors.sounding_investors_delete",
       "kind": "policy",
       "name": "sounding_investors_delete",
-      "qual": "( SELECT private.can_access_intake_session(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -18927,7 +20129,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.sounding_investors.sounding_investors_select",
@@ -18947,7 +20149,7 @@
       "id": "policy:public.sounding_investors.sounding_investors_update",
       "kind": "policy",
       "name": "sounding_investors_update",
-      "qual": "( SELECT private.can_access_intake_session(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -18955,13 +20157,13 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(sounding_investors.organization_id, sounding_investors.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.soundings.soundings_delete",
       "kind": "policy",
       "name": "soundings_delete",
-      "qual": "( SELECT private.can_access_intake_session(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -18983,7 +20185,7 @@
       "schema": "public",
       "command": "INSERT",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_access_intake_session(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": "(( SELECT private.can_work_intake_session_v1(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session) AND (created_by = ( SELECT auth.uid() AS uid)))"
     },
     {
       "id": "policy:public.soundings.soundings_select",
@@ -19003,7 +20205,7 @@
       "id": "policy:public.soundings.soundings_update",
       "kind": "policy",
       "name": "soundings_update",
-      "qual": "( SELECT private.can_access_intake_session(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)",
+      "qual": "( SELECT private.can_work_intake_session_v1(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)",
       "roles": [
         "authenticated"
       ],
@@ -19011,7 +20213,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "( SELECT private.can_access_intake_session(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)"
+      "with_check": "( SELECT private.can_work_intake_session_v1(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)"
     },
     {
       "id": "policy:public.source_documents.source_documents_insert",
@@ -19031,7 +20233,7 @@
       "id": "policy:public.source_documents.source_documents_select",
       "kind": "policy",
       "name": "source_documents_select",
-      "qual": "(((opportunity_id IS NOT NULL) AND ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.read'::text) AS can_access_opportunity)) OR ((intake_session_id IS NOT NULL) AND ( SELECT private.can_access_intake_session(source_documents.organization_id, source_documents.intake_session_id) AS can_access_intake_session)))",
+      "qual": "(((opportunity_id IS NULL) OR ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.read'::text) AS can_access_opportunity)) AND ((intake_session_id IS NULL) OR ( SELECT private.can_access_intake_session(source_documents.organization_id, source_documents.intake_session_id) AS can_access_intake_session)))",
       "roles": [
         "authenticated"
       ],
@@ -19045,7 +20247,7 @@
       "id": "policy:public.source_documents.source_documents_update",
       "kind": "policy",
       "name": "source_documents_update",
-      "qual": "(((opportunity_id IS NOT NULL) AND ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.write'::text) AS can_access_opportunity)) OR ((intake_session_id IS NOT NULL) AND ( SELECT private.can_access_intake_session(source_documents.organization_id, source_documents.intake_session_id) AS can_access_intake_session)))",
+      "qual": "( SELECT private.can_access_document_scope(source_documents.organization_id, COALESCE(source_documents.intake_session_id, source_documents.opportunity_id), 'document.write'::text) AS can_access_document_scope)",
       "roles": [
         "authenticated"
       ],
@@ -19053,7 +20255,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "(((opportunity_id IS NOT NULL) AND ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.write'::text) AS can_access_opportunity)) OR ((intake_session_id IS NOT NULL) AND ( SELECT private.can_access_intake_session(source_documents.organization_id, source_documents.intake_session_id) AS can_access_intake_session)))"
+      "with_check": "(((opportunity_id IS NULL) OR ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.write'::text) AS can_access_opportunity)) AND ((intake_session_id IS NULL) OR ( SELECT private.can_access_resource_v1(source_documents.organization_id, source_documents.intake_session_id, 'work'::text) AS can_access_resource_v1)))"
     },
     {
       "id": "policy:public.structure_scenarios.structure_scenarios_all",
@@ -19070,18 +20272,60 @@
       "with_check": "( SELECT private.can_access_opportunity(structure_scenarios.organization_id, structure_scenarios.opportunity_id, 'scenario.write'::text) AS can_access_opportunity)"
     },
     {
-      "id": "policy:public.workflow_runs.workflow_runs_all",
+      "id": "policy:public.workflow_runs.workflow_runs_delete_scoped",
       "kind": "policy",
-      "name": "workflow_runs_all",
-      "qual": "( SELECT private.is_org_member(workflow_runs.organization_id) AS is_org_member)",
+      "name": "workflow_runs_delete_scoped",
+      "qual": "( SELECT private.can_access_resource_v1(workflow_runs.organization_id, workflow_runs.opportunity_id, 'manage'::text) AS can_access_resource_v1)",
       "roles": [
         "authenticated"
       ],
       "table": "workflow_runs",
       "schema": "public",
-      "command": "ALL",
+      "command": "DELETE",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.is_org_member(workflow_runs.organization_id) AS is_org_member) AND (started_by = ( SELECT auth.uid() AS uid)))"
+      "with_check": null
+    },
+    {
+      "id": "policy:public.workflow_runs.workflow_runs_insert_scoped",
+      "kind": "policy",
+      "name": "workflow_runs_insert_scoped",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workflow_runs",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((started_by = ( SELECT auth.uid() AS uid)) AND ( SELECT private.can_access_resource_v1(workflow_runs.organization_id, workflow_runs.opportunity_id, 'work'::text) AS can_access_resource_v1))"
+    },
+    {
+      "id": "policy:public.workflow_runs.workflow_runs_select_scoped",
+      "kind": "policy",
+      "name": "workflow_runs_select_scoped",
+      "qual": "( SELECT private.can_access_opportunity(workflow_runs.organization_id, workflow_runs.opportunity_id, 'opportunity.read'::text) AS can_access_opportunity)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workflow_runs",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.workflow_runs.workflow_runs_update_scoped",
+      "kind": "policy",
+      "name": "workflow_runs_update_scoped",
+      "qual": "( SELECT private.can_access_resource_v1(workflow_runs.organization_id, workflow_runs.opportunity_id, 'work'::text) AS can_access_resource_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "workflow_runs",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "( SELECT private.can_access_resource_v1(workflow_runs.organization_id, workflow_runs.opportunity_id, 'work'::text) AS can_access_resource_v1)"
     },
     {
       "id": "policy:public.workspace_project_groups.workspace_project_groups_select",
@@ -19210,6 +20454,48 @@
       "with_check": null
     },
     {
+      "id": "policy:storage.objects.job_document_layer_storage_insert",
+      "kind": "policy",
+      "name": "job_document_layer_storage_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'document-layers'::text) AND ( SELECT private.worker_can_access_document_storage_v1(objects.bucket_id, objects.name, true) AS worker_can_access_document_storage_v1))"
+    },
+    {
+      "id": "policy:storage.objects.job_document_layer_storage_update",
+      "kind": "policy",
+      "name": "job_document_layer_storage_update",
+      "qual": "((bucket_id = 'document-layers'::text) AND ( SELECT private.worker_can_access_document_storage_v1(objects.bucket_id, objects.name, true) AS worker_can_access_document_storage_v1))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'document-layers'::text) AND ( SELECT private.worker_can_access_document_storage_v1(objects.bucket_id, objects.name, true) AS worker_can_access_document_storage_v1))"
+    },
+    {
+      "id": "policy:storage.objects.job_document_storage_select",
+      "kind": "policy",
+      "name": "job_document_storage_select",
+      "qual": "( SELECT private.worker_can_access_document_storage_v1(objects.bucket_id, objects.name, false) AS worker_can_access_document_storage_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:storage.objects.opportunity_documents_delete",
       "kind": "policy",
       "name": "opportunity_documents_delete",
@@ -19264,6 +20550,162 @@
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "((bucket_id = 'opportunity-documents'::text) AND ( SELECT private.can_access_document_scope(private.storage_organization_id(objects.name), private.storage_opportunity_id(objects.name), 'document.write'::text) AS can_access_document_scope))"
+    },
+    {
+      "id": "policy:storage.objects.private_storage_no_bearer_signing",
+      "kind": "policy",
+      "name": "private_storage_no_bearer_signing",
+      "qual": "( SELECT private.storage_operation_is_revocable_v1() AS storage_operation_is_revocable_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "( SELECT private.storage_operation_is_revocable_v1() AS storage_operation_is_revocable_v1)"
+    },
+    {
+      "id": "policy:storage.objects.storage_rotation_insert",
+      "kind": "policy",
+      "name": "storage_rotation_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "( SELECT private.worker_can_rotate_storage_v1(objects.bucket_id, objects.name) AS worker_can_rotate_storage_v1)"
+    },
+    {
+      "id": "policy:storage.objects.storage_rotation_select",
+      "kind": "policy",
+      "name": "storage_rotation_select",
+      "qual": "( SELECT private.worker_can_rotate_storage_v1(objects.bucket_id, objects.name) AS worker_can_rotate_storage_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.storage_rotation_update",
+      "kind": "policy",
+      "name": "storage_rotation_update",
+      "qual": "( SELECT private.worker_can_rotate_storage_v1(objects.bucket_id, objects.name) AS worker_can_rotate_storage_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "( SELECT private.worker_can_rotate_storage_v1(objects.bucket_id, objects.name) AS worker_can_rotate_storage_v1)"
+    },
+    {
+      "id": "r:private.access_resources",
+      "rls": true,
+      "kind": "table",
+      "name": "access_resources",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.authorization_revisions",
+      "rls": true,
+      "kind": "table",
+      "name": "authorization_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:private.capital_project_material_upload_grants",
@@ -20816,6 +22258,56 @@
       "force_rls": false
     },
     {
+      "id": "r:private.resource_access_grants",
+      "rls": true,
+      "kind": "table",
+      "name": "resource_access_grants",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.retrieval_audit_events",
       "rls": false,
       "kind": "table",
@@ -20864,6 +22356,106 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "r:private.review_execution_authorizations",
+      "rls": true,
+      "kind": "table",
+      "name": "review_execution_authorizations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.storage_path_rotations",
+      "rls": true,
+      "kind": "table",
+      "name": "storage_path_rotations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:private.worker_tokens",
@@ -32576,6 +34168,46 @@
       "force_rls": true
     },
     {
+      "id": "trigger:private.access_resources.access_resources_audit",
+      "kind": "trigger",
+      "name": "access_resources_audit",
+      "table": "access_resources",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER access_resources_audit AFTER INSERT OR DELETE OR UPDATE ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.access_resources.access_resources_updated_at",
+      "kind": "trigger",
+      "name": "access_resources_updated_at",
+      "table": "access_resources",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER access_resources_updated_at BEFORE UPDATE ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
+      "kind": "trigger",
+      "name": "authorization_revisions_audit",
+      "table": "authorization_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER authorization_revisions_audit AFTER INSERT OR DELETE OR UPDATE ON private.authorization_revisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.authorization_revisions.authorization_revisions_updated_at",
+      "kind": "trigger",
+      "name": "authorization_revisions_updated_at",
+      "table": "authorization_revisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER authorization_revisions_updated_at BEFORE UPDATE ON private.authorization_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
       "kind": "trigger",
       "name": "human_intervention_ledger_immutable",
@@ -32804,6 +34436,66 @@
       "enabled": "O",
       "function": "private.guard_receivables_scope_immutable()",
       "definition": "CREATE TRIGGER receivables_scope_immutable BEFORE UPDATE ON private.receivables_evidence_scopes FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_scope_immutable()"
+    },
+    {
+      "id": "trigger:private.resource_access_grants.resource_access_grants_audit",
+      "kind": "trigger",
+      "name": "resource_access_grants_audit",
+      "table": "resource_access_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER resource_access_grants_audit AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.resource_access_grants.resource_access_grants_updated_at",
+      "kind": "trigger",
+      "name": "resource_access_grants_updated_at",
+      "table": "resource_access_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER resource_access_grants_updated_at BEFORE UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.review_execution_authorizations.review_execution_authorizations_audit",
+      "kind": "trigger",
+      "name": "review_execution_authorizations_audit",
+      "table": "review_execution_authorizations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER review_execution_authorizations_audit AFTER INSERT OR DELETE OR UPDATE ON private.review_execution_authorizations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.review_execution_authorizations.review_execution_authorizations_updated_at",
+      "kind": "trigger",
+      "name": "review_execution_authorizations_updated_at",
+      "table": "review_execution_authorizations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER review_execution_authorizations_updated_at BEFORE UPDATE ON private.review_execution_authorizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.storage_path_rotations.storage_path_rotations_audit",
+      "kind": "trigger",
+      "name": "storage_path_rotations_audit",
+      "table": "storage_path_rotations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER storage_path_rotations_audit AFTER INSERT OR DELETE OR UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.storage_path_rotations.storage_path_rotations_updated_at",
+      "kind": "trigger",
+      "name": "storage_path_rotations_updated_at",
+      "table": "storage_path_rotations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER storage_path_rotations_updated_at BEFORE UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.access_requests.access_requests_set_updated_at",
@@ -33216,6 +34908,16 @@
       "definition": "CREATE TRIGGER capital_project_requirement_coverage_set_updated_at BEFORE UPDATE ON public.capital_project_requirement_coverage FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.capital_project_review_assignments.capital_project_review_assignments_access",
+      "kind": "trigger",
+      "name": "capital_project_review_assignments_access",
+      "table": "capital_project_review_assignments",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_review_resource_access_v1()",
+      "definition": "CREATE TRIGGER capital_project_review_assignments_access AFTER INSERT OR DELETE ON public.capital_project_review_assignments FOR EACH ROW EXECUTE FUNCTION private.sync_review_resource_access_v1()"
+    },
+    {
       "id": "trigger:public.capital_project_review_assignments.capital_project_review_assignments_audit",
       "kind": "trigger",
       "name": "capital_project_review_assignments_audit",
@@ -33304,6 +35006,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER capital_project_work_requests_set_updated_at BEFORE UPDATE ON public.capital_project_work_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.capital_projects.capital_projects_access_resource",
+      "kind": "trigger",
+      "name": "capital_projects_access_resource",
+      "table": "capital_projects",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_access_resource_v1()",
+      "definition": "CREATE TRIGGER capital_projects_access_resource AFTER INSERT OR UPDATE ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('capital_project')"
     },
     {
       "id": "trigger:public.capital_projects.capital_projects_audit",
@@ -33454,6 +35166,16 @@
       "enabled": "O",
       "function": "private.capture_audit_event()",
       "definition": "CREATE TRIGGER claim_decisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.claim_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.companies.companies_access_resource",
+      "kind": "trigger",
+      "name": "companies_access_resource",
+      "table": "companies",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_access_resource_v1()",
+      "definition": "CREATE TRIGGER companies_access_resource AFTER INSERT OR UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('company')"
     },
     {
       "id": "trigger:public.companies.companies_audit",
@@ -33694,6 +35416,16 @@
       "enabled": "O",
       "function": "private.lock_execution_approval_context()",
       "definition": "CREATE TRIGGER execution_approval_session_lock BEFORE UPDATE ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.lock_execution_approval_context()"
+    },
+    {
+      "id": "trigger:public.document_intake_sessions.intake_sessions_access_resource",
+      "kind": "trigger",
+      "name": "intake_sessions_access_resource",
+      "table": "document_intake_sessions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_access_resource_v1()",
+      "definition": "CREATE TRIGGER intake_sessions_access_resource AFTER INSERT OR UPDATE ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('intake_session')"
     },
     {
       "id": "trigger:public.document_layers.document_layers_set_updated_at",
@@ -33966,6 +35698,16 @@
       "definition": "CREATE TRIGGER operating_control_snapshots_immutable BEFORE DELETE OR UPDATE ON public.operating_control_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_control_ledger_mutation()"
     },
     {
+      "id": "trigger:public.opportunities.opportunities_access_resource",
+      "kind": "trigger",
+      "name": "opportunities_access_resource",
+      "table": "opportunities",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_access_resource_v1()",
+      "definition": "CREATE TRIGGER opportunities_access_resource AFTER INSERT OR UPDATE ON public.opportunities FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('opportunity')"
+    },
+    {
       "id": "trigger:public.opportunities.opportunities_audit",
       "kind": "trigger",
       "name": "opportunities_audit",
@@ -34044,6 +35786,16 @@
       "enabled": "O",
       "function": "private.capture_organization_authority_event_v1()",
       "definition": "CREATE TRIGGER organization_memberships_authority_audit AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_organization_authority_event_v1()"
+    },
+    {
+      "id": "trigger:public.organization_memberships.organization_memberships_resource_revocation",
+      "kind": "trigger",
+      "name": "organization_memberships_resource_revocation",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.revoke_membership_resources_v1()",
+      "definition": "CREATE TRIGGER organization_memberships_resource_revocation AFTER DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.revoke_membership_resources_v1()"
     },
     {
       "id": "trigger:public.organization_methodologies.organization_methodologies_set_updated_at",
@@ -34234,6 +35986,16 @@
       "enabled": "O",
       "function": "private.lock_governed_sector_lineage()",
       "definition": "CREATE TRIGGER governed_sector_lineage_lock BEFORE INSERT OR DELETE OR UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.lock_governed_sector_lineage()"
+    },
+    {
+      "id": "trigger:public.processing_jobs.processing_jobs_bind_authority",
+      "kind": "trigger",
+      "name": "processing_jobs_bind_authority",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_job_authority_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_bind_authority BEFORE INSERT ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_job_authority_v1()"
     },
     {
       "id": "trigger:public.processing_jobs.processing_jobs_enqueue_case_analysis",
@@ -34736,6 +36498,16 @@
       "definition": "CREATE TRIGGER structure_scenarios_set_updated_at BEFORE UPDATE ON public.structure_scenarios FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
+      "kind": "trigger",
+      "name": "workspace_groups_access_resource",
+      "table": "workspace_project_groups",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_access_resource_v1()",
+      "definition": "CREATE TRIGGER workspace_groups_access_resource AFTER INSERT OR UPDATE ON public.workspace_project_groups FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('workspace_group')"
+    },
+    {
       "id": "trigger:public.workspace_project_groups.workspace_project_groups_audit",
       "kind": "trigger",
       "name": "workspace_project_groups_audit",
@@ -35161,5 +36933,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-15T12:32:52.705691+00:00"
+  "captured_at": "2026-09-15T20:41:59.034271+00:00"
 }
