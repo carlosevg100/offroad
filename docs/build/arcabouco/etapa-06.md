@@ -42,3 +42,7 @@ O exercício do E0 revelou outro defeito: a busca textual de `/JS` nos bytes bru
 Os quatro riscos de fonte da etapa 6 têm testes e prova de backfill; a confirmação indevida foi corrigida no schema instalado. O fechamento do inventário só encerra o achado com o commit entregue. As 18 lacunas gerais continuam no registro `RISCOS-POR-INCREMENTO.md`, cada uma com incremento e prova exigida.
 
 Rollback de aplicação preserva o schema: versões imutáveis e revogação da RPC não são revertidas. Se um consumidor antigo tentar sobrescrever camada ou confirmar hash, a operação falha fechada; corrigir o consumidor em novo commit. Correção de DDL usa outra migração. Nenhuma tela administrativa, direito contratual, entrada privada entre dossiês, Temporal, provedor ou integração é habilitada aqui.
+
+## Entrega e conciliação
+
+A implementação foi mesclada e implantada pela PR 635. A revisão `docs/security/history/wave-5-final-review.md` fixa o commit, CI e runtime efetivamente observados; a conciliação tem gates e recibos finais próprios no completion externo. O teste de revogação espera o grant desaparecer da resposta do servidor antes da leitura negativa; não reutiliza o aviso salvo da concessão anterior. A etapa seguinte continua dependente do OK do fundador.

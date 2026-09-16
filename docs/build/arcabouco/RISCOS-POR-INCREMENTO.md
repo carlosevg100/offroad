@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 5 · 16/09/2026 · Referência entregue: `0abe864e7187e6435b0e464fe4ed07b2515a0402`.
+Onda 5 · 16/09/2026 · Referência entregue: `3ccc8bcd4c399f984cd399daadf063f1e54638d7`.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -50,3 +50,7 @@ Os marcos 12 e 17 incluem a revisão dos riscos vencidos de seus incrementos. A 
 ## Achado adicional na abertura da etapa 6
 
 `SG-SOURCE-VERIFICATION-AUTHORITY` (crítico): em staging, membro sem grant conseguiu alterar SHA-256 e `sha256_verified_at` pela RPC `record_document_verification`. Reprodução sintética com rollback, sem mutação em produção. Etapa 6 corrige a autoridade e a prova de bytes antes do backfill. O inventário passa a 19 lacunas, sem encerrar as 18 anteriores. A abertura do inventário registra o problema; não declara a função segura.
+
+## Fechamento da etapa 6
+
+Os cinco riscos específicos de fonte acima têm implementação e regressão neste incremento. `SG-SOURCE-VERIFICATION-AUTHORITY` foi encerrado com a PR 635 implantada, a reprodução negada e o contrato de recibo delegado. O registro de abertura permanece como histórico. O inventário ativo volta a 18 lacunas gerais, sem considerar como encerradas as dependências de outros incrementos. Provas e limites em `etapa-06.md` e `docs/security/history/wave-5-final-review.md`.

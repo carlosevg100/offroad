@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "0abe864e7187e6435b0e464fe4ed07b2515a0402";
-const capturedAt = "2026-09-16T20:23:25.103Z";
+const baselineCommit = "3ccc8bcd4c399f984cd399daadf063f1e54638d7";
+const capturedAt = "2026-09-16T22:26:29.355Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,21 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-SOURCE-PDF-STRUCTURE", "repository_file", "packages/document-intelligence/src/pdf-structure.ts", "PDF object inspection distinguishes stream bytes from executable names, with bounded object-stream inflation and fail-closed unsupported structures."),
+  evidence("SEV-SOURCE-PDF-REGRESSION", "automated_test", "packages/document-intelligence/src/pdf-structure.test.ts", "Real corpus image false positive, escaped/compressed JavaScript, encrypted and embedded objects, inflation and nesting bounds."),
+  evidence("SEV-SOURCE-E2E", "repository_file", "apps/web/e2e/support/source-verification.ts", "Local-only E2E downloads actual uploaded bytes through the delegated worker Storage boundary and records an E0 receipt; no production fixtures or fake verification timestamps."),
+  evidence("SEV-SOURCE-SCHEMA", "repository_file", "supabase/migrations/20260916212202_logical_sources_and_versions.sql", "Immutable byte versions, explicit uses, exact extraction anchors and worker-only byte verification."),
+  evidence("SEV-SOURCE-LEGACY-INSERT", "repository_file", "supabase/migrations/20260916212209_source_identity_legacy_insert_default.sql", "Legacy opportunity upload keeps an atomic source projection without new grants."),
+  evidence("SEV-SOURCE-ISOLATION", "automated_test", "supabase/tests/source_version_identity.sql", "Version integrity, scoped deduplication, preserved uses and anchors, Storage denial, forged receipt and revocation."),
+  evidence("SEV-SOURCE-CONTRACT", "automated_test", "packages/domain-contracts/src/source-version.test.ts", "Unverified historical identity never invents proof; verified versions require hash and size."),
+  evidence("SEV-SOURCE-JOB", "automated_test", "apps/document-worker/src/source-version.test.ts", "Historical payload compatibility and rejection of substituted byte versions."),
+  evidence("SEV-SOURCE-STORAGE", "automated_test", "apps/document-worker/src/job-storage.test.ts", "Immutable retry compares exact bytes and rechecks delegated authority before returning."),
+  evidence("SEV-SOURCE-DOWNLOAD", "automated_test", "apps/web/src/app/[locale]/app/documents/[documentId]/route.test.ts", "No byte delivery after initial denial, revocation during I/O or malformed reauthorization."),
+  evidence("SEV-SOURCE-INSTALLED-EVAL", "repository_file", "docs/build/arcabouco/etapa-06-installed-eval.json", "All 69 SQL contracts pass on installed staging schema with synthetic rollback."),
+  evidence("SEV-SOURCE-INSTALLATION", "repository_file", "docs/build/arcabouco/etapa-06-installation.json", "Matching journal SQL, 27 identical functions and 28 preserved source versions in production; old verification EXECUTE denied."),
+  evidence("SEV-SOURCE-BEFORE", "repository_file", "docs/build/arcabouco/source-verification-before.json", "Historical staging reproduction proves both unauthorized hash mutation and verification before the remediation."),
+  evidence("SEV-SOURCE-BEFORE-SQL", "repository_file", "docs/build/arcabouco/source-verification-before.sql", "Synthetic rollback reproduction establishes denied document authority before exercising the legacy verification RPC."),
+
   evidence("SEV-DOSSIER-SCHEMA", "repository_file", "supabase/migrations/20260916190600_entity_and_dossier_identity.sql", "Entity identity remains separate from private resource authority; reviewed temporal links and isolated dossiers."),
   evidence("SEV-DOSSIER-ISOLATION", "automated_test", "supabase/tests/entity_dossier_isolation.sql", "Homonyms, shared public identifier, same-tenant and cross-tenant denial, revocation, reviewed history and legacy profile authority."),
   evidence("SEV-DOSSIER-PUBLIC-CACHE", "automated_test", "supabase/tests/public_research_public_cache.sql", "Public memory requires proven identity and the current job delegation; private cross-dossier access remains absent."),
@@ -243,14 +258,14 @@ const systems = [
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
-    gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
@@ -288,13 +303,13 @@ const dataStores = [
   {
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "A common Postgres evaluator intersects explicit grants, flat groups, deny rules, barriers and purposes. Installed definitions and negative staging contracts are verified for stage 3; universal live completeness remains unverified.",
-    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
-    gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
+    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-SOURCE-SCHEMA", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
+    gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
     storeId: "STORE-OBJECTS", title: "Supabase private object storage", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
-    dataClassIds: ["customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "Private buckets and signed URLs are observed in code; complete live policy state is unverified.",
-    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Document platform owner"), evidenceRefs: ["SEV-POLICY-SCHEMA", "SEV-POLICY-EXPORT", "SEV-WEB-UPLOAD", "SEV-RLS-TEST"],
+    dataClassIds: ["customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "Private buckets require current resource authority and export purpose or a delegated worker lease. Registered bytes cannot be overwritten or deleted by authenticated clients; document delivery uses reauthorized no-store routes, not reusable bearer URLs. Complete provider configuration remains unverified.",
+    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Document platform owner"), evidenceRefs: ["SEV-SOURCE-STORAGE", "SEV-SOURCE-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-EXPORT", "SEV-WEB-UPLOAD", "SEV-RLS-TEST"],
     gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG"], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
@@ -348,9 +363,9 @@ const dataFlows = [
   },
   {
     flowId: "FLOW-WEB-DATA", title: "Web application to Supabase", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"],
-    dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and signed storage operations.",
+    dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and purpose-authorized private storage operations.",
     authorizationBoundary: "Publishable client plus authenticated session; the common database evaluator is authoritative. Export purpose is checked by the server download path and restrictive Storage policy; administrative authority does not imply content access.", direction: "internal", owner: owner("Application security owner", "Data security owner"),
-    evidenceRefs: ["SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-SOURCE-CONTRACT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-DOWNLOAD", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
   },
   {
     flowId: "FLOW-UPLOAD", title: "Browser document upload", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["customer_confidential", "restricted_financial"],
@@ -361,7 +376,7 @@ const dataFlows = [
     flowId: "FLOW-DATA-WORKER", title: "Supabase job and document access to worker", sourceRef: "SYS-SUPABASE", destinationRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"],
     dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "security_evidence"], purpose: "Claim jobs and content-free authority events under separate bounded leases; deliver capability-scoped records and short-lived document access.",
     authorizationBoundary: "Delegated worker principal bound to the human, job, resource root, actual worker credential, authenticated account and lease expiry. Publication rechecks current policy under the organization authorization lock. Outbox uses its separate lease capability; snapshots remain private.", direction: "internal", owner: owner("Data security owner", "Document platform owner"),
-    evidenceRefs: ["SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-REVOCATION", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-REVOCATION", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     flowId: "FLOW-WORKER-ANTHROPIC", title: "Worker to Anthropic", sourceRef: "SYS-WORKER", destinationRef: "VEN-ANTHROPIC", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"],
@@ -516,7 +531,7 @@ const identities = [
   {
     identityId: "ID-WORKER-ACCOUNT", title: "Dedicated worker account", kind: "service_role", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"], privilege: "workload_scoped",
     authentication: "Dedicated account, worker claim credential and per-job capability; delegated principal also binds human authority, resource root and expiry. No standalone worker grant or group membership.", lifecycleState: "partial", owner: owner("Platform engineering owner", "Data security owner"),
-    evidenceRefs: ["SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-SCHEMA", "SEV-POLICY-DELEGATION", "SEV-OUTBOX-CONTRACT", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-SOURCE-ISOLATION", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-SCHEMA", "SEV-POLICY-DELEGATION", "SEV-OUTBOX-CONTRACT", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     identityId: "ID-GITHUB-OIDC", title: "GitHub deployment OIDC principal", kind: "oidc_principal", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-PRODUCTION"], privilege: "workload_scoped",
@@ -660,11 +675,6 @@ const vendors: VendorInput[] = [
 ];
 
 const gaps = [
-  {
-    gapId: "SG-SOURCE-VERIFICATION-AUTHORITY", title: "Legacy verification RPC permits unauthorized hash and verification writes", severity: "critical", owner: owner("Data platform owner", "Product security owner"),
-    targetRefs: ["SYS-SUPABASE", "STORE-POSTGRES", "FLOW-WEB-DATA"], evidenceRefs: ["SEV-WEB-UPLOAD", "SEV-RLS-TEST"], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
-    nextAction: "Stage 6, before immutable-source backfill: deny ungranted member, revoked subject and forged verification; bind verification to exact stored bytes and trusted execution. Reproduced with synthetic staging data and rollback on 2026-09-16; no production mutation. Add the negative SQL regression and verify deployed definition before closing.",
-  },
 
   {
     gapId: "SG-LIVE-CONFIG", title: "Live configuration snapshot missing", severity: "critical", owner: owner("Cloud security owner", "Security governance owner"),
@@ -760,7 +770,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.16-wave-5-opening-v1",
+  inventoryVersion: "2026.09.16-wave-5-delivered-v1",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-5", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
