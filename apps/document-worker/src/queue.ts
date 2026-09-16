@@ -273,6 +273,7 @@ export type QueueClient = {
   recordPublicResearch(job: CaseAnalysisJob | CapitalProjectAnalysisJob, plan: unknown, result: unknown): Promise<string>;
   loadPublicResearchCache?(job: CapitalProjectAnalysisJob, queryIds: string[]): Promise<unknown>;
   storePublicResearchCache?(job: CapitalProjectAnalysisJob, entries: unknown[]): Promise<unknown>;
+  loadPublicCompanyIdentity?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadPublicCompanyMemory?(job: CapitalProjectAnalysisJob, companyKey: string): Promise<unknown>;
   storePublicCompanyMemory?(job: CapitalProjectAnalysisJob, record: unknown): Promise<unknown>;
   recordPreliminaryUnderstanding(job: PreliminaryAnalysisJob, input: {
@@ -865,6 +866,9 @@ export function createQueueClient(
         p_capability_token: job.capability_token,
         p_entries: entries,
       });
+    },
+    async loadPublicCompanyIdentity(job) {
+      return call("worker_read_public_entity_subject_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
     async loadPublicCompanyMemory(job, companyKey) {
       return call("worker_load_public_company_memory", {

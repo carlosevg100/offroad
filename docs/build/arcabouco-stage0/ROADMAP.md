@@ -129,6 +129,8 @@ Alterar `apps/document-worker/src/advisor-context.ts`, `agent-operation-brief.ts
 
 ## 5. Entidade e dossiê privado
 
+**Recorte confirmado pelo fundador em 16/09/2026.** Entidade comum não aciona reutilização automática de memória privada de outro trabalho. Nesta etapa, o worker permanece no recurso delegado ao job; loaders de memória relacionada continuam sem conteúdo entre dossiês. A leitura humana exige autorização por dossiê. A memória pública exige identidade pública comprovada. Nas etapas 17/18, insumos adicionais serão declarados, delegados e revalidados sob o contrato de execução e dependências.
+
 **Objetivo e conceito.** Identificar a companhia ou outro objeto econômico sem misturar suas memórias privadas entre organizações.
 
 **Escopo.** Migração **nova** `entity_and_dossier_identity`: criar `public.entities`, `public.entity_identifiers`, `public.dossiers` e `public.dossier_entity_links`; identificação pública validada separada de atributos privados. Preservar `companies` como perfil privado legado e mapear seu ID ao dossiê. Entidades não públicas usam escopo de organização; tabela global só contém identidade comprovadamente pública. **Novos** contratos `packages/domain-contracts/src/entity.ts` e `dossier.ts`; RPCs `public.resolve_entity_candidate_v1`, `public.link_dossier_entity_v1`, `public.read_dossier_v1`. Adaptar `packages/public-research/src/company-memory.ts`, `save_project_company_context`, `save_project_company_profile` e loaders de memória relacionada.

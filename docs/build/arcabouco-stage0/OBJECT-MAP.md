@@ -2019,3 +2019,64 @@ Migrações adicionais:
 - `trigger:private.principals.principals_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
 - `trigger:public.organization_memberships.membership_policy_principal`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
 - `trigger:public.processing_jobs.processing_jobs_policy_principal`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+
+## Atualização da etapa 5, 16/09/2026
+
+56 superfícies novas conferidas nos dois catálogos. Migração de produção 20260916190600, staging 20260916190433, SQL idêntico. Identidade não concede acesso; memória privada entre dossiês permanece desligada até 17/18.
+
+- `function:private.backfill_dossiers_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.can_read_dossier_v1(p_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.can_read_entity_v1(p_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.capture_identity_audit_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.guard_identity_scope_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.read_dossier_v1(p_dossier_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.register_resource_dossier_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.require_dossier_v1(p_id uuid, p_action text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.sync_company_dossier_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.sync_project_dossier_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.sync_session_dossier_v1()`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:private.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.read_dossier_v1(p_dossier_id uuid)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)`: preservar, etapa 5; Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.
+- `policy:public.dossier_entity_links.dossier_entity_links_deny_delete`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossier_entity_links.dossier_entity_links_deny_insert`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossier_entity_links.dossier_entity_links_deny_update`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossier_entity_links.dossier_entity_links_select`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossiers.dossiers_deny_delete`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossiers.dossiers_deny_insert`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossiers.dossiers_deny_update`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.dossiers.dossiers_select`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entities.entities_deny_delete`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entities.entities_deny_insert`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entities.entities_deny_update`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entities.entities_select`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entity_identifiers.entity_identifiers_deny_delete`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entity_identifiers.entity_identifiers_deny_insert`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entity_identifiers.entity_identifiers_deny_update`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `policy:public.entity_identifiers.entity_identifiers_select`: preservar, etapa 5; Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.
+- `r:public.dossier_entity_links`: preservar, etapa 5; Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.
+- `r:public.dossiers`: preservar, etapa 5; Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.
+- `r:public.entities`: preservar, etapa 5; Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.
+- `r:public.entity_identifiers`: preservar, etapa 5; Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.
+- `trigger:private.access_resources.resource_dossier`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.capital_projects.zz_project_dossier`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.companies.zz_company_dossier`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.document_intake_sessions.zz_session_dossier`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.dossier_entity_links.dossier_entity_links_audit`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.dossier_entity_links.dossier_entity_links_updated`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.dossier_entity_links.dossier_link_scope`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.dossiers.dossiers_audit`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.dossiers.dossiers_updated`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.entities.entities_audit`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.entities.entities_updated`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.entity_identifiers.entity_identifiers_audit`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.entity_identifiers.entity_identifiers_updated`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+- `trigger:public.entity_identifiers.identifier_scope`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.

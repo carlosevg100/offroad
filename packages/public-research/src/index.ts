@@ -165,7 +165,7 @@ export async function runPublicResearch(input: {
       cacheReadFailed = true;
     }
   }
-  if (input.companyMemory && input.companySubject) {
+  if (input.companyMemory && input.companySubject?.verifiedEntityId) {
     try {
       const loaded = await input.companyMemory.load(publicCompanyKey(input.companySubject));
       priorCompanyMemory = selectFreshPublicCompanyMemory({subject: input.companySubject, record: loaded, now: now()});
@@ -238,7 +238,7 @@ export async function runPublicResearch(input: {
   const unique = [...new Map(sources.map((source) => [`${source.topic}:${canonicalUrl(source.url)}`, source])).values()];
   // A useful fallback may still support the current run after an authoritative source fails,
   // but partial chains are never promoted into shared company memory.
-  if (input.companyMemory && input.companySubject && unique.length > 0 && failures.length === 0) {
+  if (input.companyMemory && input.companySubject?.verifiedEntityId && unique.length > 0 && failures.length === 0) {
     try {
       await input.companyMemory.store(createPublicCompanyMemoryRecord({
         subject: input.companySubject,

@@ -1,0 +1,402 @@
+{
+  "production": {
+    "stamp": "20260916190600",
+    "functions": [
+      {
+        "schema": "private",
+        "name": "backfill_dossiers_v1",
+        "signature": "",
+        "definition_md5": "109d06373c1083bc6a753f1cf580c796"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_dossier_v1",
+        "signature": "p_id uuid",
+        "definition_md5": "fda5aa9316a4589b4d6df95c57820360"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_entity_v1",
+        "signature": "p_id uuid",
+        "definition_md5": "4460d7fb3c580249c5f759e30f461a81"
+      },
+      {
+        "schema": "private",
+        "name": "capture_identity_audit_v1",
+        "signature": "",
+        "definition_md5": "e775a9ee61d82a5a315d4763a02df7b2"
+      },
+      {
+        "schema": "private",
+        "name": "guard_identity_scope_v1",
+        "signature": "",
+        "definition_md5": "2c0572bb5b311cfb74bce63856dc6333"
+      },
+      {
+        "schema": "private",
+        "name": "link_dossier_entity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+        "definition_md5": "ff00da7ae9b32f6ea3992bd61fefb3fc"
+      },
+      {
+        "schema": "private",
+        "name": "read_dossier_v1",
+        "signature": "p_dossier_id uuid",
+        "definition_md5": "40eca9eea257b64c18bc43f03687488e"
+      },
+      {
+        "schema": "private",
+        "name": "register_resource_dossier_v1",
+        "signature": "",
+        "definition_md5": "e0fbe64dae98b7920077e0386dd0b135"
+      },
+      {
+        "schema": "private",
+        "name": "require_dossier_v1",
+        "signature": "p_id uuid, p_action text",
+        "definition_md5": "7c8449eb4467f731943a4723c3361597"
+      },
+      {
+        "schema": "private",
+        "name": "resolve_entity_candidate_v1",
+        "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+        "definition_md5": "689a23d0f97d18bd6227be38569cc7c9"
+      },
+      {
+        "schema": "private",
+        "name": "review_dossier_identity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+        "definition_md5": "45e44c2a8988785d728fdd33a0ca99d7"
+      },
+      {
+        "schema": "private",
+        "name": "save_guided_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "7167f8a6968e10cf8f9d0be06f94497b"
+      },
+      {
+        "schema": "private",
+        "name": "save_project_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "0ff9b0fd47f705eff003ad4cec7540f7"
+      },
+      {
+        "schema": "private",
+        "name": "sync_company_dossier_v1",
+        "signature": "",
+        "definition_md5": "a51d3f9d874f03d386468e738a978569"
+      },
+      {
+        "schema": "private",
+        "name": "sync_project_dossier_v1",
+        "signature": "",
+        "definition_md5": "20e23339fbcd816215f7d61ab24f4539"
+      },
+      {
+        "schema": "private",
+        "name": "sync_session_dossier_v1",
+        "signature": "",
+        "definition_md5": "a628c6b2aa3b9595b2d825e137fd3770"
+      },
+      {
+        "schema": "private",
+        "name": "withdraw_dossier_entity_link_v1",
+        "signature": "p_link_id uuid, p_reason text",
+        "definition_md5": "410973ef2bbb8b1a375ab7eb9042d23b"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_agent_context_before_professional_context_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "1888661ed3dca0f1248c8ca3fef22206"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "bc1d789324d50706ab11429c1b5d399a"
+      },
+      {
+        "schema": "private",
+        "name": "worker_read_public_entity_subject_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "8c9baa5aefb2f67db5916abb39bdc2da"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "f5fc65a20d9ce4ebadf3bf7eabe4768d"
+      },
+      {
+        "schema": "public",
+        "name": "link_dossier_entity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+        "definition_md5": "0f69fbe81c8a33b2771550f40c352e66"
+      },
+      {
+        "schema": "public",
+        "name": "read_dossier_v1",
+        "signature": "p_dossier_id uuid",
+        "definition_md5": "bfcef2b6176fe4c914c60c7d9aea84e9"
+      },
+      {
+        "schema": "public",
+        "name": "resolve_entity_candidate_v1",
+        "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+        "definition_md5": "dc5c3dcff3dd0454af8d391f9468ddd2"
+      },
+      {
+        "schema": "public",
+        "name": "review_dossier_identity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+        "definition_md5": "cc832947d42d1322c5404048aa4b8edb"
+      },
+      {
+        "schema": "public",
+        "name": "save_guided_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "dddca598f55cddafa7c2f4403ac2e9a1"
+      },
+      {
+        "schema": "public",
+        "name": "save_project_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "cac88feb65069600dfea9634c7f83a60"
+      },
+      {
+        "schema": "public",
+        "name": "withdraw_dossier_entity_link_v1",
+        "signature": "p_link_id uuid, p_reason text",
+        "definition_md5": "21b553600ebac68dc3d5e18528f1b8a9"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "65d9ea717e355f115078ebbee0a47062"
+      },
+      {
+        "schema": "public",
+        "name": "worker_read_public_entity_subject_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "8113accf1f5cf82c0a1dc859d90871c5"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "74e173d6e4ea79be391fd8f4cbb585c1"
+      }
+    ],
+    "backfill": [
+      {
+        "checked_at": "2026-09-16 19:08:12.208608+00",
+        "eligible_resources": 50,
+        "dossiers": 50,
+        "missing_dossiers": 0,
+        "legacy_mapping_mismatches": 0,
+        "entities": 0,
+        "entity_links": 0,
+        "private_cross_dossier_loader_absent": true
+      }
+    ]
+  },
+  "staging": {
+    "stamp": "20260916190433",
+    "functions": [
+      {
+        "schema": "private",
+        "name": "backfill_dossiers_v1",
+        "signature": "",
+        "definition_md5": "109d06373c1083bc6a753f1cf580c796"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_dossier_v1",
+        "signature": "p_id uuid",
+        "definition_md5": "fda5aa9316a4589b4d6df95c57820360"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_entity_v1",
+        "signature": "p_id uuid",
+        "definition_md5": "4460d7fb3c580249c5f759e30f461a81"
+      },
+      {
+        "schema": "private",
+        "name": "capture_identity_audit_v1",
+        "signature": "",
+        "definition_md5": "e775a9ee61d82a5a315d4763a02df7b2"
+      },
+      {
+        "schema": "private",
+        "name": "guard_identity_scope_v1",
+        "signature": "",
+        "definition_md5": "2c0572bb5b311cfb74bce63856dc6333"
+      },
+      {
+        "schema": "private",
+        "name": "link_dossier_entity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+        "definition_md5": "ff00da7ae9b32f6ea3992bd61fefb3fc"
+      },
+      {
+        "schema": "private",
+        "name": "read_dossier_v1",
+        "signature": "p_dossier_id uuid",
+        "definition_md5": "40eca9eea257b64c18bc43f03687488e"
+      },
+      {
+        "schema": "private",
+        "name": "register_resource_dossier_v1",
+        "signature": "",
+        "definition_md5": "e0fbe64dae98b7920077e0386dd0b135"
+      },
+      {
+        "schema": "private",
+        "name": "require_dossier_v1",
+        "signature": "p_id uuid, p_action text",
+        "definition_md5": "7c8449eb4467f731943a4723c3361597"
+      },
+      {
+        "schema": "private",
+        "name": "resolve_entity_candidate_v1",
+        "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+        "definition_md5": "689a23d0f97d18bd6227be38569cc7c9"
+      },
+      {
+        "schema": "private",
+        "name": "review_dossier_identity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+        "definition_md5": "45e44c2a8988785d728fdd33a0ca99d7"
+      },
+      {
+        "schema": "private",
+        "name": "save_guided_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "7167f8a6968e10cf8f9d0be06f94497b"
+      },
+      {
+        "schema": "private",
+        "name": "save_project_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "0ff9b0fd47f705eff003ad4cec7540f7"
+      },
+      {
+        "schema": "private",
+        "name": "sync_company_dossier_v1",
+        "signature": "",
+        "definition_md5": "a51d3f9d874f03d386468e738a978569"
+      },
+      {
+        "schema": "private",
+        "name": "sync_project_dossier_v1",
+        "signature": "",
+        "definition_md5": "20e23339fbcd816215f7d61ab24f4539"
+      },
+      {
+        "schema": "private",
+        "name": "sync_session_dossier_v1",
+        "signature": "",
+        "definition_md5": "a628c6b2aa3b9595b2d825e137fd3770"
+      },
+      {
+        "schema": "private",
+        "name": "withdraw_dossier_entity_link_v1",
+        "signature": "p_link_id uuid, p_reason text",
+        "definition_md5": "410973ef2bbb8b1a375ab7eb9042d23b"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_agent_context_before_professional_context_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "1888661ed3dca0f1248c8ca3fef22206"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "bc1d789324d50706ab11429c1b5d399a"
+      },
+      {
+        "schema": "private",
+        "name": "worker_read_public_entity_subject_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "8c9baa5aefb2f67db5916abb39bdc2da"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "f5fc65a20d9ce4ebadf3bf7eabe4768d"
+      },
+      {
+        "schema": "public",
+        "name": "link_dossier_entity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+        "definition_md5": "0f69fbe81c8a33b2771550f40c352e66"
+      },
+      {
+        "schema": "public",
+        "name": "read_dossier_v1",
+        "signature": "p_dossier_id uuid",
+        "definition_md5": "bfcef2b6176fe4c914c60c7d9aea84e9"
+      },
+      {
+        "schema": "public",
+        "name": "resolve_entity_candidate_v1",
+        "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+        "definition_md5": "dc5c3dcff3dd0454af8d391f9468ddd2"
+      },
+      {
+        "schema": "public",
+        "name": "review_dossier_identity_v1",
+        "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+        "definition_md5": "cc832947d42d1322c5404048aa4b8edb"
+      },
+      {
+        "schema": "public",
+        "name": "save_guided_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "dddca598f55cddafa7c2f4403ac2e9a1"
+      },
+      {
+        "schema": "public",
+        "name": "save_project_company_profile",
+        "signature": "p_session_id uuid, p_name text, p_legal_name text, p_website text, p_description text, p_identifier_hash bytea, p_identifier_last4 text",
+        "definition_md5": "cac88feb65069600dfea9634c7f83a60"
+      },
+      {
+        "schema": "public",
+        "name": "withdraw_dossier_entity_link_v1",
+        "signature": "p_link_id uuid, p_reason text",
+        "definition_md5": "21b553600ebac68dc3d5e18528f1b8a9"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "65d9ea717e355f115078ebbee0a47062"
+      },
+      {
+        "schema": "public",
+        "name": "worker_read_public_entity_subject_v1",
+        "signature": "p_job_id uuid, p_capability_token text",
+        "definition_md5": "8113accf1f5cf82c0a1dc859d90871c5"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_company_memory",
+        "signature": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "74e173d6e4ea79be391fd8f4cbb585c1"
+      }
+    ]
+  },
+  "sqlMd5": "3c4aff1453f037d6d6d38984956bff0a",
+  "fileSha256": "3bcd9e093e645bf3aa25861402fcc7252baa492e0663ad759362521d1ebb9bc6",
+  "securityAdvisors": {
+    "production": [],
+    "staging": []
+  }
+}

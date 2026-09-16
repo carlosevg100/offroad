@@ -4,9 +4,9 @@ import {z} from "zod";
 import {publicResearchSubjectSchema, researchSourceSchema, type PublicResearchSubject, type ResearchSource} from "./contracts";
 
 export const publicCompanyMemoryRecordSchema = z.object({
-  schemaVersion: z.literal("public-company-memory.v1"),
+  schemaVersion: z.literal("public-company-memory.v2"),
   companyKey: z.string().regex(/^[a-f0-9]{64}$/),
-  subject: publicResearchSubjectSchema,
+  subject: z.object({legalName: z.string().min(2).max(200), verifiedEntityId: z.uuid()}).strict(),
   queryIds: z.array(z.string().regex(/^[a-f0-9]{64}$/)).min(1).max(60),
   sources: z.array(researchSourceSchema).min(1).max(120),
   storedAt: z.iso.datetime(),
@@ -28,16 +28,11 @@ export type PublicCompanyMemory = {
   store(record: PublicCompanyMemoryRecord): Promise<void>;
 };
 
-/** A stable public identity key. Uploaded documents, project text and user data are never inputs. */
+/** Only a reviewed public registry entity is reusable across dossiers. Names are not keys. */
 export function publicCompanyKey(raw: PublicResearchSubject): string {
   const subject = publicResearchSubjectSchema.parse(raw);
-  const name = normalizeIdentity(subject.legalName);
-  const geographyOrDomain = subject.geography
-    ? `geography:${normalizeIdentity(subject.geography)}`
-    : subject.website
-      ? `domain:${new URL(subject.website).hostname.toLowerCase().replace(/^www\./, "")}`
-      : "geography:global";
-  return createHash("sha256").update(`${name}|${geographyOrDomain}`).digest("hex");
+  if (!subject.verifiedEntityId) throw new Error("verified_public_identity_required");
+  return createHash("sha256").update(`public-entity:${subject.verifiedEntityId}`).digest("hex");
 }
 
 export function createPublicCompanyMemoryRecord(input: {
@@ -55,9 +50,9 @@ export function createPublicCompanyMemoryRecord(input: {
   const sources = deduplicateSources([...(prior?.sources ?? []), ...input.sources]).slice(-120);
   const ttlHours = Math.min(24 * 90, Math.max(1, input.ttlHours ?? 24 * 30));
   return publicCompanyMemoryRecordSchema.parse({
-    schemaVersion: "public-company-memory.v1",
+    schemaVersion: "public-company-memory.v2",
     companyKey,
-    subject,
+    subject: {legalName: subject.legalName, verifiedEntityId: subject.verifiedEntityId},
     queryIds,
     sources,
     storedAt: input.storedAt.toISOString(),
@@ -73,7 +68,7 @@ export function selectFreshPublicCompanyMemory(input: {
 }): PublicCompanyMemoryRecord | null {
   const parsed = publicCompanyMemoryRecordSchema.safeParse(input.record);
   if (!parsed.success) return null;
-  if (parsed.data.companyKey !== publicCompanyKey(input.subject)) return null;
+  if (!input.subject.verifiedEntityId || parsed.data.companyKey !== publicCompanyKey(input.subject)) return null;
   if (Date.parse(parsed.data.validUntil) <= input.now.getTime()) return null;
   return parsed.data;
 }
@@ -90,9 +85,4 @@ function canonicalUrl(value: string): string {
   }
   url.searchParams.sort();
   return url.toString();
-}
-
-function normalizeIdentity(value: string): string {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
 }

@@ -765,3 +765,6 @@ export type MatchScreen = z.infer<typeof matchScreenSchema>;
 
 export * from "./document-work-product";
 export {domainEventSchema, type DomainEvent} from "./domain-event";
+
+export * from "./entity";
+export * from "./dossier";

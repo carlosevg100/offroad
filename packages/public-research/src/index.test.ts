@@ -264,7 +264,7 @@ describe("governed public research", () => {
     const result = await runPublicResearch({
       plan,
       cache: {load: async () => [], store: async (records) => { writes.push(...records); }},
-      companySubject: {legalName: "Empresa Exemplo"},
+      companySubject: {legalName: "Empresa Exemplo", verifiedEntityId: "a5550000-0000-4000-9000-000000000003"},
       companyMemory: {load: async () => null, store: async (record) => { companyWrites.push(record); }},
       providers: [
         {id: "official", continueAfterSuccess: true, search: async () => {
@@ -286,7 +286,7 @@ describe("governed public research", () => {
   });
 
   it("maintains a company-centric public source catalog without changing the current research result", async () => {
-    const subject = {legalName: "Camil Alimentos", geography: "Brasil"};
+    const subject = {legalName: "Camil Alimentos", geography: "Brasil", verifiedEntityId: "a5550000-0000-4000-9000-000000000003"};
     const plan = buildCompanyDebtResearchPlan(subject).slice(0, 1);
     const earlierSource = {
       provider: "official" as const, topic: "identity" as const, title: "Relatório anual",

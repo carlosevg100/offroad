@@ -5,6 +5,7 @@ export const researchTopicSchema = z.enum(researchTopics);
 export type ResearchTopic = z.infer<typeof researchTopicSchema>;
 
 export const publicResearchSubjectSchema = z.object({
+  verifiedEntityId: z.uuid().optional(),
   legalName: z.string().trim().min(2).max(200),
   website: z.url().optional(),
   sector: z.string().trim().min(2).max(120).optional(),

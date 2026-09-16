@@ -3847,6 +3847,133 @@ export type Database = {
           },
         ]
       }
+      dossier_entity_links: {
+        Row: {
+          created_at: string
+          dossier_id: string
+          entity_id: string
+          id: string
+          organization_id: string
+          perimeter: Json
+          relationship: string
+          request_fingerprint: string
+          request_id: string
+          review_reason: string
+          reviewed_by: string
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          withdrawal_reason: string | null
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          dossier_id: string
+          entity_id: string
+          id?: string
+          organization_id: string
+          perimeter: Json
+          relationship: string
+          request_fingerprint: string
+          request_id: string
+          review_reason: string
+          reviewed_by: string
+          updated_at?: string
+          valid_from: string
+          valid_until?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string
+          entity_id?: string
+          id?: string
+          organization_id?: string
+          perimeter?: Json
+          relationship?: string
+          request_fingerprint?: string
+          request_id?: string
+          review_reason?: string
+          reviewed_by?: string
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dossier_entity_links_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dossier_entity_links_organization_id_dossier_id_fkey"
+            columns: ["organization_id", "dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "dossier_entity_links_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dossiers: {
+        Row: {
+          created_at: string
+          id: string
+          legacy_company_id: string | null
+          organization_id: string
+          profile: Json
+          resource_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          legacy_company_id?: string | null
+          organization_id: string
+          profile?: Json
+          resource_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          legacy_company_id?: string | null
+          organization_id?: string
+          profile?: Json
+          resource_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dossiers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dossiers_organization_id_legacy_company_id_fkey"
+            columns: ["organization_id", "legacy_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       engagement_conflict_reviews: {
         Row: {
           case_fingerprint: string
@@ -3891,6 +4018,134 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      entities: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          legal_name: string
+          organization_id: string | null
+          origin_dossier_id: string | null
+          public_proof: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          legal_name: string
+          organization_id?: string | null
+          origin_dossier_id?: string | null
+          public_proof?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          legal_name?: string
+          organization_id?: string | null
+          origin_dossier_id?: string | null
+          public_proof?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entities_organization_id_origin_dossier_id_fkey"
+            columns: ["organization_id", "origin_dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      entity_identifiers: {
+        Row: {
+          created_at: string
+          entity_id: string
+          evidence: Json
+          id: string
+          namespace: string
+          organization_id: string | null
+          review_state: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          supersedes_id: string | null
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          evidence: Json
+          id?: string
+          namespace: string
+          organization_id?: string | null
+          review_state: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          supersedes_id?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          evidence?: Json
+          id?: string
+          namespace?: string
+          organization_id?: string | null
+          review_state?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          supersedes_id?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_identifiers_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_identifiers_organization_id_entity_id_fkey"
+            columns: ["organization_id", "entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "entity_identifiers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_identifiers_supersedes_id_fkey"
+            columns: ["supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "entity_identifiers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8698,6 +8953,19 @@ export type Database = {
         Args: { p_account_id: string; p_expected_account_id: string }
         Returns: string
       }
+      link_dossier_entity_v1: {
+        Args: {
+          p_dossier_id: string
+          p_entity_id: string
+          p_perimeter: Json
+          p_reason: string
+          p_relationship: string
+          p_request_id: string
+          p_valid_from: string
+          p_valid_until: string
+        }
+        Returns: string
+      }
       list_my_workspace_invites_v1: { Args: never; Returns: Json }
       list_my_workspaces_v1: { Args: never; Returns: Json }
       list_provider_mandates_v1: {
@@ -8756,6 +9024,7 @@ export type Database = {
         Args: { p_execution_brief_id: string; p_project_id: string }
         Returns: string
       }
+      read_dossier_v1: { Args: { p_dossier_id: string }; Returns: Json }
       read_institutional_configuration_reviews_v1: {
         Args: { p_project_id: string }
         Returns: Json
@@ -9090,6 +9359,15 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_entity_candidate_v1: {
+        Args: {
+          p_dossier_id: string
+          p_name: string
+          p_namespace?: string
+          p_value?: string
+        }
+        Returns: Json
+      }
       restart_onboarding_intake: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -9103,6 +9381,17 @@ export type Database = {
           p_intake_session_id: string
           p_organization_id: string
           p_rationale: string
+        }
+        Returns: string
+      }
+      review_dossier_identity_v1: {
+        Args: {
+          p_dossier_id: string
+          p_entity_id: string
+          p_name: string
+          p_namespace: string
+          p_reason: string
+          p_value: string
         }
         Returns: string
       }
@@ -9673,6 +9962,10 @@ export type Database = {
         }
         Returns: Json
       }
+      withdraw_dossier_entity_link_v1: {
+        Args: { p_link_id: string; p_reason: string }
+        Returns: undefined
+      }
       withdraw_provider_mandate_v1: {
         Args: {
           p_mandate_id: string
@@ -10015,6 +10308,10 @@ export type Database = {
           p_precedent_purpose?: string
           p_query: string
         }
+        Returns: Json
+      }
+      worker_read_public_entity_subject_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_record_agent_assessment_v1: {

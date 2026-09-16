@@ -19,7 +19,7 @@ import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
-import {createWorkerPublicCompanyMemory} from "./public-company-memory";
+import {createWorkerPublicCompanyMemory, verifiedCompanyMemorySubject} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
@@ -519,11 +519,12 @@ async function collectResearch(input: {
     jurisdictionNeedsConfirmation: input.runtime.jurisdictionNeedsConfirmation,
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const companySubject = await verifiedCompanyMemorySubject(input.queue, input.job, input.subject);
   const companyMemory = createWorkerPublicCompanyMemory(input.queue, input.job);
   const result = await runPublicResearch({
     plan: input.plan, providers: input.runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
-    ...(companyMemory ? {companyMemory, companySubject: input.subject} : {}),
+    ...(companyMemory && companySubject ? {companyMemory, companySubject} : {}),
   });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
   const persisted = {

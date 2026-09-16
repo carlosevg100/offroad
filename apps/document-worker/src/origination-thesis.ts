@@ -31,7 +31,7 @@ import {materialNumericTokens} from "./material-numeric-tokens";
 import {summarizeModelAttempts} from "./model-failure-lineage";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
-import {createWorkerPublicCompanyMemory} from "./public-company-memory";
+import {createWorkerPublicCompanyMemory, verifiedCompanyMemorySubject} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 
@@ -756,11 +756,12 @@ async function collectOriginationResearch(input: {
     jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const companySubject = await verifiedCompanyMemorySubject(input.queue, input.job, subject);
   const companyMemory = createWorkerPublicCompanyMemory(input.queue, input.job);
   const result = await runPublicResearch({
     plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
-    ...(companyMemory ? {companyMemory, companySubject: subject} : {}),
+    ...(companyMemory && companySubject ? {companyMemory, companySubject} : {}),
   });
   const safeSources = await enrichResearchSources(
     result.sources.filter((source) => source.url.startsWith("https://")),

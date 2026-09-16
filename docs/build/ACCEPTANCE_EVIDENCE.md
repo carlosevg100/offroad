@@ -1,3 +1,7 @@
+## Etapa 5: entidade e dossiê instalados em 16/09/2026
+
+O recorte aprovado mantém memória privada entre dossiês desligada até o contrato explícito de 17/18. Entidades, identificadores revisados, dossiês privados e vínculos datados/perimetrais usam a política comum. Memória pública v2 exige identidade comprovada e delegação do job; v1 congelada. Migração staging `20260916190433` e produção `20260916190600`, mesmo SQL; 50/50 recursos projetados sem desvios, zero entidades inferidas, 31 funções em paridade, advisors de segurança limpos. 56 novas superfícies e 321 versões de produção inventariadas. Detalhes em `docs/build/arcabouco/etapa-05.md`. 68 testes SQL passaram no candidato e no schema instalado de staging; a etapa ainda exige CI, merge e implantação exata antes do completion. Nenhum trabalho de etapa 6 está autorizado.
+
 ## 16 September 2026: stage 3 resource policy and barriers
 
 ## Onda 4 autorizada: entidade e dossiê privado
