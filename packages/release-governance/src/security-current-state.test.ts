@@ -30,7 +30,7 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(currentSecurityInventory.baseline).toMatchObject({
-      waveId: "wave-3", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+      waveId: "wave-4", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
     });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);
@@ -75,12 +75,12 @@ describe("security current-state inventory", () => {
 
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
-    archived.baseline.waveId = "wave-2";
+    archived.baseline.waveId = "wave-3";
     archived.baseline.waveStatus = "closed";
     const decision = evaluateSecurityCurrentStateInventory(archived, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-2"});
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-2"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-3"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-3"});
   });
 
   it("resolves every repository and local evidence byte before asserting current-state truth", async () => {
@@ -564,15 +564,15 @@ describe("security current-state inventory", () => {
 
   it("refuses fabricated renewal of both baseline and observation into a future wave", async () => {
     const inventory = copyInventory();
-    inventory.baseline.waveId = "wave-4";
+    inventory.baseline.waveId = "wave-unapproved";
     inventory.baseline.waveStatus = "open";
     inventory.baseline.materialChangeState = "reviewed";
     const observation = inventory.evidenceIndex.find((item) => item.evidenceId === "SEV-AWS-DEPLOY-ROLE-SNAPSHOT")!;
-    observation.waveId = "wave-4";
+    observation.waveId = "wave-unapproved";
     const decision = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.blockers).toEqual(expect.arrayContaining([
-      {code: "baseline_wave_unknown", subjectRef: "wave-4"},
+      {code: "baseline_wave_unknown", subjectRef: "wave-unapproved"},
       {code: "canonical_inventory_snapshot_mismatch", subjectRef: inventory.inventoryVersion},
       {code: "evidence_wave_mismatch", subjectRef: observation.evidenceId},
       {code: "external_evidence_declaration_not_allowlisted", subjectRef: observation.evidenceId},
@@ -634,7 +634,7 @@ describe("security current-state inventory", () => {
 
   it.each([
     ["collector", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.collector = {name: "invented", version: "9", principalClass: "self-declared"}; }],
-    ["waveId", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.waveId = "wave-4"; }],
+    ["waveId", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.waveId = "wave-unapproved"; }],
     ["freshness", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.freshness = "time_bound"; }],
     ["capturedAt", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.capturedAt = "2026-09-07T09:21:00.000-03:00"; }],
     ["validThrough", (evidence: SecurityCurrentStateInventory["evidenceIndex"][number]) => { evidence.validThrough = "2026-09-13T09:20:00.000-03:00"; }],

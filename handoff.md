@@ -1,5 +1,9 @@
 ## 16 September 2026: stage 3 resource policy and barriers
 
+## Onda 4 autorizada: entidade e dossiê privado
+
+O OK do fundador autoriza somente a etapa 5. A abertura fixa main `5d73624cad869d17ad56eff3d3cab800acd44f64`, preserva a revisão encerrada da onda 3 e renova as 63 evidências. Leitura ao vivo confirmou paridade das 11 funções de perfil, memória pública e contexto afetadas entre staging e produção; worker revisão 339 saudável, imagem exata e quatro alarmes OK. As 18 lacunas existentes permanecem. A implementação ainda não foi aplicada. Escopo e critérios em `docs/security/INVENTORY_WAVE_4_REVIEW.md`.
+
 ## Etapa 3: conciliação da entrega em 16/09/2026
 
 Implementação mesclada pela PR 629 (`a8cddded`), com os três gates Quality, preview e scans aprovados. Três migrações aplicadas e conferidas nos dois journals; 67 contratos SQL instalados em staging, 31 E2Es na CI e 53 funções idênticas entre ambientes. O inventário final vincula a política comum, barreiras, delegação, exportação e os testes aos bytes desse baseline. Revisão e limites em `docs/security/history/wave-3-final-review.md`; evidência operacional em `docs/security/evidence/aws-worker-rollout-diagnostics-wave-3.json`. Sem telas administrativas e sem dados descartáveis em produção. A próxima onda depende do OK do fundador; etapa 5 não iniciada.
