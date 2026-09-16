@@ -82,9 +82,10 @@ function diagnostic(sourceUrl: string) {
   };
 }
 
-function gatewayWith(output: ReturnType<typeof diagnostic>, calls: {count: number}): ModelGateway {
+function gatewayWith(output: ReturnType<typeof diagnostic>, calls: {count: number; requests?: unknown[]}): ModelGateway {
   return {
-    complete: (async () => {
+    complete: (async (request) => {
+      calls.requests?.push({system:request.system,input:request.input,maxOutputTokens:request.maxOutputTokens,schemaName:request.schemaName,outputMode:request.outputMode,task:request.task});
       calls.count += 1;
       return {output, provider: "anthropic" as const, model: "claude-sonnet-5", effort: "medium" as const,
         usage: {inputTokens: 1200, outputTokens: 1200, cachedInputTokens: 0}, costUsd: 0.03,
@@ -117,8 +118,9 @@ function queueFor(input: {loadContext?: () => Promise<unknown>; artifacts: Array
   } as unknown as QueueClient;
 }
 
+let counterfactualRequest: unknown;
 describe("company debt view vertical", () => {
-  it("runs one synthesis over bounded parallel research and persists the full diagnostic DAG", async () => {
+  it.each(["cfo", "credit_analyst", "financial_advisor", null])("%s: runs one synthesis over bounded parallel research and persists the full diagnostic DAG", async (profile) => {
     const sourceUrl = "https://public.example/company";
     const provider: PublicSearchProvider = {id: "perplexity", search: async (query) => [{
       provider: "perplexity", topic: query.topic, title: `Fonte ${query.topic}`, url: sourceUrl,
@@ -128,14 +130,17 @@ describe("company debt view vertical", () => {
     const artifacts: Array<Record<string, unknown>> = [];
     const completed: Array<Record<string, unknown>> = [];
     const started: string[] = [];
-    const calls = {count: 0};
+    const calls = {count: 0, requests: [] as unknown[]};
     const result = await processCompanyDebtViewJob(job, {
-      queue: queueFor({artifacts, completed, started}), gateway: gatewayWith(diagnostic(sourceUrl), calls),
+      queue: queueFor({artifacts, completed, started, loadContext:async()=>context({professional_context:profile===null?null:{professionalRoles:[profile]}})}), gateway: gatewayWith(diagnostic(sourceUrl), calls),
       lineage: () => [], researchProviders: [provider], now: () => new Date("2026-09-01T12:00:00.000Z"),
     });
 
     expect(result.status).toBe("succeeded");
     expect(calls.count).toBe(1);
+    if(counterfactualRequest===undefined)counterfactualRequest=calls.requests[0];
+    expect(calls.requests[0]).toEqual(counterfactualRequest);
+    expect(JSON.stringify(calls.requests[0])).not.toContain('professionalContext');
     expect(started).toHaveLength(24);
     expect(new Set(started)).toEqual(new Set(taskDefinitions.map(([id]) => id)));
     const final = artifacts.find((artifact) => artifact.taskId === "C11");

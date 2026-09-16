@@ -1,6 +1,6 @@
 "use client";
 
-import {Check, ChevronDown, ChevronRight, CircleGauge, Landmark, LogOut, PanelLeft, Plus, Search, Target, UserRoundCog, X} from "lucide-react";
+import {Check, ChevronDown, ChevronRight, CircleGauge, Landmark, LogOut, PanelLeft, Plus, Search, Target, X} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname, useRouter, useSearchParams} from "next/navigation";
@@ -21,7 +21,6 @@ export type WorkspaceRailCopy = WorkspaceNavigationCopy & {
   expand: string;
   newChat: string;
   overview: string;
-  professionalContext: string;
   publicCapitalMarket: string;
   recent: string;
   folders: string;
@@ -215,12 +214,6 @@ export function WorkspaceRail(props: Props) {
           href={`/${locale}/app`}
           title={copy.overview}
         ><CircleGauge aria-hidden="true" size={15} /><span>{copy.overview}</span></Link>
-        <Link
-          aria-current={pathname.includes("/app/context") ? "page" : undefined}
-          className="app-rail__row"
-          href={`/${locale}/app/context`}
-          title={copy.professionalContext}
-        ><UserRoundCog aria-hidden="true" size={15} /><span>{copy.professionalContext}</span></Link>
         <Link aria-current={pathname.includes("/app/market") ? "page" : undefined} className="app-rail__row" href={`/${locale}/app/market`} title={copy.publicCapitalMarket}><Landmark aria-hidden="true" size={15} /><span>{copy.publicCapitalMarket}</span></Link>
         {props.mandatesHref ? (
           <Link aria-current={pathname.includes("/app/mandates") ? "page" : undefined} className="app-rail__row" data-testid="rail-mandates" href={props.mandatesHref} title={copy.fundsAndMandates}><Target aria-hidden="true" size={15} /><span>{copy.fundsAndMandates}</span></Link>

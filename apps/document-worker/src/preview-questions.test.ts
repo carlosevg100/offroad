@@ -8,7 +8,7 @@ const gaps = [
   {id: "C09.unproven_conditions[0]", taskId: "C09", methodId: "reconcile-covenant-definitions", objectLabel: "Covenants", key: "unproven_conditions" as const, text: "deb-11: proof of ordinary settlement"},
 ];
 const fixed: CandidateQuestion[] = [{id: "q-angle", text: "Leitura de refinanciamento ou alternativas mais amplas?", changesTheWork: "define o universo", coverage: {searched: ["ITR"], answeredBy: null, answer: null}, priority: 1}];
-const base = {locale: "pt-BR" as const, gaps, request: {desiredOutcome: "material", audience: "vp", depth: null, form: null, undefinedAspects: ["thesis"], sponsorInstruction: null}, professionalContext: null, answered: [], documents: ["ITR"], fixed};
+const base = {locale: "pt-BR" as const, gaps, request: {desiredOutcome: "material", audience: "vp", depth: null, form: null, undefinedAspects: ["thesis"], sponsorInstruction: null}, answered: [], documents: ["ITR"], fixed};
 
 function gateway(output: unknown, fail = false): ModelGateway {
   let spent = 0;

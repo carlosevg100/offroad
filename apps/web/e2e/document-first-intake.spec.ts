@@ -159,7 +159,7 @@ test.describe("Document-first intake (company journey)", () => {
   test("signs up with e-mail verification and lands on onboarding", async () => {
     await page.goto("/pt-BR/signup");
     // Account creation asks for identity and nothing else: no market side, no job title.
-    // Everything that shapes the work is asked by the professional onboarding below.
+    // Registration collects identity; the work itself supplies analytical context.
     await expect(page.locator('input[name="entry_path"]')).toHaveCount(0);
     await expect(page.locator('input[name="job_title"]')).toHaveCount(0);
     await page.locator('input[name="full_name"]').fill(account.fullName);
@@ -176,20 +176,8 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator("form.auth-form--verification button[type=submit]").click();
 
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
-    await expect(page.locator(".professional-context--onboarding")).toBeVisible();
-    // Nothing arrives pre-answered: this screen exists to ask, not to assume, and where someone
-    // works is only asked once they have said they work somewhere.
-    await expect(page.locator('input[name="use_forms"]:checked')).toHaveCount(0);
-    await expect(page.locator('input[name="institution_name"]')).toHaveCount(0);
-    await page.locator('input[name="use_forms"][value="institutional_work"]').check();
-    await page.locator('input[name="institution_name"]').fill("Rede Horizonte Supermercados");
-    // Several roles and several areas at once, which is the point of the new shape.
-    await page.locator('input[name="professional_roles"][value="cfo"]').check();
-    await page.locator('input[name="professional_roles"][value="treasury"]').check();
-    await page.locator('input[name="practice_areas"][value="treasury"]').check();
-    await page.locator('input[name="practice_areas"][value="corporate_finance"]').check();
-    await page.locator('input[name="primary_objectives"][value="evaluate_capital_options"]').check();
-    await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
+    await expect(page.locator('input[name="professional_roles"]')).toHaveCount(0);
+    // Verified identity proceeds without collecting a professional role.
 
     await expect(page.locator(".intake-start")).toBeVisible();
     await expect(page.locator(".workspace-welcome h1")).toHaveText("Bem-vindo.");

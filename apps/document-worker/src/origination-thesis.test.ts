@@ -52,8 +52,9 @@ const job: CapitalProjectAnalysisJob = {
   },
 };
 
+let counterfactualRequest: unknown;
 describe("origination thesis vertical", () => {
-  it("runs bounded public research, persists every TaskSpec output and leaves the brief pending confirmation", async () => {
+  it.each(["cfo", "credit_analyst", "financial_advisor", null])("%s: runs bounded public research, persists every TaskSpec output and leaves the brief pending confirmation", async (profile) => {
     const recordedArtifacts: Array<{taskId: string; artifactType: string; status: string; dependencies: unknown[]; content?: Record<string, unknown>}> = [];
     const completed: unknown[] = [];
     const assessments: Array<{coverage: Array<{requirementKey: string; status: string}>}> = [];
@@ -77,9 +78,9 @@ describe("origination thesis vertical", () => {
           privacy_status: "public_information",
           representation_status: "not_claimed",
         },
-        professional_context: {
+        professional_context: profile === null ? null : {
           useForms: ["institutional_work"],
-          professionalRoles: ["banker", "originator"],
+          professionalRoles: [profile],
           practiceAreas: ["dcm", "origination", "syndicate_distribution"],
           primaryObjectives: ["originate_ideas", "prepare_meetings"],
           institutionName: "Banco Farol",
@@ -177,21 +178,24 @@ describe("origination thesis vertical", () => {
     let acquiredPages = 0;
     const gateway: ModelGateway = {
       complete: (async (request) => {
+        const comparable={system:request.system,input:request.input,maxOutputTokens:request.maxOutputTokens,schemaName:request.schemaName,outputMode:request.outputMode,task:request.task};
+        if(counterfactualRequest===undefined)counterfactualRequest=comparable;
+        expect(comparable).toEqual(counterfactualRequest);
         const textInput = request.input.find((part) => part.type === "text");
         if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
         const modelInput = JSON.parse(textInput.text) as {
           allowedMaterialNumericTokens?: string[];
           professionalContext?: {professionalRoles?: string[]; institutionName?: string};
           journeyBlueprint?: {id?: string};
-          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
+          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; reasoningBasis?: string};
         };
         expect(modelInput.allowedMaterialNumericTokens).toContain("r$1,0");
         expect(modelInput.allowedMaterialNumericTokens).not.toContain("24meses");
-        expect(modelInput.professionalContext).toMatchObject({professionalRoles: ["banker", "originator"], institutionName: "Banco Farol"});
+        expect(modelInput.professionalContext).toBeUndefined();
         expect(modelInput.journeyBlueprint?.id).toBe("origination_thesis");
         expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
           alternativeUniverse: "company_first_and_unconstrained",
-          professionalContextUse: "prioritize_and_shape_never_suppress",
+          reasoningBasis: "objective_evidence_and_method",
         });
         expect(JSON.stringify(modelInput)).toContain("CONTEUDO_APROFUNDADO");
         return {

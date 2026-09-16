@@ -22,7 +22,7 @@ describe("workspace journey blueprints", () => {
 
   it("treats professional capability as prioritization rather than an alternative boundary", () => {
     expect(collaborativeAdvisoryPolicy.alternativeUniverse).toBe("company_first_and_unconstrained");
-    expect(collaborativeAdvisoryPolicy.professionalContextUse).toBe("prioritize_and_shape_never_suppress");
+    expect(collaborativeAdvisoryPolicy.reasoningBasis).toBe("objective_evidence_and_method");
     expect(collaborativeAdvisoryPolicy.collaborationClose).toMatchObject({
       posture: "associate_or_vp_to_md",
       choices: ["deepen_one", "combine_alternatives", "develop_all_for_comparison", "add_context_and_reassess"],

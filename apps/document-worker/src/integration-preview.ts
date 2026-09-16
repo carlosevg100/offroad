@@ -343,12 +343,6 @@ const contextSchema = z.object({
   plan: z.object({id: z.uuid(), version: z.number(), fingerprint: z.string()}),
   tasks: z.array(z.object({id: z.string(), ordinal: z.number(), batch: z.number(), label: z.string(), dependencies: z.array(z.string()), execution_class: z.string(), effect: z.string(), maturity_at_compile: z.string()})),
   prior_artifacts: z.array(z.object({task_id: z.string(), id: z.uuid(), artifact_type: z.string(), artifact_version: z.number(), artifact_fingerprint: z.string(), input_fingerprint: z.string().nullable(), status: z.string(), content: z.record(z.string(), z.unknown())})).default([]),
-  professional_context: z.object({
-    useForms: z.array(z.string()).default([]),
-    professionalRoles: z.array(z.string()).default([]),
-    practiceAreas: z.array(z.string()).default([]),
-    primaryObjectives: z.array(z.string()).default([]),
-  }).nullable().optional(),
   recent_messages: z.array(z.object({id: z.uuid(), role: z.string(), content: z.string(), created_at: z.string()})).default([]),
 });
 export type PreviewRunContextRow = z.infer<typeof contextSchema>;
@@ -669,7 +663,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           locale,
           gaps: preview.extractPreviewGaps(outputs, locale),
           request: {desiredOutcome: request.sponsorInstruction, audience: request.audience?.primary ?? null, depth: null, form: request.form, undefinedAspects: request.undefinedAspects, sponsorInstruction: request.sponsorInstruction},
-          professionalContext: context.professional_context ? {useForms: context.professional_context.useForms, professionalRoles: context.professional_context.professionalRoles, practiceAreas: context.professional_context.practiceAreas, primaryObjectives: context.professional_context.primaryObjectives} : null,
+
           answered: briefAnswers,
           // The base's documents, not the fixed questions' (deepen and prepare_decision have none): the planner refuses a question that searched nothing.
           documents: preview.previewBaseDocuments(),

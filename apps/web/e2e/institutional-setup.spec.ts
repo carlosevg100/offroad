@@ -24,12 +24,6 @@ test("guided institutional setup calculates only after review and survives resum
   await page.locator('input[name="token"]').fill(await waitForOneTimeCode(email));
   await page.locator("form.auth-form--verification button[type=submit]").click();
   await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
-  await page.locator('input[name="use_forms"][value="institutional_work"]').check();
-  await page.locator('input[name="institution_name"]').fill("Instituição sintética de teste");
-  await page.locator('input[name="professional_roles"][value="banker"]').check();
-  await page.locator('input[name="practice_areas"][value="dcm"]').check();
-  await page.locator('input[name="primary_objectives"][value="prepare_meetings"]').check();
-  await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
   await expect(page.locator(".intake-start")).toBeVisible();
   await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
   await page.locator('input[name="signatory_title"]').fill("Analista");

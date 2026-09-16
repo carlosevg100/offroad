@@ -35,8 +35,8 @@ export type PreviewQuestionsOutput = z.infer<typeof previewQuestionsOutputSchema
 
 export const PREVIEW_QUESTIONS_SYSTEM = `You write the questions an internal debt capital markets desk asks the person it works for,
 after it analysed a company from a frozen evidence base. You receive the gaps the analysis
-declared (what could not be proven, covered or reconciled), the request as understood, the
-person's professional context and the questions already answered.
+declared (what could not be proven, covered or reconciled), the request as understood and the
+questions already answered. Prioritize questions by their effect on the declared objective.
 
 Write at most four questions, in the request's language, each one:
 - grounded in one or more listed gap ids (copy them exactly into gapIds; never invent a gap);
@@ -53,7 +53,7 @@ export type PreviewQuestionsInput = {
   locale: "pt-BR" | "en-US";
   gaps: preview.PreviewGap[];
   request: {desiredOutcome: string | null; audience: string | null; depth: string | null; form: string | null; undefinedAspects: string[]; sponsorInstruction: string | null};
-  professionalContext: {useForms: string[]; professionalRoles: string[]; practiceAreas: string[]; primaryObjectives: string[]} | null;
+
   answered: Array<{questionId: string; answer: string}>;
   /** The documents of the base every question's coverage declares as searched. */
   documents: string[];
@@ -92,7 +92,7 @@ export async function generatePreviewQuestions(input: PreviewQuestionsInput): Pr
         text: JSON.stringify({
           locale: input.locale,
           request: input.request,
-          professionalContext: input.professionalContext,
+
           answered: input.answered,
           gaps: input.gaps.map((gap) => ({id: gap.id, object: gap.objectLabel, kind: gap.key, text: gap.text})),
         }),

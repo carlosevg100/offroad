@@ -25,7 +25,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import {ambiguousDebtAmount} from "./debt-amount-units";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {summarizeModelAttempts} from "./model-failure-lineage";
@@ -101,7 +101,6 @@ const contextSchema = z.object({
     quality_results: z.array(recordSchema).max(30),
     error: recordSchema.nullable(),
   })).max(20).default([]),
-  professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   organization_methodology: organizationMethodologySchema.nullable().optional(),
 });
@@ -167,12 +166,10 @@ Rules:
 - Keep the complete structured response below roughly ten thousand output tokens. Depth comes from
   synthesis and specificity, not repetition or filling every array to its maximum. Use the user's
   audience, objective and relationship context to shape the meeting plan.
-- First build the alternatives that make the most sense for the company, regardless of the user's
-  institution or current product set. Then use professionalContext and institutionCapabilities
-  silently to prioritize the order, depth, framing and plausible ways each alternative could be
-  advanced. Never omit a company-relevant alternative solely because it is outside the declared
-  capability profile, and never tell the user what their institution can or cannot lead unless the
-  user explicitly asks.
+- Build the alternatives that best serve the company. Derive priority, depth and rigor from the
+  stated objective, available evidence and method. institutionCapabilities describes means of
+  execution only; it never limits the alternative universe or quality of analysis. Discuss which
+  institution can lead a path only when the user asks about execution responsibility.
 - Evaluate each alternative through three distinct lenses inside the required fields: fit for the
   company's objective and balance sheet; feasibility under the available market evidence; and
   possible execution paths, including partnership or third-party capital when relevant. Do not
@@ -335,7 +332,7 @@ export async function processOriginationThesisJob(
         asOfDate: (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
         company: {name: companyName, website: website ?? null},
         meetingBrief: context.brief.content,
-        professionalContext: context.professional_context ?? null,
+
         institutionCapabilities: context.institution_capabilities ?? null,
         journeyBlueprint: workspaceJourneyBlueprint("origination_thesis"),
         collaborativeAdvisoryPolicy,

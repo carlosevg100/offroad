@@ -6,9 +6,9 @@ import {executableWorkspaceJobSchema, type ExecutableWorkspaceJob} from "./works
 const evidenceModeSchema = z.enum(["public", "private", "hybrid"]);
 
 export const collaborativeAdvisoryPolicySchema = z.object({
-  schemaVersion: z.literal("collaborative-advisory-policy.v1"),
+  schemaVersion: z.literal("collaborative-advisory-policy.v2"),
   alternativeUniverse: z.literal("company_first_and_unconstrained"),
-  professionalContextUse: z.literal("prioritize_and_shape_never_suppress"),
+  reasoningBasis: z.literal("objective_evidence_and_method"),
   evaluationLenses: z.tuple([
     z.literal("company_fit"),
     z.literal("market_feasibility"),
@@ -29,9 +29,9 @@ export const collaborativeAdvisoryPolicySchema = z.object({
 export type CollaborativeAdvisoryPolicy = z.infer<typeof collaborativeAdvisoryPolicySchema>;
 
 export const collaborativeAdvisoryPolicy = collaborativeAdvisoryPolicySchema.parse({
-  schemaVersion: "collaborative-advisory-policy.v1",
+  schemaVersion: "collaborative-advisory-policy.v2",
   alternativeUniverse: "company_first_and_unconstrained",
-  professionalContextUse: "prioritize_and_shape_never_suppress",
+  reasoningBasis: "objective_evidence_and_method",
   evaluationLenses: ["company_fit", "market_feasibility", "execution_path"],
   prohibitedFraming: [
     "Do not describe the user's declared capabilities as the boundary of the strategic analysis.",

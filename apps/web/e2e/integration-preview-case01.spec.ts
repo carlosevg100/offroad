@@ -124,13 +124,6 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
-    await page.locator('input[name="use_forms"][value="institutional_work"]').check();
-    await page.locator('input[name="institution_name"]').fill("Banco Preview");
-    await page.locator('input[name="professional_roles"][value="banker"]').check();
-    await page.locator('input[name="practice_areas"][value="investment_banking"]').check();
-    await page.locator('input[name="practice_areas"][value="dcm"]').check();
-    await page.locator('input[name="primary_objectives"][value="prepare_meetings"]').check();
-    await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
     await expect(page.locator(".intake-start")).toBeVisible();
     // Account onboarding ends with the one-time confidentiality acceptance and the first private
     // project. Only after that gate does the organization enter the conversational workspace.

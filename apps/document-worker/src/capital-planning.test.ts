@@ -50,8 +50,9 @@ const job: CapitalProjectAnalysisJob = {
   },
 };
 
+let counterfactualRequest: unknown;
 describe("capital planning executor", () => {
-  it("persists the full bounded DAG and abstains from invented transaction terms", async () => {
+  it.each(["cfo", "credit_analyst", "financial_advisor", null])("%s: persists the full bounded DAG and abstains from invented transaction terms", async (profile) => {
     const artifacts: Array<{taskId: string; type: string; status: string; content: unknown}> = [];
     let completed: Record<string, unknown> | undefined;
     const queue = {
@@ -65,9 +66,9 @@ describe("capital planning executor", () => {
           id: ids.session, locale: "pt-BR", company_profile: {name: "Camil", website: "https://ri.camil.com.br", geography: "Brasil"},
           privacy_status: "public_information", representation_status: "not_claimed",
         },
-        professional_context: {
+        professional_context: profile === null ? null : {
           useForms: ["institutional_work"],
-          professionalRoles: ["cfo", "treasury"],
+          professionalRoles: [profile],
           practiceAreas: ["treasury", "corporate_finance"],
           primaryObjectives: ["evaluate_capital_options"],
           institutionName: "Rede Horizonte",
@@ -108,18 +109,21 @@ describe("capital planning executor", () => {
     } as unknown as QueueClient;
     const gateway = {
       complete: async (request: Parameters<ModelGateway["complete"]>[0]) => {
+        const comparable={system:request.system,input:request.input,maxOutputTokens:request.maxOutputTokens,schemaName:request.schemaName,outputMode:request.outputMode,task:request.task};
+        if(counterfactualRequest===undefined)counterfactualRequest=comparable;
+        expect(comparable).toEqual(counterfactualRequest);
         const textInput = request.input.find((part) => part.type === "text");
         if (!textInput || textInput.type !== "text") throw new Error("expected text model input");
         const modelInput = JSON.parse(textInput.text) as {
           professionalContext?: {professionalRoles?: string[]; useForms?: string[]};
           journeyBlueprint?: {id?: string};
-          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; professionalContextUse?: string};
+          collaborativeAdvisoryPolicy?: {alternativeUniverse?: string; reasoningBasis?: string};
         };
-        expect(modelInput.professionalContext).toMatchObject({professionalRoles: ["cfo", "treasury"], useForms: ["institutional_work"]});
+        expect(modelInput.professionalContext).toBeUndefined();
         expect(modelInput.journeyBlueprint?.id).toBe("capital_planning");
         expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
           alternativeUniverse: "company_first_and_unconstrained",
-          professionalContextUse: "prioritize_and_shape_never_suppress",
+          reasoningBasis: "objective_evidence_and_method",
         });
         return ({
         output: {

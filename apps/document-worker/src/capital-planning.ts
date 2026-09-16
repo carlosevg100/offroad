@@ -16,7 +16,7 @@ import {
 import {z} from "zod";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
 import {createWorkerPublicCompanyMemory} from "./public-company-memory";
@@ -61,7 +61,6 @@ const contextSchema = z.object({
     artifact_fingerprint: z.string().regex(/^[a-f0-9]{64}$/), content: recordSchema,
     evidence_refs: z.array(recordSchema),
   })).default([]),
-  professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   organization_methodology: organizationMethodologySchema.nullable().optional(),
 });
@@ -90,9 +89,9 @@ Rules:
   collateral eligibility remain conditions until verified.
 - Ask for the smallest next evidence batch: one to five requests, each stating why it matters and
   what decision it changes.
-- Build the company-relevant alternative universe before applying the user's professional profile.
-  professionalContext and institutionCapabilities may shape priority, depth and execution framing,
-  but they must never suppress an alternative that could be better for the company.
+- Build the complete company-relevant alternative universe. Analytical priority, depth and rigor
+  follow the stated objective, available evidence and method. institutionCapabilities describes
+  execution means only and never limits the alternatives or quality of the analysis.
 - Keep company fit, market feasibility and possible execution paths distinct. A route outside the
   declared capability profile may still be strategically relevant and may be pursued through a
   different role, partnership or third-party capital. Do not tell the user what their institution
@@ -188,7 +187,7 @@ export async function processCapitalPlanningJob(
       jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
       company: {name: companyName, website: website ?? null},
       capitalPlanningBrief: context.brief.content,
-      professionalContext: context.professional_context ?? null,
+
       institutionCapabilities: context.institution_capabilities ?? null,
       journeyBlueprint: workspaceJourneyBlueprint("capital_planning"),
       collaborativeAdvisoryPolicy,

@@ -51,7 +51,6 @@ const cases: Record<string, {
   assetsDir: string;
   documents: Array<{id: string; title: string; fileName: string}>;
   turnIds: string[];
-  professionalContext: BaselineInformationBase["professionalContext"];
   companyPattern: RegExp;
 }> = {
   gc01: {
@@ -64,7 +63,6 @@ const cases: Record<string, {
       {id: "proposta_agoe_2026", title: "Proposta da administração para a AGOE de 2026", fileName: "02_Proposta_Administracao_AGOE_2026.pdf"},
     ],
     turnIds: ["gc01-t01", "gc01-t02"],
-    professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
     companyPattern: /CAMIL/i,
   },
 };
@@ -142,7 +140,6 @@ async function main(): Promise<void> {
 
   const base = baselineInformationBaseSchema.parse({
     caseId: spec.caseId, caseVersion: spec.caseVersion, language: "pt-BR", asOfDate: spec.asOfDate,
-    professionalContext: spec.professionalContext, turns, documents, sources,
   });
   const rendered = renderInformationBase(base);
   const baseHash = informationBaseHash(base);

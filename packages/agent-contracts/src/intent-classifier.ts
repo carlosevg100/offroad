@@ -24,17 +24,11 @@ export const intentClassifierInputSchema = z.object({
   recentConversation: z.array(z.object({role: z.string().min(1), content: z.string()})).max(8),
   entryJob: z.string().nullable(),
   documentCount: z.number().int().nonnegative(),
-  professionalContext: z.object({
-    useForms: z.array(z.string()),
-    professionalRoles: z.array(z.string()),
-    practiceAreas: z.array(z.string()),
-    primaryObjectives: z.array(z.string()),
-  }).nullable(),
 });
 export type IntentClassifierInput = z.infer<typeof intentClassifierInputSchema>;
 
 /** Parse once before JSON serialization so runtime and evals send the same bounded shape. */
-export function buildIntentClassifierInput(input: IntentClassifierInput): IntentClassifierInput {
+export function buildIntentClassifierInput(input: unknown): IntentClassifierInput {
   return intentClassifierInputSchema.parse(input);
 }
 
@@ -431,7 +425,7 @@ export function canonicalizeIntentClassifierOutput(
   inputOrLocale: IntentClassifierInput | IntentClassifierInput["locale"],
 ): IntentClassifierOutput {
   const input: IntentClassifierInput = typeof inputOrLocale === "string"
-    ? {locale: inputOrLocale, latestUserMessage: "", recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null}
+    ? {locale: inputOrLocale, latestUserMessage: "", recentConversation: [], entryJob: null, documentCount: 0}
     : inputOrLocale;
   const locale = input.locale;
   const explicit = explicitComposition(input);

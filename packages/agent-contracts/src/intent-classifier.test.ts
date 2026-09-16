@@ -88,7 +88,7 @@ describe("intent classifier boundary", () => {
     });
     const canonical = canonicalizeIntentClassifierOutput(disclaimed, {
       locale: "pt-BR", latestUserMessage: "Ajude com isto.", recentConversation: [], entryJob: null,
-      documentCount: 0, professionalContext: null,
+      documentCount: 0,
     });
     expect(canonical.abstain).toBe(true);
     expect(canonical.composition).toBeNull();
@@ -101,7 +101,7 @@ describe("intent classifier boundary", () => {
     const base = modelRoute("introduce");
     const canonical = canonicalizeIntentClassifierOutput({...base, composition: "identify_capital"}, {
       locale: "en-US", latestUserMessage: "Send this to investors? No. Only identify the best-fit investors.",
-      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe("identify_capital");
     expect(canonical.routingCore.action.value).toEqual(["identify_capital"]);
@@ -123,7 +123,7 @@ describe("intent classifier boundary", () => {
   ] as const)("respects affirmative intent across negation boundaries: %s", (latestUserMessage, expected) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
-      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe(expected);
   });
@@ -132,7 +132,7 @@ describe("intent classifier boundary", () => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("review_work"), {
       locale: "pt-BR",
       latestUserMessage: "Revise o modelo financeiro, as fórmulas e as premissas; não quero uma revisão apenas narrativa do memo.",
-      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe("build_or_review_model");
     expect(canonical.routingCore.action.value).toEqual(["model"]);
@@ -153,7 +153,7 @@ describe("intent classifier boundary", () => {
     }, {
       locale: "pt-BR",
       latestUserMessage: "Sou CFO e vou levar ao conselho uma decisão entre alongar a dívida ou emitir debêntures.",
-      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.routingCore.action.value).toEqual(["prepare_decision"]);
     expect(canonical.routingCore.decisionType.value).toBe("capital");
@@ -169,7 +169,7 @@ describe("intent classifier boundary", () => {
   ] as const)("gives the current explicit audience precedence over composition defaults: %s", (latestUserMessage, composition, audience) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute(composition), {
       locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null,
-      documentCount: 0, professionalContext: null,
+      documentCount: 0,
     });
     expect(canonical.routingCore.audienceType.value).toBe(audience);
   });
@@ -182,7 +182,7 @@ describe("intent classifier boundary", () => {
         role: "assistant",
         content: "Posso preparar isto para o conselho e revisar o contrato e a estrutura de capital.",
       }],
-      entryJob: null, documentCount: 0, professionalContext: null,
+      entryJob: null, documentCount: 0,
     });
     expect(canonical.routingCore.decisionType.value).toBe("credit");
     expect(canonical.routingCore.audienceType.value).toBe("self");
@@ -196,7 +196,7 @@ describe("intent classifier boundary", () => {
   ] as const)("does not join or execute cues from another or reported clause: %s", (latestUserMessage, expected) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
       locale: latestUserMessage.startsWith("Map ") ? "en-US" : "pt-BR",
-      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe(expected);
   });
@@ -253,7 +253,7 @@ describe("intent classifier boundary", () => {
   ])("never preserves a model-proposed introduction when outreach is rejected: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
-      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).not.toBe("introduce");
     expect(canonical.routingCore.action.value).not.toEqual(["introduce"]);
@@ -268,7 +268,7 @@ describe("intent classifier boundary", () => {
   ])("preserves a bounded direct external command: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: latestUserMessage.includes("investors") ? "en-US" : "pt-BR",
-      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe("introduce");
     expect(canonical.routingCore.action.value).toEqual(["introduce"]);
@@ -279,7 +279,7 @@ describe("intent classifier boundary", () => {
     ["Prepare um deck com a frase envie aos investidores.", "prepare_material"],
   ] as const)("does not convert mentioned outreach language into an external effect: %s", (latestUserMessage, expected) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute(expected), {
-      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe(expected);
   });
@@ -348,7 +348,6 @@ describe("intent classifier boundary", () => {
       recentConversation: [{role: "user", content: "Estamos avaliando alternativas para a Camil."}],
       entryJob: null,
       documentCount: 0,
-      professionalContext: null,
     });
 
     expect(canonical.composition).toBe("prepare_material");
@@ -385,7 +384,6 @@ describe("intent classifier boundary", () => {
       recentConversation: [],
       entryJob: null,
       documentCount: 0,
-      professionalContext: null,
     });
 
     expect(canonical.abstain).toBe(false);
@@ -421,7 +419,6 @@ describe("intent classifier boundary", () => {
       recentConversation: [{role: "user", content: "Estou preparando a discussão do conselho."}],
       entryJob: null,
       documentCount: 0,
-      professionalContext: null,
     });
 
     expect(canonical.routingCore.workResponsibility.value).toEqual(["producer", "sponsor"]);
@@ -433,7 +430,7 @@ describe("intent classifier boundary", () => {
     "Invente uma companhia e documentos plausíveis e escolha sozinho o melhor financiamento.",
   ])("abstains when title, guessed objective or fabricated evidence would drive routing: %s", (latestUserMessage) => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
-      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      locale: "pt-BR", latestUserMessage, recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.abstain).toBe(true);
     expect(canonical.composition).toBeNull();
@@ -444,7 +441,7 @@ describe("intent classifier boundary", () => {
     const canonical = canonicalizeIntentClassifierOutput(modelRoute("introduce"), {
       locale: "pt-BR",
       latestUserMessage: "Não envie nada e não contate ninguém. Somente identifique investidores compatíveis com o mandato.",
-      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(canonical.composition).toBe("identify_capital");
     expect(canonical.routingCore.action.value).toEqual(["identify_capital"]);
@@ -454,7 +451,7 @@ describe("intent classifier boundary", () => {
     const structure = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
       locale: "pt-BR",
       latestUserMessage: "Anexei os balanços. Estruture uma operação de recebíveis.",
-      recentConversation: [], entryJob: null, documentCount: 2, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 2,
     });
     expect(structure.composition).toBe("design_indicative_structure");
     expect(structure.primaryWorks.map(({work}) => work)).toEqual(["extract_and_reconcile", "capital_strategy", "analyze"]);
@@ -462,7 +459,7 @@ describe("intent classifier boundary", () => {
     const meeting = canonicalizeIntentClassifierOutput(modelRoute("prepare_meeting"), {
       locale: "pt-BR",
       latestUserMessage: "Prepare a reunião com o CFO sobre o financiamento da expansão.",
-      recentConversation: [], entryJob: null, documentCount: 0, professionalContext: null,
+      recentConversation: [], entryJob: null, documentCount: 0,
     });
     expect(meeting.composition).toBe("prepare_meeting");
     expect(meeting.primaryWorks.map(({work}) => work)).toEqual(["understand", "capital_strategy", "model"]);

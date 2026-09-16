@@ -115,12 +115,6 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await page.locator('input[name="token"]').fill(await waitForOneTimeCode(email));
   await page.locator("form.auth-form--verification button[type=submit]").click();
   await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
-  await page.locator('input[name="use_forms"][value="institutional_work"]').check();
-  await page.locator('input[name="institution_name"]').fill("Gestora sintética de crédito");
-  await page.locator('input[name="professional_roles"][value="banker"]').check();
-  await page.locator('input[name="practice_areas"][value="dcm"]').check();
-  await page.locator('input[name="primary_objectives"][value="prepare_meetings"]').check();
-  await page.locator(".professional-context__actions .button:not(.button--ghost)").click();
   await expect(page.locator(".intake-start")).toBeVisible();
   const organizationId = setup("workspace", email);
   const token = await accessToken(request, email, password);
