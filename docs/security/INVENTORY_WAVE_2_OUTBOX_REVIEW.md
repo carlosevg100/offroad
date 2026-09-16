@@ -1,6 +1,6 @@
 # Wave 2: domain events and bounded consumer
 
-Status: database and alarm configuration installed; final consumer deployment is not yet attested. Controls reviewed: IAM-05, IAM-12, DATA-02, DATA-03, DATA-12, DATA-13 and CLOUD-04. The opening security inventory remains immutable opening evidence; the wave closeout must reference the actual delivered commits and receipts.
+Status: core delivered in PR 625; main Quality and Security passed, web and worker deployed at b0d1e8db, ECS revision 334. Real polling and four OK alarm states were observed; this is not independent assurance. Controls reviewed: IAM-05, IAM-12, DATA-02, DATA-03, DATA-12, DATA-13 and CLOUD-04. The opening security inventory remains immutable opening evidence; the wave closeout must reference the actual delivered commits and receipts.
 
 Protected authority changes produce an immutable domain event, ordinary audit reference and durable outbox entry in their own transaction. Snapshots are restricted authority metadata with explicit field lists. Optional historical-ledger references carry organization_id; historical records are not relabelled as new events. The envelope exported to the worker contains IDs and enumerated/versioned metadata only. Logs omit snapshots, worker credentials, lease capabilities and raw service errors. The existing AWS region and provider remain unchanged.
 

@@ -20,5 +20,19 @@
     "staging": 1511
   },
   "alarms": "four installed and read back with existing console session; IAM unchanged",
-  "deployment": "pending"
+  "deployment": {
+    "commit": "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b",
+    "pr": 625,
+    "web": 6479066516,
+    "worker_run": 35086389368,
+    "ecs_revision": 334,
+    "main_quality": 35086389401,
+    "main_security": 35086389373,
+    "status": "success",
+    "real_polling": true,
+    "alarms": "4 OK",
+    "synthetic_production_data": false
+  },
+  "staging_sql_contracts_passed": 62,
+  "matching_function_definitions": 13
 }

@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "9620406b8d3b9624a68bf611b40791e289f90a90";
-const capturedAt = "2026-09-16T03:00:58.181Z";
+const baselineCommit = "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b";
+const capturedAt = "2026-09-16T10:49:40.306Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,14 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-WORKSPACE-IDENTITY", "repository_file", "supabase/migrations/20260916035105_explicit_workspace_context.sql", "Explicit personal/institutional context and private commercial accounts."),
+  evidence("SEV-WORKSPACE-CONTEXT-REGRESSION", "automated_test", "supabase/tests/explicit_workspace_context.sql", "Ambiguous context and cross-workspace denial regressions."),
+  evidence("SEV-OUTBOX-SCHEMA", "repository_file", "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql", "Transactional authority events, isolated snapshots and bounded leases."),
+  evidence("SEV-OUTBOX-CONSUMER", "repository_file", "apps/document-worker/src/event-outbox.ts", "Content-free bounded consumer with idempotent completion."),
+  evidence("SEV-OUTBOX-REVOCATION", "automated_test", "supabase/tests/domain_event_outbox_revocation.sql", "Revocation cancels stale jobs; audit failure rolls back the effect."),
+  evidence("SEV-OUTBOX-CONTRACT", "automated_test", "supabase/tests/domain_event_outbox.sql", "Producer rollback, lease replacement, account binding and immutable audit."),
+  evidence("SEV-OUTBOX-MONITORING", "configuration", "apps/document-worker/monitoring/event-outbox-alarms.json", "Four bounded operational alarms for the event consumer."),
+
   evidence("SEV-CREATOR-REMEDIATION", "repository_file", "docs/build/arcabouco/etapa-1a.md", "Stage 1A authority and installed database proof."),
   evidence("SEV-ACCESS-REMEDIATION", "repository_file", "docs/build/arcabouco/etapa-1b.md", "Stage 1B explicit resource access and production transition."),
   evidence("SEV-PROFILE-REMEDIATION", "repository_file", "docs/build/arcabouco/etapa-1c.md", "Stage 1C role-free context and installed database proof."),
@@ -88,7 +96,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-SECURITY-PLAN", "design_reference", "docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md", "Security readiness design reference; this is not proof of current operation."),
   evidence("SEV-ENV-NAMES", "configuration", ".env.example", "Configuration names and secret-store expectations without secret values."),
   evidence("SEV-WORKER-TASK", "configuration", "apps/document-worker/task-definition.json", "Worker runtime, role names, provider switches and secret references by name."),
-  evidence("SEV-WORKER-RUNTIME", "repository_file", "apps/document-worker/src/main.ts", "Worker authentication, capability use, logging and provider wiring."),
+  evidence("SEV-WORKER-RUNTIME", "repository_file", "apps/document-worker/src/main.ts", "Worker authentication, independent outbox loop, capability use, logging and provider wiring."),
   evidence("SEV-WORKER-CONFIG", "repository_file", "apps/document-worker/src/config.ts", "Fail-closed worker configuration and safe configuration description."),
   evidence("SEV-DEPLOY-WORKER", "configuration", ".github/workflows/deploy-worker.yml", "OIDC-based worker build and deployment workflow."),
   evidence("SEV-EVAL-EXTRACTION", "configuration", ".github/workflows/measure-extraction.yml", "Evaluation workflow using a dedicated OIDC role and model-provider credentials retrieved at run time."),
@@ -124,7 +132,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Role-free debt-view request builder after stage 1C."),
   evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Role-free origination request builder after stage 1C."),
   evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Role-free capital planning request builder after stage 1C."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-2.json", "Codex read-only observation: the inspected deployment log reports unavailable AWS boot diagnostics and local AWS credentials are absent; effective IAM permissions remain unknown."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-2.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
 ];
 
 const environments = [
@@ -212,19 +220,19 @@ const systems = [
     systemId: "SYS-WEB", title: "Offroad web application", kind: "application", purpose: "Authenticated workspace, project interaction and document intake.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "personal_data", "customer_confidential", "restricted_financial"],
     vendorRefs: ["VEN-VERCEL", "VEN-SUPABASE", "VEN-SENTRY", "VEN-POSTHOG", "VEN-GOOGLE-FONTS"], owner: owner("Web platform owner", "Application security owner"),
-    evidenceRefs: ["SEV-AGENTS-SCOPE", "SEV-WEB-DEPENDENCIES", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-TELEMETRY-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-APP-01", "TRUST-APP-02", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-WORKSPACE-IDENTITY", "SEV-WORKSPACE-CONTEXT-REGRESSION", "SEV-AGENTS-SCOPE", "SEV-WEB-DEPENDENCIES", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-TELEMETRY-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-APP-01", "TRUST-APP-02", "TRUST-DATA-01"],
   },
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
-    systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis and artifact generation.",
+    systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
@@ -262,7 +270,7 @@ const dataStores = [
   {
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "Organization and project policies plus private database commands; live completeness is unverified.",
-    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
+    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
     gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
@@ -274,7 +282,7 @@ const dataStores = [
   {
     storeId: "STORE-CLOUDWATCH", title: "Worker operational logs", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["internal_operational", "security_evidence"],
     tenancyBoundary: "Logs are intended to exclude customer content, but direct error-message paths are not comprehensively governed or tested.", retentionState: "unknown", backupState: "unknown",
-    owner: owner("Security operations owner", "Platform engineering owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-WORKER-RUNTIME"], gapRefs: ["SG-LIVE-CONFIG", "SG-DATA-LIFECYCLE", "SG-LOGGING-CONTENT-SAFETY"], controlIds: ["TRUST-OPS-01", "TRUST-DATA-02", "TRUST-CLOUD-01"],
+    owner: owner("Security operations owner", "Platform engineering owner"), evidenceRefs: ["SEV-OUTBOX-MONITORING", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME"], gapRefs: ["SG-LIVE-CONFIG", "SG-DATA-LIFECYCLE", "SG-LOGGING-CONTENT-SAFETY"], controlIds: ["TRUST-OPS-01", "TRUST-DATA-02", "TRUST-CLOUD-01"],
   },
   {
     storeId: "STORE-TELEMETRY", title: "External application telemetry", systemRef: "SYS-OBSERVABILITY", environmentRefs: ["ENV-EXTERNAL"], dataClassIds: ["internal_operational", "personal_data", "security_evidence"],
@@ -333,9 +341,9 @@ const dataFlows = [
   },
   {
     flowId: "FLOW-DATA-WORKER", title: "Supabase job and document access to worker", sourceRef: "SYS-SUPABASE", destinationRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"],
-    dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "security_evidence"], purpose: "Claim one job and deliver capability-scoped records and short-lived document access.",
-    authorizationBoundary: "Worker credential claims; per-job capability authorizes subsequent commands.", direction: "internal", owner: owner("Data security owner", "Document platform owner"),
-    evidenceRefs: ["SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "security_evidence"], purpose: "Claim jobs and content-free authority events under separate bounded leases; deliver capability-scoped records and short-lived document access.",
+    authorizationBoundary: "Worker credential and active authenticated account; job and outbox commands require their own lease capabilities and current authority. Snapshots remain private.", direction: "internal", owner: owner("Data security owner", "Document platform owner"),
+    evidenceRefs: ["SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-REVOCATION", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     flowId: "FLOW-WORKER-ANTHROPIC", title: "Worker to Anthropic", sourceRef: "SYS-WORKER", destinationRef: "VEN-ANTHROPIC", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"],
@@ -490,7 +498,7 @@ const identities = [
   {
     identityId: "ID-WORKER-ACCOUNT", title: "Dedicated worker account", kind: "service_role", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"], privilege: "workload_scoped",
     authentication: "Dedicated account plus worker claim credential and per-job capability.", lifecycleState: "partial", owner: owner("Platform engineering owner", "Data security owner"),
-    evidenceRefs: ["SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-OUTBOX-CONTRACT", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     identityId: "ID-GITHUB-OIDC", title: "GitHub deployment OIDC principal", kind: "oidc_principal", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-PRODUCTION"], privilege: "workload_scoped",
@@ -728,7 +736,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.16-wave-2-v1",
+  inventoryVersion: "2026.09.16-wave-2-delivery-v2",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-2", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
