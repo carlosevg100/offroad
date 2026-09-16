@@ -236,8 +236,11 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-DATA-PROTECTION", domain: "data",
     criterion: "Tenant isolation, storage, lifecycle, recovery and content-safe logging are separately covered and never inferred from one another.",
     evidenceRequirements: [
-      {evidenceRef: "SEV-PROJECT-ACCESS-SQL", criterion: "The pinned project helper admits active organization members and requires the stage 1B project access boundary."},
-      {evidenceRef: "SEV-INTAKE-ACCESS-SQL", criterion: "The pinned intake helper admits organization membership; this static definition does not prove a live exploit."},
+      {evidenceRef: "SEV-ACCESS-REMEDIATION", criterion: "Stage 1B explicit resource access and production transition."},
+      {evidenceRef: "SEV-ACCESS-REGRESSION", criterion: "Resource revocation reaches claims and job publication."},
+
+      {evidenceRef: "SEV-PROJECT-ACCESS-SQL", criterion: "Historical project authorization before the stage 1B replacement; retained solely as before-state evidence."},
+      {evidenceRef: "SEV-INTAKE-ACCESS-SQL", criterion: "Historical intake authorization before stage 1B; current enforcement is documented and tested separately."},
       {evidenceRef: "SEV-SUPABASE-CONFIG", criterion: "Local platform configuration identifies declared Auth, database and storage behavior."},
       {evidenceRef: "SEV-RLS-TEST", criterion: "The tenant non-interference suite is present at the pinned repository commit."},
       {evidenceRef: "SEV-WEB-UPLOAD", criterion: "The browser upload implementation identifies the private object-storage path."},
@@ -245,7 +248,6 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-WORKER-CONFIG", criterion: "Worker configuration identifies fail-closed parsing and declared provider switches."},
     ],
     requiredGaps: [
-      {gapRef: "SG-PROJECT-MEMBERSHIP-READ", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-DATA-LIFECYCLE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-BACKUP-RESTORE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-LOGGING-CONTENT-SAFETY", severity: "high", requiredStatus: "open"},
@@ -255,13 +257,15 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-IDENTITY-ACCESS", domain: "identity",
     criterion: "Human, workload and deployment identities are inventoried without inferring effective permissions from configuration or operator recollection.",
     evidenceRequirements: [
-      {evidenceRef: "SEV-ORG-AUTHORITY-SQL", criterion: "The pinned SQL retains creator-based authority; active membership and revocation must be proven by stage 1A."},
+      {evidenceRef: "SEV-CREATOR-REMEDIATION", criterion: "Stage 1A authority and installed database proof."},
+      {evidenceRef: "SEV-CREATOR-REGRESSION", criterion: "Creator revocation and denied self-reactivation."},
+
+      {evidenceRef: "SEV-ORG-AUTHORITY-SQL", criterion: "Historical creator authority before stage 1A; current revocation is documented and tested separately."},
       {evidenceRef: "SEV-DEPLOY-BOOT-PROOF", criterion: "The diagnostic helper treats missing AWS reads as unavailable evidence, not a successful diagnostic proof."},
       {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "OIDC and named deployment roles are visible in the pinned workflow."},
       {evidenceRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", criterion: "The unverified operator observation records only the need for effective-permission evidence."},
     ],
     requiredGaps: [
-      {gapRef: "SG-CREATOR-RESIDUAL-AUTHORITY", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-PRIVILEGED-ACCESS", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENDPOINTS", severity: "high", requiredStatus: "open"},
       {gapRef: "SG-DEPLOY-DIAGNOSTICS", severity: "high", requiredStatus: "open"},
@@ -283,9 +287,12 @@ const canonicalSecurityCoverageCatalogue = [
     claimId: "SCL-AI-PROVIDER-BOUNDARY", domain: "ai",
     criterion: "Model routing, provider data policy and the privileged Codex executor are distinct boundaries with explicit credential and prompt-injection risk.",
     evidenceRequirements: [
-      {evidenceRef: "SEV-DEBT-VIEW-PROMPT", criterion: "The debt-view prompt retains professional-context calibration pending stage 1C."},
-      {evidenceRef: "SEV-ORIGINATION-PROMPT", criterion: "The origination prompt retains professional-context calibration pending stage 1C."},
-      {evidenceRef: "SEV-CAPITAL-PLANNING-PROMPT", criterion: "The planning prompt retains professional-context calibration pending stage 1C."},
+      {evidenceRef: "SEV-PROFILE-REMEDIATION", criterion: "Stage 1C role-free context and installed database proof."},
+      {evidenceRef: "SEV-PROFILE-REGRESSION", criterion: "Role-free loaders and denied internal entry points."},
+
+      {evidenceRef: "SEV-DEBT-VIEW-PROMPT", criterion: "The pinned debt-view prompt no longer consumes professional roles."},
+      {evidenceRef: "SEV-ORIGINATION-PROMPT", criterion: "The pinned origination prompt no longer consumes professional roles."},
+      {evidenceRef: "SEV-CAPITAL-PLANNING-PROMPT", criterion: "The pinned planning prompt no longer consumes professional roles."},
       {evidenceRef: "SEV-MODEL-DATA-POLICY", criterion: "The provider data-policy contract is present at the pinned commit."},
       {evidenceRef: "SEV-MODEL-DATA-POLICY-TEST", criterion: "Provider policy regressions are represented by pinned tests."},
       {evidenceRef: "SEV-MODEL-POLICY", criterion: "The model routing policy identifies allowlists, fallback and workload limits."},
@@ -293,7 +300,6 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-EVAL-CODEX", criterion: "The Codex workflow identifies its agentic workspace, credential and egress boundary."},
     ],
     requiredGaps: [
-      {gapRef: "SG-PROFILE-ANALYTICAL-DEPTH", severity: "high", requiredStatus: "open"},
       {gapRef: "SG-PROVIDER-ASSURANCE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-CODEX-CI-AGENT-BOUNDARY", severity: "critical", requiredStatus: "open"},
     ],
@@ -809,11 +815,11 @@ const trustedExternalEvidenceAuthorities = {
     authorityRef: "AUTH-OPERATOR-OBSERVATION-ONLY",
     kind: "operator_observation",
     freshness: "wave_bound",
-    waveId: "wave-1",
-    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-2026-09-14.json",
-    capturedAt: "2026-09-14T21:41:19.418739Z",
+    waveId: "wave-2",
+    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-2.json",
+    capturedAt: "2026-09-16T03:00:58.181Z",
     validThrough: null,
-    contentFingerprint: "sha256:2ca8cf4f4f6e243d06ec0fabcb7cfc4505d331a4fc92e9e145f106e755d9e715",
+    contentFingerprint: "sha256:0174ab7213e91fc0bb712e6b1d7ee8a09ba37b21477ed2cd5c16c26a3a63e89f",
     source: "Codex read-only repository and GitHub API observation",
     collector: {name: "codex-read-only-github-observation", version: "1", principalClass: "repository automation using the existing local GitHub session"},
     origin: {

@@ -1,3 +1,7 @@
+## Wave 2: governed security inventory renewal
+
+The founder approved advancement after wave 1. The next dependency frontier covers stages 2 and 4; dependent stages require the next wave OK. The security snapshot and canonical evidence contracts now use merged baseline `9620406b8d3b9624a68bf611b40791e289f90a90`. Three remediated findings are replaced by required regression evidence; all other 18 gaps remain open. The final wave-one review and its initial immutable snapshot are archived, and fresh read-only production authority checks plus both security advisors passed. See `docs/security/INVENTORY_WAVE_2_REVIEW.md`. This prerequisite changes governance only; it adds no schema or product capability. Final publication receipts follow the actual CI and deployments.
+
 ## Stage 1C: role-free runtime, entry and database context
 
 Application PR 619 merged as `db624e41866696d69ad40206077fa865fec562fd`, with Quality 35040740501 and Security 35040740490 green. Vercel deployment 6471418589 and worker deployment 35041538760 published that commit before the database change; ECS revision 328 was stable at the expected nonzero capacity. The runtime and entry flow no longer request or consume a professional profile. Objective, evidence and method determine rigor and scope; institution capabilities describe execution means only.
