@@ -228,6 +228,7 @@ const canonicalSecurityCoverageCatalogue = [
     ],
     requiredGaps: [
       {gapRef: "SG-LIVE-CONFIG", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-SOURCE-VERIFICATION-AUTHORITY", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENV-SEPARATION", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-SCHEMA-BEFORE-CODE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENV-DATA-MAPPING", severity: "critical", requiredStatus: "open"},
@@ -838,11 +839,11 @@ const trustedExternalEvidenceAuthorities = {
     authorityRef: "AUTH-OPERATOR-OBSERVATION-ONLY",
     kind: "operator_observation",
     freshness: "wave_bound",
-    waveId: "wave-4",
-    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-4.json",
-    capturedAt: "2026-09-16T19:36:46.285Z",
+    waveId: "wave-5",
+    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-5.json",
+    capturedAt: "2026-09-16T20:23:25.103Z",
     validThrough: null,
-    contentFingerprint: "sha256:2407d7ee1690d314e914ebb623a1a1be1da587a78d2da445c3a3b59f53a0416d",
+    contentFingerprint: "sha256:414a023bd188f8a55284c5095f30fa95205e099c2a3a0003d26b6def29bf34cc",
     source: "Codex read-only GitHub and AWS API delivery observation",
     collector: {"name": "codex-read-only-delivery-observation", "version": "2", "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"},
     origin: {

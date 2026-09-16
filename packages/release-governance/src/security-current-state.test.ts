@@ -30,13 +30,13 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(currentSecurityInventory.baseline).toMatchObject({
-      waveId: "wave-4", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+      waveId: "wave-5", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
     });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.assuranceReady).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 28, identities: 12, vendors: 19, openGaps: 18, coverageClaims: 8});
+    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 28, identities: 12, vendors: 19, openGaps: 19, coverageClaims: 8});
     expect(decision.warnings).toContainEqual({code: "operator_observation_not_independently_verified", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
   });
 
@@ -86,12 +86,12 @@ describe("security current-state inventory", () => {
 
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
-    archived.baseline.waveId = "wave-3";
+    archived.baseline.waveId = "wave-4";
     archived.baseline.waveStatus = "closed";
     const decision = evaluateSecurityCurrentStateInventory(archived, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-3"});
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-3"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-4"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-4"});
   });
 
   it("resolves every repository and local evidence byte before asserting current-state truth", async () => {
@@ -201,7 +201,7 @@ describe("security current-state inventory", () => {
     expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-CODEX-OPENAI")?.dataClassIds).toContain("credential_secret");
   });
 
-  it("fails closed if canonical claims or 17 of 18 required gaps are removed and references are reused", () => {
+  it("fails closed if canonical claims or 18 of 19 required gaps are removed and references are reused", () => {
     const inventory = copyInventory();
     const retainedGap = inventory.gaps.find((gap) => gap.gapId === "SG-ENV-DATA-MAPPING")!;
     const allEntityIds = [
@@ -406,7 +406,7 @@ describe("security current-state inventory", () => {
     })).toThrow();
 
     const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, trusted);
-    expect(rendered).toContain("| Lacunas abertas | 18 |");
+    expect(rendered).toContain("| Lacunas abertas | 19 |");
     expect(rendered).toContain("| Assurance ready | não |");
     expect(countsRead).toBe(0);
     expect(assuranceRead).toBe(0);

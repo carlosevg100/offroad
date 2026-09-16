@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "aee07fc000d27bdaf08c0b123a66e271c3d7f2d3";
-const capturedAt = "2026-09-16T19:36:46.285Z";
+const baselineCommit = "0abe864e7187e6435b0e464fe4ed07b2515a0402";
+const capturedAt = "2026-09-16T20:23:25.103Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -150,7 +150,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Role-free debt-view request builder after stage 1C."),
   evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Role-free origination request builder after stage 1C."),
   evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Role-free capital planning request builder after stage 1C."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-4.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-5.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
 ];
 
 const environments = [
@@ -244,7 +244,7 @@ const systems = [
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
-    gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
+    gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
@@ -289,7 +289,7 @@ const dataStores = [
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "A common Postgres evaluator intersects explicit grants, flat groups, deny rules, barriers and purposes. Installed definitions and negative staging contracts are verified for stage 3; universal live completeness remains unverified.",
     retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
-    gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
+    gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
     storeId: "STORE-OBJECTS", title: "Supabase private object storage", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
@@ -350,7 +350,7 @@ const dataFlows = [
     flowId: "FLOW-WEB-DATA", title: "Web application to Supabase", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and signed storage operations.",
     authorizationBoundary: "Publishable client plus authenticated session; the common database evaluator is authoritative. Export purpose is checked by the server download path and restrictive Storage policy; administrative authority does not imply content access.", direction: "internal", owner: owner("Application security owner", "Data security owner"),
-    evidenceRefs: ["SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-SOURCE-VERIFICATION-AUTHORITY", "SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
   },
   {
     flowId: "FLOW-UPLOAD", title: "Browser document upload", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["customer_confidential", "restricted_financial"],
@@ -661,6 +661,12 @@ const vendors: VendorInput[] = [
 
 const gaps = [
   {
+    gapId: "SG-SOURCE-VERIFICATION-AUTHORITY", title: "Legacy verification RPC permits unauthorized hash and verification writes", severity: "critical", owner: owner("Data platform owner", "Product security owner"),
+    targetRefs: ["SYS-SUPABASE", "STORE-POSTGRES", "FLOW-WEB-DATA"], evidenceRefs: ["SEV-WEB-UPLOAD", "SEV-RLS-TEST"], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    nextAction: "Stage 6, before immutable-source backfill: deny ungranted member, revoked subject and forged verification; bind verification to exact stored bytes and trusted execution. Reproduced with synthetic staging data and rollback on 2026-09-16; no production mutation. Add the negative SQL regression and verify deployed definition before closing.",
+  },
+
+  {
     gapId: "SG-LIVE-CONFIG", title: "Live configuration snapshot missing", severity: "critical", owner: owner("Cloud security owner", "Security governance owner"),
     targetRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-CI", "SYS-WEB", "SYS-SUPABASE", "SYS-WORKER", "SYS-GITHUB", "SYS-OBSERVABILITY", "SYS-AUTH-EMAIL", "STORE-POSTGRES", "STORE-OBJECTS", "STORE-CLOUDWATCH", "STORE-TELEMETRY", "STORE-AWS-SECRETS", "STORE-ECR", "FLOW-WEB-DATA", "FLOW-UPLOAD", "FLOW-DATA-WORKER", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI", "FLOW-WORKER-RESEARCH", "FLOW-WORKER-FIRECRAWL", "FLOW-WEB-TELEMETRY", "FLOW-AUTH-EMAIL", "FLOW-GITHUB-AWS", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "FLOW-GITHUB-VERCEL", "ID-ANON-ROLE", "ID-AUTH-ROLE", "ID-WORKER-ACCOUNT", "ID-GITHUB-OIDC", "ID-GITHUB-EVALS-OIDC", "ID-AWS-WORKER-ROLES", "ID-PROVIDER-CREDENTIALS", "ID-VERCEL-SOURCE-INTEGRATION", "VEN-AWS", "VEN-VERCEL", "VEN-SMTP-UNKNOWN"],
     evidenceRefs: ["SEV-SECURITY-PLAN"], controlIds: ["TRUST-CLOUD-01", "TRUST-CLOUD-02", "TRUST-OPS-01"], nextAction: "Collect read-only, dated configuration snapshots from each material platform and attach time-bound evidence.",
@@ -754,9 +760,9 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.16-wave-4-delivered-v1",
+  inventoryVersion: "2026.09.16-wave-5-opening-v1",
   generatedAt: capturedAt,
-  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-4", waveStatus: "open", materialChangeState: "reviewed"},
+  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-5", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
   scopeRelationship: {
     semantics: "environment_and_data_class_refs_are_independent_unions",

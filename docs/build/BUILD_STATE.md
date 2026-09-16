@@ -1,3 +1,7 @@
+## Onda 5 autorizada: fonte e versão imutável
+
+O fundador autorizou a etapa 6 e determinou tratar riscos no incremento correspondente. Baseline entregue `0abe864e7187e6435b0e464fe4ed07b2515a0402`; inventário renovado com 70 evidências, sem encerrar as 18 lacunas gerais. A inspeção de fonte reproduziu também `SG-SOURCE-VERIFICATION-AUTHORITY`: membro sem grant altera hash e confirmação por RPC; total de 19 lacunas, correção obrigatória na etapa 6 antes do backfill. ECS revisão 342, imagem exata, polling sem backlog e quatro alarmes OK conferidos por leitura em 16/09/2026; ações de notificação continuam ausentes. O registro `docs/build/arcabouco/RISCOS-POR-INCREMENTO.md` fixa tratamento e prova de fechamento por etapa. Fontes/versões ainda não implantadas; etapas 7 e seguintes não iniciadas.
+
 ## Etapa 5: conciliação da entrega em 16/09/2026
 
 A PR 632 mesclou entidade/dossiê no baseline `aee07fc0`, com qualidade, banco, 31 E2Es, scans e preview aprovados. Schema nos dois ambientes, 68 contratos SQL instalados e 31 funções em paridade; produção preserva 50 recursos/dossiês sem inferência de entidades. Vercel Production `6488774421` e ECS revisão 341 executam esse commit; polling e alarmes conferidos por leitura, sem fixtures em produção. O inventário final vincula 70 evidências e conserva as 18 lacunas gerais. Revisão em `docs/security/history/wave-4-final-review.md`; o completion externo registra também os gates e runtime do commit desta conciliação. Memória privada entre dossiês permanece para 17/18; etapa 6 aguarda OK.

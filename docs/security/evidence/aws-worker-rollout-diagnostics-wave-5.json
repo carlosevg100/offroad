@@ -1,0 +1,120 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-09-16T20:23:25.103Z",
+  "validThrough": null,
+  "source": "Codex read-only GitHub and AWS API delivery observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-delivery-observation",
+    "version": "2",
+    "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"
+  },
+  "scope": "Wave 5 opening, stage 6 logical sources and immutable versions",
+  "observation": "Read-only opening observation: exact deployed main commit, current task health and alarm states. No independent IAM assurance; alarm notification actions remain unconfigured.",
+  "verificationState": "unverified_operator_observation",
+  "collection": {
+    "baselineCommit": "0abe864e7187e6435b0e464fe4ed07b2515a0402",
+    "githubReadOnly": {
+      "runId": 35143274736,
+      "headSha": "0abe864e7187e6435b0e464fe4ed07b2515a0402",
+      "conclusion": "success"
+    },
+    "runtimeReadOnly": {
+      "captured_at": "2026-09-16T20:22:43.346181+00:00",
+      "commit": "0abe864e7187e6435b0e464fe4ed07b2515a0402",
+      "task_revision": 342,
+      "desired": 1,
+      "running": 1,
+      "rollout": "COMPLETED",
+      "images": [
+        "document-worker:0abe864e7187"
+      ],
+      "health_event_count": 146,
+      "sample": [
+        {
+          "at": "2026-09-16T20:22:29.512Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T20:22:31.540Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T20:22:33.570Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T20:22:35.601Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T20:22:37.629Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        }
+      ],
+      "alarms": [
+        {
+          "name": "offroad-outbox-backlog",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:34.378000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-blocked",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:29.632000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-errors",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:19:34.419000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-heartbeat-missing",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:09.565000-03:00",
+          "actionsConfigured": false
+        }
+      ],
+      "read_only": true,
+      "synthetic_production_data": false
+    },
+    "oidcDeniedRead": {
+      "runId": 35081046003,
+      "action": "cloudwatch:DescribeAlarms",
+      "result": "AccessDenied"
+    },
+    "productionFixtures": false
+  },
+  "actionsRequiringEffectivePermissionVerification": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents"
+  ],
+  "requiredNextEvidence": "Role policy and policy simulation receipts for each named action and representative in-scope and out-of-scope resources; live diagnostic reads when available.",
+  "redaction": "No credentials, account identifiers, role identifiers, task identifiers, customer payloads, or raw worker logs are retained. GitHub run and commit identifiers refer only to the repository delivery history.",
+  "limitations": [
+    "Point-in-time operator observation, not independent assurance.",
+    "Alarm actions are not configured; alarm evaluation and state are observed in CloudWatch.",
+    "OIDC diagnostic permissions remain separate from the authorized operator session."
+  ],
+  "freshness": "wave_bound",
+  "waveId": "wave-5"
+}
