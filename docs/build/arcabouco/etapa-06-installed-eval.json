@@ -1,0 +1,358 @@
+{
+  "environment": "staging",
+  "projectId": "gjkkjtbfnssdsbmlhmwk",
+  "stamps": [
+    "20260916211117",
+    "20260916211402"
+  ],
+  "tests": [
+    {
+      "name": "advisor_semantic_dag_activation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:27.278Z"
+    },
+    {
+      "name": "agentic_dcm_work_system.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:30.166Z"
+    },
+    {
+      "name": "client_presentation_templates.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:32.302Z"
+    },
+    {
+      "name": "company_debt_view_vertical.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:37.452Z"
+    },
+    {
+      "name": "confirmed_receivables_evidence_scope.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:39.981Z"
+    },
+    {
+      "name": "confirmed_receivables_support_sheets.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:42.646Z"
+    },
+    {
+      "name": "conversational_advisor_workspace.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:44.757Z"
+    },
+    {
+      "name": "creator_authority_revocation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:47.169Z"
+    },
+    {
+      "name": "documentary_plan_persistence.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:49.761Z"
+    },
+    {
+      "name": "domain_event_outbox.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:51.701Z"
+    },
+    {
+      "name": "domain_event_outbox_revocation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:53.831Z"
+    },
+    {
+      "name": "entity_dossier_isolation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:56.257Z"
+    },
+    {
+      "name": "execution_brief_foundation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:18:58.552Z"
+    },
+    {
+      "name": "execution_brief_proposal_bridge.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:01.152Z"
+    },
+    {
+      "name": "execution_proposal_revision.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:04.917Z"
+    },
+    {
+      "name": "explicit_documentary_work_revision.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:08.586Z"
+    },
+    {
+      "name": "explicit_execution_brief_approval.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:11.479Z"
+    },
+    {
+      "name": "explicit_legacy_workspace_context.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:13.805Z"
+    },
+    {
+      "name": "explicit_workspace_context.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:16.067Z"
+    },
+    {
+      "name": "financier_analytical_workspace.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:18.608Z"
+    },
+    {
+      "name": "gold_case_bindings.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:20.785Z"
+    },
+    {
+      "name": "governed_capital_material_storage.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:24.111Z"
+    },
+    {
+      "name": "governed_sector_context.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:26.865Z"
+    },
+    {
+      "name": "institutional_assumption_answers.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:29.543Z"
+    },
+    {
+      "name": "institutional_private_rls.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:31.627Z"
+    },
+    {
+      "name": "institutional_revision_proposals.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:34.092Z"
+    },
+    {
+      "name": "institutional_setup_lifecycle.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:37.059Z"
+    },
+    {
+      "name": "integration_preview_mode.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:41.565Z"
+    },
+    {
+      "name": "intent_envelopes_shadow.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:43.630Z"
+    },
+    {
+      "name": "intent_objective_routing_metrics.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:45.668Z"
+    },
+    {
+      "name": "job_failure_causes.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:47.761Z"
+    },
+    {
+      "name": "job_failure_contract.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:49.876Z"
+    },
+    {
+      "name": "legacy_access_revocation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:52.596Z"
+    },
+    {
+      "name": "legacy_resource_access.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:54.735Z"
+    },
+    {
+      "name": "no_implicit_workspace_capabilities.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:56.725Z"
+    },
+    {
+      "name": "objective_plan_preflight.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:19:59.045Z"
+    },
+    {
+      "name": "operating_controls.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:02.999Z"
+    },
+    {
+      "name": "organization_methodology.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:06.784Z"
+    },
+    {
+      "name": "organization_profile_authority.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:09.059Z"
+    },
+    {
+      "name": "origination_thesis_vertical.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:12.955Z"
+    },
+    {
+      "name": "professional_capability_context.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:14.784Z"
+    },
+    {
+      "name": "project_canonical_revisions.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:17.007Z"
+    },
+    {
+      "name": "project_company_scope.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:19.751Z"
+    },
+    {
+      "name": "project_review_roles.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:23.127Z"
+    },
+    {
+      "name": "provider_case_fit_persistence.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:25.683Z"
+    },
+    {
+      "name": "provider_research_persistence.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:33.424Z"
+    },
+    {
+      "name": "provider_research_public_catalog_v2.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:37.344Z"
+    },
+    {
+      "name": "public_research_public_cache.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:39.868Z"
+    },
+    {
+      "name": "read_grant_cannot_mutate_legacy.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:41.816Z"
+    },
+    {
+      "name": "receivables_analytical_release.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:46.528Z"
+    },
+    {
+      "name": "receivables_document_adapter_persistence.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:49.124Z"
+    },
+    {
+      "name": "receivables_information_request_bindings.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:51.676Z"
+    },
+    {
+      "name": "receivables_information_request_dataset_revision.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:54.458Z"
+    },
+    {
+      "name": "receivables_method_input_assembly_store.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:20:59.293Z"
+    },
+    {
+      "name": "receivables_method_supplement_store.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:02.293Z"
+    },
+    {
+      "name": "resource_policy_barriers.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:04.696Z"
+    },
+    {
+      "name": "resource_policy_delegation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:06.978Z"
+    },
+    {
+      "name": "resource_policy_event_once.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:08.976Z"
+    },
+    {
+      "name": "resource_policy_isolation.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:11.158Z"
+    },
+    {
+      "name": "resource_policy_performance.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:15.451Z"
+    },
+    {
+      "name": "rls_non_interference.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:31.705Z"
+    },
+    {
+      "name": "role_free_reasoning_context.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:35.191Z"
+    },
+    {
+      "name": "source_version_identity.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:37.519Z"
+    },
+    {
+      "name": "terminal_job_authorization_metadata.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:39.755Z"
+    },
+    {
+      "name": "verified_provider_mandates.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:41.974Z"
+    },
+    {
+      "name": "worker_runtime_schema_contract.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:43.838Z"
+    },
+    {
+      "name": "workspace_member_administration.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:46.058Z"
+    },
+    {
+      "name": "workspace_project_folders.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:47.989Z"
+    },
+    {
+      "name": "workspace_replay_authority.sql",
+      "result": "PASS",
+      "checkedAt": "2026-09-16T21:21:50.240Z"
+    }
+  ],
+  "total": 69,
+  "passed": 69,
+  "transaction": "synthetic fixtures with rollback; no production data"
+}

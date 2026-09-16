@@ -1,3 +1,4 @@
+import {sourceVersionDownloadSchema} from "@offroad/domain-contracts";
 import {z} from "zod";
 import {createClient} from "@/lib/supabase/server";
 
@@ -11,13 +12,14 @@ export async function GET(_request: Request, context: {params: Promise<{locale: 
   if (!supabase) return new Response(null, {status: 503, headers});
   const identity = await supabase.auth.getClaims();
   if (identity.error || !identity.data?.claims.sub) return new Response(null, {status: 401, headers});
-  const document = await supabase.from("source_documents").select("id, bucket_id, object_path, original_name").eq("id", documentId).maybeSingle();
-  if (document.error || !document.data) return new Response(null, {status: 404, headers});
+  const authorization = await supabase.rpc("authorize_source_version_download_v1", {p_version_id: documentId});
+  const document = sourceVersionDownloadSchema.safeParse(authorization.data);
+  if (authorization.error || !document.success) return new Response(null, {status: 404, headers});
   const download = await supabase.storage.from(document.data.bucket_id).download(document.data.object_path);
   if (download.error || !download.data) return new Response(null, {status: 404, headers});
   // A revocation during the storage request must not release the downloaded buffer.
-  const current = await supabase.from("source_documents").select("id").eq("id", documentId).maybeSingle();
-  if (current.error || !current.data) return new Response(null, {status: 404, headers});
+  const current = await supabase.rpc("authorize_source_version_download_v1", {p_version_id: documentId});
+  if (current.error || !sourceVersionDownloadSchema.safeParse(current.data).success) return new Response(null, {status: 404, headers});
   const name = encodeURIComponent(document.data.original_name).replace(/['()*]/g, (value) => `%${value.charCodeAt(0).toString(16)}`);
   return new Response(await download.data.arrayBuffer(), {headers: {
     ...headers,

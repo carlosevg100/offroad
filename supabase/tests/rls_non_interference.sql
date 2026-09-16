@@ -1062,7 +1062,7 @@ begin
   result := public.worker_record_document_result(
     job_id,
     capability,
-    '{"verdict":"clean","scanner":"clamav-test"}'::jsonb,
+    jsonb_build_object('verdict','clean','scanner','clamav-test','organizationId','20000000-0000-4000-8000-000000000001','sourceDocumentId','50000000-0000-4000-8000-000000000003','operationId',job_id,'documentVersion',1,'expectedSha256',repeat('d',64),'observedSha256',repeat('d',64),'expectedByteSize',4096,'observedByteSize',4096,'receiptId','sha256:'||repeat('f',64)),
     jsonb_build_object(
       'document_kind', 'audited_financial_statements',
       'information_class', 'audited',
@@ -1902,7 +1902,7 @@ begin
   perform public.worker_record_document_result(
     job_id,
     capability,
-    '{"verdict":"clean"}'::jsonb,
+    jsonb_build_object('verdict','clean','scanner','clamav-test','organizationId','20000000-0000-4000-8000-000000000001','sourceDocumentId','50000000-0000-4000-8000-000000000003','operationId',job_id,'documentVersion',1,'expectedSha256',repeat('d',64),'observedSha256',repeat('d',64),'expectedByteSize',4096,'observedByteSize',4096,'receiptId','sha256:'||repeat('f',64)),
     jsonb_build_object(
       'document_kind', 'other',
       'information_class', 'company_document',
@@ -5637,6 +5637,16 @@ do $$ declare relation text; begin
  end loop;
 end $$;
 
+-- Stage 6 surfaces are closed to direct mutation; old verification is no longer callable.
+reset role;
+do $$ declare table_name text; begin
+ foreach table_name in array array['sources','source_versions','source_bindings'] loop
+  if has_table_privilege('authenticated','public.'||table_name,'INSERT,UPDATE,DELETE') then raise exception 'source direct mutation grant: %',table_name; end if;
+  if not (select relrowsecurity and relforcerowsecurity from pg_class where oid=('public.'||table_name)::regclass) then raise exception 'source RLS missing: %',table_name; end if;
+ end loop;
+ if has_function_privilege('authenticated','public.record_document_verification(uuid,uuid,text,text)','EXECUTE')
+ or has_function_privilege('authenticated','private.record_document_verification(uuid,uuid,text,text)','EXECUTE') then raise exception 'legacy verification entry remains open'; end if;
+end $$;
 rollback;
 
 do $$

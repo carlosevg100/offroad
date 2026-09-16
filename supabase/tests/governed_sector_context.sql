@@ -75,9 +75,10 @@ begin
   if original_hash=private.execution_approval_input_fingerprint('20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901')
     or private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'sector change retained exact approval'; end if;
   update public.intake_field_candidates set normalized_value='"energy"' where id='51000000-0000-4000-8000-000000000901';
-  update public.source_documents set document_version=2 where id='50000000-0000-4000-8000-000000000901';
+  insert into public.source_documents(organization_id,intake_session_id,opportunity_id,object_path,original_name,mime_type,byte_size,sha256,document_version,logical_source_id,created_by,processing_status) select organization_id,intake_session_id,opportunity_id,object_path||'.next',original_name,mime_type,byte_size,repeat('e',64),2,logical_source_id,created_by,'ready' from public.source_documents where id='50000000-0000-4000-8000-000000000901';
+  delete from public.source_documents where id='50000000-0000-4000-8000-000000000901';
   projection:=private.governed_sector_context_inputs('20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901');
-  if projection#>>'{sources,0,document_version}'<>'2' or projection#>>'{candidates,0,extraction_document_version}'<>'1'
+  if jsonb_array_length(projection->'sources')<>0 or projection#>>'{candidates,0,extraction_document_version}'<>'1'
     or private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'source replacement lost staleness evidence'; end if;
   update public.processing_jobs set payload='{}' where id='81000000-0000-4000-8000-000000000901';
   projection:=private.governed_sector_context_inputs('20000000-0000-4000-8000-000000000901','40000000-0000-4000-8000-000000000901');

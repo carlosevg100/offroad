@@ -18,6 +18,8 @@ import {jobFailureRecordSchema} from "./job-failure";
  */
 export const jobPayloadSchema = z.object({
   source_document_id: z.uuid(),
+  source_version_id: z.uuid().optional(),
+  source_id: z.uuid().optional(),
   document_version: z.number().int().positive().default(1),
   original_name: z.string().min(1),
   mime_type: z.string().min(1).optional(),
@@ -32,6 +34,11 @@ export const jobPayloadSchema = z.object({
     max_cost_usd: z.number().positive(),
     max_calls: z.number().int().positive(),
   }).optional(),
+}).superRefine((value, context) => {
+  // Historical queued payloads omit the alias; their document ID is already the version ID.
+  if (value.source_version_id && value.source_version_id !== value.source_document_id) {
+    context.addIssue({code: "custom", path: ["source_version_id"], message: "Job byte version differs from its source document"});
+  }
 });
 export type JobPayload = z.infer<typeof jobPayloadSchema>;
 

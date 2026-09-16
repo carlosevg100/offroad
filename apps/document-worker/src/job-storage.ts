@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import type {DocumentJob} from "./queue";
@@ -31,9 +32,17 @@ export function createJobStorageClient(supabase: SupabaseClient) {
     async uploadLayer(job: DocumentJob, body: Uint8Array): Promise<void> {
       const scope = await authorize(job);
       const result = await supabase.storage.from(scope.layer_bucket).upload(scope.layer_path, Buffer.from(body), {
-        contentType: "application/json", upsert: true,
+        contentType: "application/json", upsert: false,
       });
-      if (result.error) throw new Error("document layer storage write denied");
+      if (result.error) {
+        // A retry may find an already written layer. Identical bytes are reusable; an
+        // existing object is never overwritten, even while this job still holds its lease.
+        const existing = await supabase.storage.from(scope.layer_bucket).download(scope.layer_path);
+        if (existing.error || !existing.data) throw new Error("document layer storage write denied");
+        const actual = createHash("sha256").update(new Uint8Array(await existing.data.arrayBuffer())).digest("hex");
+        const expected = createHash("sha256").update(body).digest("hex");
+        if (actual !== expected) throw new Error("document layer immutable bytes conflict");
+      }
       await authorize(job);
     },
   };

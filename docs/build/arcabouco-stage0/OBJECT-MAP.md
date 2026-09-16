@@ -2080,3 +2080,49 @@ Migrações adicionais:
 - `trigger:public.entity_identifiers.entity_identifiers_audit`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
 - `trigger:public.entity_identifiers.entity_identifiers_updated`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
 - `trigger:public.entity_identifiers.identifier_scope`: preservar, etapa 5; Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.
+
+## Atualização da etapa 6, 16/09/2026
+
+41 superfícies novas de fonte, versão, vínculo, prova e Storage conferidas nos dois ambientes. 1622 objetos em produção e 1683 em staging; 323 versões de arquivo no journal de produção. Definições e linhagem em object-decisions.json. A RPC record_document_verification fica congelada sem EXECUTE; register/remove legados tornam-se adaptadores.
+
+- `function:private.authorize_source_version_download_v1(p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.bind_document_job_version_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.can_export_source_version_v1(p_organization_id uuid, p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.detach_document_source_binding_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.preserve_document_bytes_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.project_document_source_version_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.read_source_version_v1(p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.register_source_verification_v1(p_job_id uuid, p_capability_token text, p_receipt jsonb)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.reject_source_version_mutation_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.source_storage_read_v1(p_bucket text, p_path text)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:private.sync_source_projection_binding_v1()`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:public.authorize_source_version_download_v1(p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:public.read_source_version_v1(p_version_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `function:public.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)`: preservar, etapa 6; Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.
+- `policy:private.source_version_verifications.source_version_verifications_deny_clients`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:public.source_bindings.source_bindings_select_authorized`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:public.source_versions.source_versions_select_authorized`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:public.sources.sources_select_authorized`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:storage.objects.source_version_storage_no_delete`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:storage.objects.source_version_storage_no_update`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `policy:storage.objects.source_version_storage_read`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `r:private.source_version_verifications`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `r:public.source_bindings`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `r:public.source_versions`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `r:public.sources`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:private.source_version_verifications.source_verifications_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:private.source_version_verifications.source_verifications_immutable`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.processing_jobs.processing_jobs_source_version`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_bindings.source_bindings_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_documents.source_documents_detach_binding`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_documents.source_documents_preserve_bytes`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_documents.source_documents_project_version`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_documents.source_documents_sync_binding`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_versions.source_versions_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.source_versions.source_versions_immutable`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+- `trigger:public.sources.sources_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.

@@ -362,7 +362,8 @@ declare job_id constant uuid:='80000000-0000-4000-8000-000000000901'; approval j
 begin
   if not private.execution_dispatch_is_current(job_id,true) then raise exception 'approved dispatch is not current before the change'; end if;
   begin
-    update public.source_documents set document_version=document_version+1 where id='50000000-0000-4000-8000-000000000901';
+    insert into public.source_documents(organization_id,intake_session_id,opportunity_id,object_path,original_name,mime_type,byte_size,sha256,document_version,logical_source_id,created_by,processing_status) select organization_id,intake_session_id,opportunity_id,object_path||'.next',original_name,mime_type,byte_size,repeat('e',64),document_version+1,logical_source_id,created_by,'ready' from public.source_documents where id='50000000-0000-4000-8000-000000000901';
+    delete from public.source_documents where id='50000000-0000-4000-8000-000000000901';
     if private.execution_dispatch_is_current(job_id,true) then raise exception 'source change preserved a stale approval'; end if;
     approval:=public.read_advisor_execution_brief_approval_v1(current_setting('test.project_id')::uuid,current_setting('test.brief_id')::uuid);
     if approval->>'status'<>'superseded' then raise exception 'changed inputs still report an approved version: %',approval; end if;
