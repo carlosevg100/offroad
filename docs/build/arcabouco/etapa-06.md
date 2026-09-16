@@ -33,6 +33,8 @@ Leitura de produção: 28 fontes, 28 versões e 28 vínculos para 28 documentos;
 
 Testes TS novos: quatro do contrato de fonte, três do payload de job, três de retry imutável de camada e cinco da rota de download. A rota testa negação inicial, sessão anônima, sucesso sem cache, revogação durante I/O e segunda autorização inválida. `pnpm check` passou nos 44 pacotes antes da publicação; CI, merge e implantação do commit final ainda são exigidos para fechar a etapa.
 
+A primeira CI encontrou dependência do fixture antigo no carimbo da RPC revogada. O suporte E2E agora prepara uma lease local limitada e usa a conta de worker sem membership, o cliente real de Storage e o gate E0 para ler os bytes efetivamente enviados. O scanner do teste é explicitamente sintético e aceita só os hashes do corpus versionado; não é prova de qualidade de antivírus. A RPC de resultado registra o recibo real de integridade. A execução de suporte fica cancelada após E0, sem declarar pipeline completo ou disparar análise. O helper recusa hosts externos e nunca roda contra staging ou produção. O código de autorização e a exigência de verificação não foram relaxados.
+
 ## Riscos e contenção
 
 Os quatro riscos de fonte da etapa 6 têm testes e prova de backfill; a confirmação indevida foi corrigida no schema instalado. O fechamento do inventário só encerra o achado com o commit entregue. As 18 lacunas gerais continuam no registro `RISCOS-POR-INCREMENTO.md`, cada uma com incremento e prova exigida.

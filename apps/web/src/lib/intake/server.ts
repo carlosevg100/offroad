@@ -468,7 +468,8 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return ok(null);
   }
 
-  // The local fixture has no worker gate, so it keeps the server-side verification path.
+  // The local fixture recomputes bytes for this calculation. Only a delegated worker receipt
+  // can establish persisted verification; a fixture read never restores the retired RPC.
   const verification = await verifyIntakeDocuments(runtime);
   if (!verification.ok) {
     logIntakeFailure("verify_documents", null);
