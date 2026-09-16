@@ -37,7 +37,7 @@ export async function verifyLocalFixtureSources(sessionId: string, ownerEmail: s
       documentVersion: job.payload.document_version, expectedSha256: job.payload.sha256!, expectedByteSize: job.payload.byte_size!,
       originalName: job.payload.original_name, declaredMediaType: job.payload.mime_type ?? null, operationId: job.job_id,
     }, scanner: {name: "synthetic-local-corpus-allowlist", scan: async observed => ({clean: allowed.has(createHash("sha256").update(observed).digest("hex"))})}});
-    if (!gated.authorization || gated.receipt.verdict !== "clean") throw new Error("Synthetic source byte verification failed");
+    if (!gated.authorization || gated.receipt.verdict !== "clean") throw new Error(`Synthetic source byte verification failed: ${gated.receipt.reasons.join(",")}`);
     const result = await worker.rpc("worker_record_document_result", {p_job_id: job.job_id, p_capability_token: capability, p_scan_result: gated.receipt, p_profile: null, p_layer: null});
     if (result.error) throw new Error("Delegated source receipt was rejected");
   }
