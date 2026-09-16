@@ -357,3 +357,11 @@ Os 75 registros de função e dez tabelas sem fonte no inventário anterior têm
 | `trigger:public.organization_memberships.organization_memberships_resource_revocation` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:396` | direct_ddl |
 | `trigger:public.processing_jobs.processing_jobs_bind_authority` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:378` | direct_ddl |
 | `trigger:public.workspace_project_groups.workspace_groups_access_resource` | `supabase/migrations/20260915204116_explicit_legacy_resource_access.sql:179` | direct_ddl |
+
+## Contexto sem cargo 1C
+
+| Objeto | Fonte vigente | Mecanismo |
+|---|---|---|
+| `function:private.worker_load_agent_context_before_execution_brief_v1(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:4` | direct_ddl |
+| `function:private.worker_load_capital_project_context_v4(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:83` | direct_ddl |
+| `function:private.worker_load_capital_project_context_v6(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:137` | direct_ddl |
