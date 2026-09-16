@@ -70,6 +70,9 @@ test("customer grants and revokes private access while workspace tabs stay isola
     const revoke = a.locator('form').filter({has: a.locator(`input[name="user"][value="${userB}"]`)})
       .filter({has: a.locator('input[name="command"][value="revoke"]')});
     await revoke.getByRole("button", {name: messages.WorkspaceAccess.revoke, exact: true}).click();
+    // The saved banner from the preceding grant is already visible. Wait for the
+    // server-rendered grant removal, then require immediate denial (no read retry).
+    await expect(revoke).toHaveCount(0);
     await expect(a.getByRole("status")).toHaveText(messages.WorkspaceAccess.saved);
     expect((await b.request.get(documentUrl)).status()).toBe(404);
     // A second tab has its own URL context; opening the first does not retarget its action.

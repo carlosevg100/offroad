@@ -1,0 +1,429 @@
+{
+  "before": [
+    {
+      "revoked_subject_can_read": false,
+      "revoked_subject_still_listed": true
+    }
+  ],
+  "after": [
+    {
+      "revoked_subject_can_read": false,
+      "revoked_subject_still_listed": false
+    }
+  ],
+  "candidate": [
+    {
+      "result": "workspace_access_projection: PASS"
+    }
+  ],
+  "production": [
+    {
+      "version": "20260916230240",
+      "journal_md5": "06781189b20c7ec496fbd6b78de58c1d",
+      "definition_md5": "860085373ee51ef03fee559b4dd3a813",
+      "allow_filter": true,
+      "authenticated_execute": true,
+      "anon_execute": false
+    }
+  ],
+  "staging": [
+    {
+      "version": "20260916230213",
+      "journal_md5": "06781189b20c7ec496fbd6b78de58c1d",
+      "definition_md5": "860085373ee51ef03fee559b4dd3a813",
+      "allow_filter": true,
+      "authenticated_execute": true,
+      "anon_execute": false
+    }
+  ],
+  "types": "Production regenerated, byte-identical",
+  "security_advisors": "0 lints both environments",
+  "catalogue": "1622 production / 1683 staging; existing surface unchanged",
+  "fixture_mode": "staging synthetic rollback; production read-only verification",
+  "performance_advisors": {
+    "production": [
+      {
+        "name": "unindexed_foreign_keys",
+        "count": 30
+      },
+      {
+        "name": "unused_index",
+        "count": 264
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "count": 1
+      }
+    ],
+    "staging": [
+      {
+        "name": "unindexed_foreign_keys",
+        "count": 30
+      },
+      {
+        "name": "unused_index",
+        "count": 170
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "count": 3
+      },
+      {
+        "name": "auth_db_connections_absolute",
+        "count": 1
+      }
+    ]
+  },
+  "installed_sql_tests": [
+    {
+      "test": "supabase/tests/advisor_semantic_dag_activation.sql",
+      "at": "2026-09-16T23:05:38.282Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/agentic_dcm_work_system.sql",
+      "at": "2026-09-16T23:05:41.178Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/client_presentation_templates.sql",
+      "at": "2026-09-16T23:05:44.181Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/company_debt_view_vertical.sql",
+      "at": "2026-09-16T23:05:50.705Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/confirmed_receivables_evidence_scope.sql",
+      "at": "2026-09-16T23:05:53.162Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/confirmed_receivables_support_sheets.sql",
+      "at": "2026-09-16T23:05:55.759Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/conversational_advisor_workspace.sql",
+      "at": "2026-09-16T23:05:59.589Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/creator_authority_revocation.sql",
+      "at": "2026-09-16T23:06:02.119Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/documentary_plan_persistence.sql",
+      "at": "2026-09-16T23:06:04.655Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/domain_event_outbox.sql",
+      "at": "2026-09-16T23:06:06.771Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/domain_event_outbox_revocation.sql",
+      "at": "2026-09-16T23:06:08.945Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/entity_dossier_isolation.sql",
+      "at": "2026-09-16T23:06:11.372Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/execution_brief_foundation.sql",
+      "at": "2026-09-16T23:06:15.703Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/execution_brief_proposal_bridge.sql",
+      "at": "2026-09-16T23:06:18.122Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/execution_proposal_revision.sql",
+      "at": "2026-09-16T23:06:22.035Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/explicit_documentary_work_revision.sql",
+      "at": "2026-09-16T23:06:25.279Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/explicit_execution_brief_approval.sql",
+      "at": "2026-09-16T23:06:28.280Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/explicit_legacy_workspace_context.sql",
+      "at": "2026-09-16T23:06:30.301Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/explicit_workspace_context.sql",
+      "at": "2026-09-16T23:06:32.604Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/financier_analytical_workspace.sql",
+      "at": "2026-09-16T23:06:35.445Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/gold_case_bindings.sql",
+      "at": "2026-09-16T23:06:37.672Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/governed_capital_material_storage.sql",
+      "at": "2026-09-16T23:06:40.105Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/governed_sector_context.sql",
+      "at": "2026-09-16T23:06:42.594Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/institutional_assumption_answers.sql",
+      "at": "2026-09-16T23:06:45.229Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/institutional_private_rls.sql",
+      "at": "2026-09-16T23:06:47.204Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/institutional_revision_proposals.sql",
+      "at": "2026-09-16T23:06:49.655Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/institutional_setup_lifecycle.sql",
+      "at": "2026-09-16T23:06:53.754Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/integration_preview_mode.sql",
+      "at": "2026-09-16T23:06:58.432Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/intent_envelopes_shadow.sql",
+      "at": "2026-09-16T23:07:00.486Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/intent_objective_routing_metrics.sql",
+      "at": "2026-09-16T23:07:02.649Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/job_failure_causes.sql",
+      "at": "2026-09-16T23:07:04.741Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/job_failure_contract.sql",
+      "at": "2026-09-16T23:07:08.496Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/legacy_access_revocation.sql",
+      "at": "2026-09-16T23:07:10.692Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/legacy_resource_access.sql",
+      "at": "2026-09-16T23:07:12.751Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/no_implicit_workspace_capabilities.sql",
+      "at": "2026-09-16T23:07:14.970Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/objective_plan_preflight.sql",
+      "at": "2026-09-16T23:07:17.345Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/operating_controls.sql",
+      "at": "2026-09-16T23:07:22.836Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/organization_methodology.sql",
+      "at": "2026-09-16T23:07:25.094Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/organization_profile_authority.sql",
+      "at": "2026-09-16T23:07:27.218Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/origination_thesis_vertical.sql",
+      "at": "2026-09-16T23:07:30.309Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/professional_capability_context.sql",
+      "at": "2026-09-16T23:07:32.404Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/project_canonical_revisions.sql",
+      "at": "2026-09-16T23:07:34.713Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/project_company_scope.sql",
+      "at": "2026-09-16T23:07:37.466Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/project_review_roles.sql",
+      "at": "2026-09-16T23:07:40.858Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/provider_case_fit_persistence.sql",
+      "at": "2026-09-16T23:07:46.258Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/provider_research_persistence.sql",
+      "at": "2026-09-16T23:07:48.739Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/provider_research_public_catalog_v2.sql",
+      "at": "2026-09-16T23:07:51.299Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/public_research_public_cache.sql",
+      "at": "2026-09-16T23:07:53.789Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/read_grant_cannot_mutate_legacy.sql",
+      "at": "2026-09-16T23:07:55.900Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_analytical_release.sql",
+      "at": "2026-09-16T23:07:58.352Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_document_adapter_persistence.sql",
+      "at": "2026-09-16T23:08:00.856Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_information_request_bindings.sql",
+      "at": "2026-09-16T23:08:03.155Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_information_request_dataset_revision.sql",
+      "at": "2026-09-16T23:08:05.636Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_method_input_assembly_store.sql",
+      "at": "2026-09-16T23:08:07.991Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/receivables_method_supplement_store.sql",
+      "at": "2026-09-16T23:08:11.792Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/resource_policy_barriers.sql",
+      "at": "2026-09-16T23:08:14.340Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/resource_policy_delegation.sql",
+      "at": "2026-09-16T23:08:16.593Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/resource_policy_event_once.sql",
+      "at": "2026-09-16T23:08:18.538Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/resource_policy_isolation.sql",
+      "at": "2026-09-16T23:08:20.587Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/resource_policy_performance.sql",
+      "at": "2026-09-16T23:08:25.094Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/rls_non_interference.sql",
+      "at": "2026-09-16T23:08:37.774Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/role_free_reasoning_context.sql",
+      "at": "2026-09-16T23:08:42.397Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/source_version_identity.sql",
+      "at": "2026-09-16T23:08:44.958Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/terminal_job_authorization_metadata.sql",
+      "at": "2026-09-16T23:08:47.003Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/verified_provider_mandates.sql",
+      "at": "2026-09-16T23:08:49.187Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/worker_runtime_schema_contract.sql",
+      "at": "2026-09-16T23:08:51.265Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/workspace_access_projection.sql",
+      "at": "2026-09-16T23:08:53.763Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/workspace_member_administration.sql",
+      "at": "2026-09-16T23:08:57.915Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/workspace_project_folders.sql",
+      "at": "2026-09-16T23:09:01.650Z",
+      "pass": true
+    },
+    {
+      "test": "supabase/tests/workspace_replay_authority.sql",
+      "at": "2026-09-16T23:09:03.795Z",
+      "pass": true
+    }
+  ]
+}

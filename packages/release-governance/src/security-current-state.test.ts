@@ -36,7 +36,7 @@ describe("security current-state inventory", () => {
     expect(decision.currentStateTruthVerified).toBe(false);
     expect(decision.assuranceReady).toBe(false);
     expect(decision.blockers).toEqual([]);
-    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 28, identities: 12, vendors: 19, openGaps: 19, coverageClaims: 8});
+    expect(decision.counts).toMatchObject({environments: 6, systems: 8, dataStores: 8, dataFlows: 28, identities: 12, vendors: 19, openGaps: 18, coverageClaims: 8});
     expect(decision.warnings).toContainEqual({code: "operator_observation_not_independently_verified", subjectRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT"});
   });
 
@@ -75,6 +75,17 @@ describe("security current-state inventory", () => {
 
   it("requires delivered dossier isolation, public identity and bounded worker evidence at wave-four closeout", () => {
     for (const evidenceRef of ["SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
+  it("requires immutable source, delegated verification and download evidence at wave-five closeout", () => {
+    for (const evidenceRef of ["SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-CONTRACT", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-DOWNLOAD", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL"]) {
       expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
       const attacked = copyInventory();
       attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
@@ -201,7 +212,7 @@ describe("security current-state inventory", () => {
     expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-CODEX-OPENAI")?.dataClassIds).toContain("credential_secret");
   });
 
-  it("fails closed if canonical claims or 18 of 19 required gaps are removed and references are reused", () => {
+  it("fails closed if canonical claims or 17 of 18 required gaps are removed and references are reused", () => {
     const inventory = copyInventory();
     const retainedGap = inventory.gaps.find((gap) => gap.gapId === "SG-ENV-DATA-MAPPING")!;
     const allEntityIds = [
@@ -406,7 +417,7 @@ describe("security current-state inventory", () => {
     })).toThrow();
 
     const rendered = renderSecurityCurrentStateInventory(currentSecurityInventory, trusted);
-    expect(rendered).toContain("| Lacunas abertas | 19 |");
+    expect(rendered).toContain("| Lacunas abertas | 18 |");
     expect(rendered).toContain("| Assurance ready | não |");
     expect(countsRead).toBe(0);
     expect(assuranceRead).toBe(0);

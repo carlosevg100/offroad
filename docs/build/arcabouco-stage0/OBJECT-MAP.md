@@ -2126,3 +2126,7 @@ Migrações adicionais:
 - `trigger:public.source_versions.source_versions_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
 - `trigger:public.source_versions.source_versions_immutable`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
 - `trigger:public.sources.sources_audit`: preservar, etapa 6; Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.
+
+### Complemento do eval da etapa 6
+
+`private.read_workspace_access_v1()` refatorada pela migração 20260916230240: tombstone deny não é concessão. Superfície e privilégios preservados; 324 arquivos no journal de produção. Staging 20260916230213, SQL idêntico. Novo contrato `workspace_access_projection.sql` e reprodução instalada em `docs/build/arcabouco/etapa-06-access-projection-eval.json`.
