@@ -1,23 +1,51 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".github/workflows/**", "scripts/ci/**"],
+  "globalDependencies": [
+    ".github/workflows/**",
+    "scripts/ci/**"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "dist/**"
+      ]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": [
+        "^lint"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": [
+        "^typecheck"
+      ]
     },
     "test": {
-      "dependsOn": ["^test"]
+      "dependsOn": [
+        "^test"
+      ]
+    },
+    "web#test": {
+      "dependsOn": [
+        "^test"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/**/*.md",
+        "$TURBO_ROOT$/AGENTS.md",
+        "$TURBO_ROOT$/README.md",
+        "$TURBO_ROOT$/handoff.md",
+        "$TURBO_ROOT$/CLAUDE.md"
+      ]
     }
   }
 }

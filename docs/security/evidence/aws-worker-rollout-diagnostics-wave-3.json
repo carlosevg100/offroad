@@ -1,0 +1,120 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-09-16T11:52:20.468Z",
+  "validThrough": null,
+  "source": "Codex read-only GitHub and AWS API delivery observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-delivery-observation",
+    "version": "2",
+    "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"
+  },
+  "scope": "Wave 3 opening baseline; bounded read-only observation of the delivered stage-4 runtime",
+  "observation": "Opening-wave read-only ECS and CloudWatch observation: exact baseline worker image active, sampled polling healthy, four alarms OK and no alarm actions configured. The recorded OIDC denial is historical evidence from wave 2, not a new IAM test. Broader effective permissions remain unknown.",
+  "verificationState": "unverified_operator_observation",
+  "collection": {
+    "baselineCommit": "9b6ccf981827f97236107c4d0f64096213a1e2e9",
+    "githubReadOnly": {
+      "runId": 35088619310,
+      "headSha": "9b6ccf981827f97236107c4d0f64096213a1e2e9",
+      "conclusion": "success"
+    },
+    "runtimeReadOnly": {
+      "captured_at": "2026-09-16T11:51:24.452266+00:00",
+      "commit": "9b6ccf981827f97236107c4d0f64096213a1e2e9",
+      "task_revision": 335,
+      "desired": 1,
+      "running": 1,
+      "rollout": "COMPLETED",
+      "images": [
+        "document-worker:9b6ccf981827"
+      ],
+      "health_event_count": 100,
+      "sample": [
+        {
+          "at": "2026-09-16T11:44:38.405Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T11:44:40.437Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T11:44:42.464Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T11:44:44.489Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T11:44:46.521Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        }
+      ],
+      "alarms": [
+        {
+          "name": "offroad-outbox-backlog",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:34.378000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-blocked",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:29.632000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-errors",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:19:34.419000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-heartbeat-missing",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:09.565000-03:00",
+          "actionsConfigured": false
+        }
+      ],
+      "read_only": true,
+      "synthetic_production_data": false
+    },
+    "oidcDeniedRead": {
+      "runId": 35081046003,
+      "action": "cloudwatch:DescribeAlarms",
+      "result": "AccessDenied"
+    },
+    "productionFixtures": false
+  },
+  "actionsRequiringEffectivePermissionVerification": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents"
+  ],
+  "requiredNextEvidence": "Role policy and policy simulation receipts for each named action and representative in-scope and out-of-scope resources; live diagnostic reads when available.",
+  "redaction": "No credentials, account identifiers, role identifiers, task identifiers, customer payloads, or raw worker logs are retained. GitHub run and commit identifiers refer only to the repository delivery history.",
+  "limitations": [
+    "Point-in-time operator observation, not independent assurance.",
+    "Alarm actions are not configured; alarm evaluation and state are observed in CloudWatch.",
+    "OIDC diagnostic permissions remain separate from the authorized operator session."
+  ],
+  "freshness": "wave_bound",
+  "waveId": "wave-3"
+}
