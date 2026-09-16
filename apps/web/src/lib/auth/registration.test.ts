@@ -32,9 +32,9 @@ describe("atomic registration authority", () => {
 
   it("uses one atomic command without forwarding metadata authority", async () => {
     const c = client();
-    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({organizationId: "new-organization", journey: "company"});
-    expect(c.rpc).toHaveBeenCalledExactlyOnceWith("initialize_professional_onboarding", {
-      p_full_name: "Synthetic registration", p_journey: "company", p_locale: "pt-BR",
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({organizationId: "new-organization", journey: "personal"});
+    expect(c.rpc).toHaveBeenCalledExactlyOnceWith("initialize_workspace_v1", {
+      p_full_name: "Synthetic registration", p_locale: "pt-BR",
     });
     expect(c.from).not.toHaveBeenCalled();
   });
@@ -43,6 +43,23 @@ describe("atomic registration authority", () => {
     const c = client();
     c.rpc.mockResolvedValue({data: null, error: {code: "42501"}});
     expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({error: "workspace"});
+    expect(c.rpc).toHaveBeenCalledTimes(1);
+    expect(c.from).not.toHaveBeenCalled();
+  });
+
+  it("registers without a market role and ignores forged membership metadata", async () => {
+    const c = client();
+    c.getUser.mockResolvedValue({data: {user: {id: "verified-user", user_metadata: {
+      full_name: "Synthetic registration", locale: "pt-BR", role: "admin", organization_id: "foreign",
+    }}}, error: null});
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({organizationId: "new-organization", journey: "personal"});
+    expect(c.rpc).toHaveBeenCalledExactlyOnceWith("initialize_workspace_v1", {p_full_name: "Synthetic registration", p_locale: "pt-BR"});
+  });
+
+  it.each(["workspace_context_required", "workspace_context_denied"])("requires selection after %s", async (message) => {
+    const c = client();
+    c.rpc.mockResolvedValue({data: null, error: {code: "P0001", message}});
+    expect(await initializeRegistrationWorkspace(c.supabase)).toEqual({error: "workspace_selection"});
     expect(c.rpc).toHaveBeenCalledTimes(1);
     expect(c.from).not.toHaveBeenCalled();
   });
@@ -56,7 +73,7 @@ describe("atomic registration authority", () => {
 });
 
 describe("registrationSchema", () => {
-  it.each(["company", "originator", "capital_provider"] as const)("accepts the %s journey", (journey) => {
+  it.each(["personal", "company", "originator", "capital_provider"] as const)("accepts the %s journey", (journey) => {
     expect(registrationSchema.safeParse({...validRegistration, journey}).success).toBe(true);
   });
 
@@ -71,7 +88,7 @@ describe("registrationSchema", () => {
 
 describe("defaultRegistrationJourney", () => {
   it("starts every new workspace on the side that can begin work", () => {
-    expect(defaultRegistrationJourney).toBe("company");
+    expect(defaultRegistrationJourney).toBe("personal");
   });
 
   it("never lands a new account on the capital-provider workspace, which signup no longer offers", () => {

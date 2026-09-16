@@ -3491,7 +3491,7 @@
       },
       "unavailableTitle": "Outside own analysis",
       "unavailable": {
-        "companyDebt": "Form-based debt view and origination thesis: entries for companies and advisors.",
+        "companyDebt": "Debt and origination forms require explicit enablement in this workspace.",
         "representation": "Declaring representation of the analyzed company.",
         "disclosure": "Disclosing the case, contacting participants or a qualified introduction."
       },

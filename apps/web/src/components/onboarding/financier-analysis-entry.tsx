@@ -5,7 +5,7 @@ import Link from "next/link";
 type Props = {
   locale: string;
   conversationHref: string;
-  mandatesHref: string;
+  mandatesHref?: string;
   termsAccepted: boolean;
 };
 
@@ -33,7 +33,7 @@ export async function FinancierAnalysisEntry({locale, conversationHref, mandates
           <ul className="origination-form__wide financier-analysis-entry__list">
             <li><Check aria-hidden="true" size={14} /><span>{t("available.conversation")}</span></li>
             <li><Check aria-hidden="true" size={14} /><span>{t("available.documents")}</span></li>
-            <li><Check aria-hidden="true" size={14} /><span>{t("available.mandates")}</span></li>
+            {mandatesHref ? <li><Check aria-hidden="true" size={14} /><span>{t("available.mandates")}</span></li> : null}
           </ul>
 
           <section className="origination-form__section origination-form__wide">
@@ -56,7 +56,7 @@ export async function FinancierAnalysisEntry({locale, conversationHref, mandates
             <p>{t("boundary")}</p>
           </div>
           <div className="origination-form__action origination-form__wide">
-            <Link className="button button--ghost" href={mandatesHref}><Landmark aria-hidden="true" size={15} />{t("mandatesCta")}</Link>
+            {mandatesHref ? <Link className="button button--ghost" href={mandatesHref}><Landmark aria-hidden="true" size={15} />{t("mandatesCta")}</Link> : null}
             <Link className="button" data-testid="financier-entry-conversation" href={conversationHref}>{t("cta")}<ArrowRight aria-hidden="true" size={15} /></Link>
           </div>
         </div>

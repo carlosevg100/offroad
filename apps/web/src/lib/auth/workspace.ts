@@ -20,6 +20,8 @@ type WorkspaceBootstrap = {
     description: string | null;
     organization_type: string;
     verification_status: string;
+    workspace_kind: "personal" | "institutional";
+    capabilities: import("@/lib/workspace/capabilities").WorkspaceCapabilities;
   };
   onboarding: {
     journey: string;
@@ -62,7 +64,7 @@ export const requireWorkspace = cache(async (locale: string) => {
   }
 
   const bootstrap = data as unknown as WorkspaceBootstrap;
-  if (!bootstrap.workspace_ready || !bootstrap.onboarding) redirect(`/${locale}/onboarding`);
+  if (!bootstrap.workspace_ready) redirect(`/${locale}/onboarding`);
 
   return {
     supabase,

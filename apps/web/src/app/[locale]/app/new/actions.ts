@@ -67,7 +67,7 @@ async function workspaceRuntime(locale: AppLocale, sessionId: string): Promise<I
   // The guided intake declares the company's operation on its behalf. A financier's analysis
   // continues in the project the session already belongs to; the database refuses the
   // representation-flavored commands regardless of this redirect.
-  if (!hasWorkspaceCapability(context.organization.organization_type, "origination_representation")) {
+  if (!hasWorkspaceCapability(context.organization.capabilities, "origination_representation")) {
     redirect(session.capital_project_id ? `/${locale}/app/projects/${session.capital_project_id}` : `/${locale}/app`);
   }
   return runtime;
@@ -128,7 +128,7 @@ export async function acceptWorkspacePrivateTerms(formData: FormData) {
   const projectSetupUrl = `/${locale}/app/new?job=${entryJob}&setup=project`;
   const parsed = z.object({
     signatoryName: z.string().trim().min(2).max(160),
-    signatoryTitle: z.string().trim().min(2).max(160),
+    signatoryTitle: z.union([z.literal(""), z.string().trim().min(2).max(160)]),
     termsAgreed: z.literal("confirmed"),
     informationRightsDeclared: z.literal("confirmed"),
   }).safeParse({

@@ -2,17 +2,11 @@ import {z} from "zod";
 
 import type {Database} from "@/types/database";
 
-export const registrationJourneys = ["company", "originator", "capital_provider"] as const;
+export const registrationJourneys = ["personal", "company", "originator", "capital_provider"] as const;
 export type RegistrationJourney = (typeof registrationJourneys)[number];
 
-/**
- * Account creation no longer asks which side of the market someone is on. That split
- * belonged to an earlier product and did not describe how the platform is used; the
- * professional onboarding asks the questions that actually shape the work. Every new
- * workspace starts on the borrower side, which is the one that can begin work, and the
- * capital-provider workspace stays reachable only for organizations that already have it.
- */
-export const defaultRegistrationJourney: RegistrationJourney = "company";
+/** New identities receive a personal workspace; historical journey metadata is not authority. */
+export const defaultRegistrationJourney: RegistrationJourney = "personal";
 
 export const passwordSchema = z.string().min(8).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[\p{P}\p{S}]/u);
 
@@ -51,7 +45,6 @@ export async function initializeRegistrationWorkspace(supabase: NonNullable<Supa
 
   const metadata = user.user_metadata as Record<string, unknown>;
   const parsed = z.object({
-    registration_role: z.enum(registrationJourneys),
     full_name: z.string().trim().min(2).max(160),
     locale: z.enum(["pt-BR", "en-US"]).default("pt-BR"),
   }).safeParse(metadata);
@@ -60,13 +53,13 @@ export async function initializeRegistrationWorkspace(supabase: NonNullable<Supa
 
   // This command creates the organization and its first active owner in one
   // transaction. Never restore client-side organization/membership bootstrap.
-  const workspaceCommand: Database["public"]["Functions"]["initialize_professional_onboarding"]["Args"] = {
+  const workspaceCommand: Database["public"]["Functions"]["initialize_workspace_v1"]["Args"] = {
     p_full_name: parsed.data.full_name,
-    p_journey: parsed.data.registration_role,
     p_locale: parsed.data.locale,
   };
-  const {data, error} = await supabase.rpc("initialize_professional_onboarding", workspaceCommand);
+  const {data, error} = await supabase.rpc("initialize_workspace_v1", workspaceCommand);
 
+  if (error?.message === "workspace_context_required" || error?.message === "workspace_context_denied") return {error: "workspace_selection" as const};
   if (error || !data) return {error: "workspace" as const};
-  return {organizationId: data, journey: parsed.data.registration_role};
+  return {organizationId: data, journey: "personal" as const};
 }

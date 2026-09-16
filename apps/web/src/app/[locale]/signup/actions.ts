@@ -91,6 +91,7 @@ export async function startRegistration(formData: FormData) {
 
   if (data.session) {
     const initialized = await initializeRegistrationWorkspace(supabase);
+    if (initialized.error === "workspace_selection") redirect(`/${locale}/workspaces`);
     if (initialized.error) redirect(`/${locale}/signup?error=workspace`);
     redirect(`/${locale}/onboarding`);
   }
@@ -113,6 +114,7 @@ export async function verifyRegistrationCode(formData: FormData) {
   if (error) redirect(`/${locale}/signup/verify?error=code`);
 
   const initialized = await initializeRegistrationWorkspace(supabase);
+  if (initialized.error === "workspace_selection") redirect(`/${locale}/workspaces`);
   if (initialized.error) redirect(`/${locale}/signup/verify?error=workspace`);
 
   cookieStore.delete(emailCookie);

@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {expect, test} from "@playwright/test";
 import {waitForOneTimeCode} from "./support/mail";
@@ -18,7 +19,8 @@ test("approved provider research persists public sources while private mandates 
   await expect(page).toHaveURL(/\/pt-BR\/signup\/verify/);
   await page.locator('input[name="token"]').fill(await waitForOneTimeCode(email));
   await page.locator("form.auth-form--verification button[type=submit]").click();
-  await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
+  await useLegacyCompanyFixture(page, email);
+    await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
   await expect(page.locator(".intake-start")).toBeVisible();
   await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
   await page.locator('input[name="signatory_title"]').fill("Analista");

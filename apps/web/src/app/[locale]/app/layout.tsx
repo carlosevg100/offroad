@@ -1,4 +1,4 @@
-import Link from "next/link";
+import {WorkspaceContextSwitcher} from "@/components/workspace-context-switcher";
 import type {Metadata} from "next";
 import {cookies} from "next/headers";
 import {getTranslations} from "next-intl/server";
@@ -27,7 +27,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   // Projects and folders follow the own-analysis capability, which every workspace type has.
   // The mandates entry follows mandate management. Origination is a separate capability and
   // no longer decides what the navigation shows.
-  const capabilities = workspaceCapabilities(organization.organization_type);
+  const capabilities = workspaceCapabilities(organization.capabilities);
   const showProjects = capabilities.own_analysis;
   const mandatesHref = capabilities.mandate_management ? `/${locale}/app/mandates` : undefined;
   const {data: navigationSessions} = showProjects
@@ -144,7 +144,7 @@ export default async function ApplicationLayout({children, params}: Props) {
         signOutAction={signOut}
       />
       <div className="app-main">
-      <nav className="workspace-context-navigation" aria-label={contextCopy("switch")}><Link href={`/${locale}/workspaces`}>{organization.name} · {contextCopy("switch")}</Link> {["owner","admin"].includes(membership.role) && <Link href={`/${locale}/app/access?workspace=${organization.id}`}>{accessCopy("title")}</Link>}</nav>
+      <WorkspaceContextSwitcher locale={locale} organization={organization} canAdminister={["owner", "admin"].includes(membership.role)} copy={{switch: contextCopy("switch"), access: accessCopy("title")}} />
         {integrationPreview.enabled && integrationPreview.scope === "organization" ? <IntegrationPreviewBanner
           copy={{
             kicker: t("integrationPreview.kicker"),

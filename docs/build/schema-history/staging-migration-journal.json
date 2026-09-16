@@ -1,4 +1,5 @@
 {
+  "captured_at": "2026-09-16 03:53:30.115646+00",
   "rows": [
     {
       "name": "platform_foundation",
@@ -1303,8 +1304,15 @@
     {
       "name": "role_free_reasoning_context",
       "version": "20260916005559"
+    },
+    {
+      "name": "explicit_workspace_context",
+      "version": "20260916032913"
+    },
+    {
+      "name": "explicit_workspace_replay_authority",
+      "version": "20260916034952"
     }
   ],
-  "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-16T00:57:54.89882+00:00"
+  "project_id": "gjkkjtbfnssdsbmlhmwk"
 }

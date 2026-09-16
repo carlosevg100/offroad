@@ -3491,7 +3491,7 @@
       },
       "unavailableTitle": "Fora da análise própria",
       "unavailable": {
-        "companyDebt": "Visão de dívida por formulário e tese de originação: entradas das companhias e dos assessores.",
+        "companyDebt": "Formulários de dívida e originação dependem de habilitação específica neste espaço.",
         "representation": "Declaração de representação da companhia analisada.",
         "disclosure": "Divulgação do caso, contato com participantes ou introdução qualificada."
       },

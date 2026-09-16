@@ -161,6 +161,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
   if (!supabase) redirect(`/${locale}/login?error=provider`);
   const {data: bootstrapData, error: bootstrapError} = await supabase.rpc("get_onboarding_bootstrap", {p_locale: locale});
   if (bootstrapError || !bootstrapData) {
+    if (bootstrapError?.message === "workspace_context_required" || bootstrapError?.message === "workspace_context_denied") redirect(`/${locale}/workspaces`);
     if (bootstrapError?.code === "P0002") {
       const {data: workspaceData} = await supabase.rpc("get_workspace_bootstrap");
       const workspace = workspaceData && typeof workspaceData === "object" && !Array.isArray(workspaceData)

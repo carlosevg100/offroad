@@ -11,7 +11,7 @@ const internationalization = createMiddleware(routing);
 export async function proxy(request: NextRequest) {
   // Never forward a caller-supplied internal context header.
   request.headers.delete(WORKSPACE_HEADER);
-  if (/^\/(pt-BR|en-US)\/app(?:\/|$)/.test(request.nextUrl.pathname)) {
+  if (/^\/(pt-BR|en-US)\/(?:app|onboarding)(?:\/|$)/.test(request.nextUrl.pathname)) {
     const context = workspaceRequestContext(request.nextUrl, request.headers.get("referer"), request.method);
     if (context.invalid) return new NextResponse(null, {status: 400});
     if (context.workspace) {

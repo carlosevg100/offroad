@@ -26,7 +26,7 @@ export default async function CompanyDebtSetup({params, searchParams}: Props) {
   const t = await getTranslations({locale, namespace: "App.companyDebt"});
   const {organization} = await requireWorkspace(locale);
   // A financier gets the explanation, never a form whose action the server refuses.
-  if (!hasWorkspaceCapability(organization.organization_type, "origination_representation")) {
+  if (!hasWorkspaceCapability(organization.capabilities, "origination_representation")) {
     return <FinancierUnavailableEntry locale={locale} />;
   }
 

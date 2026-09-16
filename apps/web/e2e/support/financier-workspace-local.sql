@@ -1,5 +1,5 @@
 -- Local Playwright setup only. It writes the rows the product cannot create today, because
--- signup always registers a company organization (`defaultRegistrationJourney`) and there is no
+-- signup creates a personal workspace and there is no
 -- product path that turns a workspace into a capital_provider one. No policy, grant, check
 -- constraint or trigger is disabled here, and every authorization the journey needs is still
 -- decided by the database when the browser and the RPC calls run.
@@ -29,15 +29,14 @@ begin
   if mode = 'workspace' then
     select id into strict org from public.organizations where created_by = actor;
     update public.organizations
-    set organization_type = 'capital_provider', name = 'Gestora sintética de crédito', updated_at = now()
+    set organization_type = 'capital_provider', workspace_kind='institutional', name = 'Gestora sintética de crédito', updated_at = now()
     where id = org;
-    update public.onboarding_progress
-    set journey = 'capital_provider',
-        current_step = 'organization',
-        answers = '{}'::jsonb,
-        completed_at = null,
-        updated_at = now()
-    where organization_id = org and user_id = actor;
+    insert into public.onboarding_progress(organization_id,user_id,journey,current_step,answers)
+    values(org,actor,'capital_provider','organization','{}')
+    on conflict(organization_id,user_id,journey) do update set current_step='organization',completed_at=null;
+    insert into private.workspace_capability_grants(organization_id,capability,enabled,basis,granted_by)
+    values(org,'mandate_management',true,'explicit_administration',actor)
+    on conflict(organization_id,capability) do update set enabled=true,basis='explicit_administration';
     perform set_config('e2e.financier_result', org::text, true);
 
   elsif mode = 'other_tenant' then

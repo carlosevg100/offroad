@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
@@ -156,7 +157,7 @@ test.describe("Document-first intake (company journey)", () => {
     await context?.close();
   });
 
-  test("signs up with e-mail verification and lands on onboarding", async () => {
+  test("registers a personal workspace, then exercises an existing company fixture", async () => {
     await page.goto("/pt-BR/signup");
     // Account creation asks for identity and nothing else: no market side, no job title.
     // Registration collects identity; the work itself supplies analytical context.
@@ -175,6 +176,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
 
+    await useLegacyCompanyFixture(page, account.email);
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator('input[name="professional_roles"]')).toHaveCount(0);
     // Verified identity proceeds without collecting a professional role.

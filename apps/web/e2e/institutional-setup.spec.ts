@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
 import {join} from "node:path";
@@ -23,7 +24,8 @@ test("guided institutional setup calculates only after review and survives resum
   await expect(page).toHaveURL(/\/pt-BR\/signup\/verify/);
   await page.locator('input[name="token"]').fill(await waitForOneTimeCode(email));
   await page.locator("form.auth-form--verification button[type=submit]").click();
-  await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
+  await useLegacyCompanyFixture(page, email);
+    await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
   await expect(page.locator(".intake-start")).toBeVisible();
   await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");
   await page.locator('input[name="signatory_title"]').fill("Analista");
