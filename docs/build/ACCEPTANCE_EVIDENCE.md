@@ -1,3 +1,6 @@
+## Etapa 3: compatibilidade prévia do consumidor
+
+Envelope passa a aceitar `access_policy` exclusivamente para o efeito existente `revalidate_authority`; nenhum payload protegido ou novo efeito é aceito. Publicar web/worker antes da migração `resource_policy_and_barriers`, evitando leases recusados por consumidor antigo. Sem DDL, concessão ou ativação de política nesta entrega. Teste negativo em `domain-event.test.ts`; etapa 3 permanece em execução.
 ## Onda 3 autorizada: 16/09/2026
 
 Etapa 3 de política comum e barreiras autorizada após conclusão da onda 2. Governança renovada contra main `9b6ccf98`; escopo e evidências em `docs/security/INVENTORY_WAVE_3_REVIEW.md`. Telas administrativas adiadas. Implementação da etapa 3 ainda não publicada por esta revisão.
