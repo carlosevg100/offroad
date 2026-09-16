@@ -1,5 +1,10 @@
 ## 16 September 2026: stage 3 resource policy and barriers
 
+## Etapa 3: conciliação da entrega em 16/09/2026
+
+Implementação mesclada pela PR 629 (`a8cddded`), com os três gates Quality, preview e scans aprovados. Três migrações aplicadas e conferidas nos dois journals; 67 contratos SQL instalados em staging, 31 E2Es na CI e 53 funções idênticas entre ambientes. O inventário final vincula a política comum, barreiras, delegação, exportação e os testes aos bytes desse baseline. Revisão e limites em `docs/security/history/wave-3-final-review.md`; evidência operacional em `docs/security/evidence/aws-worker-rollout-diagnostics-wave-3.json`. Sem telas administrativas e sem dados descartáveis em produção. A próxima onda depende do OK do fundador; etapa 5 não iniciada.
+
+
 PostgreSQL now evaluates explicit human/group grants, deny precedence, flat groups, desk barriers, purpose restrictions and bounded worker principals. Administrative authority is separate from content access; web capabilities are emitted by the server. Existing download/Storage, job and publication paths consult the common policy. No administrative screens or next-wave work were added.
 
 Three immutable migrations are installed in staging (20260916124024, 20260916124447, 20260916163357) and production (20260916163753, 20260916163756, 20260916163759), with matching SQL hashes. The follow-ups fix child grant scope, explicit-deny basis and duplicate purpose audit events. Staging passed all 67 rollback SQL contracts, including the preserved role-free context suite. All 53 inspected function definitions match across environments; security advisors report no lints. Generated types and object/journal inventories reflect production. Local pnpm check passed across 44 packages.

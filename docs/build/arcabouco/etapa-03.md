@@ -10,7 +10,7 @@
 - Mutação de política e publicação de job compartilham lock de autorização; revogação invalida jobs cuja autoridade ficou insuficiente. Controles síncronos permanecem obrigatórios enquanto outbox propaga.
 - Sem telas administrativas nesta etapa, conforme ajuste do fundador.
 
-Status em 16/09/2026: contrato instalado em staging e produção; 67 contratos SQL PASS em staging, 53 funções idênticas e advisors de segurança sem lints. Publicação da PR e verificação do runtime final ainda pendentes; não é completion.
+Status em 16/09/2026: implementação mesclada pela PR 629 no commit `a8cdddedda7ad1d09915571d54e98a775c42763a`. Quality `35123611009` e Security `35123611021` passaram; 31 E2Es passaram. Contrato instalado em staging e produção, 67 contratos SQL PASS no schema instalado, 53 funções idênticas e advisors de segurança sem lints. A revisão técnica final está em `docs/security/history/wave-3-final-review.md`; o receipt de runtime está em `docs/security/evidence/aws-worker-rollout-diagnostics-wave-3.json`. O relatório externo de completion registra também a CI e o runtime do commit da conciliação final.
 
 | Migração | Staging | Produção |
 |---|---|---|
@@ -25,3 +25,5 @@ Novos contratos SQL: resource_policy_barriers, resource_policy_delegation, resou
 Tipos gerados a partir de produção, inventário de 75 novas superfícies revisado e checkers de catálogos/journal/replay histórico sem divergência. SQLs antigos de distribuição exclusivos de staging continuam fora do replay.
 
 Rollback: não remover tabelas/grants ou repor membership como acesso. Contenção por comandos auditados de grupo/barreira/finalidade e correção sucessora; manter o consumidor access_policy da PR 628 ou posterior. As 67 regressões verificam compatibilidade com rotas e loaders legados.
+
+Entrega do baseline: Quality de main `35124886036` PASS; Security `35124885842` PASS; deploy worker `35124885802` PASS, ECS revisão 338 e imagem `document-worker:a8cdddedda7a`, uma tarefa ativa, polling sem pendência/bloqueio e quatro alarmes OK. Vercel Production deployment `6486075247` SUCCESS no mesmo commit. HTTP público 200 e rotas privadas anônimas 307 para login. Os alarmes ainda não têm ações configuradas; esta é observação operacional, não atestado geral de IAM.
