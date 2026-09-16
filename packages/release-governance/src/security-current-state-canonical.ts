@@ -40,7 +40,7 @@ export type CanonicalSecurityGapRelationship = {
  * dates. A runtime caller may present a snapshot, but cannot redefine this trust root.
  */
 const inventorySnapshotContract = {
-  inventoryFingerprint: "ec1449231310151d14117f46febec47c61a91299832d8b9599c7b3035d893477",
+  inventoryFingerprint: "9ead1f535b5def591d929e9d9e4323168cdf96b90e21ecc5c8b0478054c780c5",
   generatedAt: "2026-09-16T20:23:25.103Z",
   evidenceCutoff: "2026-09-16T20:23:25.103Z",
   reviewDueAt: null,
@@ -1216,6 +1216,7 @@ const entityRelationships = {
       "SEV-AGENTS-SCOPE"
     ],
     "gapRefs": [
+      "SG-SOURCE-VERIFICATION-AUTHORITY",
       "SG-LIVE-CONFIG",
       "SG-BACKUP-RESTORE",
       "SG-DATA-LIFECYCLE",
@@ -1373,6 +1374,7 @@ const entityRelationships = {
       "SEV-SUPABASE-CONFIG"
     ],
     "gapRefs": [
+      "SG-SOURCE-VERIFICATION-AUTHORITY",
       "SG-DATA-LIFECYCLE",
       "SG-BACKUP-RESTORE",
       "SG-LIVE-CONFIG",
@@ -1559,6 +1561,7 @@ const entityRelationships = {
       "SEV-WEB-UPLOAD"
     ],
     "gapRefs": [
+      "SG-SOURCE-VERIFICATION-AUTHORITY",
       "SG-LIVE-CONFIG",
       "SG-ENV-SEPARATION"
     ],
@@ -2967,6 +2970,22 @@ const gapRelationships = {
       "TRUST-VENDOR-01",
       "TRUST-AI-01",
       "TRUST-DATA-03"
+    ]
+  },
+  "SG-SOURCE-VERIFICATION-AUTHORITY": {
+    "severity": "critical",
+    "targetRefs": [
+      "SYS-SUPABASE",
+      "STORE-POSTGRES",
+      "FLOW-WEB-DATA"
+    ],
+    "evidenceRefs": [
+      "SEV-WEB-UPLOAD",
+      "SEV-RLS-TEST"
+    ],
+    "controlIds": [
+      "TRUST-APP-01",
+      "TRUST-DATA-01"
     ]
   }
 } satisfies Record<string, CanonicalSecurityGapRelationship>;

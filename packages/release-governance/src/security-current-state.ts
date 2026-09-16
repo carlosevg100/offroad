@@ -228,6 +228,7 @@ const canonicalSecurityCoverageCatalogue = [
     ],
     requiredGaps: [
       {gapRef: "SG-LIVE-CONFIG", severity: "critical", requiredStatus: "open"},
+      {gapRef: "SG-SOURCE-VERIFICATION-AUTHORITY", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENV-SEPARATION", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-SCHEMA-BEFORE-CODE", severity: "critical", requiredStatus: "open"},
       {gapRef: "SG-ENV-DATA-MAPPING", severity: "critical", requiredStatus: "open"},

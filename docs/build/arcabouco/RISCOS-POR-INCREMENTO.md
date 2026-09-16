@@ -45,3 +45,7 @@ O responsável técnico pelo incremento trata os riscos abaixo antes de pedir se
 | SG-ASSET-DISCOVERY | Cada onda inventaria o que cria; 23 fecha superfície | Dependências, serviços, imagens e caminhos externos classificados; checker rejeita superfície sem dono |
 
 Os marcos 12 e 17 incluem a revisão dos riscos vencidos de seus incrementos. A etapa 24 não recebe como “resolvido” um item apenas agendado. Dependência operacional que não possa ser satisfeita é reportada com opções concretas no incremento responsável; não acrescenta silenciosamente novos atos exclusivos do fundador.
+
+## Achado adicional na abertura da etapa 6
+
+`SG-SOURCE-VERIFICATION-AUTHORITY` (crítico): em staging, membro sem grant conseguiu alterar SHA-256 e `sha256_verified_at` pela RPC `record_document_verification`. Reprodução sintética com rollback, sem mutação em produção. Etapa 6 corrige a autoridade e a prova de bytes antes do backfill. O inventário passa a 19 lacunas, sem encerrar as 18 anteriores. A abertura do inventário registra o problema; não declara a função segura.
