@@ -1,0 +1,24 @@
+{
+  "captured_at": "2026-09-16T10:26:05.214763+00:00",
+  "migration": "reconcile_domain_event_audit_outbox",
+  "staging_version": "20260916102218",
+  "production_version": "20260916102242",
+  "initial_staging_only": "20260916101915",
+  "production_first_attempt": "rolled back: staging-only authorize_pack_distribution absent",
+  "reconciliation": "original SQL archived unchanged; idempotent successor handles only this optional staging surface",
+  "staging_tests": {
+    "domain_event_outbox.sql": "PASS",
+    "domain_event_outbox_revocation.sql": "PASS",
+    "rls_non_interference.sql": "PASS"
+  },
+  "security_advisors": {
+    "production": 0,
+    "staging": 0
+  },
+  "catalogue_objects": {
+    "production": 1450,
+    "staging": 1511
+  },
+  "alarms": "four installed and read back with existing console session; IAM unchanged",
+  "deployment": "pending"
+}

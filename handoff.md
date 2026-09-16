@@ -1,3 +1,7 @@
+## Wave 2: stage 4 schema and alarms installed
+
+Production `20260916102242` and staging `20260916102218` install the reconciled transactional event/outbox contract. The initial staging application `20260916101915` is archived unchanged; production rejected and rolled back that first candidate because pack distribution is a known staging-only surface. The successor retains that boundary. Three installed SQL contracts passed, security advisors report zero lints in both environments, and 1450/1511 catalogue objects are reconciled. Four CloudWatch alarms and filters are installed/read back through the existing authorized console session, with no IAM change. Final CI, main merge and real consumer deployment remain gates; see `docs/build/arcabouco/etapa-04-installation.json`.
+
 ## Wave 2: governed security inventory renewal
 
 ## Wave 2: stage 2 registration cutover installed

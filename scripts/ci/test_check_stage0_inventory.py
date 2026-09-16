@@ -22,6 +22,15 @@ class CoverageTest(unittest.TestCase):
     def test_reviewed_production_catalogue_is_covered(self):
         self.assertEqual(self.errors(), [])
 
+    def test_reconciliation_name_does_not_reintroduce_archived_history(self):
+        self.assertNotIn('staging_only_history_in_replay:domain_event_audit_outbox', self.errors())
+
+    def test_exact_archived_name_in_replay_is_rejected(self):
+        m = copy.deepcopy(self.manifest)
+        archived = next(x for x in m['staging_archive'] if x['name'] == 'domain_event_audit_outbox')
+        archived['name'] = 'reconcile_domain_event_audit_outbox'
+        self.assertIn('staging_only_history_in_replay:reconcile_domain_event_audit_outbox', self.errors(manifest=m))
+
     def test_new_public_overload_requires_its_own_decision(self):
         c = copy.deepcopy(self.catalogue)
         f = copy.deepcopy(next(x for x in c['objects'] if x['kind'] == 'function' and x['schema'] == 'public'))

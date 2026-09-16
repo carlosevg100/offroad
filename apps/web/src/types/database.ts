@@ -8486,8 +8486,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      claim_event_outbox_v1: { Args: { p_worker_token: string }; Returns: Json }
       claim_storage_rotation_v1: {
         Args: { p_worker_token: string }
+        Returns: Json
+      }
+      complete_event_outbox_v1: {
+        Args: {
+          p_capability: string
+          p_outbox_id: string
+          p_worker_token: string
+        }
         Returns: Json
       }
       complete_intake_processing: {

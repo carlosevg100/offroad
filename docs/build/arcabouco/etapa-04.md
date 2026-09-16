@@ -1,6 +1,6 @@
 # Etapa 4: eventos duráveis e auditoria transacional
 
-**Estado: implementação local; etapa não concluída.** A migração não foi aplicada permanentemente em staging nem em produção. Ensaios usam transação com rollback. Publicação depende do gate completo, CI, carimbos, implantação e alarmes instalados e verificados.
+**Estado: banco e alarmes instalados; etapa ainda não concluída.** Conciliação aplicada em staging `20260916102218` e produção `20260916102242`. Os três contratos SQL passaram no schema instalado, os dois advisors de segurança não apontaram lints e os catálogos foram conferidos. CI, merge e consumidor implantado permanecem gates para o completion.
 
 O worker existente consome referências da outbox em um laço independente e limitado, no mesmo processo e com a mesma credencial, sem criar intake artificial. Jobs documentais longos não atrasam a propagação. Não há Temporal nem novo orquestrador. A confirmação e o efeito interno ocorrem na mesma transação SQL; o worker não executa efeitos financeiros ou externos a partir do envelope.
 
@@ -24,6 +24,8 @@ O envelope TypeScript recusa campos sensíveis e efeitos desconhecidos. O consum
 
 A configuração revisável está em `apps/document-worker/monitoring/event-outbox-alarms.json`: heartbeat ausente por três minutos, backlog acima de cinco minutos por dois períodos, itens bloqueados e erros de consumo. O instalador em `scripts/ci/configure-event-outbox-alarms.py` usa uma sessão AWS já autorizada, testa os filtros com amostras em memória e compara a configuração instalada. Não altera IAM nem cria eventos sintéticos no produto. Referência: [sintaxe oficial de filtros CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntaxForMetricFilters.html).
 
-A CLI local está sem credenciais e o console redireciona para login. O caminho alternativo em preparação é um workflow manual no GitHub com a identidade OIDC já existente. Permissões de monitoramento não são inferidas do sucesso anterior de deploy ECS. Nenhuma permissão é ampliada automaticamente. A migração definitiva espera essa verificação; alarmes em arquivo ou mensagens de log não contam como alarmes instalados.
+Os quatro alarmes e filtros foram instalados e conferidos pela CLI autenticada temporariamente com a sessão AWS existente. Nenhuma política IAM foi alterada. A identidade OIDC do workflow continua sem `DescribeAlarms`; a conferência operacional desta entrega usa a sessão autorizada. O heartbeat deve sair do estado de ausência após implantar o consumidor.
+
+A primeira aplicação funcionou em staging, mas a tentativa em produção foi revertida porque `authorize_pack_distribution` é uma superfície exclusiva de staging já inventariada. O SQL aplicado ficou preservado em `docs/build/schema-history/staging-only-outbox/20260916101915_domain_event_audit_outbox.sql`. A nova migração de conciliação é idempotente, preserva os registros existentes e não promove essa superfície; o comando de introdução existente continua obrigatoriamente protegido. Nenhum carimbo anterior foi alterado.
 
 A etapa 22 continua responsável por retenção e revogação de ponta a ponta em todos os destinos. Esta etapa registra as mudanças atuais de autoridade e seu primeiro consumidor; não declara auditoria universal de todas as leituras, nem limpeza já implementada de busca e cache.
