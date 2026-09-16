@@ -1,4 +1,5 @@
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
+import {verifyLocalFixtureSources} from "./support/source-verification";
 import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
@@ -225,6 +226,9 @@ test.describe("Document-first intake (company journey)", () => {
       String(dataRoomExpectations.documents),
       {timeout: 120_000},
     );
+    if (process.env.OFFROAD_E2E_REQUIRE_EXECUTION_APPROVAL !== "1") {
+      await verifyLocalFixtureSources(new URL(page.url()).searchParams.get("session")!, account.email);
+    }
     await page.locator(".intake-operation-context__actions button[type=submit]").click();
 
     await expectNoErrorNotice(page);

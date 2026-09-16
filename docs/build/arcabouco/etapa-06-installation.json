@@ -1,0 +1,386 @@
+{
+  "production": {
+    "stamps": [
+      "20260916212202",
+      "20260916212209"
+    ],
+    "functions": [
+      {
+        "schema": "private",
+        "name": "authorize_source_version_download_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "c709945f2b586c89a6ae21734140e424"
+      },
+      {
+        "schema": "private",
+        "name": "bind_document_job_version_v1",
+        "signature": "",
+        "definition_md5": "24ec2f06902d670629a6948b6cdcdf8c"
+      },
+      {
+        "schema": "private",
+        "name": "bind_source_version_v1",
+        "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+        "definition_md5": "1f1e45db065c97b72ef8a9f431f4ce3e"
+      },
+      {
+        "schema": "private",
+        "name": "can_export_source_version_v1",
+        "signature": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "57d2d6b52401c2e985f8f7e42581f4df"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_source_version_v1",
+        "signature": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "ffe05be14e7ec130789533e941c536df"
+      },
+      {
+        "schema": "private",
+        "name": "detach_document_source_binding_v1",
+        "signature": "",
+        "definition_md5": "938e9c635771c661bbd97746d2116c88"
+      },
+      {
+        "schema": "private",
+        "name": "preserve_document_bytes_v1",
+        "signature": "",
+        "definition_md5": "359adbe88cf21d64456c689b5c4f0732"
+      },
+      {
+        "schema": "private",
+        "name": "project_document_source_version_v1",
+        "signature": "",
+        "definition_md5": "150ecb3a3e4a9104e3e9c24e08b2f488"
+      },
+      {
+        "schema": "private",
+        "name": "read_source_version_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "792a69568b8957b3bc3c57668c7e94e4"
+      },
+      {
+        "schema": "private",
+        "name": "record_document_verification",
+        "signature": "p_organization_id uuid, p_document_id uuid, p_sha256 text, p_processing_status text",
+        "definition_md5": "82ca97a9cc0a6dbdcf30afd9d0d7cfed"
+      },
+      {
+        "schema": "private",
+        "name": "register_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
+        "definition_md5": "980cfa13ac729b927c0c6b0981b8d55e"
+      },
+      {
+        "schema": "private",
+        "name": "register_source_verification_v1",
+        "signature": "p_job_id uuid, p_capability_token text, p_receipt jsonb",
+        "definition_md5": "b7157014e7c42a276a251d6a09d8c7b4"
+      },
+      {
+        "schema": "private",
+        "name": "register_source_version_v1",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+        "definition_md5": "554856fe27246dc3a9a41b8115a53cbb"
+      },
+      {
+        "schema": "private",
+        "name": "reject_source_version_mutation_v1",
+        "signature": "",
+        "definition_md5": "2896e07f60b93daa37b3f9efeba01c8f"
+      },
+      {
+        "schema": "private",
+        "name": "remove_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid",
+        "definition_md5": "4fed96f9b7fa646414aef1ba0a281129"
+      },
+      {
+        "schema": "private",
+        "name": "source_storage_is_unbound_v1",
+        "signature": "p_bucket text, p_path text",
+        "definition_md5": "a63e35eb49ee4f0ea6fe33de3df122f4"
+      },
+      {
+        "schema": "private",
+        "name": "source_storage_read_v1",
+        "signature": "p_bucket text, p_path text",
+        "definition_md5": "17b2b420192796092c709ff2ab12628c"
+      },
+      {
+        "schema": "private",
+        "name": "sync_source_projection_binding_v1",
+        "signature": "",
+        "definition_md5": "c58307e5de6903e27a335c035331a746"
+      },
+      {
+        "schema": "private",
+        "name": "worker_record_document_result",
+        "signature": "p_job_id uuid, p_capability_token text, p_scan_result jsonb, p_profile jsonb, p_layer jsonb",
+        "definition_md5": "b4da080e9ff794d48a68f8e29a058cf9"
+      },
+      {
+        "schema": "public",
+        "name": "authorize_source_version_download_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "8256bc7e1c0cae48b2465e7c494c9c61"
+      },
+      {
+        "schema": "public",
+        "name": "bind_source_version_v1",
+        "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+        "definition_md5": "c86007d77f2b2c23088b4cb8630721e2"
+      },
+      {
+        "schema": "public",
+        "name": "read_source_version_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "af6eb8c38aecceab0e2ab454f04aea0f"
+      },
+      {
+        "schema": "public",
+        "name": "record_document_verification",
+        "signature": "p_organization_id uuid, p_document_id uuid, p_sha256 text, p_processing_status text",
+        "definition_md5": "0fa71d13fa0543af2f123364b9e1090a"
+      },
+      {
+        "schema": "public",
+        "name": "register_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
+        "definition_md5": "b6de71b09c915255b09266d2f755087f"
+      },
+      {
+        "schema": "public",
+        "name": "register_source_version_v1",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+        "definition_md5": "be711f3ba9567d3bec3c80b952c3b140"
+      },
+      {
+        "schema": "public",
+        "name": "remove_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid",
+        "definition_md5": "c82156e9f9de057ba57d38619501c19e"
+      },
+      {
+        "schema": "public",
+        "name": "worker_record_document_result",
+        "signature": "p_job_id uuid, p_capability_token text, p_scan_result jsonb, p_profile jsonb, p_layer jsonb",
+        "definition_md5": "9e1284b10ac6afdb644394b404fb24cd"
+      }
+    ],
+    "backfill": [
+      {
+        "checked_at": "2026-09-16 21:23:04.361326+00",
+        "documents": 28,
+        "sources": 28,
+        "versions": 28,
+        "bindings": 28,
+        "legacy_unverified": 28,
+        "preserved_historical_claims": 17,
+        "currently_verified_projections": 0,
+        "worker_verification_receipts": 0,
+        "mismatches": 0,
+        "profiles": 24,
+        "layers": 24,
+        "legacy_public_execute": false,
+        "legacy_private_execute": false
+      }
+    ]
+  },
+  "staging": {
+    "stamps": [
+      "20260916211117",
+      "20260916211402"
+    ],
+    "functions": [
+      {
+        "schema": "private",
+        "name": "authorize_source_version_download_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "c709945f2b586c89a6ae21734140e424"
+      },
+      {
+        "schema": "private",
+        "name": "bind_document_job_version_v1",
+        "signature": "",
+        "definition_md5": "24ec2f06902d670629a6948b6cdcdf8c"
+      },
+      {
+        "schema": "private",
+        "name": "bind_source_version_v1",
+        "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+        "definition_md5": "1f1e45db065c97b72ef8a9f431f4ce3e"
+      },
+      {
+        "schema": "private",
+        "name": "can_export_source_version_v1",
+        "signature": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "57d2d6b52401c2e985f8f7e42581f4df"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_source_version_v1",
+        "signature": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "ffe05be14e7ec130789533e941c536df"
+      },
+      {
+        "schema": "private",
+        "name": "detach_document_source_binding_v1",
+        "signature": "",
+        "definition_md5": "938e9c635771c661bbd97746d2116c88"
+      },
+      {
+        "schema": "private",
+        "name": "preserve_document_bytes_v1",
+        "signature": "",
+        "definition_md5": "359adbe88cf21d64456c689b5c4f0732"
+      },
+      {
+        "schema": "private",
+        "name": "project_document_source_version_v1",
+        "signature": "",
+        "definition_md5": "150ecb3a3e4a9104e3e9c24e08b2f488"
+      },
+      {
+        "schema": "private",
+        "name": "read_source_version_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "792a69568b8957b3bc3c57668c7e94e4"
+      },
+      {
+        "schema": "private",
+        "name": "record_document_verification",
+        "signature": "p_organization_id uuid, p_document_id uuid, p_sha256 text, p_processing_status text",
+        "definition_md5": "82ca97a9cc0a6dbdcf30afd9d0d7cfed"
+      },
+      {
+        "schema": "private",
+        "name": "register_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
+        "definition_md5": "980cfa13ac729b927c0c6b0981b8d55e"
+      },
+      {
+        "schema": "private",
+        "name": "register_source_verification_v1",
+        "signature": "p_job_id uuid, p_capability_token text, p_receipt jsonb",
+        "definition_md5": "b7157014e7c42a276a251d6a09d8c7b4"
+      },
+      {
+        "schema": "private",
+        "name": "register_source_version_v1",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+        "definition_md5": "554856fe27246dc3a9a41b8115a53cbb"
+      },
+      {
+        "schema": "private",
+        "name": "reject_source_version_mutation_v1",
+        "signature": "",
+        "definition_md5": "2896e07f60b93daa37b3f9efeba01c8f"
+      },
+      {
+        "schema": "private",
+        "name": "remove_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid",
+        "definition_md5": "4fed96f9b7fa646414aef1ba0a281129"
+      },
+      {
+        "schema": "private",
+        "name": "source_storage_is_unbound_v1",
+        "signature": "p_bucket text, p_path text",
+        "definition_md5": "a63e35eb49ee4f0ea6fe33de3df122f4"
+      },
+      {
+        "schema": "private",
+        "name": "source_storage_read_v1",
+        "signature": "p_bucket text, p_path text",
+        "definition_md5": "17b2b420192796092c709ff2ab12628c"
+      },
+      {
+        "schema": "private",
+        "name": "sync_source_projection_binding_v1",
+        "signature": "",
+        "definition_md5": "c58307e5de6903e27a335c035331a746"
+      },
+      {
+        "schema": "private",
+        "name": "worker_record_document_result",
+        "signature": "p_job_id uuid, p_capability_token text, p_scan_result jsonb, p_profile jsonb, p_layer jsonb",
+        "definition_md5": "b4da080e9ff794d48a68f8e29a058cf9"
+      },
+      {
+        "schema": "public",
+        "name": "authorize_source_version_download_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "8256bc7e1c0cae48b2465e7c494c9c61"
+      },
+      {
+        "schema": "public",
+        "name": "bind_source_version_v1",
+        "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+        "definition_md5": "c86007d77f2b2c23088b4cb8630721e2"
+      },
+      {
+        "schema": "public",
+        "name": "read_source_version_v1",
+        "signature": "p_version_id uuid",
+        "definition_md5": "af6eb8c38aecceab0e2ab454f04aea0f"
+      },
+      {
+        "schema": "public",
+        "name": "record_document_verification",
+        "signature": "p_organization_id uuid, p_document_id uuid, p_sha256 text, p_processing_status text",
+        "definition_md5": "0fa71d13fa0543af2f123364b9e1090a"
+      },
+      {
+        "schema": "public",
+        "name": "register_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
+        "definition_md5": "b6de71b09c915255b09266d2f755087f"
+      },
+      {
+        "schema": "public",
+        "name": "register_source_version_v1",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+        "definition_md5": "be711f3ba9567d3bec3c80b952c3b140"
+      },
+      {
+        "schema": "public",
+        "name": "remove_intake_document_command",
+        "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid",
+        "definition_md5": "c82156e9f9de057ba57d38619501c19e"
+      },
+      {
+        "schema": "public",
+        "name": "worker_record_document_result",
+        "signature": "p_job_id uuid, p_capability_token text, p_scan_result jsonb, p_profile jsonb, p_layer jsonb",
+        "definition_md5": "9e1284b10ac6afdb644394b404fb24cd"
+      }
+    ],
+    "backfill": [
+      {
+        "checked_at": "2026-09-16 21:23:13.43936+00",
+        "documents": 0,
+        "sources": 0,
+        "versions": 0,
+        "bindings": 0,
+        "legacy_unverified": 0,
+        "preserved_historical_claims": 0,
+        "currently_verified_projections": 0,
+        "worker_verification_receipts": 0,
+        "mismatches": 0,
+        "profiles": 0,
+        "layers": 0,
+        "legacy_public_execute": false,
+        "legacy_private_execute": false
+      }
+    ]
+  },
+  "sqlMd5": [
+    "e60fd8157897f27a62dc34b135deab2c",
+    "21277ebbddd939d43cecc08a3bfb5901"
+  ],
+  "securityAdvisors": {
+    "production": [],
+    "staging": []
+  }
+}

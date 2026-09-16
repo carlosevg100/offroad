@@ -33,4 +33,20 @@ describe("leased job storage authority",()=>{
   const f=fixture();f.rpc.mockResolvedValueOnce({data:scope,error:null}).mockResolvedValueOnce({error:{code:"42501"}});
   await expect(f.client.uploadLayer(job,new Uint8Array([1]))).rejects.toThrow("authorization denied");
  });
+ it("reuses identical layer bytes on retry without enabling overwrite",async()=>{
+  const f=fixture();f.upload.mockResolvedValue({error:{statusCode:"409"}});
+  await f.client.uploadLayer(job,new TextEncoder().encode("source"));
+  expect(f.upload.mock.calls[0]?.[2]).toEqual({contentType:"application/json",upsert:false});
+  expect(f.rpc).toHaveBeenCalledTimes(2);
+ });
+ it("rejects conflicting bytes at an existing layer path",async()=>{
+  const f=fixture();f.upload.mockResolvedValue({error:{statusCode:"409"}});
+  await expect(f.client.uploadLayer(job,new TextEncoder().encode("different"))).rejects.toThrow("immutable bytes conflict");
+ });
+ it("rechecks revocation after reading an idempotent layer",async()=>{
+  const f=fixture();f.upload.mockResolvedValue({error:{statusCode:"409"}});
+  f.rpc.mockResolvedValueOnce({data:scope,error:null}).mockResolvedValueOnce({error:{code:"42501"}});
+  await expect(f.client.uploadLayer(job,new TextEncoder().encode("source"))).rejects.toThrow("authorization denied");
+ });
+
 });

@@ -2895,7 +2895,7 @@ export type Database = {
             foreignKeyName: "case_retrieval_chunks_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3718,6 +3718,21 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "document_layers_exact_source_version_fkey"
+            columns: [
+              "organization_id",
+              "source_document_id",
+              "document_version",
+            ]
+            isOneToOne: true
+            referencedRelation: "source_versions"
+            referencedColumns: [
+              "organization_id",
+              "id",
+              "legacy_document_version",
+            ]
+          },
+          {
             foreignKeyName: "document_layers_organization_id_processing_run_id_fkey"
             columns: ["organization_id", "processing_run_id"]
             isOneToOne: false
@@ -3728,7 +3743,7 @@ export type Database = {
             foreignKeyName: "document_layers_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3832,6 +3847,21 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "document_profiles_exact_source_version_fkey"
+            columns: [
+              "organization_id",
+              "source_document_id",
+              "document_version",
+            ]
+            isOneToOne: true
+            referencedRelation: "source_versions"
+            referencedColumns: [
+              "organization_id",
+              "id",
+              "legacy_document_version",
+            ]
+          },
+          {
             foreignKeyName: "document_profiles_organization_id_processing_run_id_fkey"
             columns: ["organization_id", "processing_run_id"]
             isOneToOne: false
@@ -3842,7 +3872,7 @@ export type Database = {
             foreignKeyName: "document_profiles_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -4228,7 +4258,7 @@ export type Database = {
             foreignKeyName: "evidence_facts_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -5008,7 +5038,7 @@ export type Database = {
             foreignKeyName: "intake_field_candidates_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
           {
@@ -6904,7 +6934,7 @@ export type Database = {
             foreignKeyName: "processing_jobs_organization_id_source_document_id_fkey"
             columns: ["organization_id", "source_document_id"]
             isOneToOne: false
-            referencedRelation: "source_documents"
+            referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -8372,6 +8402,63 @@ export type Database = {
           },
         ]
       }
+      source_bindings: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          request_id: string
+          resource_id: string | null
+          resource_reference: string
+          revoked_at: string | null
+          revoked_by: string | null
+          source_version_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          organization_id: string
+          request_id: string
+          resource_id?: string | null
+          resource_reference: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source_version_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          request_id?: string
+          resource_id?: string | null
+          resource_reference?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          source_version_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_bindings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_bindings_organization_id_source_version_id_fkey"
+            columns: ["organization_id", "source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       source_documents: {
         Row: {
           bucket_id: string
@@ -8383,6 +8470,7 @@ export type Database = {
           evidence_rank: number | null
           id: string
           intake_session_id: string | null
+          logical_source_id: string
           mime_type: string | null
           object_path: string
           opportunity_id: string | null
@@ -8404,6 +8492,7 @@ export type Database = {
           evidence_rank?: number | null
           id?: string
           intake_session_id?: string | null
+          logical_source_id?: string
           mime_type?: string | null
           object_path: string
           opportunity_id?: string | null
@@ -8425,6 +8514,7 @@ export type Database = {
           evidence_rank?: number | null
           id?: string
           intake_session_id?: string | null
+          logical_source_id?: string
           mime_type?: string | null
           object_path?: string
           opportunity_id?: string | null
@@ -8445,11 +8535,128 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
           {
+            foreignKeyName: "source_documents_organization_id_logical_source_id_fkey"
+            columns: ["organization_id", "logical_source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "source_documents_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
             isOneToOne: false
             referencedRelation: "opportunities"
             referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      source_versions: {
+        Row: {
+          bucket_id: string
+          byte_size: number | null
+          created_at: string
+          created_by: string
+          declared_sha256: string | null
+          id: string
+          initial_verification_state: string
+          legacy_document_version: number
+          legacy_verification_claim: string | null
+          mime_type: string | null
+          object_path: string
+          organization_id: string
+          original_name: string
+          source_id: string
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          bucket_id: string
+          byte_size?: number | null
+          created_at?: string
+          created_by: string
+          declared_sha256?: string | null
+          id: string
+          initial_verification_state: string
+          legacy_document_version: number
+          legacy_verification_claim?: string | null
+          mime_type?: string | null
+          object_path: string
+          organization_id: string
+          original_name: string
+          source_id: string
+          updated_at?: string
+          version_no: number
+        }
+        Update: {
+          bucket_id?: string
+          byte_size?: number | null
+          created_at?: string
+          created_by?: string
+          declared_sha256?: string | null
+          id?: string
+          initial_verification_state?: string
+          legacy_document_version?: number
+          legacy_verification_claim?: string | null
+          mime_type?: string | null
+          object_path?: string
+          organization_id?: string
+          original_name?: string
+          source_id?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_versions_organization_id_source_id_fkey"
+            columns: ["organization_id", "source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      sources: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          origin_resource_id: string | null
+          origin_resource_reference: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          organization_id: string
+          origin_resource_id?: string | null
+          origin_resource_reference: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          origin_resource_id?: string | null
+          origin_resource_reference?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -8718,6 +8925,10 @@ export type Database = {
         Args: { p_material_fingerprint: string; p_plan_id: string }
         Returns: string
       }
+      authorize_source_version_download_v1: {
+        Args: { p_version_id: string }
+        Returns: Json
+      }
       begin_intake_processing: {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
@@ -8732,6 +8943,14 @@ export type Database = {
           p_trigger: string
         }
         Returns: Json
+      }
+      bind_source_version_v1: {
+        Args: {
+          p_request_id: string
+          p_resource_id: string
+          p_version_id: string
+        }
+        Returns: string
       }
       claim_case_brief: {
         Args: {
@@ -9069,6 +9288,7 @@ export type Database = {
         Args: { p_session_id: string }
         Returns: Json
       }
+      read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
       read_workspace_access_v1: { Args: never; Returns: Json }
       record_agent_change_proposal: {
         Args: {
@@ -9294,6 +9514,22 @@ export type Database = {
           p_fund_strategy?: string
           p_mandate?: Json
           p_organization_id: string
+        }
+        Returns: Json
+      }
+      register_source_version_v1: {
+        Args: {
+          p_bucket_id: string
+          p_byte_size: number
+          p_document_id: string
+          p_event_id: string
+          p_mime_type: string
+          p_object_path: string
+          p_organization_id: string
+          p_original_name: string
+          p_session_id: string
+          p_sha256: string
+          p_source_id?: string
         }
         Returns: Json
       }

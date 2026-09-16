@@ -12,6 +12,7 @@ O responsável técnico pelo incremento trata os riscos abaixo antes de pedir se
 | Deduplicação revelar documento de outro escopo | 6 | Busca de hash limitada ao escopo autorizado e negação entre tenants e dossiês |
 | Hash histórico presumido verdadeiro | 6 | Backfill distingue `legacy_unverified`; verificação exige bytes e evento, sem fabricar prova |
 | Remoção de vínculo destruir outro uso | 6 | Dois vínculos; remover um conserva versão e uso autorizado restante |
+| Inspeção de PDF confundir bytes de imagem com código ou perder ações comprimidas | 6 | Inspeção estrutural; regressões de nomes escapados/objetos comprimidos e limites de expansão/profundidade, sem alterar o corpus |
 | Identidade pública ampliar memória privada | 7, 17 e 18 | Direitos antes da busca; inputs adicionais declarados, delegação e dependências; loader privado entre dossiês permanece desativado até essas provas |
 | Ranking transformar hipótese em dado adotado | 8 e 9 | Observações coexistem; adoção explícita, versionada por finalidade |
 | Publicação sem ato humano ou aprovação reaproveitada | 12, 13 e 20 | Versão e efeito fixados; worker não publica; nova revisão material exige novo ato |

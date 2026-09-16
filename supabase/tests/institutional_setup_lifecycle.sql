@@ -167,7 +167,9 @@ do $$declare accepted boolean:=false;begin
 end $$;
 reset role;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000881","role":"authenticated"}',true);
-update public.source_documents set document_version=document_version+1 where id='50000000-0000-4000-8000-000000000881';
+insert into public.source_documents(organization_id,intake_session_id,opportunity_id,object_path,original_name,mime_type,byte_size,sha256,document_version,logical_source_id,created_by,processing_status) select organization_id,intake_session_id,opportunity_id,object_path||'.next',original_name,mime_type,byte_size,repeat('e',64),document_version+1,logical_source_id,created_by,'ready' from public.source_documents where id='50000000-0000-4000-8000-000000000881';
+-- Replacing the active input detaches the old projection; its bytes remain in source_versions.
+delete from public.source_documents where id='50000000-0000-4000-8000-000000000881';
 set local role authenticated;
 do $$declare result jsonb;begin
  result:=public.worker_load_institutional_model_context_v1(current_setting('test.setup_job')::uuid,repeat('w',64));

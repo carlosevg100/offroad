@@ -1731,6 +1731,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.authorize_source_version_download_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.authorize_source_version_download_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "authorize_source_version_download_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.authorize_source_version_download_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "authorize_source_version_download_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 658,
+          "anchor": "create function private.authorize_source_version_download_v1(p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.backfill_dossiers_v1()",
       "kind": "function",
       "catalogues": {
@@ -2022,6 +2087,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.bind_document_job_version_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_document_job_version_v1()",
+          "kind": "function",
+          "name": "bind_document_job_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_document_job_version_v1()",
+          "kind": "function",
+          "name": "bind_document_job_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 675,
+          "anchor": "create function private.bind_document_job_version_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.bind_execution_brief_dispatch(p_brief_id uuid, p_job_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -2131,6 +2251,71 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+          "kind": "function",
+          "name": "bind_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+          "kind": "function",
+          "name": "bind_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 286,
+          "anchor": "create function private.bind_source_version_v1(p_version_id uuid,p_resource_id uuid,p_request_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.bind_workspace_group_after_capital_project_insert()",
@@ -3059,6 +3244,61 @@
       "last_review_stage": "1A"
     },
     {
+      "id": "function:private.can_export_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_export_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+          "kind": "function",
+          "name": "can_export_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_export_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+          "kind": "function",
+          "name": "can_export_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 648,
+          "anchor": "create function private.can_export_source_version_v1(p_organization_id uuid,p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.can_manage_fund(p_fund_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3395,6 +3635,71 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+          "kind": "function",
+          "name": "can_read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+          "kind": "function",
+          "name": "can_read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 51,
+          "anchor": "create function private.can_read_source_version_v1(p_organization_id uuid,p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.can_review_intake_claims(p_organization_id uuid, p_session_id uuid)",
@@ -5811,6 +6116,61 @@
         }
       ],
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "function:private.detach_document_source_binding_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.detach_document_source_binding_v1()",
+          "kind": "function",
+          "name": "detach_document_source_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.detach_document_source_binding_v1()",
+          "kind": "function",
+          "name": "detach_document_source_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 637,
+          "anchor": "create function private.detach_document_source_binding_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.document_work_request_binding_v1(p_job_id uuid)",
@@ -12275,6 +12635,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.preserve_document_bytes_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.preserve_document_bytes_v1()",
+          "kind": "function",
+          "name": "preserve_document_bytes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.preserve_document_bytes_v1()",
+          "kind": "function",
+          "name": "preserve_document_bytes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 114,
+          "anchor": "create function private.preserve_document_bytes_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.project_canonical_inputs(p_organization_id uuid, p_project_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -12389,6 +12804,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.project_document_source_version_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_document_source_version_v1()",
+          "kind": "function",
+          "name": "project_document_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_document_source_version_v1()",
+          "kind": "function",
+          "name": "project_document_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 90,
+          "anchor": "create function private.project_document_source_version_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.promote_organization_rollout(p_organization_id uuid, p_to_state text, p_approved_by uuid, p_approval_note text, p_wave_1_cohort_id uuid, p_wave_2_cohort_id uuid)",
@@ -14573,6 +15043,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.read_source_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_source_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_source_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 312,
+          "anchor": "create function private.read_source_version_v1(p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -15676,11 +16211,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -15699,11 +16229,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -15714,10 +16239,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 6, 7, 17",
-      "reason": "preservar origem e execução sob autorização de recurso e versão fixada",
+      "owner": "Codex — etapa 6",
+      "decision": "congelar",
+      "stage": "6",
+      "reason": "RPC legada sem EXECUTE; confirmação por membership retirada. Só recibo de job autorizado comprova bytes.",
       "sources": [
         {
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
@@ -15729,6 +16254,12 @@
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 1013,
           "anchor": "create or replace function private.record_document_verification(p_organization_id uuid, p_document_id uuid, p_sha256 text, p_processing_status text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 125,
+          "anchor": "create or replace function private.record_document_verification(p_organization_id uuid,p_document_id uuid,p_sha256 text,p_processing_status text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -17167,7 +17698,7 @@
             "search_path=\"\""
           ],
           "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
-          "security_definer": true
+          "security_definer": false
         },
         "staging": {
           "id": "function:private.register_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text)",
@@ -17190,13 +17721,13 @@
             "search_path=\"\""
           ],
           "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
-          "security_definer": true
+          "security_definer": false
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex — etapa 6",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
       "sources": [
         {
           "path": "supabase/migrations/20260825171945_m0_capital_need_documents.sql",
@@ -17208,6 +17739,12 @@
           "path": "supabase/migrations/20260831133035_idempotent_intake_document_upload.sql",
           "line": 5,
           "anchor": "create or replace function private.register_intake_document_command(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 275,
+          "anchor": "create or replace function private.register_intake_document_command(p_organization_id uuid,p_session_id uuid,p_event_id uuid,p_document_id uuid,p_bucket_id text,p_object_path text,p_original_name text,p_mime_type text,p_byte_size bigint,p_sha256 text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -17345,6 +17882,126 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "function:private.register_source_verification_v1(p_job_id uuid, p_capability_token text, p_receipt jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_source_verification_v1(p_job_id uuid, p_capability_token text, p_receipt jsonb)",
+          "kind": "function",
+          "name": "register_source_verification_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_receipt jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.register_source_verification_v1(p_job_id uuid, p_capability_token text, p_receipt jsonb)",
+          "kind": "function",
+          "name": "register_source_verification_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_receipt jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 343,
+          "anchor": "create function private.register_source_verification_v1(p_job_id uuid,p_capability_token text,p_receipt jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+          "kind": "function",
+          "name": "register_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+          "kind": "function",
+          "name": "register_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 130,
+          "anchor": "create or replace function private.register_source_version_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.reject_control_ledger_mutation()",
@@ -17512,6 +18169,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.reject_source_version_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reject_source_version_mutation_v1()",
+          "kind": "function",
+          "name": "reject_source_version_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.reject_source_version_mutation_v1()",
+          "kind": "function",
+          "name": "reject_source_version_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 108,
+          "anchor": "create function private.reject_source_version_mutation_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
       "kind": "function",
       "catalogues": {
@@ -17676,10 +18388,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex — etapa 6",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
       "sources": [
         {
           "path": "supabase/migrations/20260825171945_m0_capital_need_documents.sql",
@@ -17691,6 +18403,12 @@
           "path": "supabase/migrations/20260825171945_m0_capital_need_documents.sql",
           "line": 533,
           "anchor": "create or replace function public.remove_intake_document_command(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 557,
+          "anchor": "create or replace function private.remove_intake_document_command(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -21902,6 +22620,136 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "source_storage_is_unbound_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "source_storage_is_unbound_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 371,
+          "anchor": "create function private.source_storage_is_unbound_v1(p_bucket text,p_path text) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.source_storage_read_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_storage_read_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "source_storage_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_storage_read_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "source_storage_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 669,
+          "anchor": "create or replace function private.source_storage_read_v1(p_bucket text,p_path text) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:private.start_advisor_project_in_group_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb, p_group_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -24588,6 +25436,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "function:private.sync_source_projection_binding_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.sync_source_projection_binding_v1()",
+          "kind": "function",
+          "name": "sync_source_projection_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.sync_source_projection_binding_v1()",
+          "kind": "function",
+          "name": "sync_source_projection_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 690,
+          "anchor": "create function private.sync_source_projection_binding_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:private.sync_worker_principal_v1()",
@@ -32796,10 +33699,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex — etapa 6",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
       "sources": [
         {
           "path": "supabase/migrations/20260818172243_privilege_hardening_no_anon_and_private_commands.sql",
@@ -32818,6 +33721,12 @@
           "line": 99,
           "anchor": "alter function public.worker_record_document_result(uuid, text, jsonb, jsonb, jsonb) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 386,
+          "anchor": "create or replace function private.worker_record_document_result(",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -36008,6 +36917,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.authorize_source_version_download_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.authorize_source_version_download_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "authorize_source_version_download_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.authorize_source_version_download_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "authorize_source_version_download_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 666,
+          "anchor": "create function public.authorize_source_version_download_v1(p_version_id uuid) returns jsonb language sql security invoker set search_path='' as $$select private.authorize_source_version_download_v1(p_version_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:public.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -36180,6 +37154,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+          "kind": "function",
+          "name": "bind_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+          "kind": "function",
+          "name": "bind_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 307,
+          "anchor": "create function public.bind_source_version_v1(p_version_id uuid,p_resource_id uuid,p_request_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:public.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
@@ -40879,6 +41918,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.read_source_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_source_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_source_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 323,
+          "anchor": "create function public.read_source_version_v1(p_version_id uuid) returns jsonb language sql security invoker set search_path='' as $$select private.read_source_version_v1(p_version_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "function:public.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -41601,16 +42705,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -41629,16 +42723,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -41649,10 +42733,10 @@
           "security_definer": false
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 6, 7, 17",
-      "reason": "preservar origem e execução sob autorização de recurso e versão fixada",
+      "owner": "Codex — etapa 6",
+      "decision": "congelar",
+      "stage": "6",
+      "reason": "RPC legada sem EXECUTE; confirmação por membership retirada. Só recibo de job autorizado comprova bytes.",
       "sources": [
         {
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
@@ -42791,6 +43875,71 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "function:public.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+          "kind": "function",
+          "name": "register_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+          "kind": "function",
+          "name": "register_source_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 279,
+          "anchor": "create function public.register_source_version_v1(p_organization_id uuid,p_session_id uuid,p_event_id uuid,p_document_id uuid,p_bucket_id text,p_object_path text,p_original_name text,p_mime_type text,p_byte_size bigint,p_sha256 text,p_source_id uuid default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "function:public.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
@@ -60483,6 +61632,53 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:private.source_version_verifications.source_version_verifications_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.source_version_verifications.source_version_verifications_deny_clients",
+          "kind": "policy",
+          "name": "source_version_verifications_deny_clients",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_version_verifications",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.source_version_verifications.source_version_verifications_deny_clients",
+          "kind": "policy",
+          "name": "source_version_verifications_deny_clients",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_version_verifications",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 75,
+          "anchor": "create policy source_version_verifications_deny_clients on private.source_version_verifications for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "policy:private.storage_path_rotations.storage_path_rotations_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -71793,6 +72989,53 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:public.source_bindings.source_bindings_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.source_bindings.source_bindings_select_authorized",
+          "kind": "policy",
+          "name": "source_bindings_select_authorized",
+          "qual": "(private.can_access_resource_v1(organization_id, resource_id, 'read'::text) AND private.can_read_source_version_v1(organization_id, source_version_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_bindings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.source_bindings.source_bindings_select_authorized",
+          "kind": "policy",
+          "name": "source_bindings_select_authorized",
+          "qual": "(private.can_access_resource_v1(organization_id, resource_id, 'read'::text) AND private.can_read_source_version_v1(organization_id, source_version_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_bindings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 74,
+          "anchor": "create policy source_bindings_select_authorized on public.source_bindings for select to authenticated using(private.can_access_resource_v1(organization_id,resource_id,'read') and private.can_read_source_version_v1(organization_id,source_version_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "policy:public.source_documents.source_documents_insert",
       "kind": "policy",
       "catalogues": {
@@ -71964,6 +73207,100 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:public.source_versions.source_versions_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.source_versions.source_versions_select_authorized",
+          "kind": "policy",
+          "name": "source_versions_select_authorized",
+          "qual": "private.can_read_source_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.source_versions.source_versions_select_authorized",
+          "kind": "policy",
+          "name": "source_versions_select_authorized",
+          "qual": "private.can_read_source_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 73,
+          "anchor": "create policy source_versions_select_authorized on public.source_versions for select to authenticated using(private.can_read_source_version_v1(organization_id,id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "policy:public.sources.sources_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.sources.sources_select_authorized",
+          "kind": "policy",
+          "name": "sources_select_authorized",
+          "qual": "private.can_access_resource_v1(organization_id, origin_resource_id, 'read'::text)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "sources",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.sources.sources_select_authorized",
+          "kind": "policy",
+          "name": "sources_select_authorized",
+          "qual": "private.can_access_resource_v1(organization_id, origin_resource_id, 'read'::text)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "sources",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 72,
+          "anchor": "create policy sources_select_authorized on public.sources for select to authenticated using(private.can_access_resource_v1(organization_id,origin_resource_id,'read'));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "policy:public.structure_scenarios.structure_scenarios_all",
@@ -73312,6 +74649,147 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_no_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.source_version_storage_no_delete",
+          "kind": "policy",
+          "name": "source_version_storage_no_delete",
+          "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.source_version_storage_no_delete",
+          "kind": "policy",
+          "name": "source_version_storage_no_delete",
+          "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 379,
+          "anchor": "create policy source_version_storage_no_delete on storage.objects as restrictive for delete to authenticated using(private.source_storage_is_unbound_v1(bucket_id,name));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_no_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.source_version_storage_no_update",
+          "kind": "policy",
+          "name": "source_version_storage_no_update",
+          "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "private.source_storage_is_unbound_v1(bucket_id, name)"
+        },
+        "staging": {
+          "id": "policy:storage.objects.source_version_storage_no_update",
+          "kind": "policy",
+          "name": "source_version_storage_no_update",
+          "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "private.source_storage_is_unbound_v1(bucket_id, name)"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 378,
+          "anchor": "create policy source_version_storage_no_update on storage.objects as restrictive for update to authenticated using(private.source_storage_is_unbound_v1(bucket_id,name)) with check(private.source_storage_is_unbound_v1(bucket_id,name));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_read",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.source_version_storage_read",
+          "kind": "policy",
+          "name": "source_version_storage_read",
+          "qual": "private.source_storage_read_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.source_version_storage_read",
+          "kind": "policy",
+          "name": "source_version_storage_read",
+          "qual": "private.source_storage_read_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 377,
+          "anchor": "create policy source_version_storage_read on storage.objects as restrictive for select to authenticated using(private.source_storage_read_v1(bucket_id,name));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "policy:storage.objects.storage_rotation_insert",
@@ -79061,6 +80539,125 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "r:private.source_version_verifications",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.source_version_verifications",
+          "rls": true,
+          "kind": "table",
+          "name": "source_version_verifications",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.source_version_verifications",
+          "rls": true,
+          "kind": "table",
+          "name": "source_version_verifications",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 42,
+          "anchor": "create table private.source_version_verifications (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "r:private.storage_path_rotations",
@@ -105559,6 +107156,135 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.source_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.source_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "source_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.source_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "source_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 22,
+          "anchor": "create table public.source_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "r:public.source_documents",
       "kind": "table",
       "catalogues": {
@@ -105766,6 +107492,264 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:public.source_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.source_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "source_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.source_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "source_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 10,
+          "anchor": "create table public.source_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "r:public.sources",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.sources",
+          "rls": true,
+          "kind": "table",
+          "name": "sources",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.sources",
+          "rls": true,
+          "kind": "table",
+          "name": "sources",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 3,
+          "anchor": "create table public.sources (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "r:public.structure_scenarios",
@@ -108769,6 +110753,84 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_verifications_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_version_verifications.source_verifications_audit",
+          "kind": "trigger",
+          "name": "source_verifications_audit",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_verifications_audit AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_version_verifications.source_verifications_audit",
+          "kind": "trigger",
+          "name": "source_verifications_audit",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_verifications_audit AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 384,
+          "anchor": "create trigger source_verifications_audit after insert on private.source_version_verifications for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_verifications_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_version_verifications.source_verifications_immutable",
+          "kind": "trigger",
+          "name": "source_verifications_immutable",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_verifications_immutable BEFORE DELETE OR UPDATE ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_version_verifications.source_verifications_immutable",
+          "kind": "trigger",
+          "name": "source_verifications_immutable",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_verifications_immutable BEFORE DELETE OR UPDATE ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 112,
+          "anchor": "create trigger source_verifications_immutable before update or delete on private.source_version_verifications for each row execute function private.reject_source_version_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "trigger:private.storage_path_rotations.storage_path_rotations_audit",
@@ -116002,6 +118064,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_source_version",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.processing_jobs_source_version",
+          "kind": "trigger",
+          "name": "processing_jobs_source_version",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_document_job_version_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_source_version BEFORE INSERT OR UPDATE OF source_document_id, payload ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_document_job_version_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.processing_jobs_source_version",
+          "kind": "trigger",
+          "name": "processing_jobs_source_version",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_document_job_version_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_source_version BEFORE INSERT OR UPDATE OF source_document_id, payload ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_document_job_version_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 687,
+          "anchor": "create trigger processing_jobs_source_version before insert or update of source_document_id,payload on public.processing_jobs for each row execute function private.bind_document_job_version_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "trigger:public.processing_jobs.provider_case_fit_completion_guard",
       "kind": "trigger",
       "catalogues": {
@@ -117493,6 +119594,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.source_bindings.source_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_bindings.source_bindings_audit",
+          "kind": "trigger",
+          "name": "source_bindings_audit",
+          "table": "source_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_bindings_audit AFTER INSERT OR DELETE OR UPDATE ON public.source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_bindings.source_bindings_audit",
+          "kind": "trigger",
+          "name": "source_bindings_audit",
+          "table": "source_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_bindings_audit AFTER INSERT OR DELETE OR UPDATE ON public.source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 383,
+          "anchor": "create trigger source_bindings_audit after insert or update or delete on public.source_bindings for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "trigger:public.source_documents.execution_approval_document_lock",
       "kind": "trigger",
       "catalogues": {
@@ -117569,6 +119709,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.source_documents.source_documents_detach_binding",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_documents.source_documents_detach_binding",
+          "kind": "trigger",
+          "name": "source_documents_detach_binding",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.detach_document_source_binding_v1()",
+          "definition": "CREATE TRIGGER source_documents_detach_binding AFTER DELETE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.detach_document_source_binding_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_documents.source_documents_detach_binding",
+          "kind": "trigger",
+          "name": "source_documents_detach_binding",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.detach_document_source_binding_v1()",
+          "definition": "CREATE TRIGGER source_documents_detach_binding AFTER DELETE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.detach_document_source_binding_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 644,
+          "anchor": "create trigger source_documents_detach_binding after delete on public.source_documents for each row execute function private.detach_document_source_binding_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "trigger:public.source_documents.source_documents_insert_invalidate_pending_preliminary",
@@ -117727,6 +119906,84 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.source_documents.source_documents_preserve_bytes",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_documents.source_documents_preserve_bytes",
+          "kind": "trigger",
+          "name": "source_documents_preserve_bytes",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.preserve_document_bytes_v1()",
+          "definition": "CREATE TRIGGER source_documents_preserve_bytes BEFORE UPDATE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.preserve_document_bytes_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_documents.source_documents_preserve_bytes",
+          "kind": "trigger",
+          "name": "source_documents_preserve_bytes",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.preserve_document_bytes_v1()",
+          "definition": "CREATE TRIGGER source_documents_preserve_bytes BEFORE UPDATE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.preserve_document_bytes_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 122,
+          "anchor": "create trigger source_documents_preserve_bytes before update on public.source_documents for each row execute function private.preserve_document_bytes_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:public.source_documents.source_documents_project_version",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_documents.source_documents_project_version",
+          "kind": "trigger",
+          "name": "source_documents_project_version",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_document_source_version_v1()",
+          "definition": "CREATE TRIGGER source_documents_project_version BEFORE INSERT ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.project_document_source_version_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_documents.source_documents_project_version",
+          "kind": "trigger",
+          "name": "source_documents_project_version",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_document_source_version_v1()",
+          "definition": "CREATE TRIGGER source_documents_project_version BEFORE INSERT ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.project_document_source_version_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 106,
+          "anchor": "create trigger source_documents_project_version before insert on public.source_documents for each row execute function private.project_document_source_version_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "trigger:public.source_documents.source_documents_require_authorized_private_access",
       "kind": "trigger",
       "catalogues": {
@@ -117805,6 +120062,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.source_documents.source_documents_sync_binding",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_documents.source_documents_sync_binding",
+          "kind": "trigger",
+          "name": "source_documents_sync_binding",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_source_projection_binding_v1()",
+          "definition": "CREATE TRIGGER source_documents_sync_binding AFTER UPDATE OF intake_session_id, opportunity_id ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.sync_source_projection_binding_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_documents.source_documents_sync_binding",
+          "kind": "trigger",
+          "name": "source_documents_sync_binding",
+          "table": "source_documents",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_source_projection_binding_v1()",
+          "definition": "CREATE TRIGGER source_documents_sync_binding AFTER UPDATE OF intake_session_id, opportunity_id ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.sync_source_projection_binding_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 702,
+          "anchor": "create trigger source_documents_sync_binding after update of intake_session_id,opportunity_id on public.source_documents for each row execute function private.sync_source_projection_binding_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
       "id": "trigger:public.source_documents.source_documents_update_invalidate_pending_preliminary",
       "kind": "trigger",
       "catalogues": {
@@ -117842,6 +120138,123 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.source_versions.source_versions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_versions.source_versions_audit",
+          "kind": "trigger",
+          "name": "source_versions_audit",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_versions_audit AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_versions.source_versions_audit",
+          "kind": "trigger",
+          "name": "source_versions_audit",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER source_versions_audit AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 382,
+          "anchor": "create trigger source_versions_audit after insert on public.source_versions for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:public.source_versions.source_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_versions.source_versions_immutable",
+          "kind": "trigger",
+          "name": "source_versions_immutable",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_versions_immutable BEFORE DELETE OR UPDATE ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_versions.source_versions_immutable",
+          "kind": "trigger",
+          "name": "source_versions_immutable",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_versions_immutable BEFORE DELETE OR UPDATE ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 111,
+          "anchor": "create trigger source_versions_immutable before update or delete on public.source_versions for each row execute function private.reject_source_version_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:public.sources.sources_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.sources.sources_audit",
+          "kind": "trigger",
+          "name": "sources_audit",
+          "table": "sources",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER sources_audit AFTER INSERT OR DELETE OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.sources.sources_audit",
+          "kind": "trigger",
+          "name": "sources_audit",
+          "table": "sources",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER sources_audit AFTER INSERT OR DELETE OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 6",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Identidade lógica, versão imutável, vínculo explícito ou prova de bytes limitada ao job autorizado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+          "line": 381,
+          "anchor": "create trigger sources_audit after insert or update or delete on public.sources for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
       "id": "trigger:public.structure_scenarios.structure_scenarios_set_updated_at",
@@ -125203,6 +127616,20 @@
       "decision": "preservar",
       "stage": "5",
       "reason": "SQL imutável aplicado nos dois ambientes; carimbo de produção conferido no journal."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916212209_source_identity_legacy_insert_default.sql",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
     }
   ],
   "staging_archive": [
@@ -125637,5 +128064,17 @@
     "new_objects": 56,
     "review": "docs/security/INVENTORY_WAVE_4_DOSSIER_REVIEW.md",
     "cross_dossier_private_memory": "deferred to explicit execution inputs and dependencies in stages 17/18"
+  },
+  "stage_6_revision": {
+    "production_migrations": [
+      "20260916212202",
+      "20260916212209"
+    ],
+    "staging_migrations": [
+      "20260916211117",
+      "20260916211402"
+    ],
+    "new_objects": 41,
+    "review": "docs/build/arcabouco/etapa-06.md"
   }
 }

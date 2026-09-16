@@ -468,7 +468,8 @@ export async function processIntakeSession(runtime: IntakeRuntime): Promise<Inta
     return ok(null);
   }
 
-  // The local fixture has no worker gate, so it keeps the server-side verification path.
+  // The local fixture recomputes bytes for this calculation. Only a delegated worker receipt
+  // can establish persisted verification; a fixture read never restores the retired RPC.
   const verification = await verifyIntakeDocuments(runtime);
   if (!verification.ok) {
     logIntakeFailure("verify_documents", null);
@@ -756,8 +757,8 @@ type VerificationResult = {hashes: Map<string, string>; verified: number; mismat
 
 /**
  * Downloads every document of the session that has not been verified yet, recomputes its
- * SHA-256 and stores the verified value (`sha256_verified_at`). A mismatch with the browser's
- * claim keeps the file, records the server hash and surfaces an explicit integrity issue.
+ * SHA-256 for the local fixture computation, without creating a persisted attestation.
+ * A mismatch is reported explicitly and never overwrites the immutable upload hash.
  */
 export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<IntakeOutcome<VerificationResult>> {
   const {supabase, organizationId, sessionId, locale} = runtime;
@@ -779,18 +780,8 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
       return fail("processing");
     }
     const serverHash = sha256HexOf(new Uint8Array(await blob.arrayBuffer()));
-    // "The server downloaded this object and the digest matched" is a statement only the server
-    // can make, so it is no longer a column a browser can write.
-    const {error: updateError} = await supabase.rpc("record_document_verification", {
-      p_organization_id: organizationId,
-      p_document_id: document.id,
-      p_sha256: serverHash,
-      p_processing_status: "clean",
-    });
-    if (updateError) {
-      logIntakeFailure("store_verified_hash", updateError);
-      return fail("processing");
-    }
+    // This local fixture read supplies only this computation. A client-session RPC cannot
+    // attest persisted bytes; production verification belongs to the delegated worker receipt.
     hashes.set(document.id, serverHash);
     verified += 1;
     if (document.sha256 && document.sha256 !== serverHash) {
@@ -811,8 +802,8 @@ export async function verifyIntakeDocuments(runtime: IntakeRuntime): Promise<Int
 
 /**
  * Removes a document while the session is still open. The command appends the removal event and
- * deletes the row in one transaction; the private object is removed afterwards. Retrying the
- * same database command returns the original object path, so storage cleanup remains possible.
+ * detaches its intake use in one transaction. The immutable version and other uses survive.
+ * Physical retention is governed separately; this command never deletes stored bytes.
  */
 export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: string): Promise<IntakeOutcome> {
   const {supabase, organizationId, sessionId} = runtime;
@@ -824,8 +815,6 @@ export async function removeIntakeDocument(runtime: IntakeRuntime, documentId: s
     p_document_id: documentId,
   });
   if (error || !data || typeof data !== "object" || Array.isArray(data)) return fail("remove");
-  const objectPath = typeof data.object_path === "string" ? data.object_path : null;
-  if (objectPath) await supabase.storage.from("opportunity-documents").remove([objectPath]);
   await refreshIntakeRequests(runtime);
   return ok(null);
 }

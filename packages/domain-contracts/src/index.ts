@@ -768,3 +768,4 @@ export {domainEventSchema, type DomainEvent} from "./domain-event";
 
 export * from "./entity";
 export * from "./dossier";
+export * from "./source-version";

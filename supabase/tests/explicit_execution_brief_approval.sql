@@ -148,7 +148,7 @@ begin
     $q$update public.intake_field_candidates set normalized_value='101' where id='51000000-0000-4000-8000-000000000801'$q$,
     $q$delete from public.intake_field_candidates where id='51000000-0000-4000-8000-000000000801'$q$,
     $q$update public.document_intake_sessions set requested_amount=101 where id='40000000-0000-4000-8000-000000000801'$q$,
-    $q$update public.source_documents set document_version=document_version+1 where id='50000000-0000-4000-8000-000000000801'$q$
+    $q$insert into public.source_documents(organization_id,intake_session_id,opportunity_id,object_path,original_name,mime_type,byte_size,sha256,document_version,logical_source_id,created_by,processing_status) select organization_id,intake_session_id,opportunity_id,object_path||'.next',original_name,mime_type,byte_size,repeat('e',64),document_version+1,logical_source_id,created_by,'ready' from public.source_documents where id='50000000-0000-4000-8000-000000000801'$q$
   ] loop
     begin
       execute mutation;

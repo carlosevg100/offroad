@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {fileTypeFromBuffer} from "file-type";
 import JSZip from "jszip";
 import {z} from "zod";
+import {inspectPdfStructure} from "./pdf-structure";
 
 export const governedDocumentQuarantineVersion = "governed-document-quarantine.v1";
 
@@ -63,7 +64,7 @@ export const documentQuarantinePolicySchema = z.object({
 export type DocumentQuarantinePolicy = z.infer<typeof documentQuarantinePolicySchema>;
 
 export const defaultDocumentQuarantinePolicy: Readonly<DocumentQuarantinePolicy> = deepFreeze(documentQuarantinePolicySchema.parse({
-  policyVersion: "offroad.document-quarantine.2026-09-07.v1",
+  policyVersion: "offroad.document-quarantine.2026-09-16.v2",
   maxFileBytes: 50 * 1024 * 1024,
   maxArchiveEntries: 5_000,
   maxArchiveMemberBytes: 200 * 1024 * 1024,
@@ -391,12 +392,15 @@ async function inspectDocumentBytes(
     container = "pdf";
     const ascii = latin1(bytes);
     if (!ascii.startsWith("%PDF-") || !/%%EOF\s*$/.test(ascii.slice(-8_192))) reasons.add("malformed_container");
-    if (policy.rejectEncryptedDocuments && /\/Encrypt\b/.test(ascii)) reasons.add("encrypted_document");
-    if (/\/(?:JavaScript|JS|Launch|OpenAction|AA)\b/.test(ascii)) {
+    const structure = await inspectPdfStructure(bytes, policy.maxActiveContentInspectionBytes);
+    if (structure.limited) reasons.add("active_content_inspection_exceeded");
+    if (structure.malformed) reasons.add("malformed_container");
+    if (policy.rejectEncryptedDocuments && structure.encrypted) reasons.add("encrypted_document");
+    if (structure.script) {
       activeContent.add("script");
       if (policy.rejectActiveScripts) reasons.add("active_script");
     }
-    if (/\/(?:EmbeddedFile|Filespec)\b/.test(ascii)) {
+    if (structure.embedded) {
       activeContent.add("embedded_object");
       if (policy.rejectEmbeddedObjects) reasons.add("embedded_object");
     }

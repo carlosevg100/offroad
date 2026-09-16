@@ -534,6 +534,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.authorize_source_version_download_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "authorize_source_version_download_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.backfill_dossiers_v1()",
       "kind": "function",
       "name": "backfill_dossiers_v1",
@@ -626,6 +649,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.bind_document_job_version_v1()",
+      "kind": "function",
+      "name": "bind_document_job_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.bind_execution_brief_dispatch(p_brief_id uuid, p_job_id uuid)",
       "kind": "function",
       "name": "bind_execution_brief_dispatch",
@@ -659,6 +700,29 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "name": "bind_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
       "security_definer": true
     },
     {
@@ -969,6 +1033,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_export_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+      "kind": "function",
+      "name": "can_export_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_version_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_manage_fund(p_fund_id uuid)",
       "kind": "function",
       "name": "can_manage_fund",
@@ -1081,6 +1163,29 @@
         "search_path=\"\""
       ],
       "signature": "p_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
+      "kind": "function",
+      "name": "can_read_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_version_id uuid",
       "security_definer": true
     },
     {
@@ -1853,6 +1958,24 @@
       ],
       "signature": "",
       "security_definer": false
+    },
+    {
+      "id": "function:private.detach_document_source_binding_v1()",
+      "kind": "function",
+      "name": "detach_document_source_binding_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
     },
     {
       "id": "function:private.document_work_request_binding_v1(p_job_id uuid)",
@@ -3826,6 +3949,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.preserve_document_bytes_v1()",
+      "kind": "function",
+      "name": "preserve_document_bytes_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.project_canonical_inputs(p_organization_id uuid, p_project_id uuid)",
       "kind": "function",
       "name": "project_canonical_inputs",
@@ -3847,6 +3988,24 @@
       "id": "function:private.project_capital_task_run_to_agent_work()",
       "kind": "function",
       "name": "project_capital_task_run_to_agent_work",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_document_source_version_v1()",
+      "kind": "function",
+      "name": "project_document_source_version_v1",
       "grants": [
         [
           "postgres",
@@ -4525,6 +4684,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_source_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "read_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_workspace_access_v1()",
       "kind": "function",
       "name": "read_workspace_access_v1",
@@ -4884,11 +5066,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -5338,7 +5515,7 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text",
-      "security_definer": true
+      "security_definer": false
     },
     {
       "id": "function:private.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)",
@@ -5382,6 +5559,47 @@
       "security_definer": true
     },
     {
+      "id": "function:private.register_source_verification_v1(p_job_id uuid, p_capability_token text, p_receipt jsonb)",
+      "kind": "function",
+      "name": "register_source_verification_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_receipt jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+      "kind": "function",
+      "name": "register_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.reject_control_ledger_mutation()",
       "kind": "function",
       "name": "reject_control_ledger_mutation",
@@ -5421,6 +5639,24 @@
       "id": "function:private.reject_legal_acceptance_mutation()",
       "kind": "function",
       "name": "reject_legal_acceptance_mutation",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.reject_source_version_mutation_v1()",
+      "kind": "function",
+      "name": "reject_source_version_mutation_v1",
       "grants": [
         [
           "postgres",
@@ -6788,6 +7024,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "name": "source_storage_is_unbound_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.source_storage_read_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "name": "source_storage_read_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.start_advisor_project_in_group_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb, p_group_id uuid)",
       "kind": "function",
       "name": "start_advisor_project_in_group_v1",
@@ -7625,6 +7907,24 @@
       "id": "function:private.sync_session_dossier_v1()",
       "kind": "function",
       "name": "sync_session_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.sync_source_projection_binding_v1()",
+      "kind": "function",
+      "name": "sync_source_projection_binding_v1",
       "grants": [
         [
           "postgres",
@@ -11345,6 +11645,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.authorize_source_version_download_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "authorize_source_version_download_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "begin_intake_processing",
@@ -11398,6 +11721,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_trigger text, p_documents jsonb, p_pipeline_version text, p_budget jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "name": "bind_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
       "security_definer": false
     },
     {
@@ -12937,6 +13283,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.read_source_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "read_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.read_workspace_access_v1()",
       "kind": "function",
       "name": "read_workspace_access_v1",
@@ -13185,16 +13554,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -13535,6 +13894,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.register_source_version_v1(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid)",
+      "kind": "function",
+      "name": "register_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text, p_source_id uuid",
       "security_definer": false
     },
     {
@@ -19406,6 +19788,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.source_version_verifications.source_version_verifications_deny_clients",
+      "kind": "policy",
+      "name": "source_version_verifications_deny_clients",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "source_version_verifications",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.storage_path_rotations.storage_path_rotations_deny_clients",
       "kind": "policy",
       "name": "storage_path_rotations_deny_clients",
@@ -22531,6 +22927,20 @@
       "with_check": "( SELECT private.can_work_intake_session_v1(soundings.organization_id, soundings.intake_session_id) AS can_access_intake_session)"
     },
     {
+      "id": "policy:public.source_bindings.source_bindings_select_authorized",
+      "kind": "policy",
+      "name": "source_bindings_select_authorized",
+      "qual": "(private.can_access_resource_v1(organization_id, resource_id, 'read'::text) AND private.can_read_source_version_v1(organization_id, source_version_id))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "source_bindings",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.source_documents.source_documents_insert",
       "kind": "policy",
       "name": "source_documents_insert",
@@ -22571,6 +22981,34 @@
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "(((opportunity_id IS NULL) OR ( SELECT private.can_access_opportunity(source_documents.organization_id, source_documents.opportunity_id, 'document.write'::text) AS can_access_opportunity)) AND ((intake_session_id IS NULL) OR ( SELECT private.can_access_resource_v1(source_documents.organization_id, source_documents.intake_session_id, 'work'::text) AS can_access_resource_v1)))"
+    },
+    {
+      "id": "policy:public.source_versions.source_versions_select_authorized",
+      "kind": "policy",
+      "name": "source_versions_select_authorized",
+      "qual": "private.can_read_source_version_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "source_versions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.sources.sources_select_authorized",
+      "kind": "policy",
+      "name": "sources_select_authorized",
+      "qual": "private.can_access_resource_v1(organization_id, origin_resource_id, 'read'::text)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "sources",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
     },
     {
       "id": "policy:public.structure_scenarios.structure_scenarios_all",
@@ -22952,6 +23390,48 @@
       "command": "ALL",
       "permissive": "RESTRICTIVE",
       "with_check": "( SELECT private.storage_operation_is_revocable_v1() AS storage_operation_is_revocable_v1)"
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_no_delete",
+      "kind": "policy",
+      "name": "source_version_storage_no_delete",
+      "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_no_update",
+      "kind": "policy",
+      "name": "source_version_storage_no_update",
+      "qual": "private.source_storage_is_unbound_v1(bucket_id, name)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "private.source_storage_is_unbound_v1(bucket_id, name)"
+    },
+    {
+      "id": "policy:storage.objects.source_version_storage_read",
+      "kind": "policy",
+      "name": "source_version_storage_read",
+      "qual": "private.source_storage_read_v1(bucket_id, name)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
     },
     {
       "id": "policy:storage.objects.storage_rotation_insert",
@@ -25300,6 +25780,56 @@
       "rls": true,
       "kind": "table",
       "name": "review_execution_authorizations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.source_version_verifications",
+      "rls": true,
+      "kind": "table",
+      "name": "source_version_verifications",
       "grants": [
         [
           "postgres",
@@ -36971,6 +37501,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.source_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "source_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.source_documents",
       "rls": true,
       "kind": "table",
@@ -37059,6 +37644,116 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.source_versions",
+      "rls": true,
+      "kind": "table",
+      "name": "source_versions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.sources",
+      "rls": true,
+      "kind": "table",
+      "name": "sources",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -37989,6 +38684,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER review_execution_authorizations_updated_at BEFORE UPDATE ON private.review_execution_authorizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_verifications_audit",
+      "kind": "trigger",
+      "name": "source_verifications_audit",
+      "table": "source_version_verifications",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER source_verifications_audit AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_verifications_immutable",
+      "kind": "trigger",
+      "name": "source_verifications_immutable",
+      "table": "source_version_verifications",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER source_verifications_immutable BEFORE DELETE OR UPDATE ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
     },
     {
       "id": "trigger:private.storage_path_rotations.storage_path_rotations_audit",
@@ -39751,6 +40466,16 @@
       "definition": "CREATE TRIGGER processing_jobs_set_updated_at BEFORE UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_source_version",
+      "kind": "trigger",
+      "name": "processing_jobs_source_version",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_document_job_version_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_source_version BEFORE INSERT OR UPDATE OF source_document_id, payload ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_document_job_version_v1()"
+    },
+    {
       "id": "trigger:public.processing_jobs.provider_case_fit_completion_guard",
       "kind": "trigger",
       "name": "provider_case_fit_completion_guard",
@@ -40111,6 +40836,16 @@
       "definition": "CREATE TRIGGER soundings_set_updated_at BEFORE UPDATE ON public.soundings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.source_bindings.source_bindings_audit",
+      "kind": "trigger",
+      "name": "source_bindings_audit",
+      "table": "source_bindings",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER source_bindings_audit AFTER INSERT OR DELETE OR UPDATE ON public.source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
       "id": "trigger:public.source_documents.execution_approval_document_lock",
       "kind": "trigger",
       "name": "execution_approval_document_lock",
@@ -40129,6 +40864,16 @@
       "enabled": "O",
       "function": "private.invalidate_pending_preliminary_on_source_change()",
       "definition": "CREATE TRIGGER source_documents_delete_invalidate_pending_preliminary AFTER DELETE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.invalidate_pending_preliminary_on_source_change()"
+    },
+    {
+      "id": "trigger:public.source_documents.source_documents_detach_binding",
+      "kind": "trigger",
+      "name": "source_documents_detach_binding",
+      "table": "source_documents",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.detach_document_source_binding_v1()",
+      "definition": "CREATE TRIGGER source_documents_detach_binding AFTER DELETE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.detach_document_source_binding_v1()"
     },
     {
       "id": "trigger:public.source_documents.source_documents_insert_invalidate_pending_preliminary",
@@ -40171,6 +40916,26 @@
       "definition": "CREATE TRIGGER source_documents_operating_control_invalidation_update AFTER UPDATE OF object_path, original_name, byte_size, sha256, document_version ON public.source_documents FOR EACH ROW WHEN (((old.object_path IS DISTINCT FROM new.object_path) OR (old.original_name IS DISTINCT FROM new.original_name) OR (old.byte_size IS DISTINCT FROM new.byte_size) OR (old.sha256 IS DISTINCT FROM new.sha256) OR (old.document_version IS DISTINCT FROM new.document_version))) EXECUTE FUNCTION private.invalidate_controls_from_source_document_v1()"
     },
     {
+      "id": "trigger:public.source_documents.source_documents_preserve_bytes",
+      "kind": "trigger",
+      "name": "source_documents_preserve_bytes",
+      "table": "source_documents",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.preserve_document_bytes_v1()",
+      "definition": "CREATE TRIGGER source_documents_preserve_bytes BEFORE UPDATE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.preserve_document_bytes_v1()"
+    },
+    {
+      "id": "trigger:public.source_documents.source_documents_project_version",
+      "kind": "trigger",
+      "name": "source_documents_project_version",
+      "table": "source_documents",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_document_source_version_v1()",
+      "definition": "CREATE TRIGGER source_documents_project_version BEFORE INSERT ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.project_document_source_version_v1()"
+    },
+    {
       "id": "trigger:public.source_documents.source_documents_require_authorized_private_access",
       "kind": "trigger",
       "name": "source_documents_require_authorized_private_access",
@@ -40191,6 +40956,16 @@
       "definition": "CREATE TRIGGER source_documents_set_updated_at BEFORE UPDATE ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.source_documents.source_documents_sync_binding",
+      "kind": "trigger",
+      "name": "source_documents_sync_binding",
+      "table": "source_documents",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_source_projection_binding_v1()",
+      "definition": "CREATE TRIGGER source_documents_sync_binding AFTER UPDATE OF intake_session_id, opportunity_id ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.sync_source_projection_binding_v1()"
+    },
+    {
       "id": "trigger:public.source_documents.source_documents_update_invalidate_pending_preliminary",
       "kind": "trigger",
       "name": "source_documents_update_invalidate_pending_preliminary",
@@ -40199,6 +40974,36 @@
       "enabled": "O",
       "function": "private.invalidate_pending_preliminary_on_source_change()",
       "definition": "CREATE TRIGGER source_documents_update_invalidate_pending_preliminary AFTER UPDATE OF object_path, original_name, byte_size, sha256, document_version, processing_status ON public.source_documents FOR EACH ROW EXECUTE FUNCTION private.invalidate_pending_preliminary_on_source_change()"
+    },
+    {
+      "id": "trigger:public.source_versions.source_versions_audit",
+      "kind": "trigger",
+      "name": "source_versions_audit",
+      "table": "source_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER source_versions_audit AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.source_versions.source_versions_immutable",
+      "kind": "trigger",
+      "name": "source_versions_immutable",
+      "table": "source_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER source_versions_immutable BEFORE DELETE OR UPDATE ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.sources.sources_audit",
+      "kind": "trigger",
+      "name": "sources_audit",
+      "table": "sources",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER sources_audit AFTER INSERT OR DELETE OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
       "id": "trigger:public.structure_scenarios.structure_scenarios_set_updated_at",
@@ -40656,5 +41461,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-16T19:07:26.851555+00:00"
+  "captured_at": "2026-09-16T21:23:07.390087+00:00"
 }
