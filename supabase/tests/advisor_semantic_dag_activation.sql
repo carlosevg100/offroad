@@ -461,13 +461,11 @@ begin
   context := public.worker_load_capital_project_context_v5(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token'
   );
-  if context #>> '{professional_context,professionalRoles,0}' <> 'banker'
-    or context #>> '{professional_context,practiceAreas,0}' <> 'dcm'
-    or context #>> '{professional_context,institutionName}' <> 'Banco Farol'
+  if context ? 'professional_context'
     or context #>> '{institution_capabilities,operatingModels,0}' <> 'structuring'
     or context #>> '{prior_failed_task_feedback,0,task_id}' <> 'M07'
     or context #>> '{prior_failed_task_feedback,0,quality_results,0,id}' <> 'unsupported_material_numbers' then
-    raise exception 'specialized project context did not receive the initiating user profile: %', context;
+    raise exception 'specialized project context must omit role and preserve capability and failure feedback: %', context;
   end if;
   perform set_config('offroad_test.capital_job_id', claim ->> 'job_id', true);
   perform set_config('offroad_test.capability', claim ->> 'capability_token', true);

@@ -1299,8 +1299,12 @@
     {
       "name": "terminal_job_authorization_metadata",
       "version": "20260915204029"
+    },
+    {
+      "name": "role_free_reasoning_context",
+      "version": "20260916005559"
     }
   ],
-  "captured_at": "2026-09-15T20:42:11.579401+00:00",
-  "project_id": "gjkkjtbfnssdsbmlhmwk"
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "captured_at": "2026-09-16T00:57:54.89882+00:00"
 }

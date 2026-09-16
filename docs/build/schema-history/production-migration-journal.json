@@ -1247,8 +1247,12 @@
     {
       "name": "require_work_for_legacy_mutations",
       "version": "20260915204124"
+    },
+    {
+      "name": "role_free_reasoning_context",
+      "version": "20260916005712"
     }
   ],
-  "captured_at": "2026-09-15T20:42:05.787462+00:00",
-  "project_id": "ifnogpksgdadruooqydi"
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-09-16T00:57:49.452094+00:00"
 }
