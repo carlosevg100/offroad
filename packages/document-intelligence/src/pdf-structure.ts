@@ -51,7 +51,7 @@ class BoundedPdfParser extends PDFParser {
   override parseObject(): PDFObject {
     this.depth += 1; this.objects += 1;
     try {
-      if (this.depth > maxDepth || this.objects > maxObjects) this.limit();
+      if (this.depth > maxDepth || this.objects + this.compressedObjects > maxObjects) this.limit();
       const object = super.parseObject();
       if (!(object instanceof PDFRawStream)) return object;
       this.streamDictionaries.push(object.dict);
@@ -62,6 +62,16 @@ class BoundedPdfParser extends PDFParser {
       if (!(count instanceof PDFNumber) || !Number.isSafeInteger(count.asNumber()) || count.asNumber() < 0 || count.asNumber() > maxObjects) this.limit();
       this.compressedObjects += count.asNumber();
       if (this.compressedObjects + this.objects > maxObjects) this.limit();
+      if (name(type) === "XRef") {
+        const widths = object.dict.get(PDFName.of("W"));
+        if (!(widths instanceof PDFArray) || widths.size() !== 3) throw new Error("invalid_xref_widths");
+        let totalWidth = 0;
+        for (const width of widths.asArray()) {
+          if (!(width instanceof PDFNumber) || !Number.isSafeInteger(width.asNumber()) || width.asNumber() < 0 || width.asNumber() > 8) this.limit();
+          totalWidth += width.asNumber();
+        }
+        if (totalWidth === 0) throw new Error("invalid_xref_widths");
+      }
       const index = object.dict.get(PDFName.of("Index"));
       if (name(type) === "XRef" && index !== undefined) {
         if (!(index instanceof PDFArray) || index.size() % 2 !== 0) throw new Error("invalid_xref_index");
@@ -88,6 +98,10 @@ class BoundedPdfParser extends PDFParser {
         }
       }
       if (contents.byteLength > remaining) this.limit();
+      if (name(type) === "ObjStm") {
+        const first = object.dict.get(PDFName.of("First"));
+        if (!(first instanceof PDFNumber) || !Number.isSafeInteger(first.asNumber()) || first.asNumber() < 0 || first.asNumber() > contents.byteLength) throw new Error("invalid_object_stream_offset");
+      }
       this.expanded += contents.byteLength;
       const dictionary = object.dict.clone();
       dictionary.delete(PDFName.of("Filter")); dictionary.delete(PDFName.of("DecodeParms"));

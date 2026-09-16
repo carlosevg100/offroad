@@ -37,5 +37,8 @@ describe("bounded PDF structural inspection", () => {
   it("fails closed on excessive nesting and malformed containers", async () => {
     expect(await inspectPdfStructure(rawPdf(`/Nested ${"[".repeat(80)}1${"]".repeat(80)}`), budget)).toMatchObject({limited: true});
     expect(await inspectPdfStructure(new TextEncoder().encode("%PDF-1.7\ninvalid\n%%EOF"), budget)).toMatchObject({malformed: true});
+    const pdf = await PDFDocument.create(); pdf.addPage();
+    pdf.context.register(pdf.context.stream(new Uint8Array([0]), {Type: "XRef", Size: 1, W: [100_000_000, 1, 1]}));
+    expect(await inspectPdfStructure(await pdf.save({useObjectStreams: false}), budget)).toMatchObject({limited: true});
   });
 });
