@@ -1,0 +1,38 @@
+name: Event outbox monitoring
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: Install the reviewed alarms before verifying them
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: event-outbox-monitoring
+  cancel-in-progress: false
+jobs:
+  monitoring:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Test monitoring write boundaries
+        run: python3 -B scripts/ci/test-event-outbox-alarms.py
+      - name: Use the existing deployment identity without changing IAM
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubDeployRole
+          aws-region: sa-east-1
+      - name: Validate filters and verify or install the reviewed alarms
+        env:
+          APPLY_CONFIGURATION: ${{ inputs.apply }}
+        run: |
+          set -euo pipefail
+          if [ "$APPLY_CONFIGURATION" = "true" ]; then
+            python3 scripts/ci/configure-event-outbox-alarms.py --apply
+          else
+            python3 scripts/ci/configure-event-outbox-alarms.py
+          fi
