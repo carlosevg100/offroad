@@ -47,7 +47,7 @@ do $$ declare rejected boolean:=false; begin
  begin perform public.confirm_receivables_evidence_scope_v2('40000000-0000-4000-8000-000000000901',repeat('d',64),'{"documentId":"50000000-0000-4000-8000-000000000901","sheet":"Titles","headerRow":1}','{}','2026-09-01','90000000-0000-4000-8000-000000000904',array['Support','Evidence']); exception when object_not_in_prerequisite_state then rejected:=true; end;
  if not rejected or exists(select 1 from private.receivables_evidence_scopes where organization_id='20000000-0000-4000-8000-000000000901') then raise exception 'confirmed case implicitly reopened'; end if;
  update public.document_intake_sessions set status='review_ready' where id='40000000-0000-4000-8000-000000000901';
- perform set_config('request.jwt.claims','',true);
+ perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
 end; $$;
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000902","role":"authenticated"}',true);
@@ -121,7 +121,7 @@ do $$ declare prior private.receivables_evidence_scopes; future_id uuid:=gen_ran
   prior.scope||jsonb_build_object('id',future_id,'confirmedAt',to_char(future_time at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')),prior.confirmed_by,future_time);
  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
  result:=public.confirm_receivables_evidence_scope_v2(prior.intake_session_id,repeat('d',64),prior.scope->'primaryTape','{}','2026-09-02','90000000-0000-4000-8000-000000000905',array['Support','Evidence']);
- perform set_config('request.jwt.claims','',true);
+ perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
  select id into latest_id from private.receivables_evidence_scopes where organization_id=prior.organization_id and intake_session_id=prior.intake_session_id order by confirmed_at desc,id desc limit 1;
  if latest_id::text<>result#>>'{scope,id}' or (result#>>'{scope,confirmedAt}')::timestamptz<=future_time then raise exception 'confirmation order did not follow serialized write'; end if;
 end; $$;
@@ -148,7 +148,7 @@ do $$ declare j uuid; ctx jsonb; sc jsonb; src jsonb; b public.capital_project_e
  if result->>'status'<>'proposed' then raise exception 'bound scope proposal did not persist'; end if;
  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
  perform public.approve_advisor_execution_brief_v1((ctx#>>'{project,id}')::uuid,(result->>'execution_brief_id')::uuid,repeat('e',64),gen_random_uuid());
- perform set_config('request.jwt.claims','',true);
+ perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
  j:=(result->>'processing_job_id')::uuid;
  update public.processing_jobs set status='leased',capability_sha256=extensions.digest(repeat('z',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id=j;
  ctx:=public.worker_load_case_input_v3(j,repeat('z',64));

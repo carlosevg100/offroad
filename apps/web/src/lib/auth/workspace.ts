@@ -1,3 +1,4 @@
+import {accessAdministration} from "@offroad/access-policy";
 import {cache} from "react";
 import {redirect} from "next/navigation";
 
@@ -5,6 +6,7 @@ import {createClient} from "@/lib/supabase/server";
 import type {Json} from "@/types/database";
 
 type WorkspaceBootstrap = {
+  access_administration?: unknown;
   user_id: string;
   email: string;
   workspace_ready: boolean;
@@ -71,6 +73,7 @@ export const requireWorkspace = cache(async (locale: string) => {
     userId: bootstrap.user_id,
     email: bootstrap.email,
     membership: bootstrap.membership,
+    accessAdministration: accessAdministration(bootstrap.access_administration),
     organization: bootstrap.organization,
     onboarding: bootstrap.onboarding,
   };

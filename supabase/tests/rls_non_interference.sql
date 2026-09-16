@@ -4318,6 +4318,13 @@ set representation_kind = 'company', representation_status = 'verified',
 where organization_id = '20000000-0000-4000-8000-000000000001'
   and id = '40000000-0000-4000-8000-000000000001';
 
+-- Read/work does not imply permission to publish this resource.
+update private.access_resources set allowed_purposes=array['analysis','retrieval','export'] where id='40000000-0000-4000-8000-000000000001';
+do $$ begin
+ begin perform public.authorize_qualified_introduction_plan('81000000-0000-4000-8000-000000000001',repeat('a',64)); raise exception 'publication purpose bypassed'; exception when insufficient_privilege then null; end;
+end $$;
+update private.access_resources set allowed_purposes=array['analysis','retrieval','publication','export'] where id='40000000-0000-4000-8000-000000000001';
+
 do $$ begin
  begin
   perform public.authorize_qualified_introduction_plan('81000000-0000-4000-8000-000000000001',repeat('a',64));
@@ -5610,6 +5617,12 @@ do $$ declare name text; begin
    or has_table_privilege('authenticated','private.'||name,'SELECT,INSERT,UPDATE,DELETE') then
    raise exception 'domain audit table exposed: %',name;
   end if;
+ end loop;
+end $$;
+-- Stage 3 policy configuration is never a directly readable/writable tenant API.
+do $$ declare t text; begin
+ foreach t in array array['principals','organization_units','access_groups','access_group_memberships','information_barriers','barrier_memberships'] loop
+ if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relname=t and c.relrowsecurity and c.relforcerowsecurity) or has_table_privilege('authenticated','private.'||t,'select,insert,update,delete') then raise exception 'policy table boundary failed: %',t; end if;
  end loop;
 end $$;
 rollback;

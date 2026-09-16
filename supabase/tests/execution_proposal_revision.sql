@@ -1131,7 +1131,7 @@ select id into j from public.processing_jobs where organization_id='20000000-000
 update public.processing_jobs set status='leased',capability_sha256=extensions.digest(repeat('c',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id=j;
 c:=public.worker_load_execution_brief_proposal_v2(j,repeat('c',64));r:=public.worker_record_execution_brief_proposal_v1(j,repeat('c',64),fixture_internal,fixture_visible,c->>'input_fingerprint',fixture_plan);perform set_config('request.jwt.claims',jsonb_build_object('sub','10000000-0000-4000-8000-000000000901','role','authenticated','aal','aal1')::text,true);
 perform public.approve_advisor_execution_brief_v1((c#>>'{project,id}')::uuid,(r->>'execution_brief_id')::uuid,(select brief_fingerprint from public.capital_project_execution_briefs where id=(r->>'execution_brief_id')::uuid),gen_random_uuid());
-perform set_config('request.jwt.claims','',true);
+perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
 if not private.execution_dispatch_is_current('80000000-0000-4000-8000-000000000901',true) then raise exception 'first approval was not current'; end if;
 
 -- Documentary authorization needs signed marker AND exact snapshot, targets and persisted tasks.

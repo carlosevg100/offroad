@@ -8648,6 +8648,10 @@ export type Database = {
         }
         Returns: Json
       }
+      explain_my_access_v1: {
+        Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
+        Returns: Json
+      }
       fail_intake_session: {
         Args: {
           p_organization_id: string
@@ -9165,6 +9169,10 @@ export type Database = {
         }
         Returns: Json
       }
+      revoke_principal_access_v1: {
+        Args: { p_principal_id: string }
+        Returns: undefined
+      }
       revoke_qualified_introduction_plan: {
         Args: { p_plan_id: string }
         Returns: string
@@ -9237,6 +9245,25 @@ export type Database = {
           source_document_id: string
         }[]
       }
+      set_access_group_member_v1: {
+        Args: {
+          p_enabled?: boolean
+          p_expires_at?: string
+          p_group_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      set_access_group_v1: {
+        Args: {
+          p_enabled?: boolean
+          p_id: string
+          p_name: string
+          p_parent_group_id?: string
+          p_unit_id?: string
+        }
+        Returns: string
+      }
       set_capital_project_review_assignment_v1: {
         Args: {
           p_assigned: boolean
@@ -9249,6 +9276,16 @@ export type Database = {
       set_capital_project_review_policy_v1: {
         Args: { p_project_id: string; p_self_approval: string }
         Returns: Json
+      }
+      set_information_barrier_v1: {
+        Args: {
+          p_enabled?: boolean
+          p_id: string
+          p_members: Json
+          p_name: string
+          p_resource_id: string
+        }
+        Returns: string
       }
       set_intake_archetype_command: {
         Args: {
@@ -9299,6 +9336,10 @@ export type Database = {
         Args: { p_organization_id: string; p_self_approval_allowed: boolean }
         Returns: Json
       }
+      set_organization_unit_v1: {
+        Args: { p_enabled?: boolean; p_id: string; p_name: string }
+        Returns: string
+      }
       set_presentation_template_v1: {
         Args: {
           p_definition: Json
@@ -9306,6 +9347,22 @@ export type Database = {
           p_project_id: string
         }
         Returns: Json
+      }
+      set_resource_policy_grant_v1: {
+        Args: {
+          p_action: string
+          p_effect: string
+          p_enabled?: boolean
+          p_expires_at?: string
+          p_group_id: string
+          p_resource_id: string
+          p_user_id: string
+        }
+        Returns: string
+      }
+      set_resource_purposes_v1: {
+        Args: { p_purposes: string[]; p_resource_id: string }
+        Returns: undefined
       }
       set_workspace_capability_v1: {
         Args: {

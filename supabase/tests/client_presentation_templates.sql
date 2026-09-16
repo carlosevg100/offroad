@@ -100,6 +100,10 @@ select pg_temp.expect_not_found($q$select public.read_presentation_template_v1(c
 select pg_temp.expect_not_found($q$select public.set_presentation_template_v1(null,current_setting('test.project_id')::uuid,pg_temp.client_template())$q$);
 select pg_temp.expect_not_found($q$select public.set_presentation_template_v1(current_setting('test.org_id')::uuid,null,pg_temp.client_template())$q$);
 
+-- Content permission is explicit; administration alone was tested above and is not reading authority.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
+select public.grant_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000802','manage');
+
 -- An administrator stores the organization identity; a replay of the same definition is idempotent.
 select pg_temp.as_user('10000000-0000-4000-8000-000000000802');
 do $$

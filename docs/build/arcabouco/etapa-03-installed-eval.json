@@ -1,0 +1,288 @@
+{
+  "environment": "staging",
+  "mode": "installed schema; synthetic transactions rolled back",
+  "sql_tests": [
+    {
+      "file": "advisor_semantic_dag_activation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "agentic_dcm_work_system.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "client_presentation_templates.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "company_debt_view_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "confirmed_receivables_evidence_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "confirmed_receivables_support_sheets.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "conversational_advisor_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "creator_authority_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "documentary_plan_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "domain_event_outbox.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "domain_event_outbox_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "execution_brief_foundation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "execution_brief_proposal_bridge.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "execution_proposal_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "explicit_documentary_work_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "explicit_execution_brief_approval.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "explicit_legacy_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "explicit_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "financier_analytical_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "gold_case_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "governed_capital_material_storage.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "governed_sector_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "institutional_assumption_answers.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "institutional_private_rls.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "institutional_revision_proposals.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "institutional_setup_lifecycle.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "integration_preview_mode.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "intent_envelopes_shadow.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "intent_objective_routing_metrics.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "job_failure_causes.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "job_failure_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "legacy_access_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "legacy_resource_access.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "no_implicit_workspace_capabilities.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "objective_plan_preflight.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "operating_controls.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "organization_methodology.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "organization_profile_authority.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "origination_thesis_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "professional_capability_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "project_canonical_revisions.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "project_company_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "project_review_roles.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "provider_case_fit_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "provider_research_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "provider_research_public_catalog_v2.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "public_research_public_cache.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "read_grant_cannot_mutate_legacy.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_analytical_release.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_document_adapter_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_information_request_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_information_request_dataset_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_method_input_assembly_store.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "receivables_method_supplement_store.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "resource_policy_barriers.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "resource_policy_delegation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "resource_policy_isolation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "resource_policy_performance.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "rls_non_interference.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "role_free_reasoning_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "terminal_job_authorization_metadata.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "verified_provider_mandates.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "worker_runtime_schema_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "workspace_member_administration.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "workspace_project_folders.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "workspace_replay_authority.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "resource_policy_event_once.sql",
+      "result": "PASS",
+      "before": "expected 1, got 2",
+      "after": "one event, unchanged value creates none"
+    }
+  ],
+  "performance": {
+    "groups": 200,
+    "samples": 200,
+    "p50_ms": 8.8505,
+    "p95_ms": 10.0992,
+    "limit_ms": 100
+  },
+  "definition_parity": {
+    "functions": 53,
+    "result": "PASS"
+  },
+  "production_fixtures_created": false
+}

@@ -1939,3 +1939,83 @@ Migrações adicionais:
 
 | Objeto | Ambientes | Decisão | Etapa | Motivo | Fonte |
 |---|---|---|---|---|---|
+
+## Atualização da etapa 3, 16/09/2026
+
+75 superfícies novas conferidas nos catálogos de staging e produção; seis tabelas privadas, 27 funções, 25 políticas e 17 triggers. Decisões e âncoras completas em object-decisions.json. Três migrações sob os carimbos de produção 20260916163753, 20260916163756 e 20260916163759. O novo pacote access-policy preserva apenas o contrato TS; a decisão é do Postgres.
+
+- `function:private.can_admin_resource_policy_v1(p_org uuid, p_resource uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.capture_policy_domain_event_v1()`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.ensure_membership_principal_v1()`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.evaluate_resource_policy_v1(p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.policy_admin_context_v1()`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.policy_group_ids_v1(p_org uuid, p_principal uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.policy_invalidate_jobs_v1(p_org uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.revoke_principal_access_v1(p_principal_id uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.sync_worker_principal_v1()`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:private.validate_policy_human_member_v1()`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.revoke_principal_access_v1(p_principal_id uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `function:public.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_group_memberships.access_group_memberships_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_group_memberships.access_group_memberships_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_group_memberships.access_group_memberships_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_group_memberships.access_group_memberships_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_groups.access_groups_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_groups.access_groups_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_groups.access_groups_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.access_groups.access_groups_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.barrier_memberships.barrier_memberships_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.barrier_memberships.barrier_memberships_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.barrier_memberships.barrier_memberships_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.barrier_memberships.barrier_memberships_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.information_barriers.information_barriers_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.information_barriers.information_barriers_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.information_barriers.information_barriers_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.information_barriers.information_barriers_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.organization_units.organization_units_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.organization_units.organization_units_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.organization_units.organization_units_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.organization_units.organization_units_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.principals.principals_deny_delete`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.principals.principals_deny_insert`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.principals.principals_deny_select`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:private.principals.principals_deny_update`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `policy:storage.objects.private_storage_export_purpose`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.access_group_memberships`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.access_groups`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.barrier_memberships`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.information_barriers`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.organization_units`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `r:private.principals`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_group_memberships.access_group_memberships_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_group_memberships.access_group_memberships_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_group_memberships.group_member_human`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_groups.access_groups_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_groups.access_groups_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.access_resources.access_resources_policy_events`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.barrier_memberships.barrier_member_human`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.barrier_memberships.barrier_memberships_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.barrier_memberships.barrier_memberships_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.information_barriers.information_barriers_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.information_barriers.information_barriers_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.organization_units.organization_units_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.organization_units.organization_units_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.principals.principals_policy_event`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:private.principals.principals_updated`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:public.organization_memberships.membership_policy_principal`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.
+- `trigger:public.processing_jobs.processing_jobs_policy_principal`: preservar, etapa 3; Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.

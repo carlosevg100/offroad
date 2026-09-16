@@ -2817,6 +2817,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.can_admin_resource_policy_v1(p_org uuid, p_resource uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_admin_resource_policy_v1(p_org uuid, p_resource uuid)",
+          "kind": "function",
+          "name": "can_admin_resource_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resource uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_admin_resource_policy_v1(p_org uuid, p_resource uuid)",
+          "kind": "function",
+          "name": "can_admin_resource_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resource uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 390,
+          "anchor": "create function private.can_admin_resource_policy_v1(p_org uuid,p_resource uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
       "kind": "function",
       "catalogues": {
@@ -3975,6 +4030,61 @@
       ],
       "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
       "last_review_stage": "1A"
+    },
+    {
+      "id": "function:private.capture_policy_domain_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_policy_domain_event_v1()",
+          "kind": "function",
+          "name": "capture_policy_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_policy_domain_event_v1()",
+          "kind": "function",
+          "name": "capture_policy_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 83,
+          "anchor": "create function private.capture_policy_domain_event_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
@@ -5353,6 +5463,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
+          "kind": "function",
+          "name": "delegated_policy_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid, p_resource_id uuid, p_action text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
+          "kind": "function",
+          "name": "delegated_policy_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid, p_resource_id uuid, p_action text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 363,
+          "anchor": "create function private.delegated_policy_access_v1(p_principal_id uuid,p_resource_id uuid,p_action text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.deny_domain_audit_mutation_v1()",
       "kind": "function",
       "catalogues": {
@@ -6274,6 +6439,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.ensure_membership_principal_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ensure_membership_principal_v1()",
+          "kind": "function",
+          "name": "ensure_membership_principal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ensure_membership_principal_v1()",
+          "kind": "function",
+          "name": "ensure_membership_principal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 166,
+          "anchor": "create function private.ensure_membership_principal_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.evaluate_operating_control_snapshot_v1(p_scope_id text, p_requested_use text, p_snapshot jsonb, p_binding jsonb)",
       "kind": "function",
       "catalogues": {
@@ -6327,6 +6547,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.evaluate_resource_policy_v1(p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.evaluate_resource_policy_v1(p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "evaluate_resource_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.evaluate_resource_policy_v1(p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "evaluate_resource_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 182,
+          "anchor": "create function private.evaluate_resource_policy_v1(p_org uuid,p_resource uuid,p_subject uuid,p_action text,p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.execution_approval_input_fingerprint(p_organization_id uuid, p_session_id uuid)",
@@ -6675,6 +6950,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "explain_my_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_action text, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "explain_my_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_action text, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 242,
+          "anchor": "create function private.explain_my_access_v1(p_resource_id uuid,p_action text default 'read',p_purpose text default 'retrieval')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.fail_intake_session(p_organization_id uuid, p_session_id uuid, p_reason text)",
@@ -11217,6 +11557,171 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.policy_admin_context_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.policy_admin_context_v1()",
+          "kind": "function",
+          "name": "policy_admin_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.policy_admin_context_v1()",
+          "kind": "function",
+          "name": "policy_admin_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 219,
+          "anchor": "create function private.policy_admin_context_v1() returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.policy_group_ids_v1(p_org uuid, p_principal uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.policy_group_ids_v1(p_org uuid, p_principal uuid)",
+          "kind": "function",
+          "name": "policy_group_ids_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_principal uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.policy_group_ids_v1(p_org uuid, p_principal uuid)",
+          "kind": "function",
+          "name": "policy_group_ids_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_principal uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 173,
+          "anchor": "create function private.policy_group_ids_v1(p_org uuid,p_principal uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.policy_invalidate_jobs_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.policy_invalidate_jobs_v1(p_org uuid)",
+          "kind": "function",
+          "name": "policy_invalidate_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.policy_invalidate_jobs_v1(p_org uuid)",
+          "kind": "function",
+          "name": "policy_invalidate_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 229,
+          "anchor": "create function private.policy_invalidate_jobs_v1(p_org uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.prepare_qualified_contact(p_target_id uuid, p_share_id uuid, p_candidate_fit text, p_rationale text)",
@@ -18829,6 +19334,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.revoke_principal_access_v1(p_principal_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.revoke_principal_access_v1(p_principal_id uuid)",
+          "kind": "function",
+          "name": "revoke_principal_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.revoke_principal_access_v1(p_principal_id uuid)",
+          "kind": "function",
+          "name": "revoke_principal_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 335,
+          "anchor": "create function private.revoke_principal_access_v1(p_principal_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.revoke_qualified_introduction_plan(p_plan_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -19395,6 +19965,136 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_access_group_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_access_group_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 274,
+          "anchor": "create function private.set_access_group_member_v1(p_group_id uuid,p_user_id uuid,p_enabled boolean default true,p_expires_at timestamptz default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+          "kind": "function",
+          "name": "set_access_group_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+          "kind": "function",
+          "name": "set_access_group_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 253,
+          "anchor": "create function private.set_access_group_v1(p_id uuid,p_name text,p_enabled boolean default true,p_unit_id uuid default null,p_parent_group_id uuid default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "catalogues": {
@@ -19542,6 +20242,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_information_barrier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_information_barrier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 285,
+          "anchor": "create function private.set_information_barrier_v1(p_id uuid,p_resource_id uuid,p_name text,p_members jsonb,p_enabled boolean default true)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.set_intake_archetype_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_archetype text, p_confidence text, p_rationale text, p_retest_triggers text[])",
@@ -19879,6 +20644,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_organization_unit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_organization_unit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 265,
+          "anchor": "create function private.set_organization_unit_v1(p_id uuid,p_name text,p_enabled boolean default true)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
       "catalogues": {
@@ -19955,6 +20785,136 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_resource_policy_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_resource_policy_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 308,
+          "anchor": "create function private.set_resource_policy_grant_v1(p_resource_id uuid,p_user_id uuid,p_group_id uuid,p_action text,p_effect text,p_enabled boolean default true,p_expires_at timestamptz default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+          "kind": "function",
+          "name": "set_resource_purposes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_purposes text[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+          "kind": "function",
+          "name": "set_resource_purposes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_purposes text[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 326,
+          "anchor": "create function private.set_resource_purposes_v1(p_resource_id uuid,p_purposes text[])",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.set_updated_at()",
@@ -21682,6 +22642,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "storage_export_purpose_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "storage_export_purpose_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 486,
+          "anchor": "create function private.storage_export_purpose_allowed_v1(p_bucket text,p_path text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.storage_operation_is_revocable_v1()",
       "kind": "function",
       "catalogues": {
@@ -22735,6 +23760,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.sync_worker_principal_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.sync_worker_principal_v1()",
+          "kind": "function",
+          "name": "sync_worker_principal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.sync_worker_principal_v1()",
+          "kind": "function",
+          "name": "sync_worker_principal_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 346,
+          "anchor": "create function private.sync_worker_principal_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -23054,6 +24134,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.validate_policy_human_member_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_policy_human_member_v1()",
+          "kind": "function",
+          "name": "validate_policy_human_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.validate_policy_human_member_v1()",
+          "kind": "function",
+          "name": "validate_policy_human_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 382,
+          "anchor": "create function private.validate_policy_human_member_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:private.validate_presentation_template(p_organization_id uuid, p_definition jsonb)",
@@ -35618,6 +36753,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "explain_my_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_action text, p_purpose text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+          "kind": "function",
+          "name": "explain_my_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_action text, p_purpose text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 406,
+          "anchor": "create function public.explain_my_access_v1(p_resource_id uuid,p_action text default 'read',p_purpose text default 'retrieval') returns jsonb language sql security invoker set search_path='' as $$select private.explain_my_access_v1(p_resource_id,p_action,p_purpose);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:public.fail_intake_session(p_organization_id uuid, p_session_id uuid, p_reason text)",
       "kind": "function",
       "catalogues": {
@@ -41868,6 +43068,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.revoke_principal_access_v1(p_principal_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.revoke_principal_access_v1(p_principal_id uuid)",
+          "kind": "function",
+          "name": "revoke_principal_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.revoke_principal_access_v1(p_principal_id uuid)",
+          "kind": "function",
+          "name": "revoke_principal_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_principal_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 420,
+          "anchor": "create function public.revoke_principal_access_v1(p_principal_id uuid) returns void language sql security invoker set search_path='' as $$select private.revoke_principal_access_v1(p_principal_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:public.revoke_qualified_introduction_plan(p_plan_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -42483,6 +43748,136 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_access_group_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_access_group_member_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 412,
+          "anchor": "create function public.set_access_group_member_v1(p_group_id uuid,p_user_id uuid,p_enabled boolean default true,p_expires_at timestamptz default null) returns uuid language sql security invoker set search_path='' as $$select private.set_access_group_member_v1(p_group_id,p_user_id,p_enabled,p_expires_at);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:public.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+          "kind": "function",
+          "name": "set_access_group_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+          "kind": "function",
+          "name": "set_access_group_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 408,
+          "anchor": "create function public.set_access_group_v1(p_id uuid,p_name text,p_enabled boolean default true,p_unit_id uuid default null,p_parent_group_id uuid default null) returns uuid language sql security invoker set search_path='' as $$select private.set_access_group_v1(p_id,p_name,p_enabled,p_unit_id,p_parent_group_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:public.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "catalogues": {
@@ -42643,6 +44038,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_information_barrier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_information_barrier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 414,
+          "anchor": "create function public.set_information_barrier_v1(p_id uuid,p_resource_id uuid,p_name text,p_members jsonb,p_enabled boolean default true) returns uuid language sql security invoker set search_path='' as $$select private.set_information_barrier_v1(p_id,p_resource_id,p_name,p_members,p_enabled);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:public.set_intake_archetype_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_archetype text, p_confidence text, p_rationale text, p_retest_triggers text[])",
@@ -42949,6 +44409,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_organization_unit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+          "kind": "function",
+          "name": "set_organization_unit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_name text, p_enabled boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 410,
+          "anchor": "create function public.set_organization_unit_v1(p_id uuid,p_name text,p_enabled boolean default true) returns uuid language sql security invoker set search_path='' as $$select private.set_organization_unit_v1(p_id,p_name,p_enabled);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
       "catalogues": {
@@ -43028,6 +44553,136 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_resource_policy_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+          "kind": "function",
+          "name": "set_resource_policy_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 416,
+          "anchor": "create function public.set_resource_policy_grant_v1(p_resource_id uuid,p_user_id uuid,p_group_id uuid,p_action text,p_effect text,p_enabled boolean default true,p_expires_at timestamptz default null) returns uuid language sql security invoker set search_path='' as $$select private.set_resource_policy_grant_v1(p_resource_id,p_user_id,p_group_id,p_action,p_effect,p_enabled,p_expires_at);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:public.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+          "kind": "function",
+          "name": "set_resource_purposes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_purposes text[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+          "kind": "function",
+          "name": "set_resource_purposes_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_purposes text[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 418,
+          "anchor": "create function public.set_resource_purposes_v1(p_resource_id uuid,p_purposes text[]) returns void language sql security invoker set search_path='' as $$select private.set_resource_purposes_v1(p_resource_id,p_purposes);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
@@ -54268,6 +55923,382 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_delete",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_delete",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 130,
+          "anchor": "create policy access_group_memberships_deny_delete on private.access_group_memberships for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_insert",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_insert",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 128,
+          "anchor": "create policy access_group_memberships_deny_insert on private.access_group_memberships for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_select",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_select",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 127,
+          "anchor": "create policy access_group_memberships_deny_select on private.access_group_memberships for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_update",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_group_memberships.access_group_memberships_deny_update",
+          "kind": "policy",
+          "name": "access_group_memberships_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_group_memberships",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 129,
+          "anchor": "create policy access_group_memberships_deny_update on private.access_group_memberships for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_groups.access_groups_deny_delete",
+          "kind": "policy",
+          "name": "access_groups_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_groups.access_groups_deny_delete",
+          "kind": "policy",
+          "name": "access_groups_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 121,
+          "anchor": "create policy access_groups_deny_delete on private.access_groups for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_groups.access_groups_deny_insert",
+          "kind": "policy",
+          "name": "access_groups_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_groups.access_groups_deny_insert",
+          "kind": "policy",
+          "name": "access_groups_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 119,
+          "anchor": "create policy access_groups_deny_insert on private.access_groups for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_groups.access_groups_deny_select",
+          "kind": "policy",
+          "name": "access_groups_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_groups.access_groups_deny_select",
+          "kind": "policy",
+          "name": "access_groups_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 118,
+          "anchor": "create policy access_groups_deny_select on private.access_groups for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_groups.access_groups_deny_update",
+          "kind": "policy",
+          "name": "access_groups_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_groups.access_groups_deny_update",
+          "kind": "policy",
+          "name": "access_groups_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_groups",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 120,
+          "anchor": "create policy access_groups_deny_update on private.access_groups for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "policy:private.access_resources.access_resources_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -54412,6 +56443,194 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_delete",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_delete",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 148,
+          "anchor": "create policy barrier_memberships_deny_delete on private.barrier_memberships for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_insert",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_insert",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 146,
+          "anchor": "create policy barrier_memberships_deny_insert on private.barrier_memberships for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_select",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_select",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 145,
+          "anchor": "create policy barrier_memberships_deny_select on private.barrier_memberships for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_update",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.barrier_memberships.barrier_memberships_deny_update",
+          "kind": "policy",
+          "name": "barrier_memberships_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "barrier_memberships",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 147,
+          "anchor": "create policy barrier_memberships_deny_update on private.barrier_memberships for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "policy:private.commercial_accounts.commercial_accounts_deny_clients",
@@ -54887,6 +57106,194 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.information_barriers.information_barriers_deny_delete",
+          "kind": "policy",
+          "name": "information_barriers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.information_barriers.information_barriers_deny_delete",
+          "kind": "policy",
+          "name": "information_barriers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 139,
+          "anchor": "create policy information_barriers_deny_delete on private.information_barriers for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.information_barriers.information_barriers_deny_insert",
+          "kind": "policy",
+          "name": "information_barriers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.information_barriers.information_barriers_deny_insert",
+          "kind": "policy",
+          "name": "information_barriers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 137,
+          "anchor": "create policy information_barriers_deny_insert on private.information_barriers for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.information_barriers.information_barriers_deny_select",
+          "kind": "policy",
+          "name": "information_barriers_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.information_barriers.information_barriers_deny_select",
+          "kind": "policy",
+          "name": "information_barriers_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 136,
+          "anchor": "create policy information_barriers_deny_select on private.information_barriers for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.information_barriers.information_barriers_deny_update",
+          "kind": "policy",
+          "name": "information_barriers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.information_barriers.information_barriers_deny_update",
+          "kind": "policy",
+          "name": "information_barriers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "information_barriers",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 138,
+          "anchor": "create policy information_barriers_deny_update on private.information_barriers for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "policy:private.institutional_information_request_bindings.institutional_bindings_deny_delete",
@@ -55829,6 +58236,194 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.organization_units.organization_units_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.organization_units.organization_units_deny_delete",
+          "kind": "policy",
+          "name": "organization_units_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.organization_units.organization_units_deny_delete",
+          "kind": "policy",
+          "name": "organization_units_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 103,
+          "anchor": "create policy organization_units_deny_delete on private.organization_units for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.organization_units.organization_units_deny_insert",
+          "kind": "policy",
+          "name": "organization_units_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.organization_units.organization_units_deny_insert",
+          "kind": "policy",
+          "name": "organization_units_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 101,
+          "anchor": "create policy organization_units_deny_insert on private.organization_units for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.organization_units.organization_units_deny_select",
+          "kind": "policy",
+          "name": "organization_units_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.organization_units.organization_units_deny_select",
+          "kind": "policy",
+          "name": "organization_units_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 100,
+          "anchor": "create policy organization_units_deny_select on private.organization_units for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.organization_units.organization_units_deny_update",
+          "kind": "policy",
+          "name": "organization_units_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.organization_units.organization_units_deny_update",
+          "kind": "policy",
+          "name": "organization_units_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "organization_units",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 102,
+          "anchor": "create policy organization_units_deny_update on private.organization_units for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "policy:private.platform_capability_accreditations.platform_capability_accreditations_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -55923,6 +58518,194 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.principals.principals_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.principals.principals_deny_delete",
+          "kind": "policy",
+          "name": "principals_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.principals.principals_deny_delete",
+          "kind": "policy",
+          "name": "principals_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 112,
+          "anchor": "create policy principals_deny_delete on private.principals for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.principals.principals_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.principals.principals_deny_insert",
+          "kind": "policy",
+          "name": "principals_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.principals.principals_deny_insert",
+          "kind": "policy",
+          "name": "principals_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 110,
+          "anchor": "create policy principals_deny_insert on private.principals for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.principals.principals_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.principals.principals_deny_select",
+          "kind": "policy",
+          "name": "principals_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.principals.principals_deny_select",
+          "kind": "policy",
+          "name": "principals_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 109,
+          "anchor": "create policy principals_deny_select on private.principals for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.principals.principals_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.principals.principals_deny_update",
+          "kind": "policy",
+          "name": "principals_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.principals.principals_deny_update",
+          "kind": "policy",
+          "name": "principals_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "principals",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 111,
+          "anchor": "create policy principals_deny_update on private.principals for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "policy:private.project_canonical_revisions.project_canonical_revisions_no_delete",
@@ -68334,6 +71117,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:storage.objects.private_storage_export_purpose",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.private_storage_export_purpose",
+          "kind": "policy",
+          "name": "private_storage_export_purpose",
+          "qual": "private.storage_export_purpose_allowed_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.private_storage_export_purpose",
+          "kind": "policy",
+          "name": "private_storage_export_purpose",
+          "qual": "private.storage_export_purpose_allowed_v1(bucket_id, name)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 499,
+          "anchor": "create policy private_storage_export_purpose on storage.objects as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "policy:storage.objects.private_storage_no_bearer_signing",
       "kind": "policy",
       "catalogues": {
@@ -68643,6 +71473,244 @@
         }
       ],
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "r:private.access_group_memberships",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.access_group_memberships",
+          "rls": true,
+          "kind": "table",
+          "name": "access_group_memberships",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.access_group_memberships",
+          "rls": true,
+          "kind": "table",
+          "name": "access_group_memberships",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 27,
+          "anchor": "create table private.access_group_memberships (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "r:private.access_groups",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.access_groups",
+          "rls": true,
+          "kind": "table",
+          "name": "access_groups",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.access_groups",
+          "rls": true,
+          "kind": "table",
+          "name": "access_groups",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 21,
+          "anchor": "create table private.access_groups (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "r:private.access_resources",
@@ -69003,6 +72071,125 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "r:private.barrier_memberships",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.barrier_memberships",
+          "rls": true,
+          "kind": "table",
+          "name": "barrier_memberships",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.barrier_memberships",
+          "rls": true,
+          "kind": "table",
+          "name": "barrier_memberships",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 40,
+          "anchor": "create table private.barrier_memberships (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "r:private.capital_project_material_upload_grants",
@@ -69964,6 +73151,125 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:private.information_barriers",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.information_barriers",
+          "rls": true,
+          "kind": "table",
+          "name": "information_barriers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.information_barriers",
+          "rls": true,
+          "kind": "table",
+          "name": "information_barriers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 34,
+          "anchor": "create table private.information_barriers (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "r:private.institutional_information_request_bindings",
       "kind": "table",
       "catalogues": {
@@ -70797,6 +74103,125 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:private.organization_units",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.organization_units",
+          "rls": true,
+          "kind": "table",
+          "name": "organization_units",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.organization_units",
+          "rls": true,
+          "kind": "table",
+          "name": "organization_units",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 3,
+          "anchor": "create table private.organization_units (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "r:private.platform_capability_accreditations",
       "kind": "table",
       "catalogues": {
@@ -71033,6 +74458,125 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.principals",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.principals",
+          "rls": true,
+          "kind": "table",
+          "name": "principals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.principals",
+          "rls": true,
+          "kind": "table",
+          "name": "principals",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 8,
+          "anchor": "create table private.principals (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "r:private.project_canonical_revisions",
@@ -100452,6 +103996,201 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "trigger:private.access_group_memberships.access_group_memberships_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_group_memberships.access_group_memberships_policy_event",
+          "kind": "trigger",
+          "name": "access_group_memberships_policy_event",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_group_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_group_memberships.access_group_memberships_policy_event",
+          "kind": "trigger",
+          "name": "access_group_memberships_policy_event",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_group_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 132,
+          "anchor": "create trigger access_group_memberships_policy_event after insert or update or delete on private.access_group_memberships for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.access_group_memberships.access_group_memberships_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_group_memberships.access_group_memberships_updated",
+          "kind": "trigger",
+          "name": "access_group_memberships_updated",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER access_group_memberships_updated BEFORE UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.access_group_memberships.access_group_memberships_updated",
+          "kind": "trigger",
+          "name": "access_group_memberships_updated",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER access_group_memberships_updated BEFORE UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 131,
+          "anchor": "create trigger access_group_memberships_updated before update on private.access_group_memberships for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.access_group_memberships.group_member_human",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_group_memberships.group_member_human",
+          "kind": "trigger",
+          "name": "group_member_human",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_policy_human_member_v1()",
+          "definition": "CREATE TRIGGER group_member_human BEFORE INSERT OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_group_memberships.group_member_human",
+          "kind": "trigger",
+          "name": "group_member_human",
+          "table": "access_group_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_policy_human_member_v1()",
+          "definition": "CREATE TRIGGER group_member_human BEFORE INSERT OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 387,
+          "anchor": "create trigger group_member_human before insert or update on private.access_group_memberships for each row execute function private.validate_policy_human_member_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.access_groups.access_groups_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_groups.access_groups_policy_event",
+          "kind": "trigger",
+          "name": "access_groups_policy_event",
+          "table": "access_groups",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_groups_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_groups.access_groups_policy_event",
+          "kind": "trigger",
+          "name": "access_groups_policy_event",
+          "table": "access_groups",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_groups_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 123,
+          "anchor": "create trigger access_groups_policy_event after insert or update or delete on private.access_groups for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.access_groups.access_groups_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_groups.access_groups_updated",
+          "kind": "trigger",
+          "name": "access_groups_updated",
+          "table": "access_groups",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER access_groups_updated BEFORE UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.access_groups.access_groups_updated",
+          "kind": "trigger",
+          "name": "access_groups_updated",
+          "table": "access_groups",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER access_groups_updated BEFORE UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 122,
+          "anchor": "create trigger access_groups_updated before update on private.access_groups for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "trigger:private.access_resources.access_resources_audit",
       "kind": "trigger",
       "catalogues": {
@@ -100490,6 +104229,45 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.access_resources.access_resources_policy_events",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_resources.access_resources_policy_events",
+          "kind": "trigger",
+          "name": "access_resources_policy_events",
+          "table": "access_resources",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_resources_policy_events AFTER UPDATE OF allowed_purposes ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_resources.access_resources_policy_events",
+          "kind": "trigger",
+          "name": "access_resources_policy_events",
+          "table": "access_resources",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER access_resources_policy_events AFTER UPDATE OF allowed_purposes ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 96,
+          "anchor": "create trigger access_resources_policy_events after update of allowed_purposes on private.access_resources for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "trigger:private.access_resources.access_resources_updated_at",
@@ -100731,6 +104509,123 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "trigger:private.barrier_memberships.barrier_member_human",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.barrier_memberships.barrier_member_human",
+          "kind": "trigger",
+          "name": "barrier_member_human",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_policy_human_member_v1()",
+          "definition": "CREATE TRIGGER barrier_member_human BEFORE INSERT OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.barrier_memberships.barrier_member_human",
+          "kind": "trigger",
+          "name": "barrier_member_human",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_policy_human_member_v1()",
+          "definition": "CREATE TRIGGER barrier_member_human BEFORE INSERT OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 388,
+          "anchor": "create trigger barrier_member_human before insert or update on private.barrier_memberships for each row execute function private.validate_policy_human_member_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.barrier_memberships.barrier_memberships_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.barrier_memberships.barrier_memberships_policy_event",
+          "kind": "trigger",
+          "name": "barrier_memberships_policy_event",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER barrier_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.barrier_memberships.barrier_memberships_policy_event",
+          "kind": "trigger",
+          "name": "barrier_memberships_policy_event",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER barrier_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 150,
+          "anchor": "create trigger barrier_memberships_policy_event after insert or update or delete on private.barrier_memberships for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.barrier_memberships.barrier_memberships_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.barrier_memberships.barrier_memberships_updated",
+          "kind": "trigger",
+          "name": "barrier_memberships_updated",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER barrier_memberships_updated BEFORE UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.barrier_memberships.barrier_memberships_updated",
+          "kind": "trigger",
+          "name": "barrier_memberships_updated",
+          "table": "barrier_memberships",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER barrier_memberships_updated BEFORE UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 149,
+          "anchor": "create trigger barrier_memberships_updated before update on private.barrier_memberships for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
       "kind": "trigger",
       "catalogues": {
@@ -100926,6 +104821,84 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.information_barriers.information_barriers_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.information_barriers.information_barriers_policy_event",
+          "kind": "trigger",
+          "name": "information_barriers_policy_event",
+          "table": "information_barriers",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER information_barriers_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.information_barriers.information_barriers_policy_event",
+          "kind": "trigger",
+          "name": "information_barriers_policy_event",
+          "table": "information_barriers",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER information_barriers_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 141,
+          "anchor": "create trigger information_barriers_policy_event after insert or update or delete on private.information_barriers for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.information_barriers.information_barriers_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.information_barriers.information_barriers_updated",
+          "kind": "trigger",
+          "name": "information_barriers_updated",
+          "table": "information_barriers",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER information_barriers_updated BEFORE UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.information_barriers.information_barriers_updated",
+          "kind": "trigger",
+          "name": "information_barriers_updated",
+          "table": "information_barriers",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER information_barriers_updated BEFORE UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 140,
+          "anchor": "create trigger information_barriers_updated before update on private.information_barriers for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "trigger:private.institutional_information_request_bindings.institutional_binding_immutable",
@@ -101552,6 +105525,84 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.organization_units.organization_units_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.organization_units.organization_units_policy_event",
+          "kind": "trigger",
+          "name": "organization_units_policy_event",
+          "table": "organization_units",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER organization_units_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.organization_units.organization_units_policy_event",
+          "kind": "trigger",
+          "name": "organization_units_policy_event",
+          "table": "organization_units",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER organization_units_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 105,
+          "anchor": "create trigger organization_units_policy_event after insert or update or delete on private.organization_units for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.organization_units.organization_units_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.organization_units.organization_units_updated",
+          "kind": "trigger",
+          "name": "organization_units_updated",
+          "table": "organization_units",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER organization_units_updated BEFORE UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.organization_units.organization_units_updated",
+          "kind": "trigger",
+          "name": "organization_units_updated",
+          "table": "organization_units",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER organization_units_updated BEFORE UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 104,
+          "anchor": "create trigger organization_units_updated before update on private.organization_units for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "trigger:private.platform_capability_accreditations.platform_capability_accreditations_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -101589,6 +105640,84 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.principals.principals_policy_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.principals.principals_policy_event",
+          "kind": "trigger",
+          "name": "principals_policy_event",
+          "table": "principals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER principals_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.principals.principals_policy_event",
+          "kind": "trigger",
+          "name": "principals_policy_event",
+          "table": "principals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_policy_domain_event_v1()",
+          "definition": "CREATE TRIGGER principals_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 114,
+          "anchor": "create trigger principals_policy_event after insert or update or delete on private.principals for each row execute function private.capture_policy_domain_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.principals.principals_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.principals.principals_updated",
+          "kind": "trigger",
+          "name": "principals_updated",
+          "table": "principals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER principals_updated BEFORE UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.principals.principals_updated",
+          "kind": "trigger",
+          "name": "principals_updated",
+          "table": "principals",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER principals_updated BEFORE UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 113,
+          "anchor": "create trigger principals_updated before update on private.principals for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "trigger:private.project_canonical_revisions.project_canonical_revision_immutable",
@@ -107326,6 +111455,45 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "trigger:public.organization_memberships.membership_policy_principal",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organization_memberships.membership_policy_principal",
+          "kind": "trigger",
+          "name": "membership_policy_principal",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.ensure_membership_principal_v1()",
+          "definition": "CREATE TRIGGER membership_policy_principal AFTER INSERT ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.ensure_membership_principal_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.organization_memberships.membership_policy_principal",
+          "kind": "trigger",
+          "name": "membership_policy_principal",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.ensure_membership_principal_v1()",
+          "definition": "CREATE TRIGGER membership_policy_principal AFTER INSERT ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.ensure_membership_principal_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 171,
+          "anchor": "create trigger membership_policy_principal after insert on public.organization_memberships for each row execute function private.ensure_membership_principal_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
       "id": "trigger:public.organization_memberships.memberships_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -108590,6 +112758,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.processing_jobs.processing_jobs_policy_principal",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.processing_jobs_policy_principal",
+          "kind": "trigger",
+          "name": "processing_jobs_policy_principal",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_worker_principal_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_policy_principal AFTER INSERT OR UPDATE OF status, leased_by, leased_account_user_id, lease_expires_at ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.sync_worker_principal_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.processing_jobs_policy_principal",
+          "kind": "trigger",
+          "name": "processing_jobs_policy_principal",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_worker_principal_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_policy_principal AFTER INSERT OR UPDATE OF status, leased_by, leased_account_user_id, lease_expires_at ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.sync_worker_principal_v1()"
+        }
+      },
+      "owner": "Codex — etapa 3",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+          "line": 358,
+          "anchor": "create trigger processing_jobs_policy_principal after insert or update of status,leased_by,leased_account_user_id,lease_expires_at on public.processing_jobs for each row execute function private.sync_worker_principal_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
       "id": "trigger:public.processing_jobs.processing_jobs_set_updated_at",
@@ -117797,6 +122004,34 @@
       "decision": "preservar",
       "stage": "4",
       "reason": "Instala ou concilia o contrato de eventos, sem promover distribuição exclusiva de staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916163756_bound_policy_grants_to_resource.sql",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916163759_deduplicate_resource_policy_events.sql",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
+    },
+    {
+      "kind": "package",
+      "path": "packages/access-policy",
+      "decision": "preservar",
+      "stage": "3",
+      "reason": "Vocabulário, contratos e vetores compartilhados; Postgres continua o único avaliador."
     }
   ],
   "staging_archive": [
@@ -118206,5 +122441,19 @@
     "production_version": "20260916102242",
     "staging_initial_version": "20260916101915",
     "reason": "Preserva aplicação inicial em staging e concilia superfície de distribuição exclusiva sem promovê-la."
+  },
+  "stage_3_revision": {
+    "production_migrations": [
+      "20260916163753",
+      "20260916163756",
+      "20260916163759"
+    ],
+    "staging_migrations": [
+      "20260916124024",
+      "20260916124447",
+      "20260916163357"
+    ],
+    "new_objects": 75,
+    "review": "docs/security/INVENTORY_WAVE_3_POLICY_REVIEW.md"
   }
 }
