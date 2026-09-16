@@ -1,3 +1,7 @@
+## Etapa 3: compatibilidade prévia do consumidor
+
+Envelope passa a aceitar `access_policy` exclusivamente para o efeito existente `revalidate_authority`; nenhum payload protegido ou novo efeito é aceito. Publicar web/worker antes da migração `resource_policy_and_barriers`, evitando leases recusados por consumidor antigo. Sem DDL, concessão ou ativação de política nesta entrega. Teste negativo em `domain-event.test.ts`; etapa 3 permanece em execução.
+
 ## Wave 2: delivery security reconciliation
 
 The final technical review pins the delivered stage 2/4 baseline `b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b`. All 54 evidence hashes and the affected workspace/outbox relationships are reconciled; the 18 remaining gaps retain their scope and severity. The opening inventory and AWS observation are archived. Production worker revision 334 polls the outbox and all four alarms show OK; no IAM expansion or production fixture was used. See `docs/security/history/wave-2-final-review.md`. The active wave remains open solely for the current authorized delivery; no subsequent wave starts without the founder OK.
