@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
 select ('a11a0000-0000-4000-8000-'||lpad(n::text,12,'0'))::uuid,'authenticated','authenticated','wave1a-'||n||'@example.invalid','{}','{}',now(),now(),false,false from generate_series(1,4) n;
 insert into public.organizations(id,organization_type,name,created_by) values('a11a0000-0000-4000-9000-000000000001','company','Synthetic authority test','a11a0000-0000-4000-8000-000000000001');

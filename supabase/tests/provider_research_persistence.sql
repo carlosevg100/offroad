@@ -1,5 +1,6 @@
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/provider_research_plan_snapshot.sql
 \ir support/execution_approval.sql
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values

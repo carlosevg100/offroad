@@ -10817,49 +10817,18 @@
     {
       "id": "function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)",
-          "kind": "function",
-          "name": "organization_has_workspace_capability",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_type text, p_capability text",
-          "security_definer": false
-        },
-        "staging": {
-          "id": "function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)",
-          "kind": "function",
-          "name": "organization_has_workspace_capability",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_type text, p_capability text",
-          "security_definer": false
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "3, 4, 22",
-      "reason": "controle atual integra autoridade, trilha e estado de liberação verificável",
+      "decision": "apagar",
+      "stage": "2",
+      "reason": "Helpers que derivavam capacidade de rótulo comercial retirados; autoridade é consultada por organização e grant explícito.",
       "sources": [
+        {
+          "path": "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql",
+          "line": 28,
+          "anchor": "drop function private.organization_has_workspace_capability(text,text);",
+          "mechanism": "dynamic_definition_transform"
+        },
         {
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 24,
@@ -10867,7 +10836,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Sem consumidor ou função instalada; substituídos pelos overloads UUID e registro explícito de capacidades.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.pack_response_codes_valid(p_entries jsonb)",
@@ -17216,49 +17186,18 @@
     {
       "id": "function:private.require_workspace_capability(p_organization_type text, p_capability text)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.require_workspace_capability(p_organization_type text, p_capability text)",
-          "kind": "function",
-          "name": "require_workspace_capability",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_type text, p_capability text",
-          "security_definer": false
-        },
-        "staging": {
-          "id": "function:private.require_workspace_capability(p_organization_type text, p_capability text)",
-          "kind": "function",
-          "name": "require_workspace_capability",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_type text, p_capability text",
-          "security_definer": false
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "3, 4, 22",
-      "reason": "controle atual integra autoridade, trilha e estado de liberação verificável",
+      "decision": "apagar",
+      "stage": "2",
+      "reason": "Helpers que derivavam capacidade de rótulo comercial retirados; autoridade é consultada por organização e grant explícito.",
       "sources": [
+        {
+          "path": "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql",
+          "line": 27,
+          "anchor": "drop function private.require_workspace_capability(text,text);",
+          "mechanism": "dynamic_definition_transform"
+        },
         {
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 47,
@@ -17266,7 +17205,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Sem consumidor ou função instalada; substituídos pelos overloads UUID e registro explícito de capacidades.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.requires_execution_brief_approval(p_job_id uuid)",
@@ -19033,6 +18973,12 @@
       "stage": "2",
       "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
       "sources": [
+        {
+          "path": "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql",
+          "line": 3,
+          "anchor": "create or replace function private.seed_workspace_foundation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
           "line": 83,
@@ -35734,6 +35680,12 @@
       "stage": "1C, 2",
       "reason": "1A: autoridade corrigida e verificada; compatibilidade sem fornecer cargo ao raciocínio ou à profundidade",
       "sources": [
+        {
+          "path": "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql",
+          "line": 16,
+          "anchor": "create or replace function public.initialize_professional_onboarding(",
+          "mechanism": "direct_ddl"
+        },
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
           "line": 278,
@@ -116082,6 +116034,13 @@
       "decision": "preservar",
       "stage": "2",
       "reason": "Correção de acesso aplicada; texto imutável sob carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Correção de acesso aplicada; texto imutável sob carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -116460,6 +116419,20 @@
       "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
       "trigger:public.organizations.organizations_workspace_foundation",
       "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at"
+    ]
+  },
+  "stage_2_cutover_revision": {
+    "base_commit": "91edc0f152708f8fcd1fabbfff51f343a466eff9",
+    "production_captured_at": "2026-09-16T04:19:43.226926+00:00",
+    "staging_captured_at": "2026-09-16T04:19:46.352367+00:00",
+    "migrations": [
+      "supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql"
+    ],
+    "changed_objects": [
+      "function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)",
+      "function:private.require_workspace_capability(p_organization_type text, p_capability text)",
+      "function:private.seed_workspace_foundation_v1()",
+      "function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)"
     ]
   }
 }

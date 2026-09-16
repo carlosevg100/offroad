@@ -1,6 +1,7 @@
 -- Actual deterministic adapter output plus a subsequent governed premise revision.
 -- This proves persistence, not live orchestration or publication of an R01 artifact.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

@@ -2,6 +2,7 @@
 -- forced through RLS and read-only to authenticated browser clients.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 -- Seed only this rollback test's synthetic human-review state. Production has no such helper.

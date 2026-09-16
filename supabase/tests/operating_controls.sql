@@ -1,6 +1,7 @@
 -- Fail-closed operating-control plane. Every fixture is rolled back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

@@ -2,6 +2,7 @@
 -- capability. Structural and readiness task sets must remain an exact partition.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,

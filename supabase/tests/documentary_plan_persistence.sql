@@ -1,5 +1,6 @@
 -- Real compiler snapshots; every synthetic fixture and write rolls back.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/documentary_plan_snapshots.sql
 create function pg_temp.documentary_plan_with_versions(p jsonb, registry text, method text) returns jsonb
 language sql immutable set search_path='' as $versions$

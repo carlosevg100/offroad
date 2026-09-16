@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 -- Rollback-only privileged fixture helper; production hash function grants stay private.
 create function pg_temp.fixture_institutional_hash(value jsonb) returns text language sql security definer set search_path='' as $$select private.institutional_config_hash(value);$$;

@@ -6,6 +6,7 @@
 -- command are refused. Company and advisor behaviour is unchanged. All fixtures roll back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 -- ---------------------------------------------------------------------------------------------
 -- Test helpers (pg_temp only; created before any role switch)

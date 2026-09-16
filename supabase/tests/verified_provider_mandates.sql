@@ -6,6 +6,7 @@
 -- draft, an expired window and a withdrawal never reach matching. All fixtures roll back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 -- ---------------------------------------------------------------------------------------------
 -- Helpers (pg_temp only; created before any role switch)

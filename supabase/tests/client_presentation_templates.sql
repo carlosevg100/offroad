@@ -3,6 +3,7 @@
 -- that overrides it, the refusals for a member without administration and for another tenant, and
 -- the refusal of a font the PDF renderer cannot embed.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 insert into auth.users (id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values
   ('10000000-0000-4000-8000-000000000801','authenticated','authenticated','template-owner@example.invalid','{}','{}',now(),now(),false,false),

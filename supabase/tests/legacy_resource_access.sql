@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_resource_fixture.sql
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000002',true);

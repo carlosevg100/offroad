@@ -1,5 +1,6 @@
 -- Synthetic stage 1C non-interference proof. Both transactions roll back.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 -- Synthetic 1B fixture. Caller owns BEGIN/ROLLBACK.
 select set_config('request.jwt.claims','{}',true);
 do $$

@@ -6,6 +6,7 @@
 -- approval writes the candidate configuration with honest provenance and queues the recompute
 -- through the configuration review that already exists.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 set local lock_timeout = '5s';
 set local statement_timeout = '60s';
 

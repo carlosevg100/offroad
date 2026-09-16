@@ -3,6 +3,7 @@
 -- Synthetic rollback-only consent boundary regression. Legacy metadata setup uses the
 -- shared fixture helper; the owner calls the real public approval RPC directly.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/documentary_plan_snapshots.sql
 do $$ begin
  if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='worker_load_document_work_request_v1' and p.provolatile<>'v') then raise exception 'capability loader must be volatile for PostgREST row locks'; end if;
