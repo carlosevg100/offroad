@@ -23,7 +23,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   const accessCopy = await getTranslations({locale, namespace: "WorkspaceAccess"});
   const contextCopy = await getTranslations({locale, namespace: "WorkspaceContext"});
   const t = await getTranslations({locale, namespace: "App"});
-  const {organization, membership, email, supabase, userId} = await requireWorkspace(locale);
+  const {organization, accessAdministration, email, supabase, userId} = await requireWorkspace(locale);
   // Projects and folders follow the own-analysis capability, which every workspace type has.
   // The mandates entry follows mandate management. Origination is a separate capability and
   // no longer decides what the navigation shows.
@@ -144,7 +144,7 @@ export default async function ApplicationLayout({children, params}: Props) {
         signOutAction={signOut}
       />
       <div className="app-main">
-      <WorkspaceContextSwitcher locale={locale} organization={organization} canAdminister={["owner", "admin"].includes(membership.role)} copy={{switch: contextCopy("switch"), access: accessCopy("title")}} />
+      <WorkspaceContextSwitcher locale={locale} organization={organization} canAdminister={accessAdministration.canAdminister} copy={{switch: contextCopy("switch"), access: accessCopy("title")}} />
         {integrationPreview.enabled && integrationPreview.scope === "organization" ? <IntegrationPreviewBanner
           copy={{
             kicker: t("integrationPreview.kicker"),

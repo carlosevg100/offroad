@@ -19,3 +19,5 @@ begin
 end $$;
 create trigger zz_synthetic_legacy_workspace_capabilities after insert on public.organizations
 for each row execute function pg_temp.provision_legacy_fixture_capabilities();
+
+\ir policy_worker_fixture.sql

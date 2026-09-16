@@ -81,6 +81,8 @@ insert into public.processing_jobs (
   1, now() + interval '10 minutes', extensions.digest(repeat('s',64), 'sha256')
 );
 
+-- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000713' where organization_id='20000000-0000-4000-8000-000000000711' and status='leased';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000713","role":"authenticated","aal":"aal1"}', true);
 

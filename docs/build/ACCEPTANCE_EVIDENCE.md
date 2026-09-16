@@ -1,3 +1,11 @@
+## 16 September 2026: stage 3 resource policy and barriers
+
+PostgreSQL now evaluates explicit human/group grants, deny precedence, flat groups, desk barriers, purpose restrictions and bounded worker principals. Administrative authority is separate from content access; web capabilities are emitted by the server. Existing download/Storage, job and publication paths consult the common policy. No administrative screens or next-wave work were added.
+
+Three immutable migrations are installed in staging (20260916124024, 20260916124447, 20260916163357) and production (20260916163753, 20260916163756, 20260916163759), with matching SQL hashes. The follow-ups fix child grant scope, explicit-deny basis and duplicate purpose audit events. Staging passed all 67 rollback SQL contracts, including the preserved role-free context suite. All 53 inspected function definitions match across environments; security advisors report no lints. Generated types and object/journal inventories reflect production. Local pnpm check passed across 44 packages.
+
+Evidence: docs/build/arcabouco/etapa-03.md, etapa-03-installed-eval.json and docs/security/INVENTORY_WAVE_3_POLICY_REVIEW.md. Final CI, merge and exact-commit web/worker proof remain required before completion. No production fixtures were created.
+
 ## Etapa 3: compatibilidade prévia do consumidor
 
 Envelope passa a aceitar `access_policy` exclusivamente para o efeito existente `revalidate_authority`; nenhum payload protegido ou novo efeito é aceito. Publicar web/worker antes da migração `resource_policy_and_barriers`, evitando leases recusados por consumidor antigo. Sem DDL, concessão ou ativação de política nesta entrega. Teste negativo em `domain-event.test.ts`; etapa 3 permanece em execução.

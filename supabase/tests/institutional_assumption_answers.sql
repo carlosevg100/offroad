@@ -57,6 +57,8 @@ do $$ begin
  if private.institutional_config_hash(current_setting('test.institutional_application')::jsonb->'nextConfiguration') is distinct from current_setting('test.institutional_application')::jsonb->>'nextConfigurationFingerprint' then raise exception 'candidate hash mismatch'; end if;
 end $$;
 update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000872' where status='leased';
+-- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000872' where organization_id='20000000-0000-4000-8000-000000000871' and status='leased';
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000872","role":"authenticated"}',true);
 select public.worker_sync_institutional_information_requests_v1('80000000-0000-4000-8000-000000000871',repeat('u',64),jsonb_build_array(current_setting('test.institutional_request')::jsonb));
@@ -113,8 +115,10 @@ do $$ declare reviews jsonb; candidate jsonb; begin
  if candidate->>'status' is distinct from 'review_required' then raise exception 'review candidate missing';end if;
  perform public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000871',(candidate->>'candidateId')::uuid,candidate->>'parentFingerprint','approved',candidate->>'configurationFingerprint');
  if not exists(select 1 from jsonb_array_elements(public.read_institutional_configuration_reviews_v1('30000000-0000-4000-8000-000000000871')) where value->>'revision'='2' and value->>'status'='approved') then raise exception 'explicit review failed';end if;
- -- Same queued message replays against its original parent after approval.
+ -- Replay uses the bound worker account, then returns to the human reviewer.
+ perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000872","role":"authenticated"}',true);
  if (public.worker_load_institutional_configuration_v1('80000000-0000-4000-8000-000000000873',repeat('v',64))->>'revision') is distinct from '1' then raise exception 'retry parent changed';end if;
+ perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000871","role":"authenticated"}',true);
 end $$;
 do $$ declare sibling jsonb; accepted boolean:=false; begin
  select value into sibling from jsonb_array_elements(public.read_institutional_configuration_reviews_v1('30000000-0000-4000-8000-000000000871')) where value->>'revision'='3';

@@ -910,6 +910,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_admin_resource_policy_v1(p_org uuid, p_resource uuid)",
+      "kind": "function",
+      "name": "can_admin_resource_policy_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_administer_membership_v1(p_organization_id uuid, p_user_id uuid, p_role text)",
       "kind": "function",
       "name": "can_administer_membership_v1",
@@ -1272,6 +1290,24 @@
       "id": "function:private.capture_organization_authority_event_v1()",
       "kind": "function",
       "name": "capture_organization_authority_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_policy_domain_event_v1()",
+      "kind": "function",
+      "name": "capture_policy_domain_event_v1",
       "grants": [
         [
           "postgres",
@@ -1724,6 +1760,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
+      "kind": "function",
+      "name": "delegated_policy_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_principal_id uuid, p_resource_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.deny_domain_audit_mutation_v1()",
       "kind": "function",
       "name": "deny_domain_audit_mutation_v1",
@@ -2035,6 +2089,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.ensure_membership_principal_v1()",
+      "kind": "function",
+      "name": "ensure_membership_principal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.evaluate_operating_control_snapshot_v1(p_scope_id text, p_requested_use text, p_snapshot jsonb, p_binding jsonb)",
       "kind": "function",
       "name": "evaluate_operating_control_snapshot_v1",
@@ -2050,6 +2122,24 @@
         "search_path=\"\""
       ],
       "signature": "p_scope_id text, p_requested_use text, p_snapshot jsonb, p_binding jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.evaluate_resource_policy_v1(p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "name": "evaluate_resource_policy_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resource uuid, p_subject uuid, p_action text, p_purpose text",
       "security_definer": true
     },
     {
@@ -2158,6 +2248,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_require_accepted boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "name": "explain_my_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_action text, p_purpose text",
       "security_definer": true
     },
     {
@@ -3633,6 +3746,60 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_share_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.policy_admin_context_v1()",
+      "kind": "function",
+      "name": "policy_admin_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.policy_group_ids_v1(p_org uuid, p_principal uuid)",
+      "kind": "function",
+      "name": "policy_group_ids_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_principal uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.policy_invalidate_jobs_v1(p_org uuid)",
+      "kind": "function",
+      "name": "policy_invalidate_jobs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
       "security_definer": true
     },
     {
@@ -6132,6 +6299,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.revoke_principal_access_v1(p_principal_id uuid)",
+      "kind": "function",
+      "name": "revoke_principal_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_principal_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.revoke_qualified_introduction_plan(p_plan_id uuid)",
       "kind": "function",
       "name": "revoke_qualified_introduction_plan",
@@ -6306,6 +6496,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "set_access_group_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+      "kind": "function",
+      "name": "set_access_group_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "name": "set_capital_project_review_assignment_v1",
@@ -6349,6 +6585,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_self_approval text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+      "kind": "function",
+      "name": "set_information_barrier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
       "security_definer": true
     },
     {
@@ -6457,6 +6716,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+      "kind": "function",
+      "name": "set_organization_unit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_name text, p_enabled boolean",
+      "security_definer": true
+    },
+    {
       "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
       "name": "set_presentation_template_v1",
@@ -6477,6 +6759,52 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "set_resource_policy_grant_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+      "kind": "function",
+      "name": "set_resource_purposes_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_purposes text[]",
       "security_definer": true
     },
     {
@@ -7022,6 +7350,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
+      "kind": "function",
+      "name": "storage_export_purpose_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.storage_operation_is_revocable_v1()",
       "kind": "function",
       "name": "storage_operation_is_revocable_v1",
@@ -7360,6 +7711,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.sync_worker_principal_v1()",
+      "kind": "function",
+      "name": "sync_worker_principal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
       "kind": "function",
       "name": "transfer_organization_owner_v1",
@@ -7445,6 +7814,24 @@
       "id": "function:private.validate_institutional_information_response_v1()",
       "kind": "function",
       "name": "validate_institutional_information_response_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.validate_policy_human_member_v1()",
+      "kind": "function",
+      "name": "validate_policy_human_member_v1",
       "grants": [
         [
           "postgres",
@@ -11589,6 +11976,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
+      "kind": "function",
+      "name": "explain_my_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_action text, p_purpose text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.fail_intake_session(p_organization_id uuid, p_session_id uuid, p_reason text)",
       "kind": "function",
       "name": "fail_intake_session",
@@ -13830,6 +14240,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.revoke_principal_access_v1(p_principal_id uuid)",
+      "kind": "function",
+      "name": "revoke_principal_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_principal_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.revoke_qualified_introduction_plan(p_plan_id uuid)",
       "kind": "function",
       "name": "revoke_qualified_introduction_plan",
@@ -14049,6 +14482,52 @@
       "security_definer": false
     },
     {
+      "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "set_access_group_member_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_access_group_v1(p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid)",
+      "kind": "function",
+      "name": "set_access_group_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_name text, p_enabled boolean, p_unit_id uuid, p_parent_group_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "name": "set_capital_project_review_assignment_v1",
@@ -14102,6 +14581,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_self_approval text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_information_barrier_v1(p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean)",
+      "kind": "function",
+      "name": "set_information_barrier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_resource_id uuid, p_name text, p_members jsonb, p_enabled boolean",
       "security_definer": false
     },
     {
@@ -14207,6 +14709,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.set_organization_unit_v1(p_id uuid, p_name text, p_enabled boolean)",
+      "kind": "function",
+      "name": "set_organization_unit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_name text, p_enabled boolean",
+      "security_definer": false
+    },
+    {
       "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
       "name": "set_presentation_template_v1",
@@ -14232,6 +14757,52 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
+      "kind": "function",
+      "name": "set_resource_policy_grant_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_resource_purposes_v1(p_resource_id uuid, p_purposes text[])",
+      "kind": "function",
+      "name": "set_resource_purposes_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_purposes text[]",
       "security_definer": false
     },
     {
@@ -18074,6 +18645,118 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_delete",
+      "kind": "policy",
+      "name": "access_group_memberships_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_group_memberships",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_insert",
+      "kind": "policy",
+      "name": "access_group_memberships_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_group_memberships",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_select",
+      "kind": "policy",
+      "name": "access_group_memberships_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_group_memberships",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_group_memberships.access_group_memberships_deny_update",
+      "kind": "policy",
+      "name": "access_group_memberships_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_group_memberships",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_delete",
+      "kind": "policy",
+      "name": "access_groups_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_groups",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_insert",
+      "kind": "policy",
+      "name": "access_groups_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_groups",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_select",
+      "kind": "policy",
+      "name": "access_groups_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_groups",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_groups.access_groups_deny_update",
+      "kind": "policy",
+      "name": "access_groups_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_groups",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.access_resources.access_resources_deny_clients",
       "kind": "policy",
       "name": "access_resources_deny_clients",
@@ -18113,6 +18796,62 @@
       "table": "authorization_revisions",
       "schema": "private",
       "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_delete",
+      "kind": "policy",
+      "name": "barrier_memberships_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "barrier_memberships",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_insert",
+      "kind": "policy",
+      "name": "barrier_memberships_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "barrier_memberships",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_select",
+      "kind": "policy",
+      "name": "barrier_memberships_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "barrier_memberships",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.barrier_memberships.barrier_memberships_deny_update",
+      "kind": "policy",
+      "name": "barrier_memberships_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "barrier_memberships",
+      "schema": "private",
+      "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "false"
     },
@@ -18256,6 +18995,62 @@
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_delete",
+      "kind": "policy",
+      "name": "information_barriers_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "information_barriers",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_insert",
+      "kind": "policy",
+      "name": "information_barriers_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "information_barriers",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_select",
+      "kind": "policy",
+      "name": "information_barriers_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "information_barriers",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.information_barriers.information_barriers_deny_update",
+      "kind": "policy",
+      "name": "information_barriers_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "information_barriers",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
       "with_check": "false"
     },
     {
@@ -18539,6 +19334,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.organization_units.organization_units_deny_delete",
+      "kind": "policy",
+      "name": "organization_units_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "organization_units",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_insert",
+      "kind": "policy",
+      "name": "organization_units_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "organization_units",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_select",
+      "kind": "policy",
+      "name": "organization_units_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "organization_units",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.organization_units.organization_units_deny_update",
+      "kind": "policy",
+      "name": "organization_units_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "organization_units",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.platform_capability_accreditations.platform_capability_accreditations_deny_clients",
       "kind": "policy",
       "name": "platform_capability_accreditations_deny_clients",
@@ -18565,6 +19416,62 @@
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.principals.principals_deny_delete",
+      "kind": "policy",
+      "name": "principals_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "principals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.principals.principals_deny_insert",
+      "kind": "policy",
+      "name": "principals_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "principals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.principals.principals_deny_select",
+      "kind": "policy",
+      "name": "principals_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "principals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.principals.principals_deny_update",
+      "kind": "policy",
+      "name": "principals_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "principals",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
       "with_check": "false"
     },
     {
@@ -22144,6 +23051,20 @@
       "with_check": "((bucket_id = 'opportunity-documents'::text) AND ( SELECT private.can_access_document_scope(private.storage_organization_id(objects.name), private.storage_opportunity_id(objects.name), 'document.write'::text) AS can_access_document_scope))"
     },
     {
+      "id": "policy:storage.objects.private_storage_export_purpose",
+      "kind": "policy",
+      "name": "private_storage_export_purpose",
+      "qual": "private.storage_export_purpose_allowed_v1(bucket_id, name)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:storage.objects.private_storage_no_bearer_signing",
       "kind": "policy",
       "name": "private_storage_no_bearer_signing",
@@ -22204,6 +23125,106 @@
       "rls": true,
       "kind": "table",
       "name": "access_decision_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.access_group_memberships",
+      "rls": true,
+      "kind": "table",
+      "name": "access_group_memberships",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.access_groups",
+      "rls": true,
+      "kind": "table",
+      "name": "access_groups",
       "grants": [
         [
           "postgres",
@@ -22354,6 +23375,56 @@
       "rls": true,
       "kind": "table",
       "name": "authorization_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.barrier_memberships",
+      "rls": true,
+      "kind": "table",
+      "name": "barrier_memberships",
       "grants": [
         [
           "postgres",
@@ -22800,6 +23871,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.information_barriers",
+      "rls": true,
+      "kind": "table",
+      "name": "information_barriers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.institutional_information_request_bindings",
       "rls": true,
       "kind": "table",
@@ -23150,6 +24271,56 @@
       "force_rls": false
     },
     {
+      "id": "r:private.organization_units",
+      "rls": true,
+      "kind": "table",
+      "name": "organization_units",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.platform_capability_accreditations",
       "rls": true,
       "kind": "table",
@@ -23204,6 +24375,56 @@
       "rls": true,
       "kind": "table",
       "name": "platform_capability_releases",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.principals",
+      "rls": true,
+      "kind": "table",
+      "name": "principals",
       "grants": [
         [
           "postgres",
@@ -36885,6 +38106,56 @@
       "definition": "CREATE TRIGGER access_decision_events_immutable BEFORE DELETE OR UPDATE ON private.access_decision_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
     },
     {
+      "id": "trigger:private.access_group_memberships.access_group_memberships_policy_event",
+      "kind": "trigger",
+      "name": "access_group_memberships_policy_event",
+      "table": "access_group_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER access_group_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.access_group_memberships.access_group_memberships_updated",
+      "kind": "trigger",
+      "name": "access_group_memberships_updated",
+      "table": "access_group_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER access_group_memberships_updated BEFORE UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.access_group_memberships.group_member_human",
+      "kind": "trigger",
+      "name": "group_member_human",
+      "table": "access_group_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.validate_policy_human_member_v1()",
+      "definition": "CREATE TRIGGER group_member_human BEFORE INSERT OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+    },
+    {
+      "id": "trigger:private.access_groups.access_groups_policy_event",
+      "kind": "trigger",
+      "name": "access_groups_policy_event",
+      "table": "access_groups",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER access_groups_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.access_groups.access_groups_updated",
+      "kind": "trigger",
+      "name": "access_groups_updated",
+      "table": "access_groups",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER access_groups_updated BEFORE UPDATE ON private.access_groups FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.access_resources.access_resources_audit",
       "kind": "trigger",
       "name": "access_resources_audit",
@@ -36893,6 +38164,16 @@
       "enabled": "O",
       "function": "private.capture_audit_event()",
       "definition": "CREATE TRIGGER access_resources_audit AFTER INSERT OR DELETE OR UPDATE ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.access_resources.access_resources_policy_events",
+      "kind": "trigger",
+      "name": "access_resources_policy_events",
+      "table": "access_resources",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER access_resources_policy_events AFTER UPDATE OF allowed_purposes ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
     },
     {
       "id": "trigger:private.access_resources.access_resources_updated_at",
@@ -36955,6 +38236,36 @@
       "definition": "CREATE TRIGGER authorization_revisions_updated_at BEFORE UPDATE ON private.authorization_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.barrier_memberships.barrier_member_human",
+      "kind": "trigger",
+      "name": "barrier_member_human",
+      "table": "barrier_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.validate_policy_human_member_v1()",
+      "definition": "CREATE TRIGGER barrier_member_human BEFORE INSERT OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.validate_policy_human_member_v1()"
+    },
+    {
+      "id": "trigger:private.barrier_memberships.barrier_memberships_policy_event",
+      "kind": "trigger",
+      "name": "barrier_memberships_policy_event",
+      "table": "barrier_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER barrier_memberships_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.barrier_memberships.barrier_memberships_updated",
+      "kind": "trigger",
+      "name": "barrier_memberships_updated",
+      "table": "barrier_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER barrier_memberships_updated BEFORE UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
       "kind": "trigger",
       "name": "commercial_accounts_audit",
@@ -37003,6 +38314,26 @@
       "enabled": "O",
       "function": "private.reject_control_ledger_mutation()",
       "definition": "CREATE TRIGGER human_intervention_ledger_immutable BEFORE DELETE OR UPDATE ON private.human_intervention_ledger FOR EACH ROW EXECUTE FUNCTION private.reject_control_ledger_mutation()"
+    },
+    {
+      "id": "trigger:private.information_barriers.information_barriers_policy_event",
+      "kind": "trigger",
+      "name": "information_barriers_policy_event",
+      "table": "information_barriers",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER information_barriers_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.information_barriers.information_barriers_updated",
+      "kind": "trigger",
+      "name": "information_barriers_updated",
+      "table": "information_barriers",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER information_barriers_updated BEFORE UPDATE ON private.information_barriers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.institutional_information_request_bindings.institutional_binding_immutable",
@@ -37165,6 +38496,26 @@
       "definition": "CREATE TRIGGER institutional_revision_proposals_updated BEFORE UPDATE ON private.institutional_revision_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.organization_units.organization_units_policy_event",
+      "kind": "trigger",
+      "name": "organization_units_policy_event",
+      "table": "organization_units",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER organization_units_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.organization_units.organization_units_updated",
+      "kind": "trigger",
+      "name": "organization_units_updated",
+      "table": "organization_units",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER organization_units_updated BEFORE UPDATE ON private.organization_units FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.platform_capability_accreditations.platform_capability_accreditations_immutable",
       "kind": "trigger",
       "name": "platform_capability_accreditations_immutable",
@@ -37173,6 +38524,26 @@
       "enabled": "O",
       "function": "private.reject_control_ledger_mutation()",
       "definition": "CREATE TRIGGER platform_capability_accreditations_immutable BEFORE DELETE OR UPDATE ON private.platform_capability_accreditations FOR EACH ROW EXECUTE FUNCTION private.reject_control_ledger_mutation()"
+    },
+    {
+      "id": "trigger:private.principals.principals_policy_event",
+      "kind": "trigger",
+      "name": "principals_policy_event",
+      "table": "principals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_policy_domain_event_v1()",
+      "definition": "CREATE TRIGGER principals_policy_event AFTER INSERT OR DELETE OR UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.capture_policy_domain_event_v1()"
+    },
+    {
+      "id": "trigger:private.principals.principals_updated",
+      "kind": "trigger",
+      "name": "principals_updated",
+      "table": "principals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER principals_updated BEFORE UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.project_canonical_revisions.project_canonical_revision_immutable",
@@ -38655,6 +40026,16 @@
       "definition": "CREATE TRIGGER membership_domain_event AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('membership')"
     },
     {
+      "id": "trigger:public.organization_memberships.membership_policy_principal",
+      "kind": "trigger",
+      "name": "membership_policy_principal",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.ensure_membership_principal_v1()",
+      "definition": "CREATE TRIGGER membership_policy_principal AFTER INSERT ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.ensure_membership_principal_v1()"
+    },
+    {
       "id": "trigger:public.organization_memberships.memberships_set_updated_at",
       "kind": "trigger",
       "name": "memberships_set_updated_at",
@@ -38993,6 +40374,16 @@
       "enabled": "O",
       "function": "private.normalize_origination_runtime_budget_v1()",
       "definition": "CREATE TRIGGER processing_jobs_origination_budget_v1 BEFORE INSERT ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.normalize_origination_runtime_budget_v1()"
+    },
+    {
+      "id": "trigger:public.processing_jobs.processing_jobs_policy_principal",
+      "kind": "trigger",
+      "name": "processing_jobs_policy_principal",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_worker_principal_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_policy_principal AFTER INSERT OR UPDATE OF status, leased_by, leased_account_user_id, lease_expires_at ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.sync_worker_principal_v1()"
     },
     {
       "id": "trigger:public.processing_jobs.processing_jobs_set_updated_at",
@@ -39940,5 +41331,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-16T10:23:16.169878+00:00"
+  "captured_at": "2026-09-16T16:35:49.209773+00:00"
 }

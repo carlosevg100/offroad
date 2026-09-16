@@ -76,6 +76,8 @@ grant select, insert on material_storage_test_state to authenticated;
 
 select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000761',true);
 
+-- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000762' where organization_id='20000000-0000-4000-8000-000000000761' and status='leased';
 set local role authenticated;
 select set_config(
   'request.jwt.claims',

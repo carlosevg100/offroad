@@ -50,8 +50,8 @@ begin
   end if;
   insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,pipeline_version,created_by) values(run_id,'a11c0000-0000-4000-9000-000000000001','a11c0000-0000-4000-9000-000000000003',10+idx,'manual','synthetic-1c',u);
   insert into public.agent_messages(id,organization_id,conversation_id,intake_session_id,role,status,content,locale,created_by) values(msg_id,'a11c0000-0000-4000-9000-000000000001','a11c0000-0000-4000-9000-000000000006','a11c0000-0000-4000-9000-000000000003','user','queued','Compare as alternativas de estrutura de capital com base no documento disponível.','pt-BR',u);
-  insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,kind,status,leased_by,lease_expires_at,capability_sha256,payload)
-  values(job_id,'a11c0000-0000-4000-9000-000000000001',run_id,'a11c0000-0000-4000-9000-000000000003','agent_operation_brief','leased','a11c0000-0000-4000-9000-000000000010',now()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256'),jsonb_build_object('message_id',msg_id));
+  insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,kind,status,leased_by,leased_account_user_id,lease_expires_at,capability_sha256,payload)
+  values(job_id,'a11c0000-0000-4000-9000-000000000001',run_id,'a11c0000-0000-4000-9000-000000000003','agent_operation_brief','leased','a11c0000-0000-4000-9000-000000000010','a11c0000-0000-4000-8000-000000000001',now()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256'),jsonb_build_object('message_id',msg_id));
   foreach loader in array array['worker_load_agent_context','worker_load_agent_context_v2','worker_load_agent_context_v3','worker_load_agent_context_v4','worker_load_agent_context_v5'] loop
    execute 'set local role authenticated';
    execute format('select public.%I($1,$2)',loader) into ctx using job_id,repeat('d',64);
@@ -140,8 +140,8 @@ begin
   insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,pipeline_version,created_by) values(run_id,o,s,idx,'manual','synthetic-1c',u);
   foreach scope in array array['origination_thesis','integration_preview'] loop
    job_id:=gen_random_uuid();
-   insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,kind,status,leased_by,lease_expires_at,capability_sha256,payload)
-   values(job_id,o,run_id,s,'capital_project_analysis','leased','a11c0000-0000-4000-9000-000000000010',now()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256'),
+   insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,kind,status,leased_by,leased_account_user_id,lease_expires_at,capability_sha256,payload)
+   values(job_id,o,run_id,s,'capital_project_analysis','leased','a11c0000-0000-4000-9000-000000000010','a11c0000-0000-4000-8000-000000000001',now()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256'),
     jsonb_build_object('analysis_scope',scope,'capital_project_id',p,'capital_project_plan_id',plan_id,'capital_project_brief_id',case when scope='integration_preview' then preview_id else brief_id end));
    perform pg_temp.fixture_approve_execution(job_id,true);
    foreach loader in array case when scope='integration_preview' then array['worker_load_capital_project_context_v6'] else array['worker_load_capital_project_context','worker_load_capital_project_context_v2','worker_load_capital_project_context_v3','worker_load_capital_project_context_v4','worker_load_capital_project_context_v5','worker_load_capital_project_context_v6'] end loop

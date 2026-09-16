@@ -1,0 +1,275 @@
+{
+  "environment": "staging",
+  "mode": "candidate migration and synthetic fixtures in BEGIN/ROLLBACK; no permanent application",
+  "tests": [
+    {
+      "file": "supabase/tests/public_research_public_cache.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_method_input_assembly_store.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/documentary_plan_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_document_adapter_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/creator_authority_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/execution_proposal_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/rls_non_interference.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/financier_analytical_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/workspace_replay_authority.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/workspace_project_folders.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/professional_capability_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/provider_case_fit_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/institutional_private_rls.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/provider_research_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/gold_case_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/worker_runtime_schema_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/client_presentation_templates.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/resource_policy_isolation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/job_failure_causes.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/resource_policy_performance.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/resource_policy_barriers.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/domain_event_outbox_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/intent_objective_routing_metrics.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/workspace_member_administration.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/legacy_resource_access.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/intent_envelopes_shadow.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/verified_provider_mandates.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/advisor_semantic_dag_activation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/execution_brief_proposal_bridge.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/origination_thesis_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/operating_controls.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/read_grant_cannot_mutate_legacy.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/resource_policy_delegation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/objective_plan_preflight.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/institutional_assumption_answers.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_information_request_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/project_review_roles.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/company_debt_view_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/agentic_dcm_work_system.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/integration_preview_mode.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/project_canonical_revisions.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/conversational_advisor_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/explicit_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/provider_research_public_catalog_v2.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/explicit_documentary_work_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/execution_brief_foundation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_analytical_release.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/legacy_access_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/domain_event_outbox.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/project_company_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/job_failure_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/terminal_job_authorization_metadata.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_information_request_dataset_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/governed_sector_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/explicit_legacy_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/confirmed_receivables_evidence_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/organization_profile_authority.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/institutional_setup_lifecycle.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/receivables_method_supplement_store.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/confirmed_receivables_support_sheets.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/no_implicit_workspace_capabilities.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/organization_methodology.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/explicit_execution_brief_approval.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/governed_capital_material_storage.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/role_free_reasoning_context.sql",
+      "result": "PASS"
+    },
+    {
+      "file": "supabase/tests/institutional_revision_proposals.sql",
+      "result": "PASS"
+    }
+  ],
+  "subsequent_targeted_regression": {
+    "test": "resource_policy_barriers.sql",
+    "result": "PASS",
+    "scope": "mandatory explicit deny survives legacy grant; guard checked under policy lock"
+  }
+}

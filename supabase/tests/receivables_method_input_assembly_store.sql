@@ -49,6 +49,8 @@ insert into public.processing_jobs (
 
 select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000721',true);
 
+-- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000722' where organization_id='20000000-0000-4000-8000-000000000721' and status='leased';
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000722","role":"authenticated","aal":"aal1"}', true);
 
