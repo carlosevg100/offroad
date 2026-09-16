@@ -1,3 +1,7 @@
+## Onda 3 autorizada: 16/09/2026
+
+Etapa 3 de política comum e barreiras autorizada após conclusão da onda 2. Governança renovada contra main `9b6ccf98`; escopo e evidências em `docs/security/INVENTORY_WAVE_3_REVIEW.md`. Telas administrativas adiadas. Implementação da etapa 3 ainda não publicada por esta revisão.
+
 ## Wave 2: delivery security reconciliation
 
 The final technical review pins the delivered stage 2/4 baseline `b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b`. All 54 evidence hashes and the affected workspace/outbox relationships are reconciled; the 18 remaining gaps retain their scope and severity. The opening inventory and AWS observation are archived. Production worker revision 334 polls the outbox and all four alarms show OK; no IAM expansion or production fixture was used. See `docs/security/history/wave-2-final-review.md`. The active wave remains open solely for the current authorized delivery; no subsequent wave starts without the founder OK.

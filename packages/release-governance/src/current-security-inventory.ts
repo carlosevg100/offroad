@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b";
-const capturedAt = "2026-09-16T10:49:40.306Z";
+const baselineCommit = "9b6ccf981827f97236107c4d0f64096213a1e2e9";
+const capturedAt = "2026-09-16T11:52:20.468Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -132,7 +132,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Role-free debt-view request builder after stage 1C."),
   evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Role-free origination request builder after stage 1C."),
   evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Role-free capital planning request builder after stage 1C."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-2.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-3.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
 ];
 
 const environments = [
@@ -736,9 +736,9 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.16-wave-2-delivery-v2",
+  inventoryVersion: "2026.09.16-wave-3-opening-v1",
   generatedAt: capturedAt,
-  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-2", waveStatus: "open", materialChangeState: "reviewed"},
+  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-3", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
   scopeRelationship: {
     semantics: "environment_and_data_class_refs_are_independent_unions",
