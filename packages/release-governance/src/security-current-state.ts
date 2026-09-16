@@ -223,6 +223,7 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-WORKER-TASK", criterion: "The task definition identifies the declared worker runtime and secret references."},
       {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "The workflow identifies deployment steps and workload identity boundaries."},
       {evidenceRef: "SEV-QUALITY-WORKFLOW", criterion: "The quality workflow identifies CI and local Supabase execution paths."},
+      {evidenceRef: "SEV-OUTBOX-MONITORING", criterion: "The four consumer alarm definitions delimit heartbeat, backlog, poison and error monitoring."},
       {evidenceRef: "SEV-ROLLOUT-ORDER", criterion: "The recorded rollout demonstrates why schema ordering remains an explicit gap."},
     ],
     requiredGaps: [
@@ -238,6 +239,10 @@ const canonicalSecurityCoverageCatalogue = [
     evidenceRequirements: [
       {evidenceRef: "SEV-ACCESS-REMEDIATION", criterion: "Stage 1B explicit resource access and production transition."},
       {evidenceRef: "SEV-ACCESS-REGRESSION", criterion: "Resource revocation reaches claims and job publication."},
+      {evidenceRef: "SEV-OUTBOX-SCHEMA", criterion: "Authority changes, immutable audit and outbox references share one transaction."},
+      {evidenceRef: "SEV-OUTBOX-CONSUMER", criterion: "The worker consumes content-free envelopes under bounded account-bound leases."},
+      {evidenceRef: "SEV-OUTBOX-CONTRACT", criterion: "Producer rollback, lease replacement, credential revocation and immutable audit have negative regressions."},
+      {evidenceRef: "SEV-OUTBOX-REVOCATION", criterion: "Invalid-authority jobs are cancelled atomically with the denial record and outbox acknowledgement."},
 
       {evidenceRef: "SEV-PROJECT-ACCESS-SQL", criterion: "Historical project authorization before the stage 1B replacement; retained solely as before-state evidence."},
       {evidenceRef: "SEV-INTAKE-ACCESS-SQL", criterion: "Historical intake authorization before stage 1B; current enforcement is documented and tested separately."},
@@ -259,11 +264,13 @@ const canonicalSecurityCoverageCatalogue = [
     evidenceRequirements: [
       {evidenceRef: "SEV-CREATOR-REMEDIATION", criterion: "Stage 1A authority and installed database proof."},
       {evidenceRef: "SEV-CREATOR-REGRESSION", criterion: "Creator revocation and denied self-reactivation."},
+      {evidenceRef: "SEV-WORKSPACE-IDENTITY", criterion: "Workspace context and capabilities are explicit; commercial-account links do not grant access."},
+      {evidenceRef: "SEV-WORKSPACE-CONTEXT-REGRESSION", criterion: "Missing, ambiguous and foreign workspace contexts fail closed."},
 
       {evidenceRef: "SEV-ORG-AUTHORITY-SQL", criterion: "Historical creator authority before stage 1A; current revocation is documented and tested separately."},
       {evidenceRef: "SEV-DEPLOY-BOOT-PROOF", criterion: "The diagnostic helper treats missing AWS reads as unavailable evidence, not a successful diagnostic proof."},
       {evidenceRef: "SEV-DEPLOY-WORKER", criterion: "OIDC and named deployment roles are visible in the pinned workflow."},
-      {evidenceRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", criterion: "The unverified operator observation records only the need for effective-permission evidence."},
+      {evidenceRef: "SEV-AWS-DEPLOY-ROLE-SNAPSHOT", criterion: "The bounded operator observation records delivery state and denied OIDC monitoring access without asserting general IAM assurance."},
     ],
     requiredGaps: [
       {gapRef: "SG-PRIVILEGED-ACCESS", severity: "critical", requiredStatus: "open"},
@@ -817,11 +824,11 @@ const trustedExternalEvidenceAuthorities = {
     freshness: "wave_bound",
     waveId: "wave-2",
     ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-2.json",
-    capturedAt: "2026-09-16T03:00:58.181Z",
+    capturedAt: "2026-09-16T10:49:40.306Z",
     validThrough: null,
-    contentFingerprint: "sha256:0174ab7213e91fc0bb712e6b1d7ee8a09ba37b21477ed2cd5c16c26a3a63e89f",
-    source: "Codex read-only repository and GitHub API observation",
-    collector: {name: "codex-read-only-github-observation", version: "1", principalClass: "repository automation using the existing local GitHub session"},
+    contentFingerprint: "sha256:09e9876b7c881635c2f53cf196b260bdf6a64002555c16df19d6d754e2d09d3c",
+    source: "Codex read-only GitHub and AWS API delivery observation",
+    collector: {"name": "codex-read-only-delivery-observation", "version": "2", "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"},
     origin: {
       repository: canonicalRepository,
       environmentRef: "ENV-PRODUCTION",

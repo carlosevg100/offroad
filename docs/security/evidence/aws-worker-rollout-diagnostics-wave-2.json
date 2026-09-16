@@ -1,8 +1,8 @@
 {
   "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
-  "capturedAt": "2026-09-16T03:00:58.181Z",
+  "capturedAt": "2026-09-16T10:49:40.306Z",
   "validThrough": null,
-  "source": "Codex read-only repository and GitHub API observation",
+  "source": "Codex read-only GitHub and AWS API delivery observation",
   "origin": {
     "repository": "carlosevg100/offroad",
     "environmentRef": "ENV-PRODUCTION",
@@ -10,26 +10,98 @@
     "authorityClass": "observation_only_no_attestation_authority"
   },
   "collector": {
-    "name": "codex-read-only-github-observation",
-    "version": "1",
-    "principalClass": "repository automation using the existing local GitHub session"
+    "name": "codex-read-only-delivery-observation",
+    "version": "2",
+    "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"
   },
-  "scope": "worker deployment diagnostics available during wave 2 opening review",
-  "observation": "The inspected GitHub deployment run reports success and unavailable_aws_read for optional boot diagnostics. Effective deployment-role diagnostic permissions remain unknown; no current role policy or simulation receipt was collected.",
+  "scope": "Wave 2 delivered worker and outbox monitoring; bounded operator observation",
+  "observation": "The deployment completed on the expected worker image. Read-only ECS, CloudWatch and SQL observations show runtime polling, zero pending or blocked items and four alarms in OK. The heartbeat alarm changed from ALARM before deployment to OK after real polling. The OIDC monitoring run denied DescribeAlarms; no IAM policy was changed. Broader role permissions and continuing control effectiveness are outside this observation.",
   "verificationState": "unverified_operator_observation",
   "collection": {
-    "baselineCommit": "9620406b8d3b9624a68bf611b40791e289f90a90",
+    "baselineCommit": "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b",
     "githubReadOnly": {
-      "runId": 35043135776,
-      "headSha": "9620406b8d3b9624a68bf611b40791e289f90a90",
-      "conclusion": "success",
-      "rolloutRecord": "Deployment stable.",
-      "safeBootRecord": {
-        "bootProof": "unavailable_aws_read",
-        "bootAt": null,
-        "documentaryWorkPlanningEnabled": null
-      }
-    }
+      "runId": 35086389368,
+      "headSha": "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b",
+      "conclusion": "success"
+    },
+    "runtimeReadOnly": {
+      "captured_at": "2026-09-16T10:48:58.295734+00:00",
+      "commit": "b0d1e8db428ca3e93dc9b1638fdee9bb2fbfdc4b",
+      "task_revision": 334,
+      "desired": 1,
+      "running": 1,
+      "rollout": "COMPLETED",
+      "images": [
+        "document-worker:b0d1e8db428c"
+      ],
+      "health_event_count": 62,
+      "sample": [
+        {
+          "at": "2026-09-16T10:48:45.519Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T10:48:47.550Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T10:48:49.587Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T10:48:51.615Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-16T10:48:53.639Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        }
+      ],
+      "alarms": [
+        {
+          "name": "offroad-outbox-backlog",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:34.378000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-blocked",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:29.632000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-errors",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:19:34.419000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-heartbeat-missing",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:09.565000-03:00",
+          "actionsConfigured": false
+        }
+      ],
+      "read_only": true,
+      "synthetic_production_data": false
+    },
+    "oidcDeniedRead": {
+      "runId": 35081046003,
+      "action": "cloudwatch:DescribeAlarms",
+      "result": "AccessDenied"
+    },
+    "productionFixtures": false
   },
   "actionsRequiringEffectivePermissionVerification": [
     "ecs:DescribeTasks",
@@ -39,8 +111,9 @@
   "requiredNextEvidence": "Role policy and policy simulation receipts for each named action and representative in-scope and out-of-scope resources; live diagnostic reads when available.",
   "redaction": "No credentials, account identifiers, role identifiers, task identifiers, customer payloads, or raw worker logs are retained. GitHub run and commit identifiers refer only to the repository delivery history.",
   "limitations": [
-    "This is an operator observation of a completed deployment, not an independent IAM attestation.",
-    "Historical completion does not continuously attest to live state."
+    "Point-in-time operator observation, not independent assurance.",
+    "Alarm actions are not configured; alarm evaluation and state are observed in CloudWatch.",
+    "OIDC diagnostic permissions remain separate from the authorized operator session."
   ],
   "freshness": "wave_bound",
   "waveId": "wave-2"

@@ -52,6 +52,16 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires the delivered workspace and outbox evidence at wave-two closeout", () => {
+    for (const evidenceRef of ["SEV-WORKSPACE-CONTEXT-REGRESSION", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-OUTBOX-MONITORING"]) {
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-1";
