@@ -6,7 +6,7 @@ Atualizado em: 2026-09-09T07:20:19.652-03:00
 Baseline: `main@b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
 Capability Ledger: `2026.09.09-v18-candidate`
 Baseline de código inspecionada pelo ledger: `b6da2876d86cf63a6a17bd4bc855b6c4a1e41698`
-Fingerprint do board: `1808f9593f74ee6bccfe64065994da5a26ac8eea3889b9c665b64de4028de055`
+Fingerprint do board: `4d1209a1e9920288415879dc611be2aa13bb9573499b177ce5836ac05a74f651`
 
 ## Leitura executiva
 
@@ -308,7 +308,7 @@ Capabilities relacionadas: `experience.execution-brief`.
 | EV-BLUEPRINT | document | repository | docs/build/OFFROAD_ENDGAME_EXECUTION_BLUEPRINT.md |
 | EV-SECURITY-PLAN | document | repository | docs/security/ENTERPRISE_SECURITY_COMPLIANCE_READINESS_PLAN.md |
 | EV-PR529 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/529 |
-| EV-SEC01-INVENTORY | document | repository | docs/security/CURRENT_STATE_INVENTORY.md |
+| EV-SEC01-INVENTORY | document | repository | docs/security/history/wave-1-initial-inventory.md |
 | EV-SEC01-TESTS | test | repository | packages/release-governance/src/security-current-state.test.ts; packages/release-governance/src/security-assurance-statements.test.ts |
 | EV-PR537 | pull_request | ci | https://github.com/carlosevg100/offroad/pull/537 |
 | EV-VLT02-BOUNDARY | document | repository | docs/build/VLT02_GOVERNED_QUARANTINE_BOUNDARY.md |
