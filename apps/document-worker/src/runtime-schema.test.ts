@@ -18,6 +18,7 @@ describe("worker runtime schema preflight", () => {
       data: {
         schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
         capabilities: [
+          "domain-event-outbox.v1",
           "explicit-resource-access.v1",
           "explicit-workspace-context.v1",
           "authenticated-document-storage.v1",
@@ -67,6 +68,14 @@ describe("worker runtime schema preflight", () => {
     }))).rejects.toThrow("missing capabilities: atomic-documentary-commit.v1");
   });
 
+  it("refuses to start the event consumer before its database migration", async () => {
+    await expect(assertWorkerRuntimeSchema(clientWith({
+      data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+        capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "domain-event-outbox.v1")},
+      error: null,
+    }))).rejects.toThrow("missing capabilities: domain-event-outbox.v1");
+  });
+
   it("keeps the image constant aligned with the latest contract migration", () => {
     const migrationsDirectory = fileURLToPath(new URL("../../../supabase/migrations/", import.meta.url));
     const contractMigration = readdirSync(migrationsDirectory)
@@ -82,7 +91,7 @@ describe("worker runtime schema preflight", () => {
     const accessSql = readFileSync(`${migrationsDirectory}/${accessExtension}`, "utf8");
     const accessCapabilities = ["explicit-resource-access.v1", "explicit-workspace-context.v1", "authenticated-document-storage.v1", "review-bound-execution.v1", "legacy-storage-rotation.v1"];
     for (const capability of accessCapabilities) expect(accessSql).toContain(capability);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);

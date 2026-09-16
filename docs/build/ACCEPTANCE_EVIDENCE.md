@@ -2805,3 +2805,8 @@ Limits recorded on purpose. No real fund has registered or confirmed a mandate: 
 ## Onda 2: preflight operacional da outbox
 
 Workflow manual `event-outbox-monitoring.yml` usa a identidade OIDC de deploy existente, sem ampliar IAM. Testa filtros e confere quatro alarmes; instalação é modo explícito. A execução ao vivo ainda deve provar as permissões. Etapa 2 concluída em `d47658eb`; etapa 4 permanece aberta, sem migração permanente nesta PR. Revisão material: `docs/security/INVENTORY_WAVE_2_OUTBOX_MONITORING_REVIEW.md`.
+
+
+## Onda 2: candidato da etapa 4
+
+Contrato de eventos/outbox e consumidor limitado no worker atual, com trilha atômica e barreira para publicação externa. Candidato SQL validado em staging com rollback; nenhuma aplicação permanente nesta preparação. A etapa segue aberta até CI, journals, deploys e alarmes reais. Escopo e riscos em `docs/build/arcabouco/etapa-04.md`; revisão material em `docs/security/INVENTORY_WAVE_2_OUTBOX_REVIEW.md`. A etapa 2 está concluída em produção no commit `d47658eb`.
