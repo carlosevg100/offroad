@@ -46,3 +46,5 @@ Rollback de aplicação preserva o schema: versões imutáveis e revogação da 
 ## Entrega e conciliação
 
 A implementação foi mesclada e implantada pela PR 635. A revisão `docs/security/history/wave-5-final-review.md` fixa o commit, CI e runtime efetivamente observados; a conciliação tem gates e recibos finais próprios no completion externo. O teste de revogação espera o grant desaparecer da resposta do servidor antes da leitura negativa; não reutiliza o aviso salvo da concessão anterior. A etapa seguinte continua dependente do OK do fundador.
+
+A CI da conciliação revelou também a lista obsoleta após uma revogação bem-sucedida: o trace contém duas respostas POST 200 com result=saved, mas a navegação à mesma URL não atualizava os grants. `apps/web/src/app/[locale]/app/access/actions.ts` revalida a página após mutação bem-sucedida, antes de redirecionar. O E2E exige que o grant desapareça e a leitura imediatamente seguinte retorne 404; não repete a leitura para obter negação. Nenhuma permissão ou política mudou.

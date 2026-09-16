@@ -1,5 +1,6 @@
 "use server";
 import {redirect} from "next/navigation";
+import {revalidatePath} from "next/cache";
 import {z} from "zod";
 import {requireWorkspace} from "@/lib/auth/workspace";
 const input = z.discriminatedUnion("command", [
@@ -22,5 +23,6 @@ export async function manageAccess(locale: string, form: FormData) {
       : v.command === "grant"
         ? await supabase.rpc("grant_resource_access_v1", {p_resource_id:v.resource,p_subject_user_id:v.user,p_action:v.action})
         : await supabase.rpc("revoke_resource_access_v1", {p_resource_id:v.resource,p_subject_user_id:v.user});
+  if (!response.error) revalidatePath(`/${validLocale}/app/access`);
   redirect(`${base}&result=${response.error ? "denied" : "saved"}`);
 }

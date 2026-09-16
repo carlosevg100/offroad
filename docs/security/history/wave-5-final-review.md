@@ -13,3 +13,5 @@ Quality de main `35157109817` e Security `35157109517` passaram. Vercel Producti
 A abertura do inventário e sua observação AWS ficam preservadas no histórico. O novo teste exige as 14 evidências adicionais e nega sua remoção. Os hashes são calculados sobre os bytes do baseline mesclado. Os recibos do commit desta conciliação serão preservados no completion externo, evitando declarar um commit futuro implantado.
 
 Ficam para seus incrementos: direitos e busca (7), inputs privados entre dossiês/dependências/continuidade (17/18), retenção/purge (22), Temporal, conectores e ensaios de produto. O próximo início requer OK do fundador. Não foi criado outro ato exclusivo do fundador.
+
+A CI da conciliação revelou também a lista obsoleta após uma revogação bem-sucedida: o trace contém duas respostas POST 200 com result=saved, mas a navegação à mesma URL não atualizava os grants. `apps/web/src/app/[locale]/app/access/actions.ts` revalida a página após mutação bem-sucedida, antes de redirecionar. O E2E exige que o grant desapareça e a leitura imediatamente seguinte retorne 404; não repete a leitura para obter negação. Nenhuma permissão ou política mudou.
