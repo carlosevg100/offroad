@@ -52,6 +52,11 @@ do $$
 declare ids cache_test_ids%rowtype;
 begin
   select * into ids from cache_test_ids;
+  insert into public.entities(id,kind,legal_name,public_proof) values('a5550000-0000-4000-9000-000000000291','legal_entity','Companhia Cache S.A.','{"registry":"official_registry","sourceUrl":"https://registry.example.invalid/cache","contentHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","reviewedAt":"2026-01-01T00:00:00Z"}');
+  perform public.link_dossier_entity_v1((select id from public.dossiers where resource_id=ids.project_id),'a5550000-0000-4000-9000-000000000291','subject','{"basis":"standalone"}','2026-01-01',null,'Synthetic verified public identity','a5550000-0000-4000-9000-000000000292');
+
+  insert into public.capital_projects(id,organization_id,project_name,created_by) values('a5550000-0000-4000-9000-000000000293','20000000-0000-4000-8000-000000000291','Synthetic authorized prior dossier','10000000-0000-4000-8000-000000000291');
+  perform public.link_dossier_entity_v1((select id from public.dossiers where resource_id='a5550000-0000-4000-9000-000000000293'),'a5550000-0000-4000-9000-000000000291','subject','{"basis":"standalone"}','2026-01-01',null,'Synthetic prior dossier identity','a5550000-0000-4000-9000-000000000294');
   insert into public.processing_runs (
     id, organization_id, intake_session_id, run_no, trigger, status,
     pipeline_version, budget, versions, created_by
@@ -128,11 +133,10 @@ begin
   end if;
 
   company_record := jsonb_build_object(
-    'schemaVersion', 'public-company-memory.v1',
-    'companyKey', repeat('b', 64),
+    'schemaVersion', 'public-company-memory.v2',
+    'companyKey', encode(extensions.digest('public-entity:a5550000-0000-4000-9000-000000000291','sha256'),'hex'),
     'subject', jsonb_build_object(
-      'legalName', 'Companhia Cache S.A.', 'website', 'https://companhia-cache.example',
-      'geography', 'Brasil'
+      'legalName', 'Companhia Cache S.A.', 'verifiedEntityId', 'a5550000-0000-4000-9000-000000000291'
     ),
     'queryIds', jsonb_build_array(query_id),
     'sources', entries #> '{0,sources}',
@@ -143,8 +147,13 @@ begin
   perform public.worker_store_public_company_memory(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token', company_record
   );
+  begin
+    perform public.worker_store_public_company_memory((claim->>'job_id')::uuid,claim->>'capability_token',jsonb_set(company_record,'{subject,verifiedEntityId}','"a5550000-0000-4000-9000-000000000999"'));
+    raise exception 'unlinked public identity accepted';
+  exception when insufficient_privilege then null; end;
+  if public.worker_load_public_company_memory((claim->>'job_id')::uuid,claim->>'capability_token',repeat('b',64)) is not null then raise exception 'legacy name key still accessible'; end if;
   company_loaded := public.worker_load_public_company_memory(
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', repeat('b', 64)
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', encode(extensions.digest('public-entity:a5550000-0000-4000-9000-000000000291','sha256'),'hex')
   );
   if company_loaded #>> '{subject,legalName}' <> 'Companhia Cache S.A.'
     or company_loaded #>> '{reusePolicy}' <> 'public_company_sources_only'
@@ -171,12 +180,20 @@ begin
   end;
   if not rejected then raise exception 'public cache accepted a guessed capability'; end if;
   insert into cache_test_claim values (
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', query_id, repeat('b', 64)
+    (claim ->> 'job_id')::uuid, claim ->> 'capability_token', query_id, encode(extensions.digest('public-entity:a5550000-0000-4000-9000-000000000291','sha256'),'hex')
   );
 end;
 $$;
 
 reset role;
+-- Withdrawing the identity association makes its reusable memory unreachable immediately.
+do $$ declare c cache_test_claim%rowtype; begin
+ select * into c from cache_test_claim;
+ update private.resource_access_grants set revoked_at=now() where resource_id='a5550000-0000-4000-9000-000000000293';
+ if private.delegated_policy_access_v1((select id from private.principals where processing_job_id=c.job_id),'a5550000-0000-4000-9000-000000000293','read') then raise exception 'public identity expanded job delegation to another dossier'; end if;
+ perform public.withdraw_dossier_entity_link_v1((select id from public.dossier_entity_links where request_id='a5550000-0000-4000-9000-000000000292'),'Synthetic identity withdrawal');
+ if public.worker_read_public_entity_subject_v1(c.job_id,c.capability_token) is not null or public.worker_load_public_company_memory(c.job_id,c.capability_token,c.company_key) is not null then raise exception 'withdrawn identity still exposes cache'; end if;
+end $$;
 update public.capital_projects
 set access_basis = 'authorized_private'
 where id = (select project_id from cache_test_ids);
@@ -233,4 +250,5 @@ begin
 end;
 $$;
 
+select 'public_research_public_cache: PASS' result;
 rollback;

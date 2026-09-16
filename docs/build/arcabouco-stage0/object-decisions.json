@@ -1731,6 +1731,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.backfill_dossiers_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.backfill_dossiers_v1()",
+          "kind": "function",
+          "name": "backfill_dossiers_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.backfill_dossiers_v1()",
+          "kind": "function",
+          "name": "backfill_dossiers_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 149,
+          "anchor": "create function private.backfill_dossiers_v1() returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3212,6 +3267,136 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.can_read_dossier_v1(p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_dossier_v1(p_id uuid)",
+          "kind": "function",
+          "name": "can_read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_dossier_v1(p_id uuid)",
+          "kind": "function",
+          "name": "can_read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 63,
+          "anchor": "create function private.can_read_dossier_v1(p_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "function:private.can_read_entity_v1(p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_entity_v1(p_id uuid)",
+          "kind": "function",
+          "name": "can_read_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_entity_v1(p_id uuid)",
+          "kind": "function",
+          "name": "can_read_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 66,
+          "anchor": "create function private.can_read_entity_v1(p_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.can_review_intake_claims(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3974,6 +4159,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.capture_identity_audit_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_identity_audit_v1()",
+          "kind": "function",
+          "name": "capture_identity_audit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_identity_audit_v1()",
+          "kind": "function",
+          "name": "capture_identity_audit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 95,
+          "anchor": "create function private.capture_identity_audit_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.capture_organization_authority_event_v1()",
@@ -7709,6 +7949,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.guard_identity_scope_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_identity_scope_v1()",
+          "kind": "function",
+          "name": "guard_identity_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_identity_scope_v1()",
+          "kind": "function",
+          "name": "guard_identity_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 77,
+          "anchor": "create function private.guard_identity_scope_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.guard_institutional_result_body()",
       "kind": "function",
       "catalogues": {
@@ -10573,6 +10868,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+          "kind": "function",
+          "name": "link_dossier_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+          "kind": "function",
+          "name": "link_dossier_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 192,
+          "anchor": "create function private.link_dossier_entity_v1(p_dossier_id uuid,p_entity_id uuid,p_relationship text,p_perimeter jsonb,p_valid_from timestamptz,p_valid_until timestamptz,p_reason text,p_request_id uuid) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -13242,6 +13602,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.read_dossier_v1(p_dossier_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_dossier_v1(p_dossier_id uuid)",
+          "kind": "function",
+          "name": "read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_dossier_v1(p_dossier_id uuid)",
+          "kind": "function",
+          "name": "read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 174,
+          "anchor": "create function private.read_dossier_v1(p_dossier_id uuid) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.read_execution_brief_progress_before_documentary(p_execution_brief_id uuid)",
@@ -16867,6 +17292,61 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.register_resource_dossier_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_resource_dossier_v1()",
+          "kind": "function",
+          "name": "register_resource_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.register_resource_dossier_v1()",
+          "kind": "function",
+          "name": "register_resource_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 164,
+          "anchor": "create function private.register_resource_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.reject_control_ledger_mutation()",
       "kind": "function",
       "catalogues": {
@@ -17811,6 +18291,61 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "function:private.require_dossier_v1(p_id uuid, p_action text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_dossier_v1(p_id uuid, p_action text)",
+          "kind": "function",
+          "name": "require_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_action text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_dossier_v1(p_id uuid, p_action text)",
+          "kind": "function",
+          "name": "require_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_action text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 69,
+          "anchor": "create function private.require_dossier_v1(p_id uuid,p_action text) returns public.dossiers language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "catalogues": {
@@ -18188,6 +18723,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+          "kind": "function",
+          "name": "resolve_entity_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+          "kind": "function",
+          "name": "resolve_entity_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 180,
+          "anchor": "create function private.resolve_entity_candidate_v1(p_dossier_id uuid,p_name text,p_namespace text default null,p_value text default null) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.resolve_pack_distribution_candidates(p_organization_id uuid, p_session_id uuid)",
@@ -18623,6 +19223,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "review_dossier_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "review_dossier_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 212,
+          "anchor": "create function private.review_dossier_identity_v1(p_dossier_id uuid,p_entity_id uuid,p_name text,p_namespace text,p_value text,p_reason text) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.review_engagement_conflict(p_organization_id uuid, p_intake_session_id uuid, p_case_fingerprint text, p_status text, p_counterparties jsonb, p_rationale text)",
@@ -23649,6 +24314,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.sync_company_dossier_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.sync_company_dossier_v1()",
+          "kind": "function",
+          "name": "sync_company_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.sync_company_dossier_v1()",
+          "kind": "function",
+          "name": "sync_company_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 295,
+          "anchor": "create function private.sync_company_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:private.sync_intake_session_after_processing_run_terminal()",
       "kind": "function",
       "catalogues": {
@@ -23702,6 +24422,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.sync_project_dossier_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.sync_project_dossier_v1()",
+          "kind": "function",
+          "name": "sync_project_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.sync_project_dossier_v1()",
+          "kind": "function",
+          "name": "sync_project_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 300,
+          "anchor": "create function private.sync_project_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.sync_review_resource_access_v1()",
@@ -23758,6 +24533,61 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.sync_session_dossier_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.sync_session_dossier_v1()",
+          "kind": "function",
+          "name": "sync_session_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.sync_session_dossier_v1()",
+          "kind": "function",
+          "name": "sync_session_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 239,
+          "anchor": "create function private.sync_session_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.sync_worker_principal_v1()",
@@ -24500,6 +25330,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_dossier_entity_link_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_link_id uuid, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_dossier_entity_link_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_link_id uuid, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 311,
+          "anchor": "create function private.withdraw_dossier_entity_link_v1(p_link_id uuid,p_reason text) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
@@ -30496,6 +31391,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_public_entity_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_public_entity_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 264,
+          "anchor": "create function private.worker_read_public_entity_subject_v1(p_job_id uuid,p_capability_token text) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:private.worker_record_agent_assessment_v1(p_job_id uuid, p_capability_token text, p_assessment jsonb)",
@@ -37662,6 +38622,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:public.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+          "kind": "function",
+          "name": "link_dossier_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+          "kind": "function",
+          "name": "link_dossier_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 208,
+          "anchor": "create function public.link_dossier_entity_v1(p_dossier_id uuid,p_entity_id uuid,p_relationship text,p_perimeter jsonb,p_valid_from timestamptz,p_valid_until timestamptz,p_reason text,p_request_id uuid) returns uuid language sql security invoker set search_path='' as $$ select private.link_dossier_entity_v1(p_dossier_id,p_entity_id,p_relationship,p_perimeter,p_valid_from,p_valid_until,p_reason,p_request_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:public.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -38877,6 +39902,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.read_dossier_v1(p_dossier_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_dossier_v1(p_dossier_id uuid)",
+          "kind": "function",
+          "name": "read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_dossier_v1(p_dossier_id uuid)",
+          "kind": "function",
+          "name": "read_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 179,
+          "anchor": "create function public.read_dossier_v1(p_dossier_id uuid) returns jsonb language sql security invoker set search_path='' as $$ select private.read_dossier_v1(p_dossier_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:public.read_institutional_configuration_reviews_v1(p_project_id uuid)",
@@ -42308,6 +43398,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+          "kind": "function",
+          "name": "resolve_entity_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+          "kind": "function",
+          "name": "resolve_entity_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 191,
+          "anchor": "create function public.resolve_entity_candidate_v1(p_dossier_id uuid,p_name text,p_namespace text default null,p_value text default null) returns jsonb language sql security invoker set search_path='' as $$ select private.resolve_entity_candidate_v1(p_dossier_id,p_name,p_namespace,p_value); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "function:public.resolve_pack_distribution_candidates(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -42521,6 +43676,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "review_dossier_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "review_dossier_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 232,
+          "anchor": "create function public.review_dossier_identity_v1(p_dossier_id uuid,p_entity_id uuid,p_name text,p_namespace text,p_value text,p_reason text) returns uuid language sql security invoker set search_path='' as $$ select private.review_dossier_identity_v1(p_dossier_id,p_entity_id,p_name,p_namespace,p_value,p_reason); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:public.review_engagement_conflict(p_organization_id uuid, p_intake_session_id uuid, p_case_fingerprint text, p_status text, p_counterparties jsonb, p_rationale text)",
@@ -47293,6 +48513,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_dossier_entity_link_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_link_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_dossier_entity_link_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_link_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 320,
+          "anchor": "create function public.withdraw_dossier_entity_link_v1(p_link_id uuid,p_reason text) returns void language sql security invoker set search_path='' as $$ select private.withdraw_dossier_entity_link_v1(p_link_id,p_reason); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:public.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
@@ -52069,6 +53354,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_public_entity_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_public_entity_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 277,
+          "anchor": "create function public.worker_read_public_entity_subject_v1(p_job_id uuid,p_capability_token text) returns jsonb language sql security invoker set search_path='' as $$ select private.worker_read_public_entity_subject_v1(p_job_id,p_capability_token); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "function:public.worker_record_agent_assessment_v1(p_job_id uuid, p_capability_token text, p_assessment jsonb)",
@@ -62983,6 +64333,382 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_delete",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_delete",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 139,
+          "anchor": "create policy dossier_entity_links_deny_delete on public.dossier_entity_links for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_insert",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_insert",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 137,
+          "anchor": "create policy dossier_entity_links_deny_insert on public.dossier_entity_links for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_update",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_update",
+          "kind": "policy",
+          "name": "dossier_entity_links_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 138,
+          "anchor": "create policy dossier_entity_links_deny_update on public.dossier_entity_links for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_select",
+          "kind": "policy",
+          "name": "dossier_entity_links_select",
+          "qual": "private.can_read_dossier_v1(dossier_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.dossier_entity_links.dossier_entity_links_select",
+          "kind": "policy",
+          "name": "dossier_entity_links_select",
+          "qual": "private.can_read_dossier_v1(dossier_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 145,
+          "anchor": "create policy dossier_entity_links_select on public.dossier_entity_links for select to authenticated using(private.can_read_dossier_v1(dossier_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossiers.dossiers_deny_delete",
+          "kind": "policy",
+          "name": "dossiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.dossiers.dossiers_deny_delete",
+          "kind": "policy",
+          "name": "dossiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 112,
+          "anchor": "create policy dossiers_deny_delete on public.dossiers for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossiers.dossiers_deny_insert",
+          "kind": "policy",
+          "name": "dossiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.dossiers.dossiers_deny_insert",
+          "kind": "policy",
+          "name": "dossiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 110,
+          "anchor": "create policy dossiers_deny_insert on public.dossiers for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossiers.dossiers_deny_update",
+          "kind": "policy",
+          "name": "dossiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.dossiers.dossiers_deny_update",
+          "kind": "policy",
+          "name": "dossiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 111,
+          "anchor": "create policy dossiers_deny_update on public.dossiers for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.dossiers.dossiers_select",
+          "kind": "policy",
+          "name": "dossiers_select",
+          "qual": "private.can_read_dossier_v1(id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.dossiers.dossiers_select",
+          "kind": "policy",
+          "name": "dossiers_select",
+          "qual": "private.can_read_dossier_v1(id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "dossiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 142,
+          "anchor": "create policy dossiers_select on public.dossiers for select to authenticated using(private.can_read_dossier_v1(id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "policy:public.engagement_conflict_reviews.engagement_conflict_reviews_select",
       "kind": "policy",
       "catalogues": {
@@ -63028,6 +64754,382 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.entities.entities_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entities.entities_deny_delete",
+          "kind": "policy",
+          "name": "entities_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.entities.entities_deny_delete",
+          "kind": "policy",
+          "name": "entities_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 121,
+          "anchor": "create policy entities_deny_delete on public.entities for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entities.entities_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entities.entities_deny_insert",
+          "kind": "policy",
+          "name": "entities_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.entities.entities_deny_insert",
+          "kind": "policy",
+          "name": "entities_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 119,
+          "anchor": "create policy entities_deny_insert on public.entities for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entities.entities_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entities.entities_deny_update",
+          "kind": "policy",
+          "name": "entities_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.entities.entities_deny_update",
+          "kind": "policy",
+          "name": "entities_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 120,
+          "anchor": "create policy entities_deny_update on public.entities for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entities.entities_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entities.entities_select",
+          "kind": "policy",
+          "name": "entities_select",
+          "qual": "private.can_read_entity_v1(id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.entities.entities_select",
+          "kind": "policy",
+          "name": "entities_select",
+          "qual": "private.can_read_entity_v1(id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entities",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 143,
+          "anchor": "create policy entities_select on public.entities for select to authenticated using(private.can_read_entity_v1(id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_delete",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_delete",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 130,
+          "anchor": "create policy entity_identifiers_deny_delete on public.entity_identifiers for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_insert",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_insert",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 128,
+          "anchor": "create policy entity_identifiers_deny_insert on public.entity_identifiers for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_update",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_deny_update",
+          "kind": "policy",
+          "name": "entity_identifiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 129,
+          "anchor": "create policy entity_identifiers_deny_update on public.entity_identifiers for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_select",
+          "kind": "policy",
+          "name": "entity_identifiers_select",
+          "qual": "private.can_read_entity_v1(entity_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.entity_identifiers.entity_identifiers_select",
+          "kind": "policy",
+          "name": "entity_identifiers_select",
+          "qual": "private.can_read_entity_v1(entity_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "entity_identifiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Leitura pela política comum; escrita direta negada, sem membership como acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 144,
+          "anchor": "create policy entity_identifiers_select on public.entity_identifiers for select to authenticated using(private.can_read_entity_v1(entity_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "policy:public.evidence_facts.evidence_facts_insert",
@@ -87671,6 +89773,264 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.dossier_entity_links",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.dossier_entity_links",
+          "rls": true,
+          "kind": "table",
+          "name": "dossier_entity_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.dossier_entity_links",
+          "rls": true,
+          "kind": "table",
+          "name": "dossier_entity_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 40,
+          "anchor": "create table public.dossier_entity_links (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "r:public.dossiers",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.dossiers",
+          "rls": true,
+          "kind": "table",
+          "name": "dossiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.dossiers",
+          "rls": true,
+          "kind": "table",
+          "name": "dossiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 3,
+          "anchor": "create table public.dossiers (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "r:public.engagement_conflict_reviews",
       "kind": "table",
       "catalogues": {
@@ -87878,6 +90238,264 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:public.entities",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.entities",
+          "rls": true,
+          "kind": "table",
+          "name": "entities",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.entities",
+          "rls": true,
+          "kind": "table",
+          "name": "entities",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 12,
+          "anchor": "create table public.entities (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "r:public.entity_identifiers",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.entity_identifiers",
+          "rls": true,
+          "kind": "table",
+          "name": "entity_identifiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.entity_identifiers",
+          "rls": true,
+          "kind": "table",
+          "name": "entity_identifiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Identidade pública comprovada ou dossiê privado vinculado à política de recurso, sem concessão por identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 27,
+          "anchor": "create table public.entity_identifiers (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "r:public.evidence_facts",
@@ -104310,6 +106928,45 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "trigger:private.access_resources.resource_dossier",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_resources.resource_dossier",
+          "kind": "trigger",
+          "name": "resource_dossier",
+          "table": "access_resources",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.register_resource_dossier_v1()",
+          "definition": "CREATE TRIGGER resource_dossier AFTER INSERT ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.register_resource_dossier_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_resources.resource_dossier",
+          "kind": "trigger",
+          "name": "resource_dossier",
+          "table": "access_resources",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.register_resource_dossier_v1()",
+          "definition": "CREATE TRIGGER resource_dossier AFTER INSERT ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.register_resource_dossier_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 172,
+          "anchor": "create trigger resource_dossier after insert on private.access_resources for each row execute function private.register_resource_dossier_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "trigger:private.account_organizations.account_organizations_audit",
       "kind": "trigger",
       "catalogues": {
@@ -108499,6 +111156,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.capital_projects.zz_project_dossier",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.capital_projects.zz_project_dossier",
+          "kind": "trigger",
+          "name": "zz_project_dossier",
+          "table": "capital_projects",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_project_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_project_dossier AFTER INSERT OR UPDATE OF company_id ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.sync_project_dossier_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.capital_projects.zz_project_dossier",
+          "kind": "trigger",
+          "name": "zz_project_dossier",
+          "table": "capital_projects",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_project_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_project_dossier AFTER INSERT OR UPDATE OF company_id ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.sync_project_dossier_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 307,
+          "anchor": "create trigger zz_project_dossier after insert or update of company_id on public.capital_projects for each row execute function private.sync_project_dossier_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "trigger:public.capital_provider_programs.capital_provider_programs_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -109044,6 +111740,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.companies.zz_company_dossier",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.companies.zz_company_dossier",
+          "kind": "trigger",
+          "name": "zz_company_dossier",
+          "table": "companies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_company_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_company_dossier AFTER INSERT OR UPDATE OF display_name, legal_name, website, description, legal_identifier_last4 ON public.companies FOR EACH ROW EXECUTE FUNCTION private.sync_company_dossier_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.companies.zz_company_dossier",
+          "kind": "trigger",
+          "name": "zz_company_dossier",
+          "table": "companies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_company_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_company_dossier AFTER INSERT OR UPDATE OF display_name, legal_name, website, description, legal_identifier_last4 ON public.companies FOR EACH ROW EXECUTE FUNCTION private.sync_company_dossier_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 306,
+          "anchor": "create trigger zz_company_dossier after insert or update of display_name,legal_name,website,description,legal_identifier_last4 on public.companies for each row execute function private.sync_company_dossier_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "trigger:public.conduct_policies.conduct_policies_set_updated_at",
@@ -109944,6 +112679,45 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "trigger:public.document_intake_sessions.zz_session_dossier",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.document_intake_sessions.zz_session_dossier",
+          "kind": "trigger",
+          "name": "zz_session_dossier",
+          "table": "document_intake_sessions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_session_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_session_dossier AFTER INSERT OR UPDATE OF company_profile, client_company_id ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.sync_session_dossier_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.document_intake_sessions.zz_session_dossier",
+          "kind": "trigger",
+          "name": "zz_session_dossier",
+          "table": "document_intake_sessions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.sync_session_dossier_v1()",
+          "definition": "CREATE TRIGGER zz_session_dossier AFTER INSERT OR UPDATE OF company_profile, client_company_id ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.sync_session_dossier_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 246,
+          "anchor": "create trigger zz_session_dossier after insert or update of company_profile,client_company_id on public.document_intake_sessions for each row execute function private.sync_session_dossier_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "trigger:public.document_layers.document_layers_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -110061,6 +112835,201 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.dossier_entity_links.dossier_entity_links_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.dossier_entity_links.dossier_entity_links_audit",
+          "kind": "trigger",
+          "name": "dossier_entity_links_audit",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER dossier_entity_links_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.dossier_entity_links.dossier_entity_links_audit",
+          "kind": "trigger",
+          "name": "dossier_entity_links_audit",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER dossier_entity_links_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 141,
+          "anchor": "create trigger dossier_entity_links_audit after insert or update or delete on public.dossier_entity_links for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.dossier_entity_links.dossier_entity_links_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.dossier_entity_links.dossier_entity_links_updated",
+          "kind": "trigger",
+          "name": "dossier_entity_links_updated",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dossier_entity_links_updated BEFORE UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.dossier_entity_links.dossier_entity_links_updated",
+          "kind": "trigger",
+          "name": "dossier_entity_links_updated",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dossier_entity_links_updated BEFORE UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 140,
+          "anchor": "create trigger dossier_entity_links_updated before update on public.dossier_entity_links for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.dossier_entity_links.dossier_link_scope",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.dossier_entity_links.dossier_link_scope",
+          "kind": "trigger",
+          "name": "dossier_link_scope",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_identity_scope_v1()",
+          "definition": "CREATE TRIGGER dossier_link_scope BEFORE INSERT OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.dossier_entity_links.dossier_link_scope",
+          "kind": "trigger",
+          "name": "dossier_link_scope",
+          "table": "dossier_entity_links",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_identity_scope_v1()",
+          "definition": "CREATE TRIGGER dossier_link_scope BEFORE INSERT OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 93,
+          "anchor": "create trigger dossier_link_scope before insert or update on public.dossier_entity_links for each row execute function private.guard_identity_scope_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.dossiers.dossiers_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.dossiers.dossiers_audit",
+          "kind": "trigger",
+          "name": "dossiers_audit",
+          "table": "dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.dossiers.dossiers_audit",
+          "kind": "trigger",
+          "name": "dossiers_audit",
+          "table": "dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 114,
+          "anchor": "create trigger dossiers_audit after insert or update or delete on public.dossiers for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.dossiers.dossiers_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.dossiers.dossiers_updated",
+          "kind": "trigger",
+          "name": "dossiers_updated",
+          "table": "dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dossiers_updated BEFORE UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.dossiers.dossiers_updated",
+          "kind": "trigger",
+          "name": "dossiers_updated",
+          "table": "dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dossiers_updated BEFORE UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 113,
+          "anchor": "create trigger dossiers_updated before update on public.dossiers for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
       "id": "trigger:public.engagement_conflict_reviews.engagement_conflict_reviews_audit",
       "kind": "trigger",
       "catalogues": {
@@ -110098,6 +113067,201 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.entities.entities_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.entities.entities_audit",
+          "kind": "trigger",
+          "name": "entities_audit",
+          "table": "entities",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER entities_audit AFTER INSERT OR DELETE OR UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.entities.entities_audit",
+          "kind": "trigger",
+          "name": "entities_audit",
+          "table": "entities",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER entities_audit AFTER INSERT OR DELETE OR UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 123,
+          "anchor": "create trigger entities_audit after insert or update or delete on public.entities for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.entities.entities_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.entities.entities_updated",
+          "kind": "trigger",
+          "name": "entities_updated",
+          "table": "entities",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER entities_updated BEFORE UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.entities.entities_updated",
+          "kind": "trigger",
+          "name": "entities_updated",
+          "table": "entities",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER entities_updated BEFORE UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 122,
+          "anchor": "create trigger entities_updated before update on public.entities for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.entity_identifiers.entity_identifiers_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.entity_identifiers.entity_identifiers_audit",
+          "kind": "trigger",
+          "name": "entity_identifiers_audit",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER entity_identifiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.entity_identifiers.entity_identifiers_audit",
+          "kind": "trigger",
+          "name": "entity_identifiers_audit",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER entity_identifiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 132,
+          "anchor": "create trigger entity_identifiers_audit after insert or update or delete on public.entity_identifiers for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.entity_identifiers.entity_identifiers_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.entity_identifiers.entity_identifiers_updated",
+          "kind": "trigger",
+          "name": "entity_identifiers_updated",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER entity_identifiers_updated BEFORE UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.entity_identifiers.entity_identifiers_updated",
+          "kind": "trigger",
+          "name": "entity_identifiers_updated",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER entity_identifiers_updated BEFORE UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 131,
+          "anchor": "create trigger entity_identifiers_updated before update on public.entity_identifiers for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "trigger:public.entity_identifiers.identifier_scope",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.entity_identifiers.identifier_scope",
+          "kind": "trigger",
+          "name": "identifier_scope",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_identity_scope_v1()",
+          "definition": "CREATE TRIGGER identifier_scope BEFORE INSERT OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.entity_identifiers.identifier_scope",
+          "kind": "trigger",
+          "name": "identifier_scope",
+          "table": "entity_identifiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_identity_scope_v1()",
+          "definition": "CREATE TRIGGER identifier_scope BEFORE INSERT OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
+        }
+      },
+      "owner": "Codex — etapa 5",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "Preserva escopo, projeção legada, revisão temporal ou auditoria sem conteúdo financeiro.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+          "line": 92,
+          "anchor": "create trigger identifier_scope before insert or update on public.entity_identifiers for each row execute function private.guard_identity_scope_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
       "id": "trigger:public.evidence_facts.evidence_facts_audit",
@@ -122032,6 +125196,13 @@
       "decision": "preservar",
       "stage": "3",
       "reason": "Vocabulário, contratos e vetores compartilhados; Postgres continua o único avaliador."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
+      "decision": "preservar",
+      "stage": "5",
+      "reason": "SQL imutável aplicado nos dois ambientes; carimbo de produção conferido no journal."
     }
   ],
   "staging_archive": [
@@ -122455,5 +125626,16 @@
     ],
     "new_objects": 75,
     "review": "docs/security/INVENTORY_WAVE_3_POLICY_REVIEW.md"
+  },
+  "stage_5_revision": {
+    "production_migrations": [
+      "20260916190600"
+    ],
+    "staging_migrations": [
+      "20260916190433"
+    ],
+    "new_objects": 56,
+    "review": "docs/security/INVENTORY_WAVE_4_DOSSIER_REVIEW.md",
+    "cross_dossier_private_memory": "deferred to explicit execution inputs and dependencies in stages 17/18"
   }
 }

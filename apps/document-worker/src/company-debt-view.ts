@@ -21,7 +21,7 @@ import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./ad
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
-import {createWorkerPublicCompanyMemory} from "./public-company-memory";
+import {createWorkerPublicCompanyMemory, verifiedCompanyMemorySubject} from "./public-company-memory";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
@@ -499,11 +499,12 @@ async function collectResearch(input: {
     jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
   });
   const cache = createWorkerPublicResearchCache(input.queue, input.job);
+  const companySubject = await verifiedCompanyMemorySubject(input.queue, input.job, subject);
   const companyMemory = createWorkerPublicCompanyMemory(input.queue, input.job);
   const result = await runPublicResearch({
     plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
-    ...(companyMemory ? {companyMemory, companySubject: subject} : {}),
+    ...(companyMemory && companySubject ? {companyMemory, companySubject} : {}),
   });
   const safeSources = result.sources.filter((source) => source.url.startsWith("https://"));
   const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {

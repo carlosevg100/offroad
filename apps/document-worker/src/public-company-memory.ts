@@ -1,6 +1,8 @@
+import {z} from "zod";
 import {
   publicCompanyMemoryRecordSchema,
   type PublicCompanyMemory,
+  type PublicResearchSubject,
 } from "@offroad/public-research";
 
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
@@ -21,4 +23,13 @@ export function createWorkerPublicCompanyMemory(
       await queue.storePublicCompanyMemory!(job, record);
     },
   };
+}
+
+/** An unresolved or differently named subject still researches normally, without identity reuse. */
+export async function verifiedCompanyMemorySubject(queue: QueueClient, job: CapitalProjectAnalysisJob, subject: PublicResearchSubject): Promise<PublicResearchSubject | undefined> {
+  if (!queue.loadPublicCompanyIdentity) return undefined;
+  const result = z.object({legalName: z.string().min(2).max(200), verifiedEntityId: z.uuid()}).strict().nullable().parse(await queue.loadPublicCompanyIdentity(job));
+  const normalize = (name: string) => name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (!result || normalize(subject.legalName) !== normalize(result.legalName)) return undefined;
+  return result;
 }

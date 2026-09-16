@@ -5625,6 +5625,18 @@ do $$ declare t text; begin
  if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relname=t and c.relrowsecurity and c.relforcerowsecurity) or has_table_privilege('authenticated','private.'||t,'select,insert,update,delete') then raise exception 'policy table boundary failed: %',t; end if;
  end loop;
 end $$;
+-- Entity identity never replaces the resource boundary of private dossiers.
+do $$ declare relation text; begin
+ foreach relation in array array['dossiers','entities','entity_identifiers','dossier_entity_links'] loop
+  if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=relation and c.relrowsecurity and c.relforcerowsecurity) then
+   raise exception 'Dossier identity RLS missing: %',relation;
+  end if;
+  if has_table_privilege('authenticated','public.'||relation,'INSERT,UPDATE,DELETE') or has_table_privilege('anon','public.'||relation,'SELECT,INSERT,UPDATE,DELETE') then
+   raise exception 'Dossier identity exposes direct writes or anonymous reads: %',relation;
+  end if;
+ end loop;
+end $$;
+
 rollback;
 
 do $$

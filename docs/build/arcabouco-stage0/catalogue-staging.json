@@ -557,6 +557,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.backfill_dossiers_v1()",
+      "kind": "function",
+      "name": "backfill_dossiers_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "begin_intake_processing",
@@ -1043,6 +1061,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_read_dossier_v1(p_id uuid)",
+      "kind": "function",
+      "name": "can_read_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_entity_v1(p_id uuid)",
+      "kind": "function",
+      "name": "can_read_entity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_review_intake_claims(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "can_review_intake_claims",
@@ -1272,6 +1336,24 @@
       "id": "function:private.capture_case_retrieval_chunk_update_batch()",
       "kind": "function",
       "name": "capture_case_retrieval_chunk_update_batch",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_identity_audit_v1()",
+      "kind": "function",
+      "name": "capture_identity_audit_v1",
       "grants": [
         [
           "postgres",
@@ -2489,6 +2571,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_identity_scope_v1()",
+      "kind": "function",
+      "name": "guard_identity_scope_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.guard_institutional_result_body()",
       "kind": "function",
       "name": "guard_institutional_result_body",
@@ -3416,6 +3516,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+      "kind": "function",
+      "name": "link_dossier_entity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "name": "list_my_workspace_invites_v1",
@@ -4297,6 +4420,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_dossier_v1(p_dossier_id uuid)",
+      "kind": "function",
+      "name": "read_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid",
       "security_definer": true
     },
     {
@@ -5502,6 +5648,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.register_resource_dossier_v1()",
+      "kind": "function",
+      "name": "register_resource_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.reject_control_ledger_mutation()",
       "kind": "function",
       "name": "reject_control_ledger_mutation",
@@ -5807,6 +5971,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.require_dossier_v1(p_id uuid, p_action text)",
+      "kind": "function",
+      "name": "require_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "require_receivables_scope_aware_reader",
@@ -5917,6 +6099,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_suggestion_event_id uuid, p_scope_event_id uuid, p_suggestion_id text, p_decision text, p_role text, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+      "kind": "function",
+      "name": "resolve_entity_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
       "security_definer": true
     },
     {
@@ -6063,6 +6268,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_intake_session_id uuid, p_flag_id text, p_flag_fingerprint text, p_decision text, p_rationale text, p_evidence_ids jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "name": "review_dossier_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
       "security_definer": true
     },
     {
@@ -7675,6 +7903,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.sync_company_dossier_v1()",
+      "kind": "function",
+      "name": "sync_company_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.sync_intake_session_after_processing_run_terminal()",
       "kind": "function",
       "name": "sync_intake_session_after_processing_run_terminal",
@@ -7693,9 +7939,45 @@
       "security_definer": true
     },
     {
+      "id": "function:private.sync_project_dossier_v1()",
+      "kind": "function",
+      "name": "sync_project_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.sync_review_resource_access_v1()",
       "kind": "function",
       "name": "sync_review_resource_access_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.sync_session_dossier_v1()",
+      "kind": "function",
+      "name": "sync_session_dossier_v1",
       "grants": [
         [
           "postgres",
@@ -7949,6 +8231,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_evidence_id uuid, p_reviewer_id uuid, p_review_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "withdraw_dossier_entity_link_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_link_id uuid, p_reason text",
       "security_definer": true
     },
     {
@@ -9881,6 +10186,29 @@
       "grants": [
         [
           "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_read_public_entity_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
           "EXECUTE",
           false
         ]
@@ -12282,6 +12610,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.link_dossier_entity_v1(p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid)",
+      "kind": "function",
+      "name": "link_dossier_entity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_entity_id uuid, p_relationship text, p_perimeter jsonb, p_valid_from timestamp with time zone, p_valid_until timestamp with time zone, p_reason text, p_request_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.list_my_workspace_invites_v1()",
       "kind": "function",
       "name": "list_my_workspace_invites_v1",
@@ -12717,6 +13068,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_dossier_v1(p_dossier_id uuid)",
+      "kind": "function",
+      "name": "read_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid",
       "security_definer": false
     },
     {
@@ -13960,6 +14334,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.resolve_entity_candidate_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text)",
+      "kind": "function",
+      "name": "resolve_entity_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.resolve_pack_distribution_candidates(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "resolve_pack_distribution_candidates",
@@ -14041,6 +14438,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_intake_session_id uuid, p_flag_id text, p_flag_fingerprint text, p_decision text, p_rationale text, p_evidence_ids jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.review_dossier_identity_v1(p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "name": "review_dossier_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_entity_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
       "security_definer": false
     },
     {
@@ -15687,6 +16107,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.withdraw_dossier_entity_link_v1(p_link_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "withdraw_dossier_entity_link_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_link_id uuid, p_reason text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
       "kind": "function",
       "name": "withdraw_provider_mandate_v1",
@@ -17326,6 +17769,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_read_public_entity_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": false
     },
     {
@@ -20708,6 +21174,118 @@
       "with_check": "( SELECT private.can_access_document_scope(document_profiles.organization_id, ( SELECT COALESCE(sd.intake_session_id, sd.opportunity_id) AS \"coalesce\"\n           FROM source_documents sd\n          WHERE ((sd.organization_id = document_profiles.organization_id) AND (sd.id = document_profiles.source_document_id))), 'document.write'::text) AS can_access_document_scope)"
     },
     {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_delete",
+      "kind": "policy",
+      "name": "dossier_entity_links_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_insert",
+      "kind": "policy",
+      "name": "dossier_entity_links_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_deny_update",
+      "kind": "policy",
+      "name": "dossier_entity_links_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.dossier_entity_links.dossier_entity_links_select",
+      "kind": "policy",
+      "name": "dossier_entity_links_select",
+      "qual": "private.can_read_dossier_v1(dossier_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_delete",
+      "kind": "policy",
+      "name": "dossiers_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossiers",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_insert",
+      "kind": "policy",
+      "name": "dossiers_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossiers",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_deny_update",
+      "kind": "policy",
+      "name": "dossiers_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossiers",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.dossiers.dossiers_select",
+      "kind": "policy",
+      "name": "dossiers_select",
+      "qual": "private.can_read_dossier_v1(id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "dossiers",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.engagement_conflict_reviews.engagement_conflict_reviews_select",
       "kind": "policy",
       "name": "engagement_conflict_reviews_select",
@@ -20716,6 +21294,118 @@
         "authenticated"
       ],
       "table": "engagement_conflict_reviews",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.entities.entities_deny_delete",
+      "kind": "policy",
+      "name": "entities_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entities",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.entities.entities_deny_insert",
+      "kind": "policy",
+      "name": "entities_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entities",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.entities.entities_deny_update",
+      "kind": "policy",
+      "name": "entities_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entities",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.entities.entities_select",
+      "kind": "policy",
+      "name": "entities_select",
+      "qual": "private.can_read_entity_v1(id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entities",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_delete",
+      "kind": "policy",
+      "name": "entity_identifiers_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entity_identifiers",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_insert",
+      "kind": "policy",
+      "name": "entity_identifiers_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entity_identifiers",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_deny_update",
+      "kind": "policy",
+      "name": "entity_identifiers_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entity_identifiers",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.entity_identifiers.entity_identifiers_select",
+      "kind": "policy",
+      "name": "entity_identifiers_select",
+      "qual": "private.can_read_entity_v1(entity_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "entity_identifiers",
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
@@ -30331,6 +31021,116 @@
       "force_rls": true
     },
     {
+      "id": "r:public.dossier_entity_links",
+      "rls": true,
+      "kind": "table",
+      "name": "dossier_entity_links",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.dossiers",
+      "rls": true,
+      "kind": "table",
+      "name": "dossiers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.engagement_conflict_reviews",
       "rls": true,
       "kind": "table",
@@ -30419,6 +31219,116 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.entities",
+      "rls": true,
+      "kind": "table",
+      "name": "entities",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.entity_identifiers",
+      "rls": true,
+      "kind": "table",
+      "name": "entity_identifiers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -38186,6 +39096,16 @@
       "definition": "CREATE TRIGGER access_resources_updated_at BEFORE UPDATE ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.access_resources.resource_dossier",
+      "kind": "trigger",
+      "name": "resource_dossier",
+      "table": "access_resources",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.register_resource_dossier_v1()",
+      "definition": "CREATE TRIGGER resource_dossier AFTER INSERT ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.register_resource_dossier_v1()"
+    },
+    {
       "id": "trigger:private.account_organizations.account_organizations_audit",
       "kind": "trigger",
       "name": "account_organizations_audit",
@@ -39256,6 +40176,16 @@
       "definition": "CREATE TRIGGER capital_projects_set_updated_at BEFORE UPDATE ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.capital_projects.zz_project_dossier",
+      "kind": "trigger",
+      "name": "zz_project_dossier",
+      "table": "capital_projects",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_project_dossier_v1()",
+      "definition": "CREATE TRIGGER zz_project_dossier AFTER INSERT OR UPDATE OF company_id ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.sync_project_dossier_v1()"
+    },
+    {
       "id": "trigger:public.capital_provider_programs.capital_provider_programs_set_updated_at",
       "kind": "trigger",
       "name": "capital_provider_programs_set_updated_at",
@@ -39394,6 +40324,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER companies_set_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.companies.zz_company_dossier",
+      "kind": "trigger",
+      "name": "zz_company_dossier",
+      "table": "companies",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_company_dossier_v1()",
+      "definition": "CREATE TRIGGER zz_company_dossier AFTER INSERT OR UPDATE OF display_name, legal_name, website, description, legal_identifier_last4 ON public.companies FOR EACH ROW EXECUTE FUNCTION private.sync_company_dossier_v1()"
     },
     {
       "id": "trigger:public.conduct_policies.conduct_policies_set_updated_at",
@@ -39626,6 +40566,16 @@
       "definition": "CREATE TRIGGER intake_sessions_access_resource AFTER INSERT OR UPDATE ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.register_access_resource_v1('intake_session')"
     },
     {
+      "id": "trigger:public.document_intake_sessions.zz_session_dossier",
+      "kind": "trigger",
+      "name": "zz_session_dossier",
+      "table": "document_intake_sessions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.sync_session_dossier_v1()",
+      "definition": "CREATE TRIGGER zz_session_dossier AFTER INSERT OR UPDATE OF company_profile, client_company_id ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.sync_session_dossier_v1()"
+    },
+    {
       "id": "trigger:public.document_layers.document_layers_set_updated_at",
       "kind": "trigger",
       "name": "document_layers_set_updated_at",
@@ -39656,6 +40606,56 @@
       "definition": "CREATE TRIGGER document_profiles_set_updated_at BEFORE UPDATE ON public.document_profiles FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.dossier_entity_links.dossier_entity_links_audit",
+      "kind": "trigger",
+      "name": "dossier_entity_links_audit",
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER dossier_entity_links_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.dossier_entity_links.dossier_entity_links_updated",
+      "kind": "trigger",
+      "name": "dossier_entity_links_updated",
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER dossier_entity_links_updated BEFORE UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.dossier_entity_links.dossier_link_scope",
+      "kind": "trigger",
+      "name": "dossier_link_scope",
+      "table": "dossier_entity_links",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_identity_scope_v1()",
+      "definition": "CREATE TRIGGER dossier_link_scope BEFORE INSERT OR UPDATE ON public.dossier_entity_links FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
+    },
+    {
+      "id": "trigger:public.dossiers.dossiers_audit",
+      "kind": "trigger",
+      "name": "dossiers_audit",
+      "table": "dossiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.dossiers.dossiers_updated",
+      "kind": "trigger",
+      "name": "dossiers_updated",
+      "table": "dossiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER dossiers_updated BEFORE UPDATE ON public.dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.engagement_conflict_reviews.engagement_conflict_reviews_audit",
       "kind": "trigger",
       "name": "engagement_conflict_reviews_audit",
@@ -39664,6 +40664,56 @@
       "enabled": "O",
       "function": "private.capture_audit_event()",
       "definition": "CREATE TRIGGER engagement_conflict_reviews_audit AFTER INSERT OR DELETE OR UPDATE ON public.engagement_conflict_reviews FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.entities.entities_audit",
+      "kind": "trigger",
+      "name": "entities_audit",
+      "table": "entities",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER entities_audit AFTER INSERT OR DELETE OR UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.entities.entities_updated",
+      "kind": "trigger",
+      "name": "entities_updated",
+      "table": "entities",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER entities_updated BEFORE UPDATE ON public.entities FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.entity_identifiers.entity_identifiers_audit",
+      "kind": "trigger",
+      "name": "entity_identifiers_audit",
+      "table": "entity_identifiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER entity_identifiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.entity_identifiers.entity_identifiers_updated",
+      "kind": "trigger",
+      "name": "entity_identifiers_updated",
+      "table": "entity_identifiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER entity_identifiers_updated BEFORE UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.entity_identifiers.identifier_scope",
+      "kind": "trigger",
+      "name": "identifier_scope",
+      "table": "entity_identifiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_identity_scope_v1()",
+      "definition": "CREATE TRIGGER identifier_scope BEFORE INSERT OR UPDATE ON public.entity_identifiers FOR EACH ROW EXECUTE FUNCTION private.guard_identity_scope_v1()"
     },
     {
       "id": "trigger:public.evidence_facts.evidence_facts_audit",
@@ -41331,5 +42381,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-16T16:35:49.209773+00:00"
+  "captured_at": "2026-09-16T19:07:32.080908+00:00"
 }
