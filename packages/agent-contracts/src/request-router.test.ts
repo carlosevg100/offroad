@@ -191,7 +191,6 @@ describe("workspace execution router", () => {
       artifactTypes: [],
       conversationText: "Quero explorar refinanciamento e alternativas de estrutura de capital.",
       requestText: "A reunião será com o CFO. É o primeiro contato e não temos exposição.",
-      professionalContextStatus: null,
     })).toMatchObject({
       action: "collect_required_context",
       requirements: ["institution_capability_context"],

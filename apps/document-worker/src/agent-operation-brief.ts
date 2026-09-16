@@ -45,7 +45,7 @@ import {
 } from "@offroad/work-plan";
 import {z} from "zod";
 
-import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import type {AgentOperationBriefJob, QueueClient} from "./queue";
 import {describeJobFailure} from "./job-failure";
 import {activeWorkObjectBindings, activeWorkSourceManifestMembershipFingerprint, governedShadowAccessBasis, shadowIntentEnvelope} from "./intent-shadow";
@@ -124,7 +124,6 @@ const contextSchema = z.object({
     visibleSnapshot: z.unknown(),
   }).nullable().optional(),
   company_profile: z.record(z.string(), z.unknown()).default({}),
-  professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   organization_methodology: organizationMethodologySchema.nullable().optional(),
   related_project_memory: z.array(z.object({
@@ -212,13 +211,10 @@ Rules:
   request. Use it before asking a question. When relevant history exists, mention the prior project,
   its recency and work product, then ask whether this assignment updates that thesis or starts a new
   one. Never imply that another client or organization supplied the history.
-- professionalContext and institutionCapabilities are durable context supplied by this user or
-  organization. Use them before asking how the user can act. They tailor execution; they are not
-  evidence about the target company, a current credit appetite or an approved mandate.
-- Use professional context silently to prioritize, sequence and explain the work. Never use it to
-  suppress an alternative that may be better for the company. Build the company-relevant universe
-  first, then explain viable execution paths without declaring what the user's institution can or
-  cannot lead unless the user explicitly asks.
+- institutionCapabilities describes declared means of execution, not company evidence, current
+  credit appetite or an approved mandate. Use it only to describe feasible execution paths.
+- Derive analytical depth, sequence and rigor from the stated objective, available evidence and
+  method. Build the complete company-relevant alternative universe regardless of who asks.
 - If executionRoute requires institution_capability_context, ask how the institution can act in
   this assignment: lend from its balance sheet, structure, distribute, advise, invest, or combine
   those roles. Explain that this calibrates emphasis and makes the execution discussion more useful,
@@ -420,14 +416,7 @@ export async function processAgentOperationBriefJob(
             accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
             authorityGrants: ["read"],
             documentIds: context.documents.map((document) => document.id),
-            professionalContext: context.professional_context
-              ? {
-                  useForms: context.professional_context.useForms,
-                  professionalRoles: context.professional_context.professionalRoles,
-                  practiceAreas: context.professional_context.practiceAreas,
-                  primaryObjectives: context.professional_context.primaryObjectives,
-                }
-              : null,
+
             activeWorkContext: activeWorkContext?.context ?? null,
             activeWorkContextBinding: activeWorkContext?.binding ?? null,
           },
@@ -487,14 +476,7 @@ export async function processAgentOperationBriefJob(
           accessBasis: governedShadowAccessBasis(context.project?.accessBasis),
           authorityGrants: ["read"] as const,
           documentIds: context.documents.map((document) => document.id),
-          professionalContext: context.professional_context
-            ? {
-                useForms: context.professional_context.useForms,
-                professionalRoles: context.professional_context.professionalRoles,
-                practiceAreas: context.professional_context.practiceAreas,
-                primaryObjectives: context.professional_context.primaryObjectives,
-              }
-            : null,
+
           openQuestions: [
             ...openQuestionsOf(priorOutputs.get("A01")),
             ...(context.answered_information_request ? [{
@@ -642,7 +624,7 @@ export async function processAgentOperationBriefJob(
       // Only the institution profile answers what an institution can do. A person's own
       // description of their work is not evidence of their employer's capability.
       institutionOperatingModels: context.institution_capabilities?.operatingModels ?? [],
-      professionalContextStatus: context.professional_context?.disclosureStatus ?? null,
+
       institutionCapabilityQuestionAsked: context.recent_messages.some((message) => message.role === "assistant"
         && /(?:como\s+(?:sua|a\s+sua)\s+institui[cç][aã]o\s+pode\s+atuar|how\s+can\s+your\s+institution\s+act)/i.test(message.content)),
       specializedWorkActive: context.tasks.some((task) => ["queued", "running", "started"].includes(task.status)),
@@ -668,7 +650,7 @@ export async function processAgentOperationBriefJob(
               currentBrief: context.brief,
               project: context.project ?? null,
               companyProfile: context.company_profile,
-              professionalContext: context.professional_context ?? null,
+
               institutionCapabilities: context.institution_capabilities ?? null,
               organizationMethodology: context.organization_methodology ?? null,
               relatedProjectMemory: context.related_project_memory,

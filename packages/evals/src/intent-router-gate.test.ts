@@ -112,7 +112,6 @@ const canonicalizedObservation = (turn: typeof intentGoldTurns[number], repeat: 
     recentConversation: turn.priorTurns,
     entryJob: null,
     documentCount: turn.documentCount,
-    professionalContext: null,
   });
   return {
     ...observation(turn, repeat, actual),
@@ -383,7 +382,7 @@ describe("intent router promotion gate", () => {
     const turn = intentGoldTurns.find(({id}) => id === "gc01-t01")!;
     const raw = outputFor(turn, {routingCore: {...outputFor(turn).routingCore, action: {value: ["review"], state: "inferred"}}});
     const actual = canonicalizeIntentClassifierOutput(raw, {
-      locale: "pt-BR", latestUserMessage: turn.message, recentConversation: [], entryJob: null, documentCount: turn.documentCount, professionalContext: null,
+      locale: "pt-BR", latestUserMessage: turn.message, recentConversation: [], entryJob: null, documentCount: turn.documentCount,
     });
     expect(actual.routingCore.action.value).toEqual(["prepare_meeting"]);
     expect(scoreIntentGoldTurn(turn, actual, raw).canonicalAction).toBe(true);

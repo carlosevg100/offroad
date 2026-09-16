@@ -101,7 +101,6 @@ const context: LiveTurnContext = {
   accessBasis: "public_information",
   authorityGrants: ["read"],
   documentIds: [],
-  professionalContext: {useForms: ["institutional_work"], professionalRoles: ["banker"], practiceAreas: ["investment_banking", "dcm"], primaryObjectives: ["prepare_meetings"]},
   openQuestions: [],
   priorObjectKinds: [],
   requestKind: "message",
@@ -113,7 +112,7 @@ async function decide(output: LiveRoutingOutput, overrides: Partial<Parameters<t
   const message = overrides.message ?? context.message;
   const canonical = canonicalizeIntentClassifierOutput(compatible, buildIntentClassifierInput({
     locale: context.locale, latestUserMessage: message, recentConversation: [], entryJob: context.entryJob,
-    documentCount: context.documentIds.length, professionalContext: context.professionalContext,
+    documentCount: context.documentIds.length,
   }));
   const understanding = {
     envelope: stampIntentEnvelope(canonical, context), output, modelRoute: "governed_model_route" as const,

@@ -51,7 +51,7 @@ export type ShadowRoutingContext = {
   /** Granted by the control plane for this turn. Project membership is not a grant. */
   authorityGrants: readonly AuthorityGrant[];
   documentIds: string[];
-  professionalContext: {useForms: string[]; professionalRoles: string[]; practiceAreas: string[]; primaryObjectives: string[]} | null;
+
   /** Governed work memory. Assistant prose and profile inference may never populate this object. */
   activeWorkContext?: ActiveWorkContext | null;
   /** Independent control-plane binding used to reject a structurally valid but stale context. */
@@ -226,7 +226,7 @@ export async function shadowIntentEnvelope(input: {
     recentConversation: userConversation,
     entryJob: context.entryJob,
     documentCount: context.documentIds.length,
-    professionalContext: context.professionalContext,
+
   });
   const objectInput = buildSemanticObjectExtractorInput({
     locale: context.locale,

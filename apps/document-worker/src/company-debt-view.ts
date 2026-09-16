@@ -17,7 +17,7 @@ import {
 } from "@offroad/public-research";
 
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
-import {institutionCapabilitiesSchema, organizationMethodologySchema, professionalContextSchema} from "./advisor-context";
+import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import {materialNumericTokens} from "./material-numeric-tokens";
 import {prepareWorkerDebtResearch, type WorkerOfficialResearchProviderFactory} from "./debt-research-runtime";
 import {createWorkerPublicResearchCache} from "./public-research-cache";
@@ -45,7 +45,6 @@ const contextSchema = z.object({
     id: z.uuid(), locale: z.enum(["pt-BR", "en-US"]), company_profile: recordSchema,
     privacy_status: z.literal("public_information"), representation_status: z.literal("not_claimed"),
   }),
-  professional_context: professionalContextSchema.nullable().optional(),
   institution_capabilities: institutionCapabilitiesSchema.nullable().optional(),
   organization_methodology: organizationMethodologySchema.nullable().optional(),
   brief: z.object({
@@ -80,8 +79,9 @@ Rules:
   unverified context, never evidence.
 - Understand the company holistically before assuming a transaction: business model, sector,
   performance, cash conversion, liquidity, debt stack, capital allocation, agenda and material risks.
-- professionalContext and institutionCapabilities adjust depth, terminology and decision framing.
-  They are not company evidence and never suppress a company-relevant issue or opportunity.
+- Analytical depth and rigor follow the stated objective, available evidence and method.
+  institutionCapabilities describes execution means only; it is not company evidence and never
+  limits a company-relevant issue, alternative or analytical depth.
 - Follow journeyBlueprint and collaborativeAdvisoryPolicy. Build the company view first and keep
   company fit, market feasibility and the user's possible execution path analytically separate.
 - On a revision, priorWorkProduct is a previously validated, source-grounded artifact. You may
@@ -235,7 +235,7 @@ export async function processCompanyDebtViewJob(
         asOfDate: (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
         company: {name: companyName, website: website ?? null},
         userFocus: context.brief.content,
-        professionalContext: context.professional_context ?? null,
+
         institutionCapabilities: context.institution_capabilities ?? null,
         journeyBlueprint: workspaceJourneyBlueprint("company_debt_view"),
         collaborativeAdvisoryPolicy,

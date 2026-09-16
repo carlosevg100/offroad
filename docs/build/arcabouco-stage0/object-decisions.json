@@ -113131,17 +113131,10 @@
     },
     {
       "kind": "entrypoint",
-      "path": "apps/web/src/app/[locale]/app/context/actions.ts",
-      "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
-    },
-    {
-      "kind": "entrypoint",
       "path": "apps/web/src/app/[locale]/app/context/page.tsx",
       "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
+      "stage": "1C",
+      "reason": "Redireciona links antigos à organização autorizada, sem ler ou pedir perfil profissional."
     },
     {
       "kind": "entrypoint",
@@ -113818,5 +113811,19 @@
       "trigger:public.processing_jobs.processing_jobs_bind_authority",
       "trigger:public.workspace_project_groups.workspace_groups_access_resource"
     ]
+  },
+  "stage_1c_revision": {
+    "phase": "worker_and_ui_compatibility",
+    "baseline_commit": "dda8361c2c146e58c25640f2a9b1ca381ae20ed0",
+    "retired_repository_items": [
+      {
+        "kind": "entrypoint",
+        "path": "apps/web/src/app/[locale]/app/context/actions.ts",
+        "decision": "apagar",
+        "stage": "1C",
+        "reason": "Cadastro profissional retirado; histórico não alimenta o raciocínio."
+      }
+    ],
+    "database_changes": "pending separate migration after worker discards legacy context"
   }
 }

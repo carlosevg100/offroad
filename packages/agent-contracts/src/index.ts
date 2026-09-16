@@ -94,7 +94,6 @@ export function routeWorkspaceExecution(input: {
   requestIntent?: WorkspaceRequestIntent;
   requestEffect?: WorkspaceRequestEffect;
   institutionOperatingModels?: string[];
-  professionalContextStatus?: "complete" | "partial" | "skipped" | null;
   institutionCapabilityQuestionAsked?: boolean;
   specializedWorkActive?: boolean;
 }): WorkspaceExecutionRoute {
@@ -183,8 +182,7 @@ export function routeWorkspaceExecution(input: {
     const relationshipMakesCapabilitiesMaterial = originationContextPatterns.noRelationship.test(corpus);
     const declaredCapabilities = (input.institutionOperatingModels ?? []).length > 0
       || originationContextPatterns.capabilities.test(corpus);
-    const capabilityQuestionWaived = input.professionalContextStatus === "skipped"
-      || originationContextPatterns.capabilityOptOut.test(corpus);
+    const capabilityQuestionWaived = originationContextPatterns.capabilityOptOut.test(corpus);
     if (meetingContextComplete && relationshipMakesCapabilitiesMaterial && !declaredCapabilities
       && !capabilityQuestionWaived && !input.institutionCapabilityQuestionAsked) {
       requirements.push("institution_capability_context");

@@ -111,7 +111,6 @@ export default async function ApplicationLayout({children, params}: Props) {
     noResults: t("noProjectResults"),
     open: t("openProject"),
     overview: t("overview"),
-    professionalContext: t("professionalContext"),
     publicCapitalMarket: t("publicCapitalMarket"),
     recent: t("recent"),
     rename: t("renameProject"),

@@ -184,7 +184,7 @@ export async function understandLiveTurn(input: {gateway: ModelGateway; context:
         recentConversation: context.recentMessages.slice(-8),
         entryJob: context.entryJob,
         documentCount: context.documentIds.length,
-        professionalContext: context.professionalContext,
+
         openQuestions: context.openQuestions,
         priorObjects: context.priorObjectKinds,
         requestKind: context.requestKind,

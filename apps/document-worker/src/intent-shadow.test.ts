@@ -44,7 +44,7 @@ const context: ShadowRoutingContext = {
   locale: "pt-BR", message: "Analise a Camil.", recentMessages: [],
   organizationId: "20000000-0000-4000-8000-000000000001",
   projectId: "30000000-0000-4000-8000-000000000001",
-  entryJob: "origination_thesis", accessBasis: "public_information", authorityGrants: ["read"], documentIds: [], professionalContext: null,
+  entryJob: "origination_thesis", accessBasis: "public_information", authorityGrants: ["read"], documentIds: [],
 };
 
 const activeContext = {

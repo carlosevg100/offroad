@@ -48,12 +48,6 @@ export const baselineInformationBaseSchema = z.object({
   language: z.literal("pt-BR"),
   /** The day the case is run as of; nothing after it may be known. */
   asOfDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  professionalContext: z.object({
-    useForms: z.array(z.string()),
-    professionalRoles: z.array(z.string()),
-    practiceAreas: z.array(z.string()),
-    primaryObjectives: z.array(z.string()),
-  }),
   turns: z.array(baselineTurnSchema).min(1).max(6),
   documents: z.array(baselineDocumentSchema),
   sources: z.array(baselineSourceSchema),
@@ -79,7 +73,6 @@ export function renderInformationBase(base: BaselineInformationBase): string {
   const parts: string[] = [];
   parts.push(`# Base de informação do caso ${base.caseId} (versão ${base.caseVersion})`);
   parts.push(`Data-base da execução: ${base.asOfDate}. Nada posterior a essa data é conhecido.`);
-  parts.push(`Perfil profissional de quem pede: formas de uso ${base.professionalContext.useForms.join(", ") || "n/d"}; funções ${base.professionalContext.professionalRoles.join(", ") || "n/d"}; áreas ${base.professionalContext.practiceAreas.join(", ") || "n/d"}; objetivos ${base.professionalContext.primaryObjectives.join(", ") || "n/d"}.`);
   parts.push("");
   parts.push(`## Documentos anexados (${base.documents.length})`);
   for (const document of byId(base.documents)) {

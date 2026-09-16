@@ -29,7 +29,6 @@ import type {Json} from "@/types/database";
 import {reportServerFailure} from "@/lib/observability/report";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
-import {parseProfessionalContextForm} from "@/lib/professional-context";
 import {workspaceHomeAfterOnboarding} from "@/lib/workspace/capabilities";
 
 type Journey = "company" | "originator" | "capital_provider";
@@ -95,29 +94,6 @@ async function onboardingContext(locale: AppLocale) {
 }
 
 type OnboardingContext = Awaited<ReturnType<typeof onboardingContext>>;
-
-export async function saveProfessionalContextAction(formData: FormData) {
-  const locale = localeFrom(formData);
-  const context = await onboardingContext(locale);
-  const skip = value(formData, "intent") === "skip";
-  const parsed = parseProfessionalContextForm(skip ? new FormData() : formData);
-  if (!parsed.success) redirect(`/${locale}/onboarding?error=validation`);
-
-  const {error} = await context.supabase.rpc("save_professional_capability_context_v2", {
-    p_organization_id: context.organizationId,
-    p_use_forms: parsed.data.useForms,
-    p_professional_roles: parsed.data.professionalRoles,
-    p_practice_areas: parsed.data.practiceAreas,
-    p_primary_objectives: parsed.data.primaryObjectives,
-    p_institution_name: parsed.data.institutionName,
-    p_skip: skip,
-  });
-  if (error) {
-    reportServerFailure({step: "onboarding.save_professional_context", error});
-    redirect(`/${locale}/onboarding?error=save`);
-  }
-  redirect(`/${locale}/onboarding`);
-}
 
 async function updateProgress(
   context: OnboardingContext,

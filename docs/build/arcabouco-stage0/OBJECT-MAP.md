@@ -1716,8 +1716,8 @@ A detecção usa specifiers exatos de import/export/require. `apps/web`, cujo no
 | `apps/web/src/app/[locale]/app/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/advisor-actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/case/[sessionId]/route.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/context/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/context/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
+| `apps/web/src/app/[locale]/app/context/actions.ts` | retired entrypoint | apagar | 1C | Removido: cadastro profissional não alimenta o raciocínio. |
+| `apps/web/src/app/[locale]/app/context/page.tsx` | entrypoint | refatorar | 1C | Redireciona à organização autorizada, sem coletar perfil. |
 | `apps/web/src/app/[locale]/app/institutional-setup-actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/layout.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/mandates/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |

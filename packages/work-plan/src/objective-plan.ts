@@ -368,7 +368,7 @@ function validateObjectiveState(plan: ObjectiveToPlanDecision, allowed: readonly
 /**
  * Compiles a normalized semantic objective into a bounded task contract. This is the architecture
  * boundary: a classifier can improve without gaining authority to invent work. The function
- * intentionally accepts no persona or seniority; profile can tune presentation later, but it
+ * intentionally accepts no persona or seniority; the declared objective and evidence determine scope, and it
  * cannot change the work required by the objective.
  */
 export function compileObjectivePlan(input: ObjectivePlanContextInput): ObjectiveToPlanDecision {

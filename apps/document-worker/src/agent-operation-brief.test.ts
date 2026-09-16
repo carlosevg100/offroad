@@ -141,7 +141,7 @@ describe("agent operation brief worker", () => {
           assumptions: [], checkpoints: [], executionMode: "start_after_display",
         },
       },
-      company_profile: {}, professional_context: null, institution_capabilities: null, organization_methodology: null,
+      company_profile: {}, institution_capabilities: null, organization_methodology: null,
       related_project_memory: [], documents: [{id: "33333333-3333-4333-8333-333333333333", name: "Balanço.xlsx", kind: "financial", status: "ready"}],
       tasks: [], artifacts: [],
       recent_messages: [{id: "44444444-4444-4444-8444-444444444444", role: "assistant", content: "Segredo histórico que não é evidência", created_at: "2026-09-07T01:00:00.000Z"}],
@@ -1466,15 +1466,15 @@ describe("agent operation brief worker", () => {
       workPlan: [{taskId: "M01", status: "succeeded"}],
       artifacts: [{type: "preliminary_understanding", version: 1, status: "draft"}],
       latestUserMessage: "O que já sabemos e qual é o próximo passo?",
-      professionalContext: {professionalRoles: ["banker", "originator"], practiceAreas: ["dcm", "corporate_banking", "structured_finance"]},
       institutionCapabilities: {institutionName: "Banco Exemplo", operatingModels: ["balance_sheet_lending", "structuring", "distribution"]},
       journeyBlueprint: {id: "company_debt_view", firstWorkProduct: expect.any(String)},
       collaborativeAdvisoryPolicy: {
         alternativeUniverse: "company_first_and_unconstrained",
-        professionalContextUse: "prioritize_and_shape_never_suppress",
+        reasoningBasis: "objective_evidence_and_method",
       },
     });
     expect(metadata).toMatchObject({projectEntryJob: "company_debt_view", documentCount: "1", artifactCount: "1"});
+    expect(modelInput).not.toContain("professionalContext");
     expect(modelInput).not.toContain("object_path");
     expect(modelInput).not.toContain("full_document_text");
   });
