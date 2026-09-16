@@ -1,6 +1,7 @@
 -- Destructive-safe tenant isolation smoke test: every fixture is rolled back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 -- Emulate the Storage API operation for direct SQL policy assertions.
 select set_config('storage.operation','object.upload',true);
 \ir support/execution_approval.sql

@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_resource_fixture.sql
 select set_config('request.jwt.claim.sub','',true);
 select set_config('request.jwt.claims','{}',true);

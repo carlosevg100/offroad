@@ -2,6 +2,7 @@
 -- The fixture binds a held execution job to a brief through the production binding; every
 -- command below is the real public RPC under the actual caller's JWT.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values

@@ -1,6 +1,7 @@
 -- A failed job that cannot explain itself is refused at the database boundary.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 do $$
 declare

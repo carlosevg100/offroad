@@ -8,6 +8,7 @@
 -- same revision twice never produces a second output, and it needs the preparer role once the
 -- project has review assignments.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 set local lock_timeout = '5s';
 set local statement_timeout = '60s';
 

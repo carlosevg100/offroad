@@ -4,6 +4,7 @@
 -- both for one organization and for the whole platform. Synthetic, rollback-only. No policy, grant
 -- or check constraint is relaxed here.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

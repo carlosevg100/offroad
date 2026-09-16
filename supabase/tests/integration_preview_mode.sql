@@ -3,6 +3,7 @@
 -- message. Without the grant nothing activates, whatever the payload says.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

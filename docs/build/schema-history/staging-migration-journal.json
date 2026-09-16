@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-09-16 03:53:30.115646+00",
+  "captured_at": "2026-09-16 04:19:51.81898+00",
   "rows": [
     {
       "name": "platform_foundation",
@@ -1312,6 +1312,10 @@
     {
       "name": "explicit_workspace_replay_authority",
       "version": "20260916034952"
+    },
+    {
+      "name": "retire_implicit_workspace_capabilities",
+      "version": "20260916041505"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk"

@@ -1,6 +1,6 @@
 # Etapa 2: identidade e contexto explícito
 
-Esta é a publicação aditiva da etapa, ainda não seu fechamento. O contrato de pronto inclui retirar a ponte de cadastro legado depois que a aplicação nova estiver implantada, CI de main e web/worker no mesmo commit. Etapas dependentes permanecem fora desta entrega.
+O contrato aditivo e a retirada da ponte de cadastro estão implementados e instalados. O relatório de completion registra o fechamento somente após a CI de main e web/worker no commit final. Etapas dependentes permanecem fora desta entrega.
 
 ## Contrato instalado
 
@@ -18,8 +18,9 @@ As tabelas privadas têm RLS forçada e nenhum acesso direto de usuários. Prefe
 |---|---|---|---|
 | `explicit_workspace_context` | `20260916035105` | `20260916032913` | `d0449ef81c06cc9fc4268c38d8966870` |
 | `explicit_workspace_replay_authority` | `20260916035119` | `20260916034952` | `0ea5f46340dbc8ed66a3be1ce434f52e` |
+| `retire_implicit_workspace_capabilities` | `20260916041917` | `20260916041505` | `06182e535b21e95eb01a950bb6bf71db` |
 
-As duas migrações estão aplicadas. Arquivos seguem os carimbos de produção; tipos foram gerados de produção. Inventário revisto: 1.421 objetos em produção e 1.482 em staging. As 61 superfícies exclusivas de staging continuam congeladas. Não houve mudança nas duas memberships nem nos 159 grants existentes, conferidos por contagem e fingerprint. As duas organizações receberam suas contas comerciais, sem vínculo ausente. Advisors de segurança: zero achados em ambos os ambientes.
+As três migrações estão aplicadas. Arquivos seguem os carimbos de produção; tipos foram gerados de produção. Inventário revisto: 1.419 objetos em produção e 1.480 em staging. As 61 superfícies exclusivas de staging continuam congeladas. Não houve mudança nas duas memberships nem nos 159 grants existentes, conferidos por contagem e fingerprint. As duas organizações receberam suas contas comerciais, sem vínculo ausente. Advisors de segurança: zero achados em ambos os ambientes.
 
 A comparação global encontrou seis diferenças anteriores nos corpos das funções: cinco são comentários ou linha vazia; `job_failure_class` contém em staging dois ramos individuais já cobertos pelo ramo `IN` idêntico de produção. Não há diferença executável nos contratos desta etapa. Essas diferenças antigas não foram reescritas nem tiveram seus journals alterados.
 
@@ -34,6 +35,13 @@ A comparação global encontrou seis diferenças anteriores nos corpos das funç
 
 ## Transição e retirada
 
-O seed temporário preserva somente durante a troca da aplicação as capacidades que o cadastro antigo atribuía. O próximo incremento desta mesma etapa retira essa derivação para organizações novas e transforma `initialize_professional_onboarding` em adaptador para o cadastro pessoal. Dados e concessões existentes são preservados. Não é permitido encerrar a etapa com essa ponte ativa.
+A PR 622 publicou a aplicação compatível no commit `91edc0f152708f8fcd1fabbfff51f343a466eff9`, após Quality 35053933099 e Security 35053933160 verdes. O E2E passou em 31 testes, incluindo o novo cenário de contexto; 16 ensaios opcionais permaneceram desabilitados como na configuração anterior. Vercel 6473612590 e worker 35054695728, revisão ECS 331, publicaram esse commit antes da retirada em produção. A migração final remove os dois helpers baseados em texto comercial, mantém apenas análise própria como fundação e transforma `initialize_professional_onboarding` em adaptador para o cadastro pessoal. As concessões existentes permanecem preservadas.
 
 Após a criação de espaços pessoais, rollback exige uma aplicação que reconheça workspace sem onboarding; uma versão anterior a esse contrato não é alvo válido. Rollback da aplicação não restaura os atalhos de replay, criador, leitura ampla ou cargo no raciocínio. As telas administrativas comerciais continuam adiadas; os contratos e testes permanecem. Não há novo provedor, chamada de modelo ou efeito externo nesta entrega.
+
+
+## Eval da retirada
+
+`no_implicit_workspace_capabilities.sql` verifica cinco rótulos, habilitação explícita, mudança de rótulo sem mudança de autoridade, cadastro legado sem cargo/intake e remoção dos helpers. Passou antes da aplicação em transação e depois no schema instalado. Os 60 contratos SQL passaram em staging com o candidato e rollback, registrados em `etapa-02-cutover-staging-tests.json`. As suítes históricas provisionam explicitamente suas capacidades de cliente existente por helper temporário, removido pelo rollback; os testes de identidade nova não o incluem. Foi conferida a ausência desse trigger no catálogo após os testes.
+
+Os corpos de seed e cadastro têm hashes iguais nos dois ambientes: `6d9d7de4759f71a8578ea22588434bbe` e `fa5e95fc8e0193460f5cdc30bf660c7c`. Tipos regenerados após a retirada são idênticos. Ambos os checkers de catálogo/journal passaram; advisors de segurança seguem sem achados. Os avisos de desempenho permanecem anteriores ou informativos sobre índices ainda sem uso. Fingerprints de produção preservados: memberships `a6152cee54a077fa80fbe63faeed0e34`; grants `eee56e3686e5bda95667976a235f8128`.

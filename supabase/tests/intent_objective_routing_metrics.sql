@@ -1,6 +1,7 @@
 -- The semantic routing measurement surface must remain aggregate, content-free and private.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 do $$
 declare

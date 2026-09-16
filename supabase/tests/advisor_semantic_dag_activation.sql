@@ -2,6 +2,7 @@
 -- response, company context, versioned brief and queued execution are atomic and capability-bound.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

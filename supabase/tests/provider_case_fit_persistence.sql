@@ -1,5 +1,6 @@
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/provider_case_fit_plan_snapshot.sql
 \ir support/provider_research_plan_snapshot.sql
 \ir support/execution_approval.sql

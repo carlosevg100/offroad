@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 -- Anonymous callers cannot use a release-control endpoint as an unauthenticated probe.
 set local role anon;

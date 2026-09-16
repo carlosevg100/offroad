@@ -2,6 +2,7 @@
 -- the shapes that older rows carry, so the taxonomy covers the whole history.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 do $$
 declare

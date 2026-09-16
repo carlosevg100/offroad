@@ -1,4 +1,5 @@
 begin;
+\ir support/legacy_workspace_capabilities.sql
 do $$
 declare relation regclass; command "char"; matching integer;
 begin

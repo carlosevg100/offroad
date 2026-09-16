@@ -1,5 +1,10 @@
 ## Wave 2: governed security inventory renewal
 
+## Wave 2: stage 2 registration cutover installed
+
+After PR 622's compatible web/worker deployment at `91edc0f152708f8fcd1fabbfff51f343a466eff9`, production `20260916041917` and staging `20260916041505` remove implicit commercial capabilities and the two label-based helpers. Existing grants and memberships remain unchanged. All 60 SQL contracts passed with the candidate in staging; the installed identity, cutover and creator regressions passed. Regenerated production types are byte-identical. Final CI, merge and deployment proof belongs to the stage completion receipt, not this pre-merge ledger entry. See `docs/build/arcabouco/etapa-02.md`.
+
+
 ## Wave 2: stage 2 additive identity rollout
 
 Production contracts `20260916035105` and `20260916035119` match staging SQL. Explicit personal/institutional context and commercial-account isolation preserve existing memberships and resource grants. Two legacy request-replay metadata bypasses were reproduced and corrected. See `docs/build/arcabouco/etapa-02.md` and `docs/security/INVENTORY_WAVE_2_IDENTITY_REVIEW.md` for executed checks and the remaining deployment/cutover gates. This entry does not close stage 2 or authorize a dependent wave. Stage 4 is the other independent delivery in the current wave; administrative screens remain deferred.

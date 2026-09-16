@@ -1,5 +1,6 @@
 -- Synthetic staging probe; every record is rolled back. No production execution.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 select set_config('request.jwt.claims','{}',true);
 do $$
 declare

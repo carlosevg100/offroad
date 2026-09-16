@@ -2,6 +2,7 @@
 -- one content-addressed object, the project member may read it, and an unrelated tenant may not.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 -- SQL emulates the authenticated Storage upload operation; HTTP signing is tested separately.
 select set_config('storage.operation','object.upload',true);
 \ir support/execution_approval.sql

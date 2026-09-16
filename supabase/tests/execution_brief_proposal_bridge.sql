@@ -2,6 +2,7 @@
 -- Snapshots below come from processExecutionBriefProposalJob and the canonical compiler.
 -- All identities and content are synthetic; every row is rolled back.
 begin;
+\ir support/legacy_workspace_capabilities.sql
 insert into auth.users (id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
 values ('a8000000-0000-4000-8000-000000000001','authenticated','authenticated','bridge-owner@example.invalid','{}','{}',now(),now(),false,false);
 insert into public.organizations (id,organization_type,name,created_by)

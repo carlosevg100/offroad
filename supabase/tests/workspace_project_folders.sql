@@ -3,6 +3,7 @@
 -- written where it should be and cleared where it should be. All fixtures roll back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,

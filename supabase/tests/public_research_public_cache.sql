@@ -2,6 +2,7 @@
 -- access. Fixtures are rolled back.
 
 begin;
+\ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (

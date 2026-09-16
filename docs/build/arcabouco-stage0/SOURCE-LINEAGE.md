@@ -450,3 +450,12 @@ Os 75 registros de função e dez tabelas sem fonte no inventário anterior têm
 | `trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:77` | direct_ddl |
 | `trigger:public.organizations.organizations_workspace_foundation` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:104` | direct_ddl |
 | `trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:78` | direct_ddl |
+
+## Retirada dos defaults comerciais da etapa 2
+
+| Objeto | Fonte vigente | Mecanismo |
+|---|---|---|
+| `function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)` | `supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql:28` | dynamic_definition_transform |
+| `function:private.require_workspace_capability(p_organization_type text, p_capability text)` | `supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql:27` | dynamic_definition_transform |
+| `function:private.seed_workspace_foundation_v1()` | `supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql:3` | direct_ddl |
+| `function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)` | `supabase/migrations/20260916041917_retire_implicit_workspace_capabilities.sql:16` | direct_ddl |
