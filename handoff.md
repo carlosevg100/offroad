@@ -1,4 +1,4 @@
-## Onda 3 autorizada — 16/09/2026
+## Onda 3 autorizada: 16/09/2026
 
 Etapa 3 de política comum e barreiras autorizada após conclusão da onda 2. Governança renovada contra main `9b6ccf98`; escopo e evidências em `docs/security/INVENTORY_WAVE_3_REVIEW.md`. Telas administrativas adiadas. Implementação da etapa 3 ainda não publicada por esta revisão.
 

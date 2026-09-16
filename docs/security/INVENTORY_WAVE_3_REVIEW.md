@@ -1,4 +1,4 @@
-# Abertura da onda 3 — política comum de acesso
+# Abertura da onda 3: política comum de acesso
 
 O fundador aprovou a onda 2 e autorizou seguir em 16/09/2026. A onda 3 executa a etapa 3: política comum, grupos, barreiras e delegação limitada; telas administrativas continuam adiadas. A etapa 5 não está incluída neste aceite.
 
