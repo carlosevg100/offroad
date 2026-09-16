@@ -1,0 +1,272 @@
+{
+  "capturedAt": "2026-09-16T05:11:10.735Z",
+  "environment": "staging",
+  "permanentMigrationApplied": false,
+  "transaction": "BEGIN; candidate migration; contract test; ROLLBACK",
+  "candidateScope": "initial event/outbox schema before external-publication barrier and historical-ledger references",
+  "results": [
+    {
+      "name": "advisor_semantic_dag_activation.sql",
+      "passed": true
+    },
+    {
+      "name": "agentic_dcm_work_system.sql",
+      "passed": true
+    },
+    {
+      "name": "client_presentation_templates.sql",
+      "passed": true
+    },
+    {
+      "name": "company_debt_view_vertical.sql",
+      "passed": true
+    },
+    {
+      "name": "confirmed_receivables_evidence_scope.sql",
+      "passed": true
+    },
+    {
+      "name": "confirmed_receivables_support_sheets.sql",
+      "passed": true
+    },
+    {
+      "name": "conversational_advisor_workspace.sql",
+      "passed": true
+    },
+    {
+      "name": "creator_authority_revocation.sql",
+      "passed": true
+    },
+    {
+      "name": "documentary_plan_persistence.sql",
+      "passed": true
+    },
+    {
+      "name": "execution_brief_foundation.sql",
+      "passed": true
+    },
+    {
+      "name": "execution_brief_proposal_bridge.sql",
+      "passed": true
+    },
+    {
+      "name": "execution_proposal_revision.sql",
+      "passed": true
+    },
+    {
+      "name": "explicit_documentary_work_revision.sql",
+      "passed": true
+    },
+    {
+      "name": "explicit_execution_brief_approval.sql",
+      "passed": true
+    },
+    {
+      "name": "explicit_legacy_workspace_context.sql",
+      "passed": true
+    },
+    {
+      "name": "explicit_workspace_context.sql",
+      "passed": true
+    },
+    {
+      "name": "financier_analytical_workspace.sql",
+      "passed": true
+    },
+    {
+      "name": "gold_case_bindings.sql",
+      "passed": true
+    },
+    {
+      "name": "governed_capital_material_storage.sql",
+      "passed": true
+    },
+    {
+      "name": "governed_sector_context.sql",
+      "passed": true
+    },
+    {
+      "name": "institutional_assumption_answers.sql",
+      "passed": true
+    },
+    {
+      "name": "institutional_private_rls.sql",
+      "passed": true
+    },
+    {
+      "name": "institutional_revision_proposals.sql",
+      "passed": true
+    },
+    {
+      "name": "institutional_setup_lifecycle.sql",
+      "passed": true
+    },
+    {
+      "name": "integration_preview_mode.sql",
+      "passed": true
+    },
+    {
+      "name": "intent_envelopes_shadow.sql",
+      "passed": true
+    },
+    {
+      "name": "intent_objective_routing_metrics.sql",
+      "passed": true
+    },
+    {
+      "name": "job_failure_causes.sql",
+      "passed": true
+    },
+    {
+      "name": "job_failure_contract.sql",
+      "passed": true
+    },
+    {
+      "name": "legacy_access_revocation.sql",
+      "passed": true
+    },
+    {
+      "name": "legacy_resource_access.sql",
+      "passed": true
+    },
+    {
+      "name": "no_implicit_workspace_capabilities.sql",
+      "passed": true
+    },
+    {
+      "name": "objective_plan_preflight.sql",
+      "passed": true
+    },
+    {
+      "name": "operating_controls.sql",
+      "passed": true
+    },
+    {
+      "name": "organization_methodology.sql",
+      "passed": true
+    },
+    {
+      "name": "organization_profile_authority.sql",
+      "passed": true
+    },
+    {
+      "name": "origination_thesis_vertical.sql",
+      "passed": true
+    },
+    {
+      "name": "professional_capability_context.sql",
+      "passed": true
+    },
+    {
+      "name": "project_canonical_revisions.sql",
+      "passed": true
+    },
+    {
+      "name": "project_company_scope.sql",
+      "passed": true
+    },
+    {
+      "name": "project_review_roles.sql",
+      "passed": true
+    },
+    {
+      "name": "provider_case_fit_persistence.sql",
+      "passed": true
+    },
+    {
+      "name": "provider_research_persistence.sql",
+      "passed": true
+    },
+    {
+      "name": "provider_research_public_catalog_v2.sql",
+      "passed": true
+    },
+    {
+      "name": "public_research_public_cache.sql",
+      "passed": true
+    },
+    {
+      "name": "read_grant_cannot_mutate_legacy.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_analytical_release.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_document_adapter_persistence.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_information_request_bindings.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_information_request_dataset_revision.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_method_input_assembly_store.sql",
+      "passed": true
+    },
+    {
+      "name": "receivables_method_supplement_store.sql",
+      "passed": true
+    },
+    {
+      "name": "rls_non_interference.sql",
+      "passed": true
+    },
+    {
+      "name": "role_free_reasoning_context.sql",
+      "passed": true
+    },
+    {
+      "name": "terminal_job_authorization_metadata.sql",
+      "passed": true
+    },
+    {
+      "name": "verified_provider_mandates.sql",
+      "passed": true
+    },
+    {
+      "name": "worker_runtime_schema_contract.sql",
+      "passed": true
+    },
+    {
+      "name": "workspace_member_administration.sql",
+      "passed": true
+    },
+    {
+      "name": "workspace_project_folders.sql",
+      "passed": true
+    },
+    {
+      "name": "workspace_replay_authority.sql",
+      "passed": true
+    }
+  ],
+  "latest": [
+    {
+      "name": "domain_event_outbox.sql",
+      "passed": true
+    },
+    {
+      "name": "domain_event_outbox_revocation.sql",
+      "passed": true
+    },
+    {
+      "name": "rls_non_interference.sql",
+      "passed": true
+    }
+  ],
+  "finalCandidateVerifiedAt": "2026-09-16T05:31:30.684265+00:00",
+  "finalCandidateSha256": "46cfaedaf98402f7dc33eebcce962d35d3b09867440d4264172769a107c4a374",
+  "finalTestSourceSha256": {
+    "domain_event_outbox.sql": "bec2f808a4e140db98934d832886f53d2b0bd09138914233a77be4b51fa90db5",
+    "domain_event_outbox_revocation.sql": "1410fdbfc552aa5a57df7c91e12a6eb8e43b02730442a67eb784cad023490977",
+    "rls_non_interference.sql": "aad212f26dbf192d744e278bffb43317a98c03000ffc9c3ef4b0e9037db4c0be"
+  },
+  "localQualityGate": "pnpm check: PASS; lint, typecheck, tests and production build",
+  "ciGate": "not run for the stage-4 implementation; operational monitoring PR is separate"
+}

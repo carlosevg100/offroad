@@ -4318,6 +4318,26 @@ set representation_kind = 'company', representation_status = 'verified',
 where organization_id = '20000000-0000-4000-8000-000000000001'
   and id = '40000000-0000-4000-8000-000000000001';
 
+do $$ begin
+ begin
+  perform public.authorize_qualified_introduction_plan('81000000-0000-4000-8000-000000000001',repeat('a',64));
+  raise exception 'external publication outran authority propagation';
+ exception when object_not_in_prerequisite_state then
+  if sqlerrm<>'authority_propagation_pending' then raise; end if;
+ end;
+end $$;
+-- Existing synthetic publication waits for the real durable consumer, rather than
+-- bypassing the new barrier through a fixture status update.
+do $$ declare item jsonb; begin
+ for counter in 1..1000 loop
+  item:=public.claim_event_outbox_v1(repeat('w',64));
+  exit when item->>'claimed'='false';
+  perform public.complete_event_outbox_v1(repeat('w',64),(item->>'outboxId')::uuid,item->>'capability');
+ end loop;
+ perform private.require_domain_event_propagation_v1('20000000-0000-4000-8000-000000000001');
+end $$;
+
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -5582,6 +5602,15 @@ do $$ begin
   where organization_id='20000000-0000-4000-8000-000000000001'
     and user_id=auth.uid();
   if found then raise exception 'suspended creator reactivated own membership'; end if;
+end $$;
+reset role;
+do $$ declare name text; begin
+ foreach name in array array['domain_events','event_outbox','access_decision_events'] loop
+  if not exists(select 1 from pg_class where oid=('private.'||name)::regclass and relrowsecurity and relforcerowsecurity)
+   or has_table_privilege('authenticated','private.'||name,'SELECT,INSERT,UPDATE,DELETE') then
+   raise exception 'domain audit table exposed: %',name;
+  end if;
+ end loop;
 end $$;
 rollback;
 

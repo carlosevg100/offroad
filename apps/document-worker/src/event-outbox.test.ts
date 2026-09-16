@@ -1,0 +1,30 @@
+import {describe,expect,it,vi} from "vitest";
+import type {SupabaseClient} from "@supabase/supabase-js";
+import {createEventOutboxConsumer} from "./event-outbox";
+const id="a2240000-0000-4000-9000-000000000001";
+const event={id,organizationId:id,aggregateKind:"membership",aggregateId:id,aggregateVersion:1,eventVersion:1,actorKind:"system",actorId:null,reason:"changed",effect:"revalidate_authority",correlationId:id};
+const claim={claimed:true,outboxId:id,capability:"a".repeat(64),event,blockedCount:0,oldestPendingSeconds:0};
+function setup(results: unknown[]) {
+ const rpc=vi.fn(); for(const result of results) rpc.mockResolvedValueOnce(result);
+ const log=vi.fn(); return {rpc,log,consumer:createEventOutboxConsumer({rpc} as unknown as SupabaseClient,"private-worker-token",log)};
+}
+describe("durable event outbox consumer",()=>{
+ it("retries an ambiguous completion with the identical capability",async()=>{
+  const {consumer,rpc,log}=setup([{data:claim,error:null},{data:null,error:{message:"sensitive failure"}},{data:{completed:true,replayed:true,appliedCount:1},error:null}]);
+  await consumer.poll(); expect(rpc).toHaveBeenCalledTimes(3);expect(rpc.mock.calls[1]).toEqual(rpc.mock.calls[2]);
+  expect(log).toHaveBeenCalledWith("outbox.processed",{eventId:id,completed:true,replayed:true,appliedCount:1});
+  expect(JSON.stringify(log.mock.calls)).not.toMatch(/sensitive failure|private-worker-token|aaaaaaaa/);
+ });
+ it("rejects financial or protected fields before any completion",async()=>{
+  const {consumer,rpc,log}=setup([{data:{...claim,event:{...event,protected_state:{balance:100}}},error:null}]);
+  await consumer.poll();expect(rpc).toHaveBeenCalledTimes(1);expect(log).toHaveBeenCalledWith("outbox.poll.failed",{reason:"invalid_contract"});
+ });
+ it("raises an alarm for blocked work even when no event is claimable",async()=>{
+  const {consumer,rpc,log}=setup([{data:{claimed:false,blockedCount:1,oldestPendingSeconds:400},error:null}]);
+  await consumer.poll();expect(rpc).toHaveBeenCalledTimes(1);expect(log).toHaveBeenCalledWith("outbox.backlog.failed",{blockedCount:1,oldestPendingSeconds:400});
+ });
+ it("bounds retries and leaves recovery to the durable lease",async()=>{
+  const {consumer,rpc,log}=setup([{data:claim,error:null},{data:null,error:{}},{data:null,error:{}}]);
+  await consumer.poll();expect(rpc).toHaveBeenCalledTimes(3);expect(log).toHaveBeenCalledWith("outbox.complete.failed",{eventId:id,reason:"completion_unconfirmed"});
+ });
+});

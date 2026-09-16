@@ -1,3 +1,7 @@
+## Wave 2: stage 4 schema and alarms installed
+
+Production `20260916102242` and staging `20260916102218` install the reconciled transactional event/outbox contract. The initial staging application `20260916101915` is archived unchanged; production rejected and rolled back that first candidate because pack distribution is a known staging-only surface. The successor retains that boundary. Three installed SQL contracts passed, security advisors report zero lints in both environments, and 1450/1511 catalogue objects are reconciled. Four CloudWatch alarms and filters are installed/read back through the existing authorized console session, with no IAM change. Final CI, main merge and real consumer deployment remain gates; see `docs/build/arcabouco/etapa-04-installation.json`.
+
 ## Wave 2: governed security inventory renewal
 
 ## Wave 2: stage 2 registration cutover installed
@@ -4870,3 +4874,8 @@ Limits recorded on purpose. No real fund has registered or confirmed a mandate: 
 ## Onda 2: preflight operacional da outbox
 
 Workflow manual `event-outbox-monitoring.yml` usa a identidade OIDC de deploy existente, sem ampliar IAM. Testa filtros e confere quatro alarmes; instalação é modo explícito. A execução ao vivo ainda deve provar as permissões. Etapa 2 concluída em `d47658eb`; etapa 4 permanece aberta, sem migração permanente nesta PR. Revisão material: `docs/security/INVENTORY_WAVE_2_OUTBOX_MONITORING_REVIEW.md`.
+
+
+## Onda 2: candidato da etapa 4
+
+Contrato de eventos/outbox e consumidor limitado no worker atual, com trilha atômica e barreira para publicação externa. Candidato SQL validado em staging com rollback; nenhuma aplicação permanente nesta preparação. A etapa segue aberta até CI, journals, deploys e alarmes reais. Escopo e riscos em `docs/build/arcabouco/etapa-04.md`; revisão material em `docs/security/INVENTORY_WAVE_2_OUTBOX_REVIEW.md`. A etapa 2 está concluída em produção no commit `d47658eb`.

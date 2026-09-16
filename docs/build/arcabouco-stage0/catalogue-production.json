@@ -242,6 +242,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.append_domain_event_v1(p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid)",
+      "kind": "function",
+      "name": "append_domain_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.append_intake_domain_event(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_event_type text, p_payload jsonb, p_occurred_at timestamp with time zone, p_actor_id uuid)",
       "kind": "function",
       "name": "append_intake_domain_event",
@@ -1156,6 +1174,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_authority_domain_event_v1()",
+      "kind": "function",
+      "name": "capture_authority_domain_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capture_case_retrieval_chunk_delete_batch()",
       "kind": "function",
       "name": "capture_case_retrieval_chunk_delete_batch",
@@ -1256,6 +1292,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.claim_event_outbox_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "claim_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.claim_storage_rotation_v1(p_worker_token text)",
       "kind": "function",
       "name": "claim_storage_rotation_v1",
@@ -1276,6 +1335,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "complete_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
       "security_definer": true
     },
     {
@@ -1617,6 +1699,24 @@
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_object_fingerprint text, p_decision text, p_correction text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.deny_domain_audit_mutation_v1()",
+      "kind": "function",
+      "name": "deny_domain_audit_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.document_work_request_binding_v1(p_job_id uuid)",
@@ -5215,6 +5315,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.require_domain_event_propagation_v1(p_organization_id uuid)",
+      "kind": "function",
+      "name": "require_domain_event_propagation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "require_receivables_scope_aware_reader",
@@ -5407,6 +5525,24 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
+      "kind": "function",
+      "name": "retry_blocked_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_outbox_id uuid",
       "security_definer": true
     },
     {
@@ -10578,6 +10714,34 @@
       "security_definer": false
     },
     {
+      "id": "function:public.claim_event_outbox_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "claim_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ],
+        [
+          "service_role",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.claim_storage_rotation_v1(p_worker_token text)",
       "kind": "function",
       "name": "claim_storage_rotation_v1",
@@ -10598,6 +10762,34 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "complete_event_outbox_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ],
+        [
+          "service_role",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
       "security_definer": false
     },
     {
@@ -17165,6 +17357,62 @@
       "security_definer": false
     },
     {
+      "id": "policy:private.access_decision_events.deny_client_delete",
+      "kind": "policy",
+      "name": "deny_client_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_decision_events",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_insert",
+      "kind": "policy",
+      "name": "deny_client_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_decision_events",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_select",
+      "kind": "policy",
+      "name": "deny_client_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_decision_events",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_update",
+      "kind": "policy",
+      "name": "deny_client_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "access_decision_events",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.access_resources.access_resources_deny_clients",
       "kind": "policy",
       "name": "access_resources_deny_clients",
@@ -17220,6 +17468,118 @@
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_delete",
+      "kind": "policy",
+      "name": "deny_client_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "domain_events",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_insert",
+      "kind": "policy",
+      "name": "deny_client_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "domain_events",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_select",
+      "kind": "policy",
+      "name": "deny_client_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "domain_events",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_update",
+      "kind": "policy",
+      "name": "deny_client_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "domain_events",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_delete",
+      "kind": "policy",
+      "name": "deny_client_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "event_outbox",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_insert",
+      "kind": "policy",
+      "name": "deny_client_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "event_outbox",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_select",
+      "kind": "policy",
+      "name": "deny_client_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "event_outbox",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_update",
+      "kind": "policy",
+      "name": "deny_client_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "event_outbox",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
       "with_check": "false"
     },
     {
@@ -21025,6 +21385,56 @@
       "with_check": "( SELECT private.worker_can_rotate_storage_v1(objects.bucket_id, objects.name) AS worker_can_rotate_storage_v1)"
     },
     {
+      "id": "r:private.access_decision_events",
+      "rls": true,
+      "kind": "table",
+      "name": "access_decision_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.access_resources",
       "rls": true,
       "kind": "table",
@@ -21329,6 +21739,106 @@
       "rls": true,
       "kind": "table",
       "name": "commercial_accounts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.domain_events",
+      "rls": true,
+      "kind": "table",
+      "name": "domain_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.event_outbox",
+      "rls": true,
+      "kind": "table",
+      "name": "event_outbox",
       "grants": [
         [
           "postgres",
@@ -34790,6 +35300,16 @@
       "force_rls": true
     },
     {
+      "id": "trigger:private.access_decision_events.access_decision_events_immutable",
+      "kind": "trigger",
+      "name": "access_decision_events_immutable",
+      "table": "access_decision_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER access_decision_events_immutable BEFORE DELETE OR UPDATE ON private.access_decision_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
       "id": "trigger:private.access_resources.access_resources_audit",
       "kind": "trigger",
       "name": "access_resources_audit",
@@ -34830,6 +35350,16 @@
       "definition": "CREATE TRIGGER account_organizations_updated_at BEFORE UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.account_organizations.commercial_account_link_domain_event",
+      "kind": "trigger",
+      "name": "commercial_account_link_domain_event",
+      "table": "account_organizations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_authority_domain_event_v1()",
+      "definition": "CREATE TRIGGER commercial_account_link_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('commercial_account_link')"
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "name": "authorization_revisions_audit",
@@ -34868,6 +35398,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER commercial_accounts_updated_at BEFORE UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.domain_events.domain_events_immutable",
+      "kind": "trigger",
+      "name": "domain_events_immutable",
+      "table": "domain_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.deny_domain_audit_mutation_v1()",
+      "definition": "CREATE TRIGGER domain_events_immutable BEFORE DELETE OR UPDATE ON private.domain_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.event_outbox.event_outbox_updated_at",
+      "kind": "trigger",
+      "name": "event_outbox_updated_at",
+      "table": "event_outbox",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER event_outbox_updated_at BEFORE UPDATE ON private.event_outbox FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
@@ -35120,6 +35670,16 @@
       "definition": "CREATE TRIGGER resource_access_grants_updated_at BEFORE UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.resource_access_grants.resource_grant_domain_event",
+      "kind": "trigger",
+      "name": "resource_grant_domain_event",
+      "table": "resource_access_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_authority_domain_event_v1()",
+      "definition": "CREATE TRIGGER resource_grant_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('resource_grant')"
+    },
+    {
       "id": "trigger:private.review_execution_authorizations.review_execution_authorizations_audit",
       "kind": "trigger",
       "name": "review_execution_authorizations_audit",
@@ -35158,6 +35718,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER storage_path_rotations_updated_at BEFORE UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
+      "kind": "trigger",
+      "name": "workspace_capability_domain_event",
+      "table": "workspace_capability_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_authority_domain_event_v1()",
+      "definition": "CREATE TRIGGER workspace_capability_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('workspace_capability')"
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
@@ -36450,6 +37020,16 @@
       "definition": "CREATE TRIGGER organization_legal_acceptances_immutable BEFORE DELETE OR UPDATE ON public.organization_legal_acceptances FOR EACH ROW EXECUTE FUNCTION private.reject_legal_acceptance_mutation()"
     },
     {
+      "id": "trigger:public.organization_memberships.membership_domain_event",
+      "kind": "trigger",
+      "name": "membership_domain_event",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_authority_domain_event_v1()",
+      "definition": "CREATE TRIGGER membership_domain_event AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('membership')"
+    },
+    {
       "id": "trigger:public.organization_memberships.memberships_set_updated_at",
       "kind": "trigger",
       "name": "memberships_set_updated_at",
@@ -37635,5 +38215,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-16T04:19:43.226926+00:00"
+  "captured_at": "2026-09-16T10:23:05.18615+00:00"
 }

@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-09-16 04:19:51.81898+00",
+  "captured_at": "2026-09-16T10:23:16.169878+00:00",
   "rows": [
     {
       "name": "platform_foundation",
@@ -1316,6 +1316,14 @@
     {
       "name": "retire_implicit_workspace_capabilities",
       "version": "20260916041505"
+    },
+    {
+      "name": "domain_event_audit_outbox",
+      "version": "20260916101915"
+    },
+    {
+      "name": "reconcile_domain_event_audit_outbox",
+      "version": "20260916102218"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk"

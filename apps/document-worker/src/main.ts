@@ -1,3 +1,4 @@
+import {createEventOutboxConsumer} from "./event-outbox";
 import {processProviderResearchJob} from "./provider-research";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
@@ -93,6 +94,8 @@ async function main(): Promise<void> {
     workerToken: config.OFFROAD_WORKER_TOKEN,
     leaseSeconds: config.LEASE_SECONDS,
   });
+
+  const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
 
   // External tools: report their versions once, so a run records exactly what read the file.
   const [sofficeVersion, tesseractVersion, pdfinfoVersion, pdftoppmVersion] = await Promise.all([
@@ -276,6 +279,19 @@ async function main(): Promise<void> {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
 
+  // A long document job cannot delay revocation propagation or its health signal.
+  const outboxLoop = (async () => {
+    while (!stopping) {
+      try {
+        for (let batch = 0; batch < 10 && !stopping; batch++) {
+          if (!await eventOutbox.poll()) break;
+        }
+      } catch { log("outbox.poll.failed", {reason: "transport_failed"}); }
+      await sleep(2000, shuttingDown.signal);
+    }
+  })();
+
+  try {
   while (!stopping) {
     let job: ClaimedJob | null = null;
     try {
@@ -416,7 +432,11 @@ async function main(): Promise<void> {
     await current;
     current = null;
   }
-
+  } finally {
+    stopping = true;
+    shuttingDown.abort();
+    await outboxLoop;
+  }
   log("worker.stopped");
 }
 

@@ -766,6 +766,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.append_domain_event_v1(p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.append_domain_event_v1(p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid)",
+          "kind": "function",
+          "name": "append_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.append_domain_event_v1(p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid)",
+          "kind": "function",
+          "name": "append_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_organization_id uuid, p_kind text, p_aggregate_id uuid, p_reason text, p_state jsonb, p_human_intervention_id uuid, p_retrieval_event_id bigint, p_correlation_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 99,
+          "anchor": "create or replace function private.append_domain_event_v1(p_id uuid,p_organization_id uuid,p_kind text,p_aggregate_id uuid,p_reason text,p_state jsonb,p_human_intervention_id uuid default null,p_retrieval_event_id bigint default null,p_correlation_id uuid default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "function:private.append_intake_domain_event(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_event_type text, p_payload jsonb, p_occurred_at timestamp with time zone, p_actor_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3646,6 +3701,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.capture_authority_domain_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_authority_domain_event_v1()",
+          "kind": "function",
+          "name": "capture_authority_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_authority_domain_event_v1()",
+          "kind": "function",
+          "name": "capture_authority_domain_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 122,
+          "anchor": "create or replace function private.capture_authority_domain_event_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "function:private.capture_case_retrieval_chunk_delete_batch()",
       "kind": "function",
       "catalogues": {
@@ -3961,6 +4071,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.claim_event_outbox_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.claim_event_outbox_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "claim_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.claim_event_outbox_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "claim_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 153,
+          "anchor": "create or replace function private.claim_event_outbox_v1(p_worker_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "function:private.claim_storage_rotation_v1(p_worker_token text)",
       "kind": "function",
       "catalogues": {
@@ -4025,6 +4200,71 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "complete_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "complete_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 186,
+          "anchor": "create or replace function private.complete_event_outbox_v1(p_worker_token text,p_outbox_id uuid,p_capability text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "function:private.complete_intake_processing(p_organization_id uuid, p_session_id uuid, p_candidates jsonb, p_issues jsonb, p_summary jsonb)",
@@ -5111,6 +5351,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.deny_domain_audit_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.deny_domain_audit_mutation_v1()",
+          "kind": "function",
+          "name": "deny_domain_audit_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.deny_domain_audit_mutation_v1()",
+          "kind": "function",
+          "name": "deny_domain_audit_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 92,
+          "anchor": "create or replace function private.deny_domain_audit_mutation_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "function:private.document_work_request_binding_v1(p_job_id uuid)",
@@ -16956,6 +17251,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.require_domain_event_propagation_v1(p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_domain_event_propagation_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "require_domain_event_propagation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_domain_event_propagation_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "require_domain_event_propagation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 232,
+          "anchor": "create or replace function private.require_domain_event_propagation_v1(p_organization_id uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "catalogues": {
@@ -17642,6 +17992,61 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
+          "kind": "function",
+          "name": "retry_blocked_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_outbox_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
+          "kind": "function",
+          "name": "retry_blocked_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_outbox_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 269,
+          "anchor": "create or replace function private.retry_blocked_event_outbox_v1(p_organization_id uuid,p_outbox_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "function:private.review_case_red_flag(p_organization_id uuid, p_intake_session_id uuid, p_flag_id text, p_flag_fingerprint text, p_decision text, p_rationale text, p_evidence_ids jsonb)",
@@ -33769,6 +34174,81 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.claim_event_outbox_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.claim_event_outbox_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "claim_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ],
+            [
+              "service_role",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.claim_event_outbox_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "claim_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ],
+            [
+              "service_role",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 182,
+          "anchor": "create or replace function public.claim_event_outbox_v1(p_worker_token text) returns jsonb language sql security invoker set search_path='' as $$ select private.claim_event_outbox_v1(p_worker_token) $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "function:public.claim_storage_rotation_v1(p_worker_token text)",
       "kind": "function",
       "catalogues": {
@@ -33833,6 +34313,81 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:public.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "complete_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ],
+            [
+              "service_role",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "complete_event_outbox_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ],
+            [
+              "service_role",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_outbox_id uuid, p_capability text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 227,
+          "anchor": "create or replace function public.complete_event_outbox_v1(p_worker_token text,p_outbox_id uuid,p_capability text) returns jsonb language sql security invoker set search_path='' as $$ select private.complete_event_outbox_v1(p_worker_token,p_outbox_id,p_capability) $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "function:public.complete_intake_processing(p_organization_id uuid, p_session_id uuid, p_candidates jsonb, p_issues jsonb, p_summary jsonb)",
@@ -53525,6 +54080,194 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.access_decision_events.deny_client_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_decision_events.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_decision_events.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 89,
+          "anchor": "execute format('create policy deny_client_delete on private.%I for delete to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_decision_events.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_decision_events.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 85,
+          "anchor": "execute format('create policy deny_client_insert on private.%I for insert to authenticated with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_decision_events.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.access_decision_events.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 83,
+          "anchor": "execute format('create policy deny_client_select on private.%I for select to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.access_decision_events.deny_client_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.access_decision_events.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.access_decision_events.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "access_decision_events",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 87,
+          "anchor": "execute format('create policy deny_client_update on private.%I for update to authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "policy:private.access_resources.access_resources_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -53719,6 +54462,382 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.domain_events.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.domain_events.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 89,
+          "anchor": "execute format('create policy deny_client_delete on private.%I for delete to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.domain_events.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.domain_events.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 85,
+          "anchor": "execute format('create policy deny_client_insert on private.%I for insert to authenticated with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.domain_events.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.domain_events.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 83,
+          "anchor": "execute format('create policy deny_client_select on private.%I for select to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.domain_events.deny_client_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.domain_events.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.domain_events.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "domain_events",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 87,
+          "anchor": "execute format('create policy deny_client_update on private.%I for update to authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.event_outbox.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.event_outbox.deny_client_delete",
+          "kind": "policy",
+          "name": "deny_client_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 89,
+          "anchor": "execute format('create policy deny_client_delete on private.%I for delete to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.event_outbox.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.event_outbox.deny_client_insert",
+          "kind": "policy",
+          "name": "deny_client_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 85,
+          "anchor": "execute format('create policy deny_client_insert on private.%I for insert to authenticated with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.event_outbox.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.event_outbox.deny_client_select",
+          "kind": "policy",
+          "name": "deny_client_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 83,
+          "anchor": "execute format('create policy deny_client_select on private.%I for select to authenticated using(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "policy:private.event_outbox.deny_client_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.event_outbox.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.event_outbox.deny_client_update",
+          "kind": "policy",
+          "name": "deny_client_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "event_outbox",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 87,
+          "anchor": "execute format('create policy deny_client_update on private.%I for update to authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "policy:private.human_intervention_ledger.human_intervention_ledger_deny_clients",
@@ -67407,6 +68526,125 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "r:private.access_decision_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.access_decision_events",
+          "rls": true,
+          "kind": "table",
+          "name": "access_decision_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.access_decision_events",
+          "rls": true,
+          "kind": "table",
+          "name": "access_decision_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 60,
+          "anchor": "create table if not exists private.access_decision_events (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "r:private.access_resources",
       "kind": "table",
       "catalogues": {
@@ -68248,6 +69486,244 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "r:private.domain_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.domain_events",
+          "rls": true,
+          "kind": "table",
+          "name": "domain_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.domain_events",
+          "rls": true,
+          "kind": "table",
+          "name": "domain_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 10,
+          "anchor": "create table if not exists private.domain_events (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "r:private.event_outbox",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.event_outbox",
+          "rls": true,
+          "kind": "table",
+          "name": "event_outbox",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.event_outbox",
+          "rls": true,
+          "kind": "table",
+          "name": "event_outbox",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 38,
+          "anchor": "create table if not exists private.event_outbox (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "r:private.gold_case_bindings",
@@ -98937,6 +100413,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.access_decision_events.access_decision_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.access_decision_events.access_decision_events_immutable",
+          "kind": "trigger",
+          "name": "access_decision_events_immutable",
+          "table": "access_decision_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.deny_domain_audit_mutation_v1()",
+          "definition": "CREATE TRIGGER access_decision_events_immutable BEFORE DELETE OR UPDATE ON private.access_decision_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.access_decision_events.access_decision_events_immutable",
+          "kind": "trigger",
+          "name": "access_decision_events_immutable",
+          "table": "access_decision_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.deny_domain_audit_mutation_v1()",
+          "definition": "CREATE TRIGGER access_decision_events_immutable BEFORE DELETE OR UPDATE ON private.access_decision_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 96,
+          "anchor": "create or replace trigger access_decision_events_immutable before update or delete on private.access_decision_events for each row execute function private.deny_domain_audit_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "trigger:private.access_resources.access_resources_audit",
       "kind": "trigger",
       "catalogues": {
@@ -99097,6 +100612,45 @@
       "last_review_stage": "2"
     },
     {
+      "id": "trigger:private.account_organizations.commercial_account_link_domain_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.account_organizations.commercial_account_link_domain_event",
+          "kind": "trigger",
+          "name": "commercial_account_link_domain_event",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER commercial_account_link_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('commercial_account_link')"
+        },
+        "staging": {
+          "id": "trigger:private.account_organizations.commercial_account_link_domain_event",
+          "kind": "trigger",
+          "name": "commercial_account_link_domain_event",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER commercial_account_link_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('commercial_account_link')"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 151,
+          "anchor": "create or replace trigger commercial_account_link_domain_event after insert or update or delete on private.account_organizations for each row execute function private.capture_authority_domain_event_v1('commercial_account_link');",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "catalogues": {
@@ -99255,6 +100809,84 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "trigger:private.domain_events.domain_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.domain_events.domain_events_immutable",
+          "kind": "trigger",
+          "name": "domain_events_immutable",
+          "table": "domain_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.deny_domain_audit_mutation_v1()",
+          "definition": "CREATE TRIGGER domain_events_immutable BEFORE DELETE OR UPDATE ON private.domain_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.domain_events.domain_events_immutable",
+          "kind": "trigger",
+          "name": "domain_events_immutable",
+          "table": "domain_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.deny_domain_audit_mutation_v1()",
+          "definition": "CREATE TRIGGER domain_events_immutable BEFORE DELETE OR UPDATE ON private.domain_events FOR EACH ROW EXECUTE FUNCTION private.deny_domain_audit_mutation_v1()"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 95,
+          "anchor": "create or replace trigger domain_events_immutable before update or delete on private.domain_events for each row execute function private.deny_domain_audit_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
+      "id": "trigger:private.event_outbox.event_outbox_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.event_outbox.event_outbox_updated_at",
+          "kind": "trigger",
+          "name": "event_outbox_updated_at",
+          "table": "event_outbox",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER event_outbox_updated_at BEFORE UPDATE ON private.event_outbox FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.event_outbox.event_outbox_updated_at",
+          "kind": "trigger",
+          "name": "event_outbox_updated_at",
+          "table": "event_outbox",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER event_outbox_updated_at BEFORE UPDATE ON private.event_outbox FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 240,
+          "anchor": "create or replace trigger event_outbox_updated_at before update on private.event_outbox for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
@@ -100234,6 +101866,45 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "trigger:private.resource_access_grants.resource_grant_domain_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.resource_access_grants.resource_grant_domain_event",
+          "kind": "trigger",
+          "name": "resource_grant_domain_event",
+          "table": "resource_access_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER resource_grant_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('resource_grant')"
+        },
+        "staging": {
+          "id": "trigger:private.resource_access_grants.resource_grant_domain_event",
+          "kind": "trigger",
+          "name": "resource_grant_domain_event",
+          "table": "resource_access_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER resource_grant_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('resource_grant')"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 149,
+          "anchor": "create or replace trigger resource_grant_domain_event after insert or update or delete on private.resource_access_grants for each row execute function private.capture_authority_domain_event_v1('resource_grant');",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
+    },
+    {
       "id": "trigger:private.review_execution_authorizations.review_execution_authorizations_audit",
       "kind": "trigger",
       "catalogues": {
@@ -100392,6 +102063,45 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
+          "kind": "trigger",
+          "name": "workspace_capability_domain_event",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER workspace_capability_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('workspace_capability')"
+        },
+        "staging": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
+          "kind": "trigger",
+          "name": "workspace_capability_domain_event",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER workspace_capability_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('workspace_capability')"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 150,
+          "anchor": "create or replace trigger workspace_capability_domain_event after insert or update or delete on private.workspace_capability_grants for each row execute function private.capture_authority_domain_event_v1('workspace_capability');",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
@@ -105575,6 +107285,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.organization_memberships.membership_domain_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organization_memberships.membership_domain_event",
+          "kind": "trigger",
+          "name": "membership_domain_event",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER membership_domain_event AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('membership')"
+        },
+        "staging": {
+          "id": "trigger:public.organization_memberships.membership_domain_event",
+          "kind": "trigger",
+          "name": "membership_domain_event",
+          "table": "organization_memberships",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_authority_domain_event_v1()",
+          "definition": "CREATE TRIGGER membership_domain_event AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('membership')"
+        }
+      },
+      "owner": "Codex — etapa 4",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+          "line": 148,
+          "anchor": "create or replace trigger membership_domain_event after insert or update or delete on public.organization_memberships for each row execute function private.capture_authority_domain_event_v1('membership');",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
       "id": "trigger:public.organization_memberships.memberships_set_updated_at",
@@ -116041,6 +117790,13 @@
       "decision": "preservar",
       "stage": "2",
       "reason": "Correção de acesso aplicada; texto imutável sob carimbo de produção."
+    },
+    {
+      "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "stage": "4",
+      "reason": "Instala ou concilia o contrato de eventos, sem promover distribuição exclusiva de staging."
     }
   ],
   "staging_archive": [
@@ -116088,6 +117844,14 @@
       "path": "docs/build/schema-history/staging-only-distribution/20260911020229_resolve_pack_distribution_candidates.sql",
       "sha256": "02fa1f4d9e6eb5b57d94d132e54c0ed6ba3de07e85aa49bdcd6a00339664ca88",
       "name": "resolve_pack_distribution_candidates"
+    },
+    {
+      "name": "domain_event_audit_outbox",
+      "path": "docs/build/schema-history/staging-only-outbox/20260916101915_domain_event_audit_outbox.sql",
+      "sha256": "46cfaedaf98402f7dc33eebcce962d35d3b09867440d4264172769a107c4a374",
+      "decision": "absorver",
+      "stage": "4",
+      "reason": "SQL exato aplicado somente em staging; substituído para replay pela migração de conciliação."
     }
   ],
   "confirmation_history_main_commit": "d88683df88829cc50fe92f3b7694477630308499",
@@ -116434,5 +118198,13 @@
       "function:private.seed_workspace_foundation_v1()",
       "function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)"
     ]
+  },
+  "stage_4_revision": {
+    "captured_at": "2026-09-16T10:23:05.18615+00:00",
+    "migration": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
+    "staging_version": "20260916102218",
+    "production_version": "20260916102242",
+    "staging_initial_version": "20260916101915",
+    "reason": "Preserva aplicação inicial em staging e concilia superfície de distribuição exclusiva sem promovê-la."
   }
 }

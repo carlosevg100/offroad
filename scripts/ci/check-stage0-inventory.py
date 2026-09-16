@@ -82,7 +82,7 @@ def check(manifest, catalogue, root=ROOT, environment='replay'):
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != source['sha256']:
             errors.append('archive_integrity_drift:' + source['path'])
         name = source['name']
-        if any(p.name.endswith('_' + name + '.sql') for p in (root / 'supabase/migrations').glob('*.sql')):
+        if any(p.name.split('_', 1)[1] == name + '.sql' for p in (root / 'supabase/migrations').glob('*.sql')):
             errors.append('staging_only_history_in_replay:' + name)
     return errors
 
