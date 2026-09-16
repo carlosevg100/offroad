@@ -202,6 +202,12 @@
       "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 636,
+          "anchor": "CREATE OR REPLACE FUNCTION private.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260828005248_move_preparation_authority_to_legal_gate_reconcile.sql",
           "line": 56,
           "anchor": "create or replace function private.accept_private_workspace_terms(",
@@ -214,7 +220,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.accept_release_cohort(p_cohort_id uuid, p_approved_by uuid, p_acceptance_note text)",
@@ -328,6 +335,12 @@
       "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 240,
+          "anchor": "select pg_get_functiondef('private.accept_workspace_invite_v1(uuid)'::regprocedure) into body;",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 737,
           "anchor": "create function private.accept_workspace_invite_v1(p_invite_id uuid)",
@@ -335,7 +348,7 @@
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.adopt_confirmed_preliminary_company()",
@@ -4296,6 +4309,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1452,
+          "anchor": "CREATE OR REPLACE FUNCTION private.confirm_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_channel text, p_valid_from date, p_valid_until date, p_document_reference text, p_contact_record_id uuid, p_contact_date date, p_note text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 507,
           "anchor": "create or replace function private.confirm_provider_mandate_v1(",
@@ -4308,7 +4327,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.confirm_receivables_evidence_scope_v1(p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid)",
@@ -4575,6 +4595,12 @@
       "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 246,
+          "anchor": "CREATE OR REPLACE FUNCTION private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text DEFAULT NULL::text, p_country_code text DEFAULT 'BR'::text, p_website text DEFAULT NULL::text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
           "line": 95,
           "anchor": "create function private.create_organization_with_owner_v1(",
@@ -4582,7 +4608,7 @@
         }
       ],
       "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
-      "last_review_stage": "1A"
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.create_release_cohort(p_cohort_kind text, p_pipeline_version text, p_model_policy_version text)",
@@ -4696,6 +4722,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 346,
+          "anchor": "CREATE OR REPLACE FUNCTION private.create_workspace_project_group(p_name text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
           "line": 224,
           "anchor": "create or replace function public.create_workspace_project_group(p_name text)",
@@ -4708,7 +4740,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.decide_advisor_preliminary_v1(p_project_id uuid, p_object_fingerprint text, p_decision text, p_correction text)",
@@ -6602,6 +6635,12 @@
       "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 850,
+          "anchor": "CREATE OR REPLACE FUNCTION private.get_onboarding_bootstrap(p_locale text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260828005129_onboarding_bootstrap_snapshot.sql",
           "line": 117,
           "anchor": "create or replace function public.get_onboarding_bootstrap(p_locale text)",
@@ -6614,7 +6653,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.get_workspace_bootstrap()",
@@ -6673,6 +6713,12 @@
       "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 970,
+          "anchor": "CREATE OR REPLACE FUNCTION private.get_workspace_bootstrap()",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260830155729_instant_workspace_entry.sql",
           "line": 246,
           "anchor": "create or replace function public.get_workspace_bootstrap()",
@@ -6685,7 +6731,74 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "function:private.get_workspace_context_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.get_workspace_context_v1()",
+          "kind": "function",
+          "name": "get_workspace_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.get_workspace_context_v1()",
+          "kind": "function",
+          "name": "get_workspace_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 126,
+          "anchor": "create function private.get_workspace_context_v1() returns jsonb language plpgsql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.get_workspace_project_setup(p_locale text)",
@@ -6744,6 +6857,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1044,
+          "anchor": "CREATE OR REPLACE FUNCTION private.get_workspace_project_setup(p_locale text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260830165102_canonical_workspace_project_setup.sql",
           "line": 86,
           "anchor": "create or replace function public.get_workspace_project_setup(p_locale text)",
@@ -6756,7 +6875,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.governed_sector_context_inputs(p_organization_id uuid, p_session_id uuid)",
@@ -7750,6 +7870,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
+          "kind": "function",
+          "name": "initialize_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_full_name text, p_locale text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
+          "kind": "function",
+          "name": "initialize_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_full_name text, p_locale text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 194,
+          "anchor": "create function private.initialize_workspace_v1(p_full_name text,p_locale text default 'pt-BR')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.institutional_config_hash(v jsonb)",
@@ -9686,6 +9872,72 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+          "kind": "function",
+          "name": "link_commercial_account_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_account_id uuid, p_expected_account_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+          "kind": "function",
+          "name": "link_commercial_account_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_account_id uuid, p_expected_account_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 177,
+          "anchor": "create function private.link_commercial_account_v1(p_account_id uuid,p_expected_account_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -9808,6 +10060,12 @@
       "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1709,
+          "anchor": "create or replace function private.list_my_workspaces_v1()",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 614,
           "anchor": "create function private.list_my_workspaces_v1()",
@@ -9815,7 +10073,7 @@
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.lock_execution_approval_context()",
@@ -10101,6 +10359,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1619,
+          "anchor": "CREATE OR REPLACE FUNCTION private.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text DEFAULT NULL::text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 446,
           "anchor": "'manage_workspace_project','manage_workspace_project_group','queue_advisor_initial_turn_v1','record_capital_project_plan',",
@@ -10120,7 +10384,7 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.manage_workspace_project_group(p_group_id uuid, p_action text, p_name text)",
@@ -10493,6 +10757,62 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "organization_has_workspace_capability",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "organization_has_workspace_capability",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 113,
+          "anchor": "create function private.organization_has_workspace_capability(p_organization_id uuid,p_capability text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.organization_has_workspace_capability(p_organization_type text, p_capability text)",
@@ -15755,6 +16075,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1369,
+          "anchor": "CREATE OR REPLACE FUNCTION private.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 398,
           "anchor": "create or replace function private.register_provider_mandate_v1(",
@@ -15767,7 +16093,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.reject_control_ledger_mutation()",
@@ -15981,6 +16308,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.remember_workspace_v1(p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.remember_workspace_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "remember_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.remember_workspace_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "remember_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 144,
+          "anchor": "create function private.remember_workspace_v1(p_organization_id uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.remove_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid)",
@@ -16763,6 +17156,62 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "require_workspace_capability",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
+          "kind": "function",
+          "name": "require_workspace_capability",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 117,
+          "anchor": "create function private.require_workspace_capability(p_organization_id uuid,p_capability text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.require_workspace_capability(p_organization_type text, p_capability text)",
@@ -18539,6 +18988,62 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.seed_workspace_foundation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.seed_workspace_foundation_v1()",
+          "kind": "function",
+          "name": "seed_workspace_foundation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.seed_workspace_foundation_v1()",
+          "kind": "function",
+          "name": "seed_workspace_foundation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 83,
+          "anchor": "create function private.seed_workspace_foundation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "catalogues": {
@@ -19156,6 +19661,72 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+          "kind": "function",
+          "name": "set_workspace_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+          "kind": "function",
+          "name": "set_workspace_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 156,
+          "anchor": "create function private.set_workspace_capability_v1(p_capability text,p_enabled boolean,p_expected_revision bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "function:private.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)",
       "kind": "function",
       "catalogues": {
@@ -19482,6 +20053,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1217,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260902105618_advisor_project_name_collision.sql",
           "line": 4,
           "anchor": "create or replace function public.start_advisor_project_v1(",
@@ -19494,7 +20071,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)",
@@ -19553,6 +20131,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 757,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean DEFAULT false)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 2020,
           "anchor": "create or replace function private.start_financier_analytical_workspace_v1(",
@@ -19565,7 +20149,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_onboarding_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
@@ -19766,6 +20351,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 423,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260827005724_private_project_authorization_gate.sql",
           "line": 457,
           "anchor": "create function public.start_onboarding_intake(",
@@ -19778,7 +20369,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_onboarding_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
@@ -20050,6 +20642,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1514,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260901035305_capital_project_access_basis.sql",
           "line": 143,
           "anchor": "create or replace function public.start_public_capital_project(",
@@ -20062,7 +20660,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_public_capital_project_v2(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text, p_plan jsonb)",
@@ -20192,6 +20791,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
+          "line": 3,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260901044903_company_debt_view_vertical.sql",
           "line": 12,
           "anchor": "create or replace function private.start_public_company_debt_view_v1(",
@@ -20204,7 +20809,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_public_onboarding_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
@@ -20405,6 +21011,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
+          "line": 157,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260901035319_origination_thesis_vertical.sql",
           "line": 59,
           "anchor": "create or replace function private.start_public_origination_thesis_v1(",
@@ -20417,7 +21029,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_workspace_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
@@ -20618,6 +21231,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 555,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260827224000_start_workspace_intake_atomic.sql",
           "line": 4,
           "anchor": "create function private.start_workspace_intake(",
@@ -20630,7 +21249,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
@@ -20689,6 +21309,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 387,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260830155729_instant_workspace_entry.sql",
           "line": 120,
           "anchor": "create or replace function public.start_workspace_project(",
@@ -20701,7 +21327,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.storage_operation_is_revocable_v1()",
@@ -21879,6 +22506,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1127,
+          "anchor": "CREATE OR REPLACE FUNCTION private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 449,
           "anchor": "'update_workspace_project','save_guided_company_profile','save_project_company_profile',",
@@ -21898,7 +22531,7 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.validate_bound_receivables_information_response_v1()",
@@ -22439,6 +23072,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1580,
+          "anchor": "CREATE OR REPLACE FUNCTION private.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 598,
           "anchor": "create or replace function private.withdraw_provider_mandate_v1(",
@@ -22451,7 +23090,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:private.worker_activate_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
@@ -31771,6 +32411,72 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.workspace_context_matches_v1(p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.workspace_context_matches_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "workspace_context_matches_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.workspace_context_matches_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "workspace_context_matches_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 216,
+          "anchor": "create function private.workspace_context_matches_v1(p_organization_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "function:private.workspace_membership_v1()",
       "kind": "function",
       "catalogues": {
@@ -32061,6 +32767,12 @@
       "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 635,
+          "anchor": "-- Replace the installed private.accept_private_workspace_terms contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260828005248_move_preparation_authority_to_legal_gate_reconcile.sql",
           "line": 56,
           "anchor": "create or replace function private.accept_private_workspace_terms(",
@@ -32073,7 +32785,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.accept_workspace_invite_v1(p_invite_id uuid)",
@@ -32132,6 +32845,12 @@
       "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 240,
+          "anchor": "select pg_get_functiondef('private.accept_workspace_invite_v1(uuid)'::regprocedure) into body;",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 772,
           "anchor": "create function public.accept_workspace_invite_v1(p_invite_id uuid) returns uuid language sql security invoker set search_path='' as $$ select private.accept_workspace_invite_v1(p_invite_id); $$;",
@@ -32139,7 +32858,7 @@
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -33486,6 +34205,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1451,
+          "anchor": "-- Replace the installed private.confirm_provider_mandate_v1 contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 507,
           "anchor": "create or replace function private.confirm_provider_mandate_v1(",
@@ -33498,7 +34223,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.confirm_receivables_evidence_scope_v1(p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid)",
@@ -33807,6 +34533,12 @@
       "reason": "Fronteira de autoridade ativa, revogável e auditada; preservar em evoluções posteriores.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 206,
+          "anchor": "org_id:=private.create_organization_with_owner_v1('personal',btrim(p_full_name),null,null,null);",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
           "line": 124,
           "anchor": "create function public.create_organization_with_owner_v1(",
@@ -33814,7 +34546,7 @@
         }
       ],
       "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
-      "last_review_stage": "1A"
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.create_workspace_project_group(p_name text)",
@@ -33883,6 +34615,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 345,
+          "anchor": "-- Replace the installed private.create_workspace_project_group contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
           "line": 224,
           "anchor": "create or replace function public.create_workspace_project_group(p_name text)",
@@ -33895,7 +34633,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.decide_advisor_preliminary_v1(p_project_id uuid, p_object_fingerprint text, p_decision text, p_correction text)",
@@ -34600,6 +35339,12 @@
       "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 849,
+          "anchor": "-- Replace the installed private.get_onboarding_bootstrap contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260828005129_onboarding_bootstrap_snapshot.sql",
           "line": 117,
           "anchor": "create or replace function public.get_onboarding_bootstrap(p_locale text)",
@@ -34612,7 +35357,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.get_workspace_bootstrap()",
@@ -34681,6 +35427,12 @@
       "reason": "autoridade exige vínculo ativo; bootstrap explícito e atômico",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 969,
+          "anchor": "-- Replace the installed private.get_workspace_bootstrap contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260830155729_instant_workspace_entry.sql",
           "line": 246,
           "anchor": "create or replace function public.get_workspace_bootstrap()",
@@ -34693,7 +35445,74 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "function:public.get_workspace_context_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.get_workspace_context_v1()",
+          "kind": "function",
+          "name": "get_workspace_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.get_workspace_context_v1()",
+          "kind": "function",
+          "name": "get_workspace_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 140,
+          "anchor": "create function public.get_workspace_context_v1() returns jsonb language sql stable security invoker set search_path='' as $$select private.get_workspace_context_v1();$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.get_workspace_project_setup(p_locale text)",
@@ -34762,6 +35581,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1043,
+          "anchor": "-- Replace the installed private.get_workspace_project_setup contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260830165102_canonical_workspace_project_setup.sql",
           "line": 86,
           "anchor": "create or replace function public.get_workspace_project_setup(p_locale text)",
@@ -34774,7 +35599,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)",
@@ -34909,6 +35735,12 @@
       "reason": "1A: autoridade corrigida e verificada; compatibilidade sem fornecer cargo ao raciocínio ou à profundidade",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 278,
+          "anchor": "CREATE OR REPLACE FUNCTION public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text DEFAULT NULL::text, p_locale text DEFAULT 'pt-BR'::text)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260915123202_active_organization_authority.sql",
           "line": 172,
           "anchor": "create or replace function public.initialize_professional_onboarding(",
@@ -34922,7 +35754,73 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
-      "last_review_stage": "1A"
+      "last_review_stage": "2"
+    },
+    {
+      "id": "function:public.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.initialize_workspace_v1(p_full_name text, p_locale text)",
+          "kind": "function",
+          "name": "initialize_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_full_name text, p_locale text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.initialize_workspace_v1(p_full_name text, p_locale text)",
+          "kind": "function",
+          "name": "initialize_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_full_name text, p_locale text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 210,
+          "anchor": "create function public.initialize_workspace_v1(p_full_name text,p_locale text default 'pt-BR')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.invite_workspace_member_v1(p_email text, p_role text)",
@@ -34989,6 +35887,72 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+          "kind": "function",
+          "name": "link_commercial_account_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_account_id uuid, p_expected_account_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+          "kind": "function",
+          "name": "link_commercial_account_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_account_id uuid, p_expected_account_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 189,
+          "anchor": "create function public.link_commercial_account_v1(p_account_id uuid,p_expected_account_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.list_my_workspace_invites_v1()",
@@ -35113,6 +36077,12 @@
       "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1709,
+          "anchor": "create or replace function private.list_my_workspaces_v1()",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 620,
           "anchor": "create function public.list_my_workspaces_v1()",
@@ -35120,7 +36090,7 @@
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
-      "last_review_stage": "1B"
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.list_provider_mandates_v1(p_organization_id uuid)",
@@ -35264,6 +36234,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1618,
+          "anchor": "-- Replace the installed private.manage_workspace_project contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260830214933_workspace_project_management.sql",
           "line": 115,
           "anchor": "create or replace function public.manage_workspace_project(",
@@ -35276,7 +36252,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.manage_workspace_project_group(p_group_id uuid, p_action text, p_name text)",
@@ -38997,6 +39974,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1368,
+          "anchor": "-- Replace the installed private.register_provider_mandate_v1 contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 398,
           "anchor": "create or replace function private.register_provider_mandate_v1(",
@@ -39009,7 +39992,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
@@ -39063,6 +40047,72 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.remember_workspace_v1(p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.remember_workspace_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "remember_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.remember_workspace_v1(p_organization_id uuid)",
+          "kind": "function",
+          "name": "remember_workspace_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 152,
+          "anchor": "create function public.remember_workspace_v1(p_organization_id uuid) returns void language sql security invoker set search_path='' as $$select private.remember_workspace_v1(p_organization_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.remove_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid)",
@@ -41473,6 +42523,72 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+          "kind": "function",
+          "name": "set_workspace_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+          "kind": "function",
+          "name": "set_workspace_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 172,
+          "anchor": "create function public.set_workspace_capability_v1(p_capability text,p_enabled boolean,p_expected_revision bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "function:public.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)",
       "kind": "function",
       "catalogues": {
@@ -41767,6 +42883,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1180,
+          "anchor": "CREATE OR REPLACE FUNCTION public.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
           "path": "supabase/migrations/20260902105618_advisor_project_name_collision.sql",
           "line": 4,
           "anchor": "create or replace function public.start_advisor_project_v1(",
@@ -41779,7 +42901,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)",
@@ -41848,6 +42971,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 756,
+          "anchor": "-- Replace the installed private.start_financier_analytical_workspace_v1 contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 2020,
           "anchor": "create or replace function private.start_financier_analytical_workspace_v1(",
@@ -41860,7 +42989,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_onboarding_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
@@ -42091,6 +43221,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 422,
+          "anchor": "-- Replace the installed private.start_onboarding_intake contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260827005724_private_project_authorization_gate.sql",
           "line": 457,
           "anchor": "create function public.start_onboarding_intake(",
@@ -42103,7 +43239,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_onboarding_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
@@ -42415,6 +43552,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1513,
+          "anchor": "-- Replace the installed private.start_public_capital_project contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260901035305_capital_project_access_basis.sql",
           "line": 143,
           "anchor": "create or replace function public.start_public_capital_project(",
@@ -42427,7 +43570,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_public_capital_project_v2(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text, p_plan jsonb)",
@@ -42577,6 +43721,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
+          "line": 3,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260901044903_company_debt_view_vertical.sql",
           "line": 12,
           "anchor": "create or replace function private.start_public_company_debt_view_v1(",
@@ -42589,7 +43739,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_public_onboarding_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
@@ -42820,6 +43971,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
+          "line": 157,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260901035319_origination_thesis_vertical.sql",
           "line": 59,
           "anchor": "create or replace function private.start_public_origination_thesis_v1(",
@@ -42832,7 +43989,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_workspace_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
@@ -43063,6 +44221,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 411,
+          "anchor": "return private.start_workspace_intake(",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260827224000_start_workspace_intake_atomic.sql",
           "line": 4,
           "anchor": "create function private.start_workspace_intake(",
@@ -43075,7 +44239,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
@@ -43144,6 +44309,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 386,
+          "anchor": "-- Replace the installed private.start_workspace_project contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260830155729_instant_workspace_entry.sql",
           "line": 120,
           "anchor": "create or replace function public.start_workspace_project(",
@@ -43156,7 +44327,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.submit_advisor_artifact_revision_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -43858,6 +45030,12 @@
       "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1126,
+          "anchor": "-- Replace the installed private.update_workspace_project contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260830214933_workspace_project_management.sql",
           "line": 143,
           "anchor": "create or replace function private.update_workspace_project(",
@@ -43870,7 +45048,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.verify_advisor_authorization_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text)",
@@ -44020,6 +45199,12 @@
       "reason": "preservar histórico e leitura autorizada; não promover distribuição, contatos ou fechamento neste núcleo",
       "sources": [
         {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 1579,
+          "anchor": "-- Replace the installed private.withdraw_provider_mandate_v1 contract, retaining all other checks.",
+          "mechanism": "dynamic_definition_transform"
+        },
+        {
           "path": "supabase/migrations/20260911011830_verified_provider_mandates.sql",
           "line": 598,
           "anchor": "create or replace function private.withdraw_provider_mandate_v1(",
@@ -44032,7 +45217,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "function:public.worker_apply_institutional_assumption_answer_v1(p_job_id uuid, p_capability_token text, p_application jsonb)",
@@ -52435,6 +53621,56 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:private.account_organizations.account_organizations_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.account_organizations.account_organizations_deny_clients",
+          "kind": "policy",
+          "name": "account_organizations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "account_organizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.account_organizations.account_organizations_deny_clients",
+          "kind": "policy",
+          "name": "account_organizations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "account_organizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 66,
+          "anchor": "create policy account_organizations_deny_clients on private.account_organizations as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "policy:private.authorization_revisions.authorization_revisions_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -52481,6 +53717,56 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:private.commercial_accounts.commercial_accounts_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.commercial_accounts.commercial_accounts_deny_clients",
+          "kind": "policy",
+          "name": "commercial_accounts_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "commercial_accounts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.commercial_accounts.commercial_accounts_deny_clients",
+          "kind": "policy",
+          "name": "commercial_accounts_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "commercial_accounts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 65,
+          "anchor": "create policy commercial_accounts_deny_clients on private.commercial_accounts as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "policy:private.human_intervention_ledger.human_intervention_ledger_deny_clients",
@@ -54039,6 +55325,56 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
+          "kind": "policy",
+          "name": "workspace_capability_grants_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
+          "kind": "policy",
+          "name": "workspace_capability_grants_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 67,
+          "anchor": "create policy workspace_capability_grants_deny_clients on private.workspace_capability_grants as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "policy:public.access_requests.access_requests_insert",
@@ -60071,6 +61407,54 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.onboarding_progress.onboarding_progress_delete_context",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_delete_context",
+          "kind": "policy",
+          "name": "onboarding_progress_delete_context",
+          "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_delete_context",
+          "kind": "policy",
+          "name": "onboarding_progress_delete_context",
+          "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 233,
+          "anchor": "create policy onboarding_progress_delete_context on public.onboarding_progress as restrictive for delete to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "policy:public.onboarding_progress.onboarding_progress_insert",
       "kind": "policy",
       "catalogues": {
@@ -60116,6 +61500,54 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.onboarding_progress.onboarding_progress_insert_context",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_insert_context",
+          "kind": "policy",
+          "name": "onboarding_progress_insert_context",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
+        },
+        "staging": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_insert_context",
+          "kind": "policy",
+          "name": "onboarding_progress_insert_context",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 229,
+          "anchor": "create policy onboarding_progress_insert_context on public.onboarding_progress as restrictive for insert to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "policy:public.onboarding_progress.onboarding_progress_select",
@@ -60210,6 +61642,54 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.onboarding_progress.onboarding_progress_update_context",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_update_context",
+          "kind": "policy",
+          "name": "onboarding_progress_update_context",
+          "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
+        },
+        "staging": {
+          "id": "policy:public.onboarding_progress.onboarding_progress_update_context",
+          "kind": "policy",
+          "name": "onboarding_progress_update_context",
+          "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "onboarding_progress",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 231,
+          "anchor": "create policy onboarding_progress_update_context on public.onboarding_progress as restrictive for update to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "policy:public.operating_control_snapshots.operating_control_snapshots_select",
@@ -61290,7 +62770,7 @@
           "id": "policy:public.organizations.organizations_update_admin",
           "kind": "policy",
           "name": "organizations_update_admin",
-          "qual": "( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization)",
+          "qual": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1))",
           "roles": [
             "authenticated"
           ],
@@ -61298,13 +62778,13 @@
           "schema": "public",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
+          "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1) AND (organization_type = ANY (ARRAY['personal'::text, 'institutional'::text, 'company'::text, 'originator'::text, 'capital_provider'::text])))"
         },
         "staging": {
           "id": "policy:public.organizations.organizations_update_admin",
           "kind": "policy",
           "name": "organizations_update_admin",
-          "qual": "( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization)",
+          "qual": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1))",
           "roles": [
             "authenticated"
           ],
@@ -61312,7 +62792,7 @@
           "schema": "public",
           "command": "UPDATE",
           "permissive": "PERMISSIVE",
-          "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
+          "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1) AND (organization_type = ANY (ARRAY['personal'::text, 'institutional'::text, 'company'::text, 'originator'::text, 'capital_provider'::text])))"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
@@ -61320,6 +62800,12 @@
       "stage": "1A, 2",
       "reason": "separar cadastro/control plane de leitura de conteúdo",
       "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 226,
+          "anchor": "alter policy organizations_update_admin on public.organizations",
+          "mechanism": "dynamic_definition_transform"
+        },
         {
           "path": "supabase/migrations/20260815014649_platform_foundation.sql",
           "line": 874,
@@ -61333,7 +62819,8 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "last_review_stage": "2"
     },
     {
       "id": "policy:public.output_artifacts.output_artifacts_all",
@@ -64570,6 +66057,204 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_delete_denied",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_delete_denied",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 73,
+          "anchor": "create policy user_workspace_preferences_delete_denied on public.user_workspace_preferences as restrictive for delete to anon,authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_insert_denied",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_insert_denied",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 71,
+          "anchor": "create policy user_workspace_preferences_insert_denied on public.user_workspace_preferences as restrictive for insert to anon,authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized",
+          "kind": "policy",
+          "name": "user_workspace_preferences_select_authorized",
+          "qual": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM organization_memberships m\n  WHERE ((m.organization_id = user_workspace_preferences.organization_id) AND (m.user_id = ( SELECT auth.uid() AS uid)) AND (m.status = 'active'::text)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized",
+          "kind": "policy",
+          "name": "user_workspace_preferences_select_authorized",
+          "qual": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM organization_memberships m\n  WHERE ((m.organization_id = user_workspace_preferences.organization_id) AND (m.user_id = ( SELECT auth.uid() AS uid)) AND (m.status = 'active'::text)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 69,
+          "anchor": "create policy user_workspace_preferences_select_authorized on public.user_workspace_preferences for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_update_denied",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_update_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_update_denied",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.user_workspace_preferences.user_workspace_preferences_update_denied",
+          "kind": "policy",
+          "name": "user_workspace_preferences_update_denied",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 72,
+          "anchor": "create policy user_workspace_preferences_update_denied on public.user_workspace_preferences as restrictive for update to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "policy:public.workflow_runs.workflow_runs_all",
       "kind": "policy",
       "catalogues": {},
@@ -65890,6 +67575,126 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "r:private.account_organizations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.account_organizations",
+          "rls": true,
+          "kind": "table",
+          "name": "account_organizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.account_organizations",
+          "rls": true,
+          "kind": "table",
+          "name": "account_organizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 21,
+          "anchor": "create table private.account_organizations (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "r:private.authorization_revisions",
       "kind": "table",
       "catalogues": {
@@ -66371,6 +68176,126 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.commercial_accounts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.commercial_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "commercial_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.commercial_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "commercial_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 14,
+          "anchor": "create table private.commercial_accounts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "r:private.gold_case_bindings",
@@ -70301,6 +72226,126 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.workspace_capability_grants",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.workspace_capability_grants",
+          "rls": true,
+          "kind": "table",
+          "name": "workspace_capability_grants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.workspace_capability_grants",
+          "rls": true,
+          "kind": "table",
+          "name": "workspace_capability_grants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 33,
+          "anchor": "create table private.workspace_capability_grants (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "r:public.access_requests",
@@ -96372,6 +98417,136 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.user_workspace_preferences",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.user_workspace_preferences",
+          "rls": true,
+          "kind": "table",
+          "name": "user_workspace_preferences",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.user_workspace_preferences",
+          "rls": true,
+          "kind": "table",
+          "name": "user_workspace_preferences",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 45,
+          "anchor": "create table public.user_workspace_preferences (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "r:public.workflow_runs",
       "kind": "table",
       "catalogues": {
@@ -96890,6 +99065,86 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "trigger:private.account_organizations.account_organizations_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.account_organizations.account_organizations_audit",
+          "kind": "trigger",
+          "name": "account_organizations_audit",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER account_organizations_audit AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.account_organizations.account_organizations_audit",
+          "kind": "trigger",
+          "name": "account_organizations_audit",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER account_organizations_audit AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 80,
+          "anchor": "create trigger account_organizations_audit after insert or update or delete on private.account_organizations for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "trigger:private.account_organizations.account_organizations_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.account_organizations.account_organizations_updated_at",
+          "kind": "trigger",
+          "name": "account_organizations_updated_at",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER account_organizations_updated_at BEFORE UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.account_organizations.account_organizations_updated_at",
+          "kind": "trigger",
+          "name": "account_organizations_updated_at",
+          "table": "account_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER account_organizations_updated_at BEFORE UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 76,
+          "anchor": "create trigger account_organizations_updated_at before update on private.account_organizations for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "catalogues": {
@@ -96968,6 +99223,86 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
+          "kind": "trigger",
+          "name": "commercial_accounts_audit",
+          "table": "commercial_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER commercial_accounts_audit AFTER INSERT OR DELETE OR UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
+          "kind": "trigger",
+          "name": "commercial_accounts_audit",
+          "table": "commercial_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER commercial_accounts_audit AFTER INSERT OR DELETE OR UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 79,
+          "anchor": "create trigger commercial_accounts_audit after insert or update or delete on private.commercial_accounts for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "trigger:private.commercial_accounts.commercial_accounts_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.commercial_accounts.commercial_accounts_updated_at",
+          "kind": "trigger",
+          "name": "commercial_accounts_updated_at",
+          "table": "commercial_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER commercial_accounts_updated_at BEFORE UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.commercial_accounts.commercial_accounts_updated_at",
+          "kind": "trigger",
+          "name": "commercial_accounts_updated_at",
+          "table": "commercial_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER commercial_accounts_updated_at BEFORE UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 75,
+          "anchor": "create trigger commercial_accounts_updated_at before update on private.commercial_accounts for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
@@ -98105,6 +100440,86 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
+          "kind": "trigger",
+          "name": "workspace_capability_grants_audit",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER workspace_capability_grants_audit AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
+          "kind": "trigger",
+          "name": "workspace_capability_grants_audit",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER workspace_capability_grants_audit AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 81,
+          "anchor": "create trigger workspace_capability_grants_audit after insert or update or delete on private.workspace_capability_grants for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
+          "kind": "trigger",
+          "name": "workspace_capability_grants_updated_at",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER workspace_capability_grants_updated_at BEFORE UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
+          "kind": "trigger",
+          "name": "workspace_capability_grants_updated_at",
+          "table": "workspace_capability_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER workspace_capability_grants_updated_at BEFORE UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 77,
+          "anchor": "create trigger workspace_capability_grants_updated_at before update on private.workspace_capability_grants for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "trigger:public.access_requests.access_requests_set_updated_at",
@@ -103641,6 +106056,46 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.organizations.organizations_workspace_foundation",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organizations.organizations_workspace_foundation",
+          "kind": "trigger",
+          "name": "organizations_workspace_foundation",
+          "table": "organizations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.seed_workspace_foundation_v1()",
+          "definition": "CREATE TRIGGER organizations_workspace_foundation AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_workspace_foundation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.organizations.organizations_workspace_foundation",
+          "kind": "trigger",
+          "name": "organizations_workspace_foundation",
+          "table": "organizations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.seed_workspace_foundation_v1()",
+          "definition": "CREATE TRIGGER organizations_workspace_foundation AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_workspace_foundation_v1()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 104,
+          "anchor": "create trigger organizations_workspace_foundation after insert on public.organizations for each row execute function private.seed_workspace_foundation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
+    },
+    {
       "id": "trigger:public.output_artifacts.output_artifacts_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -106354,6 +108809,46 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at",
+          "kind": "trigger",
+          "name": "user_workspace_preferences_updated_at",
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at",
+          "kind": "trigger",
+          "name": "user_workspace_preferences_updated_at",
+          "table": "user_workspace_preferences",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, segunda onda",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Identidade e capacidades explícitas; conta comercial não concede acesso ao conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+          "line": 78,
+          "anchor": "create trigger user_workspace_preferences_updated_at before update on public.user_workspace_preferences for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
+      "last_review_stage": "2"
     },
     {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
@@ -113573,6 +116068,20 @@
       "decision": "preservar",
       "stage": "1C",
       "reason": "Retirada de perfil dos carregadores; texto imutável sob carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Correção de acesso aplicada; texto imutável sob carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
+      "decision": "preservar",
+      "stage": "2",
+      "reason": "Correção de acesso aplicada; texto imutável sob carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -113861,5 +116370,96 @@
     ],
     "production_captured_at": "2026-09-16T00:57:46.391849+00:00",
     "staging_captured_at": "2026-09-16T00:57:51.507172+00:00"
+  },
+  "stage_2_revision": {
+    "base_commit": "fc2c0747766e1207fe9c4ee7cf71907e4e98f9ff",
+    "production_captured_at": "2026-09-16T03:52:02.138607+00:00",
+    "staging_captured_at": "2026-09-16T03:52:05.113739+00:00",
+    "migrations": [
+      "supabase/migrations/20260916035105_explicit_workspace_context.sql",
+      "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql"
+    ],
+    "changed_objects": [
+      "function:private.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)",
+      "function:private.accept_workspace_invite_v1(p_invite_id uuid)",
+      "function:private.confirm_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_channel text, p_valid_from date, p_valid_until date, p_document_reference text, p_contact_record_id uuid, p_contact_date date, p_note text)",
+      "function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "function:private.create_workspace_project_group(p_name text)",
+      "function:private.get_onboarding_bootstrap(p_locale text)",
+      "function:private.get_workspace_bootstrap()",
+      "function:private.get_workspace_context_v1()",
+      "function:private.get_workspace_project_setup(p_locale text)",
+      "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "function:private.list_my_workspaces_v1()",
+      "function:private.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)",
+      "function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)",
+      "function:private.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)",
+      "function:private.remember_workspace_v1(p_organization_id uuid)",
+      "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
+      "function:private.seed_workspace_foundation_v1()",
+      "function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "function:private.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)",
+      "function:private.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)",
+      "function:private.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:private.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
+      "function:private.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+      "function:private.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+      "function:private.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:private.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
+      "function:private.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
+      "function:private.workspace_context_matches_v1(p_organization_id uuid)",
+      "function:public.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)",
+      "function:public.accept_workspace_invite_v1(p_invite_id uuid)",
+      "function:public.confirm_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_channel text, p_valid_from date, p_valid_until date, p_document_reference text, p_contact_record_id uuid, p_contact_date date, p_note text)",
+      "function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)",
+      "function:public.create_workspace_project_group(p_name text)",
+      "function:public.get_onboarding_bootstrap(p_locale text)",
+      "function:public.get_workspace_bootstrap()",
+      "function:public.get_workspace_context_v1()",
+      "function:public.get_workspace_project_setup(p_locale text)",
+      "function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)",
+      "function:public.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "function:public.list_my_workspaces_v1()",
+      "function:public.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)",
+      "function:public.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)",
+      "function:public.remember_workspace_v1(p_organization_id uuid)",
+      "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "function:public.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)",
+      "function:public.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)",
+      "function:public.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:public.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
+      "function:public.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+      "function:public.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+      "function:public.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:public.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
+      "function:public.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
+      "function:public.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)",
+      "policy:private.account_organizations.account_organizations_deny_clients",
+      "policy:private.commercial_accounts.commercial_accounts_deny_clients",
+      "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
+      "policy:public.onboarding_progress.onboarding_progress_delete_context",
+      "policy:public.onboarding_progress.onboarding_progress_insert_context",
+      "policy:public.onboarding_progress.onboarding_progress_update_context",
+      "policy:public.organizations.organizations_update_admin",
+      "policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied",
+      "policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied",
+      "policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized",
+      "policy:public.user_workspace_preferences.user_workspace_preferences_update_denied",
+      "r:private.account_organizations",
+      "r:private.commercial_accounts",
+      "r:private.workspace_capability_grants",
+      "r:public.user_workspace_preferences",
+      "trigger:private.account_organizations.account_organizations_audit",
+      "trigger:private.account_organizations.account_organizations_updated_at",
+      "trigger:private.commercial_accounts.commercial_accounts_audit",
+      "trigger:private.commercial_accounts.commercial_accounts_updated_at",
+      "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
+      "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
+      "trigger:public.organizations.organizations_workspace_foundation",
+      "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at"
+    ]
   }
 }

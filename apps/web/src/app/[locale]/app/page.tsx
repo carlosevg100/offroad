@@ -21,11 +21,12 @@ export default async function ApplicationHome({params, searchParams}: Props) {
   const state = await searchParams;
   const t = await getTranslations({locale, namespace: "App"});
   const {supabase, organization, userId} = await requireWorkspace(locale);
-  const capabilities = workspaceCapabilities(organization.organization_type);
+  const capabilities = workspaceCapabilities(organization.capabilities);
   // A financier analyzes in the same conversation as everyone else. Its funds and mandates keep
   // their own page; what this page adds for it is the reminder that private documents wait for
   // the accepted workspace terms, so the attach button never fails without an explanation.
   const financier = capabilities.mandate_management;
+  const analyticalWorkspace = !capabilities.origination_representation;
   const [selectedGroupResult, profileResult, termsResult] = await Promise.all([
     state.group
       ? supabase.from("workspace_project_groups")
@@ -36,14 +37,14 @@ export default async function ApplicationHome({params, searchParams}: Props) {
         .maybeSingle()
       : Promise.resolve({data: null}),
     supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle(),
-    financier ? supabase.rpc("get_workspace_project_setup", {p_locale: locale}) : Promise.resolve({data: null}),
+    analyticalWorkspace ? supabase.rpc("get_workspace_project_setup", {p_locale: locale}) : Promise.resolve({data: null}),
   ]);
   const selectedGroup = selectedGroupResult.data;
   const userFirstName = profileResult.data?.full_name?.trim().split(/\s+/)[0] ?? "";
   const termsSetup = termsResult.data && typeof termsResult.data === "object" && !Array.isArray(termsResult.data)
     ? termsResult.data as WorkspaceTermsSetup
     : null;
-  const termsPending = financier && termsSetup !== null && termsSetup.terms_accepted !== true;
+  const termsPending = analyticalWorkspace && termsSetup !== null && termsSetup.terms_accepted !== true;
 
   const {data: recentSessions} = await supabase
     .from("document_intake_sessions")

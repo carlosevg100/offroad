@@ -28,7 +28,7 @@ export default async function MandatesPage({params, searchParams}: Props) {
   const t = await getTranslations({locale, namespace: "App"});
   const registry = await getTranslations({locale, namespace: "MandateRegistry"});
   const {supabase, organization} = await requireWorkspace(locale);
-  if (!hasWorkspaceCapability(organization.organization_type, "mandate_management")) notFound();
+  if (!hasWorkspaceCapability(organization.capabilities, "mandate_management")) notFound();
 
   const [{data: mandateRows}, {data: funds}, {data: contacts}, {data: requests}] = await Promise.all([
     supabase.rpc("list_provider_mandates_v1", {p_organization_id: organization.id}),

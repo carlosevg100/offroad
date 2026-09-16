@@ -5996,6 +5996,7 @@ export type Database = {
           updated_at: string
           verification_status: string
           website: string | null
+          workspace_kind: string
         }
         Insert: {
           city?: string | null
@@ -6016,6 +6017,7 @@ export type Database = {
           updated_at?: string
           verification_status?: string
           website?: string | null
+          workspace_kind?: string
         }
         Update: {
           city?: string | null
@@ -6036,6 +6038,7 @@ export type Database = {
           updated_at?: string
           verification_status?: string
           website?: string | null
+          workspace_kind?: string
         }
         Relationships: []
       }
@@ -8239,6 +8242,41 @@ export type Database = {
           },
         ]
       }
+      user_workspace_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          last_selected_at: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_selected_at?: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_selected_at?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_workspace_preferences_organization_id_user_id_fkey"
+            columns: ["organization_id", "user_id"]
+            isOneToOne: true
+            referencedRelation: "organization_memberships"
+            referencedColumns: ["organization_id", "user_id"]
+          },
+        ]
+      }
       workflow_runs: {
         Row: {
           completed_at: string | null
@@ -8615,6 +8653,7 @@ export type Database = {
       }
       get_onboarding_bootstrap: { Args: { p_locale: string }; Returns: Json }
       get_workspace_bootstrap: { Args: never; Returns: Json }
+      get_workspace_context_v1: { Args: never; Returns: Json }
       get_workspace_project_setup: { Args: { p_locale: string }; Returns: Json }
       grant_resource_access_v1: {
         Args: {
@@ -8634,8 +8673,16 @@ export type Database = {
         }
         Returns: string
       }
+      initialize_workspace_v1: {
+        Args: { p_full_name: string; p_locale?: string }
+        Returns: string
+      }
       invite_workspace_member_v1: {
         Args: { p_email: string; p_role: string }
+        Returns: string
+      }
+      link_commercial_account_v1: {
+        Args: { p_account_id: string; p_expected_account_id: string }
         Returns: string
       }
       list_my_workspace_invites_v1: { Args: never; Returns: Json }
@@ -8968,6 +9015,10 @@ export type Database = {
         }
         Returns: Json
       }
+      remember_workspace_v1: {
+        Args: { p_organization_id: string }
+        Returns: undefined
+      }
       remove_intake_document_command: {
         Args: {
           p_document_id: string
@@ -9246,6 +9297,14 @@ export type Database = {
           p_project_id: string
         }
         Returns: Json
+      }
+      set_workspace_capability_v1: {
+        Args: {
+          p_capability: string
+          p_enabled: boolean
+          p_expected_revision: number
+        }
+        Returns: number
       }
       set_workspace_member_v1: {
         Args: { p_role: string; p_status: string; p_user_id: string }

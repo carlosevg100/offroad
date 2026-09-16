@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
@@ -123,6 +124,7 @@ test.describe("integration_preview: Case 01 end to end", () => {
     const code = await waitForOneTimeCode(account.email);
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
+    await useLegacyCompanyFixture(page, account.email);
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".intake-start")).toBeVisible();
     // Account onboarding ends with the one-time confidentiality acceptance and the first private

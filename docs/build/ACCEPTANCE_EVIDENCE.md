@@ -1,5 +1,10 @@
 ## Wave 2: governed security inventory renewal
 
+## Wave 2: stage 2 additive identity rollout
+
+Production contracts `20260916035105` and `20260916035119` match staging SQL. Explicit personal/institutional context and commercial-account isolation preserve existing memberships and resource grants. Two legacy request-replay metadata bypasses were reproduced and corrected. See `docs/build/arcabouco/etapa-02.md` and `docs/security/INVENTORY_WAVE_2_IDENTITY_REVIEW.md` for executed checks and the remaining deployment/cutover gates. This entry does not close stage 2 or authorize a dependent wave. Stage 4 is the other independent delivery in the current wave; administrative screens remain deferred.
+
+
 The founder approved advancement after wave 1. The next dependency frontier covers stages 2 and 4; dependent stages require the next wave OK. The security snapshot and canonical evidence contracts now use merged baseline `9620406b8d3b9624a68bf611b40791e289f90a90`. Three remediated findings are replaced by required regression evidence; all other 18 gaps remain open. The final wave-one review and its initial immutable snapshot are archived, and fresh read-only production authority checks plus both security advisors passed. See `docs/security/INVENTORY_WAVE_2_REVIEW.md`. This prerequisite changes governance only; it adds no schema or product capability. Final publication receipts follow the actual CI and deployments.
 
 ## Stage 1C: role-free runtime, entry and database context

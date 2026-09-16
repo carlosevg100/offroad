@@ -18,7 +18,7 @@ import type {AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadIntakeCollection, loadIntakeReview, loadIntakeSession} from "@/lib/intake/server";
 import type {IntakeErrorCode} from "@/lib/intake/types";
-import {resolveNewProjectEntry} from "@/lib/workspace/capabilities";
+import {hasWorkspaceCapability, resolveNewProjectEntry} from "@/lib/workspace/capabilities";
 import type {Json} from "@/types/database";
 
 import {
@@ -100,7 +100,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
     ? await loadIntakeSession({supabase, organizationId: organization.id, userId, locale: locale as AppLocale, sessionId})
     : null;
   const entry = resolveNewProjectEntry({
-    organizationType: organization.organization_type,
+    capabilities: organization.capabilities,
     mode,
     session: financierSession ? {id: financierSession.id, capitalProjectId: financierSession.capital_project_id} : null,
   });
@@ -125,7 +125,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           <section className="intake-setup-card intake-setup-card--terms">
             <PrivateProjectSetup
               acceptAction={acceptWorkspacePrivateTerms}
-              journey="capital_provider"
+              journey={organization.workspace_kind === "personal" ? "personal" : "institutional"}
               legalDocument={financierSetup?.legal_document ?? null}
               locale={locale}
               mode="terms"
@@ -145,7 +145,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
           <FinancierAnalysisEntry
             conversationHref={`/${locale}/app`}
             locale={locale}
-            mandatesHref={`/${locale}/app/mandates`}
+            mandatesHref={hasWorkspaceCapability(organization.capabilities, "mandate_management") ? `/${locale}/app/mandates` : undefined}
             termsAccepted={financierTermsAccepted}
           />
         ) : null}

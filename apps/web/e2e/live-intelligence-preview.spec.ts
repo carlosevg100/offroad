@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
@@ -116,6 +117,7 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     const code = await waitForOneTimeCode(account.email);
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
+    await useLegacyCompanyFixture(page, account.email);
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".intake-start")).toBeVisible();
     await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");

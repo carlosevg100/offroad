@@ -1,3 +1,4 @@
+import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
@@ -60,6 +61,7 @@ test.describe("documentary work products with actual provider execution", () => 
     const code = await waitForOneTimeCode(account.email);
     await page.locator('input[name="token"]').fill(code);
     await page.locator("form.auth-form--verification button[type=submit]").click();
+    await useLegacyCompanyFixture(page, account.email);
     await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
     await expect(page.locator(".intake-start")).toBeVisible();
     await page.goto("/pt-BR/onboarding?setup=terms&job=capital_planning");

@@ -114,8 +114,7 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await expect(page).toHaveURL(/\/pt-BR\/signup\/verify/);
   await page.locator('input[name="token"]').fill(await waitForOneTimeCode(email));
   await page.locator("form.auth-form--verification button[type=submit]").click();
-  await expect(page).toHaveURL(/\/pt-BR\/onboarding/);
-  await expect(page.locator(".intake-start")).toBeVisible();
+  await expect(page).toHaveURL(/\/pt-BR\/app(?:\?|$)/);
   const organizationId = setup("workspace", email);
   const token = await accessToken(request, email, password);
 

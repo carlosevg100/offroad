@@ -1,40 +1,22 @@
-/**
- * The four workspace capabilities, mirrored from `private.organization_has_workspace_capability`
- * in the database (docs/product/FINANCIER_ANALYTICAL_WORKSPACE.md). The database is the
- * authority: these helpers only decide what the interface offers and explains, never what the
- * server accepts. A route that shows a button the server would refuse is a bug on this side.
- */
-export type WorkspaceOrganizationType = "company" | "originator" | "capital_provider";
-
-export type WorkspaceCapability =
-  | "own_analysis"
-  | "mandate_management"
-  | "origination_representation"
-  | "external_disclosure";
-
+/** Display-only capabilities issued by PostgreSQL for the active workspace. */
+export type WorkspaceCapability = "own_analysis" | "mandate_management" | "origination_representation" | "external_disclosure";
 export type WorkspaceCapabilities = Readonly<Record<WorkspaceCapability, boolean>>;
+const closed: WorkspaceCapabilities = {own_analysis: false, mandate_management: false, origination_representation: false, external_disclosure: false};
 
-const capabilitiesByType: Readonly<Record<WorkspaceOrganizationType, WorkspaceCapabilities>> = {
-  company: {own_analysis: true, mandate_management: false, origination_representation: true, external_disclosure: true},
-  originator: {own_analysis: true, mandate_management: false, origination_representation: true, external_disclosure: true},
-  capital_provider: {own_analysis: true, mandate_management: true, origination_representation: false, external_disclosure: false},
-};
-
-const closed: WorkspaceCapabilities = {
-  own_analysis: false, mandate_management: false, origination_representation: false, external_disclosure: false,
-};
-
-export function isWorkspaceOrganizationType(value: string): value is WorkspaceOrganizationType {
-  return value === "company" || value === "originator" || value === "capital_provider";
+/** A commercial label, missing response or malformed contract grants nothing. */
+export function workspaceCapabilities(value: unknown): WorkspaceCapabilities {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return closed;
+  const record = value as Record<string, unknown>;
+  if (Object.keys(closed).some((key) => typeof record[key] !== "boolean")) return closed;
+  return {
+    own_analysis: record.own_analysis === true,
+    mandate_management: record.mandate_management === true,
+    origination_representation: record.origination_representation === true,
+    external_disclosure: record.external_disclosure === true,
+  };
 }
-
-/** Unknown types (the internal `offroad` tenant, or a value this build does not know) get nothing. */
-export function workspaceCapabilities(organizationType: string): WorkspaceCapabilities {
-  return isWorkspaceOrganizationType(organizationType) ? capabilitiesByType[organizationType] : closed;
-}
-
-export function hasWorkspaceCapability(organizationType: string, capability: WorkspaceCapability): boolean {
-  return workspaceCapabilities(organizationType)[capability];
+export function hasWorkspaceCapability(value: unknown, capability: WorkspaceCapability): boolean {
+  return workspaceCapabilities(value)[capability];
 }
 
 export type NewProjectEntry =
@@ -48,16 +30,15 @@ export type NewProjectEntry =
   | {kind: "analysis_entry"};
 
 /**
- * Decides what `/app/new` shows. Company and advisor keep the representation-declared setup and
- * the guided document pages. A financier never sees a representation declaration: its sessions
- * open in their project and the choice screen becomes the analytical entry.
+ * Offers representation setup only when the active workspace has that explicit capability.
+ * Analytical work continues in its existing project without inferring a market-side role.
  */
 export function resolveNewProjectEntry(input: {
-  organizationType: string;
+  capabilities: unknown;
   mode: "choice" | "documents";
   session: {id: string; capitalProjectId: string | null} | null;
 }): NewProjectEntry {
-  const capabilities = workspaceCapabilities(input.organizationType);
+  const capabilities = workspaceCapabilities(input.capabilities);
   if (capabilities.origination_representation) return {kind: "representation_setup"};
   if (input.mode === "documents") {
     if (!input.session) return {kind: "session_not_found"};
@@ -68,6 +49,6 @@ export function resolveNewProjectEntry(input: {
 }
 
 /** Where the workspace sends someone once account onboarding completes. */
-export function workspaceHomeAfterOnboarding(input: {organizationType: string; completedThrough: "mandate" | "own_analysis"}): "app" | "mandates" {
-  return input.completedThrough === "mandate" && hasWorkspaceCapability(input.organizationType, "mandate_management") ? "mandates" : "app";
+export function workspaceHomeAfterOnboarding(input: {capabilities: unknown; completedThrough: "mandate" | "own_analysis"}): "app" | "mandates" {
+  return input.completedThrough === "mandate" && hasWorkspaceCapability(input.capabilities, "mandate_management") ? "mandates" : "app";
 }

@@ -7,64 +7,48 @@ import {
   workspaceHomeAfterOnboarding,
 } from "./capabilities";
 
+const analysis = {own_analysis: true, mandate_management: false, origination_representation: false, external_disclosure: false};
+const mandates = {...analysis, mandate_management: true};
+const representation = {...analysis, origination_representation: true, external_disclosure: true};
+
 describe("workspaceCapabilities", () => {
-  it("gives every workspace type its own analysis and nothing else by default", () => {
-    expect(workspaceCapabilities("capital_provider")).toEqual({
-      own_analysis: true,
-      mandate_management: true,
-      origination_representation: false,
-      external_disclosure: false,
-    });
-    expect(workspaceCapabilities("company")).toEqual({
-      own_analysis: true,
-      mandate_management: false,
-      origination_representation: true,
-      external_disclosure: true,
-    });
-    expect(workspaceCapabilities("originator")).toEqual(workspaceCapabilities("company"));
+  it("uses only the complete server-issued contract", () => {
+    expect(workspaceCapabilities(analysis)).toEqual(analysis);
+    expect(workspaceCapabilities(mandates)).toEqual(mandates);
   });
-
-  it("closes everything for unknown or internal organization types", () => {
-    expect(workspaceCapabilities("offroad")).toEqual({
-      own_analysis: false,
-      mandate_management: false,
-      origination_representation: false,
-      external_disclosure: false,
-    });
-    expect(hasWorkspaceCapability("", "own_analysis")).toBe(false);
+  it.each(["company", "originator", "capital_provider", "personal", "institutional", null, {own_analysis: true}, {...analysis, mandate_management: "true"}])("does not infer authority from labels or malformed data: %j", (input) => {
+    expect(Object.values(workspaceCapabilities(input)).some(Boolean)).toBe(false);
   });
-
-  it("never lets analysis imply origination, representation or disclosure", () => {
-    expect(hasWorkspaceCapability("capital_provider", "own_analysis")).toBe(true);
-    expect(hasWorkspaceCapability("capital_provider", "origination_representation")).toBe(false);
-    expect(hasWorkspaceCapability("capital_provider", "external_disclosure")).toBe(false);
+  it("does not turn analysis into external effects", () => {
+    expect(hasWorkspaceCapability(analysis, "own_analysis")).toBe(true);
+    expect(hasWorkspaceCapability(analysis, "external_disclosure")).toBe(false);
   });
 });
 
 describe("resolveNewProjectEntry", () => {
   it("keeps the representation-declared setup for companies and advisors", () => {
-    expect(resolveNewProjectEntry({organizationType: "company", mode: "choice", session: null})).toEqual({kind: "representation_setup"});
-    expect(resolveNewProjectEntry({organizationType: "originator", mode: "documents", session: {id: "s1", capitalProjectId: null}})).toEqual({kind: "representation_setup"});
+    expect(resolveNewProjectEntry({capabilities: representation, mode: "choice", session: null})).toEqual({kind: "representation_setup"});
+    expect(resolveNewProjectEntry({capabilities: representation, mode: "documents", session: {id: "s1", capitalProjectId: null}})).toEqual({kind: "representation_setup"});
   });
 
   it("opens a financier session in its own project and never in the guided intake", () => {
-    expect(resolveNewProjectEntry({organizationType: "capital_provider", mode: "documents", session: {id: "s1", capitalProjectId: "p1"}})).toEqual({kind: "project", projectId: "p1"});
+    expect(resolveNewProjectEntry({capabilities: mandates, mode: "documents", session: {id: "s1", capitalProjectId: "p1"}})).toEqual({kind: "project", projectId: "p1"});
   });
 
   it("refuses a financier session that does not resolve inside the displayed tenant", () => {
-    expect(resolveNewProjectEntry({organizationType: "capital_provider", mode: "documents", session: null})).toEqual({kind: "session_not_found"});
-    expect(resolveNewProjectEntry({organizationType: "capital_provider", mode: "documents", session: {id: "s1", capitalProjectId: null}})).toEqual({kind: "session_not_found"});
+    expect(resolveNewProjectEntry({capabilities: mandates, mode: "documents", session: null})).toEqual({kind: "session_not_found"});
+    expect(resolveNewProjectEntry({capabilities: mandates, mode: "documents", session: {id: "s1", capitalProjectId: null}})).toEqual({kind: "session_not_found"});
   });
 
   it("shows the analytical entry instead of a representation form to a financier", () => {
-    expect(resolveNewProjectEntry({organizationType: "capital_provider", mode: "choice", session: null})).toEqual({kind: "analysis_entry"});
+    expect(resolveNewProjectEntry({capabilities: mandates, mode: "choice", session: null})).toEqual({kind: "analysis_entry"});
   });
 });
 
 describe("workspaceHomeAfterOnboarding", () => {
   it("sends a mandate-registered financier to the mandates panel and everyone else to the conversation", () => {
-    expect(workspaceHomeAfterOnboarding({organizationType: "capital_provider", completedThrough: "mandate"})).toBe("mandates");
-    expect(workspaceHomeAfterOnboarding({organizationType: "capital_provider", completedThrough: "own_analysis"})).toBe("app");
-    expect(workspaceHomeAfterOnboarding({organizationType: "company", completedThrough: "mandate"})).toBe("app");
+    expect(workspaceHomeAfterOnboarding({capabilities: mandates, completedThrough: "mandate"})).toBe("mandates");
+    expect(workspaceHomeAfterOnboarding({capabilities: mandates, completedThrough: "own_analysis"})).toBe("app");
+    expect(workspaceHomeAfterOnboarding({capabilities: representation, completedThrough: "mandate"})).toBe("app");
   });
 });

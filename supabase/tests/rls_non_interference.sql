@@ -5598,4 +5598,19 @@ begin
 end;
 $$;
 
+do $$ declare relation text; begin
+ foreach relation in array array['commercial_accounts','account_organizations','workspace_capability_grants'] loop
+  if has_table_privilege('authenticated','private.'||relation,'SELECT,INSERT,UPDATE,DELETE')
+   or has_table_privilege('anon','private.'||relation,'SELECT,INSERT,UPDATE,DELETE')
+   or not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+    where n.nspname='private' and c.relname=relation and c.relrowsecurity and c.relforcerowsecurity) then
+   raise exception 'Workspace identity metadata isolation missing: %',relation;
+  end if;
+ end loop;
+ if has_table_privilege('authenticated','public.user_workspace_preferences','INSERT,UPDATE,DELETE')
+  or has_table_privilege('anon','public.user_workspace_preferences','SELECT,INSERT,UPDATE,DELETE') then
+  raise exception 'Workspace preferences allow direct mutation or anonymous read';
+ end if;
+end $$;
+
 select 'rls_non_interference_passed' as result;

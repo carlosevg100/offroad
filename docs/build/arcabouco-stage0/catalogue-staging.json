@@ -2171,6 +2171,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.get_workspace_context_v1()",
+      "kind": "function",
+      "name": "get_workspace_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.get_workspace_project_setup(p_locale text)",
       "kind": "function",
       "name": "get_workspace_project_setup",
@@ -2507,6 +2530,29 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "kind": "function",
+      "name": "initialize_workspace_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_full_name text, p_locale text",
       "security_definer": true
     },
     {
@@ -3134,6 +3180,29 @@
       "security_definer": false
     },
     {
+      "id": "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "kind": "function",
+      "name": "link_commercial_account_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_account_id uuid, p_expected_account_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "name": "list_my_workspace_invites_v1",
@@ -3400,6 +3469,24 @@
         "search_path=\"\""
       ],
       "signature": "p_share_id uuid, p_item_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "organization_has_workspace_capability",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_capability text",
       "security_definer": true
     },
     {
@@ -5243,6 +5330,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.remember_workspace_v1(p_organization_id uuid)",
+      "kind": "function",
+      "name": "remember_workspace_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.remove_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid)",
       "kind": "function",
       "name": "remove_intake_document_command",
@@ -5481,6 +5591,24 @@
         "search_path=\"\""
       ],
       "signature": "p_resource_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
+      "kind": "function",
+      "name": "require_workspace_capability",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_capability text",
       "security_definer": true
     },
     {
@@ -6060,6 +6188,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.seed_workspace_foundation_v1()",
+      "kind": "function",
+      "name": "seed_workspace_foundation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.set_capital_project_review_assignment_v1(p_project_id uuid, p_user_id uuid, p_review_role text, p_assigned boolean)",
       "kind": "function",
       "name": "set_capital_project_review_assignment_v1",
@@ -6250,6 +6396,29 @@
       ],
       "signature": "",
       "security_definer": false
+    },
+    {
+      "id": "function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "kind": "function",
+      "name": "set_workspace_capability_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
+      "security_definer": true
     },
     {
       "id": "function:private.set_workspace_member_v1(p_user_id uuid, p_role text, p_status text)",
@@ -10342,6 +10511,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.workspace_context_matches_v1(p_organization_id uuid)",
+      "kind": "function",
+      "name": "workspace_context_matches_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.workspace_membership_v1()",
       "kind": "function",
       "name": "workspace_membership_v1",
@@ -11353,6 +11545,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.get_workspace_context_v1()",
+      "kind": "function",
+      "name": "get_workspace_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:public.get_workspace_project_setup(p_locale text)",
       "kind": "function",
       "name": "get_workspace_project_setup",
@@ -11432,6 +11647,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.initialize_workspace_v1(p_full_name text, p_locale text)",
+      "kind": "function",
+      "name": "initialize_workspace_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_full_name text, p_locale text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.invite_workspace_member_v1(p_email text, p_role text)",
       "kind": "function",
       "name": "invite_workspace_member_v1",
@@ -11452,6 +11690,29 @@
         "search_path=\"\""
       ],
       "signature": "p_email text, p_role text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
+      "kind": "function",
+      "name": "link_commercial_account_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_account_id uuid, p_expected_account_id uuid",
       "security_definer": false
     },
     {
@@ -12942,6 +13203,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.remember_workspace_v1(p_organization_id uuid)",
+      "kind": "function",
+      "name": "remember_workspace_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.remove_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid)",
       "kind": "function",
       "name": "remove_intake_document_command",
@@ -13792,6 +14076,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
+      "kind": "function",
+      "name": "set_workspace_capability_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_capability text, p_enabled boolean, p_expected_revision bigint",
       "security_definer": false
     },
     {
@@ -17569,6 +17876,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.account_organizations.account_organizations_deny_clients",
+      "kind": "policy",
+      "name": "account_organizations_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "account_organizations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.authorization_revisions.authorization_revisions_deny_clients",
       "kind": "policy",
       "name": "authorization_revisions_deny_clients",
@@ -17580,6 +17902,21 @@
       "schema": "private",
       "command": "ALL",
       "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.commercial_accounts.commercial_accounts_deny_clients",
+      "kind": "policy",
+      "name": "commercial_accounts_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "commercial_accounts",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
       "with_check": "false"
     },
     {
@@ -18044,6 +18381,21 @@
       "schema": "private",
       "command": "ALL",
       "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
+      "kind": "policy",
+      "name": "workspace_capability_grants_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "workspace_capability_grants",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
       "with_check": "false"
     },
     {
@@ -19783,6 +20135,20 @@
       "with_check": null
     },
     {
+      "id": "policy:public.onboarding_progress.onboarding_progress_delete_context",
+      "kind": "policy",
+      "name": "onboarding_progress_delete_context",
+      "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "onboarding_progress",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.onboarding_progress.onboarding_progress_insert",
       "kind": "policy",
       "name": "onboarding_progress_insert",
@@ -19795,6 +20161,20 @@
       "command": "INSERT",
       "permissive": "PERMISSIVE",
       "with_check": "((user_id = ( SELECT auth.uid() AS uid)) AND ( SELECT private.is_org_member(onboarding_progress.organization_id) AS is_org_member))"
+    },
+    {
+      "id": "policy:public.onboarding_progress.onboarding_progress_insert_context",
+      "kind": "policy",
+      "name": "onboarding_progress_insert_context",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "onboarding_progress",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
     },
     {
       "id": "policy:public.onboarding_progress.onboarding_progress_select",
@@ -19823,6 +20203,20 @@
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "((user_id = ( SELECT auth.uid() AS uid)) AND ( SELECT private.is_org_member(onboarding_progress.organization_id) AS is_org_member))"
+    },
+    {
+      "id": "policy:public.onboarding_progress.onboarding_progress_update_context",
+      "kind": "policy",
+      "name": "onboarding_progress_update_context",
+      "qual": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "onboarding_progress",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "( SELECT private.workspace_context_matches_v1(onboarding_progress.organization_id) AS workspace_context_matches_v1)"
     },
     {
       "id": "policy:public.operating_control_snapshots.operating_control_snapshots_select",
@@ -20122,7 +20516,7 @@
       "id": "policy:public.organizations.organizations_update_admin",
       "kind": "policy",
       "name": "organizations_update_admin",
-      "qual": "( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization)",
+      "qual": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1))",
       "roles": [
         "authenticated"
       ],
@@ -20130,7 +20524,7 @@
       "schema": "public",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
-      "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND (organization_type = ANY (ARRAY['company'::text, 'originator'::text, 'capital_provider'::text])))"
+      "with_check": "(( SELECT private.can_manage_organization(organizations.id) AS can_manage_organization) AND ( SELECT private.workspace_context_matches_v1(organizations.id) AS workspace_context_matches_v1) AND (organization_type = ANY (ARRAY['personal'::text, 'institutional'::text, 'company'::text, 'originator'::text, 'capital_provider'::text])))"
     },
     {
       "id": "policy:public.output_artifacts.output_artifacts_all",
@@ -21087,6 +21481,65 @@
       "with_check": "( SELECT private.can_access_opportunity(structure_scenarios.organization_id, structure_scenarios.opportunity_id, 'scenario.write'::text) AS can_access_opportunity)"
     },
     {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied",
+      "kind": "policy",
+      "name": "user_workspace_preferences_delete_denied",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "user_workspace_preferences",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied",
+      "kind": "policy",
+      "name": "user_workspace_preferences_insert_denied",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "user_workspace_preferences",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized",
+      "kind": "policy",
+      "name": "user_workspace_preferences_select_authorized",
+      "qual": "((user_id = ( SELECT auth.uid() AS uid)) AND (EXISTS ( SELECT 1\n   FROM organization_memberships m\n  WHERE ((m.organization_id = user_workspace_preferences.organization_id) AND (m.user_id = ( SELECT auth.uid() AS uid)) AND (m.status = 'active'::text)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "user_workspace_preferences",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.user_workspace_preferences.user_workspace_preferences_update_denied",
+      "kind": "policy",
+      "name": "user_workspace_preferences_update_denied",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "user_workspace_preferences",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:public.workflow_runs.workflow_runs_delete_scoped",
       "kind": "policy",
       "name": "workflow_runs_delete_scoped",
@@ -21473,6 +21926,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.account_organizations",
+      "rls": true,
+      "kind": "table",
+      "name": "account_organizations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.authorization_revisions",
       "rls": true,
       "kind": "table",
@@ -21671,6 +22174,56 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "r:private.commercial_accounts",
+      "rls": true,
+      "kind": "table",
+      "name": "commercial_accounts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:private.gold_case_bindings",
@@ -23321,6 +23874,56 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "r:private.workspace_capability_grants",
+      "rls": true,
+      "kind": "table",
+      "name": "workspace_capability_grants",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:public.access_requests",
@@ -35543,6 +36146,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.user_workspace_preferences",
+      "rls": true,
+      "kind": "table",
+      "name": "user_workspace_preferences",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.workflow_runs",
       "rls": true,
       "kind": "table",
@@ -35763,6 +36421,26 @@
       "definition": "CREATE TRIGGER access_resources_updated_at BEFORE UPDATE ON private.access_resources FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.account_organizations.account_organizations_audit",
+      "kind": "trigger",
+      "name": "account_organizations_audit",
+      "table": "account_organizations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER account_organizations_audit AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.account_organizations.account_organizations_updated_at",
+      "kind": "trigger",
+      "name": "account_organizations_updated_at",
+      "table": "account_organizations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER account_organizations_updated_at BEFORE UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "name": "authorization_revisions_audit",
@@ -35781,6 +36459,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER authorization_revisions_updated_at BEFORE UPDATE ON private.authorization_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.commercial_accounts.commercial_accounts_audit",
+      "kind": "trigger",
+      "name": "commercial_accounts_audit",
+      "table": "commercial_accounts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER commercial_accounts_audit AFTER INSERT OR DELETE OR UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.commercial_accounts.commercial_accounts_updated_at",
+      "kind": "trigger",
+      "name": "commercial_accounts_updated_at",
+      "table": "commercial_accounts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER commercial_accounts_updated_at BEFORE UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
@@ -36071,6 +36769,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER storage_path_rotations_updated_at BEFORE UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_audit",
+      "kind": "trigger",
+      "name": "workspace_capability_grants_audit",
+      "table": "workspace_capability_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER workspace_capability_grants_audit AFTER INSERT OR DELETE OR UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at",
+      "kind": "trigger",
+      "name": "workspace_capability_grants_updated_at",
+      "table": "workspace_capability_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER workspace_capability_grants_updated_at BEFORE UPDATE ON private.workspace_capability_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.access_requests.access_requests_set_updated_at",
@@ -37503,6 +38221,16 @@
       "definition": "CREATE TRIGGER organizations_set_updated_at BEFORE UPDATE ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.organizations.organizations_workspace_foundation",
+      "kind": "trigger",
+      "name": "organizations_workspace_foundation",
+      "table": "organizations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.seed_workspace_foundation_v1()",
+      "definition": "CREATE TRIGGER organizations_workspace_foundation AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_workspace_foundation_v1()"
+    },
+    {
       "id": "trigger:public.output_artifacts.output_artifacts_set_updated_at",
       "kind": "trigger",
       "name": "output_artifacts_set_updated_at",
@@ -38223,6 +38951,16 @@
       "definition": "CREATE TRIGGER structure_scenarios_set_updated_at BEFORE UPDATE ON public.structure_scenarios FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at",
+      "kind": "trigger",
+      "name": "user_workspace_preferences_updated_at",
+      "table": "user_workspace_preferences",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
       "kind": "trigger",
       "name": "workspace_groups_access_resource",
@@ -38658,5 +39396,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-16T00:57:51.507172+00:00"
+  "captured_at": "2026-09-16T03:52:05.113739+00:00"
 }

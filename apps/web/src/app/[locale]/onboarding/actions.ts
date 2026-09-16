@@ -65,19 +65,15 @@ async function onboardingContext(locale: AppLocale) {
   const userId = claimsData?.claims?.sub;
   if (claimsError || !userId) redirect(`/${locale}/login`);
 
-  const {data: membership} = await supabase
-    .from("organization_memberships")
-    .select("organization_id")
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .limit(1)
-    .maybeSingle();
-  if (!membership) redirect(`/${locale}/signup?error=session`);
+  const {data: workspace, error: workspaceError} = await supabase.rpc("get_workspace_context_v1");
+  if (workspaceError?.message === "workspace_context_required" || workspaceError?.message === "workspace_context_denied") redirect(`/${locale}/workspaces`);
+  const organizationId = workspace && typeof workspace === "object" && !Array.isArray(workspace) ? workspace.organization_id : null;
+  if (typeof organizationId !== "string") redirect(`/${locale}/signup?error=session`);
 
   const {data: progress} = await supabase
     .from("onboarding_progress")
     .select("journey, current_step, answers, completed_at")
-    .eq("organization_id", membership.organization_id)
+    .eq("organization_id", organizationId)
     .eq("user_id", userId)
     .maybeSingle();
   if (!progress) redirect(`/${locale}/signup?error=session`);
@@ -86,7 +82,7 @@ async function onboardingContext(locale: AppLocale) {
   return {
     supabase,
     userId,
-    organizationId: membership.organization_id,
+    organizationId: organizationId,
     journey: progress.journey as Journey,
     currentStep: progress.current_step,
     answers: (progress.answers ?? {}) as AnswerMap,
@@ -744,7 +740,9 @@ export async function completeOnboarding(formData: FormData) {
   const {error} = await context.supabase.from("onboarding_progress").update({current_step: "complete", completed_at: new Date().toISOString()}).eq("organization_id", context.organizationId).eq("user_id", context.userId).eq("journey", context.journey);
   if (error) redirect(`/${locale}/onboarding?error=save`);
   // The mandate path lands on the mandates panel; the conversation is the home of every workspace.
-  const home = workspaceHomeAfterOnboarding({organizationType: context.journey, completedThrough: context.journey === "capital_provider" ? "mandate" : "own_analysis"});
+  const {data: workspaceContext} = await context.supabase.rpc("get_workspace_context_v1");
+  const issuedCapabilities = workspaceContext && typeof workspaceContext === "object" && !Array.isArray(workspaceContext) ? workspaceContext.capabilities : null;
+  const home = workspaceHomeAfterOnboarding({capabilities: issuedCapabilities, completedThrough: context.journey === "capital_provider" ? "mandate" : "own_analysis"});
   redirect(home === "mandates" ? `/${locale}/app/mandates?welcome=1` : `/${locale}/app?welcome=1`);
 }
 

@@ -12,7 +12,7 @@ type Props = {
   locale: string;
   mode: "terms" | "project";
   /** A financier accepts the terms with an information-usage declaration and never sees the project form. */
-  journey: "company" | "originator" | "capital_provider";
+  journey: "company" | "originator" | "capital_provider" | "personal" | "institutional";
   legalDocument?: {
     title: string;
     version: string;
@@ -73,7 +73,7 @@ export async function PrivateProjectSetup({
   entryJob,
 }: Props) {
   const t = await getTranslations({locale, namespace: "Onboarding.privateProject"});
-  const financier = journey === "capital_provider";
+  const financier = journey !== "company" && journey !== "originator";
 
   if (mode === "terms") {
     const sections = legalSections(legalDocument?.body_sections);
@@ -124,10 +124,10 @@ export async function PrivateProjectSetup({
               <span>{t("terms.name")}</span>
               <input defaultValue={profile.fullName} maxLength={160} minLength={2} name="signatory_name" required />
             </label>
-            <label>
+            {journey !== "personal" ? <label>
               <span>{financier ? t("terms.financierTitleLabel") : t("terms.titleLabel")}</span>
               <input defaultValue={profile.jobTitle} maxLength={160} minLength={2} name="signatory_title" required />
-            </label>
+            </label> : null}
           </div>
           <label className="private-project-gate__check">
             <input name="terms_agreed" required type="checkbox" value="confirmed" />
@@ -148,7 +148,7 @@ export async function PrivateProjectSetup({
 
   // The project form carries a representation declaration. A financier never declares one, so
   // there is nothing to render here for it; its projects start from the workspace conversation.
-  if (journey === "capital_provider") return null;
+  if (journey !== "company" && journey !== "originator") return null;
 
   const editingExistingProject = Boolean(project?.name.trim());
 

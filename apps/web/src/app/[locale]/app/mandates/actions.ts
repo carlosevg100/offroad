@@ -113,7 +113,7 @@ function mandateError(error: {code?: string} | null): MandateActionResult {
 
 async function workspaceForMandates(locale: "pt-BR" | "en-US") {
   const {supabase, organization} = await requireWorkspace(locale);
-  return hasWorkspaceCapability(organization.organization_type, "mandate_management")
+  return hasWorkspaceCapability(organization.capabilities, "mandate_management")
     ? {supabase, organization}
     : null;
 }

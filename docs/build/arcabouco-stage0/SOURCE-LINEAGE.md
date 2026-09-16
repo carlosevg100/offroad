@@ -365,3 +365,88 @@ Os 75 registros de função e dez tabelas sem fonte no inventário anterior têm
 | `function:private.worker_load_agent_context_before_execution_brief_v1(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:4` | direct_ddl |
 | `function:private.worker_load_capital_project_context_v4(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:83` | direct_ddl |
 | `function:private.worker_load_capital_project_context_v6(p_job_id uuid, p_capability_token text)` | `supabase/migrations/20260916005712_role_free_reasoning_context.sql:137` | direct_ddl |
+
+## Identidade e contexto explícito 2
+
+| Objeto | Fonte vigente | Mecanismo |
+|---|---|---|
+| `function:private.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:636` | direct_ddl |
+| `function:private.accept_workspace_invite_v1(p_invite_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:240` | dynamic_definition_transform |
+| `function:private.confirm_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_channel text, p_valid_from date, p_valid_until date, p_document_reference text, p_contact_record_id uuid, p_contact_date date, p_note text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1452` | direct_ddl |
+| `function:private.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:246` | direct_ddl |
+| `function:private.create_workspace_project_group(p_name text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:346` | direct_ddl |
+| `function:private.get_onboarding_bootstrap(p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:850` | direct_ddl |
+| `function:private.get_workspace_bootstrap()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:970` | direct_ddl |
+| `function:private.get_workspace_context_v1()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:126` | direct_ddl |
+| `function:private.get_workspace_project_setup(p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1044` | direct_ddl |
+| `function:private.initialize_workspace_v1(p_full_name text, p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:194` | direct_ddl |
+| `function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:177` | direct_ddl |
+| `function:private.list_my_workspaces_v1()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1709` | direct_ddl |
+| `function:private.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1619` | direct_ddl |
+| `function:private.organization_has_workspace_capability(p_organization_id uuid, p_capability text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:113` | direct_ddl |
+| `function:private.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1369` | direct_ddl |
+| `function:private.remember_workspace_v1(p_organization_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:144` | direct_ddl |
+| `function:private.require_workspace_capability(p_organization_id uuid, p_capability text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:117` | direct_ddl |
+| `function:private.seed_workspace_foundation_v1()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:83` | direct_ddl |
+| `function:private.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:156` | direct_ddl |
+| `function:private.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1217` | direct_ddl |
+| `function:private.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:757` | direct_ddl |
+| `function:private.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:423` | direct_ddl |
+| `function:private.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1514` | direct_ddl |
+| `function:private.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)` | `supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql:3` | direct_ddl |
+| `function:private.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)` | `supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql:157` | direct_ddl |
+| `function:private.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:555` | direct_ddl |
+| `function:private.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:387` | direct_ddl |
+| `function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1127` | direct_ddl |
+| `function:private.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1580` | direct_ddl |
+| `function:private.workspace_context_matches_v1(p_organization_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:216` | direct_ddl |
+| `function:public.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:635` | dynamic_definition_transform |
+| `function:public.accept_workspace_invite_v1(p_invite_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:240` | dynamic_definition_transform |
+| `function:public.confirm_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_channel text, p_valid_from date, p_valid_until date, p_document_reference text, p_contact_record_id uuid, p_contact_date date, p_note text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1451` | dynamic_definition_transform |
+| `function:public.create_organization_with_owner_v1(p_organization_type text, p_name text, p_legal_name text, p_country_code text, p_website text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:206` | dynamic_definition_transform |
+| `function:public.create_workspace_project_group(p_name text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:345` | dynamic_definition_transform |
+| `function:public.get_onboarding_bootstrap(p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:849` | dynamic_definition_transform |
+| `function:public.get_workspace_bootstrap()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:969` | dynamic_definition_transform |
+| `function:public.get_workspace_context_v1()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:140` | direct_ddl |
+| `function:public.get_workspace_project_setup(p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1043` | dynamic_definition_transform |
+| `function:public.initialize_professional_onboarding(p_journey text, p_full_name text, p_job_title text, p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:278` | direct_ddl |
+| `function:public.initialize_workspace_v1(p_full_name text, p_locale text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:210` | direct_ddl |
+| `function:public.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:189` | direct_ddl |
+| `function:public.list_my_workspaces_v1()` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1709` | dynamic_definition_transform |
+| `function:public.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1618` | dynamic_definition_transform |
+| `function:public.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1368` | dynamic_definition_transform |
+| `function:public.remember_workspace_v1(p_organization_id uuid)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:152` | direct_ddl |
+| `function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:172` | direct_ddl |
+| `function:public.start_advisor_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1180` | direct_ddl |
+| `function:public.start_financier_analytical_workspace_v1(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean, p_terms_acceptance_recorded boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:756` | dynamic_definition_transform |
+| `function:public.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:422` | dynamic_definition_transform |
+| `function:public.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1513` | dynamic_definition_transform |
+| `function:public.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)` | `supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql:3` | dynamic_definition_transform |
+| `function:public.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)` | `supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql:157` | dynamic_definition_transform |
+| `function:public.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:411` | dynamic_definition_transform |
+| `function:public.start_workspace_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:386` | dynamic_definition_transform |
+| `function:public.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1126` | dynamic_definition_transform |
+| `function:public.withdraw_provider_mandate_v1(p_organization_id uuid, p_mandate_id uuid, p_note text)` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:1579` | dynamic_definition_transform |
+| `policy:private.account_organizations.account_organizations_deny_clients` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:66` | direct_ddl |
+| `policy:private.commercial_accounts.commercial_accounts_deny_clients` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:65` | direct_ddl |
+| `policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:67` | direct_ddl |
+| `policy:public.onboarding_progress.onboarding_progress_delete_context` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:233` | direct_ddl |
+| `policy:public.onboarding_progress.onboarding_progress_insert_context` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:229` | direct_ddl |
+| `policy:public.onboarding_progress.onboarding_progress_update_context` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:231` | direct_ddl |
+| `policy:public.organizations.organizations_update_admin` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:226` | dynamic_definition_transform |
+| `policy:public.user_workspace_preferences.user_workspace_preferences_delete_denied` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:73` | direct_ddl |
+| `policy:public.user_workspace_preferences.user_workspace_preferences_insert_denied` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:71` | direct_ddl |
+| `policy:public.user_workspace_preferences.user_workspace_preferences_select_authorized` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:69` | direct_ddl |
+| `policy:public.user_workspace_preferences.user_workspace_preferences_update_denied` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:72` | direct_ddl |
+| `r:private.account_organizations` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:21` | direct_ddl |
+| `r:private.commercial_accounts` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:14` | direct_ddl |
+| `r:private.workspace_capability_grants` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:33` | direct_ddl |
+| `r:public.user_workspace_preferences` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:45` | direct_ddl |
+| `trigger:private.account_organizations.account_organizations_audit` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:80` | direct_ddl |
+| `trigger:private.account_organizations.account_organizations_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:76` | direct_ddl |
+| `trigger:private.commercial_accounts.commercial_accounts_audit` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:79` | direct_ddl |
+| `trigger:private.commercial_accounts.commercial_accounts_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:75` | direct_ddl |
+| `trigger:private.workspace_capability_grants.workspace_capability_grants_audit` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:81` | direct_ddl |
+| `trigger:private.workspace_capability_grants.workspace_capability_grants_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:77` | direct_ddl |
+| `trigger:public.organizations.organizations_workspace_foundation` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:104` | direct_ddl |
+| `trigger:public.user_workspace_preferences.user_workspace_preferences_updated_at` | `supabase/migrations/20260916035105_explicit_workspace_context.sql:78` | direct_ddl |

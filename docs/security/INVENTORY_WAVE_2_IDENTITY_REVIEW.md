@@ -1,0 +1,11 @@
+# Revisão material da onda 2: identidade
+
+Revisão requerida pela mudança de identidade e concluída antes da publicação da aplicação. A referência imutável do inventário da abertura continua sendo o código já mesclado da onda 1; ela não é apresentada como prova de código futuro. Esta revisão registra o delta da etapa 2 e suas observações instaladas. O fechamento da onda deve incorporar os commits efetivamente publicados ao snapshot final.
+
+Controles: TRUST-ID-01, TRUST-DATA-01, TRUST-GOV-02 e TRUST-SDLC-01. Classes afetadas: dados pessoais de identidade, metadados internos de conta comercial e evidência de segurança. Não há novo destino externo, segredo, provedor ou classe de dado financeiro. Conta comercial não cria membership nem grant de conteúdo. Novas funções privilegiadas têm finalidade limitada, schema privado e search path vazio; wrappers públicos são invoker. Permissões diretas sobre as três tabelas privadas permanecem negadas.
+
+Abusos verificados: tipo comercial usado como capacidade; organização mais antiga escolhida silenciosamente; preferência ou cookie usados como autoridade; contexto trocado no submit; membro que tenta habilitar capacidades ou vincular conta; conta comercial que expõe outra organização; criador revogado; convite que fabrica perfil comercial; replay que revela identificador restrito.
+
+O último abuso foi reproduzido nos comandos `start_public_company_debt_view_v1` e `start_public_origination_thesis_v1`. A consulta de idempotência precedia a verificação de recurso. A correção exige contexto/capacidade antes da consulta e grant de trabalho antes do retorno. O teste negativo preserva o replay legítimo. Isso amplia a cobertura da correção 1B; o relatório anterior não é prova de que esses dois caminhos já estavam cobertos.
+
+Os carimbos, hashes, catálogos, invariantes de produção e resultados executados estão em `docs/build/arcabouco/etapa-02.md`. Nenhum dado descartável foi criado em produção. A revisão não certifica o produto, não fecha os 18 gaps restantes da abertura e não autoriza uma nova onda. O seed transitório de cadastro é retirado no fechamento desta etapa, após a aplicação compatível estar implantada.
