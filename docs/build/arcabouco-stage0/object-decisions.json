@@ -15158,15 +15158,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex, primeira onda",
-      "decision": "preservar",
-      "stage": "1B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
+      "owner": "Codex — etapa 6",
+      "decision": "refatorar",
+      "stage": "6",
+      "reason": "A projeção administrativa lista concessões allow; tombstone deny conserva a revogação sem aparecer como acesso concedido.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 776,
           "anchor": "create function private.read_workspace_access_v1()",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260916230240_workspace_access_allow_projection.sql",
+          "line": 2,
+          "anchor": "create or replace function private.read_workspace_access_v1()",
           "mechanism": "direct_ddl"
         }
       ],
@@ -127630,6 +127636,13 @@
       "decision": "preservar",
       "stage": "6",
       "reason": "SQL imutável aplicado nos dois ambientes; nome alinhado ao journal de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260916230240_workspace_access_allow_projection.sql",
+      "decision": "preservar",
+      "stage": "6",
+      "reason": "Correção da projeção de grants aplicada nos dois ambientes; sem alteração de privilégios."
     }
   ],
   "staging_archive": [
@@ -128068,11 +128081,13 @@
   "stage_6_revision": {
     "production_migrations": [
       "20260916212202",
-      "20260916212209"
+      "20260916212209",
+      "20260916230240"
     ],
     "staging_migrations": [
       "20260916211117",
-      "20260916211402"
+      "20260916211402",
+      "20260916230213"
     ],
     "new_objects": 41,
     "review": "docs/build/arcabouco/etapa-06.md"

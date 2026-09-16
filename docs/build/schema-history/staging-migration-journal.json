@@ -1,5 +1,4 @@
 {
-  "captured_at": "2026-09-16T10:23:16.169878+00:00",
   "rows": [
     {
       "name": "platform_foundation",
@@ -1324,7 +1323,36 @@
     {
       "name": "reconcile_domain_event_audit_outbox",
       "version": "20260916102218"
+    },
+    {
+      "name": "resource_policy_and_barriers",
+      "version": "20260916124024"
+    },
+    {
+      "name": "bound_policy_grants_to_resource",
+      "version": "20260916124447"
+    },
+    {
+      "name": "deduplicate_resource_policy_events",
+      "version": "20260916163357"
+    },
+    {
+      "name": "entity_and_dossier_identity",
+      "version": "20260916190433"
+    },
+    {
+      "name": "logical_sources_and_versions",
+      "version": "20260916211117"
+    },
+    {
+      "name": "source_identity_legacy_insert_default",
+      "version": "20260916211402"
+    },
+    {
+      "name": "workspace_access_allow_projection",
+      "version": "20260916230213"
     }
   ],
-  "project_id": "gjkkjtbfnssdsbmlhmwk"
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "captured_at": "2026-09-16T23:03:27.51862+00:00"
 }
