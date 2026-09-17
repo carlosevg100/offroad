@@ -257,7 +257,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".intake-issues__list")).toContainText(/49 milhões/);
   });
 
-  test("accepts high-confidence suggestions and confirms the case", async () => {
+  test("reviews individual contributions without a confidence batch and confirms the case", async () => {
     await page.goto(`${primaryProjectUrl}&step=documents`);
     await expect(page.locator(".intake-review")).toBeVisible();
 
@@ -279,13 +279,26 @@ test.describe("Document-first intake (company journey)", () => {
       await expect(form).toHaveCount(0);
     }
 
+    const previousRun = await page.locator(".intake-review").getAttribute("data-processing-run-id");
+    expect(previousRun).toBeTruthy();
     await page.locator(".intake-review__reanalyze button[type=submit]").click();
+    // A visible review from the previous run is not completion of the submitted reanalysis.
+    // Wait for its replacement before taking candidate IDs from the new projection.
+    await expect(page.locator(".intake-review")).not.toHaveAttribute("data-processing-run-id", previousRun!);
     await awaitIntakeAnalysis(page);
+    await expect(page.locator(".intake-review")).not.toHaveAttribute("data-processing-run-id", previousRun!);
     await expect(page.locator(".intake-case-review-actions")).toBeVisible();
-    await page.locator(".intake-review__toolbar form").first().locator("button[type=submit]").click();
-    // Confirmation copy is about the decision, not an internal field count. Prove the bulk action
-    // itself on the evidence register instead of leaking that implementation detail into the UI.
-    await expect(page.locator(".intake-field.is-confirmed")).toHaveCount(dataRoomExpectations.acceptedAfterBulkAccept);
+    await expect(page.getByRole("button", {name: /alta confiança|high.confidence/i})).toHaveCount(0);
+    const evidenceForReview = page.locator(".intake-review__evidence");
+    if (await evidenceForReview.getAttribute("open") === null) await evidenceForReview.locator(":scope > summary").click();
+    for (const fieldPath of ["company.legal_name", "transaction.purpose", "transaction.requested_amount"]) {
+      const field = page.locator(`.intake-field[data-field-path="${fieldPath}"]`);
+      await expect(field).toHaveCount(1);
+      const group = page.locator(".intake-group").filter({has: field});
+      if (await group.getAttribute("open") === null) await group.locator(":scope > summary").click();
+      await field.locator('button[name="decision"][value="accept"]').click();
+      await expect(field).toHaveClass(/is-confirmed/);
+    }
 
     // Review the actual extracted candidate through the same form available to the borrower.
     // The synthetic source files and their extraction expectations remain unchanged.

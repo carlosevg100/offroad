@@ -21,6 +21,4 @@ export const dataRoomExpectations = {
   documents: redeHorizonteRequiredFiles.length,
   candidates: 38,
   openIssues: 8,
-  /** Primary candidates with confidence ≥ 0.95 accepted by the "high confidence" action (37 primaries; only the CFO-letter cost estimate is a non-primary alternative). */
-  acceptedAfterBulkAccept: 37,
 } as const;

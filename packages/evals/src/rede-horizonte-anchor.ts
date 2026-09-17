@@ -40,6 +40,8 @@ export function redeHorizonteCandidates(gold = loadRedeHorizonteGold()): FactCan
       informationClass: profile.informationClass,
       confidence: 0.995,
       anchorVerified: true,
+      // This synthetic case declares one standalone BRL reporting entity; normalized gold values are in base units.
+      entityScope: "standalone", currency: "BRL", unit: "currency", scale: String(profile.scale ?? 1),
       ...(field.periodStart ? {periodStart: field.periodStart} : {}),
       ...(field.periodEnd ? {periodEnd: field.periodEnd} : {}),
       ...(profile.entityName ? {entityName: profile.entityName} : {}),

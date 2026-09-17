@@ -8,7 +8,6 @@ import {capitalProjectJobSchema} from "@offroad/work-plan";
 
 import {routing, type AppLocale} from "@/i18n/routing";
 import {
-  acceptHighConfidenceCandidates as acceptCandidates,
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
@@ -472,13 +471,6 @@ export async function reviseDiagnosticCase(formData: FormData) {
   if (error) redirect(onboardingUrl(locale, "save"));
   const processing = await processIntakeSession(runtime);
   redirect(onboardingUrl(locale, processing.ok ? undefined : processing.error));
-}
-
-export async function acceptHighConfidenceCandidates(formData: FormData) {
-  const locale = localeFrom(formData);
-  const {runtime} = await onboardingIntakeRuntime(locale, formData);
-  const outcome = await acceptCandidates(runtime);
-  redirect(onboardingUrl(locale, outcome.ok ? undefined : outcome.error));
 }
 
 export async function reviewIntakeCandidate(formData: FormData) {

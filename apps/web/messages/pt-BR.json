@@ -3789,7 +3789,6 @@
       "fields": "campos",
       "openItems": "pontos de atenção",
       "reviewedCounter": "{reviewed}/{total} campos revisados",
-      "acceptHighConfidence": "Aceitar sugestões confiáveis",
       "reprocess": "Reprocessar",
       "nextBatchKicker": "PRÓXIMA RODADA",
       "nextBatchTitle": "O que precisamos confirmar agora",

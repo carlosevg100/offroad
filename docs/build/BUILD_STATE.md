@@ -1,3 +1,11 @@
+## Etapa 8: ponte de leitura (em execução, 17/09/2026)
+
+Retirada da aceitação por confiança e preservação de dimensões nos consumidores. Revisão
+individual funciona antes e depois da migração de observações. A base de cálculo recusa
+ambiguidade e contexto incompleto, sem apagar as leituras originais. Banco novo somente em
+staging; precisão decimal no armazenamento será ativada com o próximo incremento. Etapa 9
+não iniciada. Contrato em `arcabouco/etapa-08.md`.
+
 ## Etapa 8: compatibilidade do consumidor antes da migração
 
 O worker passa a reconhecer envelopes sem conteúdo dos agregados `observation` e

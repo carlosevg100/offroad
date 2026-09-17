@@ -2682,6 +2682,11 @@ function toCandidate(candidate: Record<string, unknown>): FactCandidate {
     ...(typeof candidate.period_end === "string" ? {periodEnd: candidate.period_end} : {}),
     ...(typeof candidate.entity_name === "string" ? {entityName: candidate.entity_name} : {}),
     ...(typeof candidate.entity_scope === "string" ? {entityScope: candidate.entity_scope} : {}),
+    ...(typeof candidate.currency === "string" ? {currency: candidate.currency} : {}),
+    ...(typeof candidate.unit === "string" ? {unit: candidate.unit} : {}),
+    ...(typeof candidate.value_scale === "number" || typeof candidate.value_scale === "string" ? {scale: String(candidate.value_scale)} : {}),
+    ...(typeof candidate.scenario === "string" ? {scenario: candidate.scenario} : {}),
+    ...(typeof candidate.definition_version_id === "string" ? {definitionVersionId: candidate.definition_version_id} : {}),
     anchor: candidate.source_anchor ?? {},
   };
 }

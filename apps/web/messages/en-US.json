@@ -3789,7 +3789,6 @@
       "fields": "fields",
       "openItems": "open items",
       "reviewedCounter": "{reviewed}/{total} fields reviewed",
-      "acceptHighConfidence": "Accept high-confidence suggestions",
       "reprocess": "Reprocess",
       "nextBatchKicker": "NEXT ROUND",
       "nextBatchTitle": "What we need to confirm now",

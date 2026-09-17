@@ -94,7 +94,7 @@ export async function IntakeReview({executionApproval, locale, session, document
   const openIssues = issues.filter(isReviewAttentionItem);
   const conflictCandidateIds = new Set(openIssues.flatMap((issue) => issue.candidate_ids));
   const reviewed = candidates.filter((candidate) => ["accepted", "edited", "rejected", "not_applicable"].includes(candidate.review_state)).length;
-  const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state) && candidate.is_primary).length;
+  const accepted = candidates.filter((candidate) => ["accepted", "edited"].includes(candidate.review_state)).length;
   const valueLabels = {yes: t("yes"), no: t("no")};
   const anchorLabels = {page: t("page"), sheet: t("sheet"), cell: t("cell")};
   const priorityLabel = (priority: string) => (priority === "critical" || priority === "analysis" || priority === "diligence" || priority === "complementary" ? t(`priority.${priority}`) : priority);
@@ -110,7 +110,7 @@ export async function IntakeReview({executionApproval, locale, session, document
 
   if (executionApproval?.pending) return <IntakeExecutionApproval state={executionApproval} locale={locale} />;
   return (
-    <div className="intake-review">
+    <div className="intake-review" data-processing-run-id={session.current_run_id}>
       {executionApproval ? <IntakeExecutionApproval state={executionApproval} locale={locale} /> : null}
       <IntakeJourneyTelemetry
         documentCount={documents.length}
@@ -207,7 +207,6 @@ export async function IntakeReview({executionApproval, locale, session, document
         <summary><span>{t("evidenceKicker")}</span><strong>{t("evidenceTitle")}</strong><small>{t("reviewedCounter", {reviewed, total: candidates.length})}</small></summary>
       <div className="intake-review__toolbar">
         <div><History size={14} /><span>{t("reviewedCounter", {reviewed, total: candidates.length})}</span></div>
-        <form action={actions.accept}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--small" type="submit"><Check size={13} />{t("acceptHighConfidence")}</button></form>
         <form action={actions.process}><input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><button className="button button--ghost button--small" type="submit">{t("reprocess")}</button></form>
       </div>
 
@@ -258,7 +257,7 @@ export async function IntakeReview({executionApproval, locale, session, document
                   const state = candidate.review_state === "accepted" || candidate.review_state === "edited" ? "is-confirmed" : candidate.review_state === "rejected" || candidate.review_state === "not_applicable" ? "is-muted" : isConflict ? "is-conflict" : Number(candidate.confidence) < HIGH_CONFIDENCE ? "is-low-confidence" : "is-proposed";
                   const display = displayCandidateValue(candidate, locale, valueLabels);
                   return (
-                    <form action={actions.review} className={`intake-field ${state}`} key={candidate.id}>
+                    <form action={actions.review} className={`intake-field ${state}`} data-field-path={candidate.field_path} key={candidate.id}>
                       <input name="locale" type="hidden" value={locale} /><input name="session_id" type="hidden" value={session.id} /><input name="candidate_id" type="hidden" value={candidate.id} />
                       <div className="intake-field__status"><i />{stateLabel(candidate, isConflict)}</div>
                       <label>

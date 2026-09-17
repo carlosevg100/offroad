@@ -8,7 +8,7 @@
  * with both sides attached, never a verdict; a calculation is a value with a trace, never a
  * claim.
  */
-export const reconciliationVersion = "2026.08.25-v3";
+export const reconciliationVersion = "2026.09.17-observations-v4";
 
 export * from "./facts";
 export * from "./rules";
@@ -20,7 +20,7 @@ export * from "./debt-truth";
 import {buildContext, runRules, type ReconciliationException} from "./rules";
 import {computeCalculations, type CalculationSet} from "./calculations";
 import {archetypeQuestions, findGaps, type InformationGap} from "./gaps";
-import {mergeInstrumentsByIdentity, reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
+import {calculationBasis, mergeInstrumentsByIdentity, reconcileFacts, renumberIndexedGroups, type FactCandidate, type ReconciledFact} from "./facts";
 import {buildFinancialTruthSet, type FinancialTruthSet} from "./financial-truth";
 import {buildDebtTruthSet, type DebtTruthSet} from "./debt-truth";
 import type {
@@ -62,9 +62,10 @@ export function reconcileCase(input: {
   const locale = input.locale ?? "pt";
   const facts = mergeInstrumentsByIdentity(renumberIndexedGroups(reconcileFacts(input.candidates)));
   const context = buildContext(facts, locale);
-  const {calculations, gaps: calculationGaps} = computeCalculations(context);
-  const financialTruth = buildFinancialTruthSet(facts);
-  const debtTruth = buildDebtTruthSet(facts, input.referenceDate ?? new Date().toISOString().slice(0, 10));
+  const basis = calculationBasis(facts);
+  const {calculations, gaps: calculationGaps} = computeCalculations(buildContext(basis.facts, locale));
+  const financialTruth = buildFinancialTruthSet(basis.facts);
+  const debtTruth = buildDebtTruthSet(basis.facts, input.referenceDate ?? new Date().toISOString().slice(0, 10));
 
   const gaps = findGaps({
     archetypeId: input.archetypeId,
@@ -75,6 +76,14 @@ export function reconcileCase(input: {
     ...(input.requirementResponses ? {requirementResponses: input.requirementResponses} : {}),
     ...(input.additionalAvailableFieldPaths ? {additionalAvailableFieldPaths: input.additionalAvailableFieldPaths} : {}),
   });
+  for (const blocked of basis.blocked) {
+    gaps.push({
+      id: `observation_basis:${blocked.fieldPath}`, severity: "high",
+      title: locale === "pt" ? "Base de cálculo incompleta ou ambígua" : "Incomplete or ambiguous calculation basis",
+      description: `${blocked.fieldPath}: ${blocked.reasons.join(", ")}`,
+      ownerRole: "internal_analyst", reference: blocked.fieldPath,
+    });
+  }
   for (const gap of calculationGaps) {
     gaps.push({
       id: `missing_calculation:${gap.id}`,

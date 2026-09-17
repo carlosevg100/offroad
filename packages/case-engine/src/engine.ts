@@ -129,7 +129,7 @@ import {
   type GovernedWorkbookAudit,
   type GovernedWorkbookMetadata,
 } from "@offroad/financial-model";
-import {reconcileCase, type FactCandidate, type ReconciledFact, type ReconciliationReport} from "@offroad/reconciliation";
+import {calculationBasis, reconcileCase, type FactCandidate, type ReconciledFact, type ReconciliationReport} from "@offroad/reconciliation";
 import {analyzeReceivables, type ReceivablesAnalysis, type ReceivablesCase} from "@offroad/receivables-analysis";
 import {z} from "zod";
 
@@ -803,7 +803,7 @@ export async function executeCaseEngine(
           const readiness = assessReadiness({
             archetypeId: input.archetypeId,
             documents: input.documents,
-            facts: reconciliation.facts,
+            facts: calculationBasis(reconciliation.facts).facts,
             exceptions: reconciliation.exceptions,
             gaps: reconciliation.gaps,
             expectedMaterialFields: expectedMaterialFields(input.archetypeId),
@@ -812,7 +812,7 @@ export async function executeCaseEngine(
             additionalAvailableFieldPaths: intakeAvailableFieldPaths(input.dealBrief),
           });
           const deskInputs = buildDeskInputs(
-            reconciliation.facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
+            calculationBasis(reconciliation.facts).facts.map((fact) => ({fieldPath: fact.key.fieldPath, value: fact.value})),
             {
               referenceDate: input.referenceDate,
               indexLevels: input.indexLevels ?? {cdi: "0.105", tlp: "0.079", ipca: "0.045", tr: "0.002"},
@@ -1255,7 +1255,7 @@ async function runStructureSubgraph(
 ) {
   const graphInput: StructureSubgraphInput = {caseInput, reconciliation, metrics};
   const sourceIds = caseSourceIds(caseInput);
-  const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
+  const valueOf = (fieldPath: string) => calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
   const calculationOf = (id: string) => reconciliation.calculations.find((calculation) => calculation.id === id)?.value;
   const task = (
     id: StructureSubtaskId,
@@ -1278,7 +1278,7 @@ async function runStructureSubgraph(
     execute,
   });
   const basisIdsFor = (operationTruth: OperationTruthSet, structureTruth: StructureTruthSet) => uniqueStrings([
-    ...reconciliation.facts.map((fact) => fact.key.fieldPath),
+    ...calculationBasis(reconciliation.facts).facts.map((fact) => fact.key.fieldPath),
     ...reconciliation.calculations.map((calculation) => calculation.id),
     ...sourceIds,
     ...operationTruth.procedureCoverage.map((procedure) => procedure.procedureId),
@@ -1289,7 +1289,7 @@ async function runStructureSubgraph(
     task("need_capacity", [], structureCapacitySchema, ["financial_core"], () => {
       const requested = caseInput.dealBrief.requestedAmount ?? number(valueOf("transaction.requested_amount"));
       if (!requested) return {output: {capacity: null}, toolsUsed: ["financial_core"], sourceIds};
-      const latestArr = reconciliation.facts
+      const latestArr = calculationBasis(reconciliation.facts).facts
         .filter((fact) => /^(historical|interim)_financials\.\d{4}(_\d{2})?\.arr(_\d+m|_ytd|_ltm)?$/.test(fact.key.fieldPath))
         .sort((a, b) => b.key.fieldPath.localeCompare(a.key.fieldPath))[0]?.value;
       const capacity = assessCapacity({
@@ -1312,13 +1312,13 @@ async function runStructureSubgraph(
         : /ltda|limitada/i.test(legalName)
           ? "ltda"
           : "other";
-      const latestYear = reconciliation.facts
+      const latestYear = calculationBasis(reconciliation.facts).facts
         .map((fact) => fact.key.fieldPath.match(/^historical_financials\.(\d{4})\./)?.[1])
         .filter((year): year is string => Boolean(year))
         .sort()
         .at(-1);
       const priorYear = latestYear ? String(Number(latestYear) - 1) : undefined;
-      const materialFacts = reconciliation.facts.filter((fact) => fact.accepted.evidenceRank <= 7);
+      const materialFacts = calculationBasis(reconciliation.facts).facts.filter((fact) => fact.accepted.evidenceRank <= 7);
       const evidenceRank = materialFacts.length
         ? (materialFacts.reduce((sum, fact) => sum + fact.accepted.evidenceRank, 0) / materialFacts.length).toFixed(2)
         : undefined;
@@ -1399,7 +1399,7 @@ async function runStructureSubgraph(
     task("operation_truth", ["need_capacity"], operationTruthSubtaskSchema, ["deal_structure"], ({outputs}) => {
       const {requested, capacity} = subtaskOutput<z.infer<typeof structureCapacitySchema>>(outputs, "need_capacity") as {requested?: string; capacity: CapacityAssessment | null};
       const operationTruth = buildOperationTruthSet({
-        facts: reconciliation.facts,
+        facts: calculationBasis(reconciliation.facts).facts,
         financialTruth: reconciliation.financialTruth,
         debtTruth: reconciliation.debtTruth,
         capacity,
@@ -1432,7 +1432,7 @@ async function runStructureSubgraph(
       const {collateral} = subtaskOutput<{collateral: CollateralPackage | null}>(outputs, "collateral_design");
       const structureTruth = buildStructureTruthSet({
         archetypeId: caseInput.archetypeId,
-        facts: reconciliation.facts,
+        facts: calculationBasis(reconciliation.facts).facts,
         financialTruth: reconciliation.financialTruth,
         debtTruth: reconciliation.debtTruth,
         operationTruth,
@@ -1570,7 +1570,7 @@ async function runStructureSubgraph(
       const pricedInstrument = instruments.find((entry) => entry.eligible)?.instrument.id;
       const alternativeCollateralAssets = collateralAssetsOf(reconciliation, metrics.desk);
       for (const alternative of proposal?.alternatives ?? []) {
-        const alternativeFacts = factsForStructureAlternative(reconciliation.facts, alternative);
+        const alternativeFacts = factsForStructureAlternative(calculationBasis(reconciliation.facts).facts, alternative);
         const alternativeCollateral = alternativeCollateralAssets.length > 0
           ? designCollateralPackage({assets: alternativeCollateralAssets, amount: alternative.amount})
           : null;
@@ -1779,7 +1779,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       const materialInputs = subtaskOutput<z.infer<typeof materialInputsSchema>>(outputs, "material_inputs");
       if (input.institutionalModelContext) {
         if (!input.materialsPreparationApproved) return {output:{financialModel:null,material:null,blockers:["production_plan_not_approved"]},toolsUsed:["financial_model"],sourceIds};
-        const calculation=calculateApprovedInstitutionalScenarios({context:input.institutionalModelContext,facts:reconciliation.facts});
+        const calculation=calculateApprovedInstitutionalScenarios({context:input.institutionalModelContext,facts:calculationBasis(reconciliation.facts).facts});
         if(calculation.status!=="ready")return {output:{financialModel:null,material:null,blockers:calculation.blockers},toolsUsed:["financial_model"],sourceIds};
         const financialModel=await buildInstitutionalWorkbookArtifact(calculation.scenarios,input.institutionalModelContext.sourceManifestFingerprint);
         const material=institutionalFinancialModelMaterial({artifactFingerprint:financialModel.fingerprint,supportIds:financialModel.supportIds,scenarios:calculation.scenarios.map(s=>({name:s.prepared.input!.assumptionBook.scenarioName,currency:s.model.currency,periods:s.model.periods}))});
@@ -1816,7 +1816,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       const annualInterestRate = rate ? midpointDecimal(rate.min, rate.max) : null;
       const modelInput = {
         archetypeId: input.archetypeId,
-        facts: reconciliation.facts,
+        facts: calculationBasis(reconciliation.facts).facts,
         calculations: [...reconciliation.calculations, ...evidence.calculations],
         requestedAmount: selected.amount,
         requestedTermMonths: selected.termMonths,
@@ -1827,7 +1827,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       } as const;
       const modelPt = buildFinancialModel({...modelInput, lang: "pt"});
       const modelEn = buildFinancialModel({...modelInput, lang: "en"});
-      const companyName = reconciliation.facts.find((fact) => fact.key.fieldPath === "company.legal_name")?.value;
+      const companyName = calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "company.legal_name")?.value;
       const commonMetadata = {
         title: companyName ? `Modelo financeiro indicativo | ${companyName}` : "Modelo financeiro indicativo",
         ...(companyName ? {companyName} : {}),
@@ -1913,7 +1913,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
       const compiled = compileMaterials({
         brief: claims.brief,
         gaps: reconciliation.gaps,
-        facts: reconciliation.facts,
+        facts: calculationBasis(reconciliation.facts).facts,
         calculations: [...reconciliation.calculations, ...evidence.calculations],
         exceptions: reconciliation.exceptions,
         readiness: metrics.readiness,
@@ -2110,8 +2110,8 @@ function applyCapacityCondition(
 }
 
 function collateralAssetsOf(reconciliation: ReconciliationReport, desk: DeskAnalysis | null): CollateralAsset[] {
-  const valueOf = (fieldPath: string) => reconciliation.facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
-  const assets: CollateralAsset[] = reconciliation.facts
+  const valueOf = (fieldPath: string) => calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === fieldPath)?.value;
+  const assets: CollateralAsset[] = calculationBasis(reconciliation.facts).facts
     .filter((fact) => /^collateral\.assets\.\d+\.type$/.test(fact.key.fieldPath))
     .map((fact) => {
       const base = fact.key.fieldPath.replace(/\.type$/, "");
@@ -2176,8 +2176,8 @@ function requestForMatching(
     : metrics.desk?.leverage.scenarios[0]?.postTurns;
   const leverage = deskLeverage
     ?? reconciliation.calculations.find((calculation) => calculation.id === "leverage_post_transaction")?.value
-    ?? reconciliation.facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
-  const dscr = reconciliation.facts.find((fact) => fact.key.fieldPath === "projections.minimum_dscr")?.value;
+    ?? calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
+  const dscr = calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "projections.minimum_dscr")?.value;
   return {
     ...(proposedAmount ? {amount: proposedAmount} : {}),
     ...(input.dealBrief.requestedTermMonths !== undefined ? {termMonths: input.dealBrief.requestedTermMonths} : {}),

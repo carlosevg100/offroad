@@ -1247,6 +1247,7 @@ function fact(fieldPath: string, normalizedValue: unknown, valueType = "number")
     confidence: 0.99,
     anchor_verified: true,
     source_anchor: {kind: "table_cell", id: fieldPath},
+    entity_scope: "standalone", currency: "BRL", unit: "currency", value_scale: 1,
   };
 }
 

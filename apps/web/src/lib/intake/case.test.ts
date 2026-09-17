@@ -25,7 +25,7 @@ describe("intake payloads", () => {
     const compilation = buildRedeHorizonteDocumentIntake(fullDocumentSet);
     const candidates = buildCandidatePayload(compilation);
     expect(candidates).toHaveLength(compilation.candidates.length);
-    expect(candidates.find((row) => row.extractor_key === "requested")).toMatchObject({normalized_value: 54_000_000, source_document_id: "doc-1", currency: "BRL", is_primary: true});
+    expect(candidates.find((row) => row.extractor_key === "requested")).toMatchObject({normalized_value: 54_000_000, source_document_id: "doc-1", currency: "BRL", is_primary: false});
     expect(candidates.every((row) => !("organization_id" in row) && !("created_by" in row))).toBe(true);
 
     const issues = buildIssuePayload(compilation);
@@ -63,7 +63,7 @@ describe("deriveCase", () => {
     ])).toBeNull();
   });
 
-  it("derives the case only from confirmed primary candidates, never from fixed text", () => {
+  it("derives the case only from unambiguous reviewed candidates, never from fixed text", () => {
     const derived = deriveCase([
       candidate({field_path: "company.legal_name", normalized_value: "Padaria Aurora Ltda."}),
       candidate({field_path: "company.display_name", normalized_value: "Aurora"}),
@@ -88,13 +88,20 @@ describe("deriveCase", () => {
     expect(buildOpportunityTitle("N".repeat(200), "p").length).toBeLessThanOrEqual(OPPORTUNITY_TITLE_MAX);
   });
 
-  it("only counts accepted/edited primary candidates as confirmed", () => {
+  it("counts human-reviewed contributions regardless of the old primary flag", () => {
     expect(confirmedCandidates([
       candidate({review_state: "accepted"}),
       candidate({review_state: "edited"}),
       candidate({review_state: "accepted", is_primary: false}),
       candidate({review_state: "not_applicable"}),
       candidate({review_state: "proposed"}),
-    ])).toHaveLength(2);
+    ])).toHaveLength(3);
   });
+});
+
+
+it("refuses conflicting reviewed origination values even when one is primary", () => {
+ const rows = [candidate({normalized_value: "Empresa X"}), candidate({field_path: "transaction.purpose", normalized_value: "Expansão"}), candidate({field_path: "transaction.requested_amount", normalized_value: "100", value_type: "number", currency: "BRL"})];
+ expect(deriveCase(rows)?.requestedAmount).toBe(100);
+ expect(deriveCase([...rows, candidate({field_path: "transaction.requested_amount", normalized_value: "101", value_type: "number", currency: "BRL", is_primary: false})])).toBeNull();
 });

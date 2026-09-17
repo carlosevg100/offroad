@@ -1,25 +1,18 @@
 import Decimal from "decimal.js";
 
-/**
- * From many documents saying things, to one set of facts the desk stands behind.
- *
- * Three documents state revenue for 2025 and they disagree. That is not a defect — it is the
- * normal condition of a data room, and resolving it is the first thing a credit desk does. The
- * rule is precedence by **evidence rank**, which the ontology already assigns to each kind of
- * document: audited statements outrank a review, a review outranks management accounts, and a
- * deck loses to all of them. Not "the most recent", not "the highest confidence", not whichever
- * document happened to be processed first.
- *
- * What is *not* discarded: the losers. Every conflicting value stays attached to the fact, with
- * its own source and anchor, because a difference between what the auditor signed and what the
- * ERP exports is exactly the question an investor will ask — and the reconciliation rules read
- * these conflicts to raise it before he does.
- */
+/** Coexisting source assertions. Ranking orders a proposed reading; it never adopts it. */
 
 export type FactKey = {
   fieldPath: string;
+  periodStart?: string;
   periodEnd?: string;
   entityName?: string;
+  entityScope?: string;
+  currency?: string;
+  unit?: string;
+  scale?: string;
+  scenario?: string;
+  definitionVersionId?: string;
 };
 
 export type FactCandidate = {
@@ -28,7 +21,7 @@ export type FactCandidate = {
   normalizedValue: string;
   valueType: "text" | "number" | "date" | "boolean" | "list";
   sourceDocument: string;
-  /** 1 (audited) to 7 (company statement). Lower wins. */
+  /** 1 (audited) to 7 (company statement). Reading order only. */
   evidenceRank: number;
   informationClass: string;
   confidence: number;
@@ -36,8 +29,13 @@ export type FactCandidate = {
   periodStart?: string;
   periodEnd?: string;
   entityName?: string;
-  /** Consolidated, standalone (parent-only) or segment; the consolidated number is the company's. */
+  /** Explicit perimeter; none of these scopes takes precedence over another. */
   entityScope?: string;
+  currency?: string;
+  unit?: string;
+  scale?: string;
+  scenario?: string;
+  definitionVersionId?: string;
   /** Where in the document it was found; carried through so a fact never loses its citation. */
   anchor?: unknown;
 };
@@ -50,10 +48,13 @@ export type FactConflict = {
 
 export type ReconciledFact = {
   key: FactKey;
-  /** The value the desk stands behind. */
+  /** Proposed reading for compatibility; not an adopted or official value. */
   value: string;
   valueType: FactCandidate["valueType"];
+  /** @deprecated Proposed reference only. Contextual adoption is a separate command. */
   accepted: FactCandidate;
+  /** All assertions, including corroboration with the same value. */
+  observations?: FactCandidate[];
   /** Everything that said otherwise, ordered by rank then confidence. Never discarded. */
   conflicts: FactConflict[];
   /** True when at least one conflict differs beyond the tolerance the caller passed. */
@@ -67,7 +68,7 @@ export function factKeyOf(candidate: FactCandidate): string {
   // Indexed tuples (instruments, customers, windows) are rows of one document: the same index in
   // another document is another row, not the same fact read twice.
   const tupleScope = indexedPath.test(candidate.fieldPath) ? candidate.sourceDocument : "";
-  return [candidate.fieldPath, candidate.periodEnd ?? "", candidate.entityName ?? "", tupleScope].join("|");
+  return JSON.stringify([candidate.fieldPath, ...dimensionTuple(candidate), tupleScope]);
 }
 
 const isNumeric = (candidate: FactCandidate) => candidate.valueType === "number";
@@ -81,13 +82,14 @@ const isNumeric = (candidate: FactCandidate) => candidate.valueType === "number"
  * deterministic — two runs over the same data room must reconcile identically, or nothing
  * downstream can be trusted.
  */
-const scopeOrder = (scope: string | undefined): number => (scope === "consolidated" ? 0 : scope === undefined ? 1 : 2);
+export function dimensionTuple(candidate: FactKey): Array<string | null> {
+  return [candidate.entityName, candidate.entityScope, candidate.periodStart, candidate.periodEnd,
+    candidate.currency, candidate.unit, candidate.scale, candidate.scenario, candidate.definitionVersionId].map((value) => value ?? null);
+}
 
 export function compareCandidates(a: FactCandidate, b: FactCandidate): number {
   if (a.evidenceRank !== b.evidenceRank) return a.evidenceRank - b.evidenceRank;
   if (a.anchorVerified !== b.anchorVerified) return a.anchorVerified ? -1 : 1;
-  // Consolidated before parent-only: a filing prints both columns and the company is the group.
-  if (scopeOrder(a.entityScope) !== scopeOrder(b.entityScope)) return scopeOrder(a.entityScope) - scopeOrder(b.entityScope);
   if (a.confidence !== b.confidence) return b.confidence - a.confidence;
   return a.normalizedValue.localeCompare(b.normalizedValue);
 }
@@ -132,12 +134,20 @@ export function reconcileFacts(candidates: readonly FactCandidate[], options: Re
     facts.push({
       key: {
         fieldPath: accepted.fieldPath,
+        ...(accepted.periodStart ? {periodStart: accepted.periodStart} : {}),
+        ...(accepted.entityScope ? {entityScope: accepted.entityScope} : {}),
+        ...(accepted.currency ? {currency: accepted.currency} : {}),
+        ...(accepted.unit ? {unit: accepted.unit} : {}),
+        ...(accepted.scale ? {scale: accepted.scale} : {}),
+        ...(accepted.scenario ? {scenario: accepted.scenario} : {}),
+        ...(accepted.definitionVersionId ? {definitionVersionId: accepted.definitionVersionId} : {}),
         ...(accepted.periodEnd ? {periodEnd: accepted.periodEnd} : {}),
         ...(accepted.entityName ? {entityName: accepted.entityName} : {}),
       },
       value: accepted.normalizedValue,
       valueType: accepted.valueType,
       accepted,
+      observations: ordered,
       conflicts,
       disputed,
     });
@@ -252,13 +262,13 @@ function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identi
     const target = remap.get(index) ?? index;
     const path = `${group}.${target}.${match[3]}`;
     const candidate = target === index ? fact : {...fact, key: {...fact.key, fieldPath: path}};
-    const key = [path, fact.key.periodEnd ?? "", fact.key.entityName ?? ""].join("|");
+    const key = JSON.stringify([path, ...dimensionTuple(fact.key)]);
     const prior = seen.get(key);
     if (!prior) { seen.set(key, candidate); merged.push(candidate); continue; }
     // Same field from two documents: the better-ranked reading stands, the other is a conflict.
     const [winner, loser] = compareCandidates(prior.accepted, candidate.accepted) <= 0 ? [prior, candidate] : [candidate, prior];
     const conflict = loser.value === winner.value ? [] : [{candidate: loser.accepted, ...(isNumeric(loser.accepted) && isNumeric(winner.accepted) ? {relativeDelta: relativeDelta(winner.value, loser.value) ?? undefined} : {})}];
-    const combined: ReconciledFact = {...winner, conflicts: [...winner.conflicts, ...loser.conflicts, ...conflict].filter((entry): entry is FactConflict => Boolean(entry)), disputed: winner.disputed || loser.disputed};
+    const combined: ReconciledFact = {...winner, observations: [...(winner.observations ?? [winner.accepted]), ...(loser.observations ?? [loser.accepted])], conflicts: [...winner.conflicts, ...loser.conflicts, ...conflict].filter((entry): entry is FactConflict => Boolean(entry)), disputed: winner.disputed || loser.disputed || conflict.length > 0};
     seen.set(key, combined);
     merged[merged.indexOf(prior)] = combined;
   }
@@ -277,13 +287,14 @@ function mergeByIdentity(facts: readonly ReconciledFact[], group: string, identi
 
 /** Index for the rules and the calculations: field path (+ period) → fact. */
 export function indexFacts(facts: readonly ReconciledFact[]): Map<string, ReconciledFact> {
-  const index = new Map<string, ReconciledFact>();
+  const buckets = new Map<string, ReconciledFact[]>();
   for (const fact of facts) {
-    index.set([fact.key.fieldPath, fact.key.periodEnd ?? ""].join("|"), fact);
-    // Also reachable without a period, for facts stated once (the request, the company).
-    if (!index.has(fact.key.fieldPath)) index.set(fact.key.fieldPath, fact);
+    for (const key of [[fact.key.fieldPath, fact.key.periodEnd ?? ""].join("|"), fact.key.fieldPath]) {
+      buckets.set(key, [...(buckets.get(key) ?? []), fact]);
+    }
   }
-  return index;
+  // An unqualified lookup must never choose a perimeter, currency or definition implicitly.
+  return new Map([...buckets].filter(([, values]) => values.length === 1).map(([key, values]) => [key, values[0]!]));
 }
 
 export function factValue(index: Map<string, ReconciledFact>, fieldPath: string, periodEnd?: string): Decimal | null {
@@ -291,4 +302,35 @@ export function factValue(index: Map<string, ReconciledFact>, fieldPath: string,
   if (!fact || fact.valueType !== "number") return null;
   const value = new Decimal(fact.value);
   return value.isFinite() ? value : null;
+}
+
+/** A proposed analytical basis must be dimensionally usable before any calculation.
+ * Contextual adoption is separate; unknown units/perimeters cannot be repaired by ranking. */
+export function calculationBasis(facts: readonly ReconciledFact[]): {
+  facts: ReconciledFact[];
+  blocked: Array<{fieldPath: string; reasons: string[]}>;
+} {
+  const numeric = facts.filter((fact) => fact.valueType === "number");
+  const perimeters = new Set(numeric.map((fact) => fact.key.entityScope).filter(Boolean));
+  const entities = new Set(numeric.map((fact) => fact.key.entityName).filter(Boolean));
+  const currencies = new Set(numeric.map((fact) => fact.key.currency).filter(Boolean));
+  const byPath = new Map<string, number>();
+  for (const fact of facts) byPath.set(fact.key.fieldPath, (byPath.get(fact.key.fieldPath) ?? 0) + 1);
+  const blocked: Array<{fieldPath: string; reasons: string[]}> = [];
+  const usable = facts.filter((fact) => {
+    const reasons: string[] = [];
+    if (fact.valueType === "number") {
+      if (!fact.key.entityScope) reasons.push("perimeter_unknown");
+      if (!fact.key.unit) reasons.push("unit_unknown");
+      if (!fact.key.scale || !/^[0-9]+(?:\.[0-9]+)?$/.test(fact.key.scale) || new Decimal(fact.key.scale).lte(0)) reasons.push("scale_unknown");
+      if (!fact.key.currency && !["ratio", "percent", "percentage", "count", "days", "months", "years"].includes(fact.key.unit ?? "")) reasons.push("currency_unknown");
+      if (perimeters.size > 1 || entities.size > 1) reasons.push("context_selection_required");
+      if (currencies.size > 1) reasons.push("currency_selection_required");
+    }
+    if ((byPath.get(fact.key.fieldPath) ?? 0) > 1) reasons.push("dimension_selection_required");
+    if (fact.conflicts.length > 0) reasons.push("conflicting_observations");
+    if (reasons.length > 0) { blocked.push({fieldPath: fact.key.fieldPath, reasons}); return false; }
+    return true;
+  });
+  return {facts: usable, blocked};
 }

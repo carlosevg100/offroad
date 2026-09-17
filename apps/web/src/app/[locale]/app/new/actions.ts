@@ -12,7 +12,6 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {createClient} from "@/lib/supabase/server";
 import {hasWorkspaceCapability} from "@/lib/workspace/capabilities";
 import {
-  acceptHighConfidenceCandidates,
   confirmIntakeCase,
   loadIntakeSession,
   processIntakeSession,
@@ -255,14 +254,6 @@ export async function reviseWorkspaceDiagnosticCase(formData: FormData) {
 
   const processing = await processIntakeSession(runtime);
   redirect(intakeUrl(locale, sessionId, processing.ok ? undefined : processing.error));
-}
-
-export async function acceptWorkspaceIntakeCandidates(formData: FormData) {
-  const locale = localeFrom(formData);
-  const sessionId = value(formData, "session_id");
-  const runtime = await workspaceRuntime(locale, sessionId);
-  const outcome = await acceptHighConfidenceCandidates(runtime);
-  redirect(intakeUrl(locale, sessionId, outcome.ok ? undefined : outcome.error));
 }
 
 export async function reviewWorkspaceIntakeCandidate(formData: FormData) {

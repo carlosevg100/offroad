@@ -24,6 +24,7 @@ const candidate = (
   informationClass: "audited",
   confidence: 0.99,
   anchorVerified: true,
+  entityScope: "consolidated", currency: "BRL", unit: "currency", scale: "1",
   ...extra,
 });
 
@@ -142,6 +143,19 @@ async function executeWithConfirmedStructure(
 }
 
 describe("the governed case engine", () => {
+  it("blocks conflicting cash in downstream capacity without dropping either observation", async () => {
+    const result = await executeCaseEngine({
+      runId: "conflicting-cash-capacity", caseId: "synthetic-observations", archetypeId: "growth_expansion",
+      locale: "pt", referenceDate: "2026-08-24",
+      candidates: [candidate("transaction.requested_amount", "100"), candidate("debt.total_gross", "60"), candidate("historical_financials.2025.ebitda", "25", "number", {periodEnd: "2025-12-31"}), candidate("historical_financials.2025.cash", "10", "number", {periodEnd: "2025-12-31"}), candidate("historical_financials.2025.cash", "10.001", "number", {sourceDocument: "second-source", confidence: 1, periodEnd: "2025-12-31"})],
+      documents: [], roomDocuments: [], dealBrief: {requestedAmount: "100", requestedTermMonths: 48, sector: "Varejo", geography: "SP", instruments: ["ccb"], collateralKinds: []},
+      resolvedMandates: [], externalReleaseApproved: false,
+    });
+    expect(result.state.reconciliation.facts.find((fact) => fact.key.fieldPath === "historical_financials.2025.cash")?.observations).toHaveLength(2);
+    expect(result.state.reconciliation.debtTruth.views.cashBasis).toBe("missing");
+    expect(result.state.reconciliation.calculations.some((row) => row.id === "net_debt")).toBe(false);
+    expect(result.state.capacity?.walls.find((wall) => wall.id === "market")?.amount).toBeNull();
+  });
   it("keeps missing cash out of leverage capacity through the real reconciliation path", async () => {
     const result = await executeCaseEngine({
       runId: "missing-cash-capacity", caseId: "synthetic-capacity", archetypeId: "growth_expansion",
