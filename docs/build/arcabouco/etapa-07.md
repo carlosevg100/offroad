@@ -105,3 +105,9 @@ O acesso direto às tabelas conserva RLS.
 cache, limite de query antes da chamada, rejeição de resposta inválida e citações/scores
 preservados. O pacote passou 47 testes; worker passou 584; `pnpm check` passou nos 44 pacotes
 antes da publicação, com nova execução obrigatória após atualizar os tipos e os recibos.
+
+O primeiro E2E da PR 638 recusou corretamente o download da fonte sintética sem direito
+explicitado (404 após concessão de acesso). A fixture local passou a declarar o direito pelo
+comando real, sob a identidade do autor e o workspace selecionado, e a registrar o hash real
+do chunk. As asserções de concessão e revogação permanecem intactas; a repetição da CI é
+obrigatória antes do merge. Essa fixture roda exclusivamente na pilha local da CI.
