@@ -1,3 +1,10 @@
+## Onda 7 autorizada: observações e definições
+
+Etapa 8 autorizada pelo fundador após a etapa 7. Baseline `a4ff8caaaa7c91d65cbfa8020a1a6e70044cf561`; revisão de abertura
+renova 97 evidências, conserva 18 lacunas e registra runtime/journals vivos. Ranking não será
+tratado como adoção; candidatos divergentes e dimensões incompletas conservam origem.
+Etapa 9 não iniciada. Revisão: `docs/security/INVENTORY_WAVE_7_REVIEW.md`.
+
 ## Etapa 7: conciliação da entrega em 17/09/2026
 
 PR 638 mesclada em `654c09c5c8f64424b68ef10bd986235a07ba7c02`; Quality da PR e de main,
