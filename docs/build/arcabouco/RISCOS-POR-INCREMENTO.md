@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 7 · 17/09/2026 · Baseline entregue: `a4ff8caaaa7c91d65cbfa8020a1a6e70044cf561`. Etapa 8 autorizada; etapa 9 não iniciada.
+Onda 7 · 17/09/2026 · Baseline de implementação entregue: `88fa39a83c090040ba764185c61657cfd0a706c4`. Etapa 8 implementada e verificada; etapa 9 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -67,11 +67,16 @@ Inputs privados adicionais e manifesto permanecem em 17/18; protocolo de artefat
 Implementação publicada e verificada; provas em `docs/security/history/wave-6-final-review.md`.
 A conciliação final registra seus próprios gates e deploy no completion externo.
 
-## Tratamento em execução na etapa 8
+## Tratamento técnico da etapa 8
 
-O risco de ranking como autoridade alcança os consumidores de capacidade, estrutura e
-modelos, além da reconciliação. O botão, ações e política morta de aceitação por confiança
-são retirados; revisão individual registra contribuição. Decimais atravessam extração e
-edição sem conversão para ponto flutuante. SQL em staging verifica append, versões, direitos
-fixados, revogação, origem e projeções; os recibos finais dependem da publicação da etapa.
-Adoção explícita permanece na etapa 9. As 18 lacunas gerais continuam abertas.
+A ponte de leitura e o armazenamento estão em produção. Observações coexistem; revisão e
+correção acrescentam histórico, sem primazia. Ranking não resolve conflito para cálculo.
+Perímetro, unidade, escala e moeda monetária ausentes bloqueiam os cálculos dependentes;
+precisão decimal atravessa a extração e edição sem conversão para ponto flutuante.
+Os testes de fonte/direito fixado, revogação, origem e projeção passaram, incluindo os
+79 contratos de staging. A licença atual ampliada não reabre um derivado com direito expirado.
+
+Adoção explícita e resolução das dimensões desconhecidas por contexto permanecem na etapa 9.
+As 18 lacunas gerais continuam abertas. Implementação, journals, main e deploy exato foram
+conferidos; provas em `etapa-08.md` e `docs/security/history/wave-7-final-review.md`.
+A conciliação registra seus próprios gates e deploy no completion externo.

@@ -1,3 +1,9 @@
+## Etapa 8: conciliação da entrega em 17/09/2026
+
+PR 643 entregue em `88fa39a83c090040ba764185c61657cfd0a706c4`, main Quality 35231824387, Security e deploy verdes. Vercel Production 6504647630 e ECS 352 executam o commit exato. Seis migrações conferidas, 25 funções em paridade e 228 observações legadas com audit/outbox; os 228 eventos foram concluídos. 79 contratos SQL passaram em staging e CI. Negativos em produção sem dados descartáveis; advisors sem achados. 331 arquivos cobertos pelo journal, 44 superfícies novas inventariadas.
+
+A conciliação exige 111 evidências e mantém 18 lacunas gerais nos incrementos responsáveis. O teste de governança recusa omitir qualquer uma das 14 novas evidências. Estado e limitações em `docs/security/history/wave-7-final-review.md`; o completion externo registra também CI e deploy do commit desta conciliação. Adoção contextual é etapa 9, ainda não iniciada.
+
 ## Etapa 8: observações instaladas, publicação do decimal pendente
 
 A ponte PR 642 está em produção no commit `0e6ee7d34253744ede8cecd3a4912fa83917a3b4`, com Quality 35228218972, Security, Vercel e ECS 351 conferidos. Seis migrações foram aplicadas em produção, carimbos `20260917134924` a `20260917135001`, com SQL idêntico ao de staging e 25 funções em paridade. Os 228 candidatos existentes têm observação imutável e auditoria/outbox. Os 79 contratos passaram em staging; negativos sem fixtures passaram em produção. Catálogos e 331 versões de arquivos conferem; advisors de segurança sem achados.

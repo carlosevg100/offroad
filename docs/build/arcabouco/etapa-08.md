@@ -1,6 +1,6 @@
 # Etapa 8: observações e definições
 
-Em execução na onda 7. Etapa 9 não autorizada. Este documento não é um completion.
+Implementação entregue na onda 7, commit `88fa39a83c090040ba764185c61657cfd0a706c4`. Etapa 9 não autorizada. O completion externo registra também a CI e os deploys da conciliação final.
 
 A compatibilidade dos eventos foi publicada na PR 641, commit
 `3582ccace62023194241713b09d2aac9eae7ee16`: CI de main, Vercel e ECS 350 conferidos.
@@ -58,6 +58,7 @@ dado sintético foi criado em produção; os negativos de leitura anônima, cont
 escrita direta e batch legado passaram. Advisors de segurança sem achados nos dois ambientes.
 O inventário registra 44 superfícies novas e os 331 arquivos estão cobertos pelo journal de produção.
 
-Evidências: `etapa-08-installation.json` e `etapa-08-installed-eval.json`. O incremento de
-decimal exato ainda precisa de merge, CI de main e web/worker no commit final para fechar.
+Evidências: `etapa-08-installation.json` e `etapa-08-installed-eval.json`. O decimal exato foi publicado pela PR 643, com Quality 35231824387, Security e worker verdes;
+Vercel Production 6504647630 e ECS 352 no commit exato. A conciliação final exige 111 evidências
+e mantém 18 lacunas gerais. Seus próprios gates constam do completion externo.
 Os ensaios de produto não estão iniciados. Adoção por contexto permanece na etapa 9.

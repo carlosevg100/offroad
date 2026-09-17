@@ -106,6 +106,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires observation and immutable history evidence at wave-seven closeout", () => {
+    for (const evidenceRef of ["SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-REVISION", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-PINNED", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-DECIMAL", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-6";
