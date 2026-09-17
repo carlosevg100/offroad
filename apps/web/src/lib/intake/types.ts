@@ -17,7 +17,6 @@ export type IntakeDecision = "accept" | "edit" | "reject" | "not_applicable";
 export const intakeDecisions: readonly IntakeDecision[] = ["accept", "edit", "reject", "not_applicable"] as const;
 
 export type IntakeReviewActionSet = {
-  accept: (formData: FormData) => Promise<void>;
   confirm: (formData: FormData) => Promise<void>;
   process: (formData: FormData) => Promise<void>;
   revise: (formData: FormData) => Promise<void>;

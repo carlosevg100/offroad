@@ -202,6 +202,7 @@ export function generateCase(raw: FactoryScenario): GeneratedCase {
     candidates.push({
       fieldPath, normalizedValue, valueType, sourceDocument: sourceName, informationClass,
       evidenceRank, confidence: 0.995, anchorVerified: true,
+      entityName: scenario.company.legalName, entityScope: "standalone", currency: scenario.company.currency, unit: "currency", scale: "1",
       ...(periodEnd ? {periodEnd} : {}), anchor: {document: sourceName, generatedField: fieldPath},
     });
   };
@@ -256,6 +257,7 @@ export function generateCase(raw: FactoryScenario): GeneratedCase {
         fieldPath: perturbation.fieldPath, normalizedValue: perturbation.alternateValue, valueType: "number",
         sourceDocument: perturbation.sourceDocument, informationClass: perturbation.informationClass,
         evidenceRank: perturbation.evidenceRank, confidence: 0.96, anchorVerified: true,
+        entityName: scenario.company.legalName, entityScope: "standalone", currency: scenario.company.currency, unit: "currency", scale: "1",
         anchor: {document: perturbation.sourceDocument, generatedConflict: perturbation.fieldPath},
         ...(perturbation.periodEnd ? {periodEnd: perturbation.periodEnd} : {}),
       });

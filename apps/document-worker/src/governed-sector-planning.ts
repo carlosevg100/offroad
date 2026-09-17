@@ -84,7 +84,7 @@ export function buildGovernedSectorPlanning(input: {
     const source = packet.sources.find((item) => item.id === candidate.source_document_id);
     const locator = JSON.stringify(candidate.source_anchor);
     const usableLocator = locator !== "{}" && locator.length <= 2_000;
-    const reviewed = candidate.is_primary && candidate.reviewed_by !== null && candidate.reviewed_at !== null;
+    const reviewed = candidate.reviewed_by !== null && candidate.reviewed_at !== null;
     const wrongEntity = !namedSegment && (candidate.entity_scope === "segment"
       || (candidate.entity_name !== null && normalized(candidate.entity_name) !== normalized(input.companyLabel)));
     const originalSource = source !== undefined && candidate.extraction_document_version === source.document_version

@@ -1,7 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {buildRedeHorizonteDocumentIntake, redeHorizonteFileHashes} from "@offroad/testing-fixtures";
 import {
-  autoAcceptDecision,
   capitalObjectiveSchema,
   capitalSituationSchema,
   chartOfAccounts,
@@ -382,32 +381,6 @@ describe("chart of accounts", () => {
     expect(chartOfAccountsMap.get("bs_total_assets")?.sumOf).toEqual(["bs_current_assets", "bs_noncurrent_assets"]);
     expect(chartOfAccountsMap.get("is_adjusted_ebitda")?.sumOf).toEqual(["is_ebitda", "is_nonrecurring_adjustments"]);
     expect(chartOfAccountsMap.get("cf_closing_cash")?.sumOf).toEqual(["cf_opening_cash", "cf_net_change_in_cash"]);
-  });
-});
-
-describe("auto-accept policy v1", () => {
-  it("accepts a verified, precise, confident, conflict-free material value", () => {
-    const decision = autoAcceptDecision({materiality: "material", anchorVerified: true, anchorPrecision: "cell", calibratedConfidence: 0.97, hasOpenConflict: false, shadowAgreement: true});
-    expect(decision.accept).toBe(true);
-    expect(decision.reasons).toEqual([]);
-    expect(decision.policyVersion).toBe("auto-accept-v1");
-  });
-
-  it("refuses unverified anchors, page-only precision, conflicts and shadow disagreement for material values", () => {
-    expect(autoAcceptDecision({materiality: "material", anchorVerified: false, anchorPrecision: "cell", calibratedConfidence: 0.99, hasOpenConflict: false}).reasons).toContain("anchor_not_verified");
-    const pageOnly = autoAcceptDecision({materiality: "material", anchorVerified: true, anchorPrecision: "page", calibratedConfidence: 0.99, hasOpenConflict: false});
-    expect(pageOnly.accept).toBe(false);
-    expect(pageOnly.effectiveConfidence).toBe(0.8);
-    expect(pageOnly.reasons).toContain("precision_page_not_allowed");
-    expect(autoAcceptDecision({materiality: "material", anchorVerified: true, anchorPrecision: "row", calibratedConfidence: 0.99, hasOpenConflict: true}).reasons).toContain("open_conflict");
-    expect(autoAcceptDecision({materiality: "material", anchorVerified: true, anchorPrecision: "row", calibratedConfidence: 0.99, hasOpenConflict: false, shadowAgreement: false}).reasons).toContain("shadow_disagreement");
-    expect(autoAcceptDecision({materiality: "material", anchorVerified: true, anchorPrecision: "row", calibratedConfidence: 0.94, hasOpenConflict: false}).reasons).toContain("confidence_below_threshold");
-  });
-
-  it("is looser for supporting values but still requires a verified anchor", () => {
-    expect(autoAcceptDecision({materiality: "supporting", anchorVerified: true, anchorPrecision: "page", calibratedConfidence: 0.92, hasOpenConflict: true}).accept).toBe(false);
-    expect(autoAcceptDecision({materiality: "supporting", anchorVerified: true, anchorPrecision: "block", calibratedConfidence: 0.92, hasOpenConflict: true}).accept).toBe(true);
-    expect(autoAcceptDecision({materiality: "supporting", anchorVerified: false, anchorPrecision: "block", calibratedConfidence: 0.99, hasOpenConflict: false}).accept).toBe(false);
   });
 });
 

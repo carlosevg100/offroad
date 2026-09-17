@@ -66,3 +66,12 @@ Essas provas não encerram SG-DATA-LIFECYCLE/SG-PRIVACY-RECORDS: purge, hold e r
 Inputs privados adicionais e manifesto permanecem em 17/18; protocolo de artefatos em 19/21.
 Implementação publicada e verificada; provas em `docs/security/history/wave-6-final-review.md`.
 A conciliação final registra seus próprios gates e deploy no completion externo.
+
+## Tratamento em execução na etapa 8
+
+O risco de ranking como autoridade alcança os consumidores de capacidade, estrutura e
+modelos, além da reconciliação. O botão, ações e política morta de aceitação por confiança
+são retirados; revisão individual registra contribuição. Decimais atravessam extração e
+edição sem conversão para ponto flutuante. SQL em staging verifica append, versões, direitos
+fixados, revogação, origem e projeções; os recibos finais dependem da publicação da etapa.
+Adoção explícita permanece na etapa 9. As 18 lacunas gerais continuam abertas.

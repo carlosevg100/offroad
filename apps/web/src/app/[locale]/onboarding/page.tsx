@@ -46,7 +46,6 @@ import {createClient} from "@/lib/supabase/server";
 import type {Database, Json} from "@/types/database";
 
 import {
-  acceptHighConfidenceCandidates,
   acceptPrivateWorkspaceTerms,
   completeOnboarding,
   confirmDocumentIntake,
@@ -552,7 +551,7 @@ export default async function OnboardingPage({params, searchParams}: Props) {
                   sessionId: intakeReview.session.id,
                   locale: locale === "en-US" ? "en" : "pt",
                 })}
-                actions={{accept: acceptHighConfidenceCandidates, confirm: confirmDocumentIntake, process: processDocumentIntake, revise: reviseDiagnosticCase, resolve: resolveIntakeIssue, review: reviewIntakeCandidate, resolveScopeSuggestion: resolveOnboardingScopeSuggestion, revokeAuthorization: revokeOnboardingAdvisorAuthorization}}
+                actions={{confirm: confirmDocumentIntake, process: processDocumentIntake, revise: reviseDiagnosticCase, resolve: resolveIntakeIssue, review: reviewIntakeCandidate, resolveScopeSuggestion: resolveOnboardingScopeSuggestion, revokeAuthorization: revokeOnboardingAdvisorAuthorization}}
                 candidates={intakeReview.candidates}
                 documents={intakeReview.documents}
                 issues={intakeReview.issues}

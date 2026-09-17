@@ -1,3 +1,11 @@
+## Etapa 8: transição das leituras antes do banco de produção
+
+Em execução: retirar a aceitação por confiança da web; revisão individual continua compatível
+com o banco antigo. Perímetro, período, moeda, unidade, escala, cenário e definição não se
+fundem por ranking. Cálculos dependentes usam apenas base utilizável, preservando todas as
+observações no relatório. Decimal exato será ativado junto do banco novo. Esquema em staging;
+produção e completion ainda pendentes. Contrato em `docs/build/arcabouco/etapa-08.md`.
+
 ## Etapa 8: compatibilidade do consumidor antes da migração
 
 O worker passa a reconhecer envelopes sem conteúdo dos agregados `observation` e

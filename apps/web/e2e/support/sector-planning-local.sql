@@ -12,11 +12,11 @@ begin
   where intake.id=current_setting('offroad.e2e_session')::uuid
     and u.email=current_setting('offroad.e2e_owner') and u.email like 'e2e-%@example.com';
   if s.capital_project_id is null then raise exception 'Synthetic session has no project'; end if;
-  -- Do not manufacture reviewed inputs. The earlier browser test edited this primary
-  -- candidate after reanalysis/bulk acceptance and before confirming the case.
+  -- Do not manufacture reviewed inputs. The earlier browser test edited this
+  -- candidate after reanalysis and individual review and before confirming the case.
   select id into strict candidate_id from public.intake_field_candidates
     where organization_id=s.organization_id and intake_session_id=s.id
-      and field_path='company.sector' and is_primary
+      and field_path='company.sector'
       and normalized_value='"varejo"'::jsonb and review_state='edited'
       and reviewed_by=s.started_by and reviewed_at is not null
       and extraction_method='user_entry';

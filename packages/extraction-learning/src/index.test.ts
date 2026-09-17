@@ -1,7 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {classifyCorrection, measureAccuracy, wilsonLowerBound, type FeedbackRow} from "./accuracy";
-import {buildAutoAcceptPolicy, worstOffenders} from "./policy";
+import {worstOffenders} from "./policy";
 import {priorityCandidates, toGoldCandidates} from "./gold";
 
 const row = (overrides: Partial<FeedbackRow> = {}): FeedbackRow => ({
@@ -122,93 +122,7 @@ describe("measureAccuracy", () => {
   });
 });
 
-describe("the auto-accept policy", () => {
-  it("locks a field with a scale error in its history, at any confidence", () => {
-    const policy = buildAutoAcceptPolicy(
-      measureAccuracy([
-        ...repeat(40, {decision: "accept"}),
-        row({decision: "edit", proposedValue: "71000", correctedValue: "71000000"}),
-      ]),
-    );
-    const decision = policy.decide({
-      fieldPath: "historical_financials.2025.revenue",
-      documentKind: "audited_financial_statements",
-      confidence: 0.999,
-    });
-    // 40 of 41 is an excellent rate. It does not matter: the units were misread once, and
-    // that misreading repeats on every document of the same shape.
-    expect(decision.autoAccept).toBe(false);
-    expect(decision.reason).toBe("scale_error");
-  });
-
-  it("makes a barely-seen field earn its way out", () => {
-    const policy = buildAutoAcceptPolicy(measureAccuracy(repeat(3, {decision: "accept"})));
-    expect(policy.decide({fieldPath: "historical_financials.2025.revenue", documentKind: "audited_financial_statements", confidence: 0.99}).reason).toBe("unproven");
-  });
-
-  it("raises the bar on a field it has been wrong about", () => {
-    // 45 of 50 is a lower bound near 0.79: short of the 0.9 target, well clear of the 0.5
-    // floor, so the response is a higher confidence bar rather than a lock.
-    const measurements = measureAccuracy([...repeat(45, {decision: "accept"}), ...repeat(5, {decision: "reject"})]);
-    const policy = buildAutoAcceptPolicy(measurements);
-    const entry = policy.fields.get("historical_financials.2025.revenue\taudited_financial_statements")!;
-    expect(entry.reason).toBe("below_target");
-    expect(entry.requiredConfidence).toBeGreaterThan(0.95);
-    expect(entry.requiredConfidence).toBeLessThanOrEqual(0.99);
-    expect(policy.decide({fieldPath: entry.fieldPath, documentKind: entry.documentKind, confidence: 0.95}).autoAccept).toBe(false);
-  });
-
-  it("locks rather than raises when the sample cannot rule out a coin flip", () => {
-    // 14 of 20 looks like 70%, but the lower bound is 0.48 — the evidence does not exclude a
-    // field that is wrong half the time, and the bar is the wrong instrument for that.
-    const policy = buildAutoAcceptPolicy(measureAccuracy([...repeat(14, {decision: "accept"}), ...repeat(6, {decision: "reject"})]));
-    const entry = policy.fields.get("historical_financials.2025.revenue\taudited_financial_statements")!;
-    expect(entry.measurement.rate).toBeCloseTo(0.7, 5);
-    expect(entry.measurement.lowerBound).toBeLessThan(0.5);
-    expect(entry.reason).toBe("unreliable");
-  });
-
-  it("leaves a proven field on the ordinary threshold", () => {
-    const policy = buildAutoAcceptPolicy(measureAccuracy(repeat(60, {decision: "accept"})));
-    const decision = policy.decide({fieldPath: "historical_financials.2025.revenue", documentKind: "audited_financial_statements", confidence: 0.96});
-    expect(decision.autoAccept).toBe(true);
-    expect(decision.reason).toBe("proven");
-  });
-
-  it("does not lock a field nobody has ever reviewed", () => {
-    // The ledger records what was reviewed. Silence about a field is not evidence against it,
-    // and treating it as such would stop the product working on its first case.
-    const policy = buildAutoAcceptPolicy([]);
-    expect(policy.decide({fieldPath: "collateral.assets.0.eligible_base", documentKind: "appraisal", confidence: 0.97})).toEqual({
-      autoAccept: true,
-      reason: "no_history",
-    });
-    expect(policy.decide({fieldPath: "collateral.assets.0.eligible_base", documentKind: "appraisal", confidence: 0.5}).autoAccept).toBe(false);
-  });
-
-  it("does not let an unseen document kind rescue a failing field", () => {
-    const measurements = measureAccuracy([
-      ...repeat(2, {decision: "accept", documentKind: null}),
-      ...repeat(18, {decision: "reject", documentKind: null}),
-    ]);
-    const policy = buildAutoAcceptPolicy(measurements);
-    const decision = policy.decide({fieldPath: "historical_financials.2025.revenue", documentKind: "a_kind_never_seen", confidence: 0.99});
-    expect(decision.autoAccept).toBe(false);
-    expect(decision.reason).toBe("unreliable");
-  });
-
-  it("locks a field it is wrong about more often than a coin flip", () => {
-    // The confidence bar has a ceiling of 0.99, so on a field measured at 10% accuracy the bar
-    // alone would still let a confident extractor through while appearing strict.
-    const policy = buildAutoAcceptPolicy(measureAccuracy([...repeat(2, {decision: "accept"}), ...repeat(18, {decision: "reject"})]));
-    const decision = policy.decide({
-      fieldPath: "historical_financials.2025.revenue",
-      documentKind: "audited_financial_statements",
-      confidence: 0.9999,
-    });
-    expect(decision).toEqual({autoAccept: false, reason: "unreliable"});
-  });
-
+describe("review priorities", () => {
   it("ranks the work by reviewer time, not by percentage", () => {
     const measurements = measureAccuracy([
       ...repeat(48, {decision: "accept", fieldPath: "common.field"}),

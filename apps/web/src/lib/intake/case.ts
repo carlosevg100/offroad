@@ -60,7 +60,7 @@ export function buildCandidatePayload(compilation: IntakeCompilation): IntakeCan
     source_anchor: candidate.sourceAnchor as Json,
     confidence: candidate.confidence,
     extraction_method: candidate.extractionMethod,
-    is_primary: candidate.isPrimary ?? false,
+    is_primary: false,
   }));
 }
 
@@ -90,9 +90,9 @@ export function summarizeCompilation(compilation: IntakeCompilation, counts: {do
   } satisfies Record<string, Json>;
 }
 
-/** Candidates that will become facts: accepted or edited, and primary for their field path. */
+/** Human-reviewed contributions; the legacy primary flag is not authority. */
 export function confirmedCandidates<T extends Pick<IntakeCandidate, "review_state" | "is_primary">>(candidates: readonly T[]) {
-  return candidates.filter((candidate) => (candidate.review_state === "accepted" || candidate.review_state === "edited") && candidate.is_primary);
+  return candidates.filter((candidate) => (candidate.review_state === "accepted" || candidate.review_state === "edited"));
 }
 
 export const OPPORTUNITY_TITLE_MAX = 180;
@@ -122,7 +122,9 @@ function textAt(byPath: ReadonlyMap<string, Pick<IntakeCandidate, "normalized_va
 
 function numberAt(byPath: ReadonlyMap<string, Pick<IntakeCandidate, "normalized_value">>, path: string) {
   const found = byPath.get(path)?.normalized_value;
-  return typeof found === "number" && Number.isFinite(found) ? found : null;
+  if (typeof found !== "number" && (typeof found !== "string" || !/^-?[0-9]+(?:\.[0-9]+)?$/.test(found))) return null;
+  const numeric = Number(found);
+  return Number.isFinite(numeric) ? numeric : null;
 }
 
 function currencyAt(byPath: ReadonlyMap<string, Pick<IntakeCandidate, "normalized_value" | "currency">>, path: string) {
@@ -148,8 +150,13 @@ export function buildOpportunityTitle(name: string, purpose: string, max = OPPOR
  * three essentials (legal name, purpose, positive requested amount) are not all confirmed —
  * the UI must ask the user instead of inventing them.
  */
-export function deriveCase(candidates: readonly Pick<IntakeCandidate, "field_path" | "normalized_value" | "currency" | "review_state" | "is_primary">[]): DerivedCase | null {
-  const byPath = new Map(confirmedCandidates(candidates).map((candidate) => [candidate.field_path, candidate] as const));
+export function deriveCase(candidates: readonly (Pick<IntakeCandidate, "field_path" | "normalized_value" | "currency" | "review_state" | "is_primary"> & Partial<Pick<IntakeCandidate, "unit" | "value_scale" | "entity_scope" | "period_start" | "period_end" | "value_type">>)[]): DerivedCase | null {
+  const reviewed = confirmedCandidates(candidates);
+  const byPath = new Map(reviewed.map((candidate) => [candidate.field_path, candidate] as const));
+  for (const candidate of reviewed) {
+    const siblings = reviewed.filter((other) => other.field_path === candidate.field_path);
+    if (new Set(siblings.map((other) => JSON.stringify([other.normalized_value, other.currency, other.unit, other.value_scale, other.entity_scope, other.period_start, other.period_end, other.value_type]))).size > 1) byPath.delete(candidate.field_path);
+  }
   const legalName = textAt(byPath, "company.legal_name");
   const purpose = textAt(byPath, "transaction.purpose");
   const requestedAmount = numberAt(byPath, "transaction.requested_amount");

@@ -22,7 +22,6 @@ import {hasWorkspaceCapability, resolveNewProjectEntry} from "@/lib/workspace/ca
 import type {Json} from "@/types/database";
 
 import {
-  acceptWorkspaceIntakeCandidates,
   acceptWorkspacePrivateTerms,
   confirmWorkspaceDocumentIntake,
   decideWorkspacePreliminaryUnderstanding,
@@ -279,7 +278,7 @@ export default async function NewOpportunityPage({params, searchParams}: Props) 
               sessionId: review.session.id,
               locale: locale === "en-US" ? "en" : "pt",
             })}
-            actions={{accept: acceptWorkspaceIntakeCandidates, confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, revise: reviseWorkspaceDiagnosticCase, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate, resolveScopeSuggestion: resolveWorkspaceScopeSuggestion, revokeAuthorization: revokeWorkspaceAdvisorAuthorization}}
+            actions={{confirm: confirmWorkspaceDocumentIntake, process: processWorkspaceDocumentIntake, revise: reviseWorkspaceDiagnosticCase, resolve: resolveWorkspaceIntakeIssue, review: reviewWorkspaceIntakeCandidate, resolveScopeSuggestion: resolveWorkspaceScopeSuggestion, revokeAuthorization: revokeWorkspaceAdvisorAuthorization}}
             candidates={review.candidates}
             checklist={tailoredChecklist}
             documents={review.documents}

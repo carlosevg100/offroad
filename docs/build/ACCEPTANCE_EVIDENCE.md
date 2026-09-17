@@ -1,3 +1,12 @@
+## Etapa 8: ponte de leitura, 17/09/2026
+
+Gate local completo da implementação passou em `storage-check-9.log` (outputs externos da
+onda 7). A ponte mantém o formato numérico legado até o banco de produção ser atualizado;
+seu gate completo passou em `bridge-check-final.log` (44/44 tarefas); CI e deploy serão conferidos no commit publicado. Novas regressões cobrem dimensões,
+concordância sem perda, conflitos abaixo da tolerância, campos desconhecidos e negação de
+capacidade com caixa conflitante. O E2E revisa entradas individualmente e verifica ausência
+da aceitação por confiança. Não constitui completion: banco, CI e deploy finais pendentes.
+
 ## Etapa 8: compatibilidade do consumidor antes da migração
 
 O worker passa a reconhecer envelopes sem conteúdo dos agregados `observation` e
