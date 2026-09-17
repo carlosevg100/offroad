@@ -1,6 +1,7 @@
 # Etapa 7: direitos de uso antes da recuperação
 
-Status: schema instalado nos dois ambientes; CI, merge e deploy exato pendentes.
+Status: implementação mesclada e implantada em produção pela PR 638, commit
+`654c09c5c8f64424b68ef10bd986235a07ba7c02`; conciliação final em publicação.
 A renovação do inventário da onda 6 foi publicada pela PR 637, commit
 `658faa75da0fb9b65d5a2f7f363434cf7ea7b948`.
 
@@ -111,3 +112,11 @@ explicitado (404 após concessão de acesso). A fixture local passou a declarar 
 comando real, sob a identidade do autor e o workspace selecionado, e a registrar o hash real
 do chunk. As asserções de concessão e revogação permanecem intactas; a repetição da CI é
 obrigatória antes do merge. Essa fixture roda exclusivamente na pilha local da CI.
+
+## Publicação da implementação
+
+Quality PR `35177608628`, Security PR `35177608634`, Quality main `35178377159`,
+Security main `35178377201` e worker `35178377176`: PASS. E2E final: 31 PASS sem retry,
+16 externos desativados. Vercel `6495004870`, ECS 347, imagem exata do merge, polling
+sem bloqueios/atraso e smoke HTTP posterior ao deploy aprovado. O completion registra
+também o commit da conciliação final; revisão em `docs/security/history/wave-6-final-review.md`.
