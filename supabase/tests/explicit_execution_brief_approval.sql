@@ -66,6 +66,9 @@ begin
   begin
     update public.processing_jobs set intake_session_id=null where id=job_id;
   exception when insufficient_privilege then rejected:=true;
+  when check_violation then
+    if sqlerrm<>'work_run_mismatch' then raise; end if;
+    rejected:=true;
   end;
   if not rejected then raise exception 'linked dispatch downgraded to projectless'; end if;
   rejected:=false;

@@ -2280,3 +2280,36 @@ Migrações adicionais:
 - `trigger:public.claim_decisions.claim_decisions_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
 - `trigger:public.scenario_versions.scenario_versions_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
 - `trigger:public.structure_scenarios.structure_scenarios_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+
+## Atualização da etapa 10, 17/09/2026
+
+28 superfícies novas conferidas nos dois ambientes. A fundação vincula conversa e fila ao trabalho; nova entrada ainda depende do incremento de ativação.
+
+- `function:private.bind_persistent_work_v1()`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:private.settle_failed_work_turn_v1()`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:private.work_turn_context_v1(p_job_id uuid)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:private.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:private.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:public.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:public.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_contexts.work_contexts_deny_delete`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_contexts.work_contexts_deny_insert`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_contexts.work_contexts_deny_update`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_contexts.work_contexts_select`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_dossiers.work_dossiers_deny_delete`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_dossiers.work_dossiers_deny_insert`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_dossiers.work_dossiers_deny_update`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `policy:public.work_dossiers.work_dossiers_select`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `r:public.work_contexts`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `r:public.work_dossiers`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.agent_conversations.aaa_agent_conversations_work`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.agent_messages.aaa_agent_messages_work`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.processing_jobs.aaa_processing_jobs_work`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.processing_jobs.processing_jobs_settle_work_turn`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.processing_runs.aaa_processing_runs_work`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.work_contexts.work_contexts_audit`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.work_contexts.work_contexts_updated`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.work_dossiers.work_dossiers_audit`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+- `trigger:public.work_dossiers.work_dossiers_updated`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.

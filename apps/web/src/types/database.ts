@@ -279,28 +279,31 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
-          intake_session_id: string
+          intake_session_id: string | null
           organization_id: string
           state: string
           updated_at: string
+          work_id: string | null
         }
         Insert: {
           created_at?: string
           created_by: string
           id?: string
-          intake_session_id: string
+          intake_session_id?: string | null
           organization_id: string
           state?: string
           updated_at?: string
+          work_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
-          intake_session_id?: string
+          intake_session_id?: string | null
           organization_id?: string
           state?: string
           updated_at?: string
+          work_id?: string | null
         }
         Relationships: [
           {
@@ -317,6 +320,13 @@ export type Database = {
             referencedRelation: "document_intake_sessions"
             referencedColumns: ["organization_id", "id"]
           },
+          {
+            foreignKeyName: "agent_conversations_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       agent_messages: {
@@ -327,7 +337,7 @@ export type Database = {
           created_by: string
           error_code: string | null
           id: string
-          intake_session_id: string
+          intake_session_id: string | null
           locale: string
           metadata: Json
           organization_id: string
@@ -336,6 +346,7 @@ export type Database = {
           role: string
           status: string
           updated_at: string
+          work_id: string | null
         }
         Insert: {
           content: string
@@ -344,7 +355,7 @@ export type Database = {
           created_by: string
           error_code?: string | null
           id: string
-          intake_session_id: string
+          intake_session_id?: string | null
           locale: string
           metadata?: Json
           organization_id: string
@@ -353,6 +364,7 @@ export type Database = {
           role: string
           status: string
           updated_at?: string
+          work_id?: string | null
         }
         Update: {
           content?: string
@@ -361,7 +373,7 @@ export type Database = {
           created_by?: string
           error_code?: string | null
           id?: string
-          intake_session_id?: string
+          intake_session_id?: string | null
           locale?: string
           metadata?: Json
           organization_id?: string
@@ -370,6 +382,7 @@ export type Database = {
           role?: string
           status?: string
           updated_at?: string
+          work_id?: string | null
         }
         Relationships: [
           {
@@ -405,6 +418,13 @@ export type Database = {
             columns: ["organization_id", "reply_to_message_id"]
             isOneToOne: false
             referencedRelation: "agent_messages"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -7335,7 +7355,7 @@ export type Database = {
           controlled_execution_id: string | null
           created_at: string
           id: string
-          intake_session_id: string
+          intake_session_id: string | null
           kind: string
           last_error: Json | null
           lease_expires_at: string | null
@@ -7352,6 +7372,7 @@ export type Database = {
           source_document_id: string | null
           status: string
           updated_at: string
+          work_id: string | null
         }
         Insert: {
           attempts?: number
@@ -7363,7 +7384,7 @@ export type Database = {
           controlled_execution_id?: string | null
           created_at?: string
           id?: string
-          intake_session_id: string
+          intake_session_id?: string | null
           kind: string
           last_error?: Json | null
           lease_expires_at?: string | null
@@ -7380,6 +7401,7 @@ export type Database = {
           source_document_id?: string | null
           status?: string
           updated_at?: string
+          work_id?: string | null
         }
         Update: {
           attempts?: number
@@ -7391,7 +7413,7 @@ export type Database = {
           controlled_execution_id?: string | null
           created_at?: string
           id?: string
-          intake_session_id?: string
+          intake_session_id?: string | null
           kind?: string
           last_error?: Json | null
           lease_expires_at?: string | null
@@ -7408,6 +7430,7 @@ export type Database = {
           source_document_id?: string | null
           status?: string
           updated_at?: string
+          work_id?: string | null
         }
         Relationships: [
           {
@@ -7438,6 +7461,13 @@ export type Database = {
             referencedRelation: "source_versions"
             referencedColumns: ["organization_id", "id"]
           },
+          {
+            foreignKeyName: "processing_jobs_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
         ]
       }
       processing_runs: {
@@ -7448,7 +7478,7 @@ export type Database = {
           created_by: string
           error: Json | null
           id: string
-          intake_session_id: string
+          intake_session_id: string | null
           model_calls: number
           model_cost_usd: number
           organization_id: string
@@ -7461,6 +7491,7 @@ export type Database = {
           updated_at: string
           usage: Json
           versions: Json
+          work_id: string | null
         }
         Insert: {
           budget?: Json
@@ -7469,7 +7500,7 @@ export type Database = {
           created_by: string
           error?: Json | null
           id?: string
-          intake_session_id: string
+          intake_session_id?: string | null
           model_calls?: number
           model_cost_usd?: number
           organization_id: string
@@ -7482,6 +7513,7 @@ export type Database = {
           updated_at?: string
           usage?: Json
           versions?: Json
+          work_id?: string | null
         }
         Update: {
           budget?: Json
@@ -7490,7 +7522,7 @@ export type Database = {
           created_by?: string
           error?: Json | null
           id?: string
-          intake_session_id?: string
+          intake_session_id?: string | null
           model_calls?: number
           model_cost_usd?: number
           organization_id?: string
@@ -7503,6 +7535,7 @@ export type Database = {
           updated_at?: string
           usage?: Json
           versions?: Json
+          work_id?: string | null
         }
         Relationships: [
           {
@@ -7510,6 +7543,13 @@ export type Database = {
             columns: ["organization_id", "intake_session_id"]
             isOneToOne: false
             referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "processing_runs_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -9266,6 +9306,118 @@ export type Database = {
           },
         ]
       }
+      work_contexts: {
+        Row: {
+          audience: string | null
+          authorized_services: string[]
+          commitment: string
+          created_at: string
+          deadline: string | null
+          id: string
+          organization_id: string
+          purpose: string
+          revision: number
+          stage: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          audience?: string | null
+          authorized_services?: string[]
+          commitment?: string
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          organization_id: string
+          purpose?: string
+          revision?: number
+          stage?: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          audience?: string | null
+          authorized_services?: string[]
+          commitment?: string
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          organization_id?: string
+          purpose?: string
+          revision?: number
+          stage?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_contexts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_contexts_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: true
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      work_dossiers: {
+        Row: {
+          created_at: string
+          dossier_id: string
+          id: string
+          linked_by: string
+          organization_id: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          dossier_id: string
+          id?: string
+          linked_by: string
+          organization_id: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          linked_by?: string
+          organization_id?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_dossiers_organization_id_dossier_id_fkey"
+            columns: ["organization_id", "dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_dossiers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_dossiers_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       workflow_runs: {
         Row: {
           completed_at: string | null
@@ -10878,6 +11030,10 @@ export type Database = {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
       }
+      worker_claim_job_v4: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
       worker_commit_documentary_execution_v1: {
         Args: {
           p_capability_token: string
@@ -10888,6 +11044,16 @@ export type Database = {
           p_result: Json
         }
         Returns: string
+      }
+      worker_commit_work_turn_v1: {
+        Args: {
+          p_capability_token: string
+          p_fingerprint: string
+          p_job_id: string
+          p_response: Json
+          p_spend: Json
+        }
+        Returns: Json
       }
       worker_complete_advisor_specialized_job_v1: {
         Args: {
@@ -11160,6 +11326,10 @@ export type Database = {
           p_precedent_purpose?: string
           p_query: string
         }
+        Returns: Json
+      }
+      worker_load_work_turn_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_read_public_entity_subject_v1: {
