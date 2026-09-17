@@ -87,11 +87,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -110,11 +105,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -125,10 +115,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "owner": "Codex, etapa 8",
+      "decision": "congelar",
+      "stage": "8",
+      "reason": "RPC legado bloqueado e sem EXECUTE do cliente; preserva negação explícita a chamadas antigas, sem aceitar por confiança.",
       "sources": [
         {
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
@@ -141,9 +131,15 @@
           "line": 163,
           "anchor": "create or replace function public.accept_intake_candidates(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 722,
+          "anchor": "create or replace function private.accept_intake_candidates(p_organization_id uuid,p_session_id uuid,p_candidate_ids uuid[]) returns integer language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Sem consumidor na aplicação; assinatura conservada somente para negar clientes antigos."
     },
     {
       "id": "function:private.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)",
@@ -3578,6 +3574,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "can_read_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "can_read_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 68,
+          "anchor": "create function private.can_read_definition_version_v1(p_org uuid,p_version uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.can_read_dossier_v1(p_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3771,6 +3832,71 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.can_read_observation_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_observation_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_observation_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 74,
+          "anchor": "create function private.can_read_observation_v1(p_org uuid,p_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
@@ -4663,6 +4789,116 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.capture_legacy_observation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_legacy_observation_v1()",
+          "kind": "function",
+          "name": "capture_legacy_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_legacy_observation_v1()",
+          "kind": "function",
+          "name": "capture_legacy_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 319,
+          "anchor": "create function private.capture_legacy_observation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.capture_observation_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_observation_event_v1()",
+          "kind": "function",
+          "name": "capture_observation_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_observation_event_v1()",
+          "kind": "function",
+          "name": "capture_observation_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 145,
+          "anchor": "create function private.capture_observation_event_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.capture_organization_authority_event_v1()",
       "kind": "function",
       "catalogues": {
@@ -5169,10 +5405,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 8",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260820222749_complete_intake_processing_is_private.sql",
@@ -5184,6 +5420,12 @@
           "path": "supabase/migrations/20260820222749_complete_intake_processing_is_private.sql",
           "line": 115,
           "anchor": "create function public.complete_intake_processing(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 393,
+          "anchor": "CREATE OR REPLACE FUNCTION private.complete_intake_processing(p_organization_id uuid, p_session_id uuid, p_candidates jsonb, p_issues jsonb, p_summary jsonb DEFAULT '{}'::jsonb)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -5324,10 +5566,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 8",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
@@ -5340,6 +5582,12 @@
           "line": 369,
           "anchor": "rename to confirm_document_intake_base;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 546,
+          "anchor": "CREATE OR REPLACE FUNCTION private.confirm_document_intake_base(p_organization_id uuid, p_session_id uuid, p_output_locale text DEFAULT 'pt-BR'::text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -8503,6 +8751,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.guard_definition_version_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_definition_version_v1()",
+          "kind": "function",
+          "name": "guard_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_definition_version_v1()",
+          "kind": "function",
+          "name": "guard_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 121,
+          "anchor": "create function private.guard_definition_version_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.guard_execution_approval_queue()",
       "kind": "function",
       "catalogues": {
@@ -8911,6 +9214,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.guard_observation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_observation_v1()",
+          "kind": "function",
+          "name": "guard_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_observation_v1()",
+          "kind": "function",
+          "name": "guard_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134953_legacy_observation_field_revision.sql",
+          "line": 1,
+          "anchor": "create or replace function private.guard_observation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.guard_project_canonical_revision()",
@@ -9432,6 +9790,61 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.import_legacy_observation_v1(p_table text, p_row jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.import_legacy_observation_v1(p_table text, p_row jsonb)",
+          "kind": "function",
+          "name": "import_legacy_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_table text, p_row jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.import_legacy_observation_v1(p_table text, p_row jsonb)",
+          "kind": "function",
+          "name": "import_legacy_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_table text, p_row jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 275,
+          "anchor": "create function private.import_legacy_observation_v1(p_table text,p_row jsonb) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.index_mandate_observation_note()",
@@ -12562,6 +12975,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "observation_source_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "observation_source_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 61,
+          "anchor": "create function private.observation_source_read_v1(p_org uuid,p_source uuid,p_rights uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.open_shared_information_pack_item(p_share_id uuid, p_item_id uuid)",
@@ -16797,6 +17265,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+          "kind": "function",
+          "name": "record_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+          "kind": "function",
+          "name": "record_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134939_observation_commands_work_authority.sql",
+          "line": 37,
+          "anchor": "create or replace function private.record_definition_version_v1(p_dossier_id uuid,p_metric_key text,p_kind text,p_definition text,p_contract_source_version_id uuid,p_contract_anchor jsonb,p_definition_id uuid,p_expected_version integer,p_request_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.record_diligence_surprise(p_organization_id uuid, p_intake_session_id uuid, p_description text, p_responsible_procedure_id text, p_corrective_action_id text)",
       "kind": "function",
       "catalogues": {
@@ -17869,6 +18402,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.record_observation_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_observation_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "record_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_observation_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "record_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917135001_observation_dimension_shape_validation.sql",
+          "line": 1,
+          "anchor": "create or replace function private.record_observation_v1(p_payload jsonb) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.record_pack_distribution_next_step(p_share_id uuid, p_step_code text, p_note text)",
       "kind": "function",
       "catalogues": {
@@ -18538,15 +19136,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa 5",
-      "decision": "preservar",
-      "stage": "5",
-      "reason": "Comando limitado de identidade/dossiê, projeção legada ou memória pública sob a delegação atual do job.",
+      "owner": "Codex, etapa 8",
+      "decision": "refatorar",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
           "line": 164,
           "anchor": "create function private.register_resource_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134924_opportunity_observation_dossier_scope.sql",
+          "line": 3,
+          "anchor": "create or replace function private.register_resource_dossier_v1() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
         }
       ],
@@ -18836,6 +19440,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.reject_observation_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reject_observation_mutation_v1()",
+          "kind": "function",
+          "name": "reject_observation_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.reject_observation_mutation_v1()",
+          "kind": "function",
+          "name": "reject_observation_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 134,
+          "anchor": "create function private.reject_observation_mutation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.reject_source_version_mutation_v1()",
@@ -19731,6 +20390,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
+    },
+    {
+      "id": "function:private.require_observation_source_v1(p_org uuid, p_source uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_observation_source_v1(p_org uuid, p_source uuid)",
+          "kind": "function",
+          "name": "require_observation_source_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_observation_source_v1(p_org uuid, p_source uuid)",
+          "kind": "function",
+          "name": "require_observation_source_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 169,
+          "anchor": "create function private.require_observation_source_v1(p_org uuid,p_source uuid) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
@@ -21190,10 +21904,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 8",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
@@ -21205,6 +21919,12 @@
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
           "line": 108,
           "anchor": "create or replace function public.review_intake_candidate(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 473,
+          "anchor": "CREATE OR REPLACE FUNCTION private.review_intake_candidate(p_organization_id uuid, p_session_id uuid, p_candidate_id uuid, p_decision text, p_normalized_value jsonb DEFAULT NULL::jsonb, p_comment text DEFAULT NULL::text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26550,6 +27270,61 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "function:private.valid_observation_value_v1(p_kind text, p_value jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.valid_observation_value_v1(p_kind text, p_value jsonb)",
+          "kind": "function",
+          "name": "valid_observation_value_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_value jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.valid_observation_value_v1(p_kind text, p_value jsonb)",
+          "kind": "function",
+          "name": "valid_observation_value_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_value jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 180,
+          "anchor": "create function private.valid_observation_value_v1(p_kind text,p_value jsonb) returns boolean language plpgsql immutable set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.validate_bound_receivables_information_response_v1()",
@@ -34135,10 +34910,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 8",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260828195518_normalize_llm_extraction_method.sql",
@@ -34150,6 +34925,12 @@
           "path": "supabase/migrations/20260828210211_preserve_unparseable_worker_candidates.sql",
           "line": 7,
           "anchor": "create or replace function private.worker_record_candidates(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 326,
+          "anchor": "CREATE OR REPLACE FUNCTION private.worker_record_candidates(p_job_id uuid, p_capability_token text, p_candidates jsonb)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -36871,16 +37652,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -36899,16 +37670,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -36920,9 +37681,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
+      "decision": "congelar",
       "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "reason": "RPC legado bloqueado e sem EXECUTE do cliente; preserva negação explícita a chamadas antigas, sem aceitar por confiança.",
       "sources": [
         {
           "path": "supabase/migrations/20260820213534_evidence_is_not_tenant_writable.sql",
@@ -36937,7 +37698,7 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Sem consumidor na aplicação; assinatura conservada somente para negar clientes antigos."
     },
     {
       "id": "function:public.accept_private_workspace_terms(p_locale text, p_signatory_name text, p_signatory_title text, p_terms_agreed boolean, p_information_rights_declared boolean)",
@@ -43626,6 +44387,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+          "kind": "function",
+          "name": "record_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+          "kind": "function",
+          "name": "record_definition_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 269,
+          "anchor": "create function public.record_definition_version_v1(p_dossier_id uuid,p_metric_key text,p_kind text,p_definition text,p_contract_source_version_id uuid,p_contract_anchor jsonb,p_definition_id uuid,p_expected_version integer,p_request_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.record_diligence_surprise(p_organization_id uuid, p_intake_session_id uuid, p_description text, p_responsible_procedure_id text, p_corrective_action_id text)",
       "kind": "function",
       "catalogues": {
@@ -44467,6 +45293,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.record_observation_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.record_observation_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "record_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.record_observation_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "record_observation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 233,
+          "anchor": "create function public.record_observation_v1(p_payload jsonb) returns uuid language sql security invoker set search_path='' as $$ select private.record_observation_v1(p_payload) $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.record_pack_distribution_next_step(p_share_id uuid, p_step_code text, p_note text)",
@@ -66261,6 +67152,194 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.definition_versions.definition_versions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.definition_versions.definition_versions_deny_delete",
+          "kind": "policy",
+          "name": "definition_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.definition_versions.definition_versions_deny_delete",
+          "kind": "policy",
+          "name": "definition_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 159,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.definition_versions.definition_versions_deny_insert",
+          "kind": "policy",
+          "name": "definition_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.definition_versions.definition_versions_deny_insert",
+          "kind": "policy",
+          "name": "definition_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 157,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.definition_versions.definition_versions_deny_update",
+          "kind": "policy",
+          "name": "definition_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.definition_versions.definition_versions_deny_update",
+          "kind": "policy",
+          "name": "definition_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 158,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.definition_versions.definition_versions_select",
+          "kind": "policy",
+          "name": "definition_versions_select",
+          "qual": "private.can_read_definition_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.definition_versions.definition_versions_select",
+          "kind": "policy",
+          "name": "definition_versions_select",
+          "qual": "private.can_read_definition_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "definition_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 166,
+          "anchor": "create policy definition_versions_select on public.definition_versions for select to authenticated using(private.can_read_definition_version_v1(organization_id,id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.dependency_invalidation_events.dependency_invalidation_events_select",
       "kind": "policy",
       "catalogues": {
@@ -70040,6 +71119,382 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_delete",
+          "kind": "policy",
+          "name": "metric_definitions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_delete",
+          "kind": "policy",
+          "name": "metric_definitions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 159,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_insert",
+          "kind": "policy",
+          "name": "metric_definitions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_insert",
+          "kind": "policy",
+          "name": "metric_definitions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 157,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_update",
+          "kind": "policy",
+          "name": "metric_definitions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.metric_definitions.metric_definitions_deny_update",
+          "kind": "policy",
+          "name": "metric_definitions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 158,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.metric_definitions.metric_definitions_select",
+          "kind": "policy",
+          "name": "metric_definitions_select",
+          "qual": "(private.can_read_dossier_v1(dossier_id) AND (EXISTS ( SELECT 1\n   FROM definition_versions v\n  WHERE ((v.organization_id = metric_definitions.organization_id) AND (v.metric_definition_id = metric_definitions.id)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.metric_definitions.metric_definitions_select",
+          "kind": "policy",
+          "name": "metric_definitions_select",
+          "qual": "(private.can_read_dossier_v1(dossier_id) AND (EXISTS ( SELECT 1\n   FROM definition_versions v\n  WHERE ((v.organization_id = metric_definitions.organization_id) AND (v.metric_definition_id = metric_definitions.id)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "metric_definitions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 165,
+          "anchor": "create policy metric_definitions_select on public.metric_definitions for select to authenticated using(private.can_read_dossier_v1(dossier_id) and exists(select 1 from public.definition_versions v where v.organization_id=metric_definitions.organization_id and v.metric_definition_id=metric_definitions.id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.observations.observations_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.observations.observations_deny_delete",
+          "kind": "policy",
+          "name": "observations_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.observations.observations_deny_delete",
+          "kind": "policy",
+          "name": "observations_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 159,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.observations.observations_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.observations.observations_deny_insert",
+          "kind": "policy",
+          "name": "observations_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.observations.observations_deny_insert",
+          "kind": "policy",
+          "name": "observations_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 157,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.observations.observations_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.observations.observations_deny_update",
+          "kind": "policy",
+          "name": "observations_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.observations.observations_deny_update",
+          "kind": "policy",
+          "name": "observations_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 158,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.observations.observations_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.observations.observations_select",
+          "kind": "policy",
+          "name": "observations_select",
+          "qual": "private.can_read_observation_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.observations.observations_select",
+          "kind": "policy",
+          "name": "observations_select",
+          "qual": "private.can_read_observation_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "observations",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 167,
+          "anchor": "create policy observations_select on public.observations for select to authenticated using(private.can_read_observation_v1(organization_id,id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:public.offroad_mandate_decisions.offroad_mandate_decisions_select",
@@ -77983,15 +79438,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa 4",
-      "decision": "preservar",
-      "stage": "4",
-      "reason": "Contrato de eventos e outbox transacionais; mutação auditada, consumo autenticado e revogação efetiva.",
+      "owner": "Codex, etapa 8",
+      "decision": "refatorar",
+      "stage": "8",
+      "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
           "path": "supabase/migrations/20260916102242_reconcile_domain_event_audit_outbox.sql",
           "line": 10,
           "anchor": "create table if not exists private.domain_events (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 144,
+          "anchor": "alter table private.domain_events add constraint domain_events_aggregate_kind_check check(aggregate_kind in ('membership','resource_grant','workspace_capability','commercial_account_link','access_policy','observation','metric_definition'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -91958,6 +93419,135 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.definition_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.definition_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "definition_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.definition_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "definition_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 12,
+          "anchor": "create table public.definition_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.dependency_invalidation_events",
       "kind": "table",
       "catalogues": {
@@ -99457,6 +101047,264 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:public.metric_definitions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.metric_definitions",
+          "rls": true,
+          "kind": "table",
+          "name": "metric_definitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.metric_definitions",
+          "rls": true,
+          "kind": "table",
+          "name": "metric_definitions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 5,
+          "anchor": "create table public.metric_definitions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.observations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.observations",
+          "rls": true,
+          "kind": "table",
+          "name": "observations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.observations",
+          "rls": true,
+          "kind": "table",
+          "name": "observations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 24,
+          "anchor": "create table public.observations (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:public.offroad_mandate_decisions",
@@ -116269,6 +118117,162 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.definition_versions.definition_versions_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.definition_versions.definition_versions_event",
+          "kind": "trigger",
+          "name": "definition_versions_event",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER definition_versions_event AFTER INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.definition_versions.definition_versions_event",
+          "kind": "trigger",
+          "name": "definition_versions_event",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER definition_versions_event AFTER INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 162,
+          "anchor": "  execute format('create trigger %I after insert on public.%I for each row execute function private.capture_observation_event_v1()',t||'_event',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.definition_versions.definition_versions_guard",
+          "kind": "trigger",
+          "name": "definition_versions_guard",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_definition_version_v1()",
+          "definition": "CREATE TRIGGER definition_versions_guard BEFORE INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.guard_definition_version_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.definition_versions.definition_versions_guard",
+          "kind": "trigger",
+          "name": "definition_versions_guard",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_definition_version_v1()",
+          "definition": "CREATE TRIGGER definition_versions_guard BEFORE INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.guard_definition_version_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 130,
+          "anchor": "create trigger definition_versions_guard before insert on public.definition_versions for each row execute function private.guard_definition_version_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.definition_versions.definition_versions_immutable",
+          "kind": "trigger",
+          "name": "definition_versions_immutable",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER definition_versions_immutable BEFORE DELETE OR UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.definition_versions.definition_versions_immutable",
+          "kind": "trigger",
+          "name": "definition_versions_immutable",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER definition_versions_immutable BEFORE DELETE OR UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 160,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_observation_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.definition_versions.definition_versions_updated",
+          "kind": "trigger",
+          "name": "definition_versions_updated",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER definition_versions_updated BEFORE UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.definition_versions.definition_versions_updated",
+          "kind": "trigger",
+          "name": "definition_versions_updated",
+          "table": "definition_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER definition_versions_updated BEFORE UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 161,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.dependency_invalidation_events.dependency_invalidation_events_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -117401,6 +119405,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.evidence_facts.evidence_facts_observation",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.evidence_facts.evidence_facts_observation",
+          "kind": "trigger",
+          "name": "evidence_facts_observation",
+          "table": "evidence_facts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER evidence_facts_observation AFTER INSERT OR UPDATE ON public.evidence_facts FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.evidence_facts.evidence_facts_observation",
+          "kind": "trigger",
+          "name": "evidence_facts_observation",
+          "table": "evidence_facts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER evidence_facts_observation AFTER INSERT OR UPDATE ON public.evidence_facts FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 323,
+          "anchor": "create trigger evidence_facts_observation after insert or update on public.evidence_facts for each row execute function private.capture_legacy_observation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.evidence_facts.evidence_facts_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -117438,6 +119481,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.financial_line_items.financial_line_items_observation",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.financial_line_items.financial_line_items_observation",
+          "kind": "trigger",
+          "name": "financial_line_items_observation",
+          "table": "financial_line_items",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER financial_line_items_observation AFTER INSERT OR UPDATE ON public.financial_line_items FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.financial_line_items.financial_line_items_observation",
+          "kind": "trigger",
+          "name": "financial_line_items_observation",
+          "table": "financial_line_items",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER financial_line_items_observation AFTER INSERT OR UPDATE ON public.financial_line_items FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 324,
+          "anchor": "create trigger financial_line_items_observation after insert or update on public.financial_line_items for each row execute function private.capture_legacy_observation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.financial_line_items.financial_line_items_set_updated_at",
@@ -117936,6 +120018,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.intake_field_candidates.intake_candidates_observation",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.intake_field_candidates.intake_candidates_observation",
+          "kind": "trigger",
+          "name": "intake_candidates_observation",
+          "table": "intake_field_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER intake_candidates_observation AFTER INSERT OR UPDATE ON public.intake_field_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.intake_field_candidates.intake_candidates_observation",
+          "kind": "trigger",
+          "name": "intake_candidates_observation",
+          "table": "intake_field_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_legacy_observation_v1()",
+          "definition": "CREATE TRIGGER intake_candidates_observation AFTER INSERT OR UPDATE ON public.intake_field_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 322,
+          "anchor": "create trigger intake_candidates_observation after insert or update on public.intake_field_candidates for each row execute function private.capture_legacy_observation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.intake_field_candidates.intake_field_candidates_audit",
       "kind": "trigger",
       "catalogues": {
@@ -118285,6 +120406,279 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.metric_definitions.metric_definitions_event",
+          "kind": "trigger",
+          "name": "metric_definitions_event",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER metric_definitions_event AFTER INSERT ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.metric_definitions.metric_definitions_event",
+          "kind": "trigger",
+          "name": "metric_definitions_event",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER metric_definitions_event AFTER INSERT ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 162,
+          "anchor": "  execute format('create trigger %I after insert on public.%I for each row execute function private.capture_observation_event_v1()',t||'_event',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.metric_definitions.metric_definitions_immutable",
+          "kind": "trigger",
+          "name": "metric_definitions_immutable",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER metric_definitions_immutable BEFORE DELETE OR UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.metric_definitions.metric_definitions_immutable",
+          "kind": "trigger",
+          "name": "metric_definitions_immutable",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER metric_definitions_immutable BEFORE DELETE OR UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 160,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_observation_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.metric_definitions.metric_definitions_updated",
+          "kind": "trigger",
+          "name": "metric_definitions_updated",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER metric_definitions_updated BEFORE UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.metric_definitions.metric_definitions_updated",
+          "kind": "trigger",
+          "name": "metric_definitions_updated",
+          "table": "metric_definitions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER metric_definitions_updated BEFORE UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 161,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.observations.observations_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.observations.observations_event",
+          "kind": "trigger",
+          "name": "observations_event",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER observations_event AFTER INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.observations.observations_event",
+          "kind": "trigger",
+          "name": "observations_event",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_observation_event_v1()",
+          "definition": "CREATE TRIGGER observations_event AFTER INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 162,
+          "anchor": "  execute format('create trigger %I after insert on public.%I for each row execute function private.capture_observation_event_v1()',t||'_event',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.observations.observations_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.observations.observations_guard",
+          "kind": "trigger",
+          "name": "observations_guard",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_observation_v1()",
+          "definition": "CREATE TRIGGER observations_guard BEFORE INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.guard_observation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.observations.observations_guard",
+          "kind": "trigger",
+          "name": "observations_guard",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_observation_v1()",
+          "definition": "CREATE TRIGGER observations_guard BEFORE INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.guard_observation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 119,
+          "anchor": "create trigger observations_guard before insert on public.observations for each row execute function private.guard_observation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.observations.observations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.observations.observations_immutable",
+          "kind": "trigger",
+          "name": "observations_immutable",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER observations_immutable BEFORE DELETE OR UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.observations.observations_immutable",
+          "kind": "trigger",
+          "name": "observations_immutable",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_observation_mutation_v1()",
+          "definition": "CREATE TRIGGER observations_immutable BEFORE DELETE OR UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 160,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_observation_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.observations.observations_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.observations.observations_updated",
+          "kind": "trigger",
+          "name": "observations_updated",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER observations_updated BEFORE UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.observations.observations_updated",
+          "kind": "trigger",
+          "name": "observations_updated",
+          "table": "observations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER observations_updated BEFORE UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 8",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+          "line": 161,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.offroad_mandate_decisions.offroad_mandate_decisions_audit",
@@ -123509,8 +125903,8 @@
       "path": "apps/document-worker",
       "name": "@offroad/document-worker",
       "decision": "refatorar",
-      "stage": "1–24",
-      "reason": "adaptar entradas, autoridade e runtime aos contratos comuns",
+      "stage": "8",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -123519,8 +125913,8 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "1–24",
-      "reason": "adaptar entradas, autoridade e runtime aos contratos comuns",
+      "stage": "8",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -123655,8 +126049,8 @@
       "path": "packages/case-engine",
       "name": "@offroad/case-engine",
       "decision": "refatorar",
-      "stage": "17",
-      "reason": "11 estágios tornam-se executores sob manifesto comum",
+      "stage": "8",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/case-manifest.ts",
@@ -125498,8 +127892,8 @@
       "path": "packages/extraction-learning",
       "name": "@offroad/extraction-learning",
       "decision": "refatorar",
-      "stage": "8, 9",
-      "reason": "feedback propõe; confiança não publica nem adota dado",
+      "stage": "8",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/server.ts",
@@ -126523,9 +128917,9 @@
       "kind": "package",
       "path": "packages/reconciliation",
       "name": "@offroad/reconciliation",
-      "decision": "substituir",
-      "stage": "8, 9",
-      "reason": "ranking passa a recomendação; adoção vira ato explícito",
+      "decision": "refatorar",
+      "stage": "8",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/reconcile.ts",
@@ -129719,6 +132113,48 @@
       "decision": "preservar",
       "stage": "7",
       "reason": "SQL imutável aplicado nos dois ambientes; arquivo alinhado ao carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917134939_observation_commands_work_authority.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917134946_observation_value_shape_validation.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917134924_opportunity_observation_dossier_scope.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917134953_legacy_observation_field_revision.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917135001_observation_dimension_shape_validation.sql",
+      "decision": "preservar",
+      "stage": "8",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -130178,5 +132614,33 @@
     "sql_md5": "26955f303ed38f67f5ed3708476b64e7",
     "new_objects": 35,
     "review": "docs/build/arcabouco/etapa-07.md"
+  },
+  "stage_8_revision": {
+    "production_migrations": [
+      "20260917134931",
+      "20260917134939",
+      "20260917134946",
+      "20260917134924",
+      "20260917134953",
+      "20260917135001"
+    ],
+    "new_objects": 44,
+    "review": "docs/build/arcabouco/etapa-08.md",
+    "staging_migrations": [
+      "20260917123634",
+      "20260917123810",
+      "20260917123901",
+      "20260917124418",
+      "20260917125017",
+      "20260917125759"
+    ],
+    "sql_md5_by_name": {
+      "opportunity_observation_dossier_scope": "3010858b43656d6691cb2a0dddfa149e",
+      "observations_metric_definitions": "f5edc25e302bc60df347aed8adb40ec8",
+      "observation_commands_work_authority": "fb71bb86b15d5f9d5a7c60410ec7fde9",
+      "observation_value_shape_validation": "fad9448e5f91b427b9322aba15234d96",
+      "legacy_observation_field_revision": "068a7d27f17160bb62187d328471d84c",
+      "observation_dimension_shape_validation": "c63b221d14eb34abdd36181b35ea857a"
+    }
   }
 }

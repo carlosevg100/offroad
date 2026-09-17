@@ -32,11 +32,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "private",
@@ -1166,6 +1161,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "can_read_definition_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_read_dossier_v1(p_id uuid)",
       "kind": "function",
       "name": "can_read_dossier_v1",
@@ -1232,6 +1250,29 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_rights uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_observation_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "name": "can_read_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_id uuid",
       "security_definer": true
     },
     {
@@ -1505,6 +1546,42 @@
       "id": "function:private.capture_identity_audit_v1()",
       "kind": "function",
       "name": "capture_identity_audit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_legacy_observation_v1()",
+      "kind": "function",
+      "name": "capture_legacy_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_observation_event_v1()",
+      "kind": "function",
+      "name": "capture_observation_event_v1",
       "grants": [
         [
           "postgres",
@@ -2763,6 +2840,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_definition_version_v1()",
+      "kind": "function",
+      "name": "guard_definition_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.guard_execution_approval_queue()",
       "kind": "function",
       "name": "guard_execution_approval_queue",
@@ -2874,6 +2969,24 @@
       "id": "function:private.guard_intake_session_terminal_projection()",
       "kind": "function",
       "name": "guard_intake_session_terminal_projection",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_observation_v1()",
+      "kind": "function",
+      "name": "guard_observation_v1",
       "grants": [
         [
           "postgres",
@@ -3058,6 +3171,24 @@
         "search_path=\"\""
       ],
       "signature": "p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.import_legacy_observation_v1(p_table text, p_row jsonb)",
+      "kind": "function",
+      "name": "import_legacy_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_table text, p_row jsonb",
       "security_definer": true
     },
     {
@@ -4069,6 +4200,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "name": "observation_source_read_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid, p_rights uuid",
       "security_definer": true
     },
     {
@@ -5470,6 +5619,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+      "kind": "function",
+      "name": "record_definition_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_diligence_surprise(p_organization_id uuid, p_intake_session_id uuid, p_description text, p_responsible_procedure_id text, p_corrective_action_id text)",
       "kind": "function",
       "name": "record_diligence_surprise",
@@ -5823,6 +5995,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_observation_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "record_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_pack_distribution_next_step(p_share_id uuid, p_step_code text, p_note text)",
       "kind": "function",
       "name": "record_pack_distribution_next_step",
@@ -6156,6 +6351,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.reject_observation_mutation_v1()",
+      "kind": "function",
+      "name": "reject_observation_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.reject_source_version_mutation_v1()",
       "kind": "function",
       "name": "reject_source_version_mutation_v1",
@@ -6440,6 +6653,24 @@
         "search_path=\"\""
       ],
       "signature": "p_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_observation_source_v1(p_org uuid, p_source uuid)",
+      "kind": "function",
+      "name": "require_observation_source_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid",
       "security_definer": true
     },
     {
@@ -8637,6 +8868,24 @@
       ],
       "signature": "p_session_id uuid, p_project_name text, p_identity_policy text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.valid_observation_value_v1(p_kind text, p_value jsonb)",
+      "kind": "function",
+      "name": "valid_observation_value_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text, p_value jsonb",
+      "security_definer": false
     },
     {
       "id": "function:private.validate_bound_receivables_information_response_v1()",
@@ -11985,16 +12234,6 @@
           "postgres",
           "EXECUTE",
           false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -14341,6 +14580,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)",
+      "kind": "function",
+      "name": "record_definition_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.record_diligence_surprise(p_organization_id uuid, p_intake_session_id uuid, p_description text, p_responsible_procedure_id text, p_corrective_action_id text)",
       "kind": "function",
       "name": "record_diligence_surprise",
@@ -14636,6 +14898,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_intake_session_id uuid, p_package_fingerprint text, p_recipient_id text, p_channel text, p_content_fingerprint text, p_has_material_commitment boolean",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.record_observation_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "record_observation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
       "security_definer": false
     },
     {
@@ -21834,6 +22119,62 @@
       "with_check": null
     },
     {
+      "id": "policy:public.definition_versions.definition_versions_deny_delete",
+      "kind": "policy",
+      "name": "definition_versions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "definition_versions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_deny_insert",
+      "kind": "policy",
+      "name": "definition_versions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "definition_versions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_deny_update",
+      "kind": "policy",
+      "name": "definition_versions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "definition_versions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.definition_versions.definition_versions_select",
+      "kind": "policy",
+      "name": "definition_versions_select",
+      "qual": "private.can_read_definition_version_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "definition_versions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.dependency_invalidation_events.dependency_invalidation_events_select",
       "kind": "policy",
       "name": "dependency_invalidation_events_select",
@@ -22920,6 +23261,118 @@
         "authenticated"
       ],
       "table": "material_communication_records",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_delete",
+      "kind": "policy",
+      "name": "metric_definitions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "metric_definitions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_insert",
+      "kind": "policy",
+      "name": "metric_definitions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "metric_definitions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_deny_update",
+      "kind": "policy",
+      "name": "metric_definitions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "metric_definitions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.metric_definitions.metric_definitions_select",
+      "kind": "policy",
+      "name": "metric_definitions_select",
+      "qual": "(private.can_read_dossier_v1(dossier_id) AND (EXISTS ( SELECT 1\n   FROM definition_versions v\n  WHERE ((v.organization_id = metric_definitions.organization_id) AND (v.metric_definition_id = metric_definitions.id)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "metric_definitions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.observations.observations_deny_delete",
+      "kind": "policy",
+      "name": "observations_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "observations",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.observations.observations_deny_insert",
+      "kind": "policy",
+      "name": "observations_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "observations",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.observations.observations_deny_update",
+      "kind": "policy",
+      "name": "observations_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "observations",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.observations.observations_select",
+      "kind": "policy",
+      "name": "observations_select",
+      "qual": "private.can_read_observation_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "observations",
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
@@ -31587,6 +32040,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.definition_versions",
+      "rls": true,
+      "kind": "table",
+      "name": "definition_versions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.dependency_invalidation_events",
       "rls": true,
       "kind": "table",
@@ -35065,6 +35573,116 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.metric_definitions",
+      "rls": true,
+      "kind": "table",
+      "name": "metric_definitions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.observations",
+      "rls": true,
+      "kind": "table",
+      "name": "observations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -41807,6 +42425,46 @@
       "definition": "CREATE TRIGGER decline_communications_audit AFTER INSERT OR DELETE OR UPDATE ON public.decline_communications FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
+      "id": "trigger:public.definition_versions.definition_versions_event",
+      "kind": "trigger",
+      "name": "definition_versions_event",
+      "table": "definition_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_observation_event_v1()",
+      "definition": "CREATE TRIGGER definition_versions_event AFTER INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_guard",
+      "kind": "trigger",
+      "name": "definition_versions_guard",
+      "table": "definition_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_definition_version_v1()",
+      "definition": "CREATE TRIGGER definition_versions_guard BEFORE INSERT ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.guard_definition_version_v1()"
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_immutable",
+      "kind": "trigger",
+      "name": "definition_versions_immutable",
+      "table": "definition_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_observation_mutation_v1()",
+      "definition": "CREATE TRIGGER definition_versions_immutable BEFORE DELETE OR UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.definition_versions.definition_versions_updated",
+      "kind": "trigger",
+      "name": "definition_versions_updated",
+      "table": "definition_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER definition_versions_updated BEFORE UPDATE ON public.definition_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.dependency_invalidation_events.dependency_invalidation_events_immutable",
       "kind": "trigger",
       "name": "dependency_invalidation_events_immutable",
@@ -42097,6 +42755,16 @@
       "definition": "CREATE TRIGGER evidence_facts_audit AFTER INSERT OR DELETE OR UPDATE ON public.evidence_facts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
+      "id": "trigger:public.evidence_facts.evidence_facts_observation",
+      "kind": "trigger",
+      "name": "evidence_facts_observation",
+      "table": "evidence_facts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_legacy_observation_v1()",
+      "definition": "CREATE TRIGGER evidence_facts_observation AFTER INSERT OR UPDATE ON public.evidence_facts FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+    },
+    {
       "id": "trigger:public.evidence_facts.evidence_facts_set_updated_at",
       "kind": "trigger",
       "name": "evidence_facts_set_updated_at",
@@ -42105,6 +42773,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER evidence_facts_set_updated_at BEFORE UPDATE ON public.evidence_facts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.financial_line_items.financial_line_items_observation",
+      "kind": "trigger",
+      "name": "financial_line_items_observation",
+      "table": "financial_line_items",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_legacy_observation_v1()",
+      "definition": "CREATE TRIGGER financial_line_items_observation AFTER INSERT OR UPDATE ON public.financial_line_items FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
     },
     {
       "id": "trigger:public.financial_line_items.financial_line_items_set_updated_at",
@@ -42247,6 +42925,16 @@
       "definition": "CREATE TRIGGER execution_approval_candidate_lock BEFORE INSERT OR DELETE OR UPDATE ON public.intake_field_candidates FOR EACH ROW EXECUTE FUNCTION private.lock_execution_approval_context()"
     },
     {
+      "id": "trigger:public.intake_field_candidates.intake_candidates_observation",
+      "kind": "trigger",
+      "name": "intake_candidates_observation",
+      "table": "intake_field_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_legacy_observation_v1()",
+      "definition": "CREATE TRIGGER intake_candidates_observation AFTER INSERT OR UPDATE ON public.intake_field_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_legacy_observation_v1()"
+    },
+    {
       "id": "trigger:public.intake_field_candidates.intake_field_candidates_audit",
       "kind": "trigger",
       "name": "intake_field_candidates_audit",
@@ -42335,6 +43023,76 @@
       "enabled": "O",
       "function": "private.capture_audit_event()",
       "definition": "CREATE TRIGGER material_communication_records_audit AFTER INSERT OR DELETE OR UPDATE ON public.material_communication_records FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_event",
+      "kind": "trigger",
+      "name": "metric_definitions_event",
+      "table": "metric_definitions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_observation_event_v1()",
+      "definition": "CREATE TRIGGER metric_definitions_event AFTER INSERT ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_immutable",
+      "kind": "trigger",
+      "name": "metric_definitions_immutable",
+      "table": "metric_definitions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_observation_mutation_v1()",
+      "definition": "CREATE TRIGGER metric_definitions_immutable BEFORE DELETE OR UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.metric_definitions.metric_definitions_updated",
+      "kind": "trigger",
+      "name": "metric_definitions_updated",
+      "table": "metric_definitions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER metric_definitions_updated BEFORE UPDATE ON public.metric_definitions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.observations.observations_event",
+      "kind": "trigger",
+      "name": "observations_event",
+      "table": "observations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_observation_event_v1()",
+      "definition": "CREATE TRIGGER observations_event AFTER INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.capture_observation_event_v1()"
+    },
+    {
+      "id": "trigger:public.observations.observations_guard",
+      "kind": "trigger",
+      "name": "observations_guard",
+      "table": "observations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_observation_v1()",
+      "definition": "CREATE TRIGGER observations_guard BEFORE INSERT ON public.observations FOR EACH ROW EXECUTE FUNCTION private.guard_observation_v1()"
+    },
+    {
+      "id": "trigger:public.observations.observations_immutable",
+      "kind": "trigger",
+      "name": "observations_immutable",
+      "table": "observations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_observation_mutation_v1()",
+      "definition": "CREATE TRIGGER observations_immutable BEFORE DELETE OR UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.reject_observation_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.observations.observations_updated",
+      "kind": "trigger",
+      "name": "observations_updated",
+      "table": "observations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER observations_updated BEFORE UPDATE ON public.observations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.offroad_mandate_decisions.offroad_mandate_decisions_audit",
@@ -43852,5 +44610,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-17T02:48:46.919299+00:00"
+  "captured_at": "2026-09-17T13:51:15.365312+00:00"
 }

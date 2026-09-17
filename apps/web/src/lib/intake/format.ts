@@ -72,7 +72,21 @@ export function decimalSeparatorFor(locale: string) {
  * - a single separator with any other number of trailing digits is a decimal separator.
  * Returns `null` for anything that is not an unambiguous number.
  */
-export function parseLocalizedNumber(raw: string, locale: string): number | null {
+export function parseLocalizedDecimal(raw: string, locale: string): string | null {
+  // Persistent observations are expressed in base units. Never erase an exponent or a
+  // textual scale: doing so changes the asserted quantity while appearing to accept it.
+  const text = raw.trim().replace(/^(?:R\$|US\$|BRL|USD|EUR|GBP|[$€£¥])\s*/i, "").replace(/\s/g, "");
+  if (!/^[+-]?\d(?:[\d.,]*\d)?$/.test(text)) return null;
+  if (text.includes(",") && text.includes(".")) {
+    const decimalAt = Math.max(text.lastIndexOf(","), text.lastIndexOf("."));
+    const grouping = text[decimalAt] === "," ? "." : ",";
+    const groups = text.slice(0, decimalAt).replace(/^[+-]/, "").split(grouping);
+    if (!/^\d{1,3}$/.test(groups[0] ?? "") || !groups.slice(1).every((part) => /^\d{3}$/.test(part))) return null;
+  }
+  return parseDecimalText(text, locale);
+}
+
+function parseDecimalText(raw: string, locale: string): string | null {
   let text = raw.trim();
   if (!text) return null;
   // Strip currency symbols, unit suffixes and spaces; keep digits, sign and separators.
@@ -109,8 +123,15 @@ export function parseLocalizedNumber(raw: string, locale: string): number | null
   }
 
   if (!/^\d+$/.test(integerPart) || !/^\d*$/.test(fractionPart)) return null;
-  const parsed = Number(`${integerPart}${fractionPart ? `.${fractionPart}` : ""}`);
-  return Number.isFinite(parsed) ? sign * parsed : null;
+  return `${sign < 0 ? "-" : ""}${integerPart}${fractionPart ? `.${fractionPart}` : ""}`;
+}
+
+/** Compatibility for non-persistent numeric controls; database review uses the exact decimal. */
+export function parseLocalizedNumber(raw: string, locale: string): number | null {
+  const decimal = parseDecimalText(raw, locale);
+  if (decimal === null) return null;
+  const value = Number(decimal);
+  return Number.isFinite(value) ? value : null;
 }
 
 /** Splits a comma-separated list, trims, drops blanks and caps the size. */

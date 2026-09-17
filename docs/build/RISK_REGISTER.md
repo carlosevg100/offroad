@@ -1,5 +1,22 @@
 # Risk Register
 
+## Arcabouço: acompanhamento da etapa 8, 17/09/2026
+
+Esta atualização registra o estado do incremento atual. As linhas históricas abaixo não
+substituem as evidências de instalação e os completions por etapa.
+
+| Risco | Controle verificado nesta etapa | Continuidade e responsável |
+| --- | --- | --- |
+| Ranking ou revisão sobrescrever uma contribuição e virar verdade oficial | PR 642 retira o batch da web; SQL instalado registra revisões imutáveis e nega o batch antigo. Leituras conflitantes ficam fora dos cálculos dependentes. | Etapa 9 implementa adoção por contexto; Engineering. |
+| Perder precisão ou presumir unidade, escala, moeda e perímetro | SQL exige decimal exato e conserva lacunas. Este incremento publica parser estrito e recusa moeda ausente, com testes negativos. | Publicar e conferir web/worker deste incremento antes de fechar a etapa 8; Engineering. |
+| Ampliar licença atual apagar a restrição fixada na observação ou definição | `observation_pinned_rights.sql` passou em staging; RLS intersecta direito atual e fixado. | Manter a interseção nos consumidores da etapa 9 e nos contratos de execução/artefatos; Engineering. |
+| Tratar alarmes em estado OK como entrega de notificações | Quatro alarmes avaliados, sem ações configuradas; essa limitação permanece explícita. | Etapa 18 configura destino, entrega e teste de notificação; Platform. |
+
+As 18 lacunas gerais do inventário de segurança permanecem abertas. Esta etapa não as
+promove a resolvidas por ter testes locais ou um catálogo consistente.
+
+## Registro histórico
+
 | ID | Risco | Probabilidade | Impacto | Controle atual | Próxima ação | Owner |
 |---|---|---:|---:|---|---|---|
 | R-001 | conflito de marca/nome digital | média | crítico | identidade centralizada; site `noindex` | clearance jurídico e registral antes de launch | Executivo/Jurídico |

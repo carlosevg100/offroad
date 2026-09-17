@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {anchorText, decimalSeparatorFor, displayCandidateValue, editableCandidateValue, parseList, parseLocalizedNumber} from "./format";
+import {anchorText, decimalSeparatorFor, displayCandidateValue, editableCandidateValue, parseList, parseLocalizedDecimal, parseLocalizedNumber} from "./format";
 
 describe("parseLocalizedNumber", () => {
   it("reads Brazilian notation", () => {
@@ -66,4 +66,16 @@ describe("candidate rendering", () => {
     expect(parseList(" a, b ,, c ")).toEqual(["a", "b", "c"]);
     expect(parseList("x".repeat(3), 1)).toEqual(["xxx"]);
   });
+});
+
+it("preserves an edited decimal beyond JavaScript precision", () => {
+  expect(parseLocalizedDecimal("9.007.199.254.740.993,123456789", "pt-BR")).toBe("9007199254740993.123456789");
+  expect(parseLocalizedDecimal("-9,007,199,254,740,993.123456789", "en-US")).toBe("-9007199254740993.123456789");
+  expect(parseLocalizedDecimal("R$ 1.234,50", "pt-BR")).toBe("1234.50");
+});
+
+it("rejects exponents and textual scales instead of changing a persistent quantity", () => {
+  for (const value of ["1e3", "1e-3", "R$ 53,76 milhões", "2x", "10%", "abc123", "(123)", "12.34,56", "1,23,4.00", "1,"]) {
+    expect(parseLocalizedDecimal(value, "pt-BR")).toBeNull();
+  }
 });

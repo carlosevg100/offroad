@@ -413,8 +413,8 @@ begin
     when sqlstate '55000' then null;
   end;
 
-  -- Review: accept the three primaries; edit the amount to a new value.
-  for candidate_id in select id from public.intake_field_candidates where intake_session_id = session_id and is_primary loop
+  -- Review three explicit candidates; confidence/primary cannot select them.
+  for candidate_id in select id from public.intake_field_candidates where intake_session_id = session_id and extractor_key <> 'project-letter' and field_path in ('company.legal_name','transaction.purpose','transaction.requested_amount') and extractor_key <> 'requested-alt' loop
     perform public.review_intake_candidate(org, session_id, candidate_id, 'accept');
   end loop;
   select id into amount_candidate from public.intake_field_candidates where intake_session_id = session_id and extractor_key = 'requested';
@@ -424,8 +424,8 @@ begin
      or (select extraction_method from public.intake_field_candidates where id = amount_candidate) <> 'user_entry' then
     raise exception 'review_intake_candidate edit did not persist';
   end if;
-  if (select count(*) from public.intake_field_candidates where intake_session_id = session_id and field_path = 'transaction.requested_amount' and is_primary) <> 1 then
-    raise exception 'review_intake_candidate left more than one primary per field path';
+  if (select count(*) from public.intake_field_candidates where intake_session_id = session_id and field_path = 'transaction.requested_amount' and is_primary) <> 0 then
+    raise exception 'review_intake_candidate promoted a human contribution to primary';
   end if;
 
   -- The learning ledger. An edit overwrites the candidate in place, so unless the prior value
@@ -542,8 +542,8 @@ begin
   end if;
   select count(*) into n from public.opportunities where organization_id = org;
   if n <> 1 then raise exception 'expected 1 opportunity, found %', n; end if;
-  select count(*) into n from public.evidence_facts where opportunity_id = first_opportunity and review_state = 'approved';
-  if n <> 3 then raise exception 'expected 3 approved evidence facts, found %', n; end if;
+  select count(*) into n from public.evidence_facts where opportunity_id = first_opportunity and review_state = 'proposed';
+  if n <> 3 then raise exception 'expected 3 proposed compatibility evidence facts, found %', n; end if;
   select char_length(title) into title_length from public.opportunities where id = first_opportunity;
   if title_length > 180 then raise exception 'opportunity title exceeds 180 characters'; end if;
   if (select requested_amount from public.opportunities where id = first_opportunity) <> 12500000 then

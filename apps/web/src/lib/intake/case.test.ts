@@ -103,5 +103,6 @@ describe("deriveCase", () => {
 it("refuses conflicting reviewed origination values even when one is primary", () => {
  const rows = [candidate({normalized_value: "Empresa X"}), candidate({field_path: "transaction.purpose", normalized_value: "Expansão"}), candidate({field_path: "transaction.requested_amount", normalized_value: "100", value_type: "number", currency: "BRL"})];
  expect(deriveCase(rows)?.requestedAmount).toBe(100);
+ expect(deriveCase(rows.map((row) => ({...row, currency: null})))).toBeNull();
  expect(deriveCase([...rows, candidate({field_path: "transaction.requested_amount", normalized_value: "101", value_type: "number", currency: "BRL", is_primary: false})])).toBeNull();
 });
