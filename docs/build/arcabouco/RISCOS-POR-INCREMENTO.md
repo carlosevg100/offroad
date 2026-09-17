@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 8 · 17/09/2026 · Baseline entregue: `047fff553e43eaac41c2ef763268c25284887f87`. Etapa 9 autorizada; etapa 10 não iniciada.
+Onda 8 · 17/09/2026 · Baseline entregue: `75f3dc70aa90b8ab33b9e9afb299fbf809db8761`. Etapa 9 implementada e verificada; etapa 10 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -80,3 +80,20 @@ Adoção explícita e resolução das dimensões desconhecidas por contexto perm
 As 18 lacunas gerais continuam abertas. Implementação, journals, main e deploy exato foram
 conferidos; provas em `etapa-08.md` e `docs/security/history/wave-7-final-review.md`.
 A conciliação registra seus próprios gates e deploy no completion externo.
+
+## Tratamento técnico da etapa 9
+
+Ranking não adota dado: a escolha explícita referencia observação ou hipótese, finalidade,
+contexto e motivo. CAS com duas conexões rejeita sobrescrita concorrente. A versão antiga
+mantém conteúdo e fingerprint; comparação não reclassifica hipótese como fato. Leitura e
+cálculo revalidam direitos fixados e atuais, inclusive derive/store quando read permanece.
+Precisão decimal, contrato, escopo, contribuição e vínculo de execução têm testes negativos.
+A captura móvel revelou sobreposição durante a transição da barra; esta conciliação
+corrige sua largura e exige separação geométrica entre barra e conteúdo no E2E.
+A nova captura e a CI da correção são condição de merge.
+
+As execuções legadas sem inputs reconstruíveis são rotuladas como tal; não recebem prova
+retroativa de reprodutibilidade. A etapa 17 deve conservar executores por versão e rejeitar
+uma versão de motor indisponível, sem recalcular silenciosamente pelo motor atual. A etapa 9
+prova repetição com a versão vigente fixada. Limites de paginação e capacidade constam de
+`etapa-09.md`; não abrem caminho alternativo sem autoridade. As 18 lacunas gerais permanecem.

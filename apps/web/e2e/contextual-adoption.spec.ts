@@ -95,5 +95,9 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  await expect(page.getByRole("heading",{name:copy.title,exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
  expect((await page.locator(".adoption-basis").boundingBox())!.width).toBeGreaterThanOrEqual(300);
+ const rail=await page.locator(".app-rail").boundingBox();
+ const main=await page.locator(".app-main").boundingBox();
+ expect(rail!.x+rail!.width).toBeLessThanOrEqual(main!.x+1);
+ await expect(page.getByRole("heading",{name:copy.title,exact:true})).toBeInViewport();
  await test.info().attach("contextual-basis-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
 });

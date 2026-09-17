@@ -1,3 +1,22 @@
+## Etapa 9: conciliação da entrega em 17/09/2026
+
+PR 647 entregue em `75f3dc70aa90b8ab33b9e9afb299fbf809db8761`; main Quality 35254486464, Security 35254486454 e worker 35254486802 passaram. Vercel Production 6508719804 e ECS 356 executam o commit exato.
+Cinco migrações conferidas nos dois journals, SQL idêntico e 23 funções em paridade.
+82 contratos SQL e concorrência real passaram na CI; 32 jornadas E2E passaram, incluindo
+revisão, reabertura e cálculo da base anterior, desktop e celular. Produção foi verificada
+sem fixtures. As 336 versões de arquivo constam do journal de produção e 56 superfícies
+novas estão inventariadas. Advisors de segurança sem achados.
+
+A conciliação também corrige a sobreposição móvel observada na inspeção da captura e
+acrescenta uma asserção geométrica ao E2E; os gates e a nova captura são condição de merge.
+
+Adoções e hipóteses são contribuições imutáveis por contexto, com revisão anterior explícita.
+O cálculo fixa base, fingerprint e versão do motor; direitos atuais e fixados são revalidados.
+A conciliação exige 126 evidências e mantém as 18 lacunas gerais nos incrementos responsáveis.
+Provas e limites em `docs/build/arcabouco/etapa-09.md` e
+`docs/security/history/wave-8-final-review.md`. O completion externo registra também CI e
+implantação do commit desta conciliação. Etapa 10 depende de novo OK do fundador.
+
 ## Etapa 9: adoção instalada, interface em publicação
 
 Cinco migrações de adoção contextual instaladas nos dois ambientes, carimbos de produção
