@@ -110,7 +110,7 @@ export async function IntakeReview({executionApproval, locale, session, document
 
   if (executionApproval?.pending) return <IntakeExecutionApproval state={executionApproval} locale={locale} />;
   return (
-    <div className="intake-review">
+    <div className="intake-review" data-processing-run-id={session.current_run_id}>
       {executionApproval ? <IntakeExecutionApproval state={executionApproval} locale={locale} /> : null}
       <IntakeJourneyTelemetry
         documentCount={documents.length}

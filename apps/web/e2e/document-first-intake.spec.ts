@@ -279,8 +279,14 @@ test.describe("Document-first intake (company journey)", () => {
       await expect(form).toHaveCount(0);
     }
 
+    const previousRun = await page.locator(".intake-review").getAttribute("data-processing-run-id");
+    expect(previousRun).toBeTruthy();
     await page.locator(".intake-review__reanalyze button[type=submit]").click();
+    // A visible review from the previous run is not completion of the submitted reanalysis.
+    // Wait for its replacement before taking candidate IDs from the new projection.
+    await expect(page.locator(".intake-review")).not.toHaveAttribute("data-processing-run-id", previousRun!);
     await awaitIntakeAnalysis(page);
+    await expect(page.locator(".intake-review")).not.toHaveAttribute("data-processing-run-id", previousRun!);
     await expect(page.locator(".intake-case-review-actions")).toBeVisible();
     await expect(page.getByRole("button", {name: /alta confiança|high.confidence/i})).toHaveCount(0);
     const evidenceForReview = page.locator(".intake-review__evidence");
