@@ -130,7 +130,11 @@ test("standalone work persists through logout and receives documents without cha
   await page.locator('.private-project-gate__form button[type="submit"]').click();
   await expect(page.locator('.private-project-gate__accepted').first()).toBeVisible();
   await page.goto(workUrl);
-  await page.locator('.advisor-composer input[type="file"]').setInputFiles({
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.getByRole("button", {name: "Anexar documentos", exact: true}).click(),
+  ]);
+  await chooser.setFiles({
     name: "synthetic-work-context.txt", mimeType: "text/plain", buffer: Buffer.from("Synthetic work continuation. No real company or financial data."),
   });
   await expect.poll(() => Number(sql(`select count(*) from public.source_documents d join public.document_intake_sessions s on s.id=d.intake_session_id where s.capital_project_id='${workId}';`))).toBe(1);
