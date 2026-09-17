@@ -90,4 +90,9 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  await page.goto(oldUrl);await calculate("3×");
  await expect(page.locator("output code")).toHaveText(fingerprint!);
  await page.reload();await expect(page.getByRole("link",{name:"Revisão 2",exact:true})).toHaveAttribute("aria-current","page");
+ await test.info().attach("contextual-basis-desktop",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
+ await page.setViewportSize({width:390,height:844});
+ await expect(page.getByRole("heading",{name:copy.title,exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+ await test.info().attach("contextual-basis-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
 });

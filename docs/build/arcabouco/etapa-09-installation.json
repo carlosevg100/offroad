@@ -1,0 +1,332 @@
+{
+  "captured_at": "2026-09-17T16:13:22.065001+00:00",
+  "production": {
+    "capturedAt": "2026-09-17T16:12:34.724Z",
+    "installation": {
+      "counts": {
+        "sets": 0,
+        "versions": 0,
+        "decisions": 0
+      },
+      "functions": [
+        {
+          "md5": "6d28ab2bd4672f3dc2b8a7ce9dfe6af7",
+          "name": "private.adoption_dependency_allowed_v1",
+          "signature": "p_org uuid, p_source uuid, p_rights uuid"
+        },
+        {
+          "md5": "8815c6b7dae1582798733e39e433d098",
+          "name": "private.adoption_entry_json_v1",
+          "signature": "p_id uuid"
+        },
+        {
+          "md5": "362f24923529dc4adcb67192f833433d",
+          "name": "private.bind_execution_adoption_v1",
+          "signature": ""
+        },
+        {
+          "md5": "43d3d635110c394dcebb6f2ddbed398d",
+          "name": "private.can_read_adoption_v1",
+          "signature": "p_org uuid, p_id uuid"
+        },
+        {
+          "md5": "cc8d0c598800723d2a9a47ee7e2113df",
+          "name": "private.can_read_assumption_version_v1",
+          "signature": "p_org uuid, p_id uuid"
+        },
+        {
+          "md5": "946670cf8be29039afbe1bb593190ca8",
+          "name": "private.capture_adoption_event_v1",
+          "signature": ""
+        },
+        {
+          "md5": "81d36265b63cb302319bd3b6bd03b89c",
+          "name": "private.compare_adoption_bases_v1",
+          "signature": "p_left_version_id uuid, p_right_version_id uuid"
+        },
+        {
+          "md5": "94daac63ac9a821b1d9b081b6ac82db6",
+          "name": "private.create_legacy_adoption_basis_v1",
+          "signature": "p_org uuid, p_work uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "1a4ef6d1234d2e8fe6e3b8aab8d1dbcb",
+          "name": "private.ensure_basis_entity_v1",
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text"
+        },
+        {
+          "md5": "9cfec6e473c47bcda11ca3c36c19184a",
+          "name": "private.execution_source_resource_v1",
+          "signature": "p_org uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "6d3457da9e300411a493d5dd1f42a91e",
+          "name": "private.execution_work_resource_v1",
+          "signature": "p_org uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "3473150846477dfff2e758ee7b8e9488",
+          "name": "private.list_work_observations_v1",
+          "signature": "p_work_id uuid, p_before_sequence text"
+        },
+        {
+          "md5": "15637cf94d32a1b162fb501265d4aeaf",
+          "name": "private.observation_dimensions_json_v1",
+          "signature": "p_row observations"
+        },
+        {
+          "md5": "149727aea21dc80e58c8448db3318527",
+          "name": "private.propose_assumption_revision_v1",
+          "signature": "p_payload jsonb"
+        },
+        {
+          "md5": "14f90df9bdd7cc0ae3a56929bc0120a0",
+          "name": "private.read_adoption_basis_v1",
+          "signature": "p_version_id uuid"
+        },
+        {
+          "md5": "a344eadab1f4e9a6b7f74f424fbfb0ce",
+          "name": "private.reject_assumption_mutation_v1",
+          "signature": ""
+        },
+        {
+          "md5": "e7558f1f6306167dc091b11f2b1f143a",
+          "name": "private.require_adoption_dependency_v1",
+          "signature": "p_org uuid, p_source uuid, p_rights uuid"
+        },
+        {
+          "md5": "e34779b71b7803e310d57c1153d27262",
+          "name": "private.write_contextual_adoption_v1",
+          "signature": "p_payload jsonb, p_kind text"
+        },
+        {
+          "md5": "facae669eb83ec0659b16d914aef653a",
+          "name": "public.compare_adoption_bases_v1",
+          "signature": "p_left_version_id uuid, p_right_version_id uuid"
+        },
+        {
+          "md5": "aa3f481bcebcf91466fb0a3ff86d29dc",
+          "name": "public.ensure_basis_entity_v1",
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text"
+        },
+        {
+          "md5": "780d0cbd5516b8b5fb75b758b9abf620",
+          "name": "public.list_work_observations_v1",
+          "signature": "p_work_id uuid, p_before_sequence text"
+        },
+        {
+          "md5": "86c1c63a2f5e3a03be0994efae07ef62",
+          "name": "public.propose_assumption_revision_v1",
+          "signature": "p_payload jsonb"
+        },
+        {
+          "md5": "ce06a25dab84a5d6223bc6df8880a98e",
+          "name": "public.read_adoption_basis_v1",
+          "signature": "p_version_id uuid"
+        }
+      ],
+      "migrations": [
+        {
+          "md5": "2cff7177f3818c8c44fa405a4f87807a",
+          "name": "contextual_adoptions_and_assumptions",
+          "version": "20260917160856"
+        },
+        {
+          "md5": "c4592d81c6ea08297540dd910ffb8742",
+          "name": "contextual_adoption_execution_bindings",
+          "version": "20260917160902"
+        },
+        {
+          "md5": "25e68a9513217cfa3e9f518d5c145ec3",
+          "name": "contextual_adoption_dependency_revalidation",
+          "version": "20260917160915"
+        },
+        {
+          "md5": "c84e388219becc74c259fcc03b46a5e3",
+          "name": "contextual_adoption_identity_command",
+          "version": "20260917160926"
+        },
+        {
+          "version": "20260917161803",
+          "name": "contextual_adoption_version_fk_index",
+          "md5": "e3922dfbde774e5ffd61d77459be3d6a"
+        }
+      ]
+    },
+    "security": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"result\":{\"lints\":[]}}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  "staging": {
+    "capturedAt": "2026-09-17T16:12:29.568Z",
+    "installation": {
+      "counts": {
+        "sets": 0,
+        "versions": 0,
+        "decisions": 0
+      },
+      "functions": [
+        {
+          "md5": "6d28ab2bd4672f3dc2b8a7ce9dfe6af7",
+          "name": "private.adoption_dependency_allowed_v1",
+          "signature": "p_org uuid, p_source uuid, p_rights uuid"
+        },
+        {
+          "md5": "8815c6b7dae1582798733e39e433d098",
+          "name": "private.adoption_entry_json_v1",
+          "signature": "p_id uuid"
+        },
+        {
+          "md5": "362f24923529dc4adcb67192f833433d",
+          "name": "private.bind_execution_adoption_v1",
+          "signature": ""
+        },
+        {
+          "md5": "43d3d635110c394dcebb6f2ddbed398d",
+          "name": "private.can_read_adoption_v1",
+          "signature": "p_org uuid, p_id uuid"
+        },
+        {
+          "md5": "cc8d0c598800723d2a9a47ee7e2113df",
+          "name": "private.can_read_assumption_version_v1",
+          "signature": "p_org uuid, p_id uuid"
+        },
+        {
+          "md5": "946670cf8be29039afbe1bb593190ca8",
+          "name": "private.capture_adoption_event_v1",
+          "signature": ""
+        },
+        {
+          "md5": "81d36265b63cb302319bd3b6bd03b89c",
+          "name": "private.compare_adoption_bases_v1",
+          "signature": "p_left_version_id uuid, p_right_version_id uuid"
+        },
+        {
+          "md5": "94daac63ac9a821b1d9b081b6ac82db6",
+          "name": "private.create_legacy_adoption_basis_v1",
+          "signature": "p_org uuid, p_work uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "1a4ef6d1234d2e8fe6e3b8aab8d1dbcb",
+          "name": "private.ensure_basis_entity_v1",
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text"
+        },
+        {
+          "md5": "9cfec6e473c47bcda11ca3c36c19184a",
+          "name": "private.execution_source_resource_v1",
+          "signature": "p_org uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "6d3457da9e300411a493d5dd1f42a91e",
+          "name": "private.execution_work_resource_v1",
+          "signature": "p_org uuid, p_table text, p_record jsonb"
+        },
+        {
+          "md5": "3473150846477dfff2e758ee7b8e9488",
+          "name": "private.list_work_observations_v1",
+          "signature": "p_work_id uuid, p_before_sequence text"
+        },
+        {
+          "md5": "15637cf94d32a1b162fb501265d4aeaf",
+          "name": "private.observation_dimensions_json_v1",
+          "signature": "p_row observations"
+        },
+        {
+          "md5": "149727aea21dc80e58c8448db3318527",
+          "name": "private.propose_assumption_revision_v1",
+          "signature": "p_payload jsonb"
+        },
+        {
+          "md5": "14f90df9bdd7cc0ae3a56929bc0120a0",
+          "name": "private.read_adoption_basis_v1",
+          "signature": "p_version_id uuid"
+        },
+        {
+          "md5": "a344eadab1f4e9a6b7f74f424fbfb0ce",
+          "name": "private.reject_assumption_mutation_v1",
+          "signature": ""
+        },
+        {
+          "md5": "e7558f1f6306167dc091b11f2b1f143a",
+          "name": "private.require_adoption_dependency_v1",
+          "signature": "p_org uuid, p_source uuid, p_rights uuid"
+        },
+        {
+          "md5": "e34779b71b7803e310d57c1153d27262",
+          "name": "private.write_contextual_adoption_v1",
+          "signature": "p_payload jsonb, p_kind text"
+        },
+        {
+          "md5": "facae669eb83ec0659b16d914aef653a",
+          "name": "public.compare_adoption_bases_v1",
+          "signature": "p_left_version_id uuid, p_right_version_id uuid"
+        },
+        {
+          "md5": "aa3f481bcebcf91466fb0a3ff86d29dc",
+          "name": "public.ensure_basis_entity_v1",
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text"
+        },
+        {
+          "md5": "780d0cbd5516b8b5fb75b758b9abf620",
+          "name": "public.list_work_observations_v1",
+          "signature": "p_work_id uuid, p_before_sequence text"
+        },
+        {
+          "md5": "86c1c63a2f5e3a03be0994efae07ef62",
+          "name": "public.propose_assumption_revision_v1",
+          "signature": "p_payload jsonb"
+        },
+        {
+          "md5": "ce06a25dab84a5d6223bc6df8880a98e",
+          "name": "public.read_adoption_basis_v1",
+          "signature": "p_version_id uuid"
+        }
+      ],
+      "migrations": [
+        {
+          "md5": "2cff7177f3818c8c44fa405a4f87807a",
+          "name": "contextual_adoptions_and_assumptions",
+          "version": "20260917154644"
+        },
+        {
+          "md5": "c4592d81c6ea08297540dd910ffb8742",
+          "name": "contextual_adoption_execution_bindings",
+          "version": "20260917154738"
+        },
+        {
+          "md5": "25e68a9513217cfa3e9f518d5c145ec3",
+          "name": "contextual_adoption_dependency_revalidation",
+          "version": "20260917155000"
+        },
+        {
+          "md5": "c84e388219becc74c259fcc03b46a5e3",
+          "name": "contextual_adoption_identity_command",
+          "version": "20260917155251"
+        },
+        {
+          "version": "20260917161756",
+          "name": "contextual_adoption_version_fk_index",
+          "md5": "e3922dfbde774e5ffd61d77459be3d6a"
+        }
+      ]
+    },
+    "security": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"result\":{\"lints\":[]}}"
+        }
+      ],
+      "isError": false
+    }
+  },
+  "function_parity": true,
+  "migration_sql_parity": true,
+  "production_fixtures": false
+}

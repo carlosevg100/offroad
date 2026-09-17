@@ -1,3 +1,14 @@
+## Etapa 9: adoção instalada, interface em publicação
+
+Cinco migrações de adoção contextual instaladas nos dois ambientes, carimbos de produção
+`20260917160856`, `20260917160902`, `20260917160915`, `20260917160926`, `20260917161803`; 23 funções e SQL dos
+journals em paridade. 82 contratos SQL passaram em staging; negativos sem fixtures passaram
+em produção. Advisors sem achados; inventário cobre 56 superfícies novas e 336 migrações.
+A ponte PR 646 já está em produção em `00506b78de8fea3545d37c23ef491a08c8ffb365`,
+Quality 35241118779, ECS 355 e Vercel 6506374936. A interface contextual, a comparação e
+os cálculos preservam versões e hipóteses; CI, merge e deploy deste incremento ainda são
+obrigatórios. Escopo, testes e riscos em `docs/build/arcabouco/etapa-09.md`. Etapa 10 não iniciada.
+
 ## Etapa 9: contrato e compatibilidade antes dos produtores
 
 O contrato tipado exige trabalho, finalidade, contexto, motivo e base anterior explícita.
@@ -1126,7 +1137,7 @@ Uma classificação documental só é confirmada quando revisão primária, enti
 
 Escopo operacional: companhia identificada na sessão, nos briefs padrão e propostas de execução. O preview público congelado mantém seu contrato próprio. Não infere SPVs, ativos, contratos ou carteiras a partir da classificação da companhia. Requisitos continuam `not_examined`, métodos `specified` e modo `planning_only`; tarefas, executores financeiros e poderes de divulgação não são ampliados. A interface diferencia o contexto dos trabalhos que serão executados.
 
-Validação: testes do produtor, callers, contrato e card aprovados; suíte SQL de aprovação executada com rollback em staging isolado e security advisor sem alertas. Datas de conhecimento/revisão são estáveis entre retries e fusos. Gate local final `pnpm check` aprovado em Node 24.19.0, 43/43 targets em lint, typecheck, testes e build, incluindo a nova verificação de compatibilidade do runtime. Quality 34240603658 e Security 34240603775 passaram; a inspeção do relatório revelou que o caminho fixture pulava a prova opcional do contexto. O teste foi substituído por uma prova obrigatória com job sintético local, trigger e worker reais; aguarda novo CI e capturas. Quatro migrações aditivas já aplicadas em produção, advisor de segurança sem alertas; capability nova ainda ausente, portanto o novo produtor permanece não liberado. Publicação da web e ativação do worker pendentes. O próximo avanço de domínio exige binding por objeto econômico e métodos homologados com evidência e revisão técnica; este corte não libera expertise universal nem conclui o endgame.
+Validação: testes do produtor, callers, contrato e card aprovados; suíte SQL de aprovação executada com rollback em staging isolado e security advisor sem alertas. Datas de conhecimento/revisão são estáveis entre retries e fusos. Gate local final `pnpm check` aprovado em Node 24.19.0, 43/43 targets em lint, typecheck, testes e build, incluindo a nova verificação de compatibilidade do runtime. Quality 34240603658 e Security 34240603775 passaram; a inspeção do relatório revelou que o caminho fixture pulava a prova opcional do contexto. O teste foi substituído por uma prova obrigatória com job sintético local, trigger e worker reais; aguarda novo CI e capturas. Cinco migrações aditivas já aplicadas em produção, advisor de segurança sem alertas; capability nova ainda ausente, portanto o novo produtor permanece não liberado. Publicação da web e ativação do worker pendentes. O próximo avanço de domínio exige binding por objeto econômico e métodos homologados com evidência e revisão técnica; este corte não libera expertise universal nem conclui o endgame.
 
 A rodada Quality 34242124667 aprovou banco e gate de código, mas o E2E obrigatório falhou ao tentar reabrir a revisão de um caso que já tinha plano aguardando aprovação. O bloqueio do produto foi preservado. A prova mantém a edição pela UI antes da confirmação; o setup local verifica a revisão persistida, enfileira somente o target sintético e usa a página do projeto. A captura deve corresponder ao fingerprint do brief persistido para esse target, não aceitar o plano anterior. Não contar as rodadas anteriores como aceite visual.
 

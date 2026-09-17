@@ -467,6 +467,181 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.adopt_observation_for_work_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.adopt_observation_for_work_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "adopt_observation_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.adopt_observation_for_work_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "adopt_observation_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 220,
+          "anchor": "create function private.adopt_observation_for_work_v1(p_payload jsonb) returns uuid language sql volatile security definer set search_path='' as $$ select private.write_contextual_adoption_v1(p_payload,'observation'); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "adoption_dependency_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "adoption_dependency_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160915_contextual_adoption_dependency_revalidation.sql",
+          "line": 3,
+          "anchor": "create function private.adoption_dependency_allowed_v1(p_org uuid,p_source uuid,p_rights uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.adoption_entry_json_v1(p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.adoption_entry_json_v1(p_id uuid)",
+          "kind": "function",
+          "name": "adoption_entry_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.adoption_entry_json_v1(p_id uuid)",
+          "kind": "function",
+          "name": "adoption_entry_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 113,
+          "anchor": "create function private.adoption_entry_json_v1(p_id uuid) returns jsonb language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.advance_authorization_revision_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -2203,6 +2378,61 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.bind_execution_adoption_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_execution_adoption_v1()",
+          "kind": "function",
+          "name": "bind_execution_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_execution_adoption_v1()",
+          "kind": "function",
+          "name": "bind_execution_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 46,
+          "anchor": "create function private.bind_execution_adoption_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.bind_execution_brief_dispatch(p_brief_id uuid, p_job_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3503,6 +3733,136 @@
       "last_review_stage": "1A"
     },
     {
+      "id": "function:private.can_read_adoption_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_adoption_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_adoption_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160915_contextual_adoption_dependency_revalidation.sql",
+          "line": 13,
+          "anchor": "create or replace function private.can_read_adoption_v1(p_org uuid,p_id uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.can_read_assumption_version_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_assumption_version_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_assumption_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_assumption_version_v1(p_org uuid, p_id uuid)",
+          "kind": "function",
+          "name": "can_read_assumption_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 61,
+          "anchor": "create function private.can_read_assumption_version_v1(p_org uuid,p_id uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.can_read_completed_capital_project_material(p_organization_id uuid, p_capital_project_id uuid, p_object_path text)",
       "kind": "function",
       "catalogues": {
@@ -4459,6 +4819,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.capture_adoption_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_adoption_event_v1()",
+          "kind": "function",
+          "name": "capture_adoption_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_adoption_event_v1()",
+          "kind": "function",
+          "name": "capture_adoption_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 80,
+          "anchor": "create function private.capture_adoption_event_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.capture_audit_event()",
       "kind": "function",
       "catalogues": {
@@ -5290,6 +5705,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+          "kind": "function",
+          "name": "compare_adoption_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_left_version_id uuid, p_right_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+          "kind": "function",
+          "name": "compare_adoption_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_left_version_id uuid, p_right_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 230,
+          "anchor": "create function private.compare_adoption_bases_v1(p_left_version_id uuid,p_right_version_id uuid) returns jsonb language plpgsql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
       "kind": "function",
       "catalogues": {
@@ -5811,6 +6291,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "create_legacy_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "create_legacy_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 3,
+          "anchor": "create function private.create_legacy_adoption_basis_v1(p_org uuid,p_work uuid,p_table text,p_record jsonb) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.create_opportunity_intake(p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text)",
@@ -7549,6 +8084,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "ensure_basis_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "ensure_basis_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160926_contextual_adoption_identity_command.sql",
+          "line": 3,
+          "anchor": "create function private.ensure_basis_entity_v1(p_dossier_id uuid,p_name text,p_namespace text,p_value text,p_reason text) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.ensure_membership_principal_v1()",
       "kind": "function",
       "catalogues": {
@@ -8060,6 +8660,116 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "execution_source_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "execution_source_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 30,
+          "anchor": "create function private.execution_source_resource_v1(p_org uuid,p_table text,p_record jsonb) returns uuid language plpgsql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.execution_work_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_work_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "execution_work_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_work_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+          "kind": "function",
+          "name": "execution_work_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_table text, p_record jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 41,
+          "anchor": "create function private.execution_work_resource_v1(p_org uuid,p_table text,p_record jsonb) returns uuid language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
@@ -12342,6 +13052,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+          "kind": "function",
+          "name": "list_work_observations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before_sequence text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+          "kind": "function",
+          "name": "list_work_observations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before_sequence text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 246,
+          "anchor": "create function private.list_work_observations_v1(p_work_id uuid,p_before_sequence text default null) returns jsonb language plpgsql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.lock_execution_approval_context()",
       "kind": "function",
       "catalogues": {
@@ -12975,6 +13750,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.observation_dimensions_json_v1(p_row observations)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.observation_dimensions_json_v1(p_row observations)",
+          "kind": "function",
+          "name": "observation_dimensions_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_row observations",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.observation_dimensions_json_v1(p_row observations)",
+          "kind": "function",
+          "name": "observation_dimensions_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_row observations",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 110,
+          "anchor": "create function private.observation_dimensions_json_v1(p_row public.observations) returns jsonb language sql immutable set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
@@ -13953,6 +14783,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.propose_assumption_revision_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.propose_assumption_revision_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "propose_assumption_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.propose_assumption_revision_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "propose_assumption_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 221,
+          "anchor": "create function private.propose_assumption_revision_v1(p_payload jsonb) returns uuid language sql volatile security definer set search_path='' as $$ select private.write_contextual_adoption_v1(p_payload,'hypothesis'); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.protect_institutional_binding_v1()",
       "kind": "function",
       "catalogues": {
@@ -14770,6 +15665,71 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.read_adoption_basis_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_adoption_basis_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_adoption_basis_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 222,
+          "anchor": "create function private.read_adoption_basis_v1(p_version_id uuid) returns jsonb language plpgsql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.read_advisor_document_work_binding_v1(p_project_id uuid, p_job_id uuid)",
@@ -19277,6 +20237,61 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.reject_assumption_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reject_assumption_mutation_v1()",
+          "kind": "function",
+          "name": "reject_assumption_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.reject_assumption_mutation_v1()",
+          "kind": "function",
+          "name": "reject_assumption_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 70,
+          "anchor": "create function private.reject_assumption_mutation_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.reject_control_ledger_mutation()",
       "kind": "function",
       "catalogues": {
@@ -20169,6 +21184,61 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "require_adoption_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "require_adoption_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_rights uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 125,
+          "anchor": "create function private.require_adoption_dependency_v1(p_org uuid,p_source uuid,p_rights uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.require_artifact_access_v1(p_artifact_id uuid, p_action text)",
@@ -37559,6 +38629,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.write_contextual_adoption_v1(p_payload jsonb, p_kind text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.write_contextual_adoption_v1(p_payload jsonb, p_kind text)",
+          "kind": "function",
+          "name": "write_contextual_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb, p_kind text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.write_contextual_adoption_v1(p_payload jsonb, p_kind text)",
+          "kind": "function",
+          "name": "write_contextual_adoption_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb, p_kind text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 135,
+          "anchor": "create function private.write_contextual_adoption_v1(p_payload jsonb,p_kind text) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.accept_and_apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -37924,6 +39049,71 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "adopt_observation_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "adopt_observation_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 239,
+          "anchor": "create function public.adopt_observation_for_work_v1(p_payload jsonb) returns uuid language sql volatile security invoker set search_path='' as $$ select private.adopt_observation_for_work_v1(p_payload); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -39157,6 +40347,71 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:public.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+          "kind": "function",
+          "name": "compare_adoption_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_left_version_id uuid, p_right_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+          "kind": "function",
+          "name": "compare_adoption_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_left_version_id uuid, p_right_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 242,
+          "anchor": "create function public.compare_adoption_bases_v1(p_left_version_id uuid,p_right_version_id uuid) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.compare_adoption_bases_v1(p_left_version_id,p_right_version_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
@@ -40527,6 +41782,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "ensure_basis_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+          "kind": "function",
+          "name": "ensure_basis_entity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160926_contextual_adoption_identity_command.sql",
+          "line": 20,
+          "anchor": "create function public.ensure_basis_entity_v1(p_dossier_id uuid,p_name text,p_namespace text,p_value text,p_reason text) returns uuid language sql security invoker set search_path='' as $$ select private.ensure_basis_entity_v1(p_dossier_id,p_name,p_namespace,p_value,p_reason); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "catalogues": {
@@ -41714,6 +43034,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+          "kind": "function",
+          "name": "list_work_observations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before_sequence text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+          "kind": "function",
+          "name": "list_work_observations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before_sequence text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 269,
+          "anchor": "create function public.list_work_observations_v1(p_work_id uuid,p_before_sequence text default null) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.list_work_observations_v1(p_work_id,p_before_sequence); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)",
       "kind": "function",
       "catalogues": {
@@ -42151,6 +43536,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.propose_assumption_revision_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.propose_assumption_revision_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "propose_assumption_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.propose_assumption_revision_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "propose_assumption_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 240,
+          "anchor": "create function public.propose_assumption_revision_v1(p_payload jsonb) returns uuid language sql volatile security invoker set search_path='' as $$ select private.propose_assumption_revision_v1(p_payload); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.queue_advisor_initial_turn_v1(p_project_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -42230,6 +43680,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.read_adoption_basis_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_adoption_basis_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_adoption_basis_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_adoption_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 241,
+          "anchor": "create function public.read_adoption_basis_v1(p_version_id uuid) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.read_adoption_basis_v1(p_version_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.read_advisor_document_work_binding_v1(p_project_id uuid, p_job_id uuid)",
@@ -60937,6 +62452,53 @@
       "last_review_stage": "2"
     },
     {
+      "id": "policy:private.assumption_version_items.assumption_version_items_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.assumption_version_items.assumption_version_items_deny",
+          "kind": "policy",
+          "name": "assumption_version_items_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_version_items",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.assumption_version_items.assumption_version_items_deny",
+          "kind": "policy",
+          "name": "assumption_version_items_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_version_items",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 104,
+          "anchor": "create policy assumption_version_items_deny on private.assumption_version_items for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:private.authorization_revisions.authorization_revisions_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -64071,6 +65633,194 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_delete",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_delete",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 94,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_insert",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_insert",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 92,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_update",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_deny_update",
+          "kind": "policy",
+          "name": "adoption_decisions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 93,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_select",
+          "kind": "policy",
+          "name": "adoption_decisions_select",
+          "qual": "private.can_read_adoption_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.adoption_decisions.adoption_decisions_select",
+          "kind": "policy",
+          "name": "adoption_decisions_select",
+          "qual": "private.can_read_adoption_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "adoption_decisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 107,
+          "anchor": "create policy adoption_decisions_select on public.adoption_decisions for select to authenticated using(private.can_read_adoption_v1(organization_id,id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.agent_change_proposals.agent_change_proposals_select",
       "kind": "policy",
       "catalogues": {
@@ -64210,6 +65960,382 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_delete",
+          "kind": "policy",
+          "name": "assumption_sets_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_delete",
+          "kind": "policy",
+          "name": "assumption_sets_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 94,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_insert",
+          "kind": "policy",
+          "name": "assumption_sets_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_insert",
+          "kind": "policy",
+          "name": "assumption_sets_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 92,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_update",
+          "kind": "policy",
+          "name": "assumption_sets_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.assumption_sets.assumption_sets_deny_update",
+          "kind": "policy",
+          "name": "assumption_sets_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 93,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_sets.assumption_sets_select",
+          "kind": "policy",
+          "name": "assumption_sets_select",
+          "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND (EXISTS ( SELECT 1\n   FROM assumption_versions v\n  WHERE ((v.organization_id = assumption_sets.organization_id) AND (v.set_id = assumption_sets.id)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.assumption_sets.assumption_sets_select",
+          "kind": "policy",
+          "name": "assumption_sets_select",
+          "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND (EXISTS ( SELECT 1\n   FROM assumption_versions v\n  WHERE ((v.organization_id = assumption_sets.organization_id) AND (v.set_id = assumption_sets.id)))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_sets",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 106,
+          "anchor": "create policy assumption_sets_select on public.assumption_sets for select to authenticated using(private.can_access_resource_v1(organization_id,work_id,'read') and exists(select 1 from public.assumption_versions v where v.organization_id=assumption_sets.organization_id and v.set_id=assumption_sets.id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_delete",
+          "kind": "policy",
+          "name": "assumption_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_delete",
+          "kind": "policy",
+          "name": "assumption_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 94,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_insert",
+          "kind": "policy",
+          "name": "assumption_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_insert",
+          "kind": "policy",
+          "name": "assumption_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 92,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_update",
+          "kind": "policy",
+          "name": "assumption_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.assumption_versions.assumption_versions_deny_update",
+          "kind": "policy",
+          "name": "assumption_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 93,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.assumption_versions.assumption_versions_select",
+          "kind": "policy",
+          "name": "assumption_versions_select",
+          "qual": "private.can_read_assumption_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.assumption_versions.assumption_versions_select",
+          "kind": "policy",
+          "name": "assumption_versions_select",
+          "qual": "private.can_read_assumption_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "assumption_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 108,
+          "anchor": "create policy assumption_versions_select on public.assumption_versions for select to authenticated using(private.can_read_assumption_version_v1(organization_id,id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:public.audit_events.audit_events_select_admin",
@@ -78612,6 +80738,125 @@
       "last_review_stage": "2"
     },
     {
+      "id": "r:private.assumption_version_items",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.assumption_version_items",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_version_items",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.assumption_version_items",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_version_items",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 39,
+          "anchor": "create table private.assumption_version_items (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:private.authorization_revisions",
       "kind": "table",
       "catalogues": {
@@ -79438,9 +81683,9 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, etapa 8",
+      "owner": "Codex, etapa 9",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva a entrada legada e registra observações sem promoção por confiança ou sobrescrita de contribuição.",
       "sources": [
         {
@@ -79453,6 +81698,12 @@
           "path": "supabase/migrations/20260917134931_observations_metric_definitions.sql",
           "line": 144,
           "anchor": "alter table private.domain_events add constraint domain_events_aggregate_kind_check check(aggregate_kind in ('membership','resource_grant','workspace_capability','commercial_account_link','access_policy','observation','metric_definition'));",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 79,
+          "anchor": "alter table private.domain_events add constraint domain_events_aggregate_kind_check check(aggregate_kind in ('membership','resource_grant','workspace_capability','commercial_account_link','access_policy','observation','metric_definition','adoption_decision','assumption_version'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -84571,6 +86822,135 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.adoption_decisions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.adoption_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "adoption_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.adoption_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "adoption_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 11,
+          "anchor": "create table public.adoption_decisions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.agent_change_proposals",
       "kind": "table",
       "catalogues": {
@@ -85196,6 +87576,264 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:public.assumption_sets",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.assumption_sets",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_sets",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.assumption_sets",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_sets",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 3,
+          "anchor": "create table public.assumption_sets (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.assumption_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.assumption_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.assumption_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "assumption_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 25,
+          "anchor": "create table public.assumption_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:public.audit_events",
@@ -112798,6 +115436,45 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "trigger:private.assumption_version_items.assumption_version_items_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.assumption_version_items.assumption_version_items_immutable",
+          "kind": "trigger",
+          "name": "assumption_version_items_immutable",
+          "table": "assumption_version_items",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_version_items_immutable BEFORE DELETE OR UPDATE ON private.assumption_version_items FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.assumption_version_items.assumption_version_items_immutable",
+          "kind": "trigger",
+          "name": "assumption_version_items_immutable",
+          "table": "assumption_version_items",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_version_items_immutable BEFORE DELETE OR UPDATE ON private.assumption_version_items FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 105,
+          "anchor": "create trigger assumption_version_items_immutable before update or delete on private.assumption_version_items for each row execute function private.reject_assumption_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "catalogues": {
@@ -114955,6 +117632,123 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_event",
+          "kind": "trigger",
+          "name": "adoption_decisions_event",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_adoption_event_v1()",
+          "definition": "CREATE TRIGGER adoption_decisions_event AFTER INSERT ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_event",
+          "kind": "trigger",
+          "name": "adoption_decisions_event",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_adoption_event_v1()",
+          "definition": "CREATE TRIGGER adoption_decisions_event AFTER INSERT ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 97,
+          "anchor": "  if t<>'assumption_sets' then execute format('create trigger %I after insert on public.%I for each row execute function private.capture_adoption_event_v1()',t||'_event',t); end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_immutable",
+          "kind": "trigger",
+          "name": "adoption_decisions_immutable",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER adoption_decisions_immutable BEFORE DELETE OR UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_immutable",
+          "kind": "trigger",
+          "name": "adoption_decisions_immutable",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER adoption_decisions_immutable BEFORE DELETE OR UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 95,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_assumption_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_updated",
+          "kind": "trigger",
+          "name": "adoption_decisions_updated",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER adoption_decisions_updated BEFORE UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.adoption_decisions.adoption_decisions_updated",
+          "kind": "trigger",
+          "name": "adoption_decisions_updated",
+          "table": "adoption_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER adoption_decisions_updated BEFORE UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 96,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.agent_change_proposals.agent_change_proposals_audit",
       "kind": "trigger",
       "catalogues": {
@@ -115228,6 +118022,240 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.assumption_sets.assumption_sets_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_sets.assumption_sets_audit",
+          "kind": "trigger",
+          "name": "assumption_sets_audit",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER assumption_sets_audit AFTER INSERT ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_sets.assumption_sets_audit",
+          "kind": "trigger",
+          "name": "assumption_sets_audit",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER assumption_sets_audit AFTER INSERT ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 100,
+          "anchor": "create trigger assumption_sets_audit after insert on public.assumption_sets for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.assumption_sets.assumption_sets_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_sets.assumption_sets_immutable",
+          "kind": "trigger",
+          "name": "assumption_sets_immutable",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_sets_immutable BEFORE DELETE OR UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_sets.assumption_sets_immutable",
+          "kind": "trigger",
+          "name": "assumption_sets_immutable",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_sets_immutable BEFORE DELETE OR UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 95,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_assumption_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.assumption_sets.assumption_sets_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_sets.assumption_sets_updated",
+          "kind": "trigger",
+          "name": "assumption_sets_updated",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER assumption_sets_updated BEFORE UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_sets.assumption_sets_updated",
+          "kind": "trigger",
+          "name": "assumption_sets_updated",
+          "table": "assumption_sets",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER assumption_sets_updated BEFORE UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 96,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_versions.assumption_versions_event",
+          "kind": "trigger",
+          "name": "assumption_versions_event",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_adoption_event_v1()",
+          "definition": "CREATE TRIGGER assumption_versions_event AFTER INSERT ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_versions.assumption_versions_event",
+          "kind": "trigger",
+          "name": "assumption_versions_event",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_adoption_event_v1()",
+          "definition": "CREATE TRIGGER assumption_versions_event AFTER INSERT ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 97,
+          "anchor": "  if t<>'assumption_sets' then execute format('create trigger %I after insert on public.%I for each row execute function private.capture_adoption_event_v1()',t||'_event',t); end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_versions.assumption_versions_immutable",
+          "kind": "trigger",
+          "name": "assumption_versions_immutable",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_versions_immutable BEFORE DELETE OR UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_versions.assumption_versions_immutable",
+          "kind": "trigger",
+          "name": "assumption_versions_immutable",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_assumption_mutation_v1()",
+          "definition": "CREATE TRIGGER assumption_versions_immutable BEFORE DELETE OR UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 95,
+          "anchor": "  execute format('create trigger %I before update or delete on public.%I for each row execute function private.reject_assumption_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.assumption_versions.assumption_versions_updated",
+          "kind": "trigger",
+          "name": "assumption_versions_updated",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER assumption_versions_updated BEFORE UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.assumption_versions.assumption_versions_updated",
+          "kind": "trigger",
+          "name": "assumption_versions_updated",
+          "table": "assumption_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER assumption_versions_updated BEFORE UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+          "line": 96,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.authority_evidence.authority_evidence_audit",
       "kind": "trigger",
       "catalogues": {
@@ -115304,6 +118332,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.calculation_runs.calculation_runs_bind_adoption",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.calculation_runs.calculation_runs_bind_adoption",
+          "kind": "trigger",
+          "name": "calculation_runs_bind_adoption",
+          "table": "calculation_runs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER calculation_runs_bind_adoption BEFORE INSERT OR UPDATE ON public.calculation_runs FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.calculation_runs.calculation_runs_bind_adoption",
+          "kind": "trigger",
+          "name": "calculation_runs_bind_adoption",
+          "table": "calculation_runs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER calculation_runs_bind_adoption BEFORE INSERT OR UPDATE ON public.calculation_runs FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 80,
+          "anchor": "  execute format('create trigger %I before insert or update on public.%I for each row execute function private.bind_execution_adoption_v1()',t||'_bind_adoption',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.capital_project_agent_events.capital_project_agent_events_audit",
@@ -117568,6 +120635,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.claim_decisions.claim_decisions_bind_adoption",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.claim_decisions.claim_decisions_bind_adoption",
+          "kind": "trigger",
+          "name": "claim_decisions_bind_adoption",
+          "table": "claim_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER claim_decisions_bind_adoption BEFORE INSERT OR UPDATE ON public.claim_decisions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.claim_decisions.claim_decisions_bind_adoption",
+          "kind": "trigger",
+          "name": "claim_decisions_bind_adoption",
+          "table": "claim_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER claim_decisions_bind_adoption BEFORE INSERT OR UPDATE ON public.claim_decisions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 80,
+          "anchor": "  execute format('create trigger %I before insert or update on public.%I for each row execute function private.bind_execution_adoption_v1()',t||'_bind_adoption',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.companies.companies_access_resource",
@@ -123829,6 +126935,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.scenario_versions.scenario_versions_bind_adoption",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.scenario_versions.scenario_versions_bind_adoption",
+          "kind": "trigger",
+          "name": "scenario_versions_bind_adoption",
+          "table": "scenario_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER scenario_versions_bind_adoption BEFORE INSERT OR UPDATE ON public.scenario_versions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.scenario_versions.scenario_versions_bind_adoption",
+          "kind": "trigger",
+          "name": "scenario_versions_bind_adoption",
+          "table": "scenario_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER scenario_versions_bind_adoption BEFORE INSERT OR UPDATE ON public.scenario_versions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 80,
+          "anchor": "  execute format('create trigger %I before insert or update on public.%I for each row execute function private.bind_execution_adoption_v1()',t||'_bind_adoption',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.sounding_events.sounding_events_audit",
       "kind": "trigger",
       "catalogues": {
@@ -124724,6 +127869,45 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:public.structure_scenarios.structure_scenarios_bind_adoption",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.structure_scenarios.structure_scenarios_bind_adoption",
+          "kind": "trigger",
+          "name": "structure_scenarios_bind_adoption",
+          "table": "structure_scenarios",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER structure_scenarios_bind_adoption BEFORE INSERT OR UPDATE ON public.structure_scenarios FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.structure_scenarios.structure_scenarios_bind_adoption",
+          "kind": "trigger",
+          "name": "structure_scenarios_bind_adoption",
+          "table": "structure_scenarios",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_execution_adoption_v1()",
+          "definition": "CREATE TRIGGER structure_scenarios_bind_adoption BEFORE INSERT OR UPDATE ON public.structure_scenarios FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+        }
+      },
+      "owner": "Codex, etapa 9",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+          "line": 80,
+          "anchor": "  execute format('create trigger %I before insert or update on public.%I for each row execute function private.bind_execution_adoption_v1()',t||'_bind_adoption',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.structure_scenarios.structure_scenarios_set_updated_at",
@@ -125903,7 +129087,7 @@
       "path": "apps/document-worker",
       "name": "@offroad/document-worker",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
@@ -125913,7 +129097,7 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
@@ -126049,7 +129233,7 @@
       "path": "packages/case-engine",
       "name": "@offroad/case-engine",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
@@ -127892,7 +131076,7 @@
       "path": "packages/extraction-learning",
       "name": "@offroad/extraction-learning",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
@@ -128918,7 +132102,7 @@
       "path": "packages/reconciliation",
       "name": "@offroad/reconciliation",
       "decision": "refatorar",
-      "stage": "8",
+      "stage": "9",
       "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
@@ -132155,6 +135339,55 @@
       "decision": "preservar",
       "stage": "8",
       "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917160915_contextual_adoption_dependency_revalidation.sql",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917160926_contextual_adoption_identity_command.sql",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/basis/page.tsx",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Base contextual sob autoridade atual: seleção explícita, comparação e cálculo determinístico."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/basis/actions.ts",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Base contextual sob autoridade atual: seleção explícita, comparação e cálculo determinístico."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917161803_contextual_adoption_version_fk_index.sql",
+      "decision": "preservar",
+      "stage": "9",
+      "reason": "Cobre a FK das versões sem varrer todo o histórico de contribuições."
     }
   ],
   "staging_archive": [
@@ -132641,6 +135874,31 @@
       "observation_value_shape_validation": "fad9448e5f91b427b9322aba15234d96",
       "legacy_observation_field_revision": "068a7d27f17160bb62187d328471d84c",
       "observation_dimension_shape_validation": "c63b221d14eb34abdd36181b35ea857a"
+    }
+  },
+  "stage_9_revision": {
+    "production_migrations": [
+      "20260917160856",
+      "20260917160902",
+      "20260917160915",
+      "20260917160926",
+      "20260917161803"
+    ],
+    "new_objects": 56,
+    "review": "docs/build/arcabouco/etapa-09.md",
+    "staging_migrations": [
+      "20260917154644",
+      "20260917154738",
+      "20260917155000",
+      "20260917155251",
+      "20260917161756"
+    ],
+    "sql_md5_by_name": {
+      "contextual_adoptions_and_assumptions": "2cff7177f3818c8c44fa405a4f87807a",
+      "contextual_adoption_execution_bindings": "c4592d81c6ea08297540dd910ffb8742",
+      "contextual_adoption_dependency_revalidation": "25e68a9513217cfa3e9f518d5c145ec3",
+      "contextual_adoption_identity_command": "c84e388219becc74c259fcc03b46a5e3",
+      "contextual_adoption_version_fk_index": "e3922dfbde774e5ffd61d77459be3d6a"
     }
   }
 }

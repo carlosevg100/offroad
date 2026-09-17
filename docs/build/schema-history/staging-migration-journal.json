@@ -1379,8 +1379,28 @@
     {
       "name": "observation_dimension_shape_validation",
       "version": "20260917125759"
+    },
+    {
+      "name": "contextual_adoptions_and_assumptions",
+      "version": "20260917154644"
+    },
+    {
+      "name": "contextual_adoption_execution_bindings",
+      "version": "20260917154738"
+    },
+    {
+      "name": "contextual_adoption_dependency_revalidation",
+      "version": "20260917155000"
+    },
+    {
+      "name": "contextual_adoption_identity_command",
+      "version": "20260917155251"
+    },
+    {
+      "name": "contextual_adoption_version_fk_index",
+      "version": "20260917161756"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-17T13:51:19.868246+00:00"
+  "captured_at": "2026-09-17T16:18:29.984736+00:00"
 }

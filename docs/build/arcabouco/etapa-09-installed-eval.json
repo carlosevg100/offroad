@@ -1,0 +1,347 @@
+{
+  "captured_at": "2026-09-17T16:14:52.859668+00:00",
+  "staging_project": "gjkkjtbfnssdsbmlhmwk",
+  "transaction_mode": "synthetic BEGIN/ROLLBACK",
+  "contracts": [
+    {
+      "name": "advisor_semantic_dag_activation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "agentic_dcm_work_system.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "client_presentation_templates.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "company_debt_view_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "confirmed_receivables_evidence_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "confirmed_receivables_support_sheets.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "contextual_adoption.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "conversational_advisor_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "creator_authority_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "documentary_plan_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "domain_event_outbox.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "domain_event_outbox_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "entity_dossier_isolation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "execution_brief_foundation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "execution_brief_proposal_bridge.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "execution_proposal_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "explicit_documentary_work_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "explicit_execution_brief_approval.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "explicit_legacy_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "explicit_workspace_context.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "financier_analytical_workspace.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "gold_case_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "governed_capital_material_storage.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "governed_sector_context.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "institutional_assumption_answers.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "institutional_private_rls.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "institutional_revision_proposals.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "institutional_setup_lifecycle.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "integration_preview_mode.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "intent_envelopes_shadow.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "intent_objective_routing_metrics.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "job_failure_causes.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "job_failure_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "legacy_access_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "legacy_resource_access.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "no_implicit_workspace_capabilities.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "objective_plan_preflight.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "observation_definition_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "observation_legacy_history.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "observation_pinned_rights.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "operating_controls.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "organization_methodology.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "organization_profile_authority.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "origination_thesis_vertical.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "professional_capability_context.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "project_canonical_revisions.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "project_company_scope.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "project_review_roles.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "provider_case_fit_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "provider_research_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "provider_research_public_catalog_v2.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "public_research_public_cache.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "read_grant_cannot_mutate_legacy.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_analytical_release.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_document_adapter_persistence.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_information_request_bindings.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_information_request_dataset_revision.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_method_input_assembly_store.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "receivables_method_supplement_store.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "resource_policy_barriers.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "resource_policy_delegation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "resource_policy_event_once.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "resource_policy_isolation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "resource_policy_performance.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "rls_non_interference.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "role_free_reasoning_context.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_deadline.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_performance.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_retrieval.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_retrieval_delivery.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_search_isolation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_rights_worker_revocation.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "source_version_identity.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "terminal_job_authorization_metadata.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "verified_provider_mandates.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "worker_runtime_schema_contract.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "workspace_access_projection.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "workspace_member_administration.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "workspace_project_folders.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "workspace_replay_authority.sql",
+      "result": "PASS"
+    }
+  ],
+  "additional_contracts": [
+    {
+      "name": "contextual_adoption_dependencies.sql",
+      "result": "PASS"
+    },
+    {
+      "name": "contextual_adoption_execution.sql",
+      "result": "PASS"
+    }
+  ],
+  "production": {
+    "test": "production_adoption_no_session_denial",
+    "result": "PASS",
+    "fixtures": false
+  },
+  "local": {
+    "financial_model_tests": 100,
+    "case_understanding_tests": 120,
+    "pnpm_check": "44/44 PASS"
+  }
+}
