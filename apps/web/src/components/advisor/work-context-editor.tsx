@@ -18,7 +18,7 @@ export function WorkContextEditor({locale, workId, value, dossiers}: {
     const date = new Date(value.deadline);
     // The browser displays local time; the command receives the exact UTC instant.
     deadline.current.value = new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
-  }, [value.deadline]);
+  }, [value.deadline, value.revision]);
   const [state, action, pending] = useActionState(async (previous: WorkContextState, form: FormData) => {
     const local = String(form.get("deadline") ?? "");
     if (local) {
@@ -32,7 +32,7 @@ export function WorkContextEditor({locale, workId, value, dossiers}: {
   const available = dossiers.filter(d => !d.linked);
   return <details className={styles.context} data-testid="work-context">
     <summary>{t("title")}</summary>
-    <form action={action}>
+    <form action={action} key={value.revision}>
       <input type="hidden" name="locale" value={locale} /><input type="hidden" name="workId" value={workId} />
       <input type="hidden" name="revision" value={value.revision} /><input type="hidden" name="stage" value={value.stage} />
       <label>{t("purpose")}<textarea name="purpose" required maxLength={8000} defaultValue={value.purpose} /></label>

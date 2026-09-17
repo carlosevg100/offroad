@@ -66,6 +66,9 @@ test("standalone work persists through logout and receives documents without cha
   await workContext.getByLabel("Momento da decisão").selectOption("preparing");
   await workContext.getByRole("button", {name: "Salvar contexto"}).click();
   await expect(workContext.getByRole("status")).toHaveText("Contexto salvo.");
+  await expect(workContext.getByRole("textbox", {name: "Objetivo", exact: true})).toHaveValue("Synthetic decision for the board");
+  await expect(workContext.getByLabel("Para quem é este trabalho?")).toHaveValue("Synthetic board");
+  await expect(workContext.getByRole("combobox", {name: "Momento da decisão"})).toHaveValue("preparing");
   for (const name of ["Synthetic related one", "Synthetic related two"]) {
     await workContext.locator('select[name="dossierId"]').selectOption({label: name});
     await workContext.getByRole("button", {name: "Relacionar dossiê"}).click();
@@ -75,7 +78,13 @@ test("standalone work persists through logout and receives documents without cha
     .toEqual({purpose: "Synthetic decision for the board", audience: "Synthetic board", commitment: "preparing", revision: 2});
   expect(Number(sql(`select count(*) from public.work_dossiers where work_id='${workId}';`))).toBe(2);
   await page.setViewportSize({width: 390, height: 844});
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect.poll(async () => (await workContext.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(300);
+  await expect.poll(async () => (await page.locator(".app-rail").boundingBox())?.width ?? 0).toBe(58);
+  const rail = await page.locator(".app-rail").boundingBox();
+  expect(rail!.x + rail!.width).toBeLessThanOrEqual((await workContext.boundingBox())!.x + 1);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect(workContext.getByRole("combobox", {name: "Momento da decisão"})).toHaveValue("preparing");
+  await page.evaluate(() => window.scrollTo(0, 0));
   await test.info().attach("persistent-work-context-mobile", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
   await page.setViewportSize({width: 1440, height: 1000});
   // A fresh application process loads the same durable history. The shared test server

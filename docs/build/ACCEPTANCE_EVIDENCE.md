@@ -1,3 +1,10 @@
+## Verificação visual da etapa 10C
+
+A jornada passou na CI, mas a captura móvel revelou transição do menu comprimindo o conteúdo.
+A correção fixa menu e coluna em 58px no celular; o E2E exige 300px úteis, alinhamento e ausência
+de overflow. O formulário remonta a revisão salva para conservar o valor visual dos selects;
+a jornada verifica objetivo, audiência e compromisso depois de salvar. Novo gate em execução.
+
 ## Incremento 10C: consolidação das entradas e contexto do trabalho
 
 As entradas conversacionais antigas delegam a `start_work_v1`; append e submit usam o mesmo contrato de turno, com negação de replay de mensagem de outro trabalho. O caminho antigo de resposta pronta em `append_advisor_message_v1` é retirado. Pesquisa e case fit sem intake ficam em conversa, com critérios declarados preservados e sem fingir execução financeira. Os motores históricos continuam disponíveis sobre sessões documentais reais e sob os gates existentes.
