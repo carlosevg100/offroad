@@ -1,3 +1,9 @@
+## Onda 9 autorizada: trabalho persistente sem intake obrigatório
+
+Etapa 10 autorizada após completion da etapa 9. Baseline `5826a8cca31510914f04c7b332462b691fd49532`. Revisão de abertura
+renova 126 evidências, mantém 18 lacunas e confere runtime e journals vivos.
+Revisão: `docs/security/INVENTORY_WAVE_9_REVIEW.md`. Etapa 11 não iniciada.
+
 ## Etapa 9: conciliação da entrega em 17/09/2026
 
 PR 647 entregue em `75f3dc70aa90b8ab33b9e9afb299fbf809db8761`; main Quality 35254486464, Security 35254486454 e worker 35254486802 passaram. Vercel Production 6508719804 e ECS 356 executam o commit exato.
