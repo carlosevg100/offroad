@@ -1,3 +1,9 @@
+# Onda 10: etapa 11 autorizada e em abertura
+
+Participação, canais pessoais e contribuições sem sobrescrita. Baseline `aba63d641077`.
+Inventário renovado em `docs/security/INVENTORY_WAVE_10_REVIEW.md`; implementação e
+completion ainda pendentes. Etapa 12 não iniciada.
+
 ## Etapa 10: conciliação da entrega em 17/09/2026
 
 PR 652 entregue em `4e6b84d9c4701df24b9fb2e9ea74264df121336b`; main Quality 35279877963, Security 35279878009 e worker 35279936974 passaram. Vercel Production 6513024337 e ECS 361 executam o commit exato.
