@@ -147,6 +147,65 @@
       "security_definer": true
     },
     {
+      "id": "function:private.adopt_observation_for_work_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "adopt_observation_for_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "name": "adoption_dependency_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid, p_rights uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.adoption_entry_json_v1(p_id uuid)",
+      "kind": "function",
+      "name": "adoption_entry_json_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.advance_authorization_revision_v1(p_organization_id uuid, p_resource_id uuid, p_subject_user_id uuid)",
       "kind": "function",
       "name": "advance_authorization_revision_v1",
@@ -685,6 +744,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.bind_execution_adoption_v1()",
+      "kind": "function",
+      "name": "bind_execution_adoption_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.bind_execution_brief_dispatch(p_brief_id uuid, p_job_id uuid)",
       "kind": "function",
       "name": "bind_execution_brief_dispatch",
@@ -1115,6 +1192,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_read_adoption_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "name": "can_read_adoption_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_assumption_version_v1(p_org uuid, p_id uuid)",
+      "kind": "function",
+      "name": "can_read_assumption_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_read_completed_capital_project_material(p_organization_id uuid, p_capital_project_id uuid, p_object_path text)",
       "kind": "function",
       "name": "can_read_completed_capital_project_material",
@@ -1430,6 +1553,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_adoption_event_v1()",
+      "kind": "function",
+      "name": "capture_adoption_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capture_audit_event()",
       "kind": "function",
       "name": "capture_audit_event",
@@ -1702,6 +1843,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+      "kind": "function",
+      "name": "compare_adoption_bases_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_left_version_id uuid, p_right_version_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.complete_event_outbox_v1(p_worker_token text, p_outbox_id uuid, p_capability text)",
       "kind": "function",
       "name": "complete_event_outbox_v1",
@@ -1860,6 +2024,24 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid, p_primary_support_sheets text[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "name": "create_legacy_adoption_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_table text, p_record jsonb",
       "security_definer": true
     },
     {
@@ -2381,6 +2563,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "name": "ensure_basis_entity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.ensure_membership_principal_v1()",
       "kind": "function",
       "name": "ensure_membership_principal_v1",
@@ -2540,6 +2745,42 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_require_accepted boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "name": "execution_source_resource_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_table text, p_record jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_work_resource_v1(p_org uuid, p_table text, p_record jsonb)",
+      "kind": "function",
+      "name": "execution_work_resource_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_table text, p_record jsonb",
       "security_definer": true
     },
     {
@@ -3926,6 +4167,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+      "kind": "function",
+      "name": "list_work_observations_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_before_sequence text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.lock_execution_approval_context()",
       "kind": "function",
       "name": "lock_execution_approval_context",
@@ -4124,6 +4388,24 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.observation_dimensions_json_v1(p_row observations)",
+      "kind": "function",
+      "name": "observation_dimensions_json_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_row observations",
+      "security_definer": false
     },
     {
       "id": "function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)",
@@ -4372,6 +4654,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_request_id uuid, p_locale text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.propose_assumption_revision_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "propose_assumption_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
       "security_definer": true
     },
     {
@@ -4639,6 +4944,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_adoption_basis_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "read_adoption_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
       "security_definer": true
     },
     {
@@ -6013,6 +6341,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.reject_assumption_mutation_v1()",
+      "kind": "function",
+      "name": "reject_assumption_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.reject_control_ledger_mutation()",
       "kind": "function",
       "name": "reject_control_ledger_mutation",
@@ -6274,6 +6620,24 @@
         "search_path=\"\""
       ],
       "signature": "p_artifact_id uuid, p_artifact_fingerprint text, p_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)",
+      "kind": "function",
+      "name": "require_adoption_dependency_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid, p_rights uuid",
       "security_definer": true
     },
     {
@@ -11845,6 +12209,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.write_contextual_adoption_v1(p_payload jsonb, p_kind text)",
+      "kind": "function",
+      "name": "write_contextual_adoption_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb, p_kind text",
+      "security_definer": true
+    },
+    {
       "id": "function:public.accept_and_apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "name": "accept_and_apply_agent_operation_brief_proposal",
@@ -11962,6 +12344,29 @@
         "search_path=\"\""
       ],
       "signature": "p_derived_version_id uuid, p_source_version_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "adopt_observation_for_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
       "security_definer": false
     },
     {
@@ -12367,6 +12772,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
+      "kind": "function",
+      "name": "compare_adoption_bases_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_left_version_id uuid, p_right_version_id uuid",
       "security_definer": false
     },
     {
@@ -12836,6 +13264,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
+      "kind": "function",
+      "name": "ensure_basis_entity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "name": "explain_my_access_v1",
@@ -13239,6 +13690,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
+      "kind": "function",
+      "name": "list_work_observations_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_before_sequence text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.manage_workspace_project_group(p_group_id uuid, p_action text, p_name text)",
       "kind": "function",
       "name": "manage_workspace_project_group",
@@ -13351,6 +13825,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.propose_assumption_revision_v1(p_payload jsonb)",
+      "kind": "function",
+      "name": "propose_assumption_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_payload jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:public.queue_advisor_initial_turn_v1(p_project_id uuid)",
       "kind": "function",
       "name": "queue_advisor_initial_turn_v1",
@@ -13376,6 +13873,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_adoption_basis_v1(p_version_id uuid)",
+      "kind": "function",
+      "name": "read_adoption_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_version_id uuid",
       "security_definer": false
     },
     {
@@ -19632,6 +20152,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.assumption_version_items.assumption_version_items_deny",
+      "kind": "policy",
+      "name": "assumption_version_items_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_version_items",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.authorization_revisions.authorization_revisions_deny_clients",
       "kind": "policy",
       "name": "authorization_revisions_deny_clients",
@@ -20562,6 +21096,62 @@
       "with_check": "(EXISTS ( SELECT 1\n   FROM published_opportunity_projections p\n  WHERE ((p.id = access_requests.projection_id) AND (p.organization_id = access_requests.source_organization_id) AND private.can_access_resource_v1(p.organization_id, p.opportunity_id, 'manage'::text))))"
     },
     {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_delete",
+      "kind": "policy",
+      "name": "adoption_decisions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "adoption_decisions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_insert",
+      "kind": "policy",
+      "name": "adoption_decisions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "adoption_decisions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_deny_update",
+      "kind": "policy",
+      "name": "adoption_decisions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "adoption_decisions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.adoption_decisions.adoption_decisions_select",
+      "kind": "policy",
+      "name": "adoption_decisions_select",
+      "qual": "private.can_read_adoption_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "adoption_decisions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.agent_change_proposals.agent_change_proposals_select",
       "kind": "policy",
       "name": "agent_change_proposals_select",
@@ -20598,6 +21188,118 @@
         "authenticated"
       ],
       "table": "agent_messages",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_delete",
+      "kind": "policy",
+      "name": "assumption_sets_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_sets",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_insert",
+      "kind": "policy",
+      "name": "assumption_sets_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_sets",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_deny_update",
+      "kind": "policy",
+      "name": "assumption_sets_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_sets",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.assumption_sets.assumption_sets_select",
+      "kind": "policy",
+      "name": "assumption_sets_select",
+      "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND (EXISTS ( SELECT 1\n   FROM assumption_versions v\n  WHERE ((v.organization_id = assumption_sets.organization_id) AND (v.set_id = assumption_sets.id)))))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_sets",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_delete",
+      "kind": "policy",
+      "name": "assumption_versions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_versions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_insert",
+      "kind": "policy",
+      "name": "assumption_versions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_versions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_deny_update",
+      "kind": "policy",
+      "name": "assumption_versions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_versions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.assumption_versions.assumption_versions_select",
+      "kind": "policy",
+      "name": "assumption_versions_select",
+      "qual": "private.can_read_assumption_version_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "assumption_versions",
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
@@ -24695,6 +25397,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.assumption_version_items",
+      "rls": true,
+      "kind": "table",
+      "name": "assumption_version_items",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.authorization_revisions",
       "rls": true,
       "kind": "table",
@@ -27200,6 +27952,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.adoption_decisions",
+      "rls": true,
+      "kind": "table",
+      "name": "adoption_decisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.agent_change_proposals",
       "rls": true,
       "kind": "table",
@@ -27478,6 +28285,116 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.assumption_sets",
+      "rls": true,
+      "kind": "table",
+      "name": "assumption_sets",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.assumption_versions",
+      "rls": true,
+      "kind": "table",
+      "name": "assumption_versions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -39490,6 +40407,16 @@
       "definition": "CREATE TRIGGER commercial_account_link_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('commercial_account_link')"
     },
     {
+      "id": "trigger:private.assumption_version_items.assumption_version_items_immutable",
+      "kind": "trigger",
+      "name": "assumption_version_items_immutable",
+      "table": "assumption_version_items",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_assumption_mutation_v1()",
+      "definition": "CREATE TRIGGER assumption_version_items_immutable BEFORE DELETE OR UPDATE ON private.assumption_version_items FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+    },
+    {
       "id": "trigger:private.authorization_revisions.authorization_revisions_audit",
       "kind": "trigger",
       "name": "authorization_revisions_audit",
@@ -40040,6 +40967,36 @@
       "definition": "CREATE TRIGGER access_requests_set_updated_at BEFORE UPDATE ON public.access_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_event",
+      "kind": "trigger",
+      "name": "adoption_decisions_event",
+      "table": "adoption_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_adoption_event_v1()",
+      "definition": "CREATE TRIGGER adoption_decisions_event AFTER INSERT ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+    },
+    {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_immutable",
+      "kind": "trigger",
+      "name": "adoption_decisions_immutable",
+      "table": "adoption_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_assumption_mutation_v1()",
+      "definition": "CREATE TRIGGER adoption_decisions_immutable BEFORE DELETE OR UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.adoption_decisions.adoption_decisions_updated",
+      "kind": "trigger",
+      "name": "adoption_decisions_updated",
+      "table": "adoption_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER adoption_decisions_updated BEFORE UPDATE ON public.adoption_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.agent_change_proposals.agent_change_proposals_audit",
       "kind": "trigger",
       "name": "agent_change_proposals_audit",
@@ -40110,6 +41067,66 @@
       "definition": "CREATE TRIGGER execution_approval_message_lock BEFORE INSERT OR DELETE OR UPDATE OF content, metadata ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.lock_execution_approval_context()"
     },
     {
+      "id": "trigger:public.assumption_sets.assumption_sets_audit",
+      "kind": "trigger",
+      "name": "assumption_sets_audit",
+      "table": "assumption_sets",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER assumption_sets_audit AFTER INSERT ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.assumption_sets.assumption_sets_immutable",
+      "kind": "trigger",
+      "name": "assumption_sets_immutable",
+      "table": "assumption_sets",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_assumption_mutation_v1()",
+      "definition": "CREATE TRIGGER assumption_sets_immutable BEFORE DELETE OR UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.assumption_sets.assumption_sets_updated",
+      "kind": "trigger",
+      "name": "assumption_sets_updated",
+      "table": "assumption_sets",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER assumption_sets_updated BEFORE UPDATE ON public.assumption_sets FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_event",
+      "kind": "trigger",
+      "name": "assumption_versions_event",
+      "table": "assumption_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_adoption_event_v1()",
+      "definition": "CREATE TRIGGER assumption_versions_event AFTER INSERT ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.capture_adoption_event_v1()"
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_immutable",
+      "kind": "trigger",
+      "name": "assumption_versions_immutable",
+      "table": "assumption_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_assumption_mutation_v1()",
+      "definition": "CREATE TRIGGER assumption_versions_immutable BEFORE DELETE OR UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.reject_assumption_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.assumption_versions.assumption_versions_updated",
+      "kind": "trigger",
+      "name": "assumption_versions_updated",
+      "table": "assumption_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER assumption_versions_updated BEFORE UPDATE ON public.assumption_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.authority_evidence.authority_evidence_audit",
       "kind": "trigger",
       "name": "authority_evidence_audit",
@@ -40128,6 +41145,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER authority_evidence_set_updated_at BEFORE UPDATE ON public.authority_evidence FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.calculation_runs.calculation_runs_bind_adoption",
+      "kind": "trigger",
+      "name": "calculation_runs_bind_adoption",
+      "table": "calculation_runs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_execution_adoption_v1()",
+      "definition": "CREATE TRIGGER calculation_runs_bind_adoption BEFORE INSERT OR UPDATE ON public.calculation_runs FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
     },
     {
       "id": "trigger:public.capital_project_agent_events.capital_project_agent_events_audit",
@@ -40708,6 +41735,16 @@
       "enabled": "O",
       "function": "private.capture_audit_event()",
       "definition": "CREATE TRIGGER claim_decisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.claim_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.claim_decisions.claim_decisions_bind_adoption",
+      "kind": "trigger",
+      "name": "claim_decisions_bind_adoption",
+      "table": "claim_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_execution_adoption_v1()",
+      "definition": "CREATE TRIGGER claim_decisions_bind_adoption BEFORE INSERT OR UPDATE ON public.claim_decisions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
     },
     {
       "id": "trigger:public.companies.companies_access_resource",
@@ -42200,6 +43237,16 @@
       "definition": "CREATE TRIGGER scenario_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.scenario_versions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
+      "id": "trigger:public.scenario_versions.scenario_versions_bind_adoption",
+      "kind": "trigger",
+      "name": "scenario_versions_bind_adoption",
+      "table": "scenario_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_execution_adoption_v1()",
+      "definition": "CREATE TRIGGER scenario_versions_bind_adoption BEFORE INSERT OR UPDATE ON public.scenario_versions FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
+    },
+    {
       "id": "trigger:public.sounding_events.sounding_events_audit",
       "kind": "trigger",
       "name": "sounding_events_audit",
@@ -42428,6 +43475,16 @@
       "enabled": "O",
       "function": "private.capture_identity_audit_v1()",
       "definition": "CREATE TRIGGER sources_audit AFTER INSERT OR DELETE OR UPDATE ON public.sources FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.structure_scenarios.structure_scenarios_bind_adoption",
+      "kind": "trigger",
+      "name": "structure_scenarios_bind_adoption",
+      "table": "structure_scenarios",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_execution_adoption_v1()",
+      "definition": "CREATE TRIGGER structure_scenarios_bind_adoption BEFORE INSERT OR UPDATE ON public.structure_scenarios FOR EACH ROW EXECUTE FUNCTION private.bind_execution_adoption_v1()"
     },
     {
       "id": "trigger:public.structure_scenarios.structure_scenarios_set_updated_at",
@@ -42885,5 +43942,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-17T13:51:07.680334+00:00"
+  "captured_at": "2026-09-17T16:11:08.148935+00:00"
 }

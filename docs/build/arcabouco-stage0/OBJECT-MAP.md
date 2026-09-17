@@ -2219,3 +2219,64 @@ Migrações adicionais:
 - `trigger:public.observations.observations_guard`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
 - `trigger:public.observations.observations_immutable`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
 - `trigger:public.observations.observations_updated`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+
+## Atualização da etapa 9, 17/09/2026
+
+56 superfícies novas conferidas nos dois ambientes. Adoções e versões de hipóteses são imutáveis, com acesso atual, direito fixado e vínculo explícito nas execuções.
+
+- `function:private.adopt_observation_for_work_v1(p_payload jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.adoption_entry_json_v1(p_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.bind_execution_adoption_v1()`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.can_read_adoption_v1(p_org uuid, p_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.can_read_assumption_version_v1(p_org uuid, p_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.capture_adoption_event_v1()`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.execution_work_resource_v1(p_org uuid, p_table text, p_record jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.observation_dimensions_json_v1(p_row observations)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.propose_assumption_revision_v1(p_payload jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.read_adoption_basis_v1(p_version_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.reject_assumption_mutation_v1()`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:private.write_contextual_adoption_v1(p_payload jsonb, p_kind text)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.adopt_observation_for_work_v1(p_payload jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.propose_assumption_revision_v1(p_payload jsonb)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `function:public.read_adoption_basis_v1(p_version_id uuid)`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:private.assumption_version_items.assumption_version_items_deny`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.adoption_decisions.adoption_decisions_deny_delete`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.adoption_decisions.adoption_decisions_deny_insert`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.adoption_decisions.adoption_decisions_deny_update`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.adoption_decisions.adoption_decisions_select`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_sets.assumption_sets_deny_delete`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_sets.assumption_sets_deny_insert`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_sets.assumption_sets_deny_update`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_sets.assumption_sets_select`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_versions.assumption_versions_deny_delete`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_versions.assumption_versions_deny_insert`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_versions.assumption_versions_deny_update`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `policy:public.assumption_versions.assumption_versions_select`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `r:private.assumption_version_items`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `r:public.adoption_decisions`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `r:public.assumption_sets`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `r:public.assumption_versions`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:private.assumption_version_items.assumption_version_items_immutable`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.adoption_decisions.adoption_decisions_event`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.adoption_decisions.adoption_decisions_immutable`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.adoption_decisions.adoption_decisions_updated`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_sets.assumption_sets_audit`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_sets.assumption_sets_immutable`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_sets.assumption_sets_updated`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_versions.assumption_versions_event`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_versions.assumption_versions_immutable`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.assumption_versions.assumption_versions_updated`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.calculation_runs.calculation_runs_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.claim_decisions.claim_decisions_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.scenario_versions.scenario_versions_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.
+- `trigger:public.structure_scenarios.structure_scenarios_bind_adoption`: preservar, etapa 9; Adoção contextual imutável com fonte, direito fixado, autoridade atual, base esperada e histórico de contribuições.

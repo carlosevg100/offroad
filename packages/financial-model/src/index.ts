@@ -23,3 +23,5 @@ export * from "./institutional-configuration";
 export * from "./institutional-runtime";
 
 export * from "./institutional-workbook";
+
+export * from "./adopted-basis";

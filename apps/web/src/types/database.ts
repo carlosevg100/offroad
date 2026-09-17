@@ -74,6 +74,99 @@ export type Database = {
           },
         ]
       }
+      adoption_decisions: {
+        Row: {
+          asserted_value: Json
+          created_at: string
+          created_by: string
+          definition_version_id: string
+          dimensions: Json
+          entity_id: string
+          field_path: string
+          id: string
+          kind: string
+          organization_id: string
+          reason: string
+          reference_observation_id: string | null
+          set_id: string
+          slot_key: string
+          updated_at: string
+          value_type: string
+        }
+        Insert: {
+          asserted_value: Json
+          created_at?: string
+          created_by: string
+          definition_version_id: string
+          dimensions: Json
+          entity_id: string
+          field_path: string
+          id?: string
+          kind: string
+          organization_id: string
+          reason: string
+          reference_observation_id?: string | null
+          set_id: string
+          slot_key: string
+          updated_at?: string
+          value_type: string
+        }
+        Update: {
+          asserted_value?: Json
+          created_at?: string
+          created_by?: string
+          definition_version_id?: string
+          dimensions?: Json
+          entity_id?: string
+          field_path?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          reason?: string
+          reference_observation_id?: string | null
+          set_id?: string
+          slot_key?: string
+          updated_at?: string
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoption_decisions_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_definition_version_id_fkey"
+            columns: ["organization_id", "definition_version_id"]
+            isOneToOne: false
+            referencedRelation: "definition_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_reference_observation_i_fkey"
+            columns: ["organization_id", "reference_observation_id"]
+            isOneToOne: false
+            referencedRelation: "observations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_set_id_fkey"
+            columns: ["organization_id", "set_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_sets"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       agent_change_proposals: {
         Row: {
           base_manifest_fingerprint: string
@@ -316,6 +409,117 @@ export type Database = {
           },
         ]
       }
+      assumption_sets: {
+        Row: {
+          context_key: string
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          purpose: string
+          updated_at: string
+          work_id: string | null
+          work_reference: string
+        }
+        Insert: {
+          context_key: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          purpose: string
+          updated_at?: string
+          work_id?: string | null
+          work_reference: string
+        }
+        Update: {
+          context_key?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          purpose?: string
+          updated_at?: string
+          work_id?: string | null
+          work_reference?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assumption_sets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assumption_versions: {
+        Row: {
+          canonical_snapshot: string
+          classification: string
+          content_fingerprint: string
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          previous_version_id: string | null
+          request_fingerprint: string
+          revision: number
+          set_id: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_snapshot: string
+          classification: string
+          content_fingerprint: string
+          created_at?: string
+          created_by?: string | null
+          id: string
+          organization_id: string
+          previous_version_id?: string | null
+          request_fingerprint: string
+          revision: number
+          set_id: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_snapshot?: string
+          classification?: string
+          content_fingerprint?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          previous_version_id?: string | null
+          request_fingerprint?: string
+          revision?: number
+          set_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assumption_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assumption_versions_organization_id_set_id_fkey"
+            columns: ["organization_id", "set_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_sets"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "assumption_versions_organization_id_set_id_previous_versio_fkey"
+            columns: ["organization_id", "set_id", "previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "set_id", "id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -415,6 +619,8 @@ export type Database = {
       }
       calculation_runs: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           completed_at: string | null
           created_at: string
           created_by: string
@@ -429,6 +635,8 @@ export type Database = {
           warnings: Json
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           completed_at?: string | null
           created_at?: string
           created_by: string
@@ -443,6 +651,8 @@ export type Database = {
           warnings?: Json
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string
@@ -457,6 +667,13 @@ export type Database = {
           warnings?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "calculation_runs_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "calculation_runs_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
@@ -2902,6 +3119,8 @@ export type Database = {
       }
       claim_decisions: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           claim_fingerprint: string
           claim_id: string
           decided_at: string
@@ -2915,6 +3134,8 @@ export type Database = {
           source_registry_fingerprint: string
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           claim_fingerprint: string
           claim_id: string
           decided_at?: string
@@ -2928,6 +3149,8 @@ export type Database = {
           source_registry_fingerprint: string
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           claim_fingerprint?: string
           claim_id?: string
           decided_at?: string
@@ -2941,6 +3164,13 @@ export type Database = {
           source_registry_fingerprint?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "claim_decisions_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "claim_decisions_organization_id_fkey"
             columns: ["organization_id"]
@@ -8441,6 +8671,8 @@ export type Database = {
       }
       scenario_versions: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           approved_at: string | null
           approved_by: string | null
           created_at: string
@@ -8454,6 +8686,8 @@ export type Database = {
           version_number: number
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -8467,6 +8701,8 @@ export type Database = {
           version_number: number
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -8480,6 +8716,13 @@ export type Database = {
           version_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "scenario_versions_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "scenario_versions_organization_id_structure_scenario_id_fkey"
             columns: ["organization_id", "structure_scenario_id"]
@@ -8933,6 +9176,8 @@ export type Database = {
       }
       structure_scenarios: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           created_at: string
           created_by: string
           id: string
@@ -8944,6 +9189,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           created_at?: string
           created_by: string
           id?: string
@@ -8955,6 +9202,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           created_at?: string
           created_by?: string
           id?: string
@@ -8966,6 +9215,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "structure_scenarios_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "structure_scenarios_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
@@ -9140,6 +9396,10 @@ export type Database = {
         Args: { p_derived_version_id: string; p_source_version_id: string }
         Returns: string
       }
+      adopt_observation_for_work_v1: {
+        Args: { p_payload: Json }
+        Returns: string
+      }
       append_advisor_message_v1: {
         Args: {
           p_content: string
@@ -9238,6 +9498,10 @@ export type Database = {
       claim_event_outbox_v1: { Args: { p_worker_token: string }; Returns: Json }
       claim_storage_rotation_v1: {
         Args: { p_worker_token: string }
+        Returns: Json
+      }
+      compare_adoption_bases_v1: {
+        Args: { p_left_version_id: string; p_right_version_id: string }
         Returns: Json
       }
       complete_event_outbox_v1: {
@@ -9410,6 +9674,16 @@ export type Database = {
         }
         Returns: Json
       }
+      ensure_basis_entity_v1: {
+        Args: {
+          p_dossier_id: string
+          p_name: string
+          p_namespace: string
+          p_reason: string
+          p_value: string
+        }
+        Returns: string
+      }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
         Returns: Json
@@ -9479,6 +9753,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      list_work_observations_v1: {
+        Args: { p_before_sequence?: string; p_work_id: string }
+        Returns: Json
+      }
       manage_workspace_project: {
         Args: {
           p_action: string
@@ -9503,10 +9781,15 @@ export type Database = {
         Args: { p_locale: string; p_project_id: string; p_request_id: string }
         Returns: Json
       }
+      propose_assumption_revision_v1: {
+        Args: { p_payload: Json }
+        Returns: string
+      }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_adoption_basis_v1: { Args: { p_version_id: string }; Returns: Json }
       read_advisor_document_work_binding_v1: {
         Args: { p_job_id: string; p_project_id: string }
         Returns: Json

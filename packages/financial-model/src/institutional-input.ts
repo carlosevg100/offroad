@@ -101,22 +101,26 @@ export function prepareInstitutionalModelInput(request:{
       ||(flow&&selection.periodStart!==`${openingYear}-01-01`)){
       gap(targetPath,"period_mismatch","Historical opening stocks and annual flows must match the selected base period before the model as-of date.");return null;
     }
-    const candidates=request.facts.filter(f=>f.key.fieldPath===selection.fieldPath&&f.key.periodEnd===selection.periodEnd
-      &&f.key.entityName===selection.entityName&&f.accepted.entityScope===selection.entityScope
-      &&f.accepted.sourceDocument===selection.sourceDocument);
-    if(candidates.length!==1){gap(targetPath,candidates.length?"fact_ambiguous":"fact_missing","Exactly one reconciled fact must match the selected field, period, entity, perimeter and source.");return null;}
-    const fact=candidates[0]!;
-    if(fact.disputed){gap(targetPath,"fact_disputed","Resolve the disputed fact before using it in the model.");return null;}
-    if(fact.valueType!=="number"||fact.accepted.valueType!=="number"||!fact.accepted.anchorVerified
-      ||fact.accepted.anchor===undefined||fact.accepted.anchor===null||stableJson(fact.accepted.anchor)==="{}"
-      ||fact.accepted.fieldPath!==selection.fieldPath||fact.accepted.periodEnd!==selection.periodEnd||fact.accepted.entityName!==selection.entityName
-      ||(flow&&fact.accepted.periodStart!==selection.periodStart)
-      ||/project|forecast|budget/i.test(fact.accepted.informationClass)||! /^(historical_financials|interim_financials)\./.test(selection.fieldPath)){
-      gap(targetPath,"fact_invalid","Use an anchored historical numeric fact with matching period and entity, never a projection substituted for history.");return null;
+    // Current observations coexist. An explicit source selection, never ranking, chooses input.
+    // Pre-observation snapshots retain their original shape as a labelled compatibility input.
+    const candidates=request.facts.flatMap(f=>{
+      const observations=f.observations??[f.accepted];
+      return observations.filter(o=>o.fieldPath===selection.fieldPath&&o.periodEnd===selection.periodEnd
+        &&o.entityName===selection.entityName&&o.entityScope===selection.entityScope&&o.sourceDocument===selection.sourceDocument)
+        .map(observation=>({observation,legacy:f.observations===undefined,parent:f}));
+    });
+    if(candidates.length!==1){gap(targetPath,candidates.length?"fact_ambiguous":"fact_missing","Exactly one observation must match the selected field, period, entity, perimeter and source.");return null;}
+    const {observation:fact,legacy,parent}=candidates[0]!;
+    if(legacy&&parent.disputed){gap(targetPath,"fact_disputed","The historical snapshot is disputed; supply an explicit observation selection.");return null;}
+    if(fact.valueType!=="number"||!fact.anchorVerified||fact.anchor===undefined||fact.anchor===null||stableJson(fact.anchor)==="{}"
+      ||(flow&&fact.periodStart!==selection.periodStart)||/project|forecast|budget/i.test(fact.informationClass)
+      ||! /^(historical_financials|interim_financials)\./.test(selection.fieldPath)
+      ||(legacy&&(parent.key.fieldPath!==selection.fieldPath||parent.key.periodEnd!==selection.periodEnd||parent.key.entityName!==selection.entityName))){
+      gap(targetPath,"fact_invalid","Use an anchored historical numeric observation with matching period and entity, never a projection substituted for history.");return null;
     }
     try{
-      if(!new Decimal(fact.value).isFinite()||!new Decimal(fact.value).eq(fact.accepted.normalizedValue))throw new Error();
-    }catch{gap(targetPath,"fact_invalid","The reconciled and accepted numeric values must agree and be finite.");return null;}
+      if(!new Decimal(fact.normalizedValue).isFinite()||(legacy&&!new Decimal(parent.value).eq(fact.normalizedValue)))throw new Error();
+    }catch{gap(targetPath,"fact_invalid","The selected numeric observation must be finite and historical snapshots must remain internally consistent.");return null;}
     const sources=request.sources.filter(s=>s.sourceDocument===selection.sourceDocument);
     const source=sources.length===1?sources[0]:undefined;
     if(!source||!source.version.trim()||! /^[a-f0-9]{64}$/i.test(source.hash)||source.version!==selection.sourceVersion
@@ -127,9 +131,9 @@ export function prepareInstitutionalModelInput(request:{
       gap(targetPath,"unit_mismatch","Historical values must already be normalized to model-currency units; source presentation scale must not be applied twice.");return null;
     }
     lineage.push({targetPath,fieldPath:selection.fieldPath,...(selection.periodStart?{periodStart:selection.periodStart}:{}),periodEnd:selection.periodEnd,
-      entityName:selection.entityName,entityScope:selection.entityScope,value:fact.value,sourceDocument:source.sourceDocument,
-      sourceVersion:source.version,sourceHash:source.hash,sourceAsOfDate:source.asOfDate,anchor:fact.accepted.anchor});
-    return fact.value;
+      entityName:selection.entityName,entityScope:selection.entityScope,value:fact.normalizedValue,sourceDocument:source.sourceDocument,
+      sourceVersion:source.version,sourceHash:source.hash,sourceAsOfDate:source.asOfDate,anchor:fact.anchor});
+    return fact.normalizedValue;
   };
   const values:Partial<Record<OpeningAmount,string>>={};
   const openingSelections=openingFields.map(field=>config.openingBalanceSheet.bindings[field]).filter(Boolean);
