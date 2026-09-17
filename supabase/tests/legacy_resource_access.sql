@@ -1,4 +1,5 @@
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_resource_fixture.sql
 set local role authenticated;

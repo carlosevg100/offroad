@@ -22,6 +22,26 @@ insert into public.organization_memberships (organization_id, user_id, role, sta
   'owner', 'active', now()
 );
 
+-- A separate synthetic publisher grants an exact payload license. This factory does not
+-- replace any production authorization function; it constructs reviewed fixture evidence.
+create function pg_temp.license_public_cache_fixture(p_source jsonb) returns void
+language plpgsql security definer set search_path='' as $$
+declare o uuid:='20000000-0000-4000-8000-000000000292';p uuid:='30000000-0000-4000-8000-000000000292';v uuid:='60000000-0000-4000-8000-000000000292';u uuid:='10000000-0000-4000-8000-000000000291';original_headers text:=current_setting('request.headers',true);
+begin
+ insert into public.organizations(id,organization_type,name,created_by) values(o,'offroad','Synthetic public license publisher',u);
+ insert into public.organization_memberships(organization_id,user_id,role,status) values(o,u,'owner','active');
+ insert into public.capital_projects(id,organization_id,project_name,created_by) values(p,o,'Synthetic license origin',u);
+ insert into public.sources(id,organization_id,origin_resource_id,origin_resource_reference,created_by) values(v,o,p,p,u);
+ insert into public.source_versions(id,organization_id,source_id,version_no,legacy_document_version,bucket_id,object_path,original_name,initial_verification_state,created_by)
+ values(v,o,v,1,1,'opportunity-documents',o::text||'/'||p::text||'/synthetic-public.txt','Synthetic public license','pending_verification',u);
+ insert into public.source_bindings(organization_id,source_version_id,resource_id,resource_reference,request_id,created_by) values(o,v,p,p,gen_random_uuid(),u);
+ perform set_config('request.headers',jsonb_build_object('x-offroad-workspace',o)::text,true);
+ perform public.declare_public_source_reuse_v1(v,0,p_source->>'url',private.public_source_payload_sha256_v1(p_source),now()+interval '60 days',now()+interval '60 days',v,repeat('a',64));
+ perform set_config('request.headers',coalesce(original_headers,'{}'),true);
+end $$;
+revoke all on function pg_temp.license_public_cache_fixture(jsonb) from public,anon,service_role;
+grant execute on function pg_temp.license_public_cache_fixture(jsonb) to authenticated;
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -120,9 +140,18 @@ begin
     'validUntil', to_char((now() + interval '24 hours') at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
     'reusePolicy', 'public_raw_material_only'
   ));
+  begin
+    perform public.worker_store_public_research_cache((claim->>'job_id')::uuid,claim->>'capability_token',entries);
+    raise exception 'unlicensed public source entered cache';
+  exception when insufficient_privilege then null; end;
+  perform pg_temp.license_public_cache_fixture(entries#>'{0,sources,0}');
   perform public.worker_store_public_research_cache(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token', entries
   );
+  begin
+    perform public.worker_store_public_research_cache((claim->>'job_id')::uuid,claim->>'capability_token',jsonb_set(entries,'{0,sources,0,snippet}','"Substituted private payload"'));
+    raise exception 'copied content hash bypassed public payload license';
+  exception when insufficient_privilege then null; end;
   loaded := public.worker_load_public_research_cache(
     (claim ->> 'job_id')::uuid, claim ->> 'capability_token', array[query_id]
   );
@@ -186,6 +215,14 @@ end;
 $$;
 
 reset role;
+-- Rights revocation reaches already stored global cache without deleting historical evidence.
+do $$ declare c cache_test_claim%rowtype; begin
+ select * into c from cache_test_claim;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values('20000000-0000-4000-8000-000000000292','60000000-0000-4000-8000-000000000292',2,'{}',array['analysis'],'authorized_workspace',now(),'human_declaration',gen_random_uuid(),repeat('b',64),'10000000-0000-4000-8000-000000000291');
+ if public.worker_load_public_research_cache(c.job_id,c.capability_token,array[c.query_id])<>'[]'::jsonb
+ or public.worker_load_public_company_memory(c.job_id,c.capability_token,c.company_key) is not null then raise exception 'revoked public source remained reusable'; end if;
+end $$;
 -- Withdrawing the identity association makes its reusable memory unreachable immediately.
 do $$ declare c cache_test_claim%rowtype; begin
  select * into c from cache_test_claim;

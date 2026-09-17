@@ -82,7 +82,9 @@ export const debtSourceDefinitionSchema = z.object({
   authorityTier: z.number().int().min(1).max(5),
   capabilities: z.array(debtResearchCapabilitySchema).min(1),
   domains: z.array(z.string().min(3)).default([]),
+  // Descriptive classification never replaces an exact, current database license.
   reuse: debtSourceReuseSchema,
+  reuseRequiresVersionedRight: z.literal(true).default(true),
   purpose: z.string().min(10).max(500),
   limitations: z.array(z.string().min(3).max(300)).default([]),
   activationEnv: z.string().regex(/^[A-Z0-9_]+$/).nullable().default(null),

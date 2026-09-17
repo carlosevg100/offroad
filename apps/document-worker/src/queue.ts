@@ -1,3 +1,4 @@
+import {retrieveGoverned} from "@offroad/governed-retrieval";
 import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
 import {createHash} from "node:crypto";
 
@@ -842,14 +843,11 @@ export function createQueueClient(
     },
 
     async loadRetrievalContext(job, input) {
-      return call("worker_load_retrieval_context", {
-        p_job_id: job.job_id,
-        p_capability_token: job.capability_token,
-        p_query: input.query,
-        p_allowed_fund_ids: input.allowedFundIds ?? [],
-        p_precedent_purpose: input.precedentPurpose ?? null,
-        p_limit: input.limit ?? 20,
-      });
+      return retrieveGoverned({
+        jobId: job.job_id, capability: job.capability_token, query: input.query,
+        allowedFundIds: input.allowedFundIds ?? [], precedentPurpose: input.precedentPurpose ?? null,
+        limit: input.limit ?? 20,
+      }, call);
     },
     async recordPublicResearch(job, plan, result) {
       const data = await call("worker_record_public_research", {

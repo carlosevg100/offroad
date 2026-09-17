@@ -65,7 +65,7 @@ import {
   type ReceivablesProviderMandate,
   type Sourced,
 } from "@offroad/fund-mandate";
-import {sha256} from "@offroad/governed-retrieval";
+import {sha256, authorizedRetrievalContextSchema} from "@offroad/governed-retrieval";
 import {gatewayCallLogSchema, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
 import {
   buildPublicResearchPlan,
@@ -130,20 +130,7 @@ import {
 } from "./operating-control-snapshot";
 
 const recordSchema = z.record(z.string(), z.unknown());
-const retrievalContextSchema = z.object({
-  playbook_version: z.string().nullable(),
-  results: z.array(z.object({
-    source: z.enum(["case", "house_playbook", "mandate_note", "precedent"]),
-    id: z.string().min(1),
-    content: z.string().min(1).max(12_000),
-    citation: z.object({
-      key: z.string().min(1),
-      label: z.string().min(1),
-    }).passthrough(),
-    score: z.coerce.number(),
-  })),
-  abstained: z.boolean(),
-});
+const retrievalContextSchema = authorizedRetrievalContextSchema;
 type RetrievalContext = z.infer<typeof retrievalContextSchema>;
 const claimDecisionSchema = z.object({
   claimId: z.string().min(1),

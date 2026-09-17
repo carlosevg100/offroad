@@ -1,5 +1,6 @@
 -- Deterministic fixture; timing is observed, not a promise about production workloads.
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_resource_fixture.sql
 select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000001',true);

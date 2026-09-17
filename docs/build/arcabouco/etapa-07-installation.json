@@ -1,0 +1,562 @@
+{
+  "production_project": "ifnogpksgdadruooqydi",
+  "staging_project": "gjkkjtbfnssdsbmlhmwk",
+  "production_stamp": "20260917025326",
+  "staging_stamp": "20260917024611",
+  "migration_file": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+  "sql_md5": "26955f303ed38f67f5ed3708476b64e7",
+  "sql_sha256": "3d56ff2850b0242652e39158c9e343d99e9069a0988a5cc80431bb270bdf05db",
+  "function_parity": {
+    "captured_at": "2026-09-17T02:57:09.871Z",
+    "staging": [
+      {
+        "schema": "private",
+        "name": "add_source_dependency_v1",
+        "arguments": "p_derived_version_id uuid, p_source_version_id uuid",
+        "definition_md5": "5f413cfcf4a317286a1bb77468b1ca2b",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_export_source_version_v1",
+        "arguments": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "a656db3dfa6ab33c0e10a2a2265770cc",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_licensed_corpus_v1",
+        "arguments": "p_org uuid, p_rights uuid",
+        "definition_md5": "4e3cdeb9d2f7c1e9dfbae46786aa7fcf",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_source_version_v1",
+        "arguments": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "f07b48a7c1eaff6dbc764b3a76432358",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "capture_source_rights_event_v1",
+        "arguments": "",
+        "definition_md5": "c21425e4d09b14369a0e998393e87b2e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "declare_public_source_reuse_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "fcf1321ed77e0e51e6de5b603b94caaf",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "house_usage_allowed_v1",
+        "arguments": "p_version uuid",
+        "definition_md5": "a67a2a0986b99e4ecc8b58df71af1c0a",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "initialize_source_rights_v1",
+        "arguments": "",
+        "definition_md5": "ccc6364a0188defc0e378f934bc56074",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "job_authority_is_current_v1",
+        "arguments": "p_job_id uuid",
+        "definition_md5": "bda73233d2097324727f1174d3818e72",
+        "security_definer": true,
+        "volatility": "s"
+      },
+      {
+        "schema": "private",
+        "name": "job_sources_rights_current_v1",
+        "arguments": "p_job_id uuid",
+        "definition_md5": "3d054c21cac929f38649342ee473a68e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "licensed_corpus_use_v1",
+        "arguments": "p_org uuid, p_rights uuid, p_subject uuid, p_purpose text",
+        "definition_md5": "87d004c31243a0bb3cf2269a3fea2326",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_cache_sources_licensed_v1",
+        "arguments": "p_sources jsonb, p_through timestamp with time zone",
+        "definition_md5": "d8f233417aa640025b04dccc94e4ef7a",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_source_license_current_v1",
+        "arguments": "p_org uuid, p_version uuid, p_through timestamp with time zone",
+        "definition_md5": "9c893a64c7fc59c018b6f0f4febed360",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_source_payload_sha256_v1",
+        "arguments": "p_source jsonb",
+        "definition_md5": "ea5771983a4b71703cbe40f21892079c",
+        "security_definer": false,
+        "volatility": "i"
+      },
+      {
+        "schema": "private",
+        "name": "search_authorized_resources_v1",
+        "arguments": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+        "definition_md5": "7c0d8714eea9b2b465fce8db4f6740d7",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "set_source_rights_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "aa3e8853dd8dca74ac41cde3203537a9",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "source_use_allowed_v1",
+        "arguments": "p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text",
+        "definition_md5": "bbf0ee66cacbed83ec7a880582993a1f",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "61ccecec1fa5afddae001b8d6f014f58",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query_ids text[]",
+        "definition_md5": "5e56b55c62493405840e16d8440f397e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_retrieval_context",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+        "definition_md5": "abf7ec8e813ff13ab1d6d564b9337694",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "d3a1e82df2785bf08b87edcd840efa39",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_entries jsonb",
+        "definition_md5": "2a809ab52b41e312895bb1e147349aee",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "add_source_dependency_v1",
+        "arguments": "p_derived_version_id uuid, p_source_version_id uuid",
+        "definition_md5": "368bedc0058d98a75848a0edb672a263",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "declare_public_source_reuse_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "927b04547cc6fc86e1588f26020e5fa8",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "search_authorized_resources_v1",
+        "arguments": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+        "definition_md5": "af4ce1801aed00d8067a27d11f1a7e1d",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "search_case_retrieval",
+        "arguments": "p_organization_id uuid, p_opportunity_id uuid, p_query text, p_limit integer",
+        "definition_md5": "993a0fd0d01f1586404bb56b8b2e9b1d",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "set_source_rights_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "63d8e6cf53f526ccd5b03af423902f9a",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "65d9ea717e355f115078ebbee0a47062",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query_ids text[]",
+        "definition_md5": "9a0ddef12b96634ad219eca7c8409283",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_retrieval_context",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+        "definition_md5": "1b082948161afe496154829a6d3e556e",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "74e173d6e4ea79be391fd8f4cbb585c1",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_entries jsonb",
+        "definition_md5": "3779cabc114f5dec41a58aded08c1963",
+        "security_definer": false,
+        "volatility": "v"
+      }
+    ],
+    "production": [
+      {
+        "schema": "private",
+        "name": "add_source_dependency_v1",
+        "arguments": "p_derived_version_id uuid, p_source_version_id uuid",
+        "definition_md5": "5f413cfcf4a317286a1bb77468b1ca2b",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_export_source_version_v1",
+        "arguments": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "a656db3dfa6ab33c0e10a2a2265770cc",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_licensed_corpus_v1",
+        "arguments": "p_org uuid, p_rights uuid",
+        "definition_md5": "4e3cdeb9d2f7c1e9dfbae46786aa7fcf",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "can_read_source_version_v1",
+        "arguments": "p_organization_id uuid, p_version_id uuid",
+        "definition_md5": "f07b48a7c1eaff6dbc764b3a76432358",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "capture_source_rights_event_v1",
+        "arguments": "",
+        "definition_md5": "c21425e4d09b14369a0e998393e87b2e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "declare_public_source_reuse_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "fcf1321ed77e0e51e6de5b603b94caaf",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "house_usage_allowed_v1",
+        "arguments": "p_version uuid",
+        "definition_md5": "a67a2a0986b99e4ecc8b58df71af1c0a",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "initialize_source_rights_v1",
+        "arguments": "",
+        "definition_md5": "ccc6364a0188defc0e378f934bc56074",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "job_authority_is_current_v1",
+        "arguments": "p_job_id uuid",
+        "definition_md5": "bda73233d2097324727f1174d3818e72",
+        "security_definer": true,
+        "volatility": "s"
+      },
+      {
+        "schema": "private",
+        "name": "job_sources_rights_current_v1",
+        "arguments": "p_job_id uuid",
+        "definition_md5": "3d054c21cac929f38649342ee473a68e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "licensed_corpus_use_v1",
+        "arguments": "p_org uuid, p_rights uuid, p_subject uuid, p_purpose text",
+        "definition_md5": "87d004c31243a0bb3cf2269a3fea2326",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_cache_sources_licensed_v1",
+        "arguments": "p_sources jsonb, p_through timestamp with time zone",
+        "definition_md5": "d8f233417aa640025b04dccc94e4ef7a",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_source_license_current_v1",
+        "arguments": "p_org uuid, p_version uuid, p_through timestamp with time zone",
+        "definition_md5": "9c893a64c7fc59c018b6f0f4febed360",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "public_source_payload_sha256_v1",
+        "arguments": "p_source jsonb",
+        "definition_md5": "ea5771983a4b71703cbe40f21892079c",
+        "security_definer": false,
+        "volatility": "i"
+      },
+      {
+        "schema": "private",
+        "name": "search_authorized_resources_v1",
+        "arguments": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+        "definition_md5": "7c0d8714eea9b2b465fce8db4f6740d7",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "set_source_rights_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "aa3e8853dd8dca74ac41cde3203537a9",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "source_use_allowed_v1",
+        "arguments": "p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text",
+        "definition_md5": "bbf0ee66cacbed83ec7a880582993a1f",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "61ccecec1fa5afddae001b8d6f014f58",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query_ids text[]",
+        "definition_md5": "5e56b55c62493405840e16d8440f397e",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_load_retrieval_context",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+        "definition_md5": "abf7ec8e813ff13ab1d6d564b9337694",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "d3a1e82df2785bf08b87edcd840efa39",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "private",
+        "name": "worker_store_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_entries jsonb",
+        "definition_md5": "2a809ab52b41e312895bb1e147349aee",
+        "security_definer": true,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "add_source_dependency_v1",
+        "arguments": "p_derived_version_id uuid, p_source_version_id uuid",
+        "definition_md5": "368bedc0058d98a75848a0edb672a263",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "declare_public_source_reuse_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "927b04547cc6fc86e1588f26020e5fa8",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "search_authorized_resources_v1",
+        "arguments": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+        "definition_md5": "af4ce1801aed00d8067a27d11f1a7e1d",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "search_case_retrieval",
+        "arguments": "p_organization_id uuid, p_opportunity_id uuid, p_query text, p_limit integer",
+        "definition_md5": "993a0fd0d01f1586404bb56b8b2e9b1d",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "set_source_rights_v1",
+        "arguments": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+        "definition_md5": "63d8e6cf53f526ccd5b03af423902f9a",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_company_key text",
+        "definition_md5": "65d9ea717e355f115078ebbee0a47062",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query_ids text[]",
+        "definition_md5": "9a0ddef12b96634ad219eca7c8409283",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_load_retrieval_context",
+        "arguments": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+        "definition_md5": "1b082948161afe496154829a6d3e556e",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_company_memory",
+        "arguments": "p_job_id uuid, p_capability_token text, p_record jsonb",
+        "definition_md5": "74e173d6e4ea79be391fd8f4cbb585c1",
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "schema": "public",
+        "name": "worker_store_public_research_cache",
+        "arguments": "p_job_id uuid, p_capability_token text, p_entries jsonb",
+        "definition_md5": "3779cabc114f5dec41a58aded08c1963",
+        "security_definer": false,
+        "volatility": "v"
+      }
+    ]
+  },
+  "security_advisors": {
+    "production": [],
+    "staging": []
+  },
+  "production_backfill": [
+    {
+      "source_versions": 28,
+      "rights_versions": 28,
+      "explicit_acceptances": 28,
+      "audited_rights": 28,
+      "public_reuse_licenses": 0,
+      "licensed_house_versions": 1
+    }
+  ],
+  "production_readonly_negative": {
+    "captured_at": "2026-09-17T02:59:35.126Z",
+    "project_id": "ifnogpksgdadruooqydi",
+    "transaction": "READ ONLY / ROLLBACK",
+    "rows": [
+      {
+        "sources_without_identity": 0,
+        "search_without_identity": 0,
+        "direct_rights_read": false,
+        "direct_dependency_write": false,
+        "anonymous_rights_command": false
+      }
+    ]
+  },
+  "catalogue_counts": {
+    "production": 1657,
+    "staging": 1718,
+    "new_objects": 35
+  },
+  "production_file_journal_coverage": 325
+}

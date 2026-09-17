@@ -4636,7 +4636,9 @@ export type Database = {
           created_at: string
           id: string
           precedent_id: string
+          rights_organization_id: string | null
           search_vector: unknown
+          source_rights_version_id: string | null
           tags: string[]
         }
         Insert: {
@@ -4646,7 +4648,9 @@ export type Database = {
           created_at?: string
           id?: string
           precedent_id: string
+          rights_organization_id?: string | null
           search_vector?: unknown
+          source_rights_version_id?: string | null
           tags?: string[]
         }
         Update: {
@@ -4656,7 +4660,9 @@ export type Database = {
           created_at?: string
           id?: string
           precedent_id?: string
+          rights_organization_id?: string | null
           search_vector?: unknown
+          source_rights_version_id?: string | null
           tags?: string[]
         }
         Relationships: [
@@ -4779,6 +4785,8 @@ export type Database = {
           id: string
           semantic_version: string
           status: string
+          usage_expires_at: string | null
+          usage_license: string | null
         }
         Insert: {
           approval_basis: string
@@ -4789,6 +4797,8 @@ export type Database = {
           id?: string
           semantic_version: string
           status: string
+          usage_expires_at?: string | null
+          usage_license?: string | null
         }
         Update: {
           approval_basis?: string
@@ -4799,6 +4809,8 @@ export type Database = {
           id?: string
           semantic_version?: string
           status?: string
+          usage_expires_at?: string | null
+          usage_license?: string | null
         }
         Relationships: []
       }
@@ -5277,6 +5289,8 @@ export type Database = {
           note_kind: string
           observation_id: string | null
           observed_at: string
+          rights_organization_id: string | null
+          source_rights_version_id: string | null
         }
         Insert: {
           citation: Json
@@ -5290,6 +5304,8 @@ export type Database = {
           note_kind: string
           observation_id?: string | null
           observed_at: string
+          rights_organization_id?: string | null
+          source_rights_version_id?: string | null
         }
         Update: {
           citation?: Json
@@ -5303,6 +5319,8 @@ export type Database = {
           note_kind?: string
           observation_id?: string | null
           observed_at?: string
+          rights_organization_id?: string | null
+          source_rights_version_id?: string | null
         }
         Relationships: [
           {
@@ -8865,6 +8883,10 @@ export type Database = {
         Args: { p_invite_id: string }
         Returns: string
       }
+      add_source_dependency_v1: {
+        Args: { p_derived_version_id: string; p_source_version_id: string }
+        Returns: string
+      }
       append_advisor_message_v1: {
         Args: {
           p_content: string
@@ -9111,6 +9133,19 @@ export type Database = {
           p_object_fingerprint: string
           p_organization_id: string
           p_session_id: string
+        }
+        Returns: string
+      }
+      declare_public_source_reuse_v1: {
+        Args: {
+          p_evidence_id: string
+          p_evidence_sha256: string
+          p_expected_revision: number
+          p_expires_at: string
+          p_payload_sha256: string
+          p_source_url: string
+          p_store_until: string
+          p_version_id: string
         }
         Returns: string
       }
@@ -9754,6 +9789,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      search_authorized_resources_v1: {
+        Args: {
+          p_limit?: number
+          p_organization_id: string
+          p_purpose?: string
+          p_query: string
+          p_resource_id: string
+        }
+        Returns: {
+          chunk_id: string
+          citation_key: string
+          content: string
+          score: number
+          source_anchor: Json
+          source_document_id: string
+        }[]
+      }
       search_case_retrieval: {
         Args: {
           p_limit?: number
@@ -9888,6 +9940,19 @@ export type Database = {
       set_resource_purposes_v1: {
         Args: { p_purposes: string[]; p_resource_id: string }
         Returns: undefined
+      }
+      set_source_rights_v1: {
+        Args: {
+          p_evidence_id: string
+          p_evidence_sha256: string
+          p_expected_revision: number
+          p_expires_at: string
+          p_operations: string[]
+          p_purposes: string[]
+          p_store_until: string
+          p_version_id: string
+        }
+        Returns: string
       }
       set_workspace_capability_v1: {
         Args: {

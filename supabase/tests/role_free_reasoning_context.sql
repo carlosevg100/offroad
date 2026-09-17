@@ -1,5 +1,6 @@
 -- Synthetic stage 1C non-interference proof. Both transactions roll back.
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 -- Synthetic 1B fixture. Caller owns BEGIN/ROLLBACK.
 select set_config('request.jwt.claims','{}',true);
@@ -78,6 +79,7 @@ select 'agent_loaders_v1_v5_four_roles' as test, 'PASS' as result;
 rollback;
 
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/execution_approval.sql
 -- Synthetic 1B fixture. Caller owns BEGIN/ROLLBACK.
 select set_config('request.jwt.claims','{}',true);

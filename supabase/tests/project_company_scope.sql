@@ -1,6 +1,7 @@
 -- Project/company separation smoke test. All fixtures are rolled back.
 
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 
 insert into auth.users (

@@ -2,6 +2,7 @@
 -- The fixture binds a held execution job to a brief through the production binding; every
 -- command below is the real public RPC under the actual caller's JWT.
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 
