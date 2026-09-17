@@ -7,6 +7,19 @@ import type {AssumptionUnit} from "./assumptions";
 import {institutionalInputFixture as fixture} from "./institutional-input.fixture";
 
 describe("source-bound institutional input adapter",()=>{
+  it("uses the explicitly selected observation even when the ranked reference is another source",()=>{
+    const request=fixture();
+    for(const fact of request.facts){
+      const selected=structuredClone(fact.accepted);
+      fact.observations=[selected,{...selected,sourceDocument:"synthetic-ranked-other",normalizedValue:"999",evidenceRank:1}];
+      fact.accepted=fact.observations[1]!;fact.value="999";fact.disputed=true;
+    }
+    const result=prepareInstitutionalModelInput(request);
+    expect(result.status).toBe("ready");
+    expect(result.lineage[0]?.value).toBe("100");
+    expect(result.lineage.every(l=>l.sourceDocument==="synthetic-accounts")).toBe(true);
+  });
+
   it("does not apply raw source presentation scale twice to normalized facts",()=>{
     const input=fixture();input.sources[0]!.amountScale="thousands";
     const prepared=prepareInstitutionalModelInput(input);expect(prepared.status).toBe("missing_inputs");

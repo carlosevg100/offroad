@@ -1033,6 +1033,9 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../credit-playbook
+      '@offroad/domain-contracts':
+        specifier: workspace:*
+        version: link:../domain-contracts
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../financial-core

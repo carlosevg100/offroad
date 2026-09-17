@@ -1,9 +1,9 @@
 /**
- * @offroad/reconciliation — from many documents saying things, to one set of facts the desk
- * stands behind, the exceptions worth raising, and the numbers, each showing its work.
+ * @offroad/reconciliation — coexisting source assertions, explicit calculation bases,
+ * exceptions worth raising and numbers showing their work.
  *
- * Deterministic end to end: no model call anywhere in this package. Precedence between
- * conflicting sources comes from evidence rank, arithmetic comes from `financial-core` in
+ * Deterministic end to end: no model call anywhere in this package. Rank orders proposed
+ * readings without adopting them; arithmetic comes from `financial-core` in
  * Decimal, and every output carries the documents it came from. An exception is a question
  * with both sides attached, never a verdict; a calculation is a value with a trace, never a
  * claim.
@@ -129,3 +129,5 @@ export function reconcileCase(input: {
     debtTruth,
   };
 }
+
+export * from "./contextual-basis";

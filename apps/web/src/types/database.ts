@@ -74,6 +74,99 @@ export type Database = {
           },
         ]
       }
+      adoption_decisions: {
+        Row: {
+          asserted_value: Json
+          created_at: string
+          created_by: string
+          definition_version_id: string
+          dimensions: Json
+          entity_id: string
+          field_path: string
+          id: string
+          kind: string
+          organization_id: string
+          reason: string
+          reference_observation_id: string | null
+          set_id: string
+          slot_key: string
+          updated_at: string
+          value_type: string
+        }
+        Insert: {
+          asserted_value: Json
+          created_at?: string
+          created_by: string
+          definition_version_id: string
+          dimensions: Json
+          entity_id: string
+          field_path: string
+          id?: string
+          kind: string
+          organization_id: string
+          reason: string
+          reference_observation_id?: string | null
+          set_id: string
+          slot_key: string
+          updated_at?: string
+          value_type: string
+        }
+        Update: {
+          asserted_value?: Json
+          created_at?: string
+          created_by?: string
+          definition_version_id?: string
+          dimensions?: Json
+          entity_id?: string
+          field_path?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          reason?: string
+          reference_observation_id?: string | null
+          set_id?: string
+          slot_key?: string
+          updated_at?: string
+          value_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoption_decisions_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_definition_version_id_fkey"
+            columns: ["organization_id", "definition_version_id"]
+            isOneToOne: false
+            referencedRelation: "definition_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_reference_observation_i_fkey"
+            columns: ["organization_id", "reference_observation_id"]
+            isOneToOne: false
+            referencedRelation: "observations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "adoption_decisions_organization_id_set_id_fkey"
+            columns: ["organization_id", "set_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_sets"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       agent_change_proposals: {
         Row: {
           base_manifest_fingerprint: string
@@ -316,6 +409,117 @@ export type Database = {
           },
         ]
       }
+      assumption_sets: {
+        Row: {
+          context_key: string
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          purpose: string
+          updated_at: string
+          work_id: string | null
+          work_reference: string
+        }
+        Insert: {
+          context_key: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id: string
+          purpose: string
+          updated_at?: string
+          work_id?: string | null
+          work_reference: string
+        }
+        Update: {
+          context_key?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          purpose?: string
+          updated_at?: string
+          work_id?: string | null
+          work_reference?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assumption_sets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assumption_versions: {
+        Row: {
+          canonical_snapshot: string
+          classification: string
+          content_fingerprint: string
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string
+          previous_version_id: string | null
+          request_fingerprint: string
+          revision: number
+          set_id: string
+          updated_at: string
+        }
+        Insert: {
+          canonical_snapshot: string
+          classification: string
+          content_fingerprint: string
+          created_at?: string
+          created_by?: string | null
+          id: string
+          organization_id: string
+          previous_version_id?: string | null
+          request_fingerprint: string
+          revision: number
+          set_id: string
+          updated_at?: string
+        }
+        Update: {
+          canonical_snapshot?: string
+          classification?: string
+          content_fingerprint?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string
+          previous_version_id?: string | null
+          request_fingerprint?: string
+          revision?: number
+          set_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assumption_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assumption_versions_organization_id_set_id_fkey"
+            columns: ["organization_id", "set_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_sets"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "assumption_versions_organization_id_set_id_previous_versio_fkey"
+            columns: ["organization_id", "set_id", "previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "set_id", "id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           action: string
@@ -415,6 +619,8 @@ export type Database = {
       }
       calculation_runs: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           completed_at: string | null
           created_at: string
           created_by: string
@@ -429,6 +635,8 @@ export type Database = {
           warnings: Json
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           completed_at?: string | null
           created_at?: string
           created_by: string
@@ -443,6 +651,8 @@ export type Database = {
           warnings?: Json
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           completed_at?: string | null
           created_at?: string
           created_by?: string
@@ -457,6 +667,13 @@ export type Database = {
           warnings?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "calculation_runs_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "calculation_runs_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
@@ -2902,6 +3119,8 @@ export type Database = {
       }
       claim_decisions: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           claim_fingerprint: string
           claim_id: string
           decided_at: string
@@ -2915,6 +3134,8 @@ export type Database = {
           source_registry_fingerprint: string
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           claim_fingerprint: string
           claim_id: string
           decided_at?: string
@@ -2928,6 +3149,8 @@ export type Database = {
           source_registry_fingerprint: string
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           claim_fingerprint?: string
           claim_id?: string
           decided_at?: string
@@ -2941,6 +3164,13 @@ export type Database = {
           source_registry_fingerprint?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "claim_decisions_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "claim_decisions_organization_id_fkey"
             columns: ["organization_id"]
@@ -4871,6 +5101,155 @@ export type Database = {
         }
         Relationships: []
       }
+      information_pack_items: {
+        Row: {
+          artifact_fingerprint: string
+          created_at: string
+          deliverable_id: string
+          format: string
+          id: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids: Json
+          template_fingerprint: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Insert: {
+          artifact_fingerprint: string
+          created_at?: string
+          deliverable_id: string
+          format: string
+          id?: string
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key: string
+          template_origin: string
+          template_version: string
+          title: string
+        }
+        Update: {
+          artifact_fingerprint?: string
+          created_at?: string
+          deliverable_id?: string
+          format?: string
+          id?: string
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          source_result_ids?: Json
+          template_fingerprint?: string | null
+          template_key?: string
+          template_origin?: string
+          template_version?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_items_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      information_pack_revisions: {
+        Row: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status: string
+          superseded_at: string | null
+          superseded_by_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          capital_project_id: string
+          case_fingerprint: string
+          created_at?: string
+          created_by: string
+          id?: string
+          intake_session_id: string
+          manifest: Json
+          material_fingerprint: string
+          organization_id: string
+          pack_fingerprint: string
+          revision_number: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          capital_project_id?: string
+          case_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          intake_session_id?: string
+          manifest?: Json
+          material_fingerprint?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          revision_number?: number
+          status?: string
+          superseded_at?: string | null
+          superseded_by_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_capital_project_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_organization_id_intake_session__fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "information_pack_revisions_superseded_by_fkey"
+            columns: ["organization_id", "superseded_by_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       institution_capability_profiles: {
         Row: {
           capability_notes: string | null
@@ -6695,6 +7074,466 @@ export type Database = {
           },
         ]
       }
+      pack_access_events: {
+        Row: {
+          access_kind: string
+          accessed_at: string
+          accessed_by: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Insert: {
+          access_kind: string
+          accessed_at?: string
+          accessed_by: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_item_id?: string | null
+          pack_revision_id: string
+          recipient_organization_id: string
+          share_id: string
+        }
+        Update: {
+          access_kind?: string
+          accessed_at?: string
+          accessed_by?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_item_id?: string | null
+          pack_revision_id?: string
+          recipient_organization_id?: string
+          share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_access_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_item_id_fkey"
+            columns: ["organization_id", "pack_item_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_access_events_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_authorizations: {
+        Row: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at: string
+          consented_by: string
+          created_at: string
+          id: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+          wave_limit: number
+        }
+        Insert: {
+          capital_project_id: string
+          consent_basis: string
+          consent_statement: string
+          consented_at?: string
+          consented_by: string
+          created_at?: string
+          id?: string
+          identity_policy: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string
+          pack_revision_id: string
+          policy_version: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit: number
+        }
+        Update: {
+          capital_project_id?: string
+          consent_basis?: string
+          consent_statement?: string
+          consented_at?: string
+          consented_by?: string
+          created_at?: string
+          id?: string
+          identity_policy?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string
+          pack_revision_id?: string
+          policy_version?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+          wave_limit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_capital_proj_fkey"
+            columns: ["organization_id", "capital_project_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizati_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_authorizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_distribution_next_steps: {
+        Row: {
+          id: string
+          intake_session_id: string
+          note: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Insert: {
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          organization_id: string
+          pack_revision_id: string
+          recorded_at?: string
+          recorded_by: string
+          share_id: string
+          step_code: string
+        }
+        Update: {
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          organization_id?: string
+          pack_revision_id?: string
+          recorded_at?: string
+          recorded_by?: string
+          share_id?: string
+          step_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_intake_sessio_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_pack_revision_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_next_steps_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      pack_distribution_shares: {
+        Row: {
+          authorization_id: string
+          created_at: string
+          created_by: string
+          delivery_state: string
+          id: string
+          intake_session_id: string
+          issuer_display_name: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          authorization_id: string
+          created_at?: string
+          created_by: string
+          delivery_state: string
+          id?: string
+          intake_session_id: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed: boolean
+          organization_id: string
+          pack_revision_id: string
+          position: number
+          recipient_directory_id?: string | null
+          recipient_kind: string
+          recipient_label: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          authorization_id?: string
+          created_at?: string
+          created_by?: string
+          delivery_state?: string
+          id?: string
+          intake_session_id?: string
+          issuer_display_name?: string | null
+          issuer_identity_disclosed?: boolean
+          organization_id?: string
+          pack_revision_id?: string
+          position?: number
+          recipient_directory_id?: string | null
+          recipient_kind?: string
+          recipient_label?: string
+          recipient_organization_id?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_authorization_id_fkey"
+            columns: ["organization_id", "authorization_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_authorizations"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_directory_id_fkey"
+            columns: ["recipient_directory_id"]
+            isOneToOne: false
+            referencedRelation: "fund_directory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_distribution_shares_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pack_recipient_responses: {
+        Row: {
+          created_at: string
+          id: string
+          intake_session_id: string
+          note: string | null
+          occurred_at: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis: string | null
+          pricing_max: number | null
+          pricing_min: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id: string | null
+          tenor_months: number | null
+          term_objections: Json
+          ticket_amount: number | null
+          ticket_currency: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intake_session_id: string
+          note?: string | null
+          occurred_at?: string
+          organization_id: string
+          pack_revision_id: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id: string
+          recorded_by: string
+          requested_conditions?: Json
+          response_state: string
+          share_id: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intake_session_id?: string
+          note?: string | null
+          occurred_at?: string
+          organization_id?: string
+          pack_revision_id?: string
+          pricing_basis?: string | null
+          pricing_max?: number | null
+          pricing_min?: number | null
+          recipient_organization_id?: string
+          recorded_by?: string
+          requested_conditions?: Json
+          response_state?: string
+          share_id?: string
+          supersedes_response_id?: string | null
+          tenor_months?: number | null
+          term_objections?: Json
+          ticket_amount?: number | null
+          ticket_currency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_intake_session_id_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_pack_revision_id_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_organization_id_supersedes_respon_fkey"
+            columns: ["organization_id", "supersedes_response_id"]
+            isOneToOne: false
+            referencedRelation: "pack_recipient_responses"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pack_recipient_responses_recipient_organization_id_fkey"
+            columns: ["recipient_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_legal_documents: {
         Row: {
           acceptance_statement: string
@@ -7867,6 +8706,106 @@ export type Database = {
           },
         ]
       }
+      qualified_contact_preparations: {
+        Row: {
+          candidate_fit: string
+          id: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint: string | null
+          pack_revision_id: string | null
+          plan_id: string
+          prepared_at: string
+          prepared_by: string
+          rationale: string
+          released_at: string | null
+          released_by: string | null
+          share_id: string | null
+          status: string
+          target_id: string
+          updated_at: string
+        }
+        Insert: {
+          candidate_fit: string
+          id?: string
+          intake_session_id: string
+          organization_id: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id: string
+          prepared_at?: string
+          prepared_by: string
+          rationale: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id: string
+          updated_at?: string
+        }
+        Update: {
+          candidate_fit?: string
+          id?: string
+          intake_session_id?: string
+          organization_id?: string
+          pack_fingerprint?: string | null
+          pack_revision_id?: string | null
+          plan_id?: string
+          prepared_at?: string
+          prepared_by?: string
+          rationale?: string
+          released_at?: string | null
+          released_by?: string | null
+          share_id?: string | null
+          status?: string
+          target_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_intake_sessi_fkey"
+            columns: ["organization_id", "intake_session_id"]
+            isOneToOne: false
+            referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparation_organization_id_pack_revisio_fkey"
+            columns: ["organization_id", "pack_revision_id"]
+            isOneToOne: false
+            referencedRelation: "information_pack_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_plan_id_fkey"
+            columns: ["organization_id", "plan_id"]
+            isOneToOne: false
+            referencedRelation: "qualified_introduction_plans"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_share_id_fkey"
+            columns: ["organization_id", "share_id"]
+            isOneToOne: false
+            referencedRelation: "pack_distribution_shares"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "qualified_contact_preparations_organization_id_target_id_fkey"
+            columns: ["organization_id", "target_id"]
+            isOneToOne: true
+            referencedRelation: "qualified_introduction_targets"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       qualified_introduction_feedback_events: {
         Row: {
           amount: number | null
@@ -8441,6 +9380,8 @@ export type Database = {
       }
       scenario_versions: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           approved_at: string | null
           approved_by: string | null
           created_at: string
@@ -8454,6 +9395,8 @@ export type Database = {
           version_number: number
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -8467,6 +9410,8 @@ export type Database = {
           version_number: number
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -8480,6 +9425,13 @@ export type Database = {
           version_number?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "scenario_versions_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "scenario_versions_organization_id_structure_scenario_id_fkey"
             columns: ["organization_id", "structure_scenario_id"]
@@ -8933,6 +9885,8 @@ export type Database = {
       }
       structure_scenarios: {
         Row: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           created_at: string
           created_by: string
           id: string
@@ -8944,6 +9898,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          adoption_basis_fingerprint: string
+          adoption_basis_version_id: string
           created_at?: string
           created_by: string
           id?: string
@@ -8955,6 +9911,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          adoption_basis_fingerprint?: string
+          adoption_basis_version_id?: string
           created_at?: string
           created_by?: string
           id?: string
@@ -8966,6 +9924,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "structure_scenarios_adoption_basis_fk"
+            columns: ["organization_id", "adoption_basis_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "structure_scenarios_organization_id_opportunity_id_fkey"
             columns: ["organization_id", "opportunity_id"]
@@ -9140,6 +10105,10 @@ export type Database = {
         Args: { p_derived_version_id: string; p_source_version_id: string }
         Returns: string
       }
+      adopt_observation_for_work_v1: {
+        Args: { p_payload: Json }
+        Returns: string
+      }
       append_advisor_message_v1: {
         Args: {
           p_content: string
@@ -9196,6 +10165,17 @@ export type Database = {
         Args: { p_information_rights_declared: boolean; p_project_id: string }
         Returns: string
       }
+      authorize_pack_distribution: {
+        Args: {
+          p_consent_statement: string
+          p_organization_id: string
+          p_pack_fingerprint: string
+          p_pack_revision_id: string
+          p_recipients: Json
+          p_session_id: string
+        }
+        Returns: Json
+      }
       authorize_qualified_introduction_plan: {
         Args: { p_material_fingerprint: string; p_plan_id: string }
         Returns: string
@@ -9238,6 +10218,10 @@ export type Database = {
       claim_event_outbox_v1: { Args: { p_worker_token: string }; Returns: Json }
       claim_storage_rotation_v1: {
         Args: { p_worker_token: string }
+        Returns: Json
+      }
+      compare_adoption_bases_v1: {
+        Args: { p_left_version_id: string; p_right_version_id: string }
         Returns: Json
       }
       complete_event_outbox_v1: {
@@ -9410,6 +10394,16 @@ export type Database = {
         }
         Returns: Json
       }
+      ensure_basis_entity_v1: {
+        Args: {
+          p_dossier_id: string
+          p_name: string
+          p_namespace: string
+          p_reason: string
+          p_value: string
+        }
+        Returns: string
+      }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
         Returns: Json
@@ -9479,6 +10473,10 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      list_work_observations_v1: {
+        Args: { p_before_sequence?: string; p_work_id: string }
+        Returns: Json
+      }
       manage_workspace_project: {
         Args: {
           p_action: string
@@ -9490,6 +10488,19 @@ export type Database = {
       manage_workspace_project_group: {
         Args: { p_action: string; p_group_id: string; p_name?: string }
         Returns: Json
+      }
+      open_shared_information_pack_item: {
+        Args: { p_item_id: string; p_share_id: string }
+        Returns: Json
+      }
+      prepare_qualified_contact: {
+        Args: {
+          p_candidate_fit: string
+          p_rationale: string
+          p_share_id?: string
+          p_target_id: string
+        }
+        Returns: string
       }
       prepare_qualified_introduction_plan: {
         Args: {
@@ -9503,10 +10514,15 @@ export type Database = {
         Args: { p_locale: string; p_project_id: string; p_request_id: string }
         Returns: Json
       }
+      propose_assumption_revision_v1: {
+        Args: { p_payload: Json }
+        Returns: string
+      }
       queue_advisor_initial_turn_v1: {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_adoption_basis_v1: { Args: { p_version_id: string }; Returns: Json }
       read_advisor_document_work_binding_v1: {
         Args: { p_job_id: string; p_project_id: string }
         Returns: Json
@@ -9574,6 +10590,14 @@ export type Database = {
       }
       read_receivables_released_result_v1: {
         Args: { p_session_id: string }
+        Returns: Json
+      }
+      read_shared_information_pack: {
+        Args: { p_share_id: string }
+        Returns: Json
+      }
+      read_shared_pack_item_material: {
+        Args: { p_item_id: string; p_share_id: string }
         Returns: Json
       }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
@@ -9711,6 +10735,10 @@ export type Database = {
         }
         Returns: string
       }
+      record_information_pack_revision: {
+        Args: { p_items: Json; p_organization_id: string; p_session_id: string }
+        Returns: Json
+      }
       record_intake_analysis: {
         Args: { p_organization_id: string; p_patch: Json; p_session_id: string }
         Returns: undefined
@@ -9769,6 +10797,27 @@ export type Database = {
         Returns: string
       }
       record_observation_v1: { Args: { p_payload: Json }; Returns: string }
+      record_pack_distribution_next_step: {
+        Args: { p_note?: string; p_share_id: string; p_step_code: string }
+        Returns: string
+      }
+      record_pack_recipient_response: {
+        Args: {
+          p_note?: string
+          p_pricing_basis?: string
+          p_pricing_max?: number
+          p_pricing_min?: number
+          p_requested_conditions?: Json
+          p_response_state: string
+          p_share_id: string
+          p_supersedes_response_id?: string
+          p_tenor_months?: number
+          p_term_objections?: Json
+          p_ticket_amount?: number
+          p_ticket_currency?: string
+        }
+        Returns: string
+      }
       record_qualified_introduction_feedback: {
         Args: {
           p_amount?: number
@@ -9835,6 +10884,10 @@ export type Database = {
           p_source_id?: string
         }
         Returns: Json
+      }
+      release_qualified_contact: {
+        Args: { p_pack_fingerprint: string; p_preparation_id: string }
+        Returns: string
       }
       remember_workspace_v1: {
         Args: { p_organization_id: string }
@@ -9905,6 +10958,10 @@ export type Database = {
           p_namespace?: string
           p_value?: string
         }
+        Returns: Json
+      }
+      resolve_pack_distribution_candidates: {
+        Args: { p_organization_id: string; p_session_id: string }
         Returns: Json
       }
       restart_onboarding_intake: {
@@ -9996,6 +11053,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      revoke_pack_distribution: {
+        Args: { p_authorization_id: string }
+        Returns: string
       }
       revoke_principal_access_v1: {
         Args: { p_principal_id: string }

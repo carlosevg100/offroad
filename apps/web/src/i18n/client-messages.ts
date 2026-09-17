@@ -3,7 +3,7 @@ type Messages = typeof import("../../messages/pt-BR.json");
 /** Exact client projection used by the locale layout, shared with render regressions. */
 export function selectClientMessages(messages: Messages) {
   return {
-    App: {privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
+    App: {adoptionBasis: messages.App.adoptionBasis, privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery}},
     IntegrationPreviewWork: messages.IntegrationPreviewWork,
     decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,

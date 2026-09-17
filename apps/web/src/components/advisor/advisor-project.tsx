@@ -122,6 +122,7 @@ type Props = {
 export function AdvisorProject(props: Props) {
   const router = useRouter();
   const documentaryRequests = useRef(createDocumentaryRequestBindings());
+  const basisCopy = useTranslations("App.adoptionBasis");
   const workCopy = useTranslations("AdvisorWorkSurface");
   const sections = props.workSections ?? [];
   const {selectedId: selectedWorkId, mobileView, setMobileView, selectSection: selectWork} = useAdvisorWorkNavigation(sections, props.initialWorkSectionId);
@@ -332,6 +333,7 @@ export function AdvisorProject(props: Props) {
       <DealStateRefresh active={advisorShouldRefresh({active, interactionPending: pending || uploading, planPreparationStatus: props.planPreparationStatus})} />
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
+          <Link href={`/${props.locale}/app/projects/${props.projectId}/basis`}>{basisCopy("title")}</Link>
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>
           <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.executionBrief?.approval?.status === "awaiting" ? approvalCopy("approval.awaiting.title") : props.copy.ready}</span>
         </header>

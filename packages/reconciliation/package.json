@@ -20,7 +20,8 @@
     "@offroad/credit-playbook": "workspace:*",
     "@offroad/financial-core": "workspace:*",
     "decimal.js": "10.6.0",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@offroad/domain-contracts": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.19.43"
