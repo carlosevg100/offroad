@@ -8,7 +8,7 @@ substituem as evidências de instalação e os completions por etapa.
 | Risco | Controle verificado nesta etapa | Continuidade e responsável |
 | --- | --- | --- |
 | Ranking ou revisão sobrescrever uma contribuição e virar verdade oficial | PR 642 retira o batch da web; SQL instalado registra revisões imutáveis e nega o batch antigo. Leituras conflitantes ficam fora dos cálculos dependentes. | Etapa 9 implementa adoção por contexto; Engineering. |
-| Perder precisão ou presumir unidade, escala, moeda e perímetro | SQL exige decimal exato e conserva lacunas. Este incremento publica parser estrito e recusa moeda ausente, com testes negativos. | Publicar e conferir web/worker deste incremento antes de fechar a etapa 8; Engineering. |
+| Perder precisão ou presumir unidade, escala, moeda e perímetro | SQL, web e worker preservam decimal exato e lacunas; parser estrito e recusa de moeda ausente foram publicados e verificados. | Etapa 9 resolve a base por contexto e conserva os negativos; Engineering. |
 | Ampliar licença atual apagar a restrição fixada na observação ou definição | `observation_pinned_rights.sql` passou em staging; RLS intersecta direito atual e fixado. | Manter a interseção nos consumidores da etapa 9 e nos contratos de execução/artefatos; Engineering. |
 | Tratar alarmes em estado OK como entrega de notificações | Quatro alarmes avaliados, sem ações configuradas; essa limitação permanece explícita. | Etapa 18 configura destino, entrega e teste de notificação; Platform. |
 
