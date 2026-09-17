@@ -8,7 +8,7 @@ import {waitForOneTimeCode} from "./support/mail";
 test("standalone work persists through logout and receives documents without changing identity", async ({page, context}) => {
   const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
   const base = process.env.E2E_BASE_URL ?? "http://localhost:3000";
-  for (const value of [databaseUrl, base]) {
+  for (const value of [databaseUrl, base, process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321"]) {
     if (!["127.0.0.1", "localhost", "[::1]"].includes(new URL(value).hostname)) throw new Error("Synthetic local services required");
   }
   const id = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -45,8 +45,8 @@ test("standalone work persists through logout and receives documents without cha
     select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${workId}'),true);
     update public.processing_jobs set status='cancelled',capability_sha256=null,lease_expires_at=null,leased_by=null where work_id='${workId}' and status in ('queued','leased');
     update public.agent_messages set status='completed',error_code=null where work_id='${workId}' and role='user';
-    insert into public.agent_messages(organization_id,work_id,conversation_id,role,status,content,locale,reply_to_message_id,metadata,created_by)
-    select organization_id,work_id,conversation_id,'assistant','completed','Synthetic persisted transport response','pt-BR',id,'{"synthetic":true}',created_by from public.agent_messages where work_id='${workId}' and role='user';
+    insert into public.agent_messages(id,organization_id,work_id,conversation_id,role,status,content,locale,reply_to_message_id,metadata,created_by)
+    select gen_random_uuid(),organization_id,work_id,conversation_id,'assistant','completed','Synthetic persisted transport response','pt-BR',id,'{"synthetic":true}',created_by from public.agent_messages where work_id='${workId}' and role='user';
     update public.agent_conversations set state='idle' where work_id='${workId}';
     commit;`);
   await page.reload();
@@ -84,6 +84,7 @@ test("standalone work persists through logout and receives documents without cha
   await page.locator('input[name="email"]').fill(email);
   await page.locator('input[name="password"]').fill(password);
   await page.locator('form.auth-form button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/pt-BR\/app(?:\/|\?|$)/);
   await page.goto(workUrl);
   await expect(page.locator(".advisor-thread")).toContainText(question);
   await expect(page.locator(".advisor-thread")).toContainText("Synthetic persisted transport response");
