@@ -1,0 +1,418 @@
+{
+  "captured_at": "2026-09-17T13:29:36.370829+00:00",
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "contract_count": 79,
+  "all_passed": true,
+  "contracts": [
+    {
+      "test": "advisor_semantic_dag_activation",
+      "result": "PASS",
+      "at": "2026-09-17T12:55:58.481Z"
+    },
+    {
+      "test": "agentic_dcm_work_system",
+      "result": "PASS",
+      "at": "2026-09-17T12:56:07.358Z"
+    },
+    {
+      "test": "client_presentation_templates",
+      "result": "PASS",
+      "at": "2026-09-17T12:56:15.997Z"
+    },
+    {
+      "test": "company_debt_view_vertical",
+      "result": "PASS",
+      "at": "2026-09-17T12:56:26.552Z"
+    },
+    {
+      "test": "confirmed_receivables_evidence_scope",
+      "result": "PASS",
+      "at": "2026-09-17T12:56:33.346Z"
+    },
+    {
+      "test": "confirmed_receivables_support_sheets",
+      "result": "PASS",
+      "at": "2026-09-17T12:56:43.913Z"
+    },
+    {
+      "test": "conversational_advisor_workspace",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:04.642Z"
+    },
+    {
+      "test": "creator_authority_revocation",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:11.663Z"
+    },
+    {
+      "test": "documentary_plan_persistence",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:18.706Z"
+    },
+    {
+      "test": "domain_event_outbox",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:26.177Z"
+    },
+    {
+      "test": "domain_event_outbox_revocation",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:37.576Z"
+    },
+    {
+      "test": "entity_dossier_isolation",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:43.325Z"
+    },
+    {
+      "test": "execution_brief_foundation",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:51.471Z"
+    },
+    {
+      "test": "execution_brief_proposal_bridge",
+      "result": "PASS",
+      "at": "2026-09-17T13:01:57.995Z"
+    },
+    {
+      "test": "execution_proposal_revision",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:09.195Z"
+    },
+    {
+      "test": "explicit_documentary_work_revision",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:16.826Z"
+    },
+    {
+      "test": "explicit_execution_brief_approval",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:25.774Z"
+    },
+    {
+      "test": "explicit_legacy_workspace_context",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:35.382Z"
+    },
+    {
+      "test": "explicit_workspace_context",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:44.801Z"
+    },
+    {
+      "test": "financier_analytical_workspace",
+      "result": "PASS",
+      "at": "2026-09-17T13:02:53.497Z"
+    },
+    {
+      "test": "gold_case_bindings",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:10.905Z"
+    },
+    {
+      "test": "governed_capital_material_storage",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:17.720Z"
+    },
+    {
+      "test": "governed_sector_context",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:26.256Z"
+    },
+    {
+      "test": "institutional_assumption_answers",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:34.476Z"
+    },
+    {
+      "test": "institutional_private_rls",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:42.693Z"
+    },
+    {
+      "test": "institutional_revision_proposals",
+      "result": "PASS",
+      "at": "2026-09-17T13:03:49.331Z"
+    },
+    {
+      "test": "institutional_setup_lifecycle",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:04.397Z"
+    },
+    {
+      "test": "integration_preview_mode",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:12.089Z"
+    },
+    {
+      "test": "intent_envelopes_shadow",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:17.543Z"
+    },
+    {
+      "test": "intent_objective_routing_metrics",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:24.272Z"
+    },
+    {
+      "test": "job_failure_causes",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:30.640Z"
+    },
+    {
+      "test": "job_failure_contract",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:37.376Z"
+    },
+    {
+      "test": "legacy_access_revocation",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:45.157Z"
+    },
+    {
+      "test": "legacy_resource_access",
+      "result": "PASS",
+      "at": "2026-09-17T13:04:50.404Z"
+    },
+    {
+      "test": "no_implicit_workspace_capabilities",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:00.831Z"
+    },
+    {
+      "test": "objective_plan_preflight",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:06.998Z"
+    },
+    {
+      "test": "observation_definition_contract",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:13.101Z"
+    },
+    {
+      "test": "observation_legacy_history",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:18.814Z"
+    },
+    {
+      "test": "operating_controls",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:24.787Z"
+    },
+    {
+      "test": "organization_methodology",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:32.045Z"
+    },
+    {
+      "test": "organization_profile_authority",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:37.908Z"
+    },
+    {
+      "test": "origination_thesis_vertical",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:44.611Z"
+    },
+    {
+      "test": "professional_capability_context",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:50.271Z"
+    },
+    {
+      "test": "project_canonical_revisions",
+      "result": "PASS",
+      "at": "2026-09-17T13:05:59.164Z"
+    },
+    {
+      "test": "project_company_scope",
+      "result": "PASS",
+      "at": "2026-09-17T13:06:14.211Z"
+    },
+    {
+      "test": "project_review_roles",
+      "result": "PASS",
+      "at": "2026-09-17T13:06:25.565Z"
+    },
+    {
+      "test": "provider_case_fit_persistence",
+      "result": "PASS",
+      "at": "2026-09-17T13:06:40.189Z"
+    },
+    {
+      "test": "provider_research_persistence",
+      "result": "PASS",
+      "at": "2026-09-17T13:06:52.520Z"
+    },
+    {
+      "test": "provider_research_public_catalog_v2",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:01.450Z"
+    },
+    {
+      "test": "public_research_public_cache",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:09.515Z"
+    },
+    {
+      "test": "read_grant_cannot_mutate_legacy",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:15.094Z"
+    },
+    {
+      "test": "receivables_analytical_release",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:21.139Z"
+    },
+    {
+      "test": "receivables_document_adapter_persistence",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:27.972Z"
+    },
+    {
+      "test": "receivables_information_request_bindings",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:34.904Z"
+    },
+    {
+      "test": "receivables_information_request_dataset_revision",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:41.052Z"
+    },
+    {
+      "test": "receivables_method_input_assembly_store",
+      "result": "PASS",
+      "at": "2026-09-17T13:07:50.271Z"
+    },
+    {
+      "test": "receivables_method_supplement_store",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:05.877Z"
+    },
+    {
+      "test": "resource_policy_barriers",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:14.680Z"
+    },
+    {
+      "test": "resource_policy_delegation",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:21.430Z"
+    },
+    {
+      "test": "resource_policy_event_once",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:29.231Z"
+    },
+    {
+      "test": "resource_policy_isolation",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:38.003Z"
+    },
+    {
+      "test": "resource_policy_performance",
+      "result": "PASS",
+      "at": "2026-09-17T13:08:46.568Z"
+    },
+    {
+      "test": "rls_non_interference",
+      "result": "PASS",
+      "at": "2026-09-17T13:09:37.608Z"
+    },
+    {
+      "test": "role_free_reasoning_context",
+      "result": "PASS",
+      "at": "2026-09-17T13:09:50.791Z"
+    },
+    {
+      "test": "source_rights_deadline",
+      "result": "PASS",
+      "at": "2026-09-17T13:09:59.654Z"
+    },
+    {
+      "test": "source_rights_performance",
+      "result": "PASS",
+      "at": "2026-09-17T13:10:08.581Z"
+    },
+    {
+      "test": "source_rights_retrieval",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:20.241Z"
+    },
+    {
+      "test": "source_rights_retrieval_delivery",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:26.745Z"
+    },
+    {
+      "test": "source_rights_search_isolation",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:32.418Z"
+    },
+    {
+      "test": "source_rights_worker_revocation",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:39.268Z"
+    },
+    {
+      "test": "source_version_identity",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:46.223Z"
+    },
+    {
+      "test": "terminal_job_authorization_metadata",
+      "result": "PASS",
+      "at": "2026-09-17T13:14:54.665Z"
+    },
+    {
+      "test": "verified_provider_mandates",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:04.366Z"
+    },
+    {
+      "test": "worker_runtime_schema_contract",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:11.678Z"
+    },
+    {
+      "test": "workspace_access_projection",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:22.948Z"
+    },
+    {
+      "test": "workspace_member_administration",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:30.080Z"
+    },
+    {
+      "test": "workspace_project_folders",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:35.711Z"
+    },
+    {
+      "test": "workspace_replay_authority",
+      "result": "PASS",
+      "at": "2026-09-17T13:15:44.387Z"
+    },
+    {
+      "test": "observation_pinned_rights",
+      "result": "PASS",
+      "receipt": "observation-pinned-rights-test.json"
+    }
+  ],
+  "additional_verification": {
+    "observation_definition_contract": "strict-dimension-test.json"
+  },
+  "transport_retries": [
+    {
+      "test": "conversational_advisor_workspace",
+      "at": "2026-09-17T12:56:47.466Z"
+    },
+    {
+      "test": "source_rights_retrieval",
+      "at": "2026-09-17T13:10:12.330Z"
+    }
+  ],
+  "synthetic_data": "rollback in staging only",
+  "production_test_data": false
+}

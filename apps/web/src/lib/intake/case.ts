@@ -129,7 +129,7 @@ function numberAt(byPath: ReadonlyMap<string, Pick<IntakeCandidate, "normalized_
 
 function currencyAt(byPath: ReadonlyMap<string, Pick<IntakeCandidate, "normalized_value" | "currency">>, path: string) {
   const currency = byPath.get(path)?.currency;
-  return typeof currency === "string" && /^[A-Z]{3}$/.test(currency) ? currency : "BRL";
+  return typeof currency === "string" && /^[A-Z]{3}$/.test(currency) ? currency : null;
 }
 
 /** Builds "<name> · <purpose>" and clips it to the schema limit, keeping the name whole when possible. */
@@ -160,7 +160,8 @@ export function deriveCase(candidates: readonly (Pick<IntakeCandidate, "field_pa
   const legalName = textAt(byPath, "company.legal_name");
   const purpose = textAt(byPath, "transaction.purpose");
   const requestedAmount = numberAt(byPath, "transaction.requested_amount");
-  if (!legalName || !purpose || requestedAmount === null || requestedAmount <= 0) return null;
+  const currency = currencyAt(byPath, "transaction.requested_amount");
+  if (!legalName || !purpose || requestedAmount === null || requestedAmount <= 0 || currency === null) return null;
 
   const displayName = textAt(byPath, "company.display_name") || legalName;
   const identifier = textAt(byPath, "company.legal_identifier").replace(/[^0-9A-Za-z]/g, "");
@@ -169,7 +170,7 @@ export function deriveCase(candidates: readonly (Pick<IntakeCandidate, "field_pa
     displayName,
     purpose,
     requestedAmount,
-    currency: currencyAt(byPath, "transaction.requested_amount"),
+    currency,
     identifier,
     sector: textAt(byPath, "company.sector") || null,
     subsector: textAt(byPath, "company.subsector") || null,

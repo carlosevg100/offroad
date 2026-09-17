@@ -69,9 +69,21 @@ describe("candidate rows", () => {
   it("keeps the anchor and the quote together — the row is the evidence, not just the value", () => {
     const row = toCandidateRow(candidate(), {locale: "pt-BR", evidenceRank: 1});
     expect(row.source_anchor).toMatchObject({id: "p12.t1.r1.c2", kind: "table_cell", quote: "Receita líquida | 185.400 | 172.900"});
-    expect(row.normalized_value).toBe(185400000);
+    expect(row.normalized_value).toBe("185400000");
     expect(row.raw_value).toBe("185.400");
     expect(row.value_scale).toBe(1000);
+  });
+
+  it("preserves exact decimals beyond JavaScript integer precision without rescaling", () => {
+    const row = toCandidateRow(candidate({normalized_value: "9007199254740993.123456789"}), {evidenceRank: 1});
+    expect(row.normalized_value).toBe("9007199254740993.123456789");
+    expect(row.value_scale).toBe(1000);
+  });
+
+  it.each(["scale_unverified", "scale_conflict"] as const)("keeps %s as an unknown scale instead of enabling calculation", (flag) => {
+    const row = toCandidateRow(candidate({verifier_flags: [flag]}), {evidenceRank: 1});
+    expect(row.value_scale).toBeNull();
+    expect(row.verifier_flags).toContain(flag);
   });
 
   it("names the field the way the reviewer reads it, in their language", () => {
@@ -79,7 +91,7 @@ describe("candidate rows", () => {
     expect(toCandidateRow(candidate(), {locale: "en-US", evidenceRank: 1}).label).toBe("Net revenue");
   });
 
-  it("proposes nothing as primary and accepts nothing — precedence is reconciliation's call", () => {
+  it("proposes nothing as primary and accepts nothing", () => {
     const row = toCandidateRow(candidate(), {evidenceRank: 1});
     expect(row.is_primary).toBe(false);
     expect(row.extraction_method).toBe("llm_anchored");

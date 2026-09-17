@@ -10,7 +10,7 @@ import type {Database, Json} from "@/types/database";
 
 import {buildCandidatePayload, buildIssuePayload, deriveCase, summarizeCompilation, type DerivedCase, type IntakeCandidatePayload, type IntakeIssuePayload} from "./case";
 import {preliminaryUnderstandingSchema, type PreliminaryUnderstanding} from "./preliminary-understanding";
-import {parseList, parseLocalizedNumber} from "./format";
+import {parseList, parseLocalizedDecimal} from "./format";
 import {pipelineEnabledFor, startProcessingRun} from "./pipeline-run";
 import {reconcileIntakeSession} from "./reconcile";
 import {parseArchetype} from "./checklist";
@@ -832,7 +832,7 @@ export async function reviewIntakeCandidate(runtime: IntakeRuntime, input: Revie
     if (!candidate) return fail("validation");
     const raw = input.rawValue.trim();
     if (candidate.value_type === "number") {
-      const parsed = parseLocalizedNumber(raw, runtime.locale);
+      const parsed = parseLocalizedDecimal(raw, runtime.locale);
       if (parsed === null) return fail("validation");
       normalized = parsed;
     } else if (candidate.value_type === "boolean") {

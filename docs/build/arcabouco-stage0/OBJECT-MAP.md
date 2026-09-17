@@ -2170,3 +2170,52 @@ Migrações adicionais:
 - `trigger:private.source_rights_versions.source_rights_event`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
 - `trigger:private.source_rights_versions.source_rights_versions_immutable`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
 - `trigger:public.source_versions.source_versions_initialize_rights`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+
+## Atualização da etapa 8, 17/09/2026
+
+44 superfícies novas conferidas nos dois ambientes. Observações e definições são imutáveis, com acesso atual e direito fixado.
+
+- `function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.can_read_observation_v1(p_org uuid, p_id uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.capture_legacy_observation_v1()`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.capture_observation_event_v1()`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.guard_definition_version_v1()`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.guard_observation_v1()`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.import_legacy_observation_v1(p_table text, p_row jsonb)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.observation_source_read_v1(p_org uuid, p_source uuid, p_rights uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.record_observation_v1(p_payload jsonb)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.reject_observation_mutation_v1()`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.require_observation_source_v1(p_org uuid, p_source uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:private.valid_observation_value_v1(p_kind text, p_value jsonb)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:public.record_definition_version_v1(p_dossier_id uuid, p_metric_key text, p_kind text, p_definition text, p_contract_source_version_id uuid, p_contract_anchor jsonb, p_definition_id uuid, p_expected_version integer, p_request_id uuid)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `function:public.record_observation_v1(p_payload jsonb)`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.definition_versions.definition_versions_deny_delete`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.definition_versions.definition_versions_deny_insert`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.definition_versions.definition_versions_deny_update`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.definition_versions.definition_versions_select`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.metric_definitions.metric_definitions_deny_delete`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.metric_definitions.metric_definitions_deny_insert`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.metric_definitions.metric_definitions_deny_update`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.metric_definitions.metric_definitions_select`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.observations.observations_deny_delete`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.observations.observations_deny_insert`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.observations.observations_deny_update`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `policy:public.observations.observations_select`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `r:public.definition_versions`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `r:public.metric_definitions`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `r:public.observations`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.definition_versions.definition_versions_event`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.definition_versions.definition_versions_guard`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.definition_versions.definition_versions_immutable`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.definition_versions.definition_versions_updated`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.evidence_facts.evidence_facts_observation`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.financial_line_items.financial_line_items_observation`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.intake_field_candidates.intake_candidates_observation`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.metric_definitions.metric_definitions_event`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.metric_definitions.metric_definitions_immutable`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.metric_definitions.metric_definitions_updated`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.observations.observations_event`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.observations.observations_guard`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.observations.observations_immutable`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.
+- `trigger:public.observations.observations_updated`: preservar, etapa 8; Observação ou definição imutável com fonte, direito fixado, autoridade atual e histórico de contribuições.

@@ -1,3 +1,9 @@
+## Etapa 8: observações instaladas, publicação do decimal pendente
+
+A ponte PR 642 está em produção no commit `0e6ee7d34253744ede8cecd3a4912fa83917a3b4`, com Quality 35228218972, Security, Vercel e ECS 351 conferidos. Seis migrações foram aplicadas em produção, carimbos `20260917134924` a `20260917135001`, com SQL idêntico ao de staging e 25 funções em paridade. Os 228 candidatos existentes têm observação imutável e auditoria/outbox. Os 79 contratos passaram em staging; negativos sem fixtures passaram em produção. Catálogos e 331 versões de arquivos conferem; advisors de segurança sem achados.
+
+Este incremento publica extração e edição com decimal exato, rejeita escala textual/expoente ambíguo e exige moeda explícita. Remove aceitação em lote no SQL; a ponte já a retirou da web. Novos registros não conferem adoção, primazia ou validação de âncora. Evidências em `docs/build/arcabouco/etapa-08-installation.json` e `etapa-08-installed-eval.json`. CI, merge e deploys do novo commit ainda são obrigatórios; etapa 8 não está concluída e etapa 9 não foi iniciada.
+
 ## Etapa 8: ponte de leitura, 17/09/2026
 
 Gate local completo da implementação passou em `storage-check-9.log` (outputs externos da

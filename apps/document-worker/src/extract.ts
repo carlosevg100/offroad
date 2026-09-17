@@ -16,9 +16,7 @@ import type {Extractor} from "./pipeline";
  *   1. **An unverified candidate is still recorded**, carrying its flags. It cannot be
  *      auto-accepted (nothing here is), but a fact a reviewer has to look at is information;
  *      a fact quietly dropped is a hole nobody knows about.
- *   2. **Nothing is marked primary and nothing is accepted.** Precedence between conflicting
- *      sources is a reconciliation decision, made by rules over evidence rank — not by
- *      whichever document happened to be processed first.
+ *   2. **Nothing is marked primary and nothing is accepted.** Evidence rank only orders reading; it cannot adopt a value for a decision.
  */
 
 const labelByPattern = new Map(fieldCatalog.map((field) => [field.pattern, field.labels]));
@@ -34,15 +32,10 @@ function labelFor(fieldPath: string, locale: string | undefined): string {
 
 /** A candidate as `worker_record_candidates` expects it. */
 export function toCandidateRow(candidate: VerifiedCandidate, options: {locale?: string; evidenceRank: number}) {
-  const numeric = candidate.value_type === "number"
-    ? Number(candidate.normalized_value)
-    : null;
   const normalized =
     candidate.value_type === "number"
-      // JSON.stringify converts NaN/Infinity to JSON null. Make that state explicit here so an
-      // unparseable, evidence-linked proposal remains reviewable instead of crashing the whole
-      // document at the database boundary.
-      ? Number.isFinite(numeric) ? numeric : null
+      // Exact decimal in base units: the verifier already applied the reported scale.
+      ? /^-?[0-9]+(?:\.[0-9]+)?$/.test(candidate.normalized_value) ? candidate.normalized_value : null
       : candidate.value_type === "boolean"
         ? candidate.normalized_value === "true"
         : candidate.value_type === "list"
@@ -74,13 +67,13 @@ export function toCandidateRow(candidate: VerifiedCandidate, options: {locale?: 
     // `model_extraction` was an obsolete worker-only label and is normalized at the RPC
     // boundary for backwards compatibility with workers already in flight.
     extraction_method: "llm_anchored",
-    // Primacy and acceptance are reconciliation's call, not extraction's.
+    // A proposal never grants adoption, regardless of confidence or reading order.
     is_primary: false,
     anchor_verified: candidate.anchor_verified,
     anchor_precision: candidate.anchor_precision,
     entity_name: candidate.entity?.name ?? null,
     entity_scope: candidate.entity?.scope ?? null,
-    value_scale: candidate.scale,
+    value_scale: candidate.verifier_flags.some((flag) => flag === "scale_unverified" || flag === "scale_conflict") ? null : candidate.scale,
     verifier_flags: candidate.verifier_flags,
   };
 }

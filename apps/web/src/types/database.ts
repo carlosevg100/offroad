@@ -3304,6 +3304,63 @@ export type Database = {
           },
         ]
       }
+      definition_versions: {
+        Row: {
+          contract_anchor: Json | null
+          contract_rights_version_id: string | null
+          contract_source_version_id: string | null
+          created_at: string
+          created_by: string | null
+          definition: string
+          id: string
+          metric_definition_id: string
+          organization_id: string
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          contract_anchor?: Json | null
+          contract_rights_version_id?: string | null
+          contract_source_version_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition: string
+          id?: string
+          metric_definition_id: string
+          organization_id: string
+          updated_at?: string
+          version_no: number
+        }
+        Update: {
+          contract_anchor?: Json | null
+          contract_rights_version_id?: string | null
+          contract_source_version_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          definition?: string
+          id?: string
+          metric_definition_id?: string
+          organization_id?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "definition_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "definition_versions_organization_id_metric_definition_id_fkey"
+            columns: ["organization_id", "metric_definition_id"]
+            isOneToOne: false
+            referencedRelation: "metric_definitions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       dependency_invalidation_events: {
         Row: {
           changed_roots: Json
@@ -5678,6 +5735,202 @@ export type Database = {
             columns: ["organization_id", "intake_session_id"]
             isOneToOne: false
             referencedRelation: "document_intake_sessions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      metric_definitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          dossier_id: string | null
+          dossier_reference: string
+          id: string
+          kind: string
+          metric_key: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string | null
+          dossier_reference: string
+          id?: string
+          kind: string
+          metric_key: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          dossier_id?: string | null
+          dossier_reference?: string
+          id?: string
+          kind?: string
+          metric_key?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metric_definitions_organization_id_dossier_id_fkey"
+            columns: ["organization_id", "dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "metric_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      observations: {
+        Row: {
+          asserted_value: Json
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          definition_version_id: string | null
+          dossier_id: string | null
+          dossier_reference: string
+          entity_id: string | null
+          field_path: string
+          id: string
+          incomplete_reasons: string[]
+          legacy_provenance: Json
+          legacy_record_id: string | null
+          legacy_table: string | null
+          organization_id: string
+          perimeter: string | null
+          period_end: string | null
+          period_start: string | null
+          request_fingerprint: string
+          request_id: string
+          scenario: string | null
+          sequence: number
+          source_anchor: Json
+          source_rights_version_id: string | null
+          source_version_id: string | null
+          supersedes_id: string | null
+          unit: string | null
+          updated_at: string
+          value_scale: number | null
+          value_type: string
+          verification_state: string
+        }
+        Insert: {
+          asserted_value: Json
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          definition_version_id?: string | null
+          dossier_id?: string | null
+          dossier_reference: string
+          entity_id?: string | null
+          field_path: string
+          id?: string
+          incomplete_reasons: string[]
+          legacy_provenance?: Json
+          legacy_record_id?: string | null
+          legacy_table?: string | null
+          organization_id: string
+          perimeter?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          request_fingerprint: string
+          request_id: string
+          scenario?: string | null
+          sequence?: never
+          source_anchor: Json
+          source_rights_version_id?: string | null
+          source_version_id?: string | null
+          supersedes_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_scale?: number | null
+          value_type: string
+          verification_state: string
+        }
+        Update: {
+          asserted_value?: Json
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          definition_version_id?: string | null
+          dossier_id?: string | null
+          dossier_reference?: string
+          entity_id?: string | null
+          field_path?: string
+          id?: string
+          incomplete_reasons?: string[]
+          legacy_provenance?: Json
+          legacy_record_id?: string | null
+          legacy_table?: string | null
+          organization_id?: string
+          perimeter?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          request_fingerprint?: string
+          request_id?: string
+          scenario?: string | null
+          sequence?: never
+          source_anchor?: Json
+          source_rights_version_id?: string | null
+          source_version_id?: string | null
+          supersedes_id?: string | null
+          unit?: string | null
+          updated_at?: string
+          value_scale?: number | null
+          value_type?: string
+          verification_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observations_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observations_organization_id_definition_version_id_fkey"
+            columns: ["organization_id", "definition_version_id"]
+            isOneToOne: false
+            referencedRelation: "definition_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "observations_organization_id_dossier_id_fkey"
+            columns: ["organization_id", "dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "observations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observations_organization_id_source_version_id_fkey"
+            columns: ["organization_id", "source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "observations_organization_id_supersedes_id_fkey"
+            columns: ["organization_id", "supersedes_id"]
+            isOneToOne: false
+            referencedRelation: "observations"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -9402,6 +9655,20 @@ export type Database = {
         }
         Returns: string
       }
+      record_definition_version_v1: {
+        Args: {
+          p_contract_anchor: Json
+          p_contract_source_version_id: string
+          p_definition: string
+          p_definition_id: string
+          p_dossier_id: string
+          p_expected_version: number
+          p_kind: string
+          p_metric_key: string
+          p_request_id: string
+        }
+        Returns: string
+      }
       record_diligence_surprise: {
         Args: {
           p_corrective_action_id?: string
@@ -9501,6 +9768,7 @@ export type Database = {
         }
         Returns: string
       }
+      record_observation_v1: { Args: { p_payload: Json }; Returns: string }
       record_qualified_introduction_feedback: {
         Args: {
           p_amount?: number
