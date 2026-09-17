@@ -1,3 +1,16 @@
+## Etapa 7: conciliação da entrega em 17/09/2026
+
+PR 638 mesclada em `654c09c5c8f64424b68ef10bd986235a07ba7c02`; Quality da PR e de main,
+Security, preview e deploy do worker passaram. 31 E2Es sem repetição, 76 contratos SQL
+instalados, 32 funções em paridade e 325 migrações cobertas pelo journal. Staging
+`20260917024611` / produção `20260917025326`, SQL idêntico. Vercel Production `6495004870`
+e ECS revisão 347 executam o commit exato, com polling atual e quatro alarmes OK, ainda sem
+notificação configurada. Direitos desconhecidos negam uso, derivados intersectam restrições,
+revogação alcança busca/cache/job e a entrega revalida direitos. Inventário exige 97 evidências
+e conserva 18 lacunas gerais nos incrementos responsáveis. Revisão em
+`docs/security/history/wave-6-final-review.md`; o completion externo registra também CI e
+deploy do commit desta conciliação. Nenhum dado descartável em produção. Etapa 8 não iniciada.
+
 ## Etapa 7: direitos instalados em 16/09/2026
 
 Migração aplicada em staging `20260917024611` e produção `20260917025326`, com SQL idêntico (MD5 `26955f303ed38f67f5ed3708476b64e7`). Os 76 contratos SQL passaram no schema instalado, incluindo seis novos testes de direitos, prazo, desempenho, isolamento e revogação. 32 funções estão em paridade; advisors de segurança sem lints; 35 superfícies novas inventariadas e 325 arquivos cobertos pelo journal de produção. O backfill preserva 28 versões, com 28 aceites explícitos e 28 eventos/auditorias/outbox. Nenhuma licença pública foi presumida. Tipos vêm de produção. CI, merge e web/worker no commit final ainda são obrigatórios para fechar. Escopo, riscos e limites em `docs/build/arcabouco/etapa-07.md`. Etapa 8 não iniciada.

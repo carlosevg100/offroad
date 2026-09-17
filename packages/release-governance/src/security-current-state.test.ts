@@ -95,6 +95,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires source rights and real retrieval evidence at wave-six closeout", () => {
+    for (const evidenceRef of ["SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-JOB", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-REGISTRY", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-4";
@@ -144,7 +155,8 @@ describe("security current-state inventory", () => {
     expect(readFileSync(generatedPath, "utf8")).toBe(rendered);
     expect(rendered).toContain("SOC 2: plano de remediação. Status: concluído com evidência referenciada.");
     expect(rendered).toContain("ISO/IEC 27001: avaliação de lacunas. Status: planejado.");
-  });
+  // This resolves every immutable Git object and local receipt under concurrent workspace tests.
+  }, 30_000);
 
   it("makes the evaluation OIDC, secret retrieval and provider boundaries explicit", () => {
     const identity = currentSecurityInventory.identities.find((item) => item.identityId === "ID-GITHUB-EVALS-OIDC");

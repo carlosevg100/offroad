@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 6 · 16/09/2026 · Baseline entregue: `f4a0a7b0759e8fc361b59fed16649a17fe5e7cad`. Etapa 7 autorizada, ainda não entregue.
+Onda 6 · 16/09/2026 · Baseline de implementação entregue: `654c09c5c8f64424b68ef10bd986235a07ba7c02`. Etapa 7 em conciliação final; etapa 8 não autorizada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -64,4 +64,5 @@ direitos fixados e atuais; revogação invalida a capability existente. Testes n
 medição em `etapa-07.md`. O caminho de ranking JavaScript usado apenas por testes foi retirado.
 Essas provas não encerram SG-DATA-LIFECYCLE/SG-PRIVACY-RECORDS: purge, hold e recibos são 22.
 Inputs privados adicionais e manifesto permanecem em 17/18; protocolo de artefatos em 19/21.
-O fechamento desta etapa ainda depende de CI, merge e deploy exato.
+Implementação publicada e verificada; provas em `docs/security/history/wave-6-final-review.md`.
+A conciliação final registra seus próprios gates e deploy no completion externo.
