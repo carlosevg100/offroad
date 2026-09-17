@@ -114,7 +114,7 @@ export function WorkspaceRail(props: Props) {
   ), [locale, normalized]);
 
   /**
-   * A database trigger creates one folder per project, named after it, and those are
+   * Historical database entries created one folder per project, named after it. Those are
    * noise: a conversation nested under a folder repeating its own name is what made
    * starting work read as two steps. The database marks them, so this is a fact rather
    * than a guess. Matching on the name would break the moment either side is renamed,

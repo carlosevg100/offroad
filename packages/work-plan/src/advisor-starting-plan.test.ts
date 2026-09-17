@@ -1,5 +1,5 @@
 import {describe,it,expect} from "vitest";
-import {compileAdvisorStartingPlan} from "./advisor-starting-plan";
+import {compileAdvisorStartingPlan, compileWorkEntry} from "./advisor-starting-plan";
 import {capitalProjectPlanSnapshot} from "./capital-jobs";
 import {inferCapitalProjectJob} from "./job-inference";
 
@@ -14,6 +14,15 @@ const requests = [
   "Revise esta oportunidade a partir dos documentos enviados",
 ];
 describe("initial advisor documentary plan selection",()=>{
+  it("opens questions without a company, documentary request or execution graph",()=>{
+    for (const message of ["Como pensar alternativas de estrutura de capital?", "Research lenders", "Compare estas propostas de financiamento"]) {
+      expect(compileWorkEntry({message,hasAttachments:false,documentaryEnabled:true}).plan).toBeNull();
+    }
+  });
+  it("binds the documentary graph only at the actual attachment boundary",()=>{
+    const input={message:requests[0]!,hasAttachments:true,documentaryEnabled:true};
+    expect(compileWorkEntry(input)).toEqual(compileAdvisorStartingPlan(input));
+  });
   it.each(requests)("binds the private graph at project creation: %s",message=>{
     const result=compileAdvisorStartingPlan({message,hasAttachments:true,documentaryEnabled:true});
     expect(["structure_from_documents","review_existing_operation"]).toContain(result.entryJob);

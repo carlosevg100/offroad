@@ -39,13 +39,12 @@ export default async function ApplicationLayout({children, params}: Props) {
         .order("updated_at", {ascending: false})
         .limit(100)
     : {data: []};
-  const capitalProjectIds = (navigationSessions ?? []).flatMap((session) => session.capital_project_id ? [session.capital_project_id] : []);
   const [{data: capitalProjects}, {data: workspaceGroups}] = await Promise.all([
-    capitalProjectIds.length > 0
+    showProjects
       ? supabase.from("capital_projects")
-          .select("id, entry_job, current_phase, workspace_group_id")
+          .select("id, project_name, status, updated_at, entry_job, current_phase, workspace_group_id")
           .eq("organization_id", organization.id)
-          .in("id", capitalProjectIds)
+          .neq("status", "archived").order("updated_at", {ascending: false}).limit(100)
       : Promise.resolve({data: []}),
     showProjects
       ? supabase.from("workspace_project_groups")
@@ -78,6 +77,19 @@ export default async function ApplicationLayout({children, params}: Props) {
       return capitalProjectJob(parsed.data).title[locale === "en-US" ? "en" : "pt"];
     })(),
   }});
+
+  const sessionWorkIds = new Set((navigationSessions ?? []).map(session => session.capital_project_id));
+  for (const work of capitalProjects ?? []) {
+    if (sessionWorkIds.has(work.id)) continue;
+    projects.push({id: work.id, projectId: work.id, groupId: work.workspace_group_id ?? work.id,
+      href: `/${locale}/app/projects/${work.id}`, name: work.project_name,
+      opportunityId: null, status: work.status});
+  }
+  const updatedById = new Map([
+    ...(capitalProjects ?? []).map(work => [work.id, work.updated_at] as const),
+    ...(navigationSessions ?? []).map(session => [session.id, session.updated_at] as const),
+  ]);
+  projects.sort((a, b) => (updatedById.get(b.id) ?? "").localeCompare(updatedById.get(a.id) ?? ""));
 
   const railCollapsed = (await cookies()).get(RAIL_COLLAPSE_COOKIE)?.value === "1";
   const integrationPreview = await loadIntegrationPreviewStatus(supabase, organization.id);

@@ -1,3 +1,4 @@
+import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
@@ -68,8 +69,8 @@ async function startProject(page: Page, prompt: string): Promise<string> {
   assistantFloor = 0;
   await page.goto("/pt-BR/app");
   await expect(page.locator(".advisor-start")).toBeVisible();
-  await page.locator(".advisor-composer--start textarea").fill(prompt);
-  await page.locator(".advisor-composer--start .advisor-composer__send").click();
+  const historicalWorkId = startLegacyConversation(account.email, prompt);
+  await page.goto(`/pt-BR/app/projects/${historicalWorkId}`);
   await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
   return page.url();
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useEffect, useMemo, useRef, useState} from "react";
 
-import {beginAdvisorProjectProcessing, startAdvisorProject} from "@/app/[locale]/app/advisor-actions";
+import {beginAdvisorProjectProcessing, prepareAdvisorDocumentUpload, startAdvisorProject} from "@/app/[locale]/app/advisor-actions";
 import {DOCUMENT_ACCEPT, formatDocumentSize, uploadDocuments} from "@/lib/intake/upload-client";
 import {createClient} from "@/lib/supabase/client";
 
@@ -141,13 +141,19 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
         setStatus("idle");
         return;
       }
+      const scope = await prepareAdvisorDocumentUpload({locale, projectId: result.workId});
+      if (!scope.ok) {
+        setError(copy.errors[scope.error === "role" ? "denied" : scope.error]);
+        setStatus("idle");
+        return;
+      }
       setStatus("uploading");
       const upload = await uploadDocuments({
         supabase,
         files: distinctFiles,
         organizationId,
         userId,
-        scope: {kind: "session", sessionId: result.sessionId},
+        scope: {kind: "session", sessionId: scope.sessionId},
       });
       if (upload.failure || upload.uploaded.length === 0) {
         setError(copy.errors.upload);
@@ -167,7 +173,7 @@ export function AdvisorStart({copy, groupId, groupName, locale, organizationId, 
       }
     }
 
-    router.push(`/${locale}/app/projects/${result.projectId}`);
+    router.push(`/${locale}/app/projects/${result.workId}`);
   }
 
   return (

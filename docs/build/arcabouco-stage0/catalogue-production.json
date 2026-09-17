@@ -355,6 +355,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+      "kind": "function",
+      "name": "append_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "name": "apply_agent_operation_brief_proposal",
@@ -836,24 +859,6 @@
         "search_path=\"\""
       ],
       "signature": "p_version_id uuid, p_resource_id uuid, p_request_id uuid",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.bind_workspace_group_after_capital_project_insert()",
-      "kind": "function",
-      "name": "bind_workspace_group_after_capital_project_insert",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "",
       "security_definer": true
     },
     {
@@ -2581,6 +2586,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.enqueue_work_turn_v1(p_work_id uuid, p_message_id uuid)",
+      "kind": "function",
+      "name": "enqueue_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_message_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
       "kind": "function",
       "name": "ensure_basis_entity_v1",
@@ -4139,6 +4162,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+      "kind": "function",
+      "name": "link_work_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_dossier_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "name": "list_my_workspace_invites_v1",
@@ -4277,6 +4323,29 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+      "kind": "function",
+      "name": "manage_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_action text, p_title text",
       "security_definer": true
     },
     {
@@ -4536,6 +4605,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_match_screen_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+      "kind": "function",
+      "name": "prepare_work_document_intake_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
       "security_definer": true
     },
     {
@@ -8328,6 +8420,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+      "kind": "function",
+      "name": "start_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+      "security_definer": true
+    },
+    {
       "id": "function:private.start_workspace_capital_project_v2(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text, p_plan jsonb)",
       "kind": "function",
       "name": "start_workspace_capital_project_v2",
@@ -8891,6 +9006,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+      "kind": "function",
+      "name": "update_work_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
       "security_definer": true
     },
     {
@@ -12521,6 +12659,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+      "kind": "function",
+      "name": "append_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "name": "apply_agent_operation_brief_proposal",
@@ -13739,6 +13900,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+      "kind": "function",
+      "name": "link_work_dossier_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_dossier_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.list_my_workspace_invites_v1()",
       "kind": "function",
       "name": "list_my_workspace_invites_v1",
@@ -13836,6 +14020,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+      "kind": "function",
+      "name": "manage_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_action text, p_title text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.manage_workspace_project_group(p_group_id uuid, p_action text, p_name text)",
       "kind": "function",
       "name": "manage_workspace_project_group",
@@ -13917,6 +14124,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid, p_match_screen_fingerprint text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+      "kind": "function",
+      "name": "prepare_work_document_intake_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
       "security_definer": false
     },
     {
@@ -16743,6 +16973,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+      "kind": "function",
+      "name": "start_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+      "security_definer": false
+    },
+    {
       "id": "function:public.start_workspace_capital_project_v2(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text, p_plan jsonb)",
       "kind": "function",
       "name": "start_workspace_capital_project_v2",
@@ -17071,6 +17324,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_new_owner_user_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+      "kind": "function",
+      "name": "update_work_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
       "security_definer": false
     },
     {
@@ -42021,16 +42297,6 @@
       "definition": "CREATE TRIGGER capital_projects_audit AFTER INSERT OR DELETE OR UPDATE ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
-      "id": "trigger:public.capital_projects.capital_projects_bind_workspace_group",
-      "kind": "trigger",
-      "name": "capital_projects_bind_workspace_group",
-      "table": "capital_projects",
-      "schema": "public",
-      "enabled": "O",
-      "function": "private.bind_workspace_group_after_capital_project_insert()",
-      "definition": "CREATE TRIGGER capital_projects_bind_workspace_group AFTER INSERT ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.bind_workspace_group_after_capital_project_insert()"
-    },
-    {
       "id": "trigger:public.capital_projects.capital_projects_normalize_access_basis",
       "kind": "trigger",
       "name": "capital_projects_normalize_access_basis",
@@ -44446,5 +44712,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-17T19:17:38.305402+00:00"
+  "captured_at": "2026-09-17T19:56:54.239942+00:00"
 }

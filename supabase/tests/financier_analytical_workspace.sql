@@ -265,7 +265,7 @@ begin
     or session_row.privacy_status <> 'private'
     or (select access_basis from public.capital_projects where id = project_id) <> 'authorized_private'
     or (select count(*) from public.capital_project_plans where capital_project_id = project_id and status = 'active') <> 1
-    or (select workspace_group_id from public.capital_projects where id = project_id) is null
+    or (select workspace_group_id from public.capital_projects where id = project_id) is not null
     or (select count(*) from public.agent_messages where intake_session_id = session_id) <> 2 then
     raise exception 'financier project was not created as its own analysis: % / %', started, to_jsonb(session_row);
   end if;

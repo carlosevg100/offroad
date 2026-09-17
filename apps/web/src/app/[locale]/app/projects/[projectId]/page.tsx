@@ -1,3 +1,5 @@
+import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
+import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
@@ -20,7 +22,7 @@ import {getTranslations} from "next-intl/server";
 import {notFound, redirect} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
-import {AdvisorProject, type AdvisorProjectCopy} from "@/components/advisor/advisor-project";
+import {AdvisorProject} from "@/components/advisor/advisor-project";
 import type {AdvisorWorkSection} from "@/components/advisor/advisor-work-surface";
 import {workSectionHref} from "@/components/advisor/advisor-work-links";
 import {DocumentWorkProduct} from "@/components/advisor/document-work-product";
@@ -97,6 +99,7 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
   // consent. Keep the actionable approval in the canonical project conversation.
   const {data: approvalSession} = await supabase.from("document_intake_sessions")
     .select("id").eq("organization_id", organization.id).eq("capital_project_id", project.id).maybeSingle();
+  if (!approvalSession) return <StandaloneWork locale={locale} project={project} />;
   if (approvalSession) {
     const {data: heldWork} = await supabase.from("processing_jobs")
       .select("id").eq("organization_id", organization.id).eq("intake_session_id", approvalSession.id)
@@ -287,7 +290,7 @@ async function ConversationalCapitalProject({
     .order("created_at", {ascending: true})
     .limit(1)
     .maybeSingle();
-  if (!session) notFound();
+  if (!session) return <StandaloneWork locale={locale} project={project} />;
   // Review roles decide what this person may prepare, return or approve; the registry entry and
   // the approval card only explain the decision the database will enforce again.
   const [reviewContext, workRequests] = await Promise.all([
@@ -479,20 +482,7 @@ async function ConversationalCapitalProject({
           .limit(5),
       ]);
 
-  const copy: AdvisorProjectCopy = {
-    advisor: t("advisor"), context: t("context"), conversation: t("conversation"), documents: t("documents"), noDocuments: t("noDocuments"), plan: t("plan"), activity: t("activity"), evidence: t("evidence"), decisions: t("decisions"), verified: t("verified"), notExamined: t("notExamined"), openRequirements: t("openRequirements"), materiality: {blocking: t("materiality.blocking"), high: t("materiality.high"), medium: t("materiality.medium"), low: t("materiality.low")}, openIssues: t("openIssues"), artifacts: t("artifacts"), contextQuestion: t("contextQuestion"), awaitingAnswer: t("awaitingAnswer"), noArtifacts: t("noArtifacts"), openWork: t("openWork"), placeholder: t("placeholder"), attach: t("attach"), send: t("send"), close: t("close"), private: t("private"), public: t("public"), working: t("working"), ready: t("ready"), needsAttention: t("needsAttention"), messageFailed: t("messageFailed"),
-    errors: {invalid: t("errors.invalid"), denied: t("errors.denied"), role: t("errors.role"), duplicate: t("errors.duplicate"), not_found: t("errors.notFound"), save: t("errors.save"), processing: t("errors.processing"), stale: t("errors.stale"), upload: t("errors.upload")},
-    informationRequest: {
-      eyebrow: t("informationRequest.eyebrow"), why: t("informationRequest.why"), impact: t("informationRequest.impact"), evidence: t("informationRequest.evidence"), attachEvidence: t("informationRequest.attachEvidence"), attachEvidenceHelp: t("informationRequest.attachEvidenceHelp"), other: t("informationRequest.other"), placeholder: t("informationRequest.placeholder"), submit: t("informationRequest.submit"), submitting: t("informationRequest.submitting"), unavailable: t("informationRequest.unavailable"), unavailableMessage: t("informationRequest.unavailableMessage"), remaining: t("informationRequest.remaining"), confirmYes: t("informationRequest.confirmYes"), confirmNo: t("informationRequest.confirmNo"),
-    },
-    proposal: {
-      preview: t("proposal.preview"), impact: t("proposal.impact"), accept: t("proposal.accept"), reject: t("proposal.reject"), applying: t("proposal.applying"), rejecting: t("proposal.rejecting"), applied: t("proposal.applied"), rejected: t("proposal.rejected"), stale: t("proposal.stale"), monthValue: t("proposal.monthValue"),
-      errors: {invalid: t("proposal.errors.invalid"), stale: t("proposal.errors.stale"), save: t("proposal.errors.save"), processing: t("proposal.errors.processing")},
-      fields: {
-        objective: t("proposal.fields.objective"), requestedAmount: t("proposal.fields.requestedAmount"), currency: t("proposal.fields.currency"), urgency: t("proposal.fields.urgency"), requestedTermMonths: t("proposal.fields.requestedTermMonths"), requestedGraceMonths: t("proposal.fields.requestedGraceMonths"), consequenceIfNotExecuted: t("proposal.fields.consequenceIfNotExecuted"), sector: t("proposal.fields.sector"), geography: t("proposal.fields.geography"), instruments: t("proposal.fields.instruments"), collateralKinds: t("proposal.fields.collateralKinds"), expectedRate: t("proposal.fields.expectedRate"),
-      },
-    },
-  };
+  const copy = await advisorProjectCopy(locale);
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
   const previewArtifacts = (artifacts ?? []).filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
     id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content,

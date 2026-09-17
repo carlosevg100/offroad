@@ -1,3 +1,4 @@
+import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
@@ -147,8 +148,9 @@ test.describe("integration_preview: Case 01 end to end", () => {
   test("prompt: the first turn proposes analysis and names the three points to align with the VP", async () => {
     const prompt = "Sou analista no time de Investment Banking. Meu VP me pediu para preparar material para uma reunião com a Camil na segunda. Ele falou em refinanciamento, mas não disse que tese quer levar nem que formato espera.";
     transcript.push(`\n**Analista:** ${prompt}\n`);
-    await page.locator(".advisor-composer--start textarea").fill(prompt);
-    await page.locator(".advisor-composer--start .advisor-composer__send").click();
+    // This frozen preview evaluates the legacy executor, not the new intake-free entry.
+    const historicalWorkId = startLegacyConversation(account.email, prompt);
+    await page.goto(`/pt-BR/app/projects/${historicalWorkId}`);
     await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
     projectUrl = page.url();
     // The internal validation banner sits on every workspace screen of a granted organization.

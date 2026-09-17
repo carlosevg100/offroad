@@ -1,6 +1,6 @@
 {
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-17T19:17:52.957Z",
+  "captured_at": "2026-09-17T19:58:37.339096+00:00",
   "rows": [
     {
       "version": "20260815014649",
@@ -1349,6 +1349,10 @@
     {
       "version": "20260917191714",
       "name": "persistent_work_without_intake"
+    },
+    {
+      "version": "20260917195617",
+      "name": "persistent_work_commands"
     }
   ]
 }
