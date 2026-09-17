@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 7 · 17/09/2026 · Baseline de implementação entregue: `88fa39a83c090040ba764185c61657cfd0a706c4`. Etapa 8 implementada e verificada; etapa 9 não iniciada.
+Onda 8 · 17/09/2026 · Baseline entregue: `047fff553e43eaac41c2ef763268c25284887f87`. Etapa 9 autorizada; etapa 10 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 

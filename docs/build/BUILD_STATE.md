@@ -1,3 +1,9 @@
+## Onda 8 autorizada: adoção contextual e hipóteses
+
+Etapa 9 autorizada após completion da etapa 8. Baseline `047fff553e43eaac41c2ef763268c25284887f87`. Revisão de abertura
+renova 111 evidências, mantém 18 lacunas e confere runtime e journals vivos.
+Revisão: `docs/security/INVENTORY_WAVE_8_REVIEW.md`. Etapa 10 não iniciada.
+
 ## Etapa 8: conciliação da entrega em 17/09/2026
 
 PR 643 entregue em `88fa39a83c090040ba764185c61657cfd0a706c4`, main Quality 35231824387, Security e deploy verdes. Vercel Production 6504647630 e ECS 352 executam o commit exato. Seis migrações conferidas, 25 funções em paridade e 228 observações legadas com audit/outbox; os 228 eventos foram concluídos. 79 contratos SQL passaram em staging e CI. Negativos em produção sem dados descartáveis; advisors sem achados. 331 arquivos cobertos pelo journal, 44 superfícies novas inventariadas.
