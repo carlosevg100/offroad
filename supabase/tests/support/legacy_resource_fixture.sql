@@ -25,7 +25,7 @@ begin
  insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,pipeline_version,created_by)
  values(r,o,s,1,'manual','synthetic-1b',a);
  insert into public.case_retrieval_chunks(organization_id,intake_session_id,source_document_id,document_version,processing_run_id,chunk_key,content,content_hash,source_anchor)
- values(o,s,d,1,r,'synthetic-1b','Synthetic confidential information for access boundary probe.',repeat('a',64),'{}');
+ values(o,s,d,1,r,'synthetic-1b','Synthetic confidential information for access boundary probe.',encode(extensions.digest('Synthetic confidential information for access boundary probe.','sha256'),'hex'),'{}');
  insert into public.agent_conversations(id,organization_id,intake_session_id,created_by) values(c,o,s,a);
  insert into public.agent_messages(id,organization_id,conversation_id,intake_session_id,role,status,content,locale,created_by)
  values('a11b0000-0000-4000-9000-000000000007',o,c,s,'user','completed','Synthetic confidential question','pt-BR',a);

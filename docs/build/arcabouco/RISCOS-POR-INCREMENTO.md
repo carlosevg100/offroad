@@ -55,3 +55,13 @@ Os marcos 12 e 17 incluem a revisão dos riscos vencidos de seus incrementos. A 
 ## Fechamento da etapa 6
 
 Os seis riscos específicos de fonte acima têm implementação e regressão neste incremento. `SG-SOURCE-VERIFICATION-AUTHORITY` foi encerrado com a PR 635 implantada, a reprodução negada e o contrato de recibo delegado. O registro de abertura permanece como histórico. O inventário ativo volta a 18 lacunas gerais, sem considerar como encerradas as dependências de outros incrementos. Provas e limites em `etapa-06.md` e `docs/security/history/wave-5-final-review.md`.
+
+## Tratamento técnico da etapa 7
+
+Direito desconhecido nega uso; prazo usa relógio corrente e é reavaliado na entrega;
+cache exige payload licenciado exato e lock da organização licenciadora; derivado intersecta
+direitos fixados e atuais; revogação invalida a capability existente. Testes negativos e
+medição em `etapa-07.md`. O caminho de ranking JavaScript usado apenas por testes foi retirado.
+Essas provas não encerram SG-DATA-LIFECYCLE/SG-PRIVACY-RECORDS: purge, hold e recibos são 22.
+Inputs privados adicionais e manifesto permanecem em 17/18; protocolo de artefatos em 19/21.
+O fechamento desta etapa ainda depende de CI, merge e deploy exato.

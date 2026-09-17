@@ -1,0 +1,525 @@
+{
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "migration": "20260917024611",
+  "isolation": "synthetic BEGIN/ROLLBACK, no production fixtures",
+  "contracts": 76,
+  "all_passed": true,
+  "tests": [
+    {
+      "name": "advisor_semantic_dag_activation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:12.236Z",
+      "elapsed_ms": 2738
+    },
+    {
+      "name": "agentic_dcm_work_system.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:15.202Z",
+      "elapsed_ms": 2806
+    },
+    {
+      "name": "client_presentation_templates.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:17.557Z",
+      "elapsed_ms": 2180
+    },
+    {
+      "name": "company_debt_view_vertical.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:24.933Z",
+      "elapsed_ms": 7199
+    },
+    {
+      "name": "confirmed_receivables_evidence_scope.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:28.664Z",
+      "elapsed_ms": 3565
+    },
+    {
+      "name": "confirmed_receivables_support_sheets.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:31.892Z",
+      "elapsed_ms": 3057
+    },
+    {
+      "name": "conversational_advisor_workspace.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:34.147Z",
+      "elapsed_ms": 2089
+    },
+    {
+      "name": "creator_authority_revocation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:36.360Z",
+      "elapsed_ms": 2031
+    },
+    {
+      "name": "documentary_plan_persistence.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:39.059Z",
+      "elapsed_ms": 2516
+    },
+    {
+      "name": "domain_event_outbox.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:41.209Z",
+      "elapsed_ms": 1979
+    },
+    {
+      "name": "domain_event_outbox_revocation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:43.569Z",
+      "elapsed_ms": 2194
+    },
+    {
+      "name": "entity_dossier_isolation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:48.377Z",
+      "elapsed_ms": 4631
+    },
+    {
+      "name": "execution_brief_foundation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:51.256Z",
+      "elapsed_ms": 2701
+    },
+    {
+      "name": "execution_brief_proposal_bridge.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:53.928Z",
+      "elapsed_ms": 2491
+    },
+    {
+      "name": "execution_proposal_revision.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:47:58.005Z",
+      "elapsed_ms": 3895
+    },
+    {
+      "name": "explicit_documentary_work_revision.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:09.883Z",
+      "elapsed_ms": 11715
+    },
+    {
+      "name": "explicit_execution_brief_approval.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:13.808Z",
+      "elapsed_ms": 3743
+    },
+    {
+      "name": "explicit_legacy_workspace_context.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:16.005Z",
+      "elapsed_ms": 2019
+    },
+    {
+      "name": "explicit_workspace_context.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:18.123Z",
+      "elapsed_ms": 1953
+    },
+    {
+      "name": "financier_analytical_workspace.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:20.964Z",
+      "elapsed_ms": 2663
+    },
+    {
+      "name": "gold_case_bindings.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:26.727Z",
+      "elapsed_ms": 5583
+    },
+    {
+      "name": "governed_capital_material_storage.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:29.304Z",
+      "elapsed_ms": 2347
+    },
+    {
+      "name": "governed_sector_context.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:34.030Z",
+      "elapsed_ms": 4553
+    },
+    {
+      "name": "institutional_assumption_answers.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:36.794Z",
+      "elapsed_ms": 2552
+    },
+    {
+      "name": "institutional_private_rls.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:38.959Z",
+      "elapsed_ms": 1992
+    },
+    {
+      "name": "institutional_revision_proposals.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:41.885Z",
+      "elapsed_ms": 2705
+    },
+    {
+      "name": "institutional_setup_lifecycle.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:44.921Z",
+      "elapsed_ms": 2816
+    },
+    {
+      "name": "integration_preview_mode.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:52.476Z",
+      "elapsed_ms": 4042
+    },
+    {
+      "name": "intent_envelopes_shadow.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:54.829Z",
+      "elapsed_ms": 2168
+    },
+    {
+      "name": "intent_objective_routing_metrics.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:48:58.105Z",
+      "elapsed_ms": 3101
+    },
+    {
+      "name": "job_failure_causes.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:00.287Z",
+      "elapsed_ms": 2014
+    },
+    {
+      "name": "job_failure_contract.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:02.440Z",
+      "elapsed_ms": 1973
+    },
+    {
+      "name": "legacy_access_revocation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:04.866Z",
+      "elapsed_ms": 2244
+    },
+    {
+      "name": "legacy_resource_access.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:07.012Z",
+      "elapsed_ms": 1982
+    },
+    {
+      "name": "no_implicit_workspace_capabilities.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:09.267Z",
+      "elapsed_ms": 2081
+    },
+    {
+      "name": "objective_plan_preflight.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:11.716Z",
+      "elapsed_ms": 2267
+    },
+    {
+      "name": "operating_controls.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:16.026Z",
+      "elapsed_ms": 4141
+    },
+    {
+      "name": "organization_methodology.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:18.278Z",
+      "elapsed_ms": 2081
+    },
+    {
+      "name": "organization_profile_authority.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:20.530Z",
+      "elapsed_ms": 2061
+    },
+    {
+      "name": "origination_thesis_vertical.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:25.524Z",
+      "elapsed_ms": 4818
+    },
+    {
+      "name": "professional_capability_context.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:32.545Z",
+      "elapsed_ms": 6845
+    },
+    {
+      "name": "project_canonical_revisions.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:37.141Z",
+      "elapsed_ms": 2301
+    },
+    {
+      "name": "project_company_scope.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:41.586Z",
+      "elapsed_ms": 4273
+    },
+    {
+      "name": "project_review_roles.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:47.098Z",
+      "elapsed_ms": 5337
+    },
+    {
+      "name": "provider_case_fit_persistence.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:49.823Z",
+      "elapsed_ms": 2540
+    },
+    {
+      "name": "provider_research_persistence.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:52.368Z",
+      "elapsed_ms": 2381
+    },
+    {
+      "name": "provider_research_public_catalog_v2.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:55.925Z",
+      "elapsed_ms": 3392
+    },
+    {
+      "name": "public_research_public_cache.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:49:58.597Z",
+      "elapsed_ms": 2507
+    },
+    {
+      "name": "read_grant_cannot_mutate_legacy.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:00.833Z",
+      "elapsed_ms": 2068
+    },
+    {
+      "name": "receivables_analytical_release.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:03.967Z",
+      "elapsed_ms": 2969
+    },
+    {
+      "name": "receivables_document_adapter_persistence.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:06.501Z",
+      "elapsed_ms": 2363
+    },
+    {
+      "name": "receivables_information_request_bindings.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:09.333Z",
+      "elapsed_ms": 2667
+    },
+    {
+      "name": "receivables_information_request_dataset_revision.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:12.011Z",
+      "elapsed_ms": 2494
+    },
+    {
+      "name": "receivables_method_input_assembly_store.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:14.776Z",
+      "elapsed_ms": 2591
+    },
+    {
+      "name": "receivables_method_supplement_store.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:17.541Z",
+      "elapsed_ms": 2606
+    },
+    {
+      "name": "resource_policy_barriers.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:25.231Z",
+      "elapsed_ms": 7528
+    },
+    {
+      "name": "resource_policy_delegation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:28.093Z",
+      "elapsed_ms": 2650
+    },
+    {
+      "name": "resource_policy_event_once.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:54.116Z",
+      "elapsed_ms": null
+    },
+    {
+      "name": "resource_policy_isolation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:52.329Z",
+      "elapsed_ms": 2053
+    },
+    {
+      "name": "resource_policy_performance.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:50:59.524Z",
+      "elapsed_ms": 7043
+    },
+    {
+      "name": "rls_non_interference.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:51:40.807Z",
+      "elapsed_ms": 41120
+    },
+    {
+      "name": "role_free_reasoning_context.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:51:45.098Z",
+      "elapsed_ms": 4103
+    },
+    {
+      "name": "source_rights_deadline.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:51:52.365Z",
+      "elapsed_ms": 7090
+    },
+    {
+      "name": "source_rights_performance.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:51:54.961Z",
+      "elapsed_ms": 2377
+    },
+    {
+      "name": "source_rights_retrieval.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:56.367Z",
+      "elapsed_ms": null
+    },
+    {
+      "name": "source_rights_retrieval_delivery.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:01.143Z",
+      "elapsed_ms": 2250
+    },
+    {
+      "name": "source_rights_search_isolation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:03.347Z",
+      "elapsed_ms": 2027
+    },
+    {
+      "name": "source_rights_worker_revocation.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:06.654Z",
+      "elapsed_ms": 3125
+    },
+    {
+      "name": "source_version_identity.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:13.124Z",
+      "elapsed_ms": 6298
+    },
+    {
+      "name": "terminal_job_authorization_metadata.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:17.351Z",
+      "elapsed_ms": 2049
+    },
+    {
+      "name": "verified_provider_mandates.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:19.739Z",
+      "elapsed_ms": 2213
+    },
+    {
+      "name": "worker_runtime_schema_contract.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:21.749Z",
+      "elapsed_ms": 1845
+    },
+    {
+      "name": "workspace_access_projection.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:23.906Z",
+      "elapsed_ms": 1968
+    },
+    {
+      "name": "workspace_member_administration.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:29.184Z",
+      "elapsed_ms": 5085
+    },
+    {
+      "name": "workspace_project_folders.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:32.507Z",
+      "elapsed_ms": 3161
+    },
+    {
+      "name": "workspace_replay_authority.sql",
+      "result": "PASS",
+      "at": "2026-09-17T02:52:34.555Z",
+      "elapsed_ms": 1877
+    }
+  ],
+  "first_run_failures": [
+    {
+      "name": "resource_policy_event_once.sql",
+      "detail": "transport connection failed"
+    },
+    {
+      "name": "source_rights_retrieval.sql",
+      "detail": "Storage fixture lacked authenticated operation context"
+    }
+  ],
+  "performance": [
+    {
+      "test": "source_rights_performance",
+      "result": "PASS",
+      "plan": [
+        {
+          "Plan": {
+            "Alias": "search_authorized_resources_v1",
+            "Node Type": "Function Scan",
+            "Plan Rows": 1000,
+            "Plan Width": 132,
+            "Total Cost": 10.25,
+            "Actual Rows": 12,
+            "Actual Loops": 1,
+            "Startup Cost": 0.25,
+            "Async Capable": false,
+            "Function Name": "search_authorized_resources_v1",
+            "Parallel Aware": false,
+            "Local Hit Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Actual Total Time": 60.382,
+            "Local Read Blocks": 0,
+            "Shared Hit Blocks": 2037,
+            "Shared Read Blocks": 0,
+            "Actual Startup Time": 60.381,
+            "Temp Written Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0
+          },
+          "Planning": {
+            "Local Hit Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Local Read Blocks": 0,
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0
+          },
+          "Triggers": [],
+          "Planning Time": 0.023,
+          "Execution Time": 60.407
+        }
+      ]
+    }
+  ]
+}

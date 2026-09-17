@@ -27,7 +27,7 @@ begin
  insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,pipeline_version,created_by)
  values(r,o,s,1,'manual','synthetic-1b',a);
  insert into public.case_retrieval_chunks(organization_id,intake_session_id,source_document_id,document_version,processing_run_id,chunk_key,content,content_hash,source_anchor)
- values(o,s,d,1,r,'synthetic-1b','Synthetic confidential information for access boundary probe.',repeat('a',64),'{}');
+ values(o,s,d,1,r,'synthetic-1b','Synthetic confidential information for access boundary probe.',encode(extensions.digest('Synthetic confidential information for access boundary probe.','sha256'),'hex'),'{}');
  insert into public.agent_conversations(id,organization_id,intake_session_id,created_by) values(c,o,s,a);
  insert into public.agent_messages(id,organization_id,conversation_id,intake_session_id,role,status,content,locale,created_by)
  values('a11e0000-0000-4000-9000-000000000007',o,c,s,'user','completed','Synthetic confidential question','pt-BR',a);
@@ -41,4 +41,16 @@ insert into public.organization_memberships(organization_id,user_id,role,status)
 insert into public.onboarding_progress(organization_id,user_id,journey,current_step,completed_at)
 select organization_id,user_id,'originator','complete',now() from public.organization_memberships where organization_id in ('a11e0000-0000-4000-9000-000000000001','a11e0000-0000-4000-9000-000000000020');
 
+-- The synthetic author explicitly licenses this source through the production command.
+-- Project access still controls which users can read or download it.
+select set_config('request.headers','{"x-offroad-workspace":"a11e0000-0000-4000-9000-000000000001"}',true);
+select set_config('request.jwt.claim.sub','a11e0000-0000-4000-8000-000000000001',true);
+set local role authenticated;
+select public.set_source_rights_v1(
+ 'a11e0000-0000-4000-9000-000000000004',0,
+ array['read','process','store','derive','export'],array['analysis','export'],
+ null,null,'a11e0000-0000-4000-9000-000000000021',
+ encode(extensions.digest('Synthetic E2E author declaration of source usage rights.','sha256'),'hex')
+);
+reset role;
 commit;

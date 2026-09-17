@@ -2130,3 +2130,43 @@ Migrações adicionais:
 ### Complemento do eval da etapa 6
 
 `private.read_workspace_access_v1()` refatorada pela migração 20260916230240: tombstone deny não é concessão. Superfície e privilégios preservados; 324 arquivos no journal de produção. Staging 20260916230213, SQL idêntico. Novo contrato `workspace_access_projection.sql` e reprodução instalada em `docs/build/arcabouco/etapa-06-access-projection-eval.json`.
+
+## Atualização da etapa 7, 16/09/2026
+
+35 superfícies novas conferidas nos dois ambientes. Catálogos: 1657 objetos em produção, 1718 em staging; 325 arquivos no journal de produção. Direitos, dependências, busca, cache e consumo de corpora substituem os caminhos que presumiam licença.
+
+- `function:private.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.can_read_licensed_corpus_v1(p_org uuid, p_rights uuid)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.capture_source_rights_event_v1()`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.house_usage_allowed_v1(p_version uuid)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.initialize_source_rights_v1()`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.job_sources_rights_current_v1(p_job_id uuid)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.licensed_corpus_use_v1(p_org uuid, p_rights uuid, p_subject uuid, p_purpose text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.public_source_license_current_v1(p_org uuid, p_version uuid, p_through timestamp with time zone)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.public_source_payload_sha256_v1(p_source jsonb)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:private.source_use_allowed_v1(p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:public.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:public.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:public.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `function:public.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:private.resource_dependencies.resource_dependencies_deny_clients`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:private.source_rights_versions.source_rights_versions_deny_clients`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.case_retrieval_chunks.case_chunks_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.document_layers.document_layers_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.document_profiles.document_profiles_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.governed_precedent_chunks.precedent_chunks_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.house_playbook_chunks.house_chunks_usage_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.mandate_note_embeddings.mandate_notes_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.source_documents.source_documents_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `policy:public.sources.sources_rights_select`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `r:private.resource_dependencies`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `r:private.source_rights_versions`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `trigger:private.resource_dependencies.resource_dependencies_immutable`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `trigger:private.resource_dependencies.resource_dependency_event`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `trigger:private.source_rights_versions.source_rights_event`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `trigger:private.source_rights_versions.source_rights_versions_immutable`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.
+- `trigger:public.source_versions.source_versions_initialize_rights`: preservar, etapa 7; Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.

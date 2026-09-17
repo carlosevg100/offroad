@@ -1,6 +1,7 @@
 -- Synthetic rollback-only consent boundary regression. Legacy metadata setup uses the
 -- shared fixture helper; the owner calls the real public approval RPC directly.
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 

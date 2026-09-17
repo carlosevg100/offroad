@@ -1,4 +1,5 @@
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_resource_fixture.sql
 insert into public.organizations(id,organization_type,name,created_by) values('a5550000-0000-4000-9000-000000000001','institutional','Synthetic other dossier tenant','a11b0000-0000-4000-8000-000000000002');

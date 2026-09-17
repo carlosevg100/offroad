@@ -1,4 +1,5 @@
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 \ir support/execution_approval.sql
 -- Rollback-only privileged fixture helper; production hash function grants stay private.

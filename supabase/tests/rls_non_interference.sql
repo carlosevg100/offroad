@@ -1,6 +1,7 @@
 -- Destructive-safe tenant isolation smoke test: every fixture is rolled back.
 
 begin;
+\ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
 -- Emulate the Storage API operation for direct SQL policy assertions.
 select set_config('storage.operation','object.upload',true);
@@ -981,6 +982,13 @@ $$;
 
 -- The worker: no membership anywhere, works only through the commands.
 reset role;
+-- This synthetic note has explicit derivative-use proof from the test source. An indexed
+-- observation alone does not license its text; production publishers must provide evidence.
+update public.mandate_note_embeddings n set
+ rights_organization_id=r.organization_id,source_rights_version_id=r.id
+from private.source_rights_versions r
+where n.observation_id='70000000-0000-4000-8000-000000000702'
+and r.source_version_id='50000000-0000-4000-8000-000000000003' and r.revision=1;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -1313,6 +1321,8 @@ begin
   if retrieval_elapsed > interval '25 seconds' then
     raise exception 'realistic retrieval indexing exceeded the bounded performance budget: %', retrieval_elapsed;
   end if;
+  -- The indexing timeout must not leak into later multi-event drain statements.
+  perform set_config('statement_timeout', '120s', true);
 
   result := public.worker_complete_job(job_id, capability, '{"documents":1, "spend": {"costUsd": 0.42, "calls": 3}}'::jsonb);
   if (result->>'pending_jobs')::integer <> 1 then
@@ -4335,11 +4345,13 @@ do $$ begin
 end $$;
 -- Existing synthetic publication waits for the real durable consumer, rather than
 -- bypassing the new barrier through a fixture status update.
-do $$ declare item jsonb; begin
+do $$ declare item jsonb; item_started timestamptz; begin
  for counter in 1..1000 loop
+  item_started:=clock_timestamp();
   item:=public.claim_event_outbox_v1(repeat('w',64));
   exit when item->>'claimed'='false';
   perform public.complete_event_outbox_v1(repeat('w',64),(item->>'outboxId')::uuid,item->>'capability');
+  if clock_timestamp()-item_started>interval '2 seconds' then raise exception 'single outbox delivery exceeded two seconds'; end if;
  end loop;
  perform private.require_domain_event_propagation_v1('20000000-0000-4000-8000-000000000001');
 end $$;

@@ -351,6 +351,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+          "kind": "function",
+          "name": "add_source_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_derived_version_id uuid, p_source_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+          "kind": "function",
+          "name": "add_source_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_derived_version_id uuid, p_source_version_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 125,
+          "anchor": "create function private.add_source_dependency_v1(p_derived_version_id uuid,p_source_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.adopt_confirmed_preliminary_company()",
       "kind": "function",
       "catalogues": {
@@ -3284,15 +3349,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa 6",
-      "decision": "preservar",
-      "stage": "6",
-      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "owner": "Codex, etapa 7",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
           "line": 648,
           "anchor": "create function private.can_export_source_version_v1(p_organization_id uuid,p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 169,
+          "anchor": "create or replace function private.can_export_source_version_v1(p_organization_id uuid,p_version_id uuid)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -3637,6 +3708,71 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.can_read_licensed_corpus_v1(p_org uuid, p_rights uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_licensed_corpus_v1(p_org uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "can_read_licensed_corpus_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_rights uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_licensed_corpus_v1(p_org uuid, p_rights uuid)",
+          "kind": "function",
+          "name": "can_read_licensed_corpus_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_rights uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 284,
+          "anchor": "create function private.can_read_licensed_corpus_v1(p_org uuid,p_rights uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -3687,15 +3823,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa 6",
-      "decision": "preservar",
-      "stage": "6",
-      "reason": "Comando preserva versão exata, política comum, vínculo explícito e prova de bytes pelo worker delegado.",
+      "owner": "Codex, etapa 7",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
           "line": 51,
           "anchor": "create function private.can_read_source_version_v1(p_organization_id uuid,p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 165,
+          "anchor": "create or replace function private.can_read_source_version_v1(p_organization_id uuid,p_version_id uuid)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -4630,6 +4772,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.capture_source_rights_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_source_rights_event_v1()",
+          "kind": "function",
+          "name": "capture_source_rights_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_source_rights_event_v1()",
+          "kind": "function",
+          "name": "capture_source_rights_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 40,
+          "anchor": "create function private.capture_source_rights_event_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
@@ -6006,6 +6203,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "declare_public_source_reuse_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "declare_public_source_reuse_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 500,
+          "anchor": "create function private.declare_public_source_reuse_v1(p_version_id uuid,p_expected_revision integer,p_source_url text,p_payload_sha256 text,p_expires_at timestamptz,p_store_until timestamptz,p_evidence_id uuid,p_evidence_sha256 text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
@@ -9107,6 +9369,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.house_usage_allowed_v1(p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.house_usage_allowed_v1(p_version uuid)",
+          "kind": "function",
+          "name": "house_usage_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.house_usage_allowed_v1(p_version uuid)",
+          "kind": "function",
+          "name": "house_usage_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 255,
+          "anchor": "create function private.house_usage_allowed_v1(p_version uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.index_mandate_observation_note()",
       "kind": "function",
       "catalogues": {
@@ -9160,6 +9487,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.initialize_source_rights_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.initialize_source_rights_v1()",
+          "kind": "function",
+          "name": "initialize_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.initialize_source_rights_v1()",
+          "kind": "function",
+          "name": "initialize_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 52,
+          "anchor": "create function private.initialize_source_rights_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.initialize_workspace_v1(p_full_name text, p_locale text)",
@@ -10829,16 +11211,22 @@
           "security_definer": true
         }
       },
-      "owner": "Codex, primeira onda",
-      "decision": "preservar",
-      "stage": "1B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
+      "owner": "Codex, etapa 7",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 331,
           "anchor": "create function private.job_authority_is_current_v1(p_job_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 243,
+          "anchor": " select pg_get_functiondef('private.job_authority_is_current_v1(uuid)'::regprocedure) into body;",
+          "mechanism": "checked_function_definition_patch"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -11091,6 +11479,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.job_sources_rights_current_v1(p_job_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.job_sources_rights_current_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "job_sources_rights_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.job_sources_rights_current_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "job_sources_rights_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 232,
+          "anchor": "create function private.job_sources_rights_current_v1(p_job_id uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.jsonb_merge_numeric(p_left jsonb, p_right jsonb)",
       "kind": "function",
       "catalogues": {
@@ -11160,6 +11603,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.licensed_corpus_use_v1(p_org uuid, p_rights uuid, p_subject uuid, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.licensed_corpus_use_v1(p_org uuid, p_rights uuid, p_subject uuid, p_purpose text)",
+          "kind": "function",
+          "name": "licensed_corpus_use_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_rights uuid, p_subject uuid, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.licensed_corpus_use_v1(p_org uuid, p_rights uuid, p_subject uuid, p_purpose text)",
+          "kind": "function",
+          "name": "licensed_corpus_use_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_rights uuid, p_subject uuid, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 275,
+          "anchor": "create function private.licensed_corpus_use_v1(p_org uuid,p_rights uuid,p_subject uuid,p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.link_commercial_account_v1(p_account_id uuid, p_expected_account_id uuid)",
@@ -13561,6 +14059,171 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)",
+          "kind": "function",
+          "name": "public_cache_sources_licensed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_sources jsonb, p_through timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)",
+          "kind": "function",
+          "name": "public_cache_sources_licensed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_sources jsonb, p_through timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 538,
+          "anchor": "create function private.public_cache_sources_licensed_v1(p_sources jsonb,p_through timestamptz default clock_timestamp())",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.public_source_license_current_v1(p_org uuid, p_version uuid, p_through timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.public_source_license_current_v1(p_org uuid, p_version uuid, p_through timestamp with time zone)",
+          "kind": "function",
+          "name": "public_source_license_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_through timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.public_source_license_current_v1(p_org uuid, p_version uuid, p_through timestamp with time zone)",
+          "kind": "function",
+          "name": "public_source_license_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_through timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 527,
+          "anchor": "create function private.public_source_license_current_v1(p_org uuid,p_version uuid,p_through timestamptz)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.public_source_payload_sha256_v1(p_source jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.public_source_payload_sha256_v1(p_source jsonb)",
+          "kind": "function",
+          "name": "public_source_payload_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.public_source_payload_sha256_v1(p_source jsonb)",
+          "kind": "function",
+          "name": "public_source_payload_sha256_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_source jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 496,
+          "anchor": "create function private.public_source_payload_sha256_v1(p_source jsonb) returns text language sql immutable set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.queue_advisor_initial_turn_v1(p_project_id uuid)",
@@ -21236,6 +21899,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+          "kind": "function",
+          "name": "search_authorized_resources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+          "kind": "function",
+          "name": "search_authorized_resources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 187,
+          "anchor": "create function private.search_authorized_resources_v1(p_organization_id uuid,p_resource_id uuid,p_query text,p_limit integer default 12,p_purpose text default 'analysis')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.seed_resource_authority_v1(p_organization_id uuid, p_resource_id uuid, p_creator_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -22306,6 +23034,71 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "function:private.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "set_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "set_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 103,
+          "anchor": "create function private.set_source_rights_v1(p_version_id uuid,p_expected_revision integer,p_operations text[],p_purposes text[],p_expires_at timestamptz,p_store_until timestamptz,p_evidence_id uuid,p_evidence_sha256 text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:private.set_updated_at()",
       "kind": "function",
       "catalogues": {
@@ -22754,6 +23547,61 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.source_use_allowed_v1(p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_use_allowed_v1(p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text)",
+          "kind": "function",
+          "name": "source_use_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_use_allowed_v1(p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text)",
+          "kind": "function",
+          "name": "source_use_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 75,
+          "anchor": "create function private.source_use_allowed_v1(p_org uuid,p_version uuid,p_subject uuid,p_operation text,p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:private.start_advisor_project_in_group_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb, p_group_id uuid)",
@@ -31664,10 +32512,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
@@ -31680,6 +32528,12 @@
           "line": 219,
           "anchor": "create or replace function public.worker_load_public_company_memory(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 577,
+          "anchor": " select pg_get_functiondef('private.worker_load_public_company_memory(uuid,text,text)'::regprocedure) into body;",
+          "mechanism": "checked_function_definition_patch"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -31735,10 +32589,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260902035119_public_research_public_cache.sql",
@@ -31751,6 +32605,12 @@
           "line": 12,
           "anchor": "create or replace function private.worker_load_public_research_cache(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 571,
+          "anchor": " select pg_get_functiondef('private.worker_load_public_research_cache(uuid,text,text[])'::regprocedure) into body;",
+          "mechanism": "checked_function_definition_patch"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -32226,10 +33086,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "substituir",
-      "stage": "1B, 3, 7",
-      "reason": "fechar membership ampla e revalidar concessão, dependências e sujeito antes de ler",
+      "owner": "Codex, etapa 7",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
@@ -32241,6 +33101,12 @@
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 672,
           "anchor": "create or replace function public.worker_load_retrieval_context(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 291,
+          "anchor": "create or replace function private.worker_load_retrieval_context(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -35325,10 +36191,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
@@ -35341,6 +36207,12 @@
           "line": 227,
           "anchor": "create or replace function public.worker_store_public_company_memory(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 580,
+          "anchor": " select pg_get_functiondef('private.worker_store_public_company_memory(uuid,text,jsonb)'::regprocedure) into body;",
+          "mechanism": "checked_function_definition_patch"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -35396,10 +36268,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260902035119_public_research_public_cache.sql",
@@ -35412,6 +36284,12 @@
           "line": 76,
           "anchor": "create or replace function private.worker_store_public_research_cache(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 574,
+          "anchor": " select pg_get_functiondef('private.worker_store_public_research_cache(uuid,text,jsonb)'::regprocedure) into body;",
+          "mechanism": "checked_function_definition_patch"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -36220,6 +37098,71 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "function:public.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+          "kind": "function",
+          "name": "add_source_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_derived_version_id uuid, p_source_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
+          "kind": "function",
+          "name": "add_source_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_derived_version_id uuid, p_source_version_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 159,
+          "anchor": "create function public.add_source_dependency_v1(p_derived_version_id uuid,p_source_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -38681,6 +39624,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "declare_public_source_reuse_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.declare_public_source_reuse_v1(p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "declare_public_source_reuse_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 522,
+          "anchor": "create function public.declare_public_source_reuse_v1(p_version_id uuid,p_expected_revision integer,p_source_url text,p_payload_sha256 text,p_expires_at timestamptz,p_store_until timestamptz,p_evidence_id uuid,p_evidence_sha256 text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:public.enqueue_deal_state_analysis(p_organization_id uuid, p_session_id uuid, p_trigger_source text)",
@@ -46048,6 +47056,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+          "kind": "function",
+          "name": "search_authorized_resources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.search_authorized_resources_v1(p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text)",
+          "kind": "function",
+          "name": "search_authorized_resources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_resource_id uuid, p_query text, p_limit integer, p_purpose text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 217,
+          "anchor": "create function public.search_authorized_resources_v1(p_organization_id uuid,p_resource_id uuid,p_query text,p_limit integer default 12,p_purpose text default 'analysis')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "function:public.search_case_retrieval(p_organization_id uuid, p_opportunity_id uuid, p_query text, p_limit integer)",
       "kind": "function",
       "catalogues": {
@@ -46108,15 +47181,21 @@
           "security_definer": false
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "substituir",
-      "stage": "1B, 3, 7",
-      "reason": "fechar membership ampla e revalidar concessão, dependências e sujeito antes de ler",
+      "owner": "Codex, etapa 7",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 386,
           "anchor": "create or replace function public.search_case_retrieval(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 224,
+          "anchor": "create or replace function public.search_case_retrieval(p_organization_id uuid,p_opportunity_id uuid,p_query text,p_limit integer default 12)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -47058,6 +48137,71 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:public.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "set_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_source_rights_v1(p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text)",
+          "kind": "function",
+          "name": "set_source_rights_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid, p_expected_revision integer, p_operations text[], p_purposes text[], p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 120,
+          "anchor": "create function public.set_source_rights_v1(p_version_id uuid,p_expected_revision integer,p_operations text[],p_purposes text[],p_expires_at timestamptz,p_store_until timestamptz,p_evidence_id uuid,p_evidence_sha256 text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "function:public.set_workspace_capability_v1(p_capability text, p_enabled boolean, p_expected_revision bigint)",
@@ -61590,6 +62734,55 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:private.resource_dependencies.resource_dependencies_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.resource_dependencies.resource_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "resource_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "resource_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.resource_dependencies.resource_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "resource_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "resource_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 35,
+          "anchor": "create policy resource_dependencies_deny_clients on private.resource_dependencies as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "policy:private.review_execution_authorizations.review_execution_authorizations_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -61636,6 +62829,55 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:private.source_rights_versions.source_rights_versions_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.source_rights_versions.source_rights_versions_deny_clients",
+          "kind": "policy",
+          "name": "source_rights_versions_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "source_rights_versions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.source_rights_versions.source_rights_versions_deny_clients",
+          "kind": "policy",
+          "name": "source_rights_versions_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "source_rights_versions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 34,
+          "anchor": "create policy source_rights_versions_deny_clients on private.source_rights_versions as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "policy:private.source_version_verifications.source_version_verifications_deny_clients",
@@ -64328,6 +65570,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.case_retrieval_chunks.case_chunks_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.case_retrieval_chunks.case_chunks_rights_select",
+          "kind": "policy",
+          "name": "case_chunks_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "case_retrieval_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.case_retrieval_chunks.case_chunks_rights_select",
+          "kind": "policy",
+          "name": "case_chunks_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "case_retrieval_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 177,
+          "anchor": "create policy case_chunks_rights_select on public.case_retrieval_chunks as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "policy:public.case_retrieval_chunks.case_retrieval_chunks_select_scoped",
       "kind": "policy",
       "catalogues": {
@@ -65394,6 +66683,53 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "policy:public.document_layers.document_layers_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.document_layers.document_layers_rights_select",
+          "kind": "policy",
+          "name": "document_layers_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "document_layers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.document_layers.document_layers_rights_select",
+          "kind": "policy",
+          "name": "document_layers_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "document_layers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 181,
+          "anchor": "create policy document_layers_rights_select on public.document_layers as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "policy:public.document_layers.document_layers_select",
       "kind": "policy",
       "catalogues": {
@@ -65439,6 +66775,53 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.document_profiles.document_profiles_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.document_profiles.document_profiles_rights_select",
+          "kind": "policy",
+          "name": "document_profiles_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "document_profiles",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.document_profiles.document_profiles_rights_select",
+          "kind": "policy",
+          "name": "document_profiles_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, source_document_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "document_profiles",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 179,
+          "anchor": "create policy document_profiles_rights_select on public.document_profiles as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "policy:public.document_profiles.document_profiles_select",
@@ -66958,6 +68341,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.governed_precedent_chunks.precedent_chunks_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.governed_precedent_chunks.precedent_chunks_rights_select",
+          "kind": "policy",
+          "name": "precedent_chunks_rights_select",
+          "qual": "private.can_read_licensed_corpus_v1(rights_organization_id, source_rights_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "governed_precedent_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.governed_precedent_chunks.precedent_chunks_rights_select",
+          "kind": "policy",
+          "name": "precedent_chunks_rights_select",
+          "qual": "private.can_read_licensed_corpus_v1(rights_organization_id, source_rights_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "governed_precedent_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 289,
+          "anchor": "create policy precedent_chunks_rights_select on public.governed_precedent_chunks as restrictive for select to authenticated using(private.can_read_licensed_corpus_v1(rights_organization_id,source_rights_version_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "policy:public.governed_precedents.governed_precedents_internal",
       "kind": "policy",
       "catalogues": {
@@ -67003,6 +68433,53 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.house_playbook_chunks.house_chunks_usage_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.house_playbook_chunks.house_chunks_usage_select",
+          "kind": "policy",
+          "name": "house_chunks_usage_select",
+          "qual": "private.house_usage_allowed_v1(playbook_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "house_playbook_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.house_playbook_chunks.house_chunks_usage_select",
+          "kind": "policy",
+          "name": "house_chunks_usage_select",
+          "qual": "private.house_usage_allowed_v1(playbook_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "house_playbook_chunks",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 260,
+          "anchor": "create policy house_chunks_usage_select on public.house_playbook_chunks as restrictive for select to authenticated using(private.house_usage_allowed_v1(playbook_version_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "policy:public.house_playbook_chunks.house_playbook_chunks_internal",
@@ -68058,6 +69535,53 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.mandate_note_embeddings.mandate_notes_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.mandate_note_embeddings.mandate_notes_rights_select",
+          "kind": "policy",
+          "name": "mandate_notes_rights_select",
+          "qual": "private.can_read_licensed_corpus_v1(rights_organization_id, source_rights_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "mandate_note_embeddings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.mandate_note_embeddings.mandate_notes_rights_select",
+          "kind": "policy",
+          "name": "mandate_notes_rights_select",
+          "qual": "private.can_read_licensed_corpus_v1(rights_organization_id, source_rights_version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "mandate_note_embeddings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 288,
+          "anchor": "create policy mandate_notes_rights_select on public.mandate_note_embeddings as restrictive for select to authenticated using(private.can_read_licensed_corpus_v1(rights_organization_id,source_rights_version_id));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "policy:public.mandate_versions.mandate_versions_all",
@@ -73095,6 +74619,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.source_documents.source_documents_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.source_documents.source_documents_rights_select",
+          "kind": "policy",
+          "name": "source_documents_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_documents",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.source_documents.source_documents_rights_select",
+          "kind": "policy",
+          "name": "source_documents_rights_select",
+          "qual": "private.can_read_source_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "source_documents",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 173,
+          "anchor": "create policy source_documents_rights_select on public.source_documents as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "policy:public.source_documents.source_documents_select",
       "kind": "policy",
       "catalogues": {
@@ -73260,6 +74831,53 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "policy:public.sources.sources_rights_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.sources.sources_rights_select",
+          "kind": "policy",
+          "name": "sources_rights_select",
+          "qual": "(EXISTS ( SELECT 1\n   FROM source_versions v\n  WHERE ((v.organization_id = sources.organization_id) AND (v.source_id = sources.id))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "sources",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.sources.sources_rights_select",
+          "kind": "policy",
+          "name": "sources_rights_select",
+          "qual": "(EXISTS ( SELECT 1\n   FROM source_versions v\n  WHERE ((v.organization_id = sources.organization_id) AND (v.source_id = sources.id))))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "sources",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 175,
+          "anchor": "create policy sources_rights_select on public.sources as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "policy:public.sources.sources_select_authorized",
@@ -80308,6 +81926,125 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "r:private.resource_dependencies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.resource_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "resource_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.resource_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "resource_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 18,
+          "anchor": "create table private.resource_dependencies (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "r:private.retrieval_audit_events",
       "kind": "table",
       "catalogues": {
@@ -80545,6 +82282,125 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "r:private.source_rights_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.source_rights_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "source_rights_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.source_rights_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "source_rights_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 3,
+          "anchor": "create table private.source_rights_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "r:private.source_version_verifications",
@@ -93888,15 +95744,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 7, 12",
-      "reason": "filtrar direito antes da busca e exigir publicação humana da referência oficial",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 257,
           "anchor": "create table public.governed_precedent_chunks (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 273,
+          "anchor": "alter table public.governed_precedent_chunks add constraint precedent_chunk_source_rights_fk foreign key(rights_organization_id,source_rights_version_id) references private.source_rights_versions(organization_id,id);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -94515,15 +96377,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 7, 12",
-      "reason": "filtrar direito antes da busca e exigir publicação humana da referência oficial",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 60,
           "anchor": "create table public.house_playbook_versions (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 252,
+          "anchor": "alter table public.house_playbook_versions add constraint house_usage_license_valid check(usage_license is null or usage_license='offroad_owned_private_analysis_v1');",
           "mechanism": "direct_ddl"
         }
       ],
@@ -96276,15 +98144,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "1B, 7, 12",
-      "reason": "filtrar direito antes da busca e exigir publicação humana da referência oficial",
+      "stage": "7",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 104,
           "anchor": "create table public.mandate_note_embeddings (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 268,
+          "anchor": "alter table public.mandate_note_embeddings add constraint mandate_note_source_rights_fk foreign key(rights_organization_id,source_rights_version_id) references private.source_rights_versions(organization_id,id);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -110681,6 +112555,84 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "trigger:private.resource_dependencies.resource_dependencies_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.resource_dependencies.resource_dependencies_immutable",
+          "kind": "trigger",
+          "name": "resource_dependencies_immutable",
+          "table": "resource_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER resource_dependencies_immutable BEFORE DELETE OR UPDATE ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.resource_dependencies.resource_dependencies_immutable",
+          "kind": "trigger",
+          "name": "resource_dependencies_immutable",
+          "table": "resource_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER resource_dependencies_immutable BEFORE DELETE OR UPDATE ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 37,
+          "anchor": "create trigger resource_dependencies_immutable before update or delete on private.resource_dependencies for each row execute function private.reject_source_version_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "trigger:private.resource_dependencies.resource_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.resource_dependencies.resource_dependency_event",
+          "kind": "trigger",
+          "name": "resource_dependency_event",
+          "table": "resource_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_source_rights_event_v1()",
+          "definition": "CREATE TRIGGER resource_dependency_event AFTER INSERT ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_source_rights_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.resource_dependencies.resource_dependency_event",
+          "kind": "trigger",
+          "name": "resource_dependency_event",
+          "table": "resource_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_source_rights_event_v1()",
+          "definition": "CREATE TRIGGER resource_dependency_event AFTER INSERT ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_source_rights_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 49,
+          "anchor": "create trigger resource_dependency_event after insert on private.resource_dependencies for each row execute function private.capture_source_rights_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "trigger:private.review_execution_authorizations.review_execution_authorizations_audit",
       "kind": "trigger",
       "catalogues": {
@@ -110759,6 +112711,84 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.source_rights_versions.source_rights_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_rights_versions.source_rights_event",
+          "kind": "trigger",
+          "name": "source_rights_event",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_source_rights_event_v1()",
+          "definition": "CREATE TRIGGER source_rights_event AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.capture_source_rights_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_rights_versions.source_rights_event",
+          "kind": "trigger",
+          "name": "source_rights_event",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_source_rights_event_v1()",
+          "definition": "CREATE TRIGGER source_rights_event AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.capture_source_rights_event_v1()"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 48,
+          "anchor": "create trigger source_rights_event after insert on private.source_rights_versions for each row execute function private.capture_source_rights_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "trigger:private.source_rights_versions.source_rights_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_rights_versions.source_rights_versions_immutable",
+          "kind": "trigger",
+          "name": "source_rights_versions_immutable",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_rights_versions_immutable BEFORE DELETE OR UPDATE ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_rights_versions.source_rights_versions_immutable",
+          "kind": "trigger",
+          "name": "source_rights_versions_immutable",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER source_rights_versions_immutable BEFORE DELETE OR UPDATE ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 36,
+          "anchor": "create trigger source_rights_versions_immutable before update or delete on private.source_rights_versions for each row execute function private.reject_source_version_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
       "id": "trigger:private.source_version_verifications.source_verifications_audit",
@@ -120224,6 +122254,45 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "trigger:public.source_versions.source_versions_initialize_rights",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_versions.source_versions_initialize_rights",
+          "kind": "trigger",
+          "name": "source_versions_initialize_rights",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.initialize_source_rights_v1()",
+          "definition": "CREATE TRIGGER source_versions_initialize_rights AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.initialize_source_rights_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_versions.source_versions_initialize_rights",
+          "kind": "trigger",
+          "name": "source_versions_initialize_rights",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.initialize_source_rights_v1()",
+          "definition": "CREATE TRIGGER source_versions_initialize_rights AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.initialize_source_rights_v1()"
+        }
+      },
+      "owner": "Codex, etapa 7",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+          "line": 67,
+          "anchor": "create trigger source_versions_initialize_rights after insert on public.source_versions for each row execute function private.initialize_source_rights_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
       "id": "trigger:public.sources.sources_audit",
       "kind": "trigger",
       "catalogues": {
@@ -123862,9 +125931,9 @@
       "kind": "package",
       "path": "packages/governed-retrieval",
       "name": "@offroad/governed-retrieval",
-      "decision": "consolidar",
-      "stage": "7, 12",
-      "reason": "unificar contrato com busca SQL real; retrieveGoverned não é hoje consumidor do runtime",
+      "decision": "refatorar",
+      "stage": "7",
+      "reason": "Recuperação usa a RPC autorizada real; classificação de fonte não concede licença de cache.",
       "direct_module_references": [
         {
           "path": "apps/document-worker/src/universal-dispatch-runtime.ts",
@@ -124193,8 +126262,8 @@
       "path": "packages/public-research",
       "name": "@offroad/public-research",
       "decision": "refatorar",
-      "stage": "5–7, 16",
-      "reason": "identidade pública e direitos por fonte, consultas sem vazar privados",
+      "stage": "7",
+      "reason": "Recuperação usa a RPC autorizada real; classificação de fonte não concede licença de cache.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/market/public-capital-catalog.ts",
@@ -127643,6 +129712,13 @@
       "decision": "preservar",
       "stage": "6",
       "reason": "Correção da projeção de grants aplicada nos dois ambientes; sem alteração de privilégios."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
+      "decision": "preservar",
+      "stage": "7",
+      "reason": "SQL imutável aplicado nos dois ambientes; arquivo alinhado ao carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -128091,5 +130167,16 @@
     ],
     "new_objects": 41,
     "review": "docs/build/arcabouco/etapa-06.md"
+  },
+  "stage_7_revision": {
+    "production_migrations": [
+      "20260917025326"
+    ],
+    "staging_migrations": [
+      "20260917024611"
+    ],
+    "sql_md5": "26955f303ed38f67f5ed3708476b64e7",
+    "new_objects": 35,
+    "review": "docs/build/arcabouco/etapa-07.md"
   }
 }
