@@ -1,3 +1,12 @@
+## Etapa 9: contrato e compatibilidade antes dos produtores
+
+O contrato tipado exige trabalho, finalidade, contexto, motivo e base anterior explícita.
+Hipóteses preservam decimal exato e exigem interpretação completa; não podem se publicar.
+O consumidor aceita referências sem conteúdo para `adoption_decision` e `assumption_version`
+antes de o banco produzir esses eventos. Sem DDL, nova rota ou habilitação neste incremento.
+41 testes de contratos e oito do consumidor passaram localmente; gate completo e entrega
+constam do completion externo da onda 8. Persistência e seleção continuam em implementação.
+
 ## Onda 8 autorizada: adoção contextual e hipóteses
 
 Etapa 9 autorizada após completion da etapa 8. Baseline `047fff553e43eaac41c2ef763268c25284887f87`. Revisão de abertura
