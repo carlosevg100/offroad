@@ -9,7 +9,7 @@ function setup(results: unknown[]) {
  const log=vi.fn(); return {rpc,log,consumer:createEventOutboxConsumer({rpc} as unknown as SupabaseClient,"private-worker-token",log)};
 }
 describe("durable event outbox consumer",()=>{
- it.each(["observation", "metric_definition"])("acknowledges %s through the existing capability without exposing content",async(aggregateKind)=>{
+ it.each(["observation", "metric_definition", "adoption_decision", "assumption_version"])("acknowledges %s through the existing capability without exposing content",async(aggregateKind)=>{
   const {consumer,rpc,log}=setup([{data:{...claim,event:{...event,aggregateKind}},error:null},{data:{completed:true,replayed:false,appliedCount:0},error:null}]);
   expect(await consumer.poll()).toBe(true);
   expect(rpc).toHaveBeenNthCalledWith(2,"complete_event_outbox_v1",{p_worker_token:"private-worker-token",p_outbox_id:id,p_capability:"a".repeat(64)});

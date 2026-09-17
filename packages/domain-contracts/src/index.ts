@@ -770,3 +770,4 @@ export * from "./entity";
 export * from "./dossier";
 export * from "./source-version";
 export * from "./observation";
+export * from "./contextual-adoption";

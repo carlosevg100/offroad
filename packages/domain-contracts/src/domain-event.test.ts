@@ -9,7 +9,7 @@ describe("domain event envelope",()=>{
   expect(domainEventSchema.safeParse({...event,aggregateKind:"access_policy",effect:"grant_access"}).success).toBe(false);
   expect(domainEventSchema.safeParse({...event,aggregateKind:"access_policy",protected_state:{}}).success).toBe(false);
  });
- it.each(["observation", "metric_definition"])("accepts content-free %s before its producer is deployed",(aggregateKind)=>{
+ it.each(["observation", "metric_definition", "adoption_decision", "assumption_version"])("accepts content-free %s before its producer is deployed",(aggregateKind)=>{
   expect(domainEventSchema.safeParse({...event,aggregateKind}).success).toBe(true);
   expect(domainEventSchema.safeParse({...event,aggregateKind,effect:"adopt_observation"}).success).toBe(false);
   expect(domainEventSchema.safeParse({...event,aggregateKind,value:"10"}).success).toBe(false);
