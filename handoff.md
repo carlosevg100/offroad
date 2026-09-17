@@ -8,7 +8,13 @@ O contexto opcional permite objetivo, audiência, prazo e momento da decisão; a
 
 Regressões dos motores legados constroem explicitamente a relação histórica com intake em fixtures transacionais. Não são prova de execução financeira sem documentos. Novos contratos cobrem cada entrada mantida, revogação do criador, replay entre trabalhos e retomada documental. O E2E acrescenta edição de contexto, dois dossiês pela interface e viewport móvel.
 
-Estado: implementação e verificação em andamento; este registro não fecha o incremento nem a etapa. Etapa 11 não iniciada.
+Verificação de banco concluída: staging `20260917203501`, `20260917204438`, `20260917204826`; produção `20260917204933`, `20260917204936`, `20260917204939`. SQL dos três carimbos idêntico; 30 definições de função iguais entre ambientes, 85 contratos SQL em staging com rollback, zero advisories de segurança e zero trabalhos antigos sem contexto. Produção negou chamadas não autenticadas sem criar dados descartáveis. Checkers conferem 341 versões de produção e os catálogos de 1.796/1.857 objetos. Tipos regenerados da produção.
+
+Os links `new/company-debt` e `new/origination` redirecionam à conversa; os dois formulários e suas actions foram retirados. As duas RPCs especializadas também preservam brief e identidade, retornam conversa sem intake e mantêm somente os motores históricos sobre contexto documental real. Replay não reabre job e respeita a autoridade e a organização selecionada. Duas migrações adicionais conservam o SQL já aplicado; uma tentativa de sintaxe rejeitada em staging não criou carimbo.
+
+10B publicado: PR 651, main `21a8e5bf0aee4de0343757ef092d1054c2084ca2`, Quality `35271461797`, Security `35271461902`, worker `35271461876`, Vercel `6511611901`, ECS `360`, health atual sem fila bloqueada. PR Quality `35269824006`: 33 E2Es passaram; 16 testes condicionais não executados, sem alegação de qualidade de modelo. Recibo externo `entry-delivery.json`.
+
+Estado de 10C: banco aplicado, código em verificação para publicação; CI e implantação da interface ainda pendentes. Etapa 10 segue aberta, etapa 11 não iniciada.
 
 ## Etapa 10B: entrada de trabalho e continuidade documental
 

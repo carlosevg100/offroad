@@ -27,3 +27,14 @@ language sql security invoker set search_path='' as $$
 $$;
 revoke all on function pg_temp.legacy_advisor_result(jsonb) from public;
 grant execute on function pg_temp.legacy_advisor_result(jsonb) to authenticated;
+
+create function pg_temp.legacy_specialized_work(p_request_id uuid,p_locale text,p_project_name text,p_company_name text,p_company_website text,p_brief jsonb,p_plan jsonb) returns void
+language plpgsql security invoker set search_path='' as $$
+declare result jsonb; prompt text;
+begin
+ prompt:=concat_ws(E'\n',btrim(p_project_name),btrim(p_company_name),(select string_agg(value,E'\n' order by key) from jsonb_each_text(p_brief)));
+ result:=public.start_work_v1(p_request_id,p_locale,p_project_name,prompt,p_plan#>>'{job,id}','public_information',p_plan,null,false);
+ perform pg_temp.legacy_intake_for_work((result->>'workId')::uuid);
+end $$;
+revoke all on function pg_temp.legacy_specialized_work(uuid,text,text,text,text,jsonb,jsonb) from public;
+grant execute on function pg_temp.legacy_specialized_work(uuid,text,text,text,text,jsonb,jsonb) to authenticated;

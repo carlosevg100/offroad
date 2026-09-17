@@ -13,3 +13,7 @@ Escopo: identidade persistente de trabalho, contexto sem cargo, conversa sem com
 intake, vínculo posterior a dossiês e documentos no mesmo trabalho e adaptações das entradas
 legadas à mesma autoridade. Jobs documentais conservam seu intake e gates próprios.
 O inventário abre a onda, sem declarar a etapa 10 implementada. Etapa 11 não autorizada.
+
+## Conciliação técnica do incremento 10C
+
+85 contratos SQL de staging passaram, incluindo continuidade sem intake, vínculos de dossiê sem concessão, identidade entre mensagens/runs/jobs, contexto sem cargo, revogação do criador, replay entre trabalhos e retomada documental. Trinta definições de função iguais entre ambientes; os três SQLs e carimbos estão conferidos nos journals. Nenhuma fixture em produção, zero advisories de segurança. Riscos de retenção/provedores permanecem na etapa 16; alarmes sem ações de notificação permanecem na 18. Os 18 GAPs gerais não foram apagados nem tratados como conformidade. A interface desse incremento aguarda CI e deploy; esta conciliação não fecha a onda.

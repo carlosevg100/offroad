@@ -21,7 +21,7 @@ import {waitForOneTimeCode} from "./support/mail";
 const runId = `${Date.now().toString(36)}${randomBytes(8).toString("hex")}`;
 const initialProjectName = `Projeto Horizonte ${runId}`;
 const secondaryProjectName = `Projeto Desconhecido ${runId}`;
-const companyDebtProjectName = `Projeto Dívida ${runId}`;
+
 const workspaceGroupName = `Camil ${runId}`;
 const renamedWorkspaceGroupName = `Camil — Dívida ${runId}`;
 const account = {
@@ -414,41 +414,12 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(projectList).toContainText(initialProjectName);
   });
 
-  test("proposes a public debt-lens analysis from the company alone", async () => {
+  test("retired debt-lens setup opens the same composer without requiring a company", async () => {
     await page.goto("/pt-BR/app/new/company-debt");
-
-    await expect(page.locator(".origination-setup__header h1")).toHaveText("Entenda o balanço antes de escolher a operação.");
-    await expect(page.locator('input[type="file"]')).toHaveCount(0);
-    const form = page.locator("form.origination-form");
-    await expect(form.locator('textarea[name="focus"]')).not.toHaveAttribute("required", "");
-    await expect(form.locator('textarea[name="known_context"]')).not.toHaveAttribute("required", "");
-    await form.locator('input[name="project_name"]').fill(companyDebtProjectName);
-    await form.locator('input[name="company_name"]').fill("Companhia Pública Exemplo");
-    await form.locator('input[name="company_website"]').fill("companhia-publica.example.com");
-    await form.locator('button[type="submit"]').click();
-
-    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
-    await expect(page.locator(".advisor-project__conversation")).toBeVisible();
-    const specializedWork = page.locator(".advisor-context-section__open");
-    await expect(specializedWork).toBeVisible();
-    await specializedWork.click();
-    await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
-    // Direct setup has the same consent boundary as the chat. Opening work cannot start it.
-    await expect.poll(async () => {
-      await page.reload();
-      return page.locator(".execution-brief-card__approval").getAttribute("data-approval-status");
-    }, {timeout: 180_000}).toBe("awaiting");
-    await expect(page.getByTestId("execution-brief")).toContainText("Companhia Pública Exemplo");
-    await expect(page.locator(".execution-brief-card__approval button")).toBeEnabled();
-    await expect(page.locator(".origination-working")).toHaveCount(0);
-
-    await page.goto("/pt-BR/app");
-    const createdProject = railProject(page, companyDebtProjectName);
-    await expect(createdProject).toBeVisible();
-    const createdMenu = await openActionMenu(page, createdProject.locator(".workspace-project-actions__trigger"));
-    page.once("dialog", (dialog) => dialog.accept());
-    await createdMenu.locator(".workspace-project-actions__archive").click();
-    await expect(page.locator(".app-rail__item").filter({hasText: companyDebtProjectName})).toHaveCount(0);
+    await expect(page).toHaveURL(/\/pt-BR\/app(?:\?|$)/);
+    await expect(page.locator(".advisor-composer--start")).toBeVisible();
+    await expect(page.locator('input[name="company_name"]')).toHaveCount(0);
+    await expect(page.locator("form.origination-form")).toHaveCount(0);
   });
 
   test("creates and reopens one conversational project from the workspace composer", async () => {

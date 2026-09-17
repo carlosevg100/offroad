@@ -6,6 +6,7 @@ begin;
 \ir support/legacy_resource_fixture.sql
 \ir support/provider_research_plan_snapshot.sql
 \ir support/provider_case_fit_plan_snapshot.sql
+\ir support/workspace_analysis_plan.sql
 insert into public.onboarding_progress(organization_id,user_id,journey,current_step)
 values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-8000-000000000001','originator','organization');
 select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000001',true);
@@ -22,12 +23,19 @@ do $$ declare r jsonb; p jsonb:=pg_temp.provider_research_plan_fixture(); work u
  request:=gen_random_uuid();
  r:=public.start_provider_research_project_v1(request,'pt-BR','Synthetic research entry','Synthetic research question',p,null);
  if r->>'executionState'<>'conversation_only' or r->>'intake_session_id' is not null or r->>'research_job_id' is not null then raise exception 'research entry activated intake-based execution'; end if;
- perform set_config('test.adapter-work',r->>'workId',true);
- perform set_config('test.adapter-request',request::text,true);
+ perform set_config('test.adapter_work',r->>'workId',true);
+ perform set_config('test.adapter_request',request::text,true);
  request:=gen_random_uuid();
  criteria:=jsonb_build_object('schemaVersion','provider-case-criteria.v1','asOf',now(),'currency','BRL','source',jsonb_build_object('kind','user_confirmed','referenceId',request));
  r:=public.start_provider_case_fit_project_v1(request,'pt-BR','Synthetic fit entry','Synthetic case-fit question',pg_temp.provider_case_fit_plan_fixture(),null,null,null,criteria);
  if r->>'executionState'<>'conversation_only' or r->>'intake_session_id' is not null or r->>'research_job_id' is not null then raise exception 'case-fit entry activated intake-based execution'; end if;
+ request:=gen_random_uuid();
+ r:=public.start_public_company_debt_view_v1(request,'pt-BR','Synthetic specialized debt','Synthetic subject',null,'{"focus":"Synthetic debt question"}',jsonb_set(pg_temp.plan_for('company_debt_view'),'{job,firstWorkProduct}','"company_debt_diagnostic"'));
+ if r->>'executionState'<>'conversation_only' or r->>'intake_session_id' is not null then raise exception 'specialized debt entry manufactured intake'; end if;
+ begin perform public.start_public_company_debt_view_v1(request,'pt-BR','Synthetic specialized debt','Synthetic subject',null,'{"focus":"Changed question"}',jsonb_set(pg_temp.plan_for('company_debt_view'),'{job,firstWorkProduct}','"company_debt_diagnostic"')); raise exception 'specialized replay discarded changed input'; exception when invalid_parameter_value then null; end;
+ request:=gen_random_uuid();
+ r:=public.start_public_origination_thesis_v1(request,'pt-BR','Synthetic specialized thesis','Synthetic subject',null,'{"meetingContext":"Synthetic meeting question"}',jsonb_set(pg_temp.plan_for('origination_thesis'),'{job,firstWorkProduct}','"meeting_brief"'));
+ if r->>'executionState'<>'conversation_only' or r->>'intake_session_id' is not null then raise exception 'specialized thesis entry manufactured intake'; end if;
  work:=public.start_public_capital_project('pt-BR','Synthetic public entry','company_debt_view','Synthetic subject',null);
  if not exists(select 1 from public.capital_projects where id=work and company_id is null) then raise exception 'public UUID is not work identity'; end if;
  if not exists(select 1 from public.dossiers where resource_id=work and profile->>'name'='Synthetic subject') then raise exception 'declared subject lost'; end if;
@@ -48,11 +56,11 @@ do $$ declare a jsonb; b jsonb; begin
  begin perform public.append_advisor_message_v1((b->>'workId')::uuid,(a->>'message_id')::uuid,'pt-BR','Synthetic original A'); raise exception 'append cross-work replay accepted'; exception when insufficient_privilege then null; end;
  begin perform public.submit_advisor_turn_v1((b->>'workId')::uuid,(a->>'message_id')::uuid,'pt-BR','Synthetic original A'); raise exception 'submit cross-work replay accepted'; exception when insufficient_privilege then null; end;
 end $$;
-select public.revoke_resource_access_v1(current_setting('test.adapter-work')::uuid,'a11b0000-0000-4000-8000-000000000001');
+select public.revoke_resource_access_v1(current_setting('test.adapter_work')::uuid,'a11b0000-0000-4000-8000-000000000001');
 do $$ begin
- begin perform public.start_provider_research_project_v1(current_setting('test.adapter-request')::uuid,'pt-BR','Synthetic research entry','Synthetic research question',pg_temp.provider_research_plan_fixture(),null); raise exception 'legacy creator replay bypassed revocation'; exception when insufficient_privilege then null; end;
- begin perform public.queue_advisor_initial_turn_v1(current_setting('test.adapter-work')::uuid); raise exception 'legacy creator queue bypassed revocation'; exception when insufficient_privilege then null; end;
- begin perform public.append_advisor_message_v1(current_setting('test.adapter-work')::uuid,gen_random_uuid(),'pt-BR','Residual write'); raise exception 'legacy creator append bypassed revocation'; exception when insufficient_privilege then null; end;
+ begin perform public.start_provider_research_project_v1(current_setting('test.adapter_request')::uuid,'pt-BR','Synthetic research entry','Synthetic research question',pg_temp.provider_research_plan_fixture(),null); raise exception 'legacy creator replay bypassed revocation'; exception when insufficient_privilege then null; end;
+ begin perform public.queue_advisor_initial_turn_v1(current_setting('test.adapter_work')::uuid); raise exception 'legacy creator queue bypassed revocation'; exception when insufficient_privilege then null; end;
+ begin perform public.append_advisor_message_v1(current_setting('test.adapter_work')::uuid,gen_random_uuid(),'pt-BR','Residual write'); raise exception 'legacy creator append bypassed revocation'; exception when insufficient_privilege then null; end;
 end $$;
 -- Resuming the old documentary onboarding cannot restore a revoked creator's authority.
 reset role;

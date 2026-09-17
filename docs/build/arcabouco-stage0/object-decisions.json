@@ -858,10 +858,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -879,6 +879,12 @@
           "path": "supabase/migrations/20260901112115_conversational_advisor_workspace.sql",
           "line": 327,
           "anchor": "create or replace function public.append_advisor_message_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 234,
+          "anchor": "create or replace function private.append_advisor_message_v1(p_project_id uuid,p_message_id uuid,p_locale text,p_content text) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -15972,10 +15978,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -15993,6 +15999,12 @@
           "path": "supabase/migrations/20260901112129_advisor_initial_turn_identity.sql",
           "line": 4,
           "anchor": "create or replace function private.queue_advisor_initial_turn_v1(p_project_id uuid)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 381,
+          "anchor": "CREATE OR REPLACE FUNCTION private.queue_advisor_initial_turn_v1(p_project_id uuid)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -25832,10 +25844,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
@@ -25847,6 +25859,12 @@
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
           "line": 424,
           "anchor": "create or replace function public.start_advisor_project_in_group_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 221,
+          "anchor": "create or replace function private.start_advisor_project_in_group_v1(p_request_id uuid,p_locale text,p_project_name text,p_entry_job text,p_prompt text,p_access_basis text,p_plan jsonb,p_group_id uuid default null) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -25903,10 +25921,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -25924,6 +25942,12 @@
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 1214,
           "anchor": "create or replace function private.start_advisor_project_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 217,
+          "anchor": "create or replace function private.start_advisor_project_v1(p_request_id uuid,p_locale text,p_project_name text,p_entry_job text,p_prompt text,p_access_basis text,p_plan jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26201,10 +26225,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -26222,6 +26246,12 @@
           "path": "supabase/migrations/20260827221500_configure_existing_onboarding_intake.sql",
           "line": 3,
           "anchor": "create or replace function private.start_onboarding_intake(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 80,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_onboarding_intake(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26350,10 +26380,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260910072024_provider_case_fit_persisted_workflow.sql",
@@ -26365,6 +26395,12 @@
           "path": "supabase/migrations/20260910072024_provider_case_fit_persisted_workflow.sql",
           "line": 187,
           "anchor": "create function public.start_provider_case_fit_project_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 578,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_provider_case_fit_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_prompt text, p_plan jsonb, p_group_id uuid DEFAULT NULL::uuid, p_project_id uuid DEFAULT NULL::uuid, p_expected_plan_fingerprint text DEFAULT NULL::text, p_case_criteria jsonb DEFAULT NULL::jsonb)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26421,10 +26457,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260910033526_provider_research_persisted_bridge.sql",
@@ -26436,6 +26472,12 @@
           "path": "supabase/migrations/20260910151957_provider_research_public_catalog_v2.sql",
           "line": 24,
           "anchor": "create or replace function private.start_provider_research_project_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 494,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_provider_research_project_v1(p_request_id uuid, p_locale text, p_project_name text, p_prompt text, p_plan jsonb, p_group_id uuid DEFAULT NULL::uuid)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26492,10 +26534,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -26513,6 +26555,12 @@
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 1583,
           "anchor": "create or replace function private.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 707,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26570,10 +26618,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035308_capital_project_plan_runtime.sql",
@@ -26585,6 +26633,12 @@
           "path": "supabase/migrations/20260901035308_capital_project_plan_runtime.sql",
           "line": 495,
           "anchor": "create or replace function public.start_public_capital_project_v2(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 757,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_capital_project_v2(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text, p_plan jsonb)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26641,10 +26695,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
@@ -26663,6 +26717,18 @@
           "line": 170,
           "anchor": "create or replace function public.start_public_company_debt_view_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204936_persistent_work_specialized_adapters.sql",
+          "line": 2,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_company_debt_view_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204939_persistent_work_specialized_replay_scope.sql",
+          "line": 7,
+          "anchor": "  'private.start_public_company_debt_view_v1(uuid,text,text,text,text,jsonb,jsonb)',",
+          "mechanism": "bounded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -26719,10 +26785,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035305_capital_project_access_basis.sql",
@@ -26734,6 +26800,12 @@
           "path": "supabase/migrations/20260901035305_capital_project_access_basis.sql",
           "line": 212,
           "anchor": "create or replace function public.start_public_onboarding_capital_project(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 776,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_onboarding_capital_project(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26790,10 +26862,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035308_capital_project_plan_runtime.sql",
@@ -26805,6 +26877,12 @@
           "path": "supabase/migrations/20260901035308_capital_project_plan_runtime.sql",
           "line": 539,
           "anchor": "create or replace function public.start_public_onboarding_capital_project_v2(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 813,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_onboarding_capital_project_v2(p_locale text, p_project_name text, p_entry_job text, p_company_name text, p_company_website text, p_plan jsonb)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26861,10 +26939,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035119_explicit_workspace_replay_authority.sql",
@@ -26883,6 +26961,18 @@
           "line": 228,
           "anchor": "create or replace function public.start_public_origination_thesis_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204936_persistent_work_specialized_adapters.sql",
+          "line": 176,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_public_origination_thesis_v1(p_request_id uuid, p_locale text, p_project_name text, p_company_name text, p_company_website text, p_brief jsonb, p_plan jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204939_persistent_work_specialized_replay_scope.sql",
+          "line": 8,
+          "anchor": "  'private.start_public_origination_thesis_v1(uuid,text,text,text,text,jsonb,jsonb)'",
+          "mechanism": "bounded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -27146,10 +27236,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -27167,6 +27257,12 @@
           "path": "supabase/migrations/20260827224000_start_workspace_intake_atomic.sql",
           "line": 88,
           "anchor": "create function public.start_workspace_intake(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 3,
+          "anchor": "CREATE OR REPLACE FUNCTION private.start_workspace_intake(p_organization_id uuid, p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -27797,10 +27893,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -27818,6 +27914,12 @@
           "path": "supabase/migrations/20260901112122_advisor_turn_queue.sql",
           "line": 143,
           "anchor": "create or replace function public.submit_advisor_turn_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 238,
+          "anchor": "CREATE OR REPLACE FUNCTION private.submit_advisor_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -51911,10 +52013,10 @@
           "security_definer": false
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
@@ -51926,6 +52028,12 @@
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
           "line": 424,
           "anchor": "create or replace function public.start_advisor_project_in_group_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 229,
+          "anchor": "create or replace function public.start_advisor_project_in_group_v1(p_request_id uuid,p_locale text,p_project_name text,p_entry_job text,p_prompt text,p_access_basis text,p_plan jsonb,p_group_id uuid default null) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -51992,10 +52100,10 @@
           "security_definer": false
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 2, 10",
-      "reason": "adaptador para contexto e trabalho; não iniciar intake como requisito de conversa",
+      "stage": "10",
+      "reason": "Consolida entradas antigas e nega replay entre trabalhos, preservando os gates dos motores documentais.",
       "sources": [
         {
           "path": "supabase/migrations/20260916035105_explicit_workspace_context.sql",
@@ -52013,6 +52121,12 @@
           "path": "supabase/migrations/20260910232821_financier_analytical_workspace.sql",
           "line": 1214,
           "anchor": "create or replace function private.start_advisor_project_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+          "line": 225,
+          "anchor": "create or replace function public.start_advisor_project_v1(p_request_id uuid,p_locale text,p_project_name text,p_entry_job text,p_prompt text,p_access_basis text,p_plan jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -137234,31 +137348,17 @@
     },
     {
       "kind": "entrypoint",
-      "path": "apps/web/src/app/[locale]/app/new/company-debt/actions.ts",
-      "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
-    },
-    {
-      "kind": "entrypoint",
       "path": "apps/web/src/app/[locale]/app/new/company-debt/page.tsx",
-      "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
-    },
-    {
-      "kind": "entrypoint",
-      "path": "apps/web/src/app/[locale]/app/new/origination/actions.ts",
-      "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
+      "decision": "substituir",
+      "stage": "10",
+      "reason": "Redireciona links antigos à mesma conversa, sem companhia ou intake na entrada."
     },
     {
       "kind": "entrypoint",
       "path": "apps/web/src/app/[locale]/app/new/origination/page.tsx",
-      "decision": "refatorar",
-      "stage": "1B, 2, 10, 19, 23",
-      "reason": "Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado."
+      "decision": "substituir",
+      "stage": "10",
+      "reason": "Redireciona links antigos à mesma conversa, sem companhia ou intake na entrada."
     },
     {
       "kind": "entrypoint",
@@ -137764,6 +137864,34 @@
     {
       "kind": "migration",
       "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/work-context-actions.ts",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Contexto com revisão esperada e vínculo de dossiê sob autoridade atual, sem cargo ou concessão de acesso."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917204936_persistent_work_specialized_adapters.sql",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917204939_persistent_work_specialized_replay_scope.sql",
       "decision": "preservar",
       "stage": "10",
       "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
@@ -138293,5 +138421,32 @@
     ],
     "new_objects": 13,
     "review": "docs/build/arcabouco/etapa-10.md"
-  }
+  },
+  "stage_10_adapters_revision": {
+    "production_migrations": [
+      "20260917204933",
+      "20260917204936",
+      "20260917204939"
+    ],
+    "new_objects": 0,
+    "review": "docs/build/arcabouco/etapa-10.md"
+  },
+  "retired_repository_items": [
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/new/company-debt/actions.ts",
+      "decision": "apagar",
+      "stage": "10",
+      "reason": "Formulário obrigatório de companhia retirado; link antigo redireciona à conversa e RPC compatível usa trabalho canônico.",
+      "owner": "Codex, etapa 10"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/new/origination/actions.ts",
+      "decision": "apagar",
+      "stage": "10",
+      "reason": "Formulário obrigatório de companhia retirado; link antigo redireciona à conversa e RPC compatível usa trabalho canônico.",
+      "owner": "Codex, etapa 10"
+    }
+  ]
 }

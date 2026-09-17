@@ -221,9 +221,9 @@ test("a financier analyses on its own, keeps its mandates and never gains repres
   await expect(page.locator(".private-project-gate--project")).toHaveCount(0);
   await expect(page.getByTestId("financier-unavailable-operations")).toContainText("Declaração de representação");
   await page.goto("/pt-BR/app/new/company-debt");
-  await expect(page.getByTestId("financier-unavailable-entry")).toBeVisible();
+  await expect(page.locator(".advisor-composer--start")).toBeVisible();
   await page.goto("/pt-BR/app/new/origination");
-  await expect(page.getByTestId("financier-unavailable-entry")).toBeVisible();
+  await expect(page.locator(".advisor-composer--start")).toBeVisible();
 
   // 6. The conversation creates the project. A private review queues no model work.
   await page.goto("/pt-BR/app");

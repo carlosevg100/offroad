@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (
@@ -84,6 +85,16 @@ begin
     ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
 
+  perform pg_temp.legacy_specialized_work(
+    request_id, 'pt-BR', 'Projeto Farol', 'Companhia Farol S.A.',
+    'https://farol.example',
+    jsonb_build_object(
+      'meetingContext', 'Preparar uma primeira conversa com a diretoria financeira sobre prioridades de dívida.',
+      'audience', 'CFO e tesouraria',
+      'thesisToTest', 'Testar se o perfil de vencimentos cria uma oportunidade de refinanciamento.'
+    ),
+    plan_snapshot
+  );
   first_result := public.start_public_origination_thesis_v1(
     request_id, 'pt-BR', 'Projeto Farol', 'Companhia Farol S.A.',
     'https://farol.example',
@@ -114,8 +125,13 @@ begin
   end if;
 
   replay_result := public.start_public_origination_thesis_v1(
-    request_id, 'pt-BR', 'Ignored on replay', 'Ignored S.A.', '',
-    jsonb_build_object('meetingContext', 'This valid-length context must not create a second project.'),
+    request_id, 'pt-BR', 'Projeto Farol', 'Companhia Farol S.A.',
+    'https://farol.example',
+    jsonb_build_object(
+      'meetingContext', 'Preparar uma primeira conversa com a diretoria financeira sobre prioridades de dívida.',
+      'audience', 'CFO e tesouraria',
+      'thesisToTest', 'Testar se o perfil de vencimentos cria uma oportunidade de refinanciamento.'
+    ),
     plan_snapshot
   );
   if replay_result ->> 'replayed' <> 'true'
