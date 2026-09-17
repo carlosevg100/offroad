@@ -128,6 +128,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires persistent work entry and authority evidence at wave-nine closeout", () => {
+    for (const evidenceRef of ["SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-WORK-STORAGE-SQL", "SEV-WORK-ENTRY-SQL", "SEV-WORK-LEGACY-SQL", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-WORK-COMPILE", "SEV-WORK-CONTEXT", "SEV-WORK-WEB", "SEV-WORK-E2E", "SEV-WORK-AUTH-REPLAY"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-8";

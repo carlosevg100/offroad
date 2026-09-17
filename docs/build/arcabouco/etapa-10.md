@@ -18,7 +18,7 @@ Uma chamada limitada ao gateway existente produz resposta ou pergunta, sem ferra
 - Tipos regenerados da produção; os dois checkers de inventário conferem superfícies e journal. Advisories de segurança: zero em ambos os ambientes. Índices novos têm cobertura das FKs; índices ainda não usados não são retirados durante o rollout.
 - PR 650 mesclada em `2c272c36e938ebfc652937eb76d115594ab392b6`. Main Quality `35265839741`, Security `35265839744` e worker `35265839729` passaram; Vercel Production `6510664206`, ECS `359`, 1/1 tarefa, health atual sem backlog/bloqueio. Recibo externo `foundation-delivery.json`. Esta fundação não fecha a etapa 10.
 
-## Próximo incremento da mesma etapa
+## Sequência realizada na mesma etapa
 
 Comandos `start_work_v1` e `append_work_turn_v1`, adaptadores das entradas antigas, remoção da pasta/intake automáticos, associação de dossiês, upload posterior e interface. Ainda não iniciada a etapa 11.
 
@@ -32,7 +32,7 @@ Fundação 10A publicada em `2c272c36e938ebfc652937eb76d115594ab392b6`: main Qua
 
 A entrada web cria trabalho e enfileira conversa atomicamente; pergunta sem anexos não compila plano nem abre intake/pasta. Upload posterior conserva conversa e identidade, cancela jobs que carregavam o contexto anterior e usa os gates documentais. Navegação, renomeação e arquivamento aceitam trabalho sem sessão. Tipos vieram da produção; 13 comandos privados/públicos inventariados, trigger e função de pasta automática retirados. Os checkers conferem 338 versões e os catálogos dos dois ambientes.
 
-A publicação da web compatível precede a consolidação dos adaptadores antigos no incremento 10C. Os E2Es dos motores de pesquisa/preview passam a declarar explicitamente sua história legada com sessão, sem semear resultados ou aprovações; a nova entrada é coberta por `persistent-work.spec.ts`. CI e deploy deste incremento ainda são gates, não conclusão. Etapa 10 continua aberta; etapa 11 não iniciada.
+A publicação da web compatível precede a consolidação dos adaptadores antigos no incremento 10C. Os E2Es dos motores de pesquisa/preview passam a declarar explicitamente sua história legada com sessão, sem semear resultados ou aprovações; a nova entrada é coberta por `persistent-work.spec.ts`. CI e deploy deste incremento foram comprovados no recibo 10B abaixo. Etapa 11 não iniciada.
 
 ## Incremento 10C: consolidação das entradas e contexto do trabalho
 
@@ -50,4 +50,25 @@ Os links `new/company-debt` e `new/origination` redirecionam à conversa; os doi
 
 10B publicado: PR 651, main `21a8e5bf0aee4de0343757ef092d1054c2084ca2`, Quality `35271461797`, Security `35271461902`, worker `35271461876`, Vercel `6511611901`, ECS `360`, health atual sem fila bloqueada. PR Quality `35269824006`: 33 E2Es passaram; 16 testes condicionais não executados, sem alegação de qualidade de modelo. Recibo externo `entry-delivery.json`.
 
-Estado de 10C: banco aplicado, código em verificação para publicação; CI e implantação da interface ainda pendentes. Etapa 10 segue aberta, etapa 11 não iniciada.
+Estado de 10C: PR 652 entregue em `4e6b84d9c4701df24b9fb2e9ea74264df121336b`; main Quality 35279877963, Security 35279878009 e worker 35279936974 passaram. Vercel Production 6513024337 e ECS 361 executam o commit exato.
+
+## Conciliação e limites da etapa
+
+85 contratos SQL passaram em staging e no replay limpo da CI; os checkers conferem 341
+versões de produção. `pnpm check` passou localmente e na CI. Os E2Es e as capturas de contexto
+móvel e histórico após upload foram conferidos. A conversa do teste usa resposta explicitamente
+sintética, sem alegação de qualidade profissional de modelo. Produção foi verificada com
+leituras e negações sem sessão, sem dados descartáveis.
+
+O seletor mostra até 100 dossiês recentes autorizados e todos os vínculos existentes legíveis.
+Busca paginada de novos vínculos acima desse conjunto exige incremento de experiência antes de
+uso nessa escala; não cria acesso alternativo. O contrato aceita múltiplos vínculos, mas não
+ativa leitura de seus conteúdos pelo modelo. Mudança de contexto invalida a publicação de uma
+resposta em voo. Sessões históricas não são apagadas e execuções documentais continuam exigindo
+os gates instalados. Execução substantiva sem intake e conservação de executores por versão
+pertencem à etapa 17. O gateway existente mantém a política atual; a matriz por provedor/modelo/
+recurso será comprovada na etapa 16. Alarmes sem ação de notificação permanecem na etapa 18.
+
+141 evidências sustentam a conciliação, incluindo 15 novas e um teste que rejeita sua omissão.
+As 18 lacunas gerais não tiveram severidade alterada. O completion externo registra os gates e
+o deploy da própria conciliação antes de considerar esta etapa encerrada. Etapa 11 não iniciada.

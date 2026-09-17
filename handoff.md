@@ -1,9 +1,19 @@
-## Verificação visual da etapa 10C
+## Etapa 10: conciliação da entrega em 17/09/2026
 
-A jornada passou na CI, mas a captura móvel revelou transição do menu comprimindo o conteúdo.
-A correção fixa menu e coluna em 58px no celular; o E2E exige 300px úteis, alinhamento e ausência
-de overflow. O formulário remonta a revisão salva para conservar o valor visual dos selects;
-a jornada verifica objetivo, audiência e compromisso depois de salvar. Novo gate em execução.
+PR 652 entregue em `4e6b84d9c4701df24b9fb2e9ea74264df121336b`; main Quality 35279877963, Security 35279878009 e worker 35279936974 passaram. Vercel Production 6513024337 e ECS 361 executam o commit exato.
+As PRs 650 e 651 publicaram primeiro o consumidor e depois a entrada compatível. As cinco
+migrações da etapa estão aplicadas em staging e produção, com SQL idêntico por nome e 52
+definições de função iguais na reconferência ao vivo. Os 85
+contratos SQL passaram no schema instalado e no replay da CI. A jornada E2E verifica contexto,
+vínculo de dois dossiês, reabertura após login e novo processo, upload posterior e histórico
+visível sob a mesma identidade, incluindo celular. Não houve fixtures em produção.
+
+Conversa não exige companhia ou intake. As entradas antigas convergem para o mesmo trabalho;
+os motores documentais históricos conservam seus gates. Não há promoção de qualidade financeira
+por teste sintético de transporte. A conciliação exige 141 evidências e mantém 18 lacunas gerais
+nos incrementos responsáveis. Provas e limites em `docs/build/arcabouco/etapa-10.md` e
+`docs/security/history/wave-9-final-review.md`. O completion externo registra também CI e
+implantação desta própria conciliação. Etapa 11 depende de novo OK do fundador.
 
 ## Incremento 10C: consolidação das entradas e contexto do trabalho
 
