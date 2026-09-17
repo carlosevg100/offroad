@@ -1,6 +1,6 @@
 {
   "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
-  "capturedAt": "2026-09-17T22:14:38.224Z",
+  "capturedAt": "2026-09-17T18:50:54.463Z",
   "validThrough": null,
   "source": "Codex read-only GitHub and AWS API delivery observation",
   "origin": {
@@ -14,54 +14,54 @@
     "version": "2",
     "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"
   },
-  "scope": "Wave 9 delivered persistent work baseline; bounded read-only observation of the deployed runtime",
-  "observation": "Delivered persistent work baseline observed in ECS and CloudWatch: exact commit image, current task polling and alarm state. No production fixtures. Historical OIDC denial is retained without claiming a new IAM permission test. Alarm notification actions remain unconfigured.",
+  "scope": "Wave 9 opening: persistent work without mandatory company or intake; bounded read-only observation before implementation",
+  "observation": "Delivered contextual adoption baseline observed in ECS and CloudWatch: exact commit image, current task polling and alarm state. No production fixtures. Historical OIDC denial is retained without claiming a new IAM permission test. Alarm notification actions remain unconfigured.",
   "verificationState": "unverified_operator_observation",
   "collection": {
-    "baselineCommit": "4e6b84d9c4701df24b9fb2e9ea74264df121336b",
+    "baselineCommit": "5826a8cca31510914f04c7b332462b691fd49532",
     "githubReadOnly": {
-      "runId": 35279877963,
-      "headSha": "4e6b84d9c4701df24b9fb2e9ea74264df121336b",
+      "runId": 35258975154,
+      "headSha": "5826a8cca31510914f04c7b332462b691fd49532",
       "conclusion": "success"
     },
     "runtimeReadOnly": {
-      "captured_at": "2026-09-17T22:10:22.170239+00:00",
-      "commit": "4e6b84d9c4701df24b9fb2e9ea74264df121336b",
-      "task_revision": 361,
+      "captured_at": "2026-09-17T18:49:48.980862+00:00",
+      "commit": "5826a8cca31510914f04c7b332462b691fd49532",
+      "task_revision": 357,
       "desired": 1,
       "running": 1,
       "rollout": "COMPLETED",
       "images": [
-        "document-worker:4e6b84d9c470"
+        "document-worker:5826a8cca315"
       ],
-      "health_event_count": 92,
+      "health_event_count": 146,
       "sample": [
         {
-          "at": "2026-09-17T22:10:09.589Z",
+          "at": "2026-09-17T18:49:35.650Z",
           "event": "outbox.health",
           "blockedCount": 0,
           "oldestPendingSeconds": 0
         },
         {
-          "at": "2026-09-17T22:10:11.635Z",
+          "at": "2026-09-17T18:49:37.722Z",
           "event": "outbox.health",
           "blockedCount": 0,
           "oldestPendingSeconds": 0
         },
         {
-          "at": "2026-09-17T22:10:13.656Z",
+          "at": "2026-09-17T18:49:39.771Z",
           "event": "outbox.health",
           "blockedCount": 0,
           "oldestPendingSeconds": 0
         },
         {
-          "at": "2026-09-17T22:10:15.680Z",
+          "at": "2026-09-17T18:49:41.811Z",
           "event": "outbox.health",
           "blockedCount": 0,
           "oldestPendingSeconds": 0
         },
         {
-          "at": "2026-09-17T22:10:17.708Z",
+          "at": "2026-09-17T18:49:43.848Z",
           "event": "outbox.health",
           "blockedCount": 0,
           "oldestPendingSeconds": 0

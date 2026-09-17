@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 9 · 17/09/2026 · Baseline entregue: `5826a8cca31510914f04c7b332462b691fd49532`. Etapa 10 autorizada; etapa 11 não iniciada.
+Onda 9 · 17/09/2026 · Baseline entregue: `4e6b84d9c4701df24b9fb2e9ea74264df121336b`. Etapa 10 implementada e verificada; etapa 11 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -97,3 +97,18 @@ retroativa de reprodutibilidade. A etapa 17 deve conservar executores por versã
 uma versão de motor indisponível, sem recalcular silenciosamente pelo motor atual. A etapa 9
 prova repetição com a versão vigente fixada. Limites de paginação e capacidade constam de
 `etapa-09.md`; não abrem caminho alternativo sem autoridade. As 18 lacunas gerais permanecem.
+
+## Tratamento técnico da etapa 10
+
+A identidade do trabalho precede companhia, documentos e plano. Adaptadores não criam intake
+ou pasta automaticamente; replay revalida organização e autoridade atuais e não revive jobs.
+Revogação ou contexto alterado durante uma chamada impede publicação. Vínculo a dossiê exige
+acesso ao trabalho e ao dossiê e não concede acesso nem ativa retrieval. Os produtores entraram
+somente após o consumidor compatível; rollback suspende produtores antes de recuar o worker.
+
+O seletor de novos vínculos é limitado a 100 dossiês recentes autorizados; vínculos existentes
+legíveis aparecem integralmente. Busca paginada deve ser entregue antes de ensaios que excedam
+esse volume. A etapa 16 verifica retenção por conta/modelo/recurso; a 17 entrega execução
+substantiva sem intake e retenção de executores históricos. Notificação de alarmes permanece
+na etapa 18. Teste sintético de histórico não comprova qualidade profissional de resposta;
+os ensaios e a aprovação de conteúdo do primeiro procedimento permanecem separados.
