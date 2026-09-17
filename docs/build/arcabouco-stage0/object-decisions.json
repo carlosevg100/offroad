@@ -130821,8 +130821,8 @@
       "path": "packages/case-engine",
       "name": "@offroad/case-engine",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
+      "stage": "9",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/case-manifest.ts",
@@ -132664,8 +132664,8 @@
       "path": "packages/extraction-learning",
       "name": "@offroad/extraction-learning",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
+      "stage": "9",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/server.ts",
@@ -133690,8 +133690,8 @@
       "path": "packages/reconciliation",
       "name": "@offroad/reconciliation",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
+      "stage": "9",
+      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/reconcile.ts",
