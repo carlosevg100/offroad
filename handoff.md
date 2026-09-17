@@ -1,3 +1,15 @@
+## Incremento 10C: consolidação das entradas e contexto do trabalho
+
+As entradas conversacionais antigas delegam a `start_work_v1`; append e submit usam o mesmo contrato de turno, com negação de replay de mensagem de outro trabalho. O caminho antigo de resposta pronta em `append_advisor_message_v1` é retirado. Pesquisa e case fit sem intake ficam em conversa, com critérios declarados preservados e sem fingir execução financeira. Os motores históricos continuam disponíveis sobre sessões documentais reais e sob os gates existentes.
+
+Entradas documentais explícitas passam por trabalho e depois pelo comando de ingestão, conservando termos e declaração. Retomar onboarding exige capacidade de representação e autoridade atual; `started_by` não concede acesso residual. Entradas públicas estruturadas, sem consumidores web, passam a retornar UUID de trabalho; o assunto declarado fica no dossiê privado, sem criar companhia ou intake.
+
+O contexto opcional permite objetivo, audiência, prazo e momento da decisão; atualização usa revisão esperada. Vários dossiês podem ser associados; vínculo nunca concede acesso nem entrega seu conteúdo ao modelo. A edição é localizada, responsiva e não pede cargo. Os contextos históricos são criados vazios, sem inventar finalidade.
+
+Regressões dos motores legados constroem explicitamente a relação histórica com intake em fixtures transacionais. Não são prova de execução financeira sem documentos. Novos contratos cobrem cada entrada mantida, revogação do criador, replay entre trabalhos e retomada documental. O E2E acrescenta edição de contexto, dois dossiês pela interface e viewport móvel.
+
+Estado: implementação e verificação em andamento; este registro não fecha o incremento nem a etapa. Etapa 11 não iniciada.
+
 ## Etapa 10B: entrada de trabalho e continuidade documental
 
 Fundação 10A publicada em `2c272c36e938ebfc652937eb76d115594ab392b6`: main Quality 35265839741, Security 35265839744, worker 35265839729, Vercel 6510664206 e ECS359 conferidos. Novos comandos instalados em staging `20260917194611` e produção `20260917195617`; 84 contratos SQL passaram em staging com rollback, incluindo contexto versionado, dois dossiês, revogação do criador e upload no mesmo trabalho. Sem fixtures de produção.

@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (
@@ -58,9 +59,9 @@ declare
   run_id uuid := '40000000-0000-4000-8000-000000000291';
   job_id uuid := '50000000-0000-4000-8000-000000000291';
 begin
-  session_id := public.start_public_capital_project(
+  session_id := pg_temp.legacy_intake_for_work(public.start_public_capital_project(
     'pt-BR', 'Projeto Cache Público', 'company_debt_view', 'Companhia Cache S.A.', ''
-  );
+  ));
   select session.capital_project_id into project_id
   from public.document_intake_sessions session where session.id = session_id;
   insert into cache_test_ids values (session_id, project_id, run_id, job_id);

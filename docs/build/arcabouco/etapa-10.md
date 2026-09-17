@@ -33,3 +33,15 @@ Fundação 10A publicada em `2c272c36e938ebfc652937eb76d115594ab392b6`: main Qua
 A entrada web cria trabalho e enfileira conversa atomicamente; pergunta sem anexos não compila plano nem abre intake/pasta. Upload posterior conserva conversa e identidade, cancela jobs que carregavam o contexto anterior e usa os gates documentais. Navegação, renomeação e arquivamento aceitam trabalho sem sessão. Tipos vieram da produção; 13 comandos privados/públicos inventariados, trigger e função de pasta automática retirados. Os checkers conferem 338 versões e os catálogos dos dois ambientes.
 
 A publicação da web compatível precede a consolidação dos adaptadores antigos no incremento 10C. Os E2Es dos motores de pesquisa/preview passam a declarar explicitamente sua história legada com sessão, sem semear resultados ou aprovações; a nova entrada é coberta por `persistent-work.spec.ts`. CI e deploy deste incremento ainda são gates, não conclusão. Etapa 10 continua aberta; etapa 11 não iniciada.
+
+## Incremento 10C: consolidação das entradas e contexto do trabalho
+
+As entradas conversacionais antigas delegam a `start_work_v1`; append e submit usam o mesmo contrato de turno, com negação de replay de mensagem de outro trabalho. O caminho antigo de resposta pronta em `append_advisor_message_v1` é retirado. Pesquisa e case fit sem intake ficam em conversa, com critérios declarados preservados e sem fingir execução financeira. Os motores históricos continuam disponíveis sobre sessões documentais reais e sob os gates existentes.
+
+Entradas documentais explícitas passam por trabalho e depois pelo comando de ingestão, conservando termos e declaração. Retomar onboarding exige capacidade de representação e autoridade atual; `started_by` não concede acesso residual. Entradas públicas estruturadas, sem consumidores web, passam a retornar UUID de trabalho; o assunto declarado fica no dossiê privado, sem criar companhia ou intake.
+
+O contexto opcional permite objetivo, audiência, prazo e momento da decisão; atualização usa revisão esperada. Vários dossiês podem ser associados; vínculo nunca concede acesso nem entrega seu conteúdo ao modelo. A edição é localizada, responsiva e não pede cargo. Os contextos históricos são criados vazios, sem inventar finalidade.
+
+Regressões dos motores legados constroem explicitamente a relação histórica com intake em fixtures transacionais. Não são prova de execução financeira sem documentos. Novos contratos cobrem cada entrada mantida, revogação do criador, replay entre trabalhos e retomada documental. O E2E acrescenta edição de contexto, dois dossiês pela interface e viewport móvel.
+
+Estado: implementação e verificação em andamento; este registro não fecha o incremento nem a etapa. Etapa 11 não iniciada.

@@ -60,6 +60,8 @@ begin
       or (select array_agg(task_id order by ordinal) from public.capital_project_plan_tasks where capital_project_id=project) is distinct from array['Q01','Q02','Q03'] then
       raise exception 'documentary compiler graph not persisted exactly';
     end if;
+    if exists(select 1 from public.document_intake_sessions where capital_project_id=project) then raise exception 'documentary intent created premature intake'; end if;
+    perform public.prepare_work_document_intake_v1(project,'pt-BR');
     if (select count(*) from public.document_intake_sessions where capital_project_id=project)<>1 then raise exception 'documentary session missing'; end if;
     replay := public.start_advisor_project_in_group_v1(request_id,'pt-BR','Synthetic '||entry,entry,'Compare os documentos sintéticos.','authorized_private',p,null);
     if replay->>'capital_project_id' is distinct from result->>'capital_project_id'

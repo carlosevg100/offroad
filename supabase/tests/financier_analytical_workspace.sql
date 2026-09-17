@@ -8,6 +8,7 @@
 begin;
 \ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 
 -- ---------------------------------------------------------------------------------------------
 -- Test helpers (pg_temp only; created before any role switch)
@@ -247,11 +248,11 @@ declare
   authorized uuid;
   session_row public.document_intake_sessions;
 begin
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f01', 'pt-BR', 'Revisão da oportunidade Farol', 'review_existing_operation',
     'Recebi a proposta da Companhia Farol e quero uma leitura própria antes do comitê.',
     'authorized_private', pg_temp.plan_for('review_existing_operation')
-  );
+  ));
   project_id := (started ->> 'capital_project_id')::uuid;
   session_id := (started ->> 'intake_session_id')::uuid;
   insert into financier_state (key, value) values ('project', project_id), ('session', session_id);
@@ -266,12 +267,12 @@ begin
     or (select access_basis from public.capital_projects where id = project_id) <> 'authorized_private'
     or (select count(*) from public.capital_project_plans where capital_project_id = project_id and status = 'active') <> 1
     or (select workspace_group_id from public.capital_projects where id = project_id) is not null
-    or (select count(*) from public.agent_messages where intake_session_id = session_id) <> 2 then
+    or (select count(*) from public.agent_messages where intake_session_id = session_id) <> 1 then
     raise exception 'financier project was not created as its own analysis: % / %', started, to_jsonb(session_row);
   end if;
 
   replayed := public.start_advisor_project_v1(
-    '30000000-0000-4000-8000-000000000f01', 'pt-BR', 'Ignorado', 'review_existing_operation', 'Replay ignorado',
+    '30000000-0000-4000-8000-000000000f01', 'pt-BR', 'Ignorado', 'review_existing_operation', 'Recebi a proposta da Companhia Farol e quero uma leitura própria antes do comitê.',
     'authorized_private', pg_temp.plan_for('review_existing_operation')
   );
   if replayed ->> 'replayed' <> 'true' or replayed ->> 'capital_project_id' <> project_id::text then
@@ -337,11 +338,11 @@ begin
   end if;
 
   -- A public-information project promoted to private keeps representation not declared.
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f02', 'pt-BR', 'Leitura pública da Companhia Farol', 'company_debt_view',
     'Quero entender a Companhia Farol pela ótica de dívida antes de pedir documentos.',
     'public_information', pg_temp.plan_for('company_debt_view')
-  );
+  ));
   public_project_id := (started ->> 'capital_project_id')::uuid;
   public_session_id := (started ->> 'intake_session_id')::uuid;
   insert into financier_state (key, value) values ('public_project', public_project_id);
@@ -520,10 +521,10 @@ declare
   started jsonb;
   project_id uuid;
 begin
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f05', 'en-US', 'Public view before the terms', 'company_debt_view',
     'Understand the target company through a debt lens.', 'public_information', pg_temp.plan_for('company_debt_view')
-  );
+  ));
   project_id := (started ->> 'capital_project_id')::uuid;
   insert into financier_state (key, value) values ('legacy_public_project', project_id);
   if (select organization_id from public.capital_projects where id = project_id) <> '20000000-0000-4000-8000-000000000f02' then
@@ -588,10 +589,10 @@ begin
   if bootstrap #>> '{organization,id}' <> '20000000-0000-4000-8000-000000000f01' then
     raise exception 'explicitly selected membership must be the displayed workspace: %', bootstrap;
   end if;
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f06', 'pt-BR', 'Planejamento no financiador', 'capital_planning',
     'Comparar alternativas para a companhia analisada.', 'public_information', pg_temp.plan_for('capital_planning')
-  );
+  ));
   folder_id := public.create_workspace_project_group('Pasta do financiador');
   if (select organization_id from public.capital_projects where id = (started ->> 'capital_project_id')::uuid) <> '20000000-0000-4000-8000-000000000f01'
     or (select organization_id from public.workspace_project_groups where id = folder_id) <> '20000000-0000-4000-8000-000000000f01' then
@@ -615,10 +616,10 @@ begin
   if bootstrap #>> '{organization,id}' <> '20000000-0000-4000-8000-000000000f03' then
     raise exception 'explicitly selected membership must be the displayed workspace (company first): %', bootstrap;
   end if;
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f07', 'pt-BR', 'Planejamento na companhia', 'capital_planning',
     'Comparar alternativas de financiamento da companhia.', 'public_information', pg_temp.plan_for('capital_planning')
-  );
+  ));
   if (select organization_id from public.capital_projects where id = (started ->> 'capital_project_id')::uuid) <> '20000000-0000-4000-8000-000000000f03'
     or (select journey from public.document_intake_sessions where id = (started ->> 'intake_session_id')::uuid) <> 'company' then
     raise exception 'company-first user created outside the displayed company workspace';
@@ -677,10 +678,10 @@ declare
   session_id uuid;
   session_row public.document_intake_sessions;
 begin
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     '30000000-0000-4000-8000-000000000f08', 'pt-BR', 'Tese para a reunião', 'origination_thesis',
     'Reunião com a Companhia Farol para chegar com leitura própria.', 'public_information', pg_temp.plan_for('origination_thesis')
-  );
+  ));
   if started ->> 'replayed' <> 'false'
     or (select journey from public.document_intake_sessions where id = (started ->> 'intake_session_id')::uuid) <> 'originator' then
     raise exception 'advisor origination thesis changed: %', started;

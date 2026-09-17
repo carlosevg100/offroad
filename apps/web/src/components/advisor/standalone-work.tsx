@@ -1,3 +1,4 @@
+import {WorkContextPanel} from "@/components/advisor/work-context-panel";
 import {AdvisorProject} from "./advisor-project";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -16,6 +17,7 @@ export async function StandaloneWork({locale, project}: {
   ]);
   if (error) throw new Error("work_conversation_unavailable");
   return <AdvisorProject
+    contextPanel={<WorkContextPanel locale={locale} workId={project.id} />}
     accessBasis={project.access_basis} artifacts={[]} copy={copy} documents={[]}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={(messages ?? []).map(message => ({id: message.id, role: message.role,

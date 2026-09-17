@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/execution_approval.sql
 
 -- Seed only this rollback test's synthetic human-review state. Production has no such helper.
@@ -209,10 +210,10 @@ declare
     'parallelBatches', jsonb_build_array(jsonb_build_array('C11'))
   );
 begin
-  session_id := public.start_public_capital_project_v2(
+  session_id := pg_temp.legacy_intake_for_work(public.start_public_capital_project_v2(
     'pt-BR', 'Projeto Teste do Deal Captain', 'company_debt_view',
     'Companhia Teste S.A.', '', plan
-  );
+  ));
   select session.capital_project_id into project_id
   from public.document_intake_sessions session where session.id = session_id;
   select capital_plan.id into base_plan_id

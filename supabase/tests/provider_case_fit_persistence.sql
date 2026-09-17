@@ -1,6 +1,7 @@
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/provider_case_fit_plan_snapshot.sql
 \ir support/provider_research_plan_snapshot.sql
 \ir support/execution_approval.sql
@@ -30,7 +31,7 @@ select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-00000000
 do $$
 declare original jsonb; r jsonb; replay jsonb; request uuid:=gen_random_uuid(); criteria jsonb; parent public.capital_project_plans; mutated jsonb;
 begin
- original:=public.start_advisor_project_v1(gen_random_uuid(),'pt-BR','Synthetic existing case','company_debt_view','Analisar a companhia.','public_information',pg_temp.provider_research_plan_fixture());
+ original:=pg_temp.legacy_advisor_result(public.start_advisor_project_v1(gen_random_uuid(),'pt-BR','Synthetic existing case','company_debt_view','Analisar a companhia.','public_information',pg_temp.provider_research_plan_fixture()));
  select * into strict parent from public.capital_project_plans where capital_project_id=(original->>'capital_project_id')::uuid and status='active';
  criteria:=jsonb_build_object('schemaVersion','provider-case-criteria.v1','asOf',now(),'currency','BRL','amount','2000000','source',jsonb_build_object('kind','user_confirmed','referenceId',request));
  begin

@@ -1,5 +1,5 @@
--- The conversational shell creates one project/session/plan/transcript atomically, replays the
--- same request and preserves tenant isolation. All fixtures roll back.
+-- Legacy conversation RPCs adapt to persistent work without creating an intake.
+-- Same-request replay, queue idempotency and cross-tenant denial. All fixtures roll back.
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
@@ -88,65 +88,40 @@ begin
   v_conversation_id := (started ->> 'conversation_id')::uuid;
 
   if started ->> 'replayed' <> 'false'
-    or (select count(*) from public.capital_projects where id = project_id) <> 1
-    or (select count(*) from public.document_intake_sessions where id = session_id and representation_status = 'not_claimed') <> 1
-    or (select count(*) from public.capital_project_plans where capital_project_id = project_id and status = 'active') <> 1
-    or (select count(*) from public.agent_conversations where id = v_conversation_id and intake_session_id = session_id) <> 1
-    or (select count(*) from public.agent_messages message where message.conversation_id = v_conversation_id) <> 2 then
-    raise exception 'advisor start did not create one coherent memory: %', started;
+    or session_id is not null
+    or exists(select 1 from public.document_intake_sessions where capital_project_id=project_id)
+    or (select company_id from public.capital_projects where id=project_id) is not null
+    or (select workspace_group_id from public.capital_projects where id=project_id) is not null
+    or (select count(*) from public.capital_project_plans where capital_project_id=project_id and status='active')<>1
+    or (select count(*) from public.agent_conversations where id=v_conversation_id and work_id=project_id and intake_session_id is null)<>1
+    or (select count(*) from public.agent_messages where conversation_id=v_conversation_id)<>1 then
+    raise exception 'legacy start did not delegate to persistent work: %',started;
   end if;
-
-  replayed := public.start_advisor_project_v1(
-    request_id, 'pt-BR', 'Ignored', 'origination_thesis', 'Ignored replay content',
-    'public_information', plan_snapshot
-  );
-  if replayed ->> 'replayed' <> 'true'
-    or replayed ->> 'capital_project_id' <> project_id::text
-    or (select count(*) from public.capital_projects where id = project_id) <> 1 then
-    raise exception 'advisor start was not idempotent: %', replayed;
+  replayed:=public.start_advisor_project_v1(request_id,'pt-BR','Ignored','origination_thesis',
+    'Vou me reunir com a Companhia Farol e quero chegar com uma leitura própria.','public_information',plan_snapshot);
+  if replayed->>'replayed'<>'true' or replayed->>'capital_project_id'<>project_id::text then
+    raise exception 'legacy replay duplicated work';
   end if;
-
-  duplicate_name_started := public.start_advisor_project_v1(
-    duplicate_name_request_id, 'pt-BR', 'Projeto Conversacional', 'origination_thesis',
-    'Uma nova reunião com a Companhia Farol deve abrir outro projeto.',
-    'public_information', plan_snapshot
-  );
-  if duplicate_name_started ->> 'replayed' <> 'false'
-    or duplicate_name_started ->> 'capital_project_id' = project_id::text
-    or (select count(*) from public.capital_projects
-        where organization_id = '20000000-0000-4000-8000-000000000221'
-          and project_name in ('Projeto Conversacional', 'Projeto Conversacional · 300000')) <> 2 then
-    raise exception 'repeated project name was not resolved atomically: %', duplicate_name_started;
+  begin
+    perform public.start_advisor_project_v1(request_id,'pt-BR','Ignored','origination_thesis','Changed objective','public_information',plan_snapshot);
+    raise exception 'legacy replay accepted changed intent';
+  exception when invalid_parameter_value then null; end;
+  queued:=public.queue_advisor_initial_turn_v1(project_id);
+  v_initial_job_id:=(queued->>'jobId')::uuid;
+  if v_initial_job_id is null or (select count(*) from public.processing_jobs where id=v_initial_job_id and kind='work_conversation' and intake_session_id is null)<>1 then
+    raise exception 'legacy initial queue did not delegate to lightweight work';
   end if;
-
-  appended := public.append_advisor_message_v1(
-    project_id, second_message_id, 'pt-BR', 'A reunião será com o CFO e a tesouraria.'
-  );
-  if appended ->> 'replayed' <> 'false'
-    or (select count(*) from public.agent_messages message where message.conversation_id = v_conversation_id) <> 4 then
-    raise exception 'advisor continuation did not preserve the transcript: %', appended;
+  queued:=public.queue_advisor_initial_turn_v1(project_id);
+  if queued->>'replayed'<>'true' or queued->>'jobId'<>v_initial_job_id::text then raise exception 'initial queue duplicated work'; end if;
+  duplicate_name_started:=public.start_advisor_project_v1(duplicate_name_request_id,'pt-BR','Projeto Conversacional','origination_thesis',
+    'Uma nova reunião com a Companhia Farol deve abrir outro projeto.','public_information',plan_snapshot);
+  if duplicate_name_started->>'capital_project_id'=project_id::text then raise exception 'title replaced identity'; end if;
+  appended:=public.append_advisor_message_v1((duplicate_name_started->>'capital_project_id')::uuid,second_message_id,'pt-BR','A reunião será com o CFO e a tesouraria.');
+  if appended->>'jobId' is null or (select count(*) from public.agent_messages where work_id=(duplicate_name_started->>'capital_project_id')::uuid)<>2 then
+    raise exception 'legacy append did not persist a real turn';
   end if;
-  appended := public.append_advisor_message_v1(
-    project_id, second_message_id, 'pt-BR', 'A reunião será com o CFO e a tesouraria.'
-  );
-  if appended ->> 'replayed' <> 'true'
-    or (select count(*) from public.agent_messages message where message.conversation_id = v_conversation_id) <> 4 then
-    raise exception 'advisor continuation replay duplicated messages: %', appended;
-  end if;
-
-  queued := public.queue_advisor_initial_turn_v1(project_id);
-  v_initial_job_id := (queued ->> 'job_id')::uuid;
-  if queued ->> 'replayed' <> 'false'
-    or v_initial_job_id is null
-    or (select status from public.agent_messages where id = request_id) <> 'queued'
-    or (select count(*) from public.agent_messages message where message.conversation_id = v_conversation_id) <> 3 then
-    raise exception 'initial advisor turn was not queued once: %', queued;
-  end if;
-  queued := public.queue_advisor_initial_turn_v1(project_id);
-  if queued ->> 'replayed' <> 'true'
-    or queued ->> 'job_id' <> v_initial_job_id::text then
-    raise exception 'initial advisor turn queue replay duplicated work: %', queued;
-  end if;
+  appended:=public.append_advisor_message_v1((duplicate_name_started->>'capital_project_id')::uuid,second_message_id,'pt-BR','A reunião será com o CFO e a tesouraria.');
+  if appended->>'replayed'<>'true' then raise exception 'legacy append replay duplicated work'; end if;
 end;
 $$;
 

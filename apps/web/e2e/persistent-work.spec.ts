@@ -51,6 +51,33 @@ test("standalone work persists through logout and receives documents without cha
     commit;`);
   await page.reload();
   await expect(page.locator(".advisor-thread")).toContainText("Synthetic persisted transport response");
+  // Additional synthetic work subjects exercise real context editing and dossier linking.
+  sql(`begin;
+    select set_config('request.jwt.claim.sub',(select created_by::text from public.capital_projects where id='${workId}'),true);
+    select set_config('request.headers',json_build_object('x-offroad-workspace',(select organization_id from public.capital_projects where id='${workId}'))::text,true);
+    select public.start_work_v1(gen_random_uuid(),'pt-BR','Synthetic related one','Synthetic dossier one','company_debt_view','public_information',null,null,false);
+    select public.start_work_v1(gen_random_uuid(),'pt-BR','Synthetic related two','Synthetic dossier two','company_debt_view','public_information',null,null,false);
+    commit;`);
+  await page.reload();
+  const workContext = page.getByTestId("work-context");
+  await workContext.locator("summary").click();
+  await workContext.getByLabel("Objetivo", {exact: true}).fill("Synthetic decision for the board");
+  await workContext.getByLabel("Para quem é este trabalho?").fill("Synthetic board");
+  await workContext.getByLabel("Momento da decisão").selectOption("preparing");
+  await workContext.getByRole("button", {name: "Salvar contexto"}).click();
+  await expect(workContext.getByRole("status")).toHaveText("Contexto salvo.");
+  for (const name of ["Synthetic related one", "Synthetic related two"]) {
+    await workContext.locator('select[name="dossierId"]').selectOption({label: name});
+    await workContext.getByRole("button", {name: "Relacionar dossiê"}).click();
+    await expect(workContext.locator("li").filter({hasText: name})).toBeVisible();
+  }
+  expect(JSON.parse(sql(`select json_build_object('purpose',purpose,'audience',audience,'commitment',commitment,'revision',revision) from public.work_contexts where work_id='${workId}';`)))
+    .toEqual({purpose: "Synthetic decision for the board", audience: "Synthetic board", commitment: "preparing", revision: 2});
+  expect(Number(sql(`select count(*) from public.work_dossiers where work_id='${workId}';`))).toBe(2);
+  await page.setViewportSize({width: 390, height: 844});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await test.info().attach("persistent-work-context-mobile", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+  await page.setViewportSize({width: 1440, height: 1000});
   // A fresh application process loads the same durable history. The shared test server
   // keeps running, so this deploy-resume check cannot interrupt the other journeys.
   const socket = createServer();
@@ -103,5 +130,10 @@ test("standalone work persists through logout and receives documents without cha
   await expect(page.locator(".advisor-thread")).toContainText(question);
   await expect(page.locator(".advisor-thread")).toContainText("Synthetic persisted transport response");
   expect(Number(sql(`select count(*) from public.document_intake_sessions where capital_project_id='${workId}';`))).toBe(1);
+  const persistedReply = page.locator(".advisor-thread__message p").filter({hasText: "Synthetic persisted transport response"});
+  await persistedReply.scrollIntoViewIfNeeded();
+  await expect(persistedReply).toBeVisible();
+  await expect(persistedReply).toBeInViewport();
+  await test.info().attach("persistent-work-visible-history", {body: await page.locator(".advisor-thread").screenshot(), contentType: "image/png"});
   await test.info().attach("persistent-work-after-upload", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 });

@@ -6131,5 +6131,28 @@
     "saved": "Alteração salva.",
     "invalid": "Confira os campos informados.",
     "denied": "Você não tem autorização para esta alteração."
+  },
+  "WorkContext": {
+    "title": "Contexto do trabalho",
+    "purpose": "Objetivo",
+    "audience": "Para quem é este trabalho?",
+    "deadline": "Prazo",
+    "commitment": "Momento da decisão",
+    "exploring": "Explorando possibilidades",
+    "preparing": "Preparando uma decisão",
+    "deciding": "Pronto para decidir",
+    "save": "Salvar contexto",
+    "saved": "Contexto salvo.",
+    "dossiers": "Dossiês relacionados",
+    "dossiersHelp": "Relacione os dossiês que ajudam a organizar este trabalho. O acesso de cada pessoa continua sujeito às permissões de cada dossiê.",
+    "chooseDossier": "Escolher dossiê",
+    "link": "Relacionar dossiê",
+    "unnamed": "Dossiê",
+    "errors": {
+      "invalid": "Revise os campos informados.",
+      "denied": "Você não tem permissão para fazer essa alteração.",
+      "stale": "O contexto mudou desde que você abriu a página. Atualize para ver a versão atual.",
+      "save": "Não foi possível salvar. Tente novamente."
+    }
   }
 }
