@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -102,11 +103,11 @@ begin
     ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
 
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     source_request_id, 'pt-BR', 'Reunião Camil', 'origination_thesis',
     'Meu VP pediu material para uma reunião com a Camil sobre refinanciamento.',
     'public_information', plan_snapshot
-  );
+  ));
   perform public.queue_advisor_initial_turn_v1((started ->> 'capital_project_id')::uuid);
   perform set_config('test.capital_project_id', started ->> 'capital_project_id', true);
 end;

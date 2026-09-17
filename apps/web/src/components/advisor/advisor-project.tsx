@@ -114,6 +114,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
+  contextPanel?: ReactNode;
   workSections?: AdvisorWorkSection[];
   initialWorkSectionId?: string;
   executionBrief?: {approval?: ExecutionBriefApproval; brief: VisibleExecutionBrief; briefId: string; changes: readonly ExecutionBriefChange[]; createdAt: string; narrative: ExecutionBriefNarrative | null; progress: ExecutionBriefProgress | null; version: number} | null;
@@ -337,6 +338,8 @@ export function AdvisorProject(props: Props) {
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>
           <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.executionBrief?.approval?.status === "awaiting" ? approvalCopy("approval.awaiting.title") : props.copy.ready}</span>
         </header>
+
+        {props.contextPanel}
 
         {props.documents.length > 0 || props.executionBrief || props.coverage.total > 0 ? <AdvisorEvidenceInventory
           disabled={pending || uploading} onAttach={() => inputRef.current?.click()}

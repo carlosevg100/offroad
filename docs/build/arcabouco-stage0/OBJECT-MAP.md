@@ -1729,10 +1729,10 @@ A detecção usa specifiers exatos de import/export/require. `apps/web`, cujo no
 | `apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/route.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/model/[sessionId]/route.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/new/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/new/company-debt/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/new/company-debt/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/new/origination/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
-| `apps/web/src/app/[locale]/app/new/origination/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
+| `apps/web/src/app/[locale]/app/new/company-debt/actions.ts` | entrypoint | apagar | 10 | Formulário retirado; nenhuma action independente de criação de companhia. |
+| `apps/web/src/app/[locale]/app/new/company-debt/page.tsx` | entrypoint | substituir | 10 | Link histórico redireciona à conversa canônica, sem formulário obrigatório de companhia. |
+| `apps/web/src/app/[locale]/app/new/origination/actions.ts` | entrypoint | apagar | 10 | Formulário retirado; nenhuma action independente de criação de companhia. |
+| `apps/web/src/app/[locale]/app/new/origination/page.tsx` | entrypoint | substituir | 10 | Link histórico redireciona à conversa canônica, sem formulário obrigatório de companhia. |
 | `apps/web/src/app/[locale]/app/new/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/opportunities/[opportunityId]/actions.ts` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
 | `apps/web/src/app/[locale]/app/opportunities/[opportunityId]/page.tsx` | entrypoint | refatorar | 1B, 2, 10, 19, 23 | Manter rota ou comando sob autorização vigente; impedir atalho durante substituição do legado. |
@@ -2331,3 +2331,9 @@ Migrações adicionais:
 - `function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
 - `function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
 - `function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+
+## Atualização da etapa 10, 17/09/2026
+
+0 superfícies novas conferidas nos dois ambientes. Adaptadores antigos consolidados após a web compatível; contexto e dossiês editáveis sem intake automático.
+
+Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, preservar na etapa 10; revisão esperada e autorização atual nas duas mutações.

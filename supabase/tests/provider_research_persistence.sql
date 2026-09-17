@@ -1,6 +1,7 @@
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/provider_research_plan_snapshot.sql
 \ir support/execution_approval.sql
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values
@@ -29,6 +30,7 @@ select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-00000000
 do $$
 declare p jsonb:=pg_temp.provider_research_plan_fixture(); r jsonb; replay jsonb; request uuid:=gen_random_uuid(); mutation jsonb;
 begin
+  perform pg_temp.legacy_advisor_result(public.start_advisor_project_v1(request,'pt-BR','Synthetic provider research',p#>>'{job,id}','Pesquise os financiadores disponíveis para nossa organização.','public_information',p));
   r:=public.start_provider_research_project_v1(request,'pt-BR','Synthetic provider research','Pesquise os financiadores disponíveis para nossa organização.',p,null);
   replay:=public.start_provider_research_project_v1(request,'pt-BR','Synthetic provider research','Pesquise os financiadores disponíveis para nossa organização.',p,null);
   if replay->>'research_job_id' is distinct from r->>'research_job_id' then raise exception 'research replay duplicated job'; end if;

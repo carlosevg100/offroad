@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (
@@ -89,6 +90,11 @@ begin
     ('C11','Compilar tese de estruturação','case',array['C09','C10'],'judgment','propose_state',23,16)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
 
+  perform pg_temp.legacy_specialized_work(
+    request_id, 'pt-BR', 'Projeto Cedro', 'Cedro Distribuição S.A.', 'https://cedro.example',
+    jsonb_build_object('focus', 'Compreender situação financeira, riscos e capacidade antes de escolher uma operação.'),
+    plan_snapshot
+  );
   first_result := public.start_public_company_debt_view_v1(
     request_id, 'pt-BR', 'Projeto Cedro', 'Cedro Distribuição S.A.', 'https://cedro.example',
     jsonb_build_object('focus', 'Compreender situação financeira, riscos e capacidade antes de escolher uma operação.'),
@@ -104,7 +110,9 @@ begin
   end if;
 
   replay_result := public.start_public_company_debt_view_v1(
-    request_id, 'pt-BR', 'Ignored', 'Ignored S.A.', '', '{}'::jsonb, plan_snapshot
+    request_id, 'pt-BR', 'Projeto Cedro', 'Cedro Distribuição S.A.', 'https://cedro.example',
+    jsonb_build_object('focus', 'Compreender situação financeira, riscos e capacidade antes de escolher uma operação.'),
+    plan_snapshot
   );
   if replay_result ->> 'replayed' <> 'true'
     or replay_result ->> 'capital_project_id' <> project_id::text

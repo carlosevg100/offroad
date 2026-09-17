@@ -1,3 +1,4 @@
+import {WorkContextPanel} from "@/components/advisor/work-context-panel";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
 import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
@@ -714,6 +715,7 @@ async function ConversationalCapitalProject({
   }
 
   return <AdvisorProject
+    contextPanel={<WorkContextPanel locale={locale} workId={project.id} />}
     workEntry={{
       context: {
         accessBasis: project.access_basis,

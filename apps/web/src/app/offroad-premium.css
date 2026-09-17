@@ -13494,3 +13494,9 @@ button[disabled].workspace-search,
   margin: 16px auto 0;
   max-width: 760px;
 }
+
+/* Keep the mobile work column usable while the desktop rail collapses. */
+@media (max-width: 640px) {
+  .application-shell:has(.advisor-project) {grid-template-columns: 58px minmax(0, 1fr);}
+  .application-shell:has(.advisor-project) > .app-rail {width: 58px; transition: none;}
+}

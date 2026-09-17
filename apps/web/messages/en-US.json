@@ -6131,5 +6131,28 @@
     "saved": "Changes saved.",
     "invalid": "Check the submitted fields.",
     "denied": "You are not authorized to make this change."
+  },
+  "WorkContext": {
+    "title": "Work context",
+    "purpose": "Objective",
+    "audience": "Who is this work for?",
+    "deadline": "Deadline",
+    "commitment": "Decision readiness",
+    "exploring": "Exploring possibilities",
+    "preparing": "Preparing a decision",
+    "deciding": "Ready to decide",
+    "save": "Save context",
+    "saved": "Context saved.",
+    "dossiers": "Related dossiers",
+    "dossiersHelp": "Link the dossiers that help organize this work. Each person’s access remains subject to the permissions of each dossier.",
+    "chooseDossier": "Choose a dossier",
+    "link": "Link dossier",
+    "unnamed": "Dossier",
+    "errors": {
+      "invalid": "Review the fields provided.",
+      "denied": "You do not have permission to make this change.",
+      "stale": "The context has changed since you opened the page. Refresh to see the current version.",
+      "save": "Unable to save. Please try again."
+    }
   }
 }

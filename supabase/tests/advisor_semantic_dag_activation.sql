@@ -3,6 +3,7 @@
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 \ir support/execution_approval.sql
 
 insert into auth.users (
@@ -106,11 +107,11 @@ begin
     ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
 
-  started := public.start_advisor_project_v1(
+  started := pg_temp.legacy_advisor_result(public.start_advisor_project_v1(
     source_request_id, 'pt-BR', 'Reunião Farol', 'origination_thesis',
     'Tenho uma reunião com a Companhia Farol e quero preparar uma tese de originação de dívida.',
     'public_information', plan_snapshot
-  );
+  ));
   perform public.queue_advisor_initial_turn_v1((started ->> 'capital_project_id')::uuid);
 end;
 $$;

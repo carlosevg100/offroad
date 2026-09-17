@@ -3,6 +3,7 @@
 begin;
 \ir support/source_rights_fixture.sql
 \ir support/legacy_workspace_capabilities.sql
+\ir support/legacy_persistent_work_fixture.sql
 
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
@@ -361,10 +362,10 @@ declare
   project_id uuid;
   accepted boolean;
 begin
-  session_id := public.start_public_capital_project(
+  session_id := pg_temp.legacy_intake_for_work(public.start_public_capital_project(
     'pt-BR', 'Tese Pública Cliente C', 'origination_thesis',
     'Cliente C S.A.', 'https://cliente-c.example'
-  );
+  ));
   select capital_project_id into project_id
   from public.document_intake_sessions
   where id = session_id;
@@ -507,10 +508,10 @@ begin
     ('K04','Pesquisar transações comparáveis','market',array['M01','M04'],'research','commit',8,2)
   ) spec(id,label,graph,dependencies,execution_class,effect,ordinal,batch);
 
-  session_id := public.start_public_capital_project_v2(
+  session_id := pg_temp.legacy_intake_for_work(public.start_public_capital_project_v2(
     'pt-BR', 'Tese com plano persistido', 'origination_thesis',
     'Cliente Planejado S.A.', 'https://cliente-planejado.example', plan_snapshot
-  );
+  ));
   select capital_project_id into project_id
   from public.document_intake_sessions where id = session_id;
 

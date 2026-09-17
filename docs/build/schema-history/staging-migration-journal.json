@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-17T19:58:37.339527+00:00",
+  "captured_at": "2026-09-17T20:51:02.513Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1409,6 +1409,18 @@
     {
       "version": "20260917194611",
       "name": "persistent_work_commands"
+    },
+    {
+      "version": "20260917203501",
+      "name": "persistent_work_legacy_adapters"
+    },
+    {
+      "version": "20260917204438",
+      "name": "persistent_work_specialized_adapters"
+    },
+    {
+      "version": "20260917204826",
+      "name": "persistent_work_specialized_replay_scope"
     }
   ]
 }
