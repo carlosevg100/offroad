@@ -89,7 +89,7 @@ test("legacy work preserves approved provider research and keeps private mandate
   await history.locator("summary").first().click();
   await expect(history.getByTestId("provider-research-work")).toHaveText(text!);
   // The initial request remains in the conversation; no workspace restart occurred.
-  await expect(page.getByText(request, {exact: true}).first()).toBeVisible();
+  await expect(page.locator(".advisor-thread").getByText(request, {exact: true})).toBeVisible();
   // Actual authenticated market navigation exercises client messages, hydration and separation
   // from the already persisted private research artifact. No external links are followed.
   await page.locator('.app-rail__nav a[href="/pt-BR/app/market"]').click();

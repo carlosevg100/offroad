@@ -61,7 +61,7 @@ test("standalone work persists through logout and receives documents without cha
   await page.reload();
   const workContext = page.getByTestId("work-context");
   await workContext.locator("summary").click();
-  await workContext.getByLabel("Objetivo", {exact: true}).fill("Synthetic decision for the board");
+  await workContext.getByRole("textbox", {name: "Objetivo", exact: true}).fill("Synthetic decision for the board");
   await workContext.getByLabel("Para quem é este trabalho?").fill("Synthetic board");
   await workContext.getByLabel("Momento da decisão").selectOption("preparing");
   await workContext.getByRole("button", {name: "Salvar contexto"}).click();
