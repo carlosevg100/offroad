@@ -9,6 +9,11 @@ describe("domain event envelope",()=>{
   expect(domainEventSchema.safeParse({...event,aggregateKind:"access_policy",effect:"grant_access"}).success).toBe(false);
   expect(domainEventSchema.safeParse({...event,aggregateKind:"access_policy",protected_state:{}}).success).toBe(false);
  });
+ it.each(["observation", "metric_definition"])("accepts content-free %s before its producer is deployed",(aggregateKind)=>{
+  expect(domainEventSchema.safeParse({...event,aggregateKind}).success).toBe(true);
+  expect(domainEventSchema.safeParse({...event,aggregateKind,effect:"adopt_observation"}).success).toBe(false);
+  expect(domainEventSchema.safeParse({...event,aggregateKind,value:"10"}).success).toBe(false);
+ });
  it("rejects unsupported effects, unsafe versions and sensitive payload",()=>{
   for(const patch of [{effect:"send_email"},{aggregateVersion:0},{aggregateVersion:Number.MAX_SAFE_INTEGER+1},{protected_state:{}},{actorKind:"user"}]) expect(domainEventSchema.safeParse({...event,...patch}).success).toBe(false);
  });

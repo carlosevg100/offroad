@@ -1,3 +1,13 @@
+## Etapa 8: compatibilidade do consumidor antes da migração
+
+O worker passa a reconhecer envelopes sem conteúdo dos agregados `observation` e
+`metric_definition`, usando a mesma capacidade e confirmação transacional existentes.
+Contratos validam valor decimal exato, dimensões desconhecidas explícitas, fonte/âncora
+e definição contratual vinculada à versão do contrato. Não há produtor novo, tabela,
+backfill, adoção ou publicação neste incremento. A migração só emitirá esses eventos
+depois de este consumidor estar implantado. Etapa 8 em execução; etapa 9 não autorizada.
+Testes negativos recusam efeitos novos, valores no envelope e auto-publicação.
+
 ## Onda 7 autorizada: observações e definições
 
 Etapa 8 autorizada pelo fundador após a etapa 7. Baseline `a4ff8caaaa7c91d65cbfa8020a1a6e70044cf561`; revisão de abertura
