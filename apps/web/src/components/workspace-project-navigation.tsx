@@ -124,6 +124,7 @@ export function ProjectActions({copy, locale, project}: {copy: WorkspaceNavigati
         <form action={renameAction} onSubmit={() => {setRenaming(false); setOpen(false);}}>
           <input name="locale" type="hidden" value={locale} />
           <input name="session_id" type="hidden" value={project.id} />
+          <input name="work_id" type="hidden" value={project.projectId ?? ""} />
           <label><span><Pencil aria-hidden="true" size={13} />{copy.rename}</span><input autoFocus defaultValue={project.name} maxLength={80} minLength={2} name="project_name" required /></label>
           <div className="workspace-project-actions__row">
             <button className="is-quiet" onClick={() => setRenaming(false)} type="button"><X aria-hidden="true" size={13} /></button>
@@ -136,6 +137,7 @@ export function ProjectActions({copy, locale, project}: {copy: WorkspaceNavigati
       }}>
         <input name="locale" type="hidden" value={locale} />
         <input name="session_id" type="hidden" value={project.id} />
+          <input name="work_id" type="hidden" value={project.projectId ?? ""} />
         <button className="workspace-project-actions__archive" disabled={archivePending} type="submit"><Archive aria-hidden="true" size={13} />{copy.archive}</button>
       </form>
       {errorCode ? <p role="alert"><X aria-hidden="true" size={12} />{copy.errors[errorCode]}</p> : null}

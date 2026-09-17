@@ -1,10 +1,11 @@
+import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
 import {expect, test} from "@playwright/test";
 import {waitForOneTimeCode} from "./support/mail";
 
 // Runs with the normal local worker, without provider credentials, seeded results or model calls.
-test("approved provider research persists public sources while private mandates remain empty", async ({page}) => {
+test("legacy work preserves approved provider research and keeps private mandates empty", async ({page}) => {
   const base = new URL(process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000");
   if (!["127.0.0.1", "localhost", "[::1]"].includes(base.hostname)) throw new Error("Provider research E2E requires a local synthetic workspace.");
   const id = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -33,12 +34,9 @@ test("approved provider research persists public sources while private mandates 
   await page.locator('input[name="project_name"]').fill(`Onboarding sintético ${id}`);
   await page.locator('.private-project-gate__form button[type="submit"]').click();
   await expect(page.locator(".intake-collect")).toBeVisible();
-  await page.goto("/pt-BR/app");
-  const composer = page.locator(".advisor-composer--start");
   const request = "Pesquise os financiadores e mandatos disponíveis para minha organização.";
-  await composer.locator("textarea").fill(request);
-  await composer.locator(".advisor-composer__send").click();
-  await expect(page).toHaveURL(/\/pt-BR\/app\/projects\/[0-9a-f-]+$/);
+  const historicalWorkId = startLegacyConversation(email, request, true);
+  await page.goto(`/pt-BR/app/projects/${historicalWorkId}`);
   const brief = page.getByTestId("execution-brief");
   await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible({timeout: 120_000});
   await expect(brief).toContainText(request);

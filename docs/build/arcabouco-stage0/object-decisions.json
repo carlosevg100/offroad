@@ -1118,6 +1118,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+          "kind": "function",
+          "name": "append_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+          "kind": "function",
+          "name": "append_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 73,
+          "anchor": "create function private.append_work_turn_v1(p_work_id uuid,p_message_id uuid,p_locale text,p_content text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:private.apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -2666,48 +2731,11 @@
     {
       "id": "function:private.bind_workspace_group_after_capital_project_insert()",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.bind_workspace_group_after_capital_project_insert()",
-          "kind": "function",
-          "name": "bind_workspace_group_after_capital_project_insert",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.bind_workspace_group_after_capital_project_insert()",
-          "kind": "function",
-          "name": "bind_workspace_group_after_capital_project_insert",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "",
-          "security_definer": true
-        }
-      },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "catalogues": {},
+      "owner": "Codex, etapa 10",
+      "decision": "apagar",
+      "stage": "10",
+      "reason": "Criação automática de pasta retirada; só ação humana cria agrupamento.",
       "sources": [
         {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
@@ -2722,7 +2750,7 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Retirado nos dois ambientes pela migração persistent_work_commands."
     },
     {
       "id": "function:private.bootstrap_organization_rollout_policy()",
@@ -8139,6 +8167,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.enqueue_work_turn_v1(p_work_id uuid, p_message_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enqueue_work_turn_v1(p_work_id uuid, p_message_id uuid)",
+          "kind": "function",
+          "name": "enqueue_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.enqueue_work_turn_v1(p_work_id uuid, p_message_id uuid)",
+          "kind": "function",
+          "name": "enqueue_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 7,
+          "anchor": "create function private.enqueue_work_turn_v1(p_work_id uuid,p_message_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:private.ensure_basis_entity_v1(p_dossier_id uuid, p_name text, p_namespace text, p_value text, p_reason text)",
       "kind": "function",
       "catalogues": {
@@ -12969,6 +13052,71 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+          "kind": "function",
+          "name": "link_work_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_dossier_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+          "kind": "function",
+          "name": "link_work_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_dossier_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 126,
+          "anchor": "create function private.link_work_dossier_v1(p_work_id uuid,p_dossier_id uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -13397,6 +13545,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+          "kind": "function",
+          "name": "manage_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_action text, p_title text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+          "kind": "function",
+          "name": "manage_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_action text, p_title text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 173,
+          "anchor": "create function private.manage_work_v1(p_work_id uuid,p_action text,p_title text default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:private.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)",
@@ -14419,6 +14632,71 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+          "kind": "function",
+          "name": "prepare_work_document_intake_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+          "kind": "function",
+          "name": "prepare_work_document_intake_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 98,
+          "anchor": "create function private.prepare_work_document_intake_v1(p_work_id uuid,p_locale text,p_plan jsonb default null) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:private.presentation_template_pdf_fonts()",
@@ -26611,6 +26889,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+          "kind": "function",
+          "name": "start_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+          "kind": "function",
+          "name": "start_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 30,
+          "anchor": "create function private.start_work_v1(p_request_id uuid,p_locale text,p_title text,p_prompt text,p_entry_job text default 'company_debt_view',p_access_basis text default 'public_information',p_plan jsonb default null,p_group_id uuid default null,p_enqueue boolean default true) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:private.start_workspace_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
       "kind": "function",
       "catalogues": {
@@ -28366,6 +28709,71 @@
       ],
       "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
       "last_review_stage": "1A"
+    },
+    {
+      "id": "function:private.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+          "kind": "function",
+          "name": "update_work_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+          "kind": "function",
+          "name": "update_work_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 140,
+          "anchor": "create function private.update_work_context_v1(p_work_id uuid,p_expected_revision bigint,p_context jsonb) returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:private.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
@@ -39557,6 +39965,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+          "kind": "function",
+          "name": "append_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)",
+          "kind": "function",
+          "name": "append_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_message_id uuid, p_locale text, p_content text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 94,
+          "anchor": "create function public.append_work_turn_v1(p_work_id uuid,p_message_id uuid,p_locale text,p_content text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:public.apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -43181,6 +43654,71 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:public.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+          "kind": "function",
+          "name": "link_work_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_dossier_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)",
+          "kind": "function",
+          "name": "link_work_dossier_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_dossier_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 137,
+          "anchor": "create function public.link_work_dossier_v1(p_work_id uuid,p_dossier_id uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:public.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -43457,6 +43995,71 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+          "kind": "function",
+          "name": "manage_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_action text, p_title text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
+          "kind": "function",
+          "name": "manage_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_action text, p_title text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 195,
+          "anchor": "create function public.manage_work_v1(p_work_id uuid,p_action text,p_title text default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:public.manage_workspace_project(p_session_id uuid, p_action text, p_project_name text)",
@@ -43813,6 +44416,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+          "kind": "function",
+          "name": "prepare_work_document_intake_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)",
+          "kind": "function",
+          "name": "prepare_work_document_intake_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 123,
+          "anchor": "create function public.prepare_work_document_intake_v1(p_work_id uuid,p_locale text,p_plan jsonb default null) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:public.propagate_project_canonical_revision_v1(p_project_id uuid, p_request_id uuid, p_locale text)",
@@ -52440,6 +53108,71 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+          "kind": "function",
+          "name": "start_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)",
+          "kind": "function",
+          "name": "start_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 70,
+          "anchor": "create function public.start_work_v1(p_request_id uuid,p_locale text,p_title text,p_prompt text,p_entry_job text default 'company_debt_view',p_access_basis text default 'public_information',p_plan jsonb default null,p_group_id uuid default null,p_enqueue boolean default true) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
       "id": "function:public.start_workspace_capital_project(p_locale text, p_project_name text, p_identity_policy text, p_representation_declared boolean, p_entry_job text)",
       "kind": "function",
       "catalogues": {
@@ -53409,6 +54142,71 @@
       ],
       "consumer_status": "Invocado por políticas RLS, comandos de cadastro ou transferência conforme contrato 1A.",
       "last_review_stage": "1A"
+    },
+    {
+      "id": "function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+          "kind": "function",
+          "name": "update_work_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)",
+          "kind": "function",
+          "name": "update_work_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_expected_revision bigint, p_context jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+          "line": 159,
+          "anchor": "create function public.update_work_context_v1(p_work_id uuid,p_expected_revision bigint,p_context jsonb) returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
       "id": "function:public.update_workspace_project(p_session_id uuid, p_project_name text, p_identity_policy text)",
@@ -121369,32 +122167,11 @@
     {
       "id": "trigger:public.capital_projects.capital_projects_bind_workspace_group",
       "kind": "trigger",
-      "catalogues": {
-        "production": {
-          "id": "trigger:public.capital_projects.capital_projects_bind_workspace_group",
-          "kind": "trigger",
-          "name": "capital_projects_bind_workspace_group",
-          "table": "capital_projects",
-          "schema": "public",
-          "enabled": "O",
-          "function": "private.bind_workspace_group_after_capital_project_insert()",
-          "definition": "CREATE TRIGGER capital_projects_bind_workspace_group AFTER INSERT ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.bind_workspace_group_after_capital_project_insert()"
-        },
-        "staging": {
-          "id": "trigger:public.capital_projects.capital_projects_bind_workspace_group",
-          "kind": "trigger",
-          "name": "capital_projects_bind_workspace_group",
-          "table": "capital_projects",
-          "schema": "public",
-          "enabled": "O",
-          "function": "private.bind_workspace_group_after_capital_project_insert()",
-          "definition": "CREATE TRIGGER capital_projects_bind_workspace_group AFTER INSERT ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.bind_workspace_group_after_capital_project_insert()"
-        }
-      },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "preservar",
-      "stage": "1B, 10",
-      "reason": "Preservar vínculo de trigger e função instalada; mudanças seguem a autoridade e linhagem da tabela public.capital_projects.",
+      "catalogues": {},
+      "owner": "Codex, etapa 10",
+      "decision": "apagar",
+      "stage": "10",
+      "reason": "Criação automática de pasta retirada; só ação humana cria agrupamento.",
       "sources": [
         {
           "path": "supabase/migrations/20260902175803_workspace_project_groups.sql",
@@ -121403,7 +122180,7 @@
           "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+      "consumer_status": "Retirado nos dois ambientes pela migração persistent_work_commands."
     },
     {
       "id": "trigger:public.capital_projects.capital_projects_normalize_access_basis",
@@ -133989,8 +134766,8 @@
       "path": "packages/work-plan",
       "name": "@offroad/work-plan",
       "decision": "refatorar",
-      "stage": "10, 13, 17",
-      "reason": "planejar por intenção e composição de procedimentos",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [
         {
           "path": "apps/web/src/components/capital-job-launcher.tsx",
@@ -136983,6 +137760,13 @@
       "decision": "preservar",
       "stage": "10",
       "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917195617_persistent_work_commands.sql",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -137501,6 +138285,13 @@
       "20260917191714"
     ],
     "new_objects": 28,
+    "review": "docs/build/arcabouco/etapa-10.md"
+  },
+  "stage_10_entry_revision": {
+    "production_migrations": [
+      "20260917195617"
+    ],
+    "new_objects": 13,
     "review": "docs/build/arcabouco/etapa-10.md"
   }
 }

@@ -16,7 +16,7 @@ Uma chamada limitada ao gateway existente produz resposta ou pergunta, sem ferra
 - 83 contratos SQL passaram em staging, com rollback. `explicit_execution_brief_approval.sql` passa a aceitar a negação antecipada exata `work_run_mismatch`, conservando a prova de que o dispatch não pode perder sua sessão.
 - Seis testes novos do worker: tipo documental exige intake; conversa com identidade exata; identidade cruzada negada antes do modelo; ausência de canal de cargo/ativação; revogação antes de publicar; erro de provedor sem conteúdo em log.
 - Tipos regenerados da produção; os dois checkers de inventário conferem superfícies e journal. Advisories de segurança: zero em ambos os ambientes. Índices novos têm cobertura das FKs; índices ainda não usados não são retirados durante o rollout.
-- CI e deploy do incremento: registrar após merge. Esta fundação não fecha a etapa 10.
+- PR 650 mesclada em `2c272c36e938ebfc652937eb76d115594ab392b6`. Main Quality `35265839741`, Security `35265839744` e worker `35265839729` passaram; Vercel Production `6510664206`, ECS `359`, 1/1 tarefa, health atual sem backlog/bloqueio. Recibo externo `foundation-delivery.json`. Esta fundação não fecha a etapa 10.
 
 ## Próximo incremento da mesma etapa
 
@@ -25,3 +25,11 @@ Comandos `start_work_v1` e `append_work_turn_v1`, adaptadores das entradas antig
 ## Riscos e contenção
 
 Deploy incompatível: v3 não recebe o novo tipo; v4 só entra depois da migração instalada. Revogação durante o modelo: commit revalida e não publica. Documento por atalho: CHECK exige intake e executor documental mantém aprovação. Vínculo a dossiê: não concede acesso nem ativa retrieval. Execução substantiva sem intake depende do contrato correspondente da etapa 17; o caminho leve não simula essa execução. Matriz de provedores permanece na etapa 16; este incremento conserva classificação restrita e política existente. Rollback suspende novos produtores antes de voltar a um consumidor anterior, preservando jobs e histórico.
+
+## Etapa 10B: entrada de trabalho e continuidade documental
+
+Fundação 10A publicada em `2c272c36e938ebfc652937eb76d115594ab392b6`: main Quality 35265839741, Security 35265839744, worker 35265839729, Vercel 6510664206 e ECS359 conferidos. Novos comandos instalados em staging `20260917194611` e produção `20260917195617`; 84 contratos SQL passaram em staging com rollback, incluindo contexto versionado, dois dossiês, revogação do criador e upload no mesmo trabalho. Sem fixtures de produção.
+
+A entrada web cria trabalho e enfileira conversa atomicamente; pergunta sem anexos não compila plano nem abre intake/pasta. Upload posterior conserva conversa e identidade, cancela jobs que carregavam o contexto anterior e usa os gates documentais. Navegação, renomeação e arquivamento aceitam trabalho sem sessão. Tipos vieram da produção; 13 comandos privados/públicos inventariados, trigger e função de pasta automática retirados. Os checkers conferem 338 versões e os catálogos dos dois ambientes.
+
+A publicação da web compatível precede a consolidação dos adaptadores antigos no incremento 10C. Os E2Es dos motores de pesquisa/preview passam a declarar explicitamente sua história legada com sessão, sem semear resultados ou aprovações; a nova entrada é coberta por `persistent-work.spec.ts`. CI e deploy deste incremento ainda são gates, não conclusão. Etapa 10 continua aberta; etapa 11 não iniciada.

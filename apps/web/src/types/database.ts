@@ -9561,6 +9561,15 @@ export type Database = {
         }
         Returns: Json
       }
+      append_work_turn_v1: {
+        Args: {
+          p_content: string
+          p_locale: string
+          p_message_id: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
       apply_agent_operation_brief_proposal: {
         Args: {
           p_event_id: string
@@ -9899,6 +9908,10 @@ export type Database = {
         }
         Returns: string
       }
+      link_work_dossier_v1: {
+        Args: { p_dossier_id: string; p_work_id: string }
+        Returns: string
+      }
       list_my_workspace_invites_v1: { Args: never; Returns: Json }
       list_my_workspaces_v1: { Args: never; Returns: Json }
       list_provider_mandates_v1: {
@@ -9907,6 +9920,10 @@ export type Database = {
       }
       list_work_observations_v1: {
         Args: { p_before_sequence?: string; p_work_id: string }
+        Returns: Json
+      }
+      manage_work_v1: {
+        Args: { p_action: string; p_title?: string; p_work_id: string }
         Returns: Json
       }
       manage_workspace_project: {
@@ -9927,6 +9944,10 @@ export type Database = {
           p_organization_id: string
           p_session_id: string
         }
+        Returns: string
+      }
+      prepare_work_document_intake_v1: {
+        Args: { p_locale: string; p_plan?: Json; p_work_id: string }
         Returns: string
       }
       propagate_project_canonical_revision_v1: {
@@ -10839,6 +10860,20 @@ export type Database = {
         }
         Returns: Json
       }
+      start_work_v1: {
+        Args: {
+          p_access_basis?: string
+          p_enqueue?: boolean
+          p_entry_job?: string
+          p_group_id?: string
+          p_locale: string
+          p_plan?: Json
+          p_prompt: string
+          p_request_id: string
+          p_title: string
+        }
+        Returns: Json
+      }
       start_workspace_capital_project: {
         Args: {
           p_entry_job: string
@@ -10948,6 +10983,14 @@ export type Database = {
       transfer_organization_owner_v1: {
         Args: { p_new_owner_user_id: string; p_organization_id: string }
         Returns: string
+      }
+      update_work_context_v1: {
+        Args: {
+          p_context: Json
+          p_expected_revision: number
+          p_work_id: string
+        }
+        Returns: number
       }
       update_workspace_project: {
         Args: {

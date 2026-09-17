@@ -53,7 +53,11 @@ export async function renameWorkspaceProject(
   if (!parsed.success) return {ok: false, code: "invalid"};
 
   const {supabase} = await requireWorkspace(locale);
-  const {error} = await supabase.rpc("manage_workspace_project", {
+  const workId = z.string().uuid().optional().safeParse(formData.get("work_id") || undefined);
+  if (!workId.success) return {ok: false, code: "invalid"};
+  const {error} = workId.data
+    ? await supabase.rpc("manage_work_v1", {p_work_id: workId.data, p_action: "rename", p_title: parsed.data.projectName})
+    : await supabase.rpc("manage_workspace_project", {
     p_action: "rename",
     p_project_name: parsed.data.projectName,
     p_session_id: parsed.data.sessionId,
@@ -74,7 +78,11 @@ export async function archiveWorkspaceProject(
   if (!parsed.success) return {ok: false, code: "invalid"};
 
   const {supabase} = await requireWorkspace(locale);
-  const {error} = await supabase.rpc("manage_workspace_project", {
+  const workId = z.string().uuid().optional().safeParse(formData.get("work_id") || undefined);
+  if (!workId.success) return {ok: false, code: "invalid"};
+  const {error} = workId.data
+    ? await supabase.rpc("manage_work_v1", {p_work_id: workId.data, p_action: "archive"})
+    : await supabase.rpc("manage_workspace_project", {
     p_action: "archive",
     p_project_name: undefined,
     p_session_id: parsed.data,

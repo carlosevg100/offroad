@@ -1,5 +1,4 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
-import {providerResearchPlanSnapshot} from "@offroad/work-plan";
 
 const {rpc, after} = vi.hoisted(() => ({rpc: vi.fn(), after: vi.fn()}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: vi.fn(async () => ({supabase: {rpc}})), requireUser: vi.fn()}));
@@ -8,27 +7,28 @@ vi.mock("next/server", () => ({after}));
 import {reviewAdvisorInstitutionalConfiguration, startAdvisorProject} from "./advisor-actions";
 
 const input = {locale: "pt-BR", prompt: "Pesquise os financiadores disponíveis para nossa organização.", hasAttachments: false, requestId: "10000000-0000-4000-8000-000000000001"};
-describe("provider research activation", () => {
+describe("persistent work entry", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    rpc.mockResolvedValue({data: {capital_project_id: "project", intake_session_id: "session", research_job_id: "job"}, error: null});
+    rpc.mockResolvedValue({data: {workId: "work", capital_project_id: "work", intake_session_id: null, jobId: "job"}, error: null});
   });
-  it("persists the research plan through its real command without dispatching a generic initial turn", async () => {
-    expect(await startAdvisorProject(input)).toEqual({ok: true, entryJob: "company_debt_view", projectId: "project", sessionId: "session"});
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("start_provider_research_project_v1", expect.objectContaining({p_plan: providerResearchPlanSnapshot(), p_prompt: input.prompt}));
+  it("atomically queues a conversation without creating an intake or promising research execution", async () => {
+    expect(await startAdvisorProject(input)).toEqual({ok: true, entryJob: "capital_planning", workId: "work", projectId: "work", sessionId: null});
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("start_work_v1", expect.objectContaining({p_plan: null, p_prompt: input.prompt, p_enqueue: true, p_access_basis: "public_information"}));
     expect(after).not.toHaveBeenCalled();
   });
   it("preserves explicit case intent and attachments", async () => {
     await startAdvisorProject({...input, entryJobHint: "company_debt_view"});
-    expect(rpc.mock.calls[0][0]).toBe("start_advisor_project_in_group_v1");
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("start_work_v1", expect.objectContaining({p_entry_job: "company_debt_view", p_plan: null, p_enqueue: true}));
     rpc.mockClear();
     await startAdvisorProject({...input, hasAttachments: true});
-    expect(rpc.mock.calls[0][0]).toBe("start_advisor_project_in_group_v1");
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("start_work_v1", expect.objectContaining({p_plan: expect.any(Object), p_enqueue: false, p_access_basis: "authorized_private"}));
   });
-  it("does not navigate or queue after rejection of the research contract", async () => {
-    rpc.mockResolvedValue({data: null, error: {code: "42501", message: "provider_research_project_denied"}});
+  it("preserves denial without a second dispatch or post-response enqueue", async () => {
+    rpc.mockResolvedValue({data: null, error: {code: "42501", message: "resource_access_denied"}});
     expect(await startAdvisorProject(input)).toEqual({ok: false, error: "denied"});
     expect(after).not.toHaveBeenCalled();
+    expect(rpc).toHaveBeenCalledTimes(1);
   });
 });
 

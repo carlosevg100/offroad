@@ -1,3 +1,11 @@
+## Etapa 10B: entrada de trabalho e continuidade documental
+
+Fundação 10A publicada em `2c272c36e938ebfc652937eb76d115594ab392b6`: main Quality 35265839741, Security 35265839744, worker 35265839729, Vercel 6510664206 e ECS359 conferidos. Novos comandos instalados em staging `20260917194611` e produção `20260917195617`; 84 contratos SQL passaram em staging com rollback, incluindo contexto versionado, dois dossiês, revogação do criador e upload no mesmo trabalho. Sem fixtures de produção.
+
+A entrada web cria trabalho e enfileira conversa atomicamente; pergunta sem anexos não compila plano nem abre intake/pasta. Upload posterior conserva conversa e identidade, cancela jobs que carregavam o contexto anterior e usa os gates documentais. Navegação, renomeação e arquivamento aceitam trabalho sem sessão. Tipos vieram da produção; 13 comandos privados/públicos inventariados, trigger e função de pasta automática retirados. Os checkers conferem 338 versões e os catálogos dos dois ambientes.
+
+A publicação da web compatível precede a consolidação dos adaptadores antigos no incremento 10C. Os E2Es dos motores de pesquisa/preview passam a declarar explicitamente sua história legada com sessão, sem semear resultados ou aprovações; a nova entrada é coberta por `persistent-work.spec.ts`. CI e deploy deste incremento ainda são gates, não conclusão. Etapa 10 continua aberta; etapa 11 não iniciada.
+
 ## Onda 9 autorizada: trabalho persistente sem intake obrigatório
 
 ## Etapa 10A: fundação de trabalho sem intake, 17/09/2026

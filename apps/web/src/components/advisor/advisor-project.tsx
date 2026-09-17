@@ -109,7 +109,7 @@ type Props = {
   projectName: string;
   pendingRequests?: AdvisorInformationRequest[];
   proposals: AdvisorChangeProposal[];
-  sessionId: string;
+  sessionId: string | null;
   sessionStatus: string;
   tasks: AdvisorProjectTask[];
   workHref?: string;
@@ -379,7 +379,7 @@ export function AdvisorProject(props: Props) {
                 <p>{message.content}</p>
                 {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
-                {proposal ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
+                {proposal && props.sessionId ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
             </article>;
           })}

@@ -2313,3 +2313,21 @@ Migrações adicionais:
 - `trigger:public.work_contexts.work_contexts_updated`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
 - `trigger:public.work_dossiers.work_dossiers_audit`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
 - `trigger:public.work_dossiers.work_dossiers_updated`: preservar, etapa 10; Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.
+
+## Atualização da etapa 10, 17/09/2026
+
+13 superfícies novas conferidas nos dois ambientes. Entrada web utiliza comandos aditivos sem intake; adaptadores antigos serão consolidados após este deploy compatível.
+
+- `function:private.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.enqueue_work_turn_v1(p_work_id uuid, p_message_id uuid)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:private.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.append_work_turn_v1(p_work_id uuid, p_message_id uuid, p_locale text, p_content text)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.link_work_dossier_v1(p_work_id uuid, p_dossier_id uuid)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.prepare_work_document_intake_v1(p_work_id uuid, p_locale text, p_plan jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.start_work_v1(p_request_id uuid, p_locale text, p_title text, p_prompt text, p_entry_job text, p_access_basis text, p_plan jsonb, p_group_id uuid, p_enqueue boolean)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
+- `function:public.update_work_context_v1(p_work_id uuid, p_expected_revision bigint, p_context jsonb)`: preservar, etapa 10; Comandos de trabalho, contexto e dossiês sob ACL explícita; upload conserva identidade e invalida contexto anterior.
