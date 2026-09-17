@@ -1,5 +1,9 @@
 ## Onda 9 autorizada: trabalho persistente sem intake obrigatório
 
+## Etapa 10A: fundação de trabalho sem intake, 17/09/2026
+
+Migração em ambos os ambientes, 83 contratos SQL de staging e seis novos testes do worker. Nova conversa usa identidade direta, revogação e commit atômico; consumidor v3 não recebe o novo tipo. A entrada atual só muda no próximo incremento da mesma etapa. Estado e riscos em `docs/build/arcabouco/etapa-10.md`. Etapa 10 ainda não concluída; etapa 11 não autorizada.
+
 Etapa 10 autorizada após completion da etapa 9. Baseline `5826a8cca31510914f04c7b332462b691fd49532`. Revisão de abertura
 renova 126 evidências, mantém 18 lacunas e confere runtime e journals vivos.
 Revisão: `docs/security/INVENTORY_WAVE_9_REVIEW.md`. Etapa 11 não iniciada.

@@ -51,6 +51,7 @@ const claimedJobBase = z.object({
   attempt: z.number().int().positive(),
   organization_id: z.uuid(),
   intake_session_id: z.uuid(),
+  work_id: z.uuid().nullable().optional(),
   processing_run_id: z.uuid(),
   /** Present when the job's project is bound to a frozen source pack: the worker reads that pack and nothing else. */
   source_pack_id: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,79}$/).nullable().optional(),
@@ -132,8 +133,16 @@ export const executionBriefProposalJobSchema = claimedJobBase.extend({
   payload: z.object({approval_target_job_id: z.uuid(), locale: z.enum(["pt-BR", "en-US"])}),
 });
 export type ExecutionBriefProposalJob = z.infer<typeof executionBriefProposalJobSchema>;
+export const workConversationJobSchema = claimedJobBase.extend({
+  kind: z.literal("work_conversation"),
+  work_id: z.uuid(),
+  intake_session_id: z.null(),
+  payload: z.object({message_id: z.uuid(), locale: z.enum(["pt-BR", "en-US"]),
+    model_budget: z.object({max_calls: z.literal(1), max_cost_usd: z.literal(0.25)})}).strict(),
+});
+export type WorkConversationJob = z.infer<typeof workConversationJobSchema>;
 export const claimedJobSchema = z.discriminatedUnion("kind", [
-  documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, executionBriefProposalJobSchema,
+  workConversationJobSchema, documentJobSchema, preliminaryAnalysisJobSchema, caseAnalysisJobSchema, executionBriefProposalJobSchema,
   agentOperationBriefJobSchema, capitalProjectAnalysisJobSchema,
 ]);
 export type ClaimedJob = z.infer<typeof claimedJobSchema>;
@@ -154,6 +163,8 @@ export type StageStatus = "started" | "succeeded" | "failed" | "skipped";
 export type CapitalTaskFinishStatus = "waiting_user" | "blocked" | "succeeded" | "failed" | "cancelled";
 
 export type QueueClient = {
+  loadWorkTurn?(job: WorkConversationJob): Promise<unknown>;
+  commitWorkTurn?(job: WorkConversationJob, fingerprint: string, response: unknown, spend: unknown): Promise<unknown>;
   loadExecutionBriefProposal?(job: ExecutionBriefProposalJob): Promise<unknown>;
   recordExecutionBriefProposal?(job: ExecutionBriefProposalJob, internal: unknown, visible: unknown, expectedInputFingerprint: string, plan?: unknown): Promise<unknown>;
   claim(): Promise<ClaimedJob | null>;
@@ -426,7 +437,7 @@ export function createQueueClient(
 
   return {
     async claim() {
-      const data = await call("worker_claim_job_v3", {
+      const data = await call("worker_claim_job_v4", {
         p_worker_token: options.workerToken,
         p_lease_seconds: options.leaseSeconds,
       });
@@ -965,6 +976,13 @@ export function createQueueClient(
     },
     async recordExecutionBriefProposal(job, internal, visible, expectedInputFingerprint, plan) {
       return call("worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: internal, p_visible_snapshot: visible, p_expected_input_fingerprint: expectedInputFingerprint, p_plan: plan ?? null});
+    },
+    async loadWorkTurn(job) {
+      return call("worker_load_work_turn_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+    },
+    async commitWorkTurn(job, fingerprint, response, spend) {
+      return call("worker_commit_work_turn_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
+        p_fingerprint: fingerprint, p_response: response, p_spend: spend});
     },
     async loadAgentContext(job) {
       return call("worker_load_agent_context_v5", {

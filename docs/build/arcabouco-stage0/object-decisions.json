@@ -2544,6 +2544,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.bind_persistent_work_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_persistent_work_v1()",
+          "kind": "function",
+          "name": "bind_persistent_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_persistent_work_v1()",
+          "kind": "function",
+          "name": "bind_persistent_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 84,
+          "anchor": "create function private.bind_persistent_work_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -25154,6 +25209,61 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.settle_failed_work_turn_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.settle_failed_work_turn_v1()",
+          "kind": "function",
+          "name": "settle_failed_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.settle_failed_work_turn_v1()",
+          "kind": "function",
+          "name": "settle_failed_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 215,
+          "anchor": "create function private.settle_failed_work_turn_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.settle_stale_execution_jobs_v1()",
       "kind": "function",
       "catalogues": {
@@ -29077,6 +29187,61 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.work_turn_context_v1(p_job_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_turn_context_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "work_turn_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_turn_context_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "work_turn_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 161,
+          "anchor": "create function private.work_turn_context_v1(p_job_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.worker_activate_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
       "kind": "function",
       "catalogues": {
@@ -29974,6 +30139,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_job_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_job_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 148,
+          "anchor": " body:=replace(before_body,'private.worker_claim_job_v2(', 'private.worker_claim_job_v4(');",
+          "mechanism": "bounded_function_clone"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.worker_commit_documentary_execution_v1(p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb)",
       "kind": "function",
       "catalogues": {
@@ -30043,6 +30273,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+          "kind": "function",
+          "name": "worker_commit_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+          "kind": "function",
+          "name": "worker_commit_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 187,
+          "anchor": "create function private.worker_commit_work_turn_v1(p_job_id uuid,p_capability_token text,p_fingerprint text,p_response jsonb,p_spend jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.worker_complete_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_completion_message_id uuid, p_artifact_id uuid, p_artifact_fingerprint text, p_content text, p_result jsonb)",
@@ -34956,6 +35251,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 174,
+          "anchor": "create function private.worker_load_work_turn_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.worker_public_company_memory_job(p_job_id uuid, p_capability_token text)",
@@ -54005,6 +54365,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:public.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_job_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_job_v4",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 156,
+          "anchor": "create function public.worker_claim_job_v4(p_worker_token text,p_lease_seconds integer default 600) returns jsonb language sql security invoker set search_path='' as $$ select private.worker_claim_job_v4(p_worker_token,p_lease_seconds); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.worker_commit_documentary_execution_v1(p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb)",
       "kind": "function",
       "catalogues": {
@@ -54084,6 +54509,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+          "kind": "function",
+          "name": "worker_commit_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+          "kind": "function",
+          "name": "worker_commit_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 208,
+          "anchor": "create function public.worker_commit_work_turn_v1(p_job_id uuid,p_capability_token text,p_fingerprint text,p_response jsonb,p_spend jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.worker_complete_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_completion_message_id uuid, p_artifact_id uuid, p_artifact_fingerprint text, p_content text, p_result jsonb)",
@@ -58059,6 +58549,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_turn_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 184,
+          "anchor": "create function public.worker_load_work_turn_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
@@ -65875,7 +66430,7 @@
           "id": "policy:public.agent_conversations.agent_conversations_select",
           "kind": "policy",
           "name": "agent_conversations_select",
-          "qual": "( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_conversations.organization_id, agent_conversations.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -65889,7 +66444,7 @@
           "id": "policy:public.agent_conversations.agent_conversations_select",
           "kind": "policy",
           "name": "agent_conversations_select",
-          "qual": "( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_conversations.organization_id, agent_conversations.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -65900,15 +66455,21 @@
           "with_check": null
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
           "line": 85,
           "anchor": "create policy agent_conversations_select on public.agent_conversations for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 120,
+          "anchor": "create policy agent_conversations_select on public.agent_conversations for select to authenticated using(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -65922,7 +66483,7 @@
           "id": "policy:public.agent_messages.agent_messages_select",
           "kind": "policy",
           "name": "agent_messages_select",
-          "qual": "( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_messages.organization_id, agent_messages.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -65936,7 +66497,7 @@
           "id": "policy:public.agent_messages.agent_messages_select",
           "kind": "policy",
           "name": "agent_messages_select",
-          "qual": "( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_messages.organization_id, agent_messages.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -65947,15 +66508,21 @@
           "with_check": null
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
           "line": 87,
           "anchor": "create policy agent_messages_select on public.agent_messages for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 124,
+          "anchor": "create policy agent_messages_select on public.agent_messages for select to authenticated using(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -76048,7 +76615,7 @@
           "id": "policy:public.processing_jobs.processing_jobs_select",
           "kind": "policy",
           "name": "processing_jobs_select",
-          "qual": "( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_jobs.organization_id, processing_jobs.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -76062,7 +76629,7 @@
           "id": "policy:public.processing_jobs.processing_jobs_select",
           "kind": "policy",
           "name": "processing_jobs_select",
-          "qual": "( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_jobs.organization_id, processing_jobs.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -76073,15 +76640,21 @@
           "with_check": null
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260818171246_intelligence_runs_profiles_layers.sql",
           "line": 369,
           "anchor": "create policy processing_jobs_select on public.processing_jobs for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 132,
+          "anchor": "create policy processing_jobs_select on public.processing_jobs for select to authenticated using(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -76095,7 +76668,7 @@
           "id": "policy:public.processing_runs.processing_runs_select",
           "kind": "policy",
           "name": "processing_runs_select",
-          "qual": "( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_runs.organization_id, processing_runs.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -76109,7 +76682,7 @@
           "id": "policy:public.processing_runs.processing_runs_select",
           "kind": "policy",
           "name": "processing_runs_select",
-          "qual": "( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)",
+          "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_runs.organization_id, processing_runs.work_id) AS can_access_capital_project)\nEND",
           "roles": [
             "authenticated"
           ],
@@ -76120,15 +76693,21 @@
           "with_check": null
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260818171246_intelligence_runs_profiles_layers.sql",
           "line": 364,
           "anchor": "create policy processing_runs_select on public.processing_runs for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 128,
+          "anchor": "create policy processing_runs_select on public.processing_runs for select to authenticated using(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -78751,6 +79330,382 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contexts.work_contexts_deny_delete",
+          "kind": "policy",
+          "name": "work_contexts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_contexts.work_contexts_deny_delete",
+          "kind": "policy",
+          "name": "work_contexts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 34,
+          "anchor": "create policy work_contexts_deny_delete on public.work_contexts for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contexts.work_contexts_deny_insert",
+          "kind": "policy",
+          "name": "work_contexts_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_contexts.work_contexts_deny_insert",
+          "kind": "policy",
+          "name": "work_contexts_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 32,
+          "anchor": "create policy work_contexts_deny_insert on public.work_contexts for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contexts.work_contexts_deny_update",
+          "kind": "policy",
+          "name": "work_contexts_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_contexts.work_contexts_deny_update",
+          "kind": "policy",
+          "name": "work_contexts_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 33,
+          "anchor": "create policy work_contexts_deny_update on public.work_contexts for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contexts.work_contexts_select",
+          "kind": "policy",
+          "name": "work_contexts_select",
+          "qual": "( SELECT private.can_access_capital_project(work_contexts.organization_id, work_contexts.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_contexts.work_contexts_select",
+          "kind": "policy",
+          "name": "work_contexts_select",
+          "qual": "( SELECT private.can_access_capital_project(work_contexts.organization_id, work_contexts.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contexts",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 31,
+          "anchor": "create policy work_contexts_select on public.work_contexts for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
+          "kind": "policy",
+          "name": "work_dossiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
+          "kind": "policy",
+          "name": "work_dossiers_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 44,
+          "anchor": "create policy work_dossiers_deny_delete on public.work_dossiers for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_insert",
+          "kind": "policy",
+          "name": "work_dossiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_insert",
+          "kind": "policy",
+          "name": "work_dossiers_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 42,
+          "anchor": "create policy work_dossiers_deny_insert on public.work_dossiers for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_update",
+          "kind": "policy",
+          "name": "work_dossiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_dossiers.work_dossiers_deny_update",
+          "kind": "policy",
+          "name": "work_dossiers_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 43,
+          "anchor": "create policy work_dossiers_deny_update on public.work_dossiers for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_dossiers.work_dossiers_select",
+          "kind": "policy",
+          "name": "work_dossiers_select",
+          "qual": "(( SELECT private.can_access_capital_project(work_dossiers.organization_id, work_dossiers.work_id) AS can_access_capital_project) AND ( SELECT private.can_read_dossier_v1(work_dossiers.dossier_id) AS can_read_dossier_v1))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_dossiers.work_dossiers_select",
+          "kind": "policy",
+          "name": "work_dossiers_select",
+          "qual": "(( SELECT private.can_access_capital_project(work_dossiers.organization_id, work_dossiers.work_id) AS can_access_capital_project) AND ( SELECT private.can_read_dossier_v1(work_dossiers.dossier_id) AS can_read_dossier_v1))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_dossiers",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 41,
+          "anchor": "create policy work_dossiers_select on public.work_dossiers for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)) and (select private.can_read_dossier_v1(dossier_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:public.workflow_runs.workflow_runs_all",
@@ -87354,15 +88309,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "10, 11",
-      "reason": "desvincular conversa do intake e preservar autoria e audiência por contribuição",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
           "line": 17,
           "anchor": "create table public.agent_conversations (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 108,
+          "anchor": "alter table public.agent_conversations add constraint conversation_work_or_intake check(work_id is not null or intake_session_id is not null);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -87563,15 +88524,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 10",
       "decision": "refatorar",
-      "stage": "10, 11",
-      "reason": "desvincular conversa do intake e preservar autoria e audiência por contribuição",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
           "line": 31,
           "anchor": "create table public.agent_messages (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 109,
+          "anchor": "alter table public.agent_messages add constraint message_work_or_intake check(work_id is not null or intake_session_id is not null);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -109043,15 +110010,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "9, 10, 17, 18",
-      "reason": "fila atual e resultados viram executor/adaptador do contrato fixado por versão",
+      "owner": "Codex, etapa 10",
+      "decision": "refatorar",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260818171246_intelligence_runs_profiles_layers.sql",
           "line": 107,
           "anchor": "create table public.processing_jobs (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 113,
+          "anchor": "alter table public.processing_jobs add constraint job_intake_by_kind check(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -109252,15 +110225,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "consolidar",
-      "stage": "9, 10, 17, 18",
-      "reason": "fila atual e resultados viram executor/adaptador do contrato fixado por versão",
+      "owner": "Codex, etapa 10",
+      "decision": "refatorar",
+      "stage": "10",
+      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
       "sources": [
         {
           "path": "supabase/migrations/20260818171246_intelligence_runs_profiles_layers.sql",
           "line": 74,
           "anchor": "create table public.processing_runs (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 110,
+          "anchor": "alter table public.processing_runs add constraint run_work_or_intake check(intake_session_id is not null or (work_id is not null and pipeline_version='work-conversation-v1'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -114487,6 +115466,264 @@
       "last_review_stage": "2"
     },
     {
+      "id": "r:public.work_contexts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_contexts",
+          "rls": true,
+          "kind": "table",
+          "name": "work_contexts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_contexts",
+          "rls": true,
+          "kind": "table",
+          "name": "work_contexts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 4,
+          "anchor": "create table public.work_contexts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.work_dossiers",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_dossiers",
+          "rls": true,
+          "kind": "table",
+          "name": "work_dossiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_dossiers",
+          "rls": true,
+          "kind": "table",
+          "name": "work_dossiers",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 17,
+          "anchor": "create table public.work_dossiers (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.workflow_runs",
       "kind": "table",
       "catalogues": {
@@ -117827,6 +119064,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.agent_conversations.aaa_agent_conversations_work",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.agent_conversations.aaa_agent_conversations_work",
+          "kind": "trigger",
+          "name": "aaa_agent_conversations_work",
+          "table": "agent_conversations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_agent_conversations_work BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.agent_conversations.aaa_agent_conversations_work",
+          "kind": "trigger",
+          "name": "aaa_agent_conversations_work",
+          "table": "agent_conversations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_agent_conversations_work BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 104,
+          "anchor": "create trigger aaa_agent_conversations_work before insert or update on public.agent_conversations for each row execute function private.bind_persistent_work_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.agent_conversations.agent_conversations_audit",
       "kind": "trigger",
       "catalogues": {
@@ -117903,6 +119179,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.agent_messages.aaa_agent_messages_work",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.agent_messages.aaa_agent_messages_work",
+          "kind": "trigger",
+          "name": "aaa_agent_messages_work",
+          "table": "agent_messages",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_agent_messages_work BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.agent_messages.aaa_agent_messages_work",
+          "kind": "trigger",
+          "name": "aaa_agent_messages_work",
+          "table": "agent_messages",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_agent_messages_work BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 105,
+          "anchor": "create trigger aaa_agent_messages_work before insert or update on public.agent_messages for each row execute function private.bind_persistent_work_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.agent_messages.agent_messages_audit",
@@ -125287,6 +126602,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.processing_jobs.aaa_processing_jobs_work",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.aaa_processing_jobs_work",
+          "kind": "trigger",
+          "name": "aaa_processing_jobs_work",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_processing_jobs_work BEFORE INSERT OR UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.aaa_processing_jobs_work",
+          "kind": "trigger",
+          "name": "aaa_processing_jobs_work",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_processing_jobs_work BEFORE INSERT OR UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 107,
+          "anchor": "create trigger aaa_processing_jobs_work before insert or update on public.processing_jobs for each row execute function private.bind_persistent_work_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.processing_jobs.execution_approval_proposal_enqueue",
       "kind": "trigger",
       "catalogues": {
@@ -125600,6 +126954,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_settle_work_turn",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.processing_jobs_settle_work_turn",
+          "kind": "trigger",
+          "name": "processing_jobs_settle_work_turn",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_failed_work_turn_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_settle_work_turn AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.settle_failed_work_turn_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.processing_jobs_settle_work_turn",
+          "kind": "trigger",
+          "name": "processing_jobs_settle_work_turn",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_failed_work_turn_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_settle_work_turn AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.settle_failed_work_turn_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 225,
+          "anchor": "create trigger processing_jobs_settle_work_turn after update of status on public.processing_jobs for each row execute function private.settle_failed_work_turn_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.processing_jobs.processing_jobs_source_version",
       "kind": "trigger",
       "catalogues": {
@@ -125754,6 +127147,45 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.processing_runs.aaa_processing_runs_work",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_runs.aaa_processing_runs_work",
+          "kind": "trigger",
+          "name": "aaa_processing_runs_work",
+          "table": "processing_runs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_processing_runs_work BEFORE INSERT OR UPDATE ON public.processing_runs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_runs.aaa_processing_runs_work",
+          "kind": "trigger",
+          "name": "aaa_processing_runs_work",
+          "table": "processing_runs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_persistent_work_v1()",
+          "definition": "CREATE TRIGGER aaa_processing_runs_work BEFORE INSERT OR UPDATE ON public.processing_runs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 106,
+          "anchor": "create trigger aaa_processing_runs_work before insert or update on public.processing_runs for each row execute function private.bind_persistent_work_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.processing_runs.processing_runs_audit",
@@ -127989,6 +129421,162 @@
       "last_review_stage": "2"
     },
     {
+      "id": "trigger:public.work_contexts.work_contexts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_contexts.work_contexts_audit",
+          "kind": "trigger",
+          "name": "work_contexts_audit",
+          "table": "work_contexts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_contexts_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_contexts.work_contexts_audit",
+          "kind": "trigger",
+          "name": "work_contexts_audit",
+          "table": "work_contexts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_contexts_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 36,
+          "anchor": "create trigger work_contexts_audit after insert or update or delete on public.work_contexts for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_contexts.work_contexts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_contexts.work_contexts_updated",
+          "kind": "trigger",
+          "name": "work_contexts_updated",
+          "table": "work_contexts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_contexts_updated BEFORE UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_contexts.work_contexts_updated",
+          "kind": "trigger",
+          "name": "work_contexts_updated",
+          "table": "work_contexts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_contexts_updated BEFORE UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 35,
+          "anchor": "create trigger work_contexts_updated before update on public.work_contexts for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_dossiers.work_dossiers_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_dossiers.work_dossiers_audit",
+          "kind": "trigger",
+          "name": "work_dossiers_audit",
+          "table": "work_dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_dossiers.work_dossiers_audit",
+          "kind": "trigger",
+          "name": "work_dossiers_audit",
+          "table": "work_dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 46,
+          "anchor": "create trigger work_dossiers_audit after insert or update or delete on public.work_dossiers for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_dossiers.work_dossiers_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_dossiers.work_dossiers_updated",
+          "kind": "trigger",
+          "name": "work_dossiers_updated",
+          "table": "work_dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_dossiers_updated BEFORE UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_dossiers.work_dossiers_updated",
+          "kind": "trigger",
+          "name": "work_dossiers_updated",
+          "table": "work_dossiers",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_dossiers_updated BEFORE UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 10",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+          "line": 45,
+          "anchor": "create trigger work_dossiers_updated before update on public.work_dossiers for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
       "kind": "trigger",
       "catalogues": {
@@ -129087,8 +130675,8 @@
       "path": "apps/document-worker",
       "name": "@offroad/document-worker",
       "decision": "refatorar",
-      "stage": "9",
-      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -129097,8 +130685,8 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "9",
-      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -129233,8 +130821,8 @@
       "path": "packages/case-engine",
       "name": "@offroad/case-engine",
       "decision": "refatorar",
-      "stage": "9",
-      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/case-manifest.ts",
@@ -131076,8 +132664,8 @@
       "path": "packages/extraction-learning",
       "name": "@offroad/extraction-learning",
       "decision": "refatorar",
-      "stage": "9",
-      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/server.ts",
@@ -132102,8 +133690,8 @@
       "path": "packages/reconciliation",
       "name": "@offroad/reconciliation",
       "decision": "refatorar",
-      "stage": "9",
-      "reason": "Preserva contribuições e dimensões; retira promoção por confiança e cálculo sobre alternativas ambíguas.",
+      "stage": "10",
+      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
       "direct_module_references": [
         {
           "path": "apps/web/src/lib/intake/reconcile.ts",
@@ -135388,6 +136976,13 @@
       "decision": "preservar",
       "stage": "9",
       "reason": "Cobre a FK das versões sem varrer todo o histórico de contribuições."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
+      "decision": "preservar",
+      "stage": "10",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -135900,5 +137495,12 @@
       "contextual_adoption_identity_command": "c84e388219becc74c259fcc03b46a5e3",
       "contextual_adoption_version_fk_index": "e3922dfbde774e5ffd61d77459be3d6a"
     }
+  },
+  "stage_10_foundation_revision": {
+    "production_migrations": [
+      "20260917191714"
+    ],
+    "new_objects": 28,
+    "review": "docs/build/arcabouco/etapa-10.md"
   }
 }

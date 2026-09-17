@@ -821,6 +821,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.bind_persistent_work_v1()",
+      "kind": "function",
+      "name": "bind_persistent_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
       "kind": "function",
       "name": "bind_source_version_v1",
@@ -8218,6 +8236,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.settle_failed_work_turn_v1()",
+      "kind": "function",
+      "name": "settle_failed_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.settle_stale_execution_jobs_v1()",
       "kind": "function",
       "name": "settle_stale_execution_jobs_v1",
@@ -9475,6 +9511,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.work_turn_context_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "work_turn_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_activate_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
       "kind": "function",
       "name": "worker_activate_advisor_specialized_job_v1",
@@ -9736,6 +9790,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "worker_claim_job_v4",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_claim_job(p_worker_token text, p_lease_seconds integer)",
       "kind": "function",
       "name": "worker_claim_job",
@@ -9784,6 +9861,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+      "kind": "function",
+      "name": "worker_commit_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
       "security_definer": true
     },
     {
@@ -11372,6 +11472,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": true
     },
     {
@@ -17905,6 +18028,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_claim_job_v4(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "worker_claim_job_v4",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_job(p_worker_token text, p_lease_seconds integer)",
       "kind": "function",
       "name": "worker_claim_job",
@@ -17958,6 +18104,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_work_turn_v1(p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb)",
+      "kind": "function",
+      "name": "worker_commit_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_fingerprint text, p_response jsonb, p_spend jsonb",
       "security_definer": false
     },
     {
@@ -19330,6 +19499,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_work_turn_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": false
     },
     {
@@ -21830,7 +22022,7 @@
       "id": "policy:public.agent_conversations.agent_conversations_select",
       "kind": "policy",
       "name": "agent_conversations_select",
-      "qual": "( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)",
+      "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_conversations.organization_id, agent_conversations.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_conversations.organization_id, agent_conversations.work_id) AS can_access_capital_project)\nEND",
       "roles": [
         "authenticated"
       ],
@@ -21844,7 +22036,7 @@
       "id": "policy:public.agent_messages.agent_messages_select",
       "kind": "policy",
       "name": "agent_messages_select",
-      "qual": "( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)",
+      "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(agent_messages.organization_id, agent_messages.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(agent_messages.organization_id, agent_messages.work_id) AS can_access_capital_project)\nEND",
       "roles": [
         "authenticated"
       ],
@@ -24800,7 +24992,7 @@
       "id": "policy:public.processing_jobs.processing_jobs_select",
       "kind": "policy",
       "name": "processing_jobs_select",
-      "qual": "( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)",
+      "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_jobs.organization_id, processing_jobs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_jobs.organization_id, processing_jobs.work_id) AS can_access_capital_project)\nEND",
       "roles": [
         "authenticated"
       ],
@@ -24814,7 +25006,7 @@
       "id": "policy:public.processing_runs.processing_runs_select",
       "kind": "policy",
       "name": "processing_runs_select",
-      "qual": "( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)",
+      "qual": "\nCASE\n    WHEN (intake_session_id IS NOT NULL) THEN ( SELECT private.can_access_intake_session(processing_runs.organization_id, processing_runs.intake_session_id) AS can_access_intake_session)\n    ELSE ( SELECT private.can_access_capital_project(processing_runs.organization_id, processing_runs.work_id) AS can_access_capital_project)\nEND",
       "roles": [
         "authenticated"
       ],
@@ -25568,6 +25760,118 @@
       "command": "UPDATE",
       "permissive": "RESTRICTIVE",
       "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_delete",
+      "kind": "policy",
+      "name": "work_contexts_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contexts",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_insert",
+      "kind": "policy",
+      "name": "work_contexts_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contexts",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_deny_update",
+      "kind": "policy",
+      "name": "work_contexts_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contexts",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_contexts.work_contexts_select",
+      "kind": "policy",
+      "name": "work_contexts_select",
+      "qual": "( SELECT private.can_access_capital_project(work_contexts.organization_id, work_contexts.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contexts",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
+      "kind": "policy",
+      "name": "work_dossiers_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_dossiers",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_insert",
+      "kind": "policy",
+      "name": "work_dossiers_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_dossiers",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_deny_update",
+      "kind": "policy",
+      "name": "work_dossiers_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_dossiers",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_dossiers.work_dossiers_select",
+      "kind": "policy",
+      "name": "work_dossiers_select",
+      "qual": "(( SELECT private.can_access_capital_project(work_dossiers.organization_id, work_dossiers.work_id) AS can_access_capital_project) AND ( SELECT private.can_read_dossier_v1(work_dossiers.dossier_id) AS can_read_dossier_v1))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_dossiers",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
     },
     {
       "id": "policy:public.workflow_runs.workflow_runs_delete_scoped",
@@ -41652,6 +41956,116 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_contexts",
+      "rls": true,
+      "kind": "table",
+      "name": "work_contexts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.work_dossiers",
+      "rls": true,
+      "kind": "table",
+      "name": "work_dossiers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.workflow_runs",
       "rls": true,
       "kind": "table",
@@ -42592,6 +43006,16 @@
       "definition": "CREATE TRIGGER agent_change_proposals_set_updated_at BEFORE UPDATE ON public.agent_change_proposals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.agent_conversations.aaa_agent_conversations_work",
+      "kind": "trigger",
+      "name": "aaa_agent_conversations_work",
+      "table": "agent_conversations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_persistent_work_v1()",
+      "definition": "CREATE TRIGGER aaa_agent_conversations_work BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+    },
+    {
       "id": "trigger:public.agent_conversations.agent_conversations_audit",
       "kind": "trigger",
       "name": "agent_conversations_audit",
@@ -42610,6 +43034,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER agent_conversations_set_updated_at BEFORE UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.agent_messages.aaa_agent_messages_work",
+      "kind": "trigger",
+      "name": "aaa_agent_messages_work",
+      "table": "agent_messages",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_persistent_work_v1()",
+      "definition": "CREATE TRIGGER aaa_agent_messages_work BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
     },
     {
       "id": "trigger:public.agent_messages.agent_messages_audit",
@@ -44532,6 +44966,16 @@
       "definition": "CREATE TRIGGER pricing_policies_set_updated_at BEFORE UPDATE ON public.pricing_policies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.processing_jobs.aaa_processing_jobs_work",
+      "kind": "trigger",
+      "name": "aaa_processing_jobs_work",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_persistent_work_v1()",
+      "definition": "CREATE TRIGGER aaa_processing_jobs_work BEFORE INSERT OR UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+    },
+    {
       "id": "trigger:public.processing_jobs.execution_approval_proposal_enqueue",
       "kind": "trigger",
       "name": "execution_approval_proposal_enqueue",
@@ -44612,6 +45056,16 @@
       "definition": "CREATE TRIGGER processing_jobs_set_updated_at BEFORE UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_settle_work_turn",
+      "kind": "trigger",
+      "name": "processing_jobs_settle_work_turn",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.settle_failed_work_turn_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_settle_work_turn AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.settle_failed_work_turn_v1()"
+    },
+    {
       "id": "trigger:public.processing_jobs.processing_jobs_source_version",
       "kind": "trigger",
       "name": "processing_jobs_source_version",
@@ -44650,6 +45104,16 @@
       "enabled": "O",
       "function": "private.guard_execution_approval_queue()",
       "definition": "CREATE TRIGGER zz_execution_approval_queue BEFORE INSERT OR UPDATE ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.guard_execution_approval_queue()"
+    },
+    {
+      "id": "trigger:public.processing_runs.aaa_processing_runs_work",
+      "kind": "trigger",
+      "name": "aaa_processing_runs_work",
+      "table": "processing_runs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_persistent_work_v1()",
+      "definition": "CREATE TRIGGER aaa_processing_runs_work BEFORE INSERT OR UPDATE ON public.processing_runs FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
     },
     {
       "id": "trigger:public.processing_runs.processing_runs_audit",
@@ -45232,6 +45696,46 @@
       "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.work_contexts.work_contexts_audit",
+      "kind": "trigger",
+      "name": "work_contexts_audit",
+      "table": "work_contexts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_contexts_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_contexts.work_contexts_updated",
+      "kind": "trigger",
+      "name": "work_contexts_updated",
+      "table": "work_contexts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_contexts_updated BEFORE UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.work_dossiers.work_dossiers_audit",
+      "kind": "trigger",
+      "name": "work_dossiers_audit",
+      "table": "work_dossiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_dossiers_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_dossiers.work_dossiers_updated",
+      "kind": "trigger",
+      "name": "work_dossiers_updated",
+      "table": "work_dossiers",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_dossiers_updated BEFORE UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
       "kind": "trigger",
       "name": "workspace_groups_access_resource",
@@ -45667,5 +46171,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-17T16:11:12.875778+00:00"
+  "captured_at": "2026-09-17T19:17:41.503027+00:00"
 }

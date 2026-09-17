@@ -30,6 +30,7 @@ import {rotateLegacyStorage} from "./storage-rotation";
 import {createJobStorageClient} from "./job-storage";
 import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
+import {processWorkConversationJob} from "./work-conversation";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {processCompanyDebtViewJob} from "./company-debt-view";
@@ -402,6 +403,8 @@ async function main(): Promise<void> {
                 ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
                 log,
               })
+      : job.kind === "work_conversation"
+        ? processWorkConversationJob(job, {queue, gateway: gatewayRun.gateway, log})
       : job.kind === "agent_operation_brief"
         ? processAgentOperationBriefJob(job, {
             queue,
