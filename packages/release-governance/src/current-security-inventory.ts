@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "047fff553e43eaac41c2ef763268c25284887f87";
-const capturedAt = "2026-09-17T15:04:52.839Z";
+const baselineCommit = "75f3dc70aa90b8ab33b9e9afb299fbf809db8761";
+const capturedAt = "2026-09-17T18:13:05.440Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,22 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-ADOPT-SCHEMA", "repository_file", "supabase/migrations/20260917160856_contextual_adoptions_and_assumptions.sql", "Immutable contextual choices and version snapshots with explicit purpose, authority and atomic audit/outbox."),
+  evidence("SEV-ADOPT-BINDING", "repository_file", "supabase/migrations/20260917160902_contextual_adoption_execution_bindings.sql", "Executions bind immutable versions; legacy references do not invent historical inputs or approvals."),
+  evidence("SEV-ADOPT-RIGHTS", "repository_file", "supabase/migrations/20260917160915_contextual_adoption_dependency_revalidation.sql", "Derived working bases intersect pinned and current read, derive and store rights."),
+  evidence("SEV-ADOPT-IDENTITY", "repository_file", "supabase/migrations/20260917160926_contextual_adoption_identity_command.sql", "Explicit local identity review is scoped and retry safe without inferring identity by name."),
+  evidence("SEV-ADOPT-CONTRACT", "repository_file", "packages/domain-contracts/src/contextual-adoption.ts", "Typed work, purpose, expected revision and exact decimal interpretation contracts."),
+  evidence("SEV-ADOPT-SQL", "automated_test", "supabase/tests/contextual_adoption.sql", "Competing revisions, source provenance, covenants, precision, immutable history and access denials."),
+  evidence("SEV-ADOPT-DEPENDENCIES", "automated_test", "supabase/tests/contextual_adoption_dependencies.sql", "Retaining source read cannot retain a derivative after derive/store withdrawal."),
+  evidence("SEV-ADOPT-EXECUTION", "automated_test", "supabase/tests/contextual_adoption_execution.sql", "Installed execution triggers reject wrong fingerprints and retain honest legacy classification."),
+  evidence("SEV-ADOPT-CONCURRENCY", "automated_test", "scripts/ci/test-adoption-concurrency.py", "Two actual local database sessions prove lock wait and single-winner compare-and-swap."),
+  evidence("SEV-ADOPT-DIFF", "automated_test", "packages/case-understanding/src/adoption-difference.test.ts", "Comparison preserves source references and distinguishes assumptions and contexts."),
+  evidence("SEV-ADOPT-MATH", "automated_test", "packages/financial-model/src/adopted-basis.test.ts", "Exact version and digest guard deterministic calculation without ranking or implicit input fallback."),
+  evidence("SEV-ADOPT-SELECTION", "automated_test", "packages/financial-model/src/institutional-input.test.ts", "Explicit configured source selection remains independent of ranked reference."),
+  evidence("SEV-ADOPT-E2E", "automated_test", "apps/web/e2e/contextual-adoption.spec.ts", "Real user actions preserve revisions, repeat prior calculations and render desktop/mobile."),
+  evidence("SEV-ADOPT-INSTALLATION", "repository_file", "docs/build/arcabouco/etapa-09-installation.json", "Five installed matching migrations, 23 equal functions and no production fixture rows."),
+  evidence("SEV-ADOPT-INSTALLED-EVAL", "repository_file", "docs/build/arcabouco/etapa-09-installed-eval.json", "82 installed staging SQL contracts and production no-session denials."),
+
   evidence("SEV-OBS-SCHEMA", "repository_file", "supabase/migrations/20260917134931_observations_metric_definitions.sql", "Immutable observations and definitions preserve lineage and emit atomic audit/outbox without granting adoption."),
   evidence("SEV-OBS-AUTHORITY", "repository_file", "supabase/migrations/20260917134939_observation_commands_work_authority.sql", "Observation commands require the current dossier work capability."),
   evidence("SEV-OBS-VALUES", "repository_file", "supabase/migrations/20260917134946_observation_value_shape_validation.sql", "Typed values reject invalid numbers and dates at the SQL boundary."),
@@ -287,14 +303,14 @@ const systems = [
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
@@ -332,7 +348,7 @@ const dataStores = [
   {
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "A common Postgres evaluator intersects explicit grants, flat groups, deny rules, barriers and purposes. Installed definitions and negative staging contracts are verified for stage 3; universal live completeness remains unverified.",
-    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-OBS-SCHEMA", "SEV-OBS-HISTORY", "SEV-OBS-PINNED", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
+    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-ADOPT-SCHEMA", "SEV-ADOPT-DEPENDENCIES", "SEV-ADOPT-CONCURRENCY", "SEV-OBS-SCHEMA", "SEV-OBS-HISTORY", "SEV-OBS-PINNED", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
     gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
@@ -394,7 +410,7 @@ const dataFlows = [
     flowId: "FLOW-WEB-DATA", title: "Web application to Supabase", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and purpose-authorized private storage operations.",
     authorizationBoundary: "Publishable client plus authenticated session; the common database evaluator is authoritative. Export purpose is checked by the server download path and restrictive Storage policy; administrative authority does not imply content access.", direction: "internal", owner: owner("Application security owner", "Data security owner"),
-    evidenceRefs: ["SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-OBS-DECIMAL", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-RETRIEVAL", "SEV-SOURCE-CONTRACT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-DOWNLOAD", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-ADOPT-IDENTITY", "SEV-ADOPT-E2E", "SEV-ADOPT-DIFF", "SEV-ADOPT-MATH", "SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-OBS-DECIMAL", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-RETRIEVAL", "SEV-SOURCE-CONTRACT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-DOWNLOAD", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
   },
   {
     flowId: "FLOW-UPLOAD", title: "Browser document upload", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["customer_confidential", "restricted_financial"],
@@ -405,7 +421,7 @@ const dataFlows = [
     flowId: "FLOW-DATA-WORKER", title: "Supabase job and document access to worker", sourceRef: "SYS-SUPABASE", destinationRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"],
     dataClassIds: ["internal_operational", "customer_confidential", "restricted_financial", "security_evidence"], purpose: "Claim jobs and content-free authority events under separate bounded leases; deliver capability-scoped records and short-lived document access.",
     authorizationBoundary: "Delegated worker principal bound to the human, job, resource root, actual worker credential, authenticated account and lease expiry. Publication rechecks current policy under the organization authorization lock. Outbox uses its separate lease capability; snapshots remain private.", direction: "internal", owner: owner("Data security owner", "Document platform owner"),
-    evidenceRefs: ["SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-JOB", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-RIGHTS-REGISTRY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-REVOCATION", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-JOB", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-RIGHTS-REGISTRY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-REVOCATION", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-WORKER-RUNTIME", "SEV-RLS-TEST"], gapRefs: ["SG-LIVE-CONFIG", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     flowId: "FLOW-WORKER-ANTHROPIC", title: "Worker to Anthropic", sourceRef: "SYS-WORKER", destinationRef: "VEN-ANTHROPIC", environmentRefs: ["ENV-PRODUCTION", "ENV-EXTERNAL"],
@@ -560,7 +576,7 @@ const identities = [
   {
     identityId: "ID-WORKER-ACCOUNT", title: "Dedicated worker account", kind: "service_role", systemRef: "SYS-WORKER", environmentRefs: ["ENV-PRODUCTION"], privilege: "workload_scoped",
     authentication: "Dedicated account, worker claim credential and per-job capability; delegated principal also binds human authority, resource root and expiry. No standalone worker grant or group membership.", lifecycleState: "partial", owner: owner("Platform engineering owner", "Data security owner"),
-    evidenceRefs: ["SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-RIGHTS-JOB", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-SCHEMA", "SEV-POLICY-DELEGATION", "SEV-OUTBOX-CONTRACT", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
+    evidenceRefs: ["SEV-ADOPT-BINDING", "SEV-ADOPT-CONTRACT", "SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-RIGHTS-JOB", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-SCHEMA", "SEV-POLICY-DELEGATION", "SEV-OUTBOX-CONTRACT", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-PRIVILEGED-ACCESS", "SG-LIVE-CONFIG"], controlIds: ["TRUST-ID-01", "TRUST-APP-01", "TRUST-DATA-03"],
   },
   {
     identityId: "ID-GITHUB-OIDC", title: "GitHub deployment OIDC principal", kind: "oidc_principal", systemRef: "SYS-GITHUB", environmentRefs: ["ENV-CI", "ENV-PRODUCTION"], privilege: "workload_scoped",
@@ -799,7 +815,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.17-wave-8-opening-v1",
+  inventoryVersion: "2026.09.17-wave-8-delivered-v1",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-8", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",

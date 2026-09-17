@@ -117,6 +117,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires contextual adoption and immutable basis evidence at wave-eight closeout", () => {
+    for (const evidenceRef of ["SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-IDENTITY", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SQL", "SEV-ADOPT-DEPENDENCIES", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-CONCURRENCY", "SEV-ADOPT-DIFF", "SEV-ADOPT-MATH", "SEV-ADOPT-SELECTION", "SEV-ADOPT-E2E", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-7";

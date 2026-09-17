@@ -59,11 +59,29 @@ As 18 lacunas gerais permanecem nos incrementos responsáveis. Auditoria ponta a
 notificações são etapa 18; retenção por provedor, 16; expurgo/restore, 22. Trabalho sem companhia
 é etapa 10 e não foi antecipado. Biblioteca profissional segue em autoria, sem publicação.
 
-## Entrega em curso
+## Entrega verificada
 
 Cinco migrações instaladas em staging/produção; 23 funções idênticas, SQL dos journals
 idêntico por nome e 56 superfícies novas inventariadas. Produção tem zero linhas nos objetos
 novos; nenhuma fixture foi criada. Advisors de segurança sem achados nos dois ambientes.
-80 contratos SQL anteriores/adoção passaram em staging, mais dois novos contratos de
-execução/direitos. `pnpm check` passou localmente. CI da PR, merge, implantação exata e
-conciliação de segurança continuam obrigatórios antes de declarar a etapa concluída.
+82 contratos SQL passaram em staging e na CI, junto do teste concorrente com duas conexões.
+32 jornadas E2E passaram; as capturas desktop/mobile foram inspecionadas e o teste exige
+largura útil mínima e ausência de overflow. Decimais mantêm precisão também na apresentação.
+`pnpm check` passou localmente e na CI.
+
+PR 647 entregue em `75f3dc70aa90b8ab33b9e9afb299fbf809db8761`; main Quality 35254486464, Security 35254486454 e worker 35254486802 passaram. Vercel Production 6508719804 e ECS 356 executam o commit exato.
+A rota privada nega sessão ausente em produção. O worker apresenta polling atual, sem bloqueio
+ou atraso, e quatro alarmes OK; ações de notificação continuam na etapa 18. A conciliação
+preserva 18 lacunas gerais e exige 126 evidências. Seu próprio deploy será registrado no
+completion externo antes do fechamento da etapa.
+
+A inspeção da captura móvel da implementação detectou sobreposição temporária da barra
+lateral durante sua transição de largura, apesar do teste de largura útil ter passado.
+Esta conciliação sincroniza barra e coluna em 58px nesse escopo e adiciona ao E2E a
+asserção geométrica de não sobreposição e presença do título no viewport. A CI e a
+nova captura desta PR precisam passar antes do merge; o recibo final externo registra
+seus resultados e o deploy. Nenhum gate ou timeout foi relaxado.
+
+Na primeira execução de Security em main, o CodeQL completou as 105 consultas e enviou
+os resultados, mas atingiu o limite ao compactar sua base. A repetição apenas desse job
+no mesmo commit passou (run 35254486454, tentativa 2), sem alteração de configuração.
