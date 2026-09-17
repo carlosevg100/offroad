@@ -2862,3 +2862,7 @@ Workflow manual `event-outbox-monitoring.yml` usa a identidade OIDC de deploy ex
 ## Onda 2: candidato da etapa 4
 
 Contrato de eventos/outbox e consumidor limitado no worker atual, com trilha atômica e barreira para publicação externa. Candidato SQL validado em staging com rollback; nenhuma aplicação permanente nesta preparação. A etapa segue aberta até CI, journals, deploys e alarmes reais. Escopo e riscos em `docs/build/arcabouco/etapa-04.md`; revisão material em `docs/security/INVENTORY_WAVE_2_OUTBOX_REVIEW.md`. A etapa 2 está concluída em produção no commit `d47658eb`.
+
+## Abertura da etapa 7 - onda 6
+
+OK do fundador recebido. Inventário renovado sobre `f4a0a7b0759e8fc361b59fed16649a17fe5e7cad`, com journals vivos e worker exato; revisão em `docs/security/INVENTORY_WAVE_6_REVIEW.md`. Implementação e eval da etapa 7 ainda pendentes; nenhuma etapa posterior autorizada.

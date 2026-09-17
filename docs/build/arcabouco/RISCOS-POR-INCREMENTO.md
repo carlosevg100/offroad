@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 5 · 16/09/2026 · Referência entregue: `3ccc8bcd4c399f984cd399daadf063f1e54638d7`.
+Onda 6 · 16/09/2026 · Baseline entregue: `f4a0a7b0759e8fc361b59fed16649a17fe5e7cad`. Etapa 7 autorizada, ainda não entregue.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
