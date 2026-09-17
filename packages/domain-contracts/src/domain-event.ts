@@ -4,7 +4,7 @@ import {z} from "zod";
 export const domainEventSchema = z.strictObject({
   id: z.uuid(),
   organizationId: z.uuid(),
-  aggregateKind: z.enum(["membership", "resource_grant", "workspace_capability", "commercial_account_link", "access_policy"]),
+  aggregateKind: z.enum(["membership", "resource_grant", "workspace_capability", "commercial_account_link", "access_policy", "observation", "metric_definition"]),
   aggregateId: z.uuid(),
   aggregateVersion: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   eventVersion: z.literal(1),

@@ -9,6 +9,12 @@ function setup(results: unknown[]) {
  const log=vi.fn(); return {rpc,log,consumer:createEventOutboxConsumer({rpc} as unknown as SupabaseClient,"private-worker-token",log)};
 }
 describe("durable event outbox consumer",()=>{
+ it.each(["observation", "metric_definition"])("acknowledges %s through the existing capability without exposing content",async(aggregateKind)=>{
+  const {consumer,rpc,log}=setup([{data:{...claim,event:{...event,aggregateKind}},error:null},{data:{completed:true,replayed:false,appliedCount:0},error:null}]);
+  expect(await consumer.poll()).toBe(true);
+  expect(rpc).toHaveBeenNthCalledWith(2,"complete_event_outbox_v1",{p_worker_token:"private-worker-token",p_outbox_id:id,p_capability:"a".repeat(64)});
+  expect(JSON.stringify(log.mock.calls)).not.toMatch(/private-worker-token|aaaaaaaa|protected_state/);
+ });
  it("retries an ambiguous completion with the identical capability",async()=>{
   const {consumer,rpc,log}=setup([{data:claim,error:null},{data:null,error:{message:"sensitive failure"}},{data:{completed:true,replayed:true,appliedCount:1},error:null}]);
   await consumer.poll(); expect(rpc).toHaveBeenCalledTimes(3);expect(rpc.mock.calls[1]).toEqual(rpc.mock.calls[2]);
