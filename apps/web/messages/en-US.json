@@ -2069,6 +2069,9 @@
   },
   "App": {
     "adoptionBasis": {
+      "absent": "No value available",
+      "yes": "Yes",
+      "no": "No",
       "title": "Analysis basis",
       "back": "Back to work",
       "intro": "Choose the observations and assumptions supporting this analysis. Each revision preserves the earlier basis, its sources and the reason for the choice.",

@@ -2069,6 +2069,9 @@
   },
   "App": {
     "adoptionBasis": {
+      "absent": "Sem valor disponível",
+      "yes": "Sim",
+      "no": "Não",
       "title": "Base da análise",
       "back": "Voltar ao trabalho",
       "intro": "Escolha quais observações e hipóteses sustentam esta análise. Cada revisão preserva a base anterior, suas fontes e o motivo da escolha.",

@@ -76,7 +76,7 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  const oldUrl=page.url();
  async function calculate(expected:string){
   const form=page.getByRole("button",{name:copy.runCalculation,exact:true}).locator("..");
-  for(const [key,metric] of [["netDebt","financials.net_debt"],["ebitda","financials.ebitda"]]){
+  for(const [key,metric] of [["netDebt",copy.netDebt],["ebitda",copy.ebitda]]){
    const option=form.locator(`[name="${key}"] option`).filter({hasText:metric});
    await form.locator(`[name="${key}"]`).selectOption((await option.getAttribute("value"))!);
   }
@@ -86,7 +86,7 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  const fingerprint=await page.locator("output code").textContent();
  await hypothesis("financials.net_debt","450");
  await expect(page.getByRole("link",{name:"Revisão 3",exact:true})).toBeVisible();
- await calculate("4.5×");
+ await calculate("4,5×");
  await page.goto(oldUrl);await calculate("3×");
  await expect(page.locator("output code")).toHaveText(fingerprint!);
  await page.reload();await expect(page.getByRole("link",{name:"Revisão 2",exact:true})).toHaveAttribute("aria-current","page");
@@ -94,5 +94,6 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  await page.setViewportSize({width:390,height:844});
  await expect(page.getByRole("heading",{name:copy.title,exact:true})).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+ expect((await page.locator(".adoption-basis").boundingBox())!.width).toBeGreaterThanOrEqual(300);
  await test.info().attach("contextual-basis-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
 });
