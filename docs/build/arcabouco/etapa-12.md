@@ -53,9 +53,9 @@ não atos de publicação no cofre. Nenhum desses caminhos cria `vault_publicati
 - `vault.test.ts` e `access-policy/contract.test.ts`: limites da entrada, identidade da revisão,
   finalidade e separação entre gestão e publicação. Catálogos PT/EN e mensagens cliente verificados.
 
-As quatro migrações têm SQL idêntico nos journals dos dois ambientes. Produção:
-`20260918105943`, `20260918105947`, `20260918105952`, `20260918105956`.
-Staging: `20260918102152`, `20260918102750`, `20260918104550`, `20260918105110`.
+As cinco migrações têm SQL idêntico nos journals dos dois ambientes. Produção:
+`20260918105943`, `20260918105947`, `20260918105952`, `20260918105956`, `20260918111441`.
+Staging: `20260918102152`, `20260918102750`, `20260918104550`, `20260918105110`, `20260918111340`.
 O catálogo de etapa zero inclui 77 superfícies novas e os checkers passaram nos dois ambientes.
 92 contratos SQL passaram em staging, sem fixtures persistidas. O advisor de segurança está
 sem lints nos dois ambientes. CI da implementação, publicação web/worker e revisão visual
@@ -75,3 +75,7 @@ Controles: autorização mínima e segregação de funções; isolamento de tena
 integridade; direitos de uso; auditoria sem conteúdo. Não há provedor novo, coleta de telemetria
 nova nem dados descartáveis em produção. Contenção: retirar publicação ou revogar grant;
 histórico imutável permanece. Não reverter migrações apagando os atos humanos.
+
+A escrita direta de `service_role` nas duas tabelas de playbook foi revogada. O teste negativo
+nega reativação da aprovação e alteração de trechos; o teste completo de recuperação por
+capability passou novamente em staging. A leitura do worker permanece no comando limitado.

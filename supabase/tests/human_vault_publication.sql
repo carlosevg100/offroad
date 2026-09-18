@@ -53,6 +53,12 @@ do $$ declare fp text;begin
  begin perform public.publish_vault_entry_v1('a5120000-0000-4000-9000-000000000011','a5120000-0000-4000-9000-000000000013',fp);raise exception 'revoked creator published';exception when insufficient_privilege then null;end;
 end $$;
 reset role;
+do $$ begin
+ if not exists(select 1 from public.audit_events where resource_type='vault_publications' and resource_id='a5120000-0000-4000-9000-000000000004' and action='insert' and metadata='{"operation":"INSERT"}'::jsonb)
+ or not exists(select 1 from public.audit_events where resource_type='vault_publications' and resource_id='a5120000-0000-4000-9000-000000000004' and action='update' and metadata='{"operation":"UPDATE"}'::jsonb) then raise exception 'publication or withdrawal lacks content-free audit';end if;
+ begin update public.vault_entry_versions set title='Synthetic overwrite' where id='a5120000-0000-4000-9000-000000000002';raise exception 'immutable version overwritten';exception when check_violation then null;end;
+ begin delete from public.vault_publication_requests where id='a5120000-0000-4000-9000-000000000003';raise exception 'review history deleted';exception when check_violation then null;end;
+end $$;
 set local role service_role;
 do $$ begin
  begin perform public.publish_vault_entry_v1('a5120000-0000-4000-9000-000000000003','a5120000-0000-4000-9000-000000000004','x');raise exception 'worker published';exception when insufficient_privilege then null;end;

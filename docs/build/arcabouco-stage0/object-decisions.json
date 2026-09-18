@@ -107345,46 +107345,6 @@
               "authenticated",
               "SELECT",
               false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -107440,62 +107400,28 @@
               "authenticated",
               "SELECT",
               false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 12",
       "decision": "refatorar",
-      "stage": "1B, 7, 12",
-      "reason": "filtrar direito antes da busca e exigir publicação humana da referência oficial",
+      "stage": "12",
+      "reason": "Preserva candidatos de plataforma e retira escrita direta de worker sobre conteúdo e aprovação.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
           "line": 77,
           "anchor": "create table public.house_playbook_chunks (",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918111441_vault_legacy_worker_grants.sql",
+          "line": 3,
+          "anchor": "revoke all on public.house_playbook_versions,public.house_playbook_chunks from service_role;",
+          "mechanism": "direct_grant_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -107554,46 +107480,6 @@
               "authenticated",
               "SELECT",
               false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -107649,46 +107535,6 @@
               "authenticated",
               "SELECT",
               false
-            ],
-            [
-              "service_role",
-              "DELETE",
-              false
-            ],
-            [
-              "service_role",
-              "INSERT",
-              false
-            ],
-            [
-              "service_role",
-              "MAINTAIN",
-              false
-            ],
-            [
-              "service_role",
-              "REFERENCES",
-              false
-            ],
-            [
-              "service_role",
-              "SELECT",
-              false
-            ],
-            [
-              "service_role",
-              "TRIGGER",
-              false
-            ],
-            [
-              "service_role",
-              "TRUNCATE",
-              false
-            ],
-            [
-              "service_role",
-              "UPDATE",
-              false
             ]
           ],
           "schema": "public",
@@ -107698,7 +107544,7 @@
       "owner": "Codex, etapa 12",
       "decision": "refatorar",
       "stage": "12",
-      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
+      "reason": "Preserva candidatos de plataforma e retira escrita direta de worker sobre conteúdo e aprovação.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
@@ -107717,6 +107563,12 @@
           "line": 3,
           "anchor": "alter table public.house_playbook_versions add column legacy_publication_provenance jsonb;",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918111441_vault_legacy_worker_grants.sql",
+          "line": 3,
+          "anchor": "revoke all on public.house_playbook_versions,public.house_playbook_chunks from service_role;",
+          "mechanism": "direct_grant_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -145586,6 +145438,13 @@
       "decision": "preservar",
       "stage": "12",
       "reason": "Revisão e publicação humana com autoridade corrente no banco."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918111441_vault_legacy_worker_grants.sql",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Revoga alteração direta do corpus histórico pelo worker; leituras seguem comandos delegados."
     }
   ],
   "staging_archive": [
@@ -146161,7 +146020,8 @@
       "20260918105943",
       "20260918105947",
       "20260918105952",
-      "20260918105956"
+      "20260918105956",
+      "20260918111441"
     ],
     "new_objects": 77,
     "review": "docs/build/arcabouco/etapa-12.md"

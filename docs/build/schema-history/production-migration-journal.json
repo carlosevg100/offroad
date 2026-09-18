@@ -1,6 +1,6 @@
 {
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-18T11:00:52.280Z",
+  "captured_at": "2026-09-18T11:15:08.567Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1397,6 +1397,10 @@
     {
       "version": "20260918105956",
       "name": "vault_publication_receipts"
+    },
+    {
+      "version": "20260918111441",
+      "name": "vault_legacy_worker_grants"
     }
   ]
 }

@@ -1,6 +1,6 @@
 ## Etapa 12: implementação e verificação de schema
 
-Cofre com publicação humana, revisão exata, histórico e direitos herdados. Quatro migrações
+Cofre com publicação humana, revisão exata, histórico e direitos herdados. Cinco migrações
 aplicadas em staging e produção com SQL conciliado; 28 versões históricas importadas como
 candidatas, zero publicações inventadas. 92 contratos SQL passaram em staging. Inventário de
 objetos atualizado e checkers sem diferenças. Interface, testes de concorrência e jornada de
@@ -18,7 +18,7 @@ publicação com escopo e finalidade fixados; etapa 13 não iniciada.
 
 PR 655 entregue em `cad8990f3cd10958a05d28cb2c7fd54da9c182b2`; main Quality 35296301221, Security 35296301200 e worker 35296319659 passaram. Vercel Production 6515711334 e ECS 364 executam o commit exato.
 Participação usa grants canônicos; canais pessoais, autoria explícita, revisões imutáveis e
-compartilhamento humano preservam as restrições das fontes. Quatro migrações estão nos dois
+compartilhamento humano preservam as restrições das fontes. Cinco migrações estão nos dois
 ambientes, com SQL idêntico por nome e 16 funções conciliadas. 87 contratos SQL e o teste de
 duas conexões concorrentes passaram. A jornada de duas pessoas verifica privacidade,
 comparação de três versões, reapresentação com linhagem, histórico e revogação na interface.

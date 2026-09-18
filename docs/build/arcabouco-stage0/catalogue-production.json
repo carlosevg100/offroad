@@ -36346,46 +36346,6 @@
           "authenticated",
           "SELECT",
           false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -36440,46 +36400,6 @@
         [
           "authenticated",
           "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
           false
         ]
       ],
@@ -47207,5 +47127,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-18T11:00:46.446659+00:00"
+  "captured_at": "2026-09-18T11:15:11.005447+00:00"
 }
