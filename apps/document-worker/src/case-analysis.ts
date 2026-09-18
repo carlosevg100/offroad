@@ -881,11 +881,9 @@ export async function processCaseAnalysisJob(
     const playbookLines = primaryRetrieval.results
       .filter((entry) => entry.source === "house_playbook")
       .map((entry) => `- [${entry.citation.label}] ${entry.content}`);
-    if (!primaryRetrieval.playbook_version || playbookLines.length === 0) {
-      throw Object.assign(new Error("approved house playbook context was not retrieved"), {
-        code: "playbook_context_unavailable",
-      });
-    }
+    // A missing human publication blocks its model consumers, not independently
+    // released deterministic methods. Persist the blocker instead of losing their results.
+    const approvedPlaybookAvailable = !!primaryRetrieval.playbook_version && playbookLines.length > 0;
 
     const spentBefore = dependencies.gateway.spent();
     let writerProvider: "anthropic" | "openai" | null = null;
@@ -938,6 +936,7 @@ export async function processCaseAnalysisJob(
       ...(persistedStructureProposal ? {structureProposal: persistedStructureProposal} : {}),
       ...(persistedStructureConfirmation ? {structureConfirmation: persistedStructureConfirmation} : {}),
       ...(!persistedStructureProposal && executionPlan.designStructure ? {designStructure: async (context: StructureDesignerContext) => {
+        if (!approvedPlaybookAvailable) return {proposal: null, blockedBy: ["playbook_context_unavailable"]};
         const callStart = dependencies.lineage().length;
         const before = dependencies.gateway.spent();
         const generated = await dependencies.gateway.complete({
@@ -1017,6 +1016,7 @@ export async function processCaseAnalysisJob(
       // callbacks only when readiness is `ready`; material compilation remains behind its own
       // structure and production-plan gates.
       writeBrief: async ({reconciliation, desk, trajectory}) => {
+        if (!approvedPlaybookAvailable) return {brief: null, blockedBy: ["playbook_context_unavailable"]};
         const evidence = deskEvidence(desk, trajectory);
         const callStart = dependencies.lineage().length;
         const before = dependencies.gateway.spent();

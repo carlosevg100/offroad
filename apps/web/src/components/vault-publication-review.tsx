@@ -1,5 +1,5 @@
 "use client";
-import {useState, useTransition} from "react";
+import {useId, useState, useTransition} from "react";
 import {useFormatter, useTranslations} from "next-intl";
 import {loadVault, loadVaultReceipts, loadVaultReferenceDetail, loadVaultPeople, designateVaultAccess, loadVaultReferences, loadVaultHistory, saveVaultVersion, proposeVaultPublication, publishVaultVersion, withdrawVaultPublication} from "@/app/[locale]/app/vault/actions";
 import type {VaultPage, VaultRow, VaultState} from "@/lib/advisor/vault";
@@ -75,6 +75,7 @@ function VaultReferencePicker({locale, kind, onSelect}: {locale: string; kind: "
   </fieldset>;
 }
 function VaultEditor({locale,row,onClose,onSaved}: {locale: string; row: VaultRow | null; onClose: () => void; onSaved: () => void}) {
+  const contentId = useId();
   const t = useTranslations("Vault"); const [kind,setKind] = useState<VaultRow["kind"]>(row?.kind ?? "directive");
   const [title,setTitle] = useState(row?.title ?? ""); const [text,setText] = useState(row?.directive_text ?? "");
   const [reference,setReference] = useState<Reference | null>(row && row.kind !== "directive" ? {id:(row.source_version_id ?? row.assumption_version_id ?? row.presentation_template_id)!,title:row.title,revision:null} : null);
@@ -87,7 +88,7 @@ function VaultEditor({locale,row,onClose,onSaved}: {locale: string; row: VaultRo
     } catch {setStatus(t("errors.save"));}});}}>
       <label>{t("kind")}<select value={kind} disabled={!!row} onChange={e => {setKind(e.target.value as VaultRow["kind"]);setReference(null);}}>{(["directive","source","adoption","template"] as const).map(k => <option key={k} value={k}>{t(`kinds.${k}`)}</option>)}</select></label>
       <label>{t("entryTitle")}<input required maxLength={180} value={title} onChange={e => setTitle(e.target.value)} /></label>
-      {kind === "directive" ? <label>{t("text")}<textarea required maxLength={32000} rows={7} value={text} onChange={e => setText(e.target.value)} /></label> : <><VaultReferencePicker key={kind} locale={locale} kind={kind} onSelect={setReference} />{reference && <p>{t("selected",{name:reference.title})}</p>}</>}
+      {kind === "directive" ? <><label htmlFor={contentId}>{t("text")}</label><textarea id={contentId} required maxLength={32000} rows={7} value={text} onChange={e => setText(e.target.value)} /></> : <><VaultReferencePicker key={kind} locale={locale} kind={kind} onSelect={setReference} />{reference && <p>{t("selected",{name:reference.title})}</p>}</>}
       <details><summary>{t("dependencies")}</summary><p>{t("dependencyNotice")}</p><VaultReferencePicker locale={locale} kind="source" onSelect={r => setSources(current => current.some(s => s.id === r.id) ? current : [...current,r])} />
         {sources.map(s => <p key={s.id}>{s.title} <button type="button" onClick={() => setSources(current => current.filter(r => r.id !== s.id))}>{t("remove")}</button></p>)}
         {row && <p>{t("inheritedDependencies",{count:row.dependency_manifest.length})}</p>}

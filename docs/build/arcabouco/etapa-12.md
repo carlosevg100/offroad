@@ -79,3 +79,11 @@ histórico imutável permanece. Não reverter migrações apagando os atos human
 A escrita direta de `service_role` nas duas tabelas de playbook foi revogada. O teste negativo
 nega reativação da aprovação e alteração de trechos; o teste completo de recuperação por
 capability passou novamente em staging. A leitura do worker permanece no comando limitado.
+
+A primeira CI revelou dois defeitos de transição. O rótulo do campo de conteúdo agora usa
+associação explícita, preservando o nome acessível ao editar texto preenchido. O worker
+registra `playbook_context_unavailable` apenas nos consumidores que exigem esse contexto:
+redação e desenho de estrutura ficam bloqueados antes da chamada ao modelo. Cálculos
+independentes continuam e seus resultados são persistidos. A regressão em
+`case-analysis.test.ts` comprova resultado de recebíveis preservado, texto ausente e zero
+chamadas ao modelo quando não existe playbook publicado. Não houve aprovação substituta.
