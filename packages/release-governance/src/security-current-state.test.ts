@@ -150,6 +150,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires exact human publication and inherited rights evidence at wave-eleven closeout", () => {
+    for (const evidenceRef of ["SEV-VAULT-WORKER-AUTHORITY", "SEV-VAULT-LEGACY-GRANTS", "SEV-VAULT-LEGACY-NEGATIVE", "SEV-VAULT-SCHEMA", "SEV-VAULT-EXPORT", "SEV-VAULT-LEGACY", "SEV-VAULT-RECEIPTS", "SEV-VAULT-HUMAN", "SEV-VAULT-ISOLATION", "SEV-VAULT-DERIVED", "SEV-VAULT-CONCURRENCY", "SEV-VAULT-E2E", "SEV-VAULT-ACTIONS", "SEV-VAULT-PROTOCOL"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-10";

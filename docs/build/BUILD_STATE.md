@@ -1,11 +1,17 @@
-## Etapa 12: implementação e verificação de schema
+## Etapa 12: entrega e reconciliação da onda 11
 
-Cofre com publicação humana, revisão exata, histórico e direitos herdados. Cinco migrações
-aplicadas em staging e produção com SQL conciliado; 28 versões históricas importadas como
-candidatas, zero publicações inventadas. 92 contratos SQL passaram em staging. Inventário de
-objetos atualizado e checkers sem diferenças. Interface, testes de concorrência e jornada de
-duas pessoas em `docs/build/arcabouco/etapa-12.md`. CI e implantação deste incremento ainda
-precisam do recibo de fechamento; etapa 13 não iniciada.
+PR 658 mesclada em `14c6e54b2d49b7af8f0da88ffa27591295a2f188`. Main Quality
+35342395648, Security 35342395706 e worker 35342395711 passaram. Vercel Production
+6523814267 e ECS 367 executam esse commit: 1/1 tarefa saudável, sem bloqueios ou atraso.
+Cofre com revisão humana exata, versões, direitos herdados, retirada e designação no produto.
+Cinco migrações conciliadas; 350 arquivos de main com carimbo em produção. 92 contratos SQL
+em staging e jornada de duas pessoas na CI. Capturas desktop/mobile inspecionadas.
+
+O inventário de fechamento reancora 164 evidências na entrega observada e preserva 18 lacunas.
+Os callbacks de redação/estrutura negam contexto da casa sem publicação humana; cálculos
+independentes são preservados. Riscos de execução/revogação permanecem nas etapas 17/18,
+retenção na 16, destino de alarmes na 18 e auditoria integral na 23. Esta conciliação não
+inicia a etapa 13; sua implantação final e completion ficam registrados no recibo da onda.
 
 ## Onda 11: etapa 12 autorizada
 
