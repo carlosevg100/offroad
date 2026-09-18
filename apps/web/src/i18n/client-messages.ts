@@ -29,6 +29,7 @@ export function selectClientMessages(messages: Messages) {
     PresentationTemplate: messages.PresentationTemplate,
     MandateRegistry: messages.MandateRegistry,
     WorkContext: messages.WorkContext,
+    WorkContributions: messages.WorkContributions,
 
   };
 }

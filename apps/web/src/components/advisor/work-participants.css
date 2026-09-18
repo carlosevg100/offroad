@@ -1,0 +1,21 @@
+.work-contributions{display:grid;gap:1rem;min-width:0;font-size:.875rem;line-height:1.5}
+.work-contributions h3,.work-contributions h4,.work-contributions p{margin:0}
+.work-contributions p{overflow-wrap:anywhere}
+.work-contributions form,.work-contributions label{display:grid;gap:.45rem}
+.work-contributions form{gap:.8rem}
+.work-contributions input:not([type=checkbox]),.work-contributions textarea{width:100%;min-width:0;border:1px solid var(--line,#ddd);border-radius:6px;padding:.65rem;font:inherit;background:var(--paper,#fafaf9);color:inherit}
+.work-contributions textarea{min-height:140px;resize:vertical}
+.work-contributions button{font:inherit;padding:.45rem .65rem;border:1px solid var(--line,#ddd);border-radius:5px;background:var(--paper,#fafaf9);cursor:pointer;color:inherit}
+.work-contributions button:disabled{opacity:.5;cursor:default}
+.work-contributions button[aria-pressed=true]{border-color:var(--accent,#7d9455);background:#eef2e7}
+.work-contributions summary{cursor:pointer;font-weight:600;padding:.3rem 0}
+.work-contributions article{border:1px solid var(--line,#ddd);border-radius:8px;padding:.85rem;display:grid;gap:.65rem;min-width:0}
+.work-contributions header,.work-contributions__actions,.work-contributions__tabs,.work-contributions__pagination{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.work-contributions header{justify-content:space-between}
+.work-contributions small{color:var(--muted,#707984)}
+.work-contributions__text,.work-contributions__diff p{white-space:pre-wrap;overflow-wrap:anywhere}
+.work-contributions__diff{display:grid;gap:.8rem;border-left:3px solid var(--accent,#7d9455);padding-left:.8rem}
+.work-contributions__people ul{list-style:none;padding:0;display:grid;gap:.5rem}
+.work-contributions__people li{display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+.work-contributions .work-contributions__source{display:flex;align-items:center;gap:.5rem;margin:.5rem 0}
+.work-contributions blockquote{margin:0;padding:.75rem;border-left:2px solid var(--line,#ddd)}

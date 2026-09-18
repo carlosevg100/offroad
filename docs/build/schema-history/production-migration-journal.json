@@ -1,6 +1,6 @@
 {
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-17T20:51:00.370Z",
+  "captured_at": "2026-09-18T00:24:23.045Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1365,6 +1365,18 @@
     {
       "version": "20260917204939",
       "name": "persistent_work_specialized_replay_scope"
+    },
+    {
+      "version": "20260918002400",
+      "name": "work_contributions_and_channels"
+    },
+    {
+      "version": "20260918002404",
+      "name": "work_contribution_command_integrity"
+    },
+    {
+      "version": "20260918002407",
+      "name": "work_contribution_history_indexes"
     }
   ]
 }

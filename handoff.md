@@ -1,3 +1,11 @@
+# Etapa 11: contratos e interface em validação
+
+Participação vinculada à política canônica, canais pessoais, revisões imutáveis e
+compartilhamento humano por versão. 87 contratos SQL de staging passaram com rollback.
+Migrações nos dois ambientes, SQL e 16 funções conciliados; segurança sem alertas.
+Detalhes em `docs/build/arcabouco/etapa-11.md`. CI e implantação do incremento ainda
+pendentes; não é completion. O cofre da etapa 12 continua fora desta onda.
+
 # Onda 10: etapa 11 autorizada e em abertura
 
 Participação, canais pessoais e contribuições sem sobrescrita. Baseline `aba63d641077`.

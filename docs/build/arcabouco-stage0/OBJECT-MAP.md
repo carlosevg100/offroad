@@ -2337,3 +2337,60 @@ Migrações adicionais:
 0 superfícies novas conferidas nos dois ambientes. Adaptadores antigos consolidados após a web compatível; contexto e dossiês editáveis sem intake automático.
 
 Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, preservar na etapa 10; revisão esperada e autorização atual nas duas mutações.
+
+## Atualização da etapa 11, 17/09/2026
+
+52 superfícies novas conferidas nos dois ambientes. Participação, canais, autoria e revisões usam a autoridade atual e mantêm os caminhos antigos sob a barreira de canal.
+
+- `function:private.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.bind_work_channel_v1()`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.can_read_contribution_revision_v1(p_org uuid, p_revision uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.ensure_personal_work_channel_v1(p_work_id uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.guard_contribution_immutable_v1()`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:public.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:public.ensure_personal_work_channel_v1(p_work_id uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:public.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:public.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:private.contribution_source_dependencies.contribution_sources_deny`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.agent_conversations.agent_conversations_channel_boundary`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.agent_messages.agent_messages_channel_boundary`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.contribution_revisions.contribution_revisions_deny_delete`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.contribution_revisions.contribution_revisions_deny_insert`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.contribution_revisions.contribution_revisions_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.contribution_revisions.contribution_revisions_select`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_channels.work_channels_deny_delete`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_channels.work_channels_deny_insert`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_channels.work_channels_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_channels.work_channels_select`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_contributions.work_contributions_deny_delete`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_contributions.work_contributions_deny_insert`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_contributions.work_contributions_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_contributions.work_contributions_select`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_participants.work_participants_deny_delete`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_participants.work_participants_deny_insert`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_participants.work_participants_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:public.work_participants.work_participants_select`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `r:private.contribution_source_dependencies`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `r:public.contribution_revisions`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `r:public.work_channels`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `r:public.work_contributions`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `r:public.work_participants`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:private.contribution_source_dependencies.contribution_dependency_immutable`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.agent_conversations.aab_conversation_channel`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.agent_messages.aab_message_channel`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.contribution_revisions.contribution_revision_immutable`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.contribution_revisions.contribution_revisions_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.contribution_revisions.contribution_revisions_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_channels.work_channels_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_channels.work_channels_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_contributions.work_contributions_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_contributions.work_contributions_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_participants.work_participants_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:public.work_participants.work_participants_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.

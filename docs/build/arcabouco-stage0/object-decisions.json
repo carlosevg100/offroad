@@ -412,6 +412,71 @@
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
+      "id": "function:private.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+          "kind": "function",
+          "name": "add_work_participant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+          "kind": "function",
+          "name": "add_work_participant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 165,
+          "anchor": "create function private.add_work_participant_v1(p_work_id uuid,p_user_id uuid,p_action text default 'work') returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.adopt_confirmed_preliminary_company()",
       "kind": "function",
       "catalogues": {
@@ -2735,6 +2800,61 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.bind_work_channel_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_work_channel_v1()",
+          "kind": "function",
+          "name": "bind_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_work_channel_v1()",
+          "kind": "function",
+          "name": "bind_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 130,
+          "anchor": "create function private.bind_work_channel_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.bind_workspace_group_after_capital_project_insert()",
       "kind": "function",
       "catalogues": {},
@@ -4023,6 +4143,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.can_read_contribution_revision_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_contribution_revision_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "can_read_contribution_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_contribution_revision_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "can_read_contribution_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 86,
+          "anchor": "create function private.can_read_contribution_revision_v1(p_org uuid,p_revision uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
       "kind": "function",
       "catalogues": {
@@ -4417,6 +4602,71 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
+          "kind": "function",
+          "name": "can_read_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_channel uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
+          "kind": "function",
+          "name": "can_read_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_channel uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 68,
+          "anchor": "create function private.can_read_work_channel_v1(p_org uuid,p_channel uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.can_review_intake_claims(p_organization_id uuid, p_session_id uuid)",
@@ -6380,6 +6630,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "contribution_sources_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "contribution_sources_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 75,
+          "anchor": "create function private.contribution_sources_allowed_v1(p_org uuid,p_revision uuid,p_subject uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
@@ -8348,6 +8653,71 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "function:private.ensure_personal_work_channel_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ensure_personal_work_channel_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "ensure_personal_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ensure_personal_work_channel_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "ensure_personal_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 176,
+          "anchor": "create function private.ensure_personal_work_channel_v1(p_work_id uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.evaluate_operating_control_snapshot_v1(p_scope_id text, p_requested_use text, p_snapshot jsonb, p_binding jsonb)",
       "kind": "function",
       "catalogues": {
@@ -9603,6 +9973,61 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.guard_contribution_immutable_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_contribution_immutable_v1()",
+          "kind": "function",
+          "name": "guard_contribution_immutable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_contribution_immutable_v1()",
+          "kind": "function",
+          "name": "guard_contribution_immutable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 112,
+          "anchor": "create function private.guard_contribution_immutable_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.guard_definition_version_v1()",
@@ -13326,6 +13751,71 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_work_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_work_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 295,
+          "anchor": "create function private.list_work_people_v1(p_work_id uuid,p_search text default '',p_offset integer default 0) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.lock_execution_approval_context()",
       "kind": "function",
       "catalogues": {
@@ -14349,6 +14839,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)",
+          "kind": "function",
+          "name": "pin_contribution_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)",
+          "kind": "function",
+          "name": "pin_contribution_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 186,
+          "anchor": "create function private.pin_contribution_sources_v1(p_org uuid,p_revision uuid,p_sources uuid[],p_parent uuid,p_base uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "catalogues": {
@@ -14994,6 +15539,71 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+          "kind": "function",
+          "name": "promote_contribution_to_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+          "kind": "function",
+          "name": "promote_contribution_to_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 236,
+          "anchor": "create function private.promote_contribution_to_work_v1(p_revision_id uuid,p_promotion_id uuid,p_expected_shared_revision_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.promote_organization_rollout(p_organization_id uuid, p_to_state text, p_approved_by uuid, p_approval_note text, p_wave_1_cohort_id uuid, p_wave_2_cohort_id uuid)",
@@ -28196,6 +28806,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_work_contribution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_work_contribution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 200,
+          "anchor": "create function private.submit_work_contribution_v1(p_work_id uuid,p_contribution_id uuid,p_revision_id uuid,p_expected_revision_id uuid,p_base_revision_id uuid,p_content text,p_source_version_ids uuid[] default '{}') returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.supersede_previous_institutional_results()",
       "kind": "function",
       "catalogues": {
@@ -39921,6 +40596,71 @@
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
+      "id": "function:public.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+          "kind": "function",
+          "name": "add_work_participant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+          "kind": "function",
+          "name": "add_work_participant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 287,
+          "anchor": "create function public.add_work_participant_v1(p_work_id uuid,p_user_id uuid,p_action text default 'work') returns uuid language sql security invoker set search_path='' as $$select private.add_work_participant_v1(p_work_id,p_user_id,p_action);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
       "kind": "function",
       "catalogues": {
@@ -42782,6 +43522,71 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:public.ensure_personal_work_channel_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.ensure_personal_work_channel_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "ensure_personal_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.ensure_personal_work_channel_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "ensure_personal_work_channel_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 288,
+          "anchor": "create function public.ensure_personal_work_channel_v1(p_work_id uuid) returns uuid language sql security invoker set search_path='' as $$select private.ensure_personal_work_channel_v1(p_work_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "catalogues": {
@@ -44099,6 +44904,71 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:public.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_work_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_work_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 314,
+          "anchor": "create function public.list_work_people_v1(p_work_id uuid,p_search text default '',p_offset integer default 0) returns jsonb language sql security invoker set search_path='' as $$select private.list_work_people_v1(p_work_id,p_search,p_offset);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
       "kind": "function",
       "catalogues": {
@@ -44583,6 +45453,71 @@
         }
       ],
       "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
+    },
+    {
+      "id": "function:public.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+          "kind": "function",
+          "name": "promote_contribution_to_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+          "kind": "function",
+          "name": "promote_contribution_to_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 290,
+          "anchor": "create function public.promote_contribution_to_work_v1(p_revision_id uuid,p_promotion_id uuid,p_expected_shared_revision_id uuid default null) returns jsonb language sql security invoker set search_path='' as $$select private.promote_contribution_to_work_v1(p_revision_id,p_promotion_id,p_expected_shared_revision_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.propagate_project_canonical_revision_v1(p_project_id uuid, p_request_id uuid, p_locale text)",
@@ -54190,6 +55125,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_work_contribution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_work_contribution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 289,
+          "anchor": "create function public.submit_work_contribution_v1(p_work_id uuid,p_contribution_id uuid,p_revision_id uuid,p_expected_revision_id uuid,p_base_revision_id uuid,p_content text,p_source_version_ids uuid[] default '{}') returns jsonb language sql security invoker set search_path='' as $$select private.submit_work_contribution_v1(p_work_id,p_contribution_id,p_revision_id,p_expected_revision_id,p_base_revision_id,p_content,p_source_version_ids);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.transfer_organization_owner_v1(p_organization_id uuid, p_new_owner_user_id uuid)",
@@ -64252,6 +65252,53 @@
       "last_review_stage": "2"
     },
     {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+          "kind": "policy",
+          "name": "contribution_sources_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+          "kind": "policy",
+          "name": "contribution_sources_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 66,
+          "anchor": "create policy contribution_sources_deny on private.contribution_source_dependencies for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:private.domain_events.deny_client_delete",
       "kind": "policy",
       "catalogues": {
@@ -67335,6 +68382,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.agent_conversations.agent_conversations_channel_boundary",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.agent_conversations.agent_conversations_channel_boundary",
+          "kind": "policy",
+          "name": "agent_conversations_channel_boundary",
+          "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "agent_conversations",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.agent_conversations.agent_conversations_channel_boundary",
+          "kind": "policy",
+          "name": "agent_conversations_channel_boundary",
+          "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "agent_conversations",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 153,
+          "anchor": "create policy agent_conversations_channel_boundary on public.agent_conversations as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.agent_conversations.agent_conversations_select",
       "kind": "policy",
       "catalogues": {
@@ -67386,6 +68480,53 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.agent_messages.agent_messages_channel_boundary",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.agent_messages.agent_messages_channel_boundary",
+          "kind": "policy",
+          "name": "agent_messages_channel_boundary",
+          "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "agent_messages",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.agent_messages.agent_messages_channel_boundary",
+          "kind": "policy",
+          "name": "agent_messages_channel_boundary",
+          "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "agent_messages",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 155,
+          "anchor": "create policy agent_messages_channel_boundary on public.agent_messages as restrictive for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:public.agent_messages.agent_messages_select",
@@ -70473,6 +71614,194 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_delete",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_delete",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 106,
+          "anchor": " execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_insert",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_insert",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 104,
+          "anchor": " execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_update",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_deny_update",
+          "kind": "policy",
+          "name": "contribution_revisions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 105,
+          "anchor": " execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_select",
+          "kind": "policy",
+          "name": "contribution_revisions_select",
+          "qual": "private.can_read_contribution_revision_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.contribution_revisions.contribution_revisions_select",
+          "kind": "policy",
+          "name": "contribution_revisions_select",
+          "qual": "private.can_read_contribution_revision_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_revisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 103,
+          "anchor": " execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:public.controlled_case_executions.controlled_case_executions_select",
@@ -80244,6 +81573,194 @@
       "last_review_stage": "2"
     },
     {
+      "id": "policy:public.work_channels.work_channels_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_channels.work_channels_deny_delete",
+          "kind": "policy",
+          "name": "work_channels_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_channels.work_channels_deny_delete",
+          "kind": "policy",
+          "name": "work_channels_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 106,
+          "anchor": " execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_channels.work_channels_deny_insert",
+          "kind": "policy",
+          "name": "work_channels_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_channels.work_channels_deny_insert",
+          "kind": "policy",
+          "name": "work_channels_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 104,
+          "anchor": " execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_channels.work_channels_deny_update",
+          "kind": "policy",
+          "name": "work_channels_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_channels.work_channels_deny_update",
+          "kind": "policy",
+          "name": "work_channels_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 105,
+          "anchor": " execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_channels.work_channels_select",
+          "kind": "policy",
+          "name": "work_channels_select",
+          "qual": "private.can_read_work_channel_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_channels.work_channels_select",
+          "kind": "policy",
+          "name": "work_channels_select",
+          "qual": "private.can_read_work_channel_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_channels",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 103,
+          "anchor": " execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.work_contexts.work_contexts_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -80432,6 +81949,194 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "policy:public.work_contributions.work_contributions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contributions.work_contributions_deny_delete",
+          "kind": "policy",
+          "name": "work_contributions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_contributions.work_contributions_deny_delete",
+          "kind": "policy",
+          "name": "work_contributions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 106,
+          "anchor": " execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contributions.work_contributions_deny_insert",
+          "kind": "policy",
+          "name": "work_contributions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_contributions.work_contributions_deny_insert",
+          "kind": "policy",
+          "name": "work_contributions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 104,
+          "anchor": " execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contributions.work_contributions_deny_update",
+          "kind": "policy",
+          "name": "work_contributions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_contributions.work_contributions_deny_update",
+          "kind": "policy",
+          "name": "work_contributions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 105,
+          "anchor": " execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_contributions.work_contributions_select",
+          "kind": "policy",
+          "name": "work_contributions_select",
+          "qual": "(private.can_read_work_channel_v1(organization_id, channel_id) AND ((head_revision_id IS NULL) OR private.can_read_contribution_revision_v1(organization_id, head_revision_id)))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_contributions.work_contributions_select",
+          "kind": "policy",
+          "name": "work_contributions_select",
+          "qual": "(private.can_read_work_channel_v1(organization_id, channel_id) AND ((head_revision_id IS NULL) OR private.can_read_contribution_revision_v1(organization_id, head_revision_id)))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_contributions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 103,
+          "anchor": " execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -80615,6 +82320,194 @@
           "line": 41,
           "anchor": "create policy work_dossiers_select on public.work_dossiers for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)) and (select private.can_read_dossier_v1(dossier_id)));",
           "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_participants.work_participants_deny_delete",
+          "kind": "policy",
+          "name": "work_participants_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_participants.work_participants_deny_delete",
+          "kind": "policy",
+          "name": "work_participants_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 106,
+          "anchor": " execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_participants.work_participants_deny_insert",
+          "kind": "policy",
+          "name": "work_participants_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_participants.work_participants_deny_insert",
+          "kind": "policy",
+          "name": "work_participants_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 104,
+          "anchor": " execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_participants.work_participants_deny_update",
+          "kind": "policy",
+          "name": "work_participants_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_participants.work_participants_deny_update",
+          "kind": "policy",
+          "name": "work_participants_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 105,
+          "anchor": " execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_participants.work_participants_select",
+          "kind": "policy",
+          "name": "work_participants_select",
+          "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND private.resource_access_as_subject_v1(organization_id, work_id, user_id, 'read'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_participants.work_participants_select",
+          "kind": "policy",
+          "name": "work_participants_select",
+          "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND private.resource_access_as_subject_v1(organization_id, work_id, user_id, 'read'::text))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_participants",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 103,
+          "anchor": " execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
@@ -83444,6 +85337,125 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "r:private.contribution_source_dependencies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.contribution_source_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "contribution_source_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.contribution_source_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "contribution_source_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 54,
+          "anchor": "create table private.contribution_source_dependencies (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:private.domain_events",
@@ -89221,10 +91233,10 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, etapa 10",
+      "owner": "Codex, etapa 11",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
+      "stage": "11",
+      "reason": "Acrescenta limite de canal e autoria comprovada às conversas existentes sem ampliar sua audiência.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
@@ -89236,6 +91248,12 @@
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 108,
           "anchor": "alter table public.agent_conversations add constraint conversation_work_or_intake check(work_id is not null or intake_session_id is not null);",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 151,
+          "anchor": "alter table public.agent_conversations add constraint work_conversation_channel_required check(work_id is null or channel_id is not null);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -89436,10 +91454,10 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, etapa 10",
+      "owner": "Codex, etapa 11",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Preserva gates legados e acrescenta resolução direta de trabalho apenas ao novo job de conversa.",
+      "stage": "11",
+      "reason": "Acrescenta limite de canal e autoria comprovada às conversas existentes sem ampliar sua audiência.",
       "sources": [
         {
           "path": "supabase/migrations/20260826203944_agent_operation_brief_vertical.sql",
@@ -89451,6 +91469,12 @@
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 109,
           "anchor": "alter table public.agent_messages add constraint message_work_or_intake check(work_id is not null or intake_session_id is not null);",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 152,
+          "anchor": "alter table public.agent_messages add constraint work_message_channel_required check(work_id is null or channel_id is not null);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -97307,6 +99331,135 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:public.contribution_revisions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.contribution_revisions",
+          "rls": true,
+          "kind": "table",
+          "name": "contribution_revisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.contribution_revisions",
+          "rls": true,
+          "kind": "table",
+          "name": "contribution_revisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 33,
+          "anchor": "create table public.contribution_revisions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:public.controlled_case_executions",
@@ -116378,6 +118531,135 @@
       "last_review_stage": "2"
     },
     {
+      "id": "r:public.work_channels",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_channels",
+          "rls": true,
+          "kind": "table",
+          "name": "work_channels",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_channels",
+          "rls": true,
+          "kind": "table",
+          "name": "work_channels",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 14,
+          "anchor": "create table public.work_channels (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.work_contexts",
       "kind": "table",
       "catalogues": {
@@ -116507,6 +118789,135 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "r:public.work_contributions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_contributions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_contributions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_contributions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_contributions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 24,
+          "anchor": "create table public.work_contributions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.work_dossiers",
       "kind": "table",
       "catalogues": {
@@ -116630,6 +119041,135 @@
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 17,
           "anchor": "create table public.work_dossiers (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.work_participants",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_participants",
+          "rls": true,
+          "kind": "table",
+          "name": "work_participants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_participants",
+          "rls": true,
+          "kind": "table",
+          "name": "work_participants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 3,
+          "anchor": "create table public.work_participants (",
           "mechanism": "direct_ddl"
         }
       ],
@@ -117899,6 +120439,45 @@
       ],
       "consumer_status": "Consumido pelos contratos de contexto da etapa 2.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "trigger:private.contribution_source_dependencies.contribution_dependency_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_dependency_immutable",
+          "kind": "trigger",
+          "name": "contribution_dependency_immutable",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER contribution_dependency_immutable BEFORE DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_dependency_immutable",
+          "kind": "trigger",
+          "name": "contribution_dependency_immutable",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER contribution_dependency_immutable BEFORE DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 116,
+          "anchor": "create trigger contribution_dependency_immutable before update or delete on private.contribution_source_dependencies for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:private.domain_events.domain_events_immutable",
@@ -120015,6 +122594,45 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "trigger:public.agent_conversations.aab_conversation_channel",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.agent_conversations.aab_conversation_channel",
+          "kind": "trigger",
+          "name": "aab_conversation_channel",
+          "table": "agent_conversations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_work_channel_v1()",
+          "definition": "CREATE TRIGGER aab_conversation_channel BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.agent_conversations.aab_conversation_channel",
+          "kind": "trigger",
+          "name": "aab_conversation_channel",
+          "table": "agent_conversations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_work_channel_v1()",
+          "definition": "CREATE TRIGGER aab_conversation_channel BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 149,
+          "anchor": "create trigger aab_conversation_channel before insert or update on public.agent_conversations for each row execute function private.bind_work_channel_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.agent_conversations.agent_conversations_audit",
       "kind": "trigger",
       "catalogues": {
@@ -120126,6 +122744,45 @@
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 105,
           "anchor": "create trigger aaa_agent_messages_work before insert or update on public.agent_messages for each row execute function private.bind_persistent_work_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.agent_messages.aab_message_channel",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.agent_messages.aab_message_channel",
+          "kind": "trigger",
+          "name": "aab_message_channel",
+          "table": "agent_messages",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_work_channel_v1()",
+          "definition": "CREATE TRIGGER aab_message_channel BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.agent_messages.aab_message_channel",
+          "kind": "trigger",
+          "name": "aab_message_channel",
+          "table": "agent_messages",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.bind_work_channel_v1()",
+          "definition": "CREATE TRIGGER aab_message_channel BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 150,
+          "anchor": "create trigger aab_message_channel before insert or update on public.agent_messages for each row execute function private.bind_work_channel_v1();",
           "mechanism": "direct_ddl"
         }
       ],
@@ -123076,6 +125733,123 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revision_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.contribution_revisions.contribution_revision_immutable",
+          "kind": "trigger",
+          "name": "contribution_revision_immutable",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER contribution_revision_immutable BEFORE DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.contribution_revisions.contribution_revision_immutable",
+          "kind": "trigger",
+          "name": "contribution_revision_immutable",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER contribution_revision_immutable BEFORE DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 115,
+          "anchor": "create trigger contribution_revision_immutable before update or delete on public.contribution_revisions for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revisions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.contribution_revisions.contribution_revisions_audit",
+          "kind": "trigger",
+          "name": "contribution_revisions_audit",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER contribution_revisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.contribution_revisions.contribution_revisions_audit",
+          "kind": "trigger",
+          "name": "contribution_revisions_audit",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER contribution_revisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 108,
+          "anchor": " execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revisions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.contribution_revisions.contribution_revisions_updated",
+          "kind": "trigger",
+          "name": "contribution_revisions_updated",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER contribution_revisions_updated BEFORE UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.contribution_revisions.contribution_revisions_updated",
+          "kind": "trigger",
+          "name": "contribution_revisions_updated",
+          "table": "contribution_revisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER contribution_revisions_updated BEFORE UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 107,
+          "anchor": " execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:public.controlled_case_executions.controlled_case_executions_audit",
@@ -130312,6 +133086,84 @@
       "last_review_stage": "2"
     },
     {
+      "id": "trigger:public.work_channels.work_channels_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_channels.work_channels_audit",
+          "kind": "trigger",
+          "name": "work_channels_audit",
+          "table": "work_channels",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_channels_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_channels.work_channels_audit",
+          "kind": "trigger",
+          "name": "work_channels_audit",
+          "table": "work_channels",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_channels_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 108,
+          "anchor": " execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_channels.work_channels_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_channels.work_channels_updated",
+          "kind": "trigger",
+          "name": "work_channels_updated",
+          "table": "work_channels",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_channels_updated BEFORE UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_channels.work_channels_updated",
+          "kind": "trigger",
+          "name": "work_channels_updated",
+          "table": "work_channels",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_channels_updated BEFORE UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 107,
+          "anchor": " execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.work_contexts.work_contexts_audit",
       "kind": "trigger",
       "catalogues": {
@@ -130390,6 +133242,84 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "trigger:public.work_contributions.work_contributions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_contributions.work_contributions_audit",
+          "kind": "trigger",
+          "name": "work_contributions_audit",
+          "table": "work_contributions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_contributions_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_contributions.work_contributions_audit",
+          "kind": "trigger",
+          "name": "work_contributions_audit",
+          "table": "work_contributions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_contributions_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 108,
+          "anchor": " execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_contributions.work_contributions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_contributions.work_contributions_updated",
+          "kind": "trigger",
+          "name": "work_contributions_updated",
+          "table": "work_contributions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_contributions_updated BEFORE UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_contributions.work_contributions_updated",
+          "kind": "trigger",
+          "name": "work_contributions_updated",
+          "table": "work_contributions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_contributions_updated BEFORE UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 107,
+          "anchor": " execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.work_dossiers.work_dossiers_audit",
       "kind": "trigger",
       "catalogues": {
@@ -130463,6 +133393,84 @@
           "line": 45,
           "anchor": "create trigger work_dossiers_updated before update on public.work_dossiers for each row execute function private.set_updated_at();",
           "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_participants.work_participants_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_participants.work_participants_audit",
+          "kind": "trigger",
+          "name": "work_participants_audit",
+          "table": "work_participants",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_participants_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_participants.work_participants_audit",
+          "kind": "trigger",
+          "name": "work_participants_audit",
+          "table": "work_participants",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_participants_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 108,
+          "anchor": " execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_participants.work_participants_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_participants.work_participants_updated",
+          "kind": "trigger",
+          "name": "work_participants_updated",
+          "table": "work_participants",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_participants_updated BEFORE UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_participants.work_participants_updated",
+          "kind": "trigger",
+          "name": "work_participants_updated",
+          "table": "work_participants",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_participants_updated BEFORE UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 107,
+          "anchor": " execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
@@ -131576,8 +134584,8 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "10",
-      "reason": "Acrescenta contrato de conversa sem intake, mantendo os executores documentais e sua autorização.",
+      "stage": "11",
+      "reason": "Acrescenta participação, revisão pessoal, comparação de conflito e compartilhamento autorizado.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -137895,6 +140903,34 @@
       "decision": "preservar",
       "stage": "10",
       "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918002404_work_contribution_command_integrity.sql",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918002407_work_contribution_history_indexes.sql",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/work-contribution-actions.ts",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Comandos de participação e revisão com identidade derivada do workspace e autorização no banco."
     }
   ],
   "staging_archive": [
@@ -138448,5 +141484,14 @@
       "reason": "Formulário obrigatório de companhia retirado; link antigo redireciona à conversa e RPC compatível usa trabalho canônico.",
       "owner": "Codex, etapa 10"
     }
-  ]
+  ],
+  "stage_11_participation_revision": {
+    "production_migrations": [
+      "20260918002400",
+      "20260918002404",
+      "20260918002407"
+    ],
+    "new_objects": 52,
+    "review": "docs/build/arcabouco/etapa-11.md"
+  }
 }

@@ -6154,5 +6154,60 @@
       "stale": "O contexto mudou desde que você abriu a página. Atualize para ver a versão atual.",
       "save": "Não foi possível salvar. Tente novamente."
     }
+  },
+  "WorkContributions": {
+    "title": "Participação e contribuições",
+    "explanation": "Prepare sua contribuição em particular e escolha a versão que deseja compartilhar neste trabalho.",
+    "people": "Pessoas neste trabalho",
+    "searchPeople": "Buscar pessoa",
+    "search": "Buscar",
+    "add": "Adicionar ao trabalho",
+    "remove": "Remover acesso",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "peopleHelp": "O acesso ao trabalho não abre canais pessoais nem concede acesso às fontes de outras pessoas.",
+    "you": "Você",
+    "person": "Pessoa {id}",
+    "write": "Sua contribuição",
+    "revise": "Revisar sua contribuição",
+    "basedOn": "Base da proposta",
+    "sources": "Fontes utilizadas",
+    "sourcesHelp": "Indique as fontes utilizadas. Restrições de versões anteriores são preservadas automaticamente.",
+    "searchSources": "Buscar fonte",
+    "selectedSources": "{count} fontes selecionadas",
+    "privateHelp": "Ao salvar, somente você pode ler esta contribuição. Ela não publica referência oficial nem inicia uma análise.",
+    "savePrivate": "Salvar no meu canal",
+    "cancel": "Cancelar edição",
+    "saved": "Alteração salva.",
+    "conflict": "A base compartilhada mudou. Sua proposta foi preservada; compare as três versões antes de continuar.",
+    "rebase": "Preparar proposta sobre a versão atual",
+    "audience": "Audiência das contribuições",
+    "personal": "Meu canal",
+    "shared": "Compartilhadas",
+    "empty": "Nenhuma contribuição nesta página.",
+    "edit": "Revisar",
+    "propose": "Propor alteração",
+    "share": "Compartilhar esta versão",
+    "history": "Histórico",
+    "close": "Fechar",
+    "older": "Versões anteriores",
+    "version": "Versão {version}",
+    "access": {
+      "read": "Leitura",
+      "work": "Colaboração",
+      "manage": "Administração do trabalho"
+    },
+    "errors": {
+      "invalid": "Confira os campos e tente novamente.",
+      "denied": "Seu acesso ou os direitos das fontes não permitem esta ação para a audiência do trabalho.",
+      "stale": "Esta contribuição mudou. Reabra a versão atual; seu texto continua no editor.",
+      "save": "Não foi possível concluir. Seu texto continua no editor."
+    },
+    "diff": {
+      "base": "Base que você utilizou",
+      "current": "Versão compartilhada atual",
+      "candidate": "Sua proposta preservada"
+    },
+    "historicalAuthor": "Autoria histórica não identificada"
   }
 }

@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-17T20:51:02.513Z",
+  "captured_at": "2026-09-18T00:24:28.252Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1421,6 +1421,18 @@
     {
       "version": "20260917204826",
       "name": "persistent_work_specialized_replay_scope"
+    },
+    {
+      "version": "20260917235306",
+      "name": "work_contributions_and_channels"
+    },
+    {
+      "version": "20260918000139",
+      "name": "work_contribution_command_integrity"
+    },
+    {
+      "version": "20260918001427",
+      "name": "work_contribution_history_indexes"
     }
   ]
 }

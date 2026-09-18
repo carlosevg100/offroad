@@ -276,6 +276,7 @@ export type Database = {
       }
       agent_conversations: {
         Row: {
+          channel_id: string | null
           created_at: string
           created_by: string
           id: string
@@ -286,6 +287,7 @@ export type Database = {
           work_id: string | null
         }
         Insert: {
+          channel_id?: string | null
           created_at?: string
           created_by: string
           id?: string
@@ -296,6 +298,7 @@ export type Database = {
           work_id?: string | null
         }
         Update: {
+          channel_id?: string | null
           created_at?: string
           created_by?: string
           id?: string
@@ -321,6 +324,13 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
           {
+            foreignKeyName: "agent_conversations_organization_id_work_id_channel_id_fkey"
+            columns: ["organization_id", "work_id", "channel_id"]
+            isOneToOne: false
+            referencedRelation: "work_channels"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+          {
             foreignKeyName: "agent_conversations_organization_id_work_id_fkey"
             columns: ["organization_id", "work_id"]
             isOneToOne: false
@@ -331,11 +341,13 @@ export type Database = {
       }
       agent_messages: {
         Row: {
+          channel_id: string | null
           content: string
           conversation_id: string
           created_at: string
           created_by: string
           error_code: string | null
+          human_author_id: string | null
           id: string
           intake_session_id: string | null
           locale: string
@@ -349,11 +361,13 @@ export type Database = {
           work_id: string | null
         }
         Insert: {
+          channel_id?: string | null
           content: string
           conversation_id: string
           created_at?: string
           created_by: string
           error_code?: string | null
+          human_author_id?: string | null
           id: string
           intake_session_id?: string | null
           locale: string
@@ -367,11 +381,13 @@ export type Database = {
           work_id?: string | null
         }
         Update: {
+          channel_id?: string | null
           content?: string
           conversation_id?: string
           created_at?: string
           created_by?: string
           error_code?: string | null
+          human_author_id?: string | null
           id?: string
           intake_session_id?: string | null
           locale?: string
@@ -419,6 +435,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "agent_messages"
             referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "agent_messages_organization_id_work_id_channel_id_fkey"
+            columns: ["organization_id", "work_id", "channel_id"]
+            isOneToOne: false
+            referencedRelation: "work_channels"
+            referencedColumns: ["organization_id", "work_id", "id"]
           },
           {
             foreignKeyName: "agent_messages_organization_id_work_id_fkey"
@@ -3329,6 +3352,97 @@ export type Database = {
           version?: string
         }
         Relationships: []
+      }
+      contribution_revisions: {
+        Row: {
+          author_user_id: string
+          base_revision_id: string | null
+          content: string
+          contribution_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          previous_revision_id: string | null
+          promoted_from_revision_id: string | null
+          recorded_by: string
+          request_fingerprint: string
+          revision: number
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          author_user_id: string
+          base_revision_id?: string | null
+          content: string
+          contribution_id: string
+          created_at?: string
+          id: string
+          organization_id: string
+          previous_revision_id?: string | null
+          promoted_from_revision_id?: string | null
+          recorded_by: string
+          request_fingerprint: string
+          revision: number
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          author_user_id?: string
+          base_revision_id?: string | null
+          content?: string
+          contribution_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          previous_revision_id?: string | null
+          promoted_from_revision_id?: string | null
+          recorded_by?: string
+          request_fingerprint?: string
+          revision?: number
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contribution_revisions_organization_id_contribution_id_pre_fkey"
+            columns: [
+              "organization_id",
+              "contribution_id",
+              "previous_revision_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "contribution_revisions"
+            referencedColumns: ["organization_id", "contribution_id", "id"]
+          },
+          {
+            foreignKeyName: "contribution_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contribution_revisions_organization_id_work_id_base_revisi_fkey"
+            columns: ["organization_id", "work_id", "base_revision_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_revisions"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+          {
+            foreignKeyName: "contribution_revisions_organization_id_work_id_contributio_fkey"
+            columns: ["organization_id", "work_id", "contribution_id"]
+            isOneToOne: false
+            referencedRelation: "work_contributions"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+          {
+            foreignKeyName: "contribution_revisions_organization_id_work_id_promoted_fr_fkey"
+            columns: ["organization_id", "work_id", "promoted_from_revision_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_revisions"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+        ]
       }
       controlled_case_executions: {
         Row: {
@@ -9306,6 +9420,51 @@ export type Database = {
           },
         ]
       }
+      work_channels: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          organization_id: string
+          owner_user_id: string | null
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          organization_id: string
+          owner_user_id?: string | null
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          owner_user_id?: string | null
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_channels_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_channels_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       work_contexts: {
         Row: {
           audience: string | null
@@ -9366,6 +9525,61 @@ export type Database = {
           },
         ]
       }
+      work_contributions: {
+        Row: {
+          author_user_id: string
+          channel_id: string
+          created_at: string
+          head_revision_id: string | null
+          id: string
+          organization_id: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          author_user_id: string
+          channel_id: string
+          created_at?: string
+          head_revision_id?: string | null
+          id: string
+          organization_id: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          author_user_id?: string
+          channel_id?: string
+          created_at?: string
+          head_revision_id?: string | null
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_contributions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_contributions_organization_id_id_head_revision_id_fkey"
+            columns: ["organization_id", "id", "head_revision_id"]
+            isOneToOne: false
+            referencedRelation: "contribution_revisions"
+            referencedColumns: ["organization_id", "contribution_id", "id"]
+          },
+          {
+            foreignKeyName: "work_contributions_organization_id_work_id_channel_id_fkey"
+            columns: ["organization_id", "work_id", "channel_id"]
+            isOneToOne: false
+            referencedRelation: "work_channels"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+        ]
+      }
       work_dossiers: {
         Row: {
           created_at: string
@@ -9411,6 +9625,54 @@ export type Database = {
           },
           {
             foreignKeyName: "work_dossiers_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      work_participants: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          grant_id: string
+          id: string
+          organization_id: string
+          updated_at: string
+          user_id: string
+          work_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          grant_id: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+          user_id: string
+          work_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          grant_id?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          user_id?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_participants_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_participants_organization_id_work_id_fkey"
             columns: ["organization_id", "work_id"]
             isOneToOne: false
             referencedRelation: "capital_projects"
@@ -9546,6 +9808,10 @@ export type Database = {
       }
       add_source_dependency_v1: {
         Args: { p_derived_version_id: string; p_source_version_id: string }
+        Returns: string
+      }
+      add_work_participant_v1: {
+        Args: { p_action?: string; p_user_id: string; p_work_id: string }
         Returns: string
       }
       adopt_observation_for_work_v1: {
@@ -9845,6 +10111,10 @@ export type Database = {
         }
         Returns: string
       }
+      ensure_personal_work_channel_v1: {
+        Args: { p_work_id: string }
+        Returns: string
+      }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
         Returns: Json
@@ -9922,6 +10192,10 @@ export type Database = {
         Args: { p_before_sequence?: string; p_work_id: string }
         Returns: Json
       }
+      list_work_people_v1: {
+        Args: { p_offset?: number; p_search?: string; p_work_id: string }
+        Returns: Json
+      }
       manage_work_v1: {
         Args: { p_action: string; p_title?: string; p_work_id: string }
         Returns: Json
@@ -9949,6 +10223,14 @@ export type Database = {
       prepare_work_document_intake_v1: {
         Args: { p_locale: string; p_plan?: Json; p_work_id: string }
         Returns: string
+      }
+      promote_contribution_to_work_v1: {
+        Args: {
+          p_expected_shared_revision_id?: string
+          p_promotion_id: string
+          p_revision_id: string
+        }
+        Returns: Json
       }
       propagate_project_canonical_revision_v1: {
         Args: { p_locale: string; p_project_id: string; p_request_id: string }
@@ -10978,6 +11260,18 @@ export type Database = {
       }
       submit_institutional_revision_proposal_v1: {
         Args: { p_payload: Json; p_project_id: string; p_proposal_id: string }
+        Returns: Json
+      }
+      submit_work_contribution_v1: {
+        Args: {
+          p_base_revision_id: string
+          p_content: string
+          p_contribution_id: string
+          p_expected_revision_id: string
+          p_revision_id: string
+          p_source_version_ids?: string[]
+          p_work_id: string
+        }
         Returns: Json
       }
       transfer_organization_owner_v1: {

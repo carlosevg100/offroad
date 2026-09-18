@@ -129,6 +129,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+      "kind": "function",
+      "name": "add_work_participant_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.adopt_confirmed_preliminary_company()",
       "kind": "function",
       "name": "adopt_confirmed_preliminary_company",
@@ -885,6 +908,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.bind_work_channel_v1()",
+      "kind": "function",
+      "name": "bind_work_channel_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.bootstrap_organization_rollout_policy()",
       "kind": "function",
       "name": "bootstrap_organization_rollout_policy",
@@ -1307,6 +1348,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_read_contribution_revision_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "name": "can_read_contribution_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_read_definition_version_v1(p_org uuid, p_version uuid)",
       "kind": "function",
       "name": "can_read_definition_version_v1",
@@ -1442,6 +1506,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_version_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
+      "kind": "function",
+      "name": "can_read_work_channel_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_channel uuid",
       "security_definer": true
     },
     {
@@ -2070,6 +2157,24 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_expected_manifest_fingerprint text, p_primary_tape jsonb, p_complement_document_ids uuid[], p_reporting_date date, p_command_id uuid, p_primary_support_sheets text[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "contribution_sources_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_subject uuid",
       "security_definer": true
     },
     {
@@ -2722,6 +2827,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.ensure_personal_work_channel_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "ensure_personal_work_channel_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.evaluate_operating_control_snapshot_v1(p_scope_id text, p_requested_use text, p_snapshot jsonb, p_binding jsonb)",
       "kind": "function",
       "name": "evaluate_operating_control_snapshot_v1",
@@ -3120,6 +3248,24 @@
       ],
       "signature": "p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone",
       "security_definer": true
+    },
+    {
+      "id": "function:private.guard_contribution_immutable_v1()",
+      "kind": "function",
+      "name": "guard_contribution_immutable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.guard_definition_version_v1()",
@@ -4331,6 +4477,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "name": "list_work_people_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_search text, p_offset integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.lock_execution_approval_context()",
       "kind": "function",
       "name": "lock_execution_approval_context",
@@ -4677,6 +4846,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)",
+      "kind": "function",
+      "name": "pin_contribution_sources_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "name": "policy_admin_context_v1",
@@ -4892,6 +5079,29 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+      "kind": "function",
+      "name": "promote_contribution_to_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
       "security_definer": true
     },
     {
@@ -9159,6 +9369,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+      "kind": "function",
+      "name": "submit_work_contribution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
+      "security_definer": true
+    },
+    {
       "id": "function:private.supersede_previous_institutional_results()",
       "kind": "function",
       "name": "supersede_previous_institutional_results",
@@ -12961,6 +13194,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.add_work_participant_v1(p_work_id uuid, p_user_id uuid, p_action text)",
+      "kind": "function",
+      "name": "add_work_participant_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_user_id uuid, p_action text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.adopt_observation_for_work_v1(p_payload jsonb)",
       "kind": "function",
       "name": "adopt_observation_for_work_v1",
@@ -13952,6 +14208,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.ensure_personal_work_channel_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "ensure_personal_work_channel_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "name": "explain_my_access_v1",
@@ -14401,6 +14680,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.list_work_people_v1(p_work_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "name": "list_work_people_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_search text, p_offset integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
       "kind": "function",
       "name": "manage_work_v1",
@@ -14584,6 +14886,29 @@
         "search_path=\"\""
       ],
       "signature": "p_work_id uuid, p_locale text, p_plan jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
+      "kind": "function",
+      "name": "promote_contribution_to_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid",
       "security_definer": false
     },
     {
@@ -17962,6 +18287,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_proposal_id uuid, p_payload jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
+      "kind": "function",
+      "name": "submit_work_contribution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[]",
       "security_definer": false
     },
     {
@@ -21380,6 +21728,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+      "kind": "policy",
+      "name": "contribution_sources_deny",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.domain_events.deny_client_delete",
       "kind": "policy",
       "name": "deny_client_delete",
@@ -22295,6 +22657,20 @@
       "with_check": null
     },
     {
+      "id": "policy:public.agent_conversations.agent_conversations_channel_boundary",
+      "kind": "policy",
+      "name": "agent_conversations_channel_boundary",
+      "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "agent_conversations",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.agent_conversations.agent_conversations_select",
       "kind": "policy",
       "name": "agent_conversations_select",
@@ -22306,6 +22682,20 @@
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.agent_messages.agent_messages_channel_boundary",
+      "kind": "policy",
+      "name": "agent_messages_channel_boundary",
+      "qual": "((channel_id IS NULL) OR private.can_read_work_channel_v1(organization_id, channel_id))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "agent_messages",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
       "with_check": null
     },
     {
@@ -23203,6 +23593,62 @@
       "command": "ALL",
       "permissive": "PERMISSIVE",
       "with_check": "false"
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_delete",
+      "kind": "policy",
+      "name": "contribution_revisions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_revisions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_insert",
+      "kind": "policy",
+      "name": "contribution_revisions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_revisions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_deny_update",
+      "kind": "policy",
+      "name": "contribution_revisions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_revisions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.contribution_revisions.contribution_revisions_select",
+      "kind": "policy",
+      "name": "contribution_revisions_select",
+      "qual": "private.can_read_contribution_revision_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_revisions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
     },
     {
       "id": "policy:public.controlled_case_executions.controlled_case_executions_select",
@@ -26038,6 +26484,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:public.work_channels.work_channels_deny_delete",
+      "kind": "policy",
+      "name": "work_channels_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_channels",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_deny_insert",
+      "kind": "policy",
+      "name": "work_channels_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_channels",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_deny_update",
+      "kind": "policy",
+      "name": "work_channels_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_channels",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_channels.work_channels_select",
+      "kind": "policy",
+      "name": "work_channels_select",
+      "qual": "private.can_read_work_channel_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_channels",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.work_contexts.work_contexts_deny_delete",
       "kind": "policy",
       "name": "work_contexts_deny_delete",
@@ -26094,6 +26596,62 @@
       "with_check": null
     },
     {
+      "id": "policy:public.work_contributions.work_contributions_deny_delete",
+      "kind": "policy",
+      "name": "work_contributions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contributions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_deny_insert",
+      "kind": "policy",
+      "name": "work_contributions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contributions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_deny_update",
+      "kind": "policy",
+      "name": "work_contributions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contributions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_contributions.work_contributions_select",
+      "kind": "policy",
+      "name": "work_contributions_select",
+      "qual": "(private.can_read_work_channel_v1(organization_id, channel_id) AND ((head_revision_id IS NULL) OR private.can_read_contribution_revision_v1(organization_id, head_revision_id)))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_contributions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.work_dossiers.work_dossiers_deny_delete",
       "kind": "policy",
       "name": "work_dossiers_deny_delete",
@@ -26144,6 +26702,62 @@
         "authenticated"
       ],
       "table": "work_dossiers",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_delete",
+      "kind": "policy",
+      "name": "work_participants_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_participants",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_insert",
+      "kind": "policy",
+      "name": "work_participants_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_participants",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_deny_update",
+      "kind": "policy",
+      "name": "work_participants_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_participants",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_participants.work_participants_select",
+      "kind": "policy",
+      "name": "work_participants_select",
+      "qual": "(private.can_access_resource_v1(organization_id, work_id, 'read'::text) AND private.resource_access_as_subject_v1(organization_id, work_id, user_id, 'read'::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_participants",
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
@@ -27096,6 +27710,56 @@
       "rls": true,
       "kind": "table",
       "name": "commercial_accounts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.contribution_source_dependencies",
+      "rls": true,
+      "kind": "table",
+      "name": "contribution_source_dependencies",
       "grants": [
         [
           "postgres",
@@ -33245,6 +33909,61 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.contribution_revisions",
+      "rls": true,
+      "kind": "table",
+      "name": "contribution_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -42232,6 +42951,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_channels",
+      "rls": true,
+      "kind": "table",
+      "name": "work_channels",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.work_contexts",
       "rls": true,
       "kind": "table",
@@ -42287,10 +43061,120 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_contributions",
+      "rls": true,
+      "kind": "table",
+      "name": "work_contributions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.work_dossiers",
       "rls": true,
       "kind": "table",
       "name": "work_dossiers",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.work_participants",
+      "rls": true,
+      "kind": "table",
+      "name": "work_participants",
       "grants": [
         [
           "postgres",
@@ -42750,6 +43634,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER commercial_accounts_updated_at BEFORE UPDATE ON private.commercial_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.contribution_source_dependencies.contribution_dependency_immutable",
+      "kind": "trigger",
+      "name": "contribution_dependency_immutable",
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER contribution_dependency_immutable BEFORE DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
       "id": "trigger:private.domain_events.domain_events_immutable",
@@ -43292,6 +44186,16 @@
       "definition": "CREATE TRIGGER aaa_agent_conversations_work BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
     },
     {
+      "id": "trigger:public.agent_conversations.aab_conversation_channel",
+      "kind": "trigger",
+      "name": "aab_conversation_channel",
+      "table": "agent_conversations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_work_channel_v1()",
+      "definition": "CREATE TRIGGER aab_conversation_channel BEFORE INSERT OR UPDATE ON public.agent_conversations FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
+    },
+    {
       "id": "trigger:public.agent_conversations.agent_conversations_audit",
       "kind": "trigger",
       "name": "agent_conversations_audit",
@@ -43320,6 +44224,16 @@
       "enabled": "O",
       "function": "private.bind_persistent_work_v1()",
       "definition": "CREATE TRIGGER aaa_agent_messages_work BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_persistent_work_v1()"
+    },
+    {
+      "id": "trigger:public.agent_messages.aab_message_channel",
+      "kind": "trigger",
+      "name": "aab_message_channel",
+      "table": "agent_messages",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.bind_work_channel_v1()",
+      "definition": "CREATE TRIGGER aab_message_channel BEFORE INSERT OR UPDATE ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.bind_work_channel_v1()"
     },
     {
       "id": "trigger:public.agent_messages.agent_messages_audit",
@@ -44070,6 +44984,36 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER conduct_policies_set_updated_at BEFORE UPDATE ON public.conduct_policies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revision_immutable",
+      "kind": "trigger",
+      "name": "contribution_revision_immutable",
+      "table": "contribution_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER contribution_revision_immutable BEFORE DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revisions_audit",
+      "kind": "trigger",
+      "name": "contribution_revisions_audit",
+      "table": "contribution_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER contribution_revisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.contribution_revisions.contribution_revisions_updated",
+      "kind": "trigger",
+      "name": "contribution_revisions_updated",
+      "table": "contribution_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER contribution_revisions_updated BEFORE UPDATE ON public.contribution_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.controlled_case_executions.controlled_case_executions_audit",
@@ -45962,6 +46906,26 @@
       "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.work_channels.work_channels_audit",
+      "kind": "trigger",
+      "name": "work_channels_audit",
+      "table": "work_channels",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_channels_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_channels.work_channels_updated",
+      "kind": "trigger",
+      "name": "work_channels_updated",
+      "table": "work_channels",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_channels_updated BEFORE UPDATE ON public.work_channels FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.work_contexts.work_contexts_audit",
       "kind": "trigger",
       "name": "work_contexts_audit",
@@ -45982,6 +46946,26 @@
       "definition": "CREATE TRIGGER work_contexts_updated BEFORE UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.work_contributions.work_contributions_audit",
+      "kind": "trigger",
+      "name": "work_contributions_audit",
+      "table": "work_contributions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_contributions_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_contributions.work_contributions_updated",
+      "kind": "trigger",
+      "name": "work_contributions_updated",
+      "table": "work_contributions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_contributions_updated BEFORE UPDATE ON public.work_contributions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.work_dossiers.work_dossiers_audit",
       "kind": "trigger",
       "name": "work_dossiers_audit",
@@ -46000,6 +46984,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER work_dossiers_updated BEFORE UPDATE ON public.work_dossiers FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.work_participants.work_participants_audit",
+      "kind": "trigger",
+      "name": "work_participants_audit",
+      "table": "work_participants",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_participants_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_participants.work_participants_updated",
+      "kind": "trigger",
+      "name": "work_participants_updated",
+      "table": "work_participants",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_participants_updated BEFORE UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
@@ -46437,5 +47441,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-17T20:50:25.482658+00:00"
+  "captured_at": "2026-09-18T00:24:24.703907+00:00"
 }

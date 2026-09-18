@@ -5690,4 +5690,17 @@ do $$ declare relation text; begin
  end if;
 end $$;
 
+-- Stage 11: channel boundaries must not become direct-write or anonymous shortcuts.
+do $$ declare relation text; begin
+ foreach relation in array array['work_participants','work_channels','work_contributions','contribution_revisions'] loop
+  if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=relation and c.relrowsecurity and c.relforcerowsecurity)
+  or has_table_privilege('anon','public.'||relation,'SELECT,INSERT,UPDATE,DELETE')
+  or has_table_privilege('authenticated','public.'||relation,'INSERT,UPDATE,DELETE')
+  or has_table_privilege('service_role','public.'||relation,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'Contribution isolation missing: %',relation;end if;
+ end loop;
+ if not exists(select 1 from pg_policy where polrelid='public.agent_messages'::regclass and polname='agent_messages_channel_boundary' and not polpermissive)
+ or not exists(select 1 from pg_policy where polrelid='public.agent_conversations'::regclass and polname='agent_conversations_channel_boundary' and not polpermissive)
+ then raise exception 'Conversation channel boundary missing';end if;
+end $$;
+
 select 'rls_non_interference_passed' as result;
