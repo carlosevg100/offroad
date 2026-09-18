@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "aba63d641077b701f6d7008efd272adfc26110b8";
-const capturedAt = "2026-09-17T23:41:02.218Z";
+const baselineCommit = "cad8990f3cd10958a05d28cb2c7fd54da9c182b2";
+const capturedAt = "2026-09-18T01:51:17.976Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,16 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-CONTRIBUTION-AUDIT", "repository_file", "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql", "Source dependencies retain immutable stable identity and content-free audit with per-command policies."),
+  evidence("SEV-CONTRIBUTION-SCHEMA", "repository_file", "supabase/migrations/20260918002400_work_contributions_and_channels.sql", "Canonical participation, personal channels, immutable revisions and inherited source rights."),
+  evidence("SEV-CONTRIBUTION-INTEGRITY", "repository_file", "supabase/migrations/20260918002404_work_contribution_command_integrity.sql", "Sharing retry deduplication, archived-work denial and bounded lineage."),
+  evidence("SEV-CONTRIBUTION-ISOLATION", "automated_test", "supabase/tests/work_contribution_isolation.sql", "Competing revisions, late participants, source audience and revocation deny shortcuts."),
+  evidence("SEV-CONTRIBUTION-RIGHTS", "automated_test", "supabase/tests/work_contribution_rights.sql", "Pinned restrictions survive forks, rebases, retries and current derive withdrawal."),
+  evidence("SEV-CONTRIBUTION-CONCURRENCY", "automated_test", "scripts/ci/test-contribution-concurrency.py", "Two real database sessions observe serialization and preserve both candidates."),
+  evidence("SEV-CONTRIBUTION-E2E", "automated_test", "apps/web/e2e/work-contributions.spec.ts", "Two browser identities use product sharing, conflict comparison, rebase and revocation."),
+  evidence("SEV-CONTRIBUTION-ACTIONS", "repository_file", "apps/web/src/app/[locale]/app/work-contribution-actions.ts", "Validated bounded commands derive workspace and revalidate current database authority."),
+  evidence("SEV-CONTRIBUTION-PROTOCOL", "automated_test", "apps/web/src/lib/advisor/work-contributions.test.ts", "Identity and conflict protocol reject incomplete or oversized submissions."),
+
   evidence("SEV-WORK-STORAGE", "repository_file", "supabase/migrations/20260917191714_persistent_work_without_intake.sql", "Persistent work identity and context with bounded worker claims and atomic current-authority revalidation."),
   evidence("SEV-WORK-COMMANDS", "repository_file", "supabase/migrations/20260917195617_persistent_work_commands.sql", "Atomic start, append, context revision and later document ingestion preserve work identity."),
   evidence("SEV-WORK-LEGACY", "repository_file", "supabase/migrations/20260917204933_persistent_work_legacy_adapters.sql", "Legacy entries delegate canonical work commands without automatic company, folder or intake."),
@@ -319,7 +329,7 @@ const systems = [
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
@@ -364,7 +374,7 @@ const dataStores = [
   {
     storeId: "STORE-POSTGRES", title: "Supabase Postgres", systemRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "security_evidence"], tenancyBoundary: "A common Postgres evaluator intersects explicit grants, flat groups, deny rules, barriers and purposes. Installed definitions and negative staging contracts are verified for stage 3; universal live completeness remains unverified.",
-    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-WORK-STORAGE-SQL", "SEV-WORK-ENTRY-SQL", "SEV-WORK-LEGACY-SQL", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-DEPENDENCIES", "SEV-ADOPT-CONCURRENCY", "SEV-OBS-SCHEMA", "SEV-OBS-HISTORY", "SEV-OBS-PINNED", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
+    retentionState: "unknown", backupState: "provider_managed_unverified", owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-CONTRIBUTION-ISOLATION", "SEV-CONTRIBUTION-RIGHTS", "SEV-CONTRIBUTION-CONCURRENCY", "SEV-WORK-STORAGE-SQL", "SEV-WORK-ENTRY-SQL", "SEV-WORK-LEGACY-SQL", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-DEPENDENCIES", "SEV-ADOPT-CONCURRENCY", "SEV-OBS-SCHEMA", "SEV-OBS-HISTORY", "SEV-OBS-PINNED", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-PUBLIC-CACHE", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-ISOLATION", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-OUTBOX-SCHEMA", "SEV-ACCESS-REMEDIATION", "SEV-PROFILE-REMEDIATION", "SEV-RLS-TEST", "SEV-SUPABASE-CONFIG"],
     gapRefs: ["SG-DATA-LIFECYCLE", "SG-BACKUP-RESTORE", "SG-LIVE-CONFIG", "SG-PRIVACY-RECORDS", ], controlIds: ["TRUST-DATA-01", "TRUST-DATA-02", "TRUST-OPS-02"],
   },
   {
@@ -426,7 +436,7 @@ const dataFlows = [
     flowId: "FLOW-WEB-DATA", title: "Web application to Supabase", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"],
     dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial"], purpose: "Authentication, project state, commands and purpose-authorized private storage operations.",
     authorizationBoundary: "Publishable client plus authenticated session; the common database evaluator is authoritative. Export purpose is checked by the server download path and restrictive Storage policy; administrative authority does not imply content access.", direction: "internal", owner: owner("Application security owner", "Data security owner"),
-    evidenceRefs: ["SEV-WORK-CONTEXT", "SEV-WORK-WEB", "SEV-WORK-E2E", "SEV-WORK-AUTH-REPLAY", "SEV-ADOPT-IDENTITY", "SEV-ADOPT-E2E", "SEV-ADOPT-DIFF", "SEV-ADOPT-MATH", "SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-OBS-DECIMAL", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-RETRIEVAL", "SEV-SOURCE-CONTRACT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-DOWNLOAD", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-CONTRIBUTION-ACTIONS", "SEV-CONTRIBUTION-E2E", "SEV-CONTRIBUTION-PROTOCOL", "SEV-WORK-CONTEXT", "SEV-WORK-WEB", "SEV-WORK-E2E", "SEV-WORK-AUTH-REPLAY", "SEV-ADOPT-IDENTITY", "SEV-ADOPT-E2E", "SEV-ADOPT-DIFF", "SEV-ADOPT-MATH", "SEV-OBS-AUTHORITY", "SEV-OBS-CONTRACT", "SEV-OBS-DECIMAL", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-RETRIEVAL", "SEV-SOURCE-CONTRACT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-DOWNLOAD", "SEV-DOSSIER-CONTRACT", "SEV-DOSSIER-ISOLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-RLS-TEST", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-ENV-SEPARATION", ], controlIds: ["TRUST-APP-01", "TRUST-DATA-01"],
   },
   {
     flowId: "FLOW-UPLOAD", title: "Browser document upload", sourceRef: "SYS-WEB", destinationRef: "SYS-SUPABASE", environmentRefs: ["ENV-PRODUCTION"], dataClassIds: ["customer_confidential", "restricted_financial"],
@@ -831,7 +841,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.17-wave-10-opening-v1",
+  inventoryVersion: "2026.09.17-wave-10-delivered-v1",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-10", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",

@@ -139,6 +139,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires contribution lineage and channel authority evidence at wave-ten closeout", () => {
+    for (const evidenceRef of ["SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-CONTRIBUTION-ISOLATION", "SEV-CONTRIBUTION-RIGHTS", "SEV-CONTRIBUTION-CONCURRENCY", "SEV-CONTRIBUTION-E2E", "SEV-CONTRIBUTION-ACTIONS", "SEV-CONTRIBUTION-PROTOCOL"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-9";
