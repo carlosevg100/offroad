@@ -37,7 +37,7 @@ test("two people preserve private branches, compare conflicts and lose revoked a
     expect(org).toMatch(/^[0-9a-f-]{36}$/);
     // Only identity/membership fixtures. All work sharing, contributions and revocation below use the product.
     sql(`begin;
-      update public.organizations set workspace_kind='institutional' where id='${org}';
+      update public.organizations set organization_type='institutional',workspace_kind='institutional' where id='${org}';
       insert into public.organization_memberships(organization_id,user_id,role,status)
       select '${org}',id,'member','active' from auth.users where email='${emailB}';
       commit;`);
