@@ -12,7 +12,7 @@ test("two people preserve private branches, compare conflicts and lose revoked a
   const id = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
   const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1"], {input: query, encoding: "utf8"}).trim();
   async function signup(target: Page, suffix: string) {
-    const email = `e2e-contributions-${suffix}-${id}@example.com`;
+    const email = `e2e-contributions-${suffix.toLowerCase()}-${id}@example.com`;
     await target.goto(`${base}/pt-BR/signup`);
     await target.locator('input[name="full_name"]').fill(`Synthetic contributor ${suffix}`);
     await target.locator('input[name="email"]').fill(email);
@@ -41,6 +41,7 @@ test("two people preserve private branches, compare conflicts and lose revoked a
       insert into public.organization_memberships(organization_id,user_id,role,status)
       select '${org}',id,'member','active' from auth.users where email='${emailB}';
       commit;`);
+    expect(sql(`select count(*) from public.organization_memberships m join auth.users u on u.id=m.user_id where m.organization_id='${org}' and u.email='${emailB}' and m.status='active';`)).toBe("1");
     const workUrl = `${base}/pt-BR/app/projects/${workId}?workspace=${org}#work-contributions`;
     await page.goto(workUrl);
     const a = page.getByTestId("work-contributions"); const b = second.getByTestId("work-contributions");
@@ -50,6 +51,7 @@ test("two people preserve private branches, compare conflicts and lose revoked a
     await expect(a.locator("article").filter({hasText: `Private A ${id}`})).toBeVisible();
     await a.getByText("Pessoas neste trabalho", {exact: true}).click();
     const personB = a.locator("li").filter({hasText: "Synthetic contributor B"});
+    await expect(personB).toBeVisible();
     await personB.getByRole("button", {name: "Adicionar ao trabalho"}).click();
     await expect(personB.getByRole("button", {name: "Remover acesso"})).toBeVisible();
     await second.goto(workUrl); await expect(b).toBeVisible();
