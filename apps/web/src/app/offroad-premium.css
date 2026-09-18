@@ -12214,7 +12214,7 @@ button[disabled].workspace-search,
 .app-rail {
   display: grid;
   width: 252px;
-  min-width: 0;
+  min-width: 252px;
   padding: 0 9px 9px;
   background: var(--rail-ground);
   color: var(--rail-text);
@@ -12224,6 +12224,7 @@ button[disabled].workspace-search,
 
 .app-rail[data-collapsed] {
   width: 58px;
+  min-width: 58px;
 }
 
 .app-rail__head {
@@ -12961,6 +12962,7 @@ button[disabled].workspace-search,
 @media (max-width: 980px) {
   .app-rail {
     width: 58px;
+    min-width: 58px;
   }
 
   .app-rail .app-rail__lockup,

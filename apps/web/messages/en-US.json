@@ -6154,5 +6154,60 @@
       "stale": "The context has changed since you opened the page. Refresh to see the current version.",
       "save": "Unable to save. Please try again."
     }
+  },
+  "WorkContributions": {
+    "title": "Participation and contributions",
+    "explanation": "Prepare your contribution privately and choose the version you want to share in this work.",
+    "people": "People in this work",
+    "searchPeople": "Find a person",
+    "search": "Search",
+    "add": "Add to work",
+    "remove": "Remove access",
+    "previous": "Previous",
+    "next": "Next",
+    "peopleHelp": "Work access does not open personal channels or grant access to other people’s sources.",
+    "you": "You",
+    "person": "Person {id}",
+    "write": "Your contribution",
+    "revise": "Revise your contribution",
+    "basedOn": "Proposal basis",
+    "sources": "Sources used",
+    "sourcesHelp": "Identify the sources used. Restrictions from previous versions are preserved automatically.",
+    "searchSources": "Find a source",
+    "selectedSources": "{count} sources selected",
+    "privateHelp": "Only you can read this contribution when saved. It does not publish an official reference or start an analysis.",
+    "savePrivate": "Save to my channel",
+    "cancel": "Cancel editing",
+    "saved": "Change saved.",
+    "conflict": "The shared basis changed. Your proposal was preserved; compare all three versions before continuing.",
+    "rebase": "Prepare a proposal against the current version",
+    "audience": "Contribution audience",
+    "personal": "My channel",
+    "shared": "Shared",
+    "empty": "No contributions on this page.",
+    "edit": "Revise",
+    "propose": "Propose a change",
+    "share": "Share this version",
+    "history": "History",
+    "close": "Close",
+    "older": "Earlier versions",
+    "version": "Version {version}",
+    "access": {
+      "read": "Read",
+      "work": "Collaborate",
+      "manage": "Manage work"
+    },
+    "errors": {
+      "invalid": "Check the fields and try again.",
+      "denied": "Your access or source rights do not permit this action for the work audience.",
+      "stale": "This contribution changed. Reopen the current version; your text remains in the editor.",
+      "save": "Unable to complete. Your text remains in the editor."
+    },
+    "diff": {
+      "base": "Basis you used",
+      "current": "Current shared version",
+      "candidate": "Your preserved proposal"
+    },
+    "historicalAuthor": "Historical author not identified"
   }
 }

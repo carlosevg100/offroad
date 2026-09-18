@@ -112,3 +112,15 @@ esse volume. A etapa 16 verifica retenção por conta/modelo/recurso; a 17 entre
 substantiva sem intake e retenção de executores históricos. Notificação de alarmes permanece
 na etapa 18. Teste sintético de histórico não comprova qualidade profissional de resposta;
 os ensaios e a aprovação de conteúdo do primeiro procedimento permanecem separados.
+
+## Tratamento da etapa 11
+
+A participação não é ACL paralela. Revogação usa os grants existentes e o canal pessoal
+requer titular e autoridade corrente. Fonte omitida não perde a restrição herdada; uma
+nova pessoa no trabalho não ganha acesso a fontes nem ao histórico pessoal. Corridas
+preservam as candidatas e apresentam três versões. Repetir compartilhamento é idempotente.
+A verificação do banco encontrou um índice novo ausente na FK de histórico, corrigido no
+mesmo incremento. Demais findings de desempenho legados não são reclassificados como novos.
+
+Manifesto e incorporação ao executor permanecem em 17; notificações/outbox em 18 e ciclo de
+vida completo em 22. As 18 lacunas gerais do inventário continuam com seu incremento responsável.

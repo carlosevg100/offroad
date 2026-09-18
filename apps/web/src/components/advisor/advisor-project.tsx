@@ -43,6 +43,7 @@ import type {ExecutionBriefChange, ExecutionBriefNarrative, ExecutionBriefProgre
 export type AdvisorProjectMessage = {
   id: string;
   role: string;
+  humanAuthorId?: string | null;
   content: string;
   status: string;
   errorCode?: string | null;
@@ -114,6 +115,7 @@ type Props = {
   tasks: AdvisorProjectTask[];
   workHref?: string;
   workProduct?: ReactNode;
+  currentUserId?: string;
   contextPanel?: ReactNode;
   workSections?: AdvisorWorkSection[];
   initialWorkSectionId?: string;
@@ -122,6 +124,7 @@ type Props = {
 
 export function AdvisorProject(props: Props) {
   const router = useRouter();
+  const contributionCopy = useTranslations("WorkContributions");
   const documentaryRequests = useRef(createDocumentaryRequestBindings());
   const basisCopy = useTranslations("App.adoptionBasis");
   const workCopy = useTranslations("AdvisorWorkSurface");
@@ -378,7 +381,7 @@ export function AdvisorProject(props: Props) {
             return <article className={`advisor-thread__message is-${message.role}`} key={message.id}>
               {message.role === "assistant" ? <span className="advisor-thread__avatar"><Bot aria-hidden="true" size={15} /></span> : null}
               <div>
-                {message.role === "assistant" ? <small>{props.copy.advisor}</small> : null}
+                {message.role === "assistant" ? <small>{props.copy.advisor}</small> : <small>{message.humanAuthorId ? message.humanAuthorId === props.currentUserId ? contributionCopy("you") : contributionCopy("person", {id: message.humanAuthorId.slice(0, 8)}) : contributionCopy("historicalAuthor")}</small>}
                 <p>{message.content}</p>
                 {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}

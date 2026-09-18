@@ -1,3 +1,4 @@
+import {WorkParticipationPanel} from "@/components/advisor/work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
 import {StandaloneWork} from "@/components/advisor/standalone-work";
@@ -283,7 +284,7 @@ async function ConversationalCapitalProject({
 }) {
   const t = await getTranslations({locale, namespace: "App.advisorProject"});
   const scopeTranslations = await getTranslations({locale, namespace: "ReceivablesScope"});
-  const {supabase, organization} = await requireWorkspace(locale);
+  const {supabase, organization, userId} = await requireWorkspace(locale);
   const {data: session} = await supabase.from("document_intake_sessions")
     .select("id, status, representation_status")
     .eq("organization_id", organization.id)
@@ -412,7 +413,7 @@ async function ConversationalCapitalProject({
     : [{data: []}, {data: []}];
   const [{data: messages}, {data: proposals}, {data: tasks}, {data: runs}] = await Promise.all([
     conversation
-      ? supabase.from("agent_messages").select("id, role, content, status, error_code, proposal_id, metadata, created_at").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
+      ? supabase.from("agent_messages").select("id, role, content, status, error_code, proposal_id, metadata, created_at, human_author_id").eq("organization_id", organization.id).eq("conversation_id", conversation.id).order("created_at")
       : Promise.resolve({data: []}),
     supabase.from("agent_change_proposals")
       .select("id, status, title, rationale, impact_summary, proposal")
@@ -518,6 +519,7 @@ async function ConversationalCapitalProject({
         return {
           id: message.id,
           role: message.role,
+          humanAuthorId: message.human_author_id,
           content: message.content,
           status: message.status,
           errorCode: message.error_code,
@@ -714,7 +716,11 @@ async function ConversationalCapitalProject({
       content: <PresentationTemplateSettings context={templateContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
   }
 
+  const contributionCopy = await getTranslations({locale, namespace: "WorkContributions"});
+  workSections.push({id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />});
+
   return <AdvisorProject
+    currentUserId={userId}
     contextPanel={<WorkContextPanel locale={locale} workId={project.id} />}
     workEntry={{
       context: {

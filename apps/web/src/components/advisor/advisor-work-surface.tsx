@@ -9,6 +9,7 @@ export type AdvisorWorkSection = {
   title: string;
   artifactId?: string;
   version?: number;
+  /** Contribution sections render their own per-revision author and audience, never an inferred approval. */
   /** Already localized by the server assembly; never infer completion here. */
   status?: string;
   content: ReactNode;
