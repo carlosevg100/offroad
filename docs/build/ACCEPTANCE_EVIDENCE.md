@@ -1,3 +1,10 @@
+## Onda 11: etapa 12 autorizada
+
+Cofre com publicação exclusivamente humana. Baseline `b5317a4d3760`; inventário de abertura
+renovado em `docs/security/INVENTORY_WAVE_11_REVIEW.md`, com 150 evidências e 18 lacunas
+preservadas. Implementação e gates da etapa 12 ainda pendentes. Marco visível de revisão e
+publicação com escopo e finalidade fixados; etapa 13 não iniciada.
+
 ## Etapa 11: conciliação da entrega da onda 10
 
 PR 655 entregue em `cad8990f3cd10958a05d28cb2c7fd54da9c182b2`; main Quality 35296301221, Security 35296301200 e worker 35296319659 passaram. Vercel Production 6515711334 e ECS 364 executam o commit exato.
