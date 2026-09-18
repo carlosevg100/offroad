@@ -1,16 +1,17 @@
-# Etapa 11: contratos e interface em validação
+## Etapa 11: conciliação da entrega da onda 10
 
-Participação vinculada à política canônica, canais pessoais, revisões imutáveis e
-compartilhamento humano por versão. 87 contratos SQL de staging passaram com rollback.
-Migrações nos dois ambientes, SQL e 16 funções conciliados; segurança sem alertas.
-Detalhes em `docs/build/arcabouco/etapa-11.md`. CI e implantação do incremento ainda
-pendentes; não é completion. O cofre da etapa 12 continua fora desta onda.
+PR 655 entregue em `cad8990f3cd10958a05d28cb2c7fd54da9c182b2`; main Quality 35296301221, Security 35296301200 e worker 35296319659 passaram. Vercel Production 6515711334 e ECS 364 executam o commit exato.
+Participação usa grants canônicos; canais pessoais, autoria explícita, revisões imutáveis e
+compartilhamento humano preservam as restrições das fontes. Quatro migrações estão nos dois
+ambientes, com SQL idêntico por nome e 16 funções conciliadas. 87 contratos SQL e o teste de
+duas conexões concorrentes passaram. A jornada de duas pessoas verifica privacidade,
+comparação de três versões, reapresentação com linhagem, histórico e revogação na interface.
 
-# Onda 10: etapa 11 autorizada e em abertura
-
-Participação, canais pessoais e contribuições sem sobrescrita. Baseline `aba63d641077`.
-Inventário renovado em `docs/security/INVENTORY_WAVE_10_REVIEW.md`; implementação e
-completion ainda pendentes. Etapa 12 não iniciada.
+150 evidências sustentam o inventário, incluindo nove novas com teste de omissão. As 18 lacunas
+gerais conservam severidade e incremento responsável. Provas em `docs/build/arcabouco/etapa-11.md`
+e `docs/security/history/wave-10-final-review.md`. O completion externo registra também CI e
+implantação deste commit de conciliação. Nenhum dado descartável foi criado em produção.
+A etapa 12 exige novo OK do fundador.
 
 ## Etapa 10: conciliação da entrega em 17/09/2026
 

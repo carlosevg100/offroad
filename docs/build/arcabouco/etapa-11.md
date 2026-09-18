@@ -51,7 +51,7 @@ uma segunda base de cálculo. A entrada de execução desses insumos permanece n
 
 Os 87 contratos SQL passaram em staging com rollback; o contrato de direitos foi ampliado e
 reexecutado para provar herança ao reapresentar candidata sobre base irrestrita. `pnpm check`
-passou. A CI e a implantação web/worker ainda são gates de fechamento, não presumidos.
+passou. A CI e a implantação web/worker foram verificadas no recibo abaixo.
 
 As migrações `work_contributions_and_channels`, `work_contribution_command_integrity` e
 `work_contribution_history_indexes` estão nos dois ambientes. A migração adicional
@@ -72,3 +72,24 @@ Cofre fica na 12; retenção por provedor na 16; incorporação de contribuiçõ
 propagação operacional e alarmes na 18; retenção, exclusão e auditoria final na 22.
 A informação já exibida a um leitor autorizado não pode ser retirada de sua memória; toda
 nova leitura e mutação passa pela autoridade corrente. Não há recuperação de acesso por autoria.
+
+## Entrega e conciliação
+
+PR 655 entregue em `cad8990f3cd10958a05d28cb2c7fd54da9c182b2`; main Quality 35296301221, Security 35296301200 e worker 35296319659 passaram. Vercel Production 6515711334 e ECS 364 executam o commit exato.
+
+A PR 654 publicou a abertura do inventário antes da implementação. A primeira CI da PR 655
+rejeitou a preparação sintética por inconsistência entre tipo e categoria de organização.
+A preparação foi corrigida sem alterar a regra do banco ou enfraquecer assertions. A rodada
+seguinte detectou e-mails sintéticos com caixa diferente da normalização do cadastro; o teste
+passou a usar o e-mail normalizado e confirmar a inclusão da pessoa antes de operar a interface.
+A inspeção visual posterior encontrou compressão do menu no desktop; a largura mínima foi
+fixada por estado e a jornada passou a verificar 252px no desktop e 58px no celular. A gravação
+de revisão também espera a versão persistida aparecer antes da checagem de linhagem.
+A inspeção visual e os testes de interface usam exclusivamente identidades sintéticas locais.
+As capturas comprovam apresentação e transporte, não qualidade de análise financeira.
+
+O inventário renovado exige nove evidências novas, totalizando 150; cada omissão bloqueia sua
+validação. Mantém as 18 lacunas gerais e a observação AWS limitada: login administrativo não
+atesta permissões IAM, e alarmes OK sem ações não provam entrega de notificações. A etapa 18
+continua responsável por esse risco. O completion externo registra também a CI e o deploy
+da própria conciliação. Não há autorização implícita para a etapa 12.
