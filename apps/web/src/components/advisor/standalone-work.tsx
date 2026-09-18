@@ -1,3 +1,4 @@
+import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {getTranslations} from "next-intl/server";
 import {WorkParticipationPanel} from "./work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
@@ -18,10 +19,11 @@ export async function StandaloneWork({locale, project}: {
     advisorProjectCopy(locale),
   ]);
   if (error) throw new Error("work_conversation_unavailable");
+  const vaultCopy = await getTranslations({locale, namespace: "Vault"});
   const contributionCopy = await getTranslations({locale, namespace: "WorkContributions"});
   return <AdvisorProject
     currentUserId={userId}
-    workSections={[{id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />}]}
+    workSections={[{id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />}, {id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />}]}
     contextPanel={<WorkContextPanel locale={locale} workId={project.id} />}
     accessBasis={project.access_basis} artifacts={[]} copy={copy} documents={[]}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}

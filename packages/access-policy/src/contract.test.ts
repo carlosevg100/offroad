@@ -1,8 +1,13 @@
 import {readFileSync} from "node:fs";
 import {describe,expect,it} from "vitest";
-import {accessAdministration,accessExplanationSchema,accessGroupCommandSchema,accessGroupMemberCommandSchema,informationBarrierCommandSchema,policyConformanceVectorSchema,policyPrincipalSchema} from "./index";
+import {accessAdministration,accessExplanationSchema,accessGroupCommandSchema,accessGroupMemberCommandSchema,informationBarrierCommandSchema,policyConformanceVectorSchema,policyPrincipalSchema,resourceActionSchema} from "./index";
 const id="a3310000-0000-4000-8000-000000000001";
 describe("PostgreSQL policy contract",()=>{
+ it("represents explicit publication without inferring it from management",()=>{
+  expect(resourceActionSchema.parse("publish")).toBe("publish");
+  expect(accessExplanationSchema.parse({allowed:true,capabilities:["manage"],policyVersion:1}).capabilities).toEqual(["manage"]);
+  expect(resourceActionSchema.safeParse("owner").success).toBe(false);
+ });
  it("never infers administration from a role or malformed server response",()=>{
   for(const value of [undefined,null,{role:"owner"},{canAdminister:"true"},{canAdminister:true,role:"admin"}])expect(accessAdministration(value)).toEqual({canAdminister:false});
   expect(accessAdministration({canAdminister:true})).toEqual({canAdminister:true});

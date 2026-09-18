@@ -5204,6 +5204,7 @@ export type Database = {
           content_hash: string
           created_at: string
           id: string
+          legacy_publication_provenance: Json | null
           semantic_version: string
           status: string
           usage_expires_at: string | null
@@ -5216,6 +5217,7 @@ export type Database = {
           content_hash: string
           created_at?: string
           id?: string
+          legacy_publication_provenance?: Json | null
           semantic_version: string
           status: string
           usage_expires_at?: string | null
@@ -5228,6 +5230,7 @@ export type Database = {
           content_hash?: string
           created_at?: string
           id?: string
+          legacy_publication_provenance?: Json | null
           semantic_version?: string
           status?: string
           usage_expires_at?: string | null
@@ -9420,6 +9423,340 @@ export type Database = {
           },
         ]
       }
+      vault_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          head_version_id: string | null
+          id: string
+          kind: string
+          legacy_source_id: string | null
+          organization_id: string
+          scope_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          head_version_id?: string | null
+          id: string
+          kind: string
+          legacy_source_id?: string | null
+          organization_id: string
+          scope_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          head_version_id?: string | null
+          id?: string
+          kind?: string
+          legacy_source_id?: string | null
+          organization_id?: string
+          scope_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_entries_organization_id_id_head_version_id_fkey"
+            columns: ["organization_id", "id", "head_version_id"]
+            isOneToOne: false
+            referencedRelation: "vault_entry_versions"
+            referencedColumns: ["organization_id", "entry_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entries_organization_id_legacy_source_id_fkey"
+            columns: ["organization_id", "legacy_source_id"]
+            isOneToOne: true
+            referencedRelation: "sources"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entries_organization_id_scope_id_fkey"
+            columns: ["organization_id", "scope_id"]
+            isOneToOne: false
+            referencedRelation: "vault_scopes"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      vault_entry_versions: {
+        Row: {
+          assumption_version_id: string | null
+          content_fingerprint: string
+          created_at: string
+          created_by: string | null
+          dependency_manifest: Json
+          directive_text: string | null
+          entry_id: string
+          id: string
+          organization_id: string
+          presentation_template_id: string | null
+          previous_version_id: string | null
+          provenance: Json
+          reference_fingerprint: string | null
+          request_fingerprint: string
+          revision: number
+          source_version_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assumption_version_id?: string | null
+          content_fingerprint: string
+          created_at?: string
+          created_by?: string | null
+          dependency_manifest: Json
+          directive_text?: string | null
+          entry_id: string
+          id: string
+          organization_id: string
+          presentation_template_id?: string | null
+          previous_version_id?: string | null
+          provenance: Json
+          reference_fingerprint?: string | null
+          request_fingerprint: string
+          revision: number
+          source_version_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assumption_version_id?: string | null
+          content_fingerprint?: string
+          created_at?: string
+          created_by?: string | null
+          dependency_manifest?: Json
+          directive_text?: string | null
+          entry_id?: string
+          id?: string
+          organization_id?: string
+          presentation_template_id?: string | null
+          previous_version_id?: string | null
+          provenance?: Json
+          reference_fingerprint?: string | null
+          request_fingerprint?: string
+          revision?: number
+          source_version_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_assumption_version_id_fkey"
+            columns: ["organization_id", "assumption_version_id"]
+            isOneToOne: false
+            referencedRelation: "assumption_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_entry_id_fkey"
+            columns: ["organization_id", "entry_id"]
+            isOneToOne: false
+            referencedRelation: "vault_entries"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_entry_id_previous_ver_fkey"
+            columns: ["organization_id", "entry_id", "previous_version_id"]
+            isOneToOne: false
+            referencedRelation: "vault_entry_versions"
+            referencedColumns: ["organization_id", "entry_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_presentation_template_fkey"
+            columns: ["organization_id", "presentation_template_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_templates"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_organization_id_source_version_id_fkey"
+            columns: ["organization_id", "source_version_id"]
+            isOneToOne: false
+            referencedRelation: "source_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      vault_publication_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          entry_id: string
+          expected_publication_id: string | null
+          id: string
+          organization_id: string
+          purpose: string
+          reason: string
+          review_fingerprint: string
+          updated_at: string
+          version_fingerprint: string
+          version_id: string
+          work_scope_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          entry_id: string
+          expected_publication_id?: string | null
+          id: string
+          organization_id: string
+          purpose: string
+          reason: string
+          review_fingerprint: string
+          updated_at?: string
+          version_fingerprint: string
+          version_id: string
+          work_scope_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          entry_id?: string
+          expected_publication_id?: string | null
+          id?: string
+          organization_id?: string
+          purpose?: string
+          reason?: string
+          review_fingerprint?: string
+          updated_at?: string
+          version_fingerprint?: string
+          version_id?: string
+          work_scope_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_publication_requests_organization_id_entry_id_expect_fkey"
+            columns: ["organization_id", "entry_id", "expected_publication_id"]
+            isOneToOne: false
+            referencedRelation: "vault_publications"
+            referencedColumns: ["organization_id", "entry_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_publication_requests_organization_id_entry_id_versio_fkey"
+            columns: ["organization_id", "entry_id", "version_id"]
+            isOneToOne: false
+            referencedRelation: "vault_entry_versions"
+            referencedColumns: ["organization_id", "entry_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_publication_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_publication_requests_organization_id_work_scope_id_fkey"
+            columns: ["organization_id", "work_scope_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      vault_publications: {
+        Row: {
+          created_at: string
+          entry_id: string
+          id: string
+          organization_id: string
+          published_at: string
+          published_by: string
+          request_id: string
+          updated_at: string
+          withdrawal_reason: string | null
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_id: string
+          id: string
+          organization_id: string
+          published_at?: string
+          published_by: string
+          request_id: string
+          updated_at?: string
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+          organization_id?: string
+          published_at?: string
+          published_by?: string
+          request_id?: string
+          updated_at?: string
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_publications_organization_id_entry_id_request_id_fkey"
+            columns: ["organization_id", "entry_id", "request_id"]
+            isOneToOne: false
+            referencedRelation: "vault_publication_requests"
+            referencedColumns: ["organization_id", "entry_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_publications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vault_scopes: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_scopes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_channels: {
         Row: {
           created_at: string
@@ -10188,6 +10525,23 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: Json
       }
+      list_vault_entries_v1: {
+        Args: {
+          p_mode?: string
+          p_offset?: number
+          p_purpose?: string
+          p_search?: string
+        }
+        Returns: Json
+      }
+      list_vault_people_v1: {
+        Args: { p_offset?: number; p_resource_id: string; p_search?: string }
+        Returns: Json
+      }
+      list_vault_publication_receipts_v1: {
+        Args: { p_offset?: number }
+        Returns: Json
+      }
       list_work_observations_v1: {
         Args: { p_before_sequence?: string; p_work_id: string }
         Returns: Json
@@ -10238,6 +10592,26 @@ export type Database = {
       }
       propose_assumption_revision_v1: {
         Args: { p_payload: Json }
+        Returns: string
+      }
+      propose_vault_publication_v1: {
+        Args: {
+          p_expected_publication_id: string
+          p_purpose: string
+          p_reason: string
+          p_request_id: string
+          p_version_fingerprint: string
+          p_version_id: string
+          p_work_scope_id: string
+        }
+        Returns: string
+      }
+      publish_vault_entry_v1: {
+        Args: {
+          p_publication_id: string
+          p_request_id: string
+          p_reviewed_fingerprint: string
+        }
         Returns: string
       }
       queue_advisor_initial_turn_v1: {
@@ -10828,6 +11202,16 @@ export type Database = {
           source_document_id: string
         }[]
       }
+      search_vault_for_work_v1: {
+        Args: {
+          p_include_candidates?: boolean
+          p_offset?: number
+          p_purpose?: string
+          p_search?: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
       set_access_group_member_v1: {
         Args: {
           p_enabled?: boolean
@@ -11262,6 +11646,19 @@ export type Database = {
         Args: { p_payload: Json; p_project_id: string; p_proposal_id: string }
         Returns: Json
       }
+      submit_vault_entry_version_v1: {
+        Args: {
+          p_directive_text?: string
+          p_entry_id: string
+          p_expected_version_id: string
+          p_kind: string
+          p_reference_id?: string
+          p_source_version_ids?: string[]
+          p_title: string
+          p_version_id: string
+        }
+        Returns: string
+      }
       submit_work_contribution_v1: {
         Args: {
           p_base_revision_id: string
@@ -11314,6 +11711,10 @@ export type Database = {
           p_organization_id: string
         }
         Returns: Json
+      }
+      withdraw_vault_publication_v1: {
+        Args: { p_publication_id: string; p_reason: string }
+        Returns: string
       }
       worker_apply_institutional_assumption_answer_v1: {
         Args: {

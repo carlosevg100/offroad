@@ -1,3 +1,12 @@
+## Etapa 12: implementação e verificação de schema
+
+Cofre com publicação humana, revisão exata, histórico e direitos herdados. Quatro migrações
+aplicadas em staging e produção com SQL conciliado; 28 versões históricas importadas como
+candidatas, zero publicações inventadas. 92 contratos SQL passaram em staging. Inventário de
+objetos atualizado e checkers sem diferenças. Interface, testes de concorrência e jornada de
+duas pessoas em `docs/build/arcabouco/etapa-12.md`. CI e implantação deste incremento ainda
+precisam do recibo de fechamento; etapa 13 não iniciada.
+
 ## Onda 11: etapa 12 autorizada
 
 Cofre com publicação exclusivamente humana. Baseline `b5317a4d3760`; inventário de abertura

@@ -1,7 +1,7 @@
 import {z} from "zod";
 
 /** Vocabulary and wire validation only. PostgreSQL is the sole policy decision point. */
-export const resourceActionSchema = z.enum(["read", "work", "manage"]);
+export const resourceActionSchema = z.enum(["read", "work", "manage", "publish"]);
 export const resourcePurposeSchema = z.enum(["analysis", "retrieval", "publication", "export"]);
 export const policyEffectSchema = z.enum(["allow", "deny"]);
 export const policyPrincipalSchema = z.discriminatedUnion("kind", [

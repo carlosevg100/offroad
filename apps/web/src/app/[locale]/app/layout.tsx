@@ -96,6 +96,7 @@ export default async function ApplicationLayout({children, params}: Props) {
   const {data: profile} = await supabase.from("profiles").select("full_name").eq("id", userId).maybeSingle();
   const copy: WorkspaceRailCopy = {
     account: t("account"),
+    vault: t("vault"),
     actions: t("projectActions"),
     archive: t("deleteProject"),
     archiveConfirm: t("deleteProjectConfirm"),

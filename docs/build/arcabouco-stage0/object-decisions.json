@@ -4604,6 +4604,201 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.can_read_vault_entry_v1(p_org uuid, p_entry uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_vault_entry_v1(p_org uuid, p_entry uuid)",
+          "kind": "function",
+          "name": "can_read_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_entry uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_vault_entry_v1(p_org uuid, p_entry uuid)",
+          "kind": "function",
+          "name": "can_read_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_entry uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 172,
+          "anchor": "create function private.can_read_vault_entry_v1(p_org uuid,p_entry uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.can_read_vault_scope_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_vault_scope_v1(p_org uuid)",
+          "kind": "function",
+          "name": "can_read_vault_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_vault_scope_v1(p_org uuid)",
+          "kind": "function",
+          "name": "can_read_vault_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 178,
+          "anchor": "create function private.can_read_vault_scope_v1(p_org uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.can_read_vault_version_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_vault_version_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "can_read_vault_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_vault_version_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "can_read_vault_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 159,
+          "anchor": "create function private.can_read_vault_version_v1(p_org uuid,p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
       "kind": "function",
       "catalogues": {
@@ -6042,6 +6237,61 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
+          "kind": "function",
+          "name": "collect_vault_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
+          "kind": "function",
+          "name": "collect_vault_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 237,
+          "anchor": "create function private.collect_vault_dependencies_v1(p_org uuid,p_previous uuid,p_source uuid,p_assumption uuid,p_sources uuid[]) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.compare_adoption_bases_v1(p_left_version_id uuid, p_right_version_id uuid)",
@@ -8813,16 +9063,22 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa 3",
-      "decision": "preservar",
-      "stage": "3",
-      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "owner": "Codex, etapa 12",
+      "decision": "refatorar",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
           "line": 182,
           "anchor": "create function private.evaluate_resource_policy_v1(p_org uuid,p_resource uuid,p_subject uuid,p_action text,p_purpose text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 108,
+          "anchor": " select pg_get_functiondef('private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)'::regprocedure) into body;",
+          "mechanism": "bounded_function_clone"
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
@@ -10886,6 +11142,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.guard_vault_identity_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_vault_identity_v1()",
+          "kind": "function",
+          "name": "guard_vault_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_vault_identity_v1()",
+          "kind": "function",
+          "name": "guard_vault_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 212,
+          "anchor": "create function private.guard_vault_identity_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.handle_new_user()",
       "kind": "function",
       "catalogues": {
@@ -11056,15 +11367,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex, etapa 7",
-      "decision": "preservar",
-      "stage": "7",
-      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "owner": "Codex, etapa 12",
+      "decision": "refatorar",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
           "line": 255,
           "anchor": "create function private.house_usage_allowed_v1(p_version uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105952_vault_legacy_publication_evidence.sql",
+          "line": 8,
+          "anchor": "create or replace function private.house_usage_allowed_v1(p_version uuid) returns boolean language sql volatile security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
         }
       ],
@@ -13686,6 +14003,136 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_search text, p_offset integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_search text, p_offset integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 431,
+          "anchor": "create function private.list_vault_people_v1(p_resource_id uuid,p_search text default '',p_offset integer default 0) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.list_vault_publication_receipts_v1(p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_vault_publication_receipts_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_publication_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_vault_publication_receipts_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_publication_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105956_vault_publication_receipts.sql",
+          "line": 3,
+          "anchor": "create function private.list_vault_publication_receipts_v1(p_offset integer default 0) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
       "kind": "function",
       "catalogues": {
@@ -14900,6 +15347,61 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.pin_vault_dependencies_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.pin_vault_dependencies_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "pin_vault_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.pin_vault_dependencies_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "pin_vault_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 256,
+          "anchor": "create function private.pin_vault_dependencies_v1(p_org uuid,p_version uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "catalogues": {
@@ -15803,6 +16305,71 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+          "kind": "function",
+          "name": "propose_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+          "kind": "function",
+          "name": "propose_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 314,
+          "anchor": "create function private.propose_vault_publication_v1(p_request_id uuid,p_version_id uuid,p_version_fingerprint text,p_expected_publication_id uuid,p_work_scope_id uuid,p_purpose text,p_reason text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.protect_institutional_binding_v1()",
       "kind": "function",
       "catalogues": {
@@ -16542,6 +17109,71 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+          "kind": "function",
+          "name": "publish_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+          "kind": "function",
+          "name": "publish_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105947_vault_export_authority.sql",
+          "line": 25,
+          "anchor": "create or replace function private.publish_vault_entry_v1(p_request_id uuid,p_publication_id uuid,p_reviewed_fingerprint text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.queue_advisor_initial_turn_v1(p_project_id uuid)",
@@ -21198,6 +21830,61 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.register_vault_resource_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_vault_resource_v1()",
+          "kind": "function",
+          "name": "register_vault_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.register_vault_resource_v1()",
+          "kind": "function",
+          "name": "register_vault_resource_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 119,
+          "anchor": "create function private.register_vault_resource_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.reject_assumption_mutation_v1()",
       "kind": "function",
       "catalogues": {
@@ -22648,6 +23335,61 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.require_vault_actor_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_vault_actor_v1()",
+          "kind": "function",
+          "name": "require_vault_actor_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_vault_actor_v1()",
+          "kind": "function",
+          "name": "require_vault_actor_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 226,
+          "anchor": "create function private.require_vault_actor_v1() returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
@@ -24715,6 +25457,71 @@
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
+      "id": "function:private.search_vault_v1(p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.search_vault_v1(p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text)",
+          "kind": "function",
+          "name": "search_vault_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.search_vault_v1(p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text)",
+          "kind": "function",
+          "name": "search_vault_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 391,
+          "anchor": "create function private.search_vault_v1(p_work_id uuid,p_search text,p_offset integer,p_mode text,p_purpose text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.seed_resource_authority_v1(p_organization_id uuid, p_resource_id uuid, p_creator_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -24769,6 +25576,61 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.seed_vault_scope_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.seed_vault_scope_v1()",
+          "kind": "function",
+          "name": "seed_vault_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.seed_vault_scope_v1()",
+          "kind": "function",
+          "name": "seed_vault_scope_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 131,
+          "anchor": "create function private.seed_vault_scope_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.seed_workspace_foundation_v1()",
@@ -25705,16 +26567,22 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa 3",
-      "decision": "preservar",
-      "stage": "3",
-      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "owner": "Codex, etapa 12",
+      "decision": "refatorar",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
           "line": 308,
           "anchor": "create function private.set_resource_policy_grant_v1(p_resource_id uuid,p_user_id uuid,p_group_id uuid,p_action text,p_effect text,p_enabled boolean default true,p_expires_at timestamptz default null)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 114,
+          "anchor": " select pg_get_functiondef('private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz)'::regprocedure) into body;",
+          "mechanism": "bounded_function_clone"
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
@@ -28812,6 +29680,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_vault_entry_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_vault_entry_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 263,
+          "anchor": "create function private.submit_vault_entry_version_v1(p_entry_id uuid,p_version_id uuid,p_expected_version_id uuid,p_kind text,p_title text,p_directive_text text default null,p_reference_id uuid default null,p_source_version_ids uuid[] default '{}')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
       "kind": "function",
       "catalogues": {
@@ -30099,6 +31032,116 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.vault_reader_org_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.vault_reader_org_v1()",
+          "kind": "function",
+          "name": "vault_reader_org_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.vault_reader_org_v1()",
+          "kind": "function",
+          "name": "vault_reader_org_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 384,
+          "anchor": "create function private.vault_reader_org_v1() returns uuid language plpgsql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.vault_reference_allowed_v1(p_org uuid, p_version uuid, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.vault_reference_allowed_v1(p_org uuid, p_version uuid, p_purpose text)",
+          "kind": "function",
+          "name": "vault_reference_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.vault_reference_allowed_v1(p_org uuid, p_version uuid, p_purpose text)",
+          "kind": "function",
+          "name": "vault_reference_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105947_vault_export_authority.sql",
+          "line": 2,
+          "anchor": "create or replace function private.vault_reference_allowed_v1(p_org uuid,p_version uuid,p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.verify_advisor_authorization_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text)",
       "kind": "function",
       "catalogues": {
@@ -30376,6 +31419,71 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "function:private.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_publication_id uuid, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_publication_id uuid, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 367,
+          "anchor": "create function private.withdraw_vault_publication_v1(p_publication_id uuid,p_reason text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
@@ -44845,6 +45953,201 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.list_vault_entries_v1(p_search text, p_offset integer, p_mode text, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_vault_entries_v1(p_search text, p_offset integer, p_mode text, p_purpose text)",
+          "kind": "function",
+          "name": "list_vault_entries_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_search text, p_offset integer, p_mode text, p_purpose text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_vault_entries_v1(p_search text, p_offset integer, p_mode text, p_purpose text)",
+          "kind": "function",
+          "name": "list_vault_entries_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_search text, p_offset integer, p_mode text, p_purpose text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 426,
+          "anchor": "create function public.list_vault_entries_v1(p_search text default '',p_offset integer default 0,p_mode text default 'published',p_purpose text default 'analysis') returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_search text, p_offset integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_people_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_resource_id uuid, p_search text, p_offset integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 446,
+          "anchor": "create function public.list_vault_people_v1(p_resource_id uuid,p_search text default '',p_offset integer default 0) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.list_vault_publication_receipts_v1(p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_vault_publication_receipts_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_publication_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_vault_publication_receipts_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_vault_publication_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105956_vault_publication_receipts.sql",
+          "line": 18,
+          "anchor": "create function public.list_vault_publication_receipts_v1(p_offset integer default 0) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
       "kind": "function",
       "catalogues": {
@@ -45670,6 +46973,136 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+          "kind": "function",
+          "name": "propose_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+          "kind": "function",
+          "name": "propose_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 375,
+          "anchor": "create function public.propose_vault_publication_v1(p_request_id uuid,p_version_id uuid,p_version_fingerprint text,p_expected_publication_id uuid,p_work_scope_id uuid,p_purpose text,p_reason text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+          "kind": "function",
+          "name": "publish_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+          "kind": "function",
+          "name": "publish_vault_entry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 377,
+          "anchor": "create function public.publish_vault_entry_v1(p_request_id uuid,p_publication_id uuid,p_reviewed_fingerprint text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.queue_advisor_initial_turn_v1(p_project_id uuid)",
@@ -51679,6 +53112,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.search_vault_for_work_v1(p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.search_vault_for_work_v1(p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text)",
+          "kind": "function",
+          "name": "search_vault_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.search_vault_for_work_v1(p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text)",
+          "kind": "function",
+          "name": "search_vault_for_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 424,
+          "anchor": "create function public.search_vault_for_work_v1(p_work_id uuid,p_search text default '',p_offset integer default 0,p_include_candidates boolean default false,p_purpose text default 'analysis') returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
       "kind": "function",
       "catalogues": {
@@ -55133,6 +56631,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_vault_entry_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+          "kind": "function",
+          "name": "submit_vault_entry_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 310,
+          "anchor": "create function public.submit_vault_entry_version_v1(p_entry_id uuid,p_version_id uuid,p_expected_version_id uuid,p_kind text,p_title text,p_directive_text text default null,p_reference_id uuid default null,p_source_version_ids uuid[] default '{}')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
       "kind": "function",
       "catalogues": {
@@ -55649,6 +57212,71 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "2"
+    },
+    {
+      "id": "function:public.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_publication_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "withdraw_vault_publication_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_publication_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 379,
+          "anchor": "create function public.withdraw_vault_publication_v1(p_publication_id uuid,p_reason text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.worker_apply_institutional_assumption_answer_v1(p_job_id uuid, p_capability_token text, p_application jsonb)",
@@ -68105,6 +69733,194 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_delete",
+          "kind": "policy",
+          "name": "vault_dependencies_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_delete",
+          "kind": "policy",
+          "name": "vault_dependencies_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 206,
+          "anchor": "create policy vault_dependencies_delete on private.vault_source_dependencies for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_insert",
+          "kind": "policy",
+          "name": "vault_dependencies_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_insert",
+          "kind": "policy",
+          "name": "vault_dependencies_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 204,
+          "anchor": "create policy vault_dependencies_insert on private.vault_source_dependencies for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_select",
+          "kind": "policy",
+          "name": "vault_dependencies_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_select",
+          "kind": "policy",
+          "name": "vault_dependencies_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 203,
+          "anchor": "create policy vault_dependencies_select on private.vault_source_dependencies for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_update",
+          "kind": "policy",
+          "name": "vault_dependencies_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.vault_source_dependencies.vault_dependencies_update",
+          "kind": "policy",
+          "name": "vault_dependencies_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 205,
+          "anchor": "create policy vault_dependencies_update on private.vault_source_dependencies for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
@@ -81738,6 +83554,946 @@
       "last_review_stage": "2"
     },
     {
+      "id": "policy:public.vault_entries.vault_entries_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entries.vault_entries_deny_delete",
+          "kind": "policy",
+          "name": "vault_entries_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_entries.vault_entries_deny_delete",
+          "kind": "policy",
+          "name": "vault_entries_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 195,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entries.vault_entries_deny_insert",
+          "kind": "policy",
+          "name": "vault_entries_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_entries.vault_entries_deny_insert",
+          "kind": "policy",
+          "name": "vault_entries_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 193,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entries.vault_entries_deny_update",
+          "kind": "policy",
+          "name": "vault_entries_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_entries.vault_entries_deny_update",
+          "kind": "policy",
+          "name": "vault_entries_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 194,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entries.vault_entries_select",
+          "kind": "policy",
+          "name": "vault_entries_select",
+          "qual": "private.can_read_vault_entry_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_entries.vault_entries_select",
+          "kind": "policy",
+          "name": "vault_entries_select",
+          "qual": "private.can_read_vault_entry_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entries",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 192,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,pred);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_delete",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_delete",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 195,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_insert",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_insert",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 193,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_update",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_update",
+          "kind": "policy",
+          "name": "vault_entry_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 194,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_select",
+          "kind": "policy",
+          "name": "vault_entry_versions_select",
+          "qual": "private.can_read_vault_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_entry_versions.vault_entry_versions_select",
+          "kind": "policy",
+          "name": "vault_entry_versions_select",
+          "qual": "private.can_read_vault_version_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 192,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,pred);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_delete",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_delete",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 195,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_insert",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_insert",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 193,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_update",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_update",
+          "kind": "policy",
+          "name": "vault_publication_requests_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 194,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_select",
+          "kind": "policy",
+          "name": "vault_publication_requests_select",
+          "qual": "private.can_read_vault_version_v1(organization_id, version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_publication_requests.vault_publication_requests_select",
+          "kind": "policy",
+          "name": "vault_publication_requests_select",
+          "qual": "private.can_read_vault_version_v1(organization_id, version_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 192,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,pred);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publications.vault_publications_deny_delete",
+          "kind": "policy",
+          "name": "vault_publications_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_publications.vault_publications_deny_delete",
+          "kind": "policy",
+          "name": "vault_publications_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 195,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publications.vault_publications_deny_insert",
+          "kind": "policy",
+          "name": "vault_publications_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_publications.vault_publications_deny_insert",
+          "kind": "policy",
+          "name": "vault_publications_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 193,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publications.vault_publications_deny_update",
+          "kind": "policy",
+          "name": "vault_publications_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_publications.vault_publications_deny_update",
+          "kind": "policy",
+          "name": "vault_publications_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 194,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_publications.vault_publications_select",
+          "kind": "policy",
+          "name": "vault_publications_select",
+          "qual": "private.can_read_vault_entry_v1(organization_id, entry_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_publications.vault_publications_select",
+          "kind": "policy",
+          "name": "vault_publications_select",
+          "qual": "private.can_read_vault_entry_v1(organization_id, entry_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_publications",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 192,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,pred);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_delete",
+          "kind": "policy",
+          "name": "vault_scopes_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_delete",
+          "kind": "policy",
+          "name": "vault_scopes_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 195,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_insert",
+          "kind": "policy",
+          "name": "vault_scopes_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_insert",
+          "kind": "policy",
+          "name": "vault_scopes_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 193,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_update",
+          "kind": "policy",
+          "name": "vault_scopes_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.vault_scopes.vault_scopes_deny_update",
+          "kind": "policy",
+          "name": "vault_scopes_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 194,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.vault_scopes.vault_scopes_select",
+          "kind": "policy",
+          "name": "vault_scopes_select",
+          "qual": "private.can_read_vault_scope_v1(organization_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.vault_scopes.vault_scopes_select",
+          "kind": "policy",
+          "name": "vault_scopes_select",
+          "qual": "private.can_read_vault_scope_v1(organization_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "vault_scopes",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 192,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using (%s)',t||'_select',t,pred);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.work_channels.work_channels_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -84527,15 +87283,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, primeira onda",
-      "decision": "preservar",
-      "stage": "1B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
+      "owner": "Codex, etapa 12",
+      "decision": "refatorar",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 3,
           "anchor": "create table private.access_resources (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 96,
+          "anchor": "alter table private.access_resources add constraint access_resources_kinds check(resource_kind in ('capital_project','intake_session','opportunity','workspace_group','company','vault_scope','vault_entry')),",
           "mechanism": "direct_ddl"
         }
       ],
@@ -89672,15 +92434,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, primeira onda",
-      "decision": "preservar",
-      "stage": "1B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
+      "owner": "Codex, etapa 12",
+      "decision": "refatorar",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 32,
           "anchor": "create table private.resource_access_grants (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 105,
+          "anchor": "alter table private.resource_access_grants add constraint resource_access_grants_action_check check(action in ('read','work','manage','publish'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -90402,6 +93170,125 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "r:private.vault_source_dependencies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.vault_source_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_source_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.vault_source_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_source_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 62,
+          "anchor": "create table private.vault_source_dependencies (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:private.worker_tokens",
@@ -104808,10 +107695,10 @@
           "force_rls": true
         }
       },
-      "owner": "Codex, etapa 7",
+      "owner": "Codex, etapa 12",
       "decision": "refatorar",
-      "stage": "7",
-      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
+      "stage": "12",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
       "sources": [
         {
           "path": "supabase/migrations/20260824232722_governed_retrieval.sql",
@@ -104823,6 +107710,12 @@
           "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
           "line": 252,
           "anchor": "alter table public.house_playbook_versions add constraint house_usage_license_valid check(usage_license is null or usage_license='offroad_owned_private_analysis_v1');",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918105952_vault_legacy_publication_evidence.sql",
+          "line": 3,
+          "anchor": "alter table public.house_playbook_versions add column legacy_publication_provenance jsonb;",
           "mechanism": "direct_ddl"
         }
       ],
@@ -118702,6 +121595,651 @@
       "last_review_stage": "2"
     },
     {
+      "id": "r:public.vault_entries",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.vault_entries",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_entries",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.vault_entries",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_entries",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 7,
+          "anchor": "create table public.vault_entries (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.vault_entry_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.vault_entry_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_entry_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.vault_entry_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_entry_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 16,
+          "anchor": "create table public.vault_entry_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.vault_publication_requests",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.vault_publication_requests",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_publication_requests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.vault_publication_requests",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_publication_requests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 38,
+          "anchor": "create table public.vault_publication_requests (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.vault_publications",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.vault_publications",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_publications",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.vault_publications",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_publications",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 50,
+          "anchor": "create table public.vault_publications (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.vault_scopes",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.vault_scopes",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_scopes",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.vault_scopes",
+          "rls": true,
+          "kind": "table",
+          "name": "vault_scopes",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 3,
+          "anchor": "create table public.vault_scopes (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.work_channels",
       "kind": "table",
       "catalogues": {
@@ -122449,6 +125987,123 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependencies_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependencies_audit",
+          "kind": "trigger",
+          "name": "vault_dependencies_audit",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependencies_audit",
+          "kind": "trigger",
+          "name": "vault_dependencies_audit",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 208,
+          "anchor": "create trigger vault_dependencies_audit after insert or update or delete on private.vault_source_dependencies for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependencies_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependencies_updated",
+          "kind": "trigger",
+          "name": "vault_dependencies_updated",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_dependencies_updated BEFORE UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependencies_updated",
+          "kind": "trigger",
+          "name": "vault_dependencies_updated",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_dependencies_updated BEFORE UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 207,
+          "anchor": "create trigger vault_dependencies_updated before update on private.vault_source_dependencies for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependency_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependency_immutable",
+          "kind": "trigger",
+          "name": "vault_dependency_immutable",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_dependency_immutable BEFORE DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.vault_source_dependencies.vault_dependency_immutable",
+          "kind": "trigger",
+          "name": "vault_dependency_immutable",
+          "table": "vault_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_dependency_immutable BEFORE DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 211,
+          "anchor": "create trigger vault_dependency_immutable before update or delete on private.vault_source_dependencies for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
@@ -129916,6 +133571,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.organizations.organizations_vault_scope",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organizations.organizations_vault_scope",
+          "kind": "trigger",
+          "name": "organizations_vault_scope",
+          "table": "organizations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.seed_vault_scope_v1()",
+          "definition": "CREATE TRIGGER organizations_vault_scope AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_vault_scope_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.organizations.organizations_vault_scope",
+          "kind": "trigger",
+          "name": "organizations_vault_scope",
+          "table": "organizations",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.seed_vault_scope_v1()",
+          "definition": "CREATE TRIGGER organizations_vault_scope AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_vault_scope_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 134,
+          "anchor": "create trigger organizations_vault_scope after insert on public.organizations for each row execute function private.seed_vault_scope_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.organizations.organizations_workspace_foundation",
       "kind": "trigger",
       "catalogues": {
@@ -133335,6 +137029,669 @@
       "last_review_stage": "2"
     },
     {
+      "id": "trigger:public.vault_entries.vault_entries_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entries.vault_entries_audit",
+          "kind": "trigger",
+          "name": "vault_entries_audit",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_entries_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entries.vault_entries_audit",
+          "kind": "trigger",
+          "name": "vault_entries_audit",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_entries_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 197,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entries_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entries.vault_entries_updated",
+          "kind": "trigger",
+          "name": "vault_entries_updated",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_entries_updated BEFORE UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entries.vault_entries_updated",
+          "kind": "trigger",
+          "name": "vault_entries_updated",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_entries_updated BEFORE UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 196,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entry_identity",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entries.vault_entry_identity",
+          "kind": "trigger",
+          "name": "vault_entry_identity",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_entry_identity BEFORE DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entries.vault_entry_identity",
+          "kind": "trigger",
+          "name": "vault_entry_identity",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_entry_identity BEFORE DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 224,
+          "anchor": "create trigger vault_entry_identity before update or delete on public.vault_entries for each row execute function private.guard_vault_identity_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entry_resource",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entries.vault_entry_resource",
+          "kind": "trigger",
+          "name": "vault_entry_resource",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.register_vault_resource_v1()",
+          "definition": "CREATE TRIGGER vault_entry_resource AFTER INSERT ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entries.vault_entry_resource",
+          "kind": "trigger",
+          "name": "vault_entry_resource",
+          "table": "vault_entries",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.register_vault_resource_v1()",
+          "definition": "CREATE TRIGGER vault_entry_resource AFTER INSERT ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 130,
+          "anchor": "create trigger vault_entry_resource after insert on public.vault_entries for each row execute function private.register_vault_resource_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_entry_versions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entry_versions.vault_entry_versions_audit",
+          "kind": "trigger",
+          "name": "vault_entry_versions_audit",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_entry_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entry_versions.vault_entry_versions_audit",
+          "kind": "trigger",
+          "name": "vault_entry_versions_audit",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_entry_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 197,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_entry_versions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entry_versions.vault_entry_versions_updated",
+          "kind": "trigger",
+          "name": "vault_entry_versions_updated",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_entry_versions_updated BEFORE UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entry_versions.vault_entry_versions_updated",
+          "kind": "trigger",
+          "name": "vault_entry_versions_updated",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_entry_versions_updated BEFORE UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 196,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_version_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_entry_versions.vault_version_immutable",
+          "kind": "trigger",
+          "name": "vault_version_immutable",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_version_immutable BEFORE DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_entry_versions.vault_version_immutable",
+          "kind": "trigger",
+          "name": "vault_version_immutable",
+          "table": "vault_entry_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_version_immutable BEFORE DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 209,
+          "anchor": "create trigger vault_version_immutable before update or delete on public.vault_entry_versions for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_publication_requests_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publication_requests.vault_publication_requests_audit",
+          "kind": "trigger",
+          "name": "vault_publication_requests_audit",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_publication_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publication_requests.vault_publication_requests_audit",
+          "kind": "trigger",
+          "name": "vault_publication_requests_audit",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_publication_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 197,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_publication_requests_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publication_requests.vault_publication_requests_updated",
+          "kind": "trigger",
+          "name": "vault_publication_requests_updated",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_publication_requests_updated BEFORE UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publication_requests.vault_publication_requests_updated",
+          "kind": "trigger",
+          "name": "vault_publication_requests_updated",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_publication_requests_updated BEFORE UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 196,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_request_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publication_requests.vault_request_immutable",
+          "kind": "trigger",
+          "name": "vault_request_immutable",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_request_immutable BEFORE DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publication_requests.vault_request_immutable",
+          "kind": "trigger",
+          "name": "vault_request_immutable",
+          "table": "vault_publication_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER vault_request_immutable BEFORE DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 210,
+          "anchor": "create trigger vault_request_immutable before update or delete on public.vault_publication_requests for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publication_history",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publications.vault_publication_history",
+          "kind": "trigger",
+          "name": "vault_publication_history",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_publication_history BEFORE DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publications.vault_publication_history",
+          "kind": "trigger",
+          "name": "vault_publication_history",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_publication_history BEFORE DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 225,
+          "anchor": "create trigger vault_publication_history before update or delete on public.vault_publications for each row execute function private.guard_vault_identity_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publications_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publications.vault_publications_audit",
+          "kind": "trigger",
+          "name": "vault_publications_audit",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_publications_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publications.vault_publications_audit",
+          "kind": "trigger",
+          "name": "vault_publications_audit",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_publications_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 197,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publications_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_publications.vault_publications_updated",
+          "kind": "trigger",
+          "name": "vault_publications_updated",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_publications_updated BEFORE UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_publications.vault_publications_updated",
+          "kind": "trigger",
+          "name": "vault_publications_updated",
+          "table": "vault_publications",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_publications_updated BEFORE UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 196,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scope_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_scopes.vault_scope_immutable",
+          "kind": "trigger",
+          "name": "vault_scope_immutable",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_scope_immutable BEFORE DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_scopes.vault_scope_immutable",
+          "kind": "trigger",
+          "name": "vault_scope_immutable",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_vault_identity_v1()",
+          "definition": "CREATE TRIGGER vault_scope_immutable BEFORE DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 223,
+          "anchor": "create trigger vault_scope_immutable before update or delete on public.vault_scopes for each row execute function private.guard_vault_identity_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scope_resource",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_scopes.vault_scope_resource",
+          "kind": "trigger",
+          "name": "vault_scope_resource",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.register_vault_resource_v1()",
+          "definition": "CREATE TRIGGER vault_scope_resource AFTER INSERT ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_scopes.vault_scope_resource",
+          "kind": "trigger",
+          "name": "vault_scope_resource",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.register_vault_resource_v1()",
+          "definition": "CREATE TRIGGER vault_scope_resource AFTER INSERT ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 129,
+          "anchor": "create trigger vault_scope_resource after insert on public.vault_scopes for each row execute function private.register_vault_resource_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scopes_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_scopes.vault_scopes_audit",
+          "kind": "trigger",
+          "name": "vault_scopes_audit",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_scopes_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_scopes.vault_scopes_audit",
+          "kind": "trigger",
+          "name": "vault_scopes_audit",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER vault_scopes_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 197,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scopes_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.vault_scopes.vault_scopes_updated",
+          "kind": "trigger",
+          "name": "vault_scopes_updated",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_scopes_updated BEFORE UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.vault_scopes.vault_scopes_updated",
+          "kind": "trigger",
+          "name": "vault_scopes_updated",
+          "table": "vault_scopes",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER vault_scopes_updated BEFORE UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 12",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+          "line": 196,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.work_channels.work_channels_audit",
       "kind": "trigger",
       "catalogues": {
@@ -134833,8 +139190,8 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "11",
-      "reason": "Acrescenta participação, revisão pessoal, comparação de conflito e compartilhamento autorizado.",
+      "stage": "12",
+      "reason": "Acrescenta cofre, revisão de publicação, designação de publicador e contexto herdado sob autorização.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -141187,6 +145544,48 @@
       "decision": "preservar",
       "stage": "11",
       "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918105947_vault_export_authority.sql",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918105952_vault_legacy_publication_evidence.sql",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918105956_vault_publication_receipts.sql",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/vault/page.tsx",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Revisão e publicação humana com autoridade corrente no banco."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/vault/actions.ts",
+      "decision": "preservar",
+      "stage": "12",
+      "reason": "Revisão e publicação humana com autoridade corrente no banco."
     }
   ],
   "staging_archive": [
@@ -141756,5 +146155,15 @@
     ],
     "new_objects": 6,
     "review": "docs/build/arcabouco/etapa-11.md"
+  },
+  "stage_12_publication_revision": {
+    "production_migrations": [
+      "20260918105943",
+      "20260918105947",
+      "20260918105952",
+      "20260918105956"
+    ],
+    "new_objects": 77,
+    "review": "docs/build/arcabouco/etapa-12.md"
   }
 }
