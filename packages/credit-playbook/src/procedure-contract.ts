@@ -30,7 +30,7 @@ export const procedureRoleSchema = z.enum([
 ]);
 export type ProcedureRole = z.infer<typeof procedureRoleSchema>;
 
-export const procedureStageSchema = z.number().int().min(1).max(12);
+export const procedureStageSchema = z.number().int().positive().safe();
 export type ProcedureStage = z.infer<typeof procedureStageSchema>;
 
 export const procedureAuthoritySchema = z.enum(["LEI", "DEF", "CASA", "MERCADO", "HEURÍSTICA"]);
@@ -79,9 +79,9 @@ const qualitySchema = z.object({
 
 const runtimeSchema = z.object({
   /** Roles are namespaces. The rail, not a model, owns order and transition. */
-  orchestration: z.literal("deterministic_pipeline"),
+  orchestration: z.enum(["deterministic_pipeline", "dependency_graph"]),
   peerHandoffs: z.literal(false),
-  maxModelCalls: z.number().int().min(0).max(3),
+  maxModelCalls: z.number().int().nonnegative().safe(),
   modelPurpose: z.array(z.string().trim().min(1)).max(3).default([]),
   allowedTools: z.array(z.string().trim().min(1)).default([]),
 }).strict();

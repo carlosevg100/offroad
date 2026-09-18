@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {renderMethodManifest} from "./build-method-manifest";
 import {resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -5,6 +7,7 @@ import {describe, expect, it} from "vitest";
 
 import {loadMethodLibrary} from "./procedure-markdown";
 import {
+  assertBundledMethodProvenance,
   specialistMethodApprovalManifest,
   specialistMethodRuntimeManifest,
   specialistMethodRuntimeManifestHash,
@@ -89,4 +92,23 @@ describe("specialist method runtime manifest", () => {
       expect(approval.approvalSource.length).toBeGreaterThan(0);
     }
   });
+});
+
+
+describe("generated method projection", () => {
+  it("matches the generator byte for byte, including compiler, executor and evidence pins", () => {
+    const root = resolve(here, "../../..");
+    const expected = renderMethodManifest(root);
+    expect(readFileSync(resolve(here, "method-runtime-manifest.generated.ts"), "utf8")).toBe(expected);
+    expect(renderMethodManifest(root)).toBe(expected);
+  });
+});
+
+
+it("checks bundled executor lineage without changing R01 routing and denies forged bindings", () => {
+  const method = specialistMethodRuntimeManifest[0];
+  expect(() => assertBundledMethodProvenance(method)).not.toThrow();
+  expect(() => assertBundledMethodProvenance({...method, sourceHash: "0".repeat(64)})).toThrow(/mismatch/);
+  expect(() => assertBundledMethodProvenance({...method, executor: {...method.executor, exportName: "invented"}})).toThrow(/mismatch/);
+  expect(() => assertBundledMethodProvenance({...method, procedure: {id: "prepare-capital-structure-decision", version: "2026.09.18-v1"}})).toThrow(/missing/);
 });

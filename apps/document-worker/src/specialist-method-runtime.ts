@@ -1,4 +1,5 @@
 import {
+  assertBundledMethodProvenance,
   specialistMethodRuntimeManifest,
   specialistTaskCapabilityRuntimeManifest,
 } from "@offroad/credit-playbook";
@@ -168,6 +169,7 @@ function methodRuntime(mode: SpecialistMethodMode) {
   const method = specialistMethodRuntimeManifest.find((entry) => entry.taskIds.includes(taskId));
   const capability = specialistTaskCapabilityRuntimeManifest.find((entry) => entry.taskId === taskId);
   if (!method || !capability) throw new Error("receivables_specialist_runtime_not_registered");
+  assertBundledMethodProvenance(method);
   const failure = evaluateReceivablesSpecialistPolicy(mode, method, capability);
   if (failure) throw new Error(failure);
   return {method, capability};

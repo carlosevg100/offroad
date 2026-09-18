@@ -46,3 +46,12 @@ describe("recorded deterministic runs behind a maturity rung", () => {
     expect(runCountsForPromotion({...record!, result: "fail"})).toBe(false);
   });
 });
+
+it("binds new run evidence to the compiled manifest while preserving historical R01 records", () => {
+  const record = [...runs.values()][0]!;
+  expect(deterministicRunEvidenceFingerprint(record)).toBe(record.evidenceFingerprint);
+  const pinned = {...record, compiledManifest: {manifestHash: "a".repeat(64), compilerHash: "b".repeat(64), componentHashes: ["c".repeat(64)]}};
+  pinned.evidenceFingerprint = deterministicRunEvidenceFingerprint(pinned);
+  expect(runCountsForPromotion(pinned)).toBe(true);
+  expect(runCountsForPromotion({...pinned, compiledManifest: {...pinned.compiledManifest, manifestHash: "d".repeat(64)}})).toBe(false);
+});

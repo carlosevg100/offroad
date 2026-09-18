@@ -1,13 +1,13 @@
 ---
 id: prepare-capital-structure-decision
-version: 2026.09.14-v1
+version: 2026.09.18-v1
 maturity: candidate
 title_pt: Preparar alternativas de estrutura de capital para uma decisão
 title_en: Prepare capital structure alternatives for a decision
 role: credit_structuring
 blueprint_stage: 6
 owner_role: Autoria profissional da Offroad
-effective_date: 2026-09-14
+effective_date: 2026-09-18
 authorities: [CASA]
 task_specs: []
 dependencies: []
@@ -117,3 +117,109 @@ Proposta de entrega para a decisão: base adotada com definições e fontes, alt
 - Completar fontes profissionais e normativas verificáveis, regras de desenho por finalidade, fórmulas e convenções, critérios de suficiência e sensibilidade, alternativas e exceções relevantes.
 - Especificar a estrutura semântica da comparação e casos de referência com resultado esperado, sem limiares ou números ilustrativos na configuração de produção.
 - Submeter conteúdo ao fundador no marco da Etapa 15; engenharia conecta componentes, manifesto e execução nas etapas aprovadas, sem tratar este esqueleto como autorização de ondas futuras.
+
+# Contrato de componentes
+
+Este bloco tipado fixa somente o enquadramento editorial. As pendências acima impedem
+tratá-lo como procedimento profissional completo. Os limites declarados são do componente
+editorial; a autoria e a engenharia declararão o orçamento dos executores quando existirem.
+
+```offroad-procedure
+{
+  "schemaVersion": "procedure-composition.v1",
+  "authoringStatus": "incomplete",
+  "pendingContent": [
+    "Autoria profissional de regras, fórmulas, convenções e casos de referência.",
+    "Contratos dos cálculos e executores de financial-core.",
+    "Revisão e aprovação humana antes da publicação."
+  ],
+  "budget": {
+    "maxModelCalls": 0,
+    "maxDurationMs": 1000,
+    "maxCostMinorUnits": 0,
+    "currency": "BRL"
+  },
+  "allowedTools": [],
+  "maximumEffect": "none",
+  "components": [
+    {
+      "id": "capital.decision-framing",
+      "version": "2026.09.18-v1",
+      "kind": "narrative",
+      "title": "Enquadramento editorial da decisão",
+      "inputs": {
+        "id": "capital.framing-input",
+        "version": "2026.09.18-v1",
+        "value": {
+          "type": "object",
+          "fields": {
+            "question": {
+              "required": true,
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "outputs": {
+        "id": "capital.framing-output",
+        "version": "2026.09.18-v1",
+        "value": {
+          "type": "object",
+          "fields": {
+            "scope": {
+              "required": true,
+              "value": {
+                "type": "string"
+              }
+            },
+            "gaps": {
+              "required": true,
+              "value": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "dependencies": [],
+      "tools": [],
+      "effect": "none",
+      "budget": {
+        "maxModelCalls": 0,
+        "maxDurationMs": 1000,
+        "maxCostMinorUnits": 0,
+        "currency": "BRL"
+      },
+      "rights": {
+        "inheritSourceRestrictions": true,
+        "purposes": [
+          "decision_support"
+        ],
+        "sourceClasses": [
+          "authorized_context"
+        ]
+      },
+      "competencies": [
+        "capital_structure",
+        "financial_analysis"
+      ],
+      "invariants": [
+        "law",
+        "contractual_definition",
+        "traceability",
+        "verification",
+        "access_barriers",
+        "deterministic_financial_math"
+      ],
+      "overridePoints": [],
+      "evidence": [],
+      "text": "Enquadrar a pergunta e registrar lacunas materiais sem exigir companhia ou intake. Este componente editorial não calcula, não executa ferramentas e não autoriza publicação."
+    }
+  ]
+}
+```

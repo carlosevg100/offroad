@@ -1,3 +1,4 @@
+import {readFileSync} from "node:fs";
 import {join} from "node:path";
 
 import {offroadTaskRegistry} from "@offroad/work-plan";
@@ -50,5 +51,25 @@ describe("method library in markdown", () => {
   it("does not let a task run on a candidate method, whatever its prose says", () => {
     expect(() => assertTaskHasProductionMethod("C05", library.methods)).toThrow(/none is in production/);
     expect(() => assertTaskHasProductionMethod("K09", library.methods)).toThrow(/no method bound/);
+  });
+});
+
+
+describe("authoring scalar safety", () => {
+  const text = readFileSync(join(root, "capital/prepare-capital-structure-decision.md"), "utf8");
+  it("reads explicit false correctly and rejects unknown boolean spellings", () => {
+    expect(compileMethodDocument(text.replace("authorities: [CASA]", "authorities: [CASA]\nlegal_review_required: false"), "test.md").procedure.knowledge.legalReviewRequired).toBe(false);
+    expect(() => compileMethodDocument(text.replace("authorities: [CASA]", "authorities: [CASA]\nlegal_review_required: maybe"), "test.md")).toThrow();
+  });
+  it("rejects duplicate frontmatter keys rather than silently overriding authority", () => {
+    expect(() => compileMethodDocument(text.replace("maturity: candidate", "maturity: candidate\nmaturity: production"), "test.md")).toThrow(/duplicate/);
+  });
+  it("keeps the capital candidate incomplete with no executor, task binding or approval", () => {
+    const parsed = compileMethodDocument(text, "test.md");
+    expect(parsed.composition?.authoringStatus).toBe("incomplete");
+    expect(parsed.composition?.pendingContent.length).toBeGreaterThan(0);
+    expect(parsed.frontmatter.task_specs).toEqual([]);
+    expect(parsed.procedure.implementation).toBeUndefined();
+    expect(parsed.procedure.owner.approvedBy).toBeUndefined();
   });
 });
