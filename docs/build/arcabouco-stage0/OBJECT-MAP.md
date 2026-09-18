@@ -2405,3 +2405,85 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `policy:private.contribution_source_dependencies.contribution_sources_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
 - `trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
 - `trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+
+## Atualização da etapa 12, 18/09/2026
+
+77 superfícies novas conferidas nos dois ambientes. Publicação, candidatos legados e direitos de uso integram a autoridade vigente; migração não constitui aprovação humana.
+
+- `function:private.can_read_vault_entry_v1(p_org uuid, p_entry uuid)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.can_read_vault_scope_v1(p_org uuid)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.can_read_vault_version_v1(p_org uuid, p_version uuid)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.guard_vault_identity_v1()`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.list_vault_publication_receipts_v1(p_offset integer)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.pin_vault_dependencies_v1(p_org uuid, p_version uuid)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.register_vault_resource_v1()`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.require_vault_actor_v1()`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.search_vault_v1(p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.seed_vault_scope_v1()`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.vault_reader_org_v1()`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.vault_reference_allowed_v1(p_org uuid, p_version uuid, p_purpose text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:private.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.list_vault_entries_v1(p_search text, p_offset integer, p_mode text, p_purpose text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.list_vault_publication_receipts_v1(p_offset integer)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.search_vault_for_work_v1(p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `function:public.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:private.vault_source_dependencies.vault_dependencies_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:private.vault_source_dependencies.vault_dependencies_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:private.vault_source_dependencies.vault_dependencies_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:private.vault_source_dependencies.vault_dependencies_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entries.vault_entries_deny_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entries.vault_entries_deny_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entries.vault_entries_deny_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entries.vault_entries_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entry_versions.vault_entry_versions_deny_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entry_versions.vault_entry_versions_deny_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entry_versions.vault_entry_versions_deny_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_entry_versions.vault_entry_versions_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publication_requests.vault_publication_requests_deny_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publication_requests.vault_publication_requests_deny_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publication_requests.vault_publication_requests_deny_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publication_requests.vault_publication_requests_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publications.vault_publications_deny_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publications.vault_publications_deny_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publications.vault_publications_deny_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_publications.vault_publications_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_scopes.vault_scopes_deny_delete`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_scopes.vault_scopes_deny_insert`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_scopes.vault_scopes_deny_update`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `policy:public.vault_scopes.vault_scopes_select`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:private.vault_source_dependencies`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:public.vault_entries`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:public.vault_entry_versions`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:public.vault_publication_requests`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:public.vault_publications`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `r:public.vault_scopes`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:private.vault_source_dependencies.vault_dependencies_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:private.vault_source_dependencies.vault_dependencies_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:private.vault_source_dependencies.vault_dependency_immutable`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.organizations.organizations_vault_scope`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entries.vault_entries_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entries.vault_entries_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entries.vault_entry_identity`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entries.vault_entry_resource`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entry_versions.vault_entry_versions_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entry_versions.vault_entry_versions_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_entry_versions.vault_version_immutable`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publication_requests.vault_publication_requests_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publication_requests.vault_publication_requests_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publication_requests.vault_request_immutable`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publications.vault_publication_history`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publications.vault_publications_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_publications.vault_publications_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_scopes.vault_scope_immutable`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_scopes.vault_scope_resource`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_scopes.vault_scopes_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+- `trigger:public.vault_scopes.vault_scopes_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.

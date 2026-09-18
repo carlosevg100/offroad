@@ -22,6 +22,7 @@ export type WorkspaceRailCopy = WorkspaceNavigationCopy & {
   newChat: string;
   overview: string;
   publicCapitalMarket: string;
+  vault: string;
   recent: string;
   folders: string;
   fundsAndMandates: string;
@@ -214,6 +215,7 @@ export function WorkspaceRail(props: Props) {
           href={`/${locale}/app`}
           title={copy.overview}
         ><CircleGauge aria-hidden="true" size={15} /><span>{copy.overview}</span></Link>
+        <Link aria-current={pathname.includes("/app/vault") ? "page" : undefined} className="app-rail__row" href={`/${locale}/app/vault`} title={copy.vault}><Landmark aria-hidden="true" size={15} /><span>{copy.vault}</span></Link>
         <Link aria-current={pathname.includes("/app/market") ? "page" : undefined} className="app-rail__row" href={`/${locale}/app/market`} title={copy.publicCapitalMarket}><Landmark aria-hidden="true" size={15} /><span>{copy.publicCapitalMarket}</span></Link>
         {props.mandatesHref ? (
           <Link aria-current={pathname.includes("/app/mandates") ? "page" : undefined} className="app-rail__row" data-testid="rail-mandates" href={props.mandatesHref} title={copy.fundsAndMandates}><Target aria-hidden="true" size={15} /><span>{copy.fundsAndMandates}</span></Link>

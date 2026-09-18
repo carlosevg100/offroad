@@ -30,6 +30,7 @@ export function selectClientMessages(messages: Messages) {
     MandateRegistry: messages.MandateRegistry,
     WorkContext: messages.WorkContext,
     WorkContributions: messages.WorkContributions,
+    Vault: messages.Vault,
 
   };
 }

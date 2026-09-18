@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-18T01:06:42.809Z",
+  "captured_at": "2026-09-18T11:15:20.334Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1437,6 +1437,26 @@
     {
       "version": "20260918010531",
       "name": "work_contribution_dependency_audit"
+    },
+    {
+      "version": "20260918102152",
+      "name": "human_vault_publication"
+    },
+    {
+      "version": "20260918102750",
+      "name": "vault_export_authority"
+    },
+    {
+      "version": "20260918104550",
+      "name": "vault_legacy_publication_evidence"
+    },
+    {
+      "version": "20260918105110",
+      "name": "vault_publication_receipts"
+    },
+    {
+      "version": "20260918111340",
+      "name": "vault_legacy_worker_grants"
     }
   ]
 }

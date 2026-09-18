@@ -1,3 +1,4 @@
+import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {WorkParticipationPanel} from "@/components/advisor/work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
@@ -716,8 +717,11 @@ async function ConversationalCapitalProject({
       content: <PresentationTemplateSettings context={templateContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
   }
 
+  const vaultCopy = await getTranslations({locale, namespace: "Vault"});
   const contributionCopy = await getTranslations({locale, namespace: "WorkContributions"});
   workSections.push({id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />});
+
+  workSections.push({id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />});
 
   return <AdvisorProject
     currentUserId={userId}

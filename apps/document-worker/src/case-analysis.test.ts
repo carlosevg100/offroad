@@ -1101,6 +1101,27 @@ describe("worker case analysis", () => {
     });
     expect(completed).not.toHaveProperty("match_details");
 
+    // Migration-only house content is no longer published. Independent calculations
+    // survive, while model writing remains blocked and records the missing authority.
+    modelCalls.length = 0;
+    recordedState = null;
+    const withoutPublishedHouse = await processCaseAnalysisJob(job, {
+      queue: {...queue,
+        loadRetrievalContext: async () => ({playbook_version: null, results: [], abstained: true}),
+      },
+      gateway,
+      lineage: () => [],
+      researchProviders: [],
+      now: () => new Date("2026-08-24T13:00:00.000Z"),
+    });
+    expect(withoutPublishedHouse).toEqual({status: "succeeded", manifestId: "manifest-1"});
+    expect(modelCalls).toEqual([]);
+    expect(recordedState).toMatchObject({
+      receivables: {caseId: "worker-receivables-case"},
+      brief: null,
+      briefBlockedBy: expect.arrayContaining(["playbook_context_unavailable"]),
+    });
+
     // Exercise the explicitly authorized documentary executor through the case runner.
     // The fixture gateway supplies model responses only; snapshots still come from the worker.
     const documentRequest = {

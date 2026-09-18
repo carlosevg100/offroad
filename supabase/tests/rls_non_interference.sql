@@ -1513,12 +1513,12 @@ begin
     null,
     20
   );
-  if retrieval->>'playbook_version' <> '2026.08.24-v2'
+  if retrieval->>'playbook_version' is not null
     or not exists (
       select 1 from jsonb_array_elements(retrieval->'results') entry
       where entry->>'source' = 'case'
     )
-    or not exists (
+    or exists (
       select 1 from jsonb_array_elements(retrieval->'results') entry
       where entry->>'source' = 'house_playbook'
     )
@@ -1526,7 +1526,7 @@ begin
       select 1 from jsonb_array_elements(retrieval->'results') entry
       where entry->>'source' = 'mandate_note'
     ) then
-    raise exception 'governed retrieval did not return the scoped case, approved playbook and allowed note: %', retrieval;
+    raise exception 'governed retrieval lost scoped case/note or treated migration-only legacy as human publication: %', retrieval;
   end if;
 
   retrieval := public.worker_load_retrieval_context(
@@ -5701,6 +5701,20 @@ do $$ declare relation text; begin
  if not exists(select 1 from pg_policy where polrelid='public.agent_messages'::regclass and polname='agent_messages_channel_boundary' and not polpermissive)
  or not exists(select 1 from pg_policy where polrelid='public.agent_conversations'::regclass and polname='agent_conversations_channel_boundary' and not polpermissive)
  then raise exception 'Conversation channel boundary missing';end if;
+end $$;
+
+-- Stage 12: publication remains an authenticated human command, never a direct write.
+do $$ declare relation text; begin
+ foreach relation in array array['vault_scopes','vault_entries','vault_entry_versions','vault_publication_requests','vault_publications'] loop
+  if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=relation and c.relrowsecurity and c.relforcerowsecurity)
+  or has_table_privilege('anon','public.'||relation,'SELECT,INSERT,UPDATE,DELETE')
+  or has_table_privilege('authenticated','public.'||relation,'INSERT,UPDATE,DELETE')
+  or has_table_privilege('service_role','public.'||relation,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'Vault isolation missing: %',relation;end if;
+ end loop;
+ if has_function_privilege('service_role','public.publish_vault_entry_v1(uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('anon','public.publish_vault_entry_v1(uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('service_role','private.publish_vault_entry_v1(uuid,uuid,text)','EXECUTE')
+ or has_table_privilege('authenticated','private.vault_source_dependencies','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Vault publication authority exposed';end if;
 end $$;
 
 select 'rls_non_interference_passed' as result;

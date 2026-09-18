@@ -1509,6 +1509,75 @@
       "security_definer": true
     },
     {
+      "id": "function:private.can_read_vault_entry_v1(p_org uuid, p_entry uuid)",
+      "kind": "function",
+      "name": "can_read_vault_entry_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_entry uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_vault_scope_v1(p_org uuid)",
+      "kind": "function",
+      "name": "can_read_vault_scope_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.can_read_vault_version_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "can_read_vault_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.can_read_work_channel_v1(p_org uuid, p_channel uuid)",
       "kind": "function",
       "name": "can_read_work_channel_v1",
@@ -1973,6 +2042,24 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
+      "kind": "function",
+      "name": "collect_vault_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[]",
       "security_definer": true
     },
     {
@@ -3538,6 +3625,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_vault_identity_v1()",
+      "kind": "function",
+      "name": "guard_vault_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.handle_new_user()",
       "kind": "function",
       "name": "handle_new_user",
@@ -4454,6 +4559,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "name": "list_vault_people_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_search text, p_offset integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.list_vault_publication_receipts_v1(p_offset integer)",
+      "kind": "function",
+      "name": "list_vault_publication_receipts_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_offset integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
       "kind": "function",
       "name": "list_work_observations_v1",
@@ -4864,6 +5015,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.pin_vault_dependencies_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "pin_vault_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "name": "policy_admin_context_v1",
@@ -5169,6 +5338,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+      "kind": "function",
+      "name": "propose_vault_publication_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.protect_institutional_binding_v1()",
       "kind": "function",
       "name": "protect_institutional_binding_v1",
@@ -5411,6 +5603,29 @@
       ],
       "signature": "p_source jsonb",
       "security_definer": false
+    },
+    {
+      "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+      "kind": "function",
+      "name": "publish_vault_entry_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
+      "security_definer": true
     },
     {
       "id": "function:private.queue_advisor_initial_turn_v1(p_project_id uuid)",
@@ -6945,6 +7160,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.register_vault_resource_v1()",
+      "kind": "function",
+      "name": "register_vault_resource_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.reject_assumption_mutation_v1()",
       "kind": "function",
       "name": "reject_assumption_mutation_v1",
@@ -7409,6 +7642,24 @@
         "search_path=\"\""
       ],
       "signature": "p_resource_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_vault_actor_v1()",
+      "kind": "function",
+      "name": "require_vault_actor_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -8080,6 +8331,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.search_vault_v1(p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text)",
+      "kind": "function",
+      "name": "search_vault_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_search text, p_offset integer, p_mode text, p_purpose text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.seed_resource_authority_v1(p_organization_id uuid, p_resource_id uuid, p_creator_id uuid)",
       "kind": "function",
       "name": "seed_resource_authority_v1",
@@ -8095,6 +8369,24 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_resource_id uuid, p_creator_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.seed_vault_scope_v1()",
+      "kind": "function",
+      "name": "seed_vault_scope_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -9369,6 +9661,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+      "kind": "function",
+      "name": "submit_vault_entry_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+      "security_definer": true
+    },
+    {
       "id": "function:private.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
       "kind": "function",
       "name": "submit_work_contribution_v1",
@@ -9790,6 +10105,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.vault_reader_org_v1()",
+      "kind": "function",
+      "name": "vault_reader_org_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.vault_reference_allowed_v1(p_org uuid, p_version uuid, p_purpose text)",
+      "kind": "function",
+      "name": "vault_reference_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid, p_purpose text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.verify_advisor_authorization_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text)",
       "kind": "function",
       "name": "verify_advisor_authorization_command",
@@ -9879,6 +10230,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_mandate_id uuid, p_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "withdraw_vault_publication_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_publication_id uuid, p_reason text",
       "security_definer": true
     },
     {
@@ -14657,6 +15031,75 @@
       "security_definer": false
     },
     {
+      "id": "function:public.list_vault_entries_v1(p_search text, p_offset integer, p_mode text, p_purpose text)",
+      "kind": "function",
+      "name": "list_vault_entries_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_search text, p_offset integer, p_mode text, p_purpose text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.list_vault_people_v1(p_resource_id uuid, p_search text, p_offset integer)",
+      "kind": "function",
+      "name": "list_vault_people_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_resource_id uuid, p_search text, p_offset integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.list_vault_publication_receipts_v1(p_offset integer)",
+      "kind": "function",
+      "name": "list_vault_publication_receipts_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_offset integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
       "kind": "function",
       "name": "list_work_observations_v1",
@@ -14960,6 +15403,52 @@
         "search_path=\"\""
       ],
       "signature": "p_payload jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.propose_vault_publication_v1(p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text)",
+      "kind": "function",
+      "name": "propose_vault_publication_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_version_id uuid, p_version_fingerprint text, p_expected_publication_id uuid, p_work_scope_id uuid, p_purpose text, p_reason text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
+      "kind": "function",
+      "name": "publish_vault_entry_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text",
       "security_definer": false
     },
     {
@@ -17118,6 +17607,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.search_vault_for_work_v1(p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text)",
+      "kind": "function",
+      "name": "search_vault_for_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_search text, p_offset integer, p_include_candidates boolean, p_purpose text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.set_access_group_member_v1(p_group_id uuid, p_user_id uuid, p_enabled boolean, p_expires_at timestamp with time zone)",
       "kind": "function",
       "name": "set_access_group_member_v1",
@@ -18290,6 +18802,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
+      "kind": "function",
+      "name": "submit_vault_entry_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[]",
+      "security_definer": false
+    },
+    {
       "id": "function:public.submit_work_contribution_v1(p_work_id uuid, p_contribution_id uuid, p_revision_id uuid, p_expected_revision_id uuid, p_base_revision_id uuid, p_content text, p_source_version_ids uuid[])",
       "kind": "function",
       "name": "submit_work_contribution_v1",
@@ -18463,6 +18998,29 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_mandate_id uuid, p_note text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.withdraw_vault_publication_v1(p_publication_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "withdraw_vault_publication_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_publication_id uuid, p_reason text",
       "security_definer": false
     },
     {
@@ -22572,6 +23130,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_delete",
+      "kind": "policy",
+      "name": "vault_dependencies_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_insert",
+      "kind": "policy",
+      "name": "vault_dependencies_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_select",
+      "kind": "policy",
+      "name": "vault_dependencies_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.vault_source_dependencies.vault_dependencies_update",
+      "kind": "policy",
+      "name": "vault_dependencies_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
       "kind": "policy",
       "name": "workspace_capability_grants_deny_clients",
@@ -26526,6 +27140,286 @@
       "with_check": "false"
     },
     {
+      "id": "policy:public.vault_entries.vault_entries_deny_delete",
+      "kind": "policy",
+      "name": "vault_entries_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entries",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_deny_insert",
+      "kind": "policy",
+      "name": "vault_entries_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entries",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_deny_update",
+      "kind": "policy",
+      "name": "vault_entries_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entries",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_entries.vault_entries_select",
+      "kind": "policy",
+      "name": "vault_entries_select",
+      "qual": "private.can_read_vault_entry_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entries",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_delete",
+      "kind": "policy",
+      "name": "vault_entry_versions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_insert",
+      "kind": "policy",
+      "name": "vault_entry_versions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_deny_update",
+      "kind": "policy",
+      "name": "vault_entry_versions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_entry_versions.vault_entry_versions_select",
+      "kind": "policy",
+      "name": "vault_entry_versions_select",
+      "qual": "private.can_read_vault_version_v1(organization_id, id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_delete",
+      "kind": "policy",
+      "name": "vault_publication_requests_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_insert",
+      "kind": "policy",
+      "name": "vault_publication_requests_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_deny_update",
+      "kind": "policy",
+      "name": "vault_publication_requests_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_publication_requests.vault_publication_requests_select",
+      "kind": "policy",
+      "name": "vault_publication_requests_select",
+      "qual": "private.can_read_vault_version_v1(organization_id, version_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_delete",
+      "kind": "policy",
+      "name": "vault_publications_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publications",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_insert",
+      "kind": "policy",
+      "name": "vault_publications_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publications",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_deny_update",
+      "kind": "policy",
+      "name": "vault_publications_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publications",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_publications.vault_publications_select",
+      "kind": "policy",
+      "name": "vault_publications_select",
+      "qual": "private.can_read_vault_entry_v1(organization_id, entry_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_publications",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_delete",
+      "kind": "policy",
+      "name": "vault_scopes_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_scopes",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_insert",
+      "kind": "policy",
+      "name": "vault_scopes_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_scopes",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_deny_update",
+      "kind": "policy",
+      "name": "vault_scopes_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_scopes",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.vault_scopes.vault_scopes_select",
+      "kind": "policy",
+      "name": "vault_scopes_select",
+      "qual": "private.can_read_vault_scope_v1(organization_id)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "vault_scopes",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.work_channels.work_channels_deny_delete",
       "kind": "policy",
       "name": "work_channels_deny_delete",
@@ -29802,6 +30696,56 @@
       "rls": true,
       "kind": "table",
       "name": "storage_path_rotations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.vault_source_dependencies",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_source_dependencies",
       "grants": [
         [
           "postgres",
@@ -36217,46 +37161,6 @@
           "authenticated",
           "SELECT",
           false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
-          false
         ]
       ],
       "schema": "public",
@@ -36311,46 +37215,6 @@
         [
           "authenticated",
           "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "DELETE",
-          false
-        ],
-        [
-          "service_role",
-          "INSERT",
-          false
-        ],
-        [
-          "service_role",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "service_role",
-          "REFERENCES",
-          false
-        ],
-        [
-          "service_role",
-          "SELECT",
-          false
-        ],
-        [
-          "service_role",
-          "TRIGGER",
-          false
-        ],
-        [
-          "service_role",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "service_role",
-          "UPDATE",
           false
         ]
       ],
@@ -42993,6 +43857,281 @@
       "force_rls": true
     },
     {
+      "id": "r:public.vault_entries",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_entries",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.vault_entry_versions",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_entry_versions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.vault_publication_requests",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_publication_requests",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.vault_publications",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_publications",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.vault_scopes",
+      "rls": true,
+      "kind": "table",
+      "name": "vault_scopes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.work_channels",
       "rls": true,
       "kind": "table",
@@ -44146,6 +45285,36 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER storage_path_rotations_updated_at BEFORE UPDATE ON private.storage_path_rotations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependencies_audit",
+      "kind": "trigger",
+      "name": "vault_dependencies_audit",
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependencies_updated",
+      "kind": "trigger",
+      "name": "vault_dependencies_updated",
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_dependencies_updated BEFORE UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.vault_source_dependencies.vault_dependency_immutable",
+      "kind": "trigger",
+      "name": "vault_dependency_immutable",
+      "table": "vault_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER vault_dependency_immutable BEFORE DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
@@ -46068,6 +47237,16 @@
       "definition": "CREATE TRIGGER organizations_set_updated_at BEFORE UPDATE ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.organizations.organizations_vault_scope",
+      "kind": "trigger",
+      "name": "organizations_vault_scope",
+      "table": "organizations",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.seed_vault_scope_v1()",
+      "definition": "CREATE TRIGGER organizations_vault_scope AFTER INSERT ON public.organizations FOR EACH ROW EXECUTE FUNCTION private.seed_vault_scope_v1()"
+    },
+    {
       "id": "trigger:public.organizations.organizations_workspace_foundation",
       "kind": "trigger",
       "name": "organizations_workspace_foundation",
@@ -46968,6 +48147,176 @@
       "definition": "CREATE TRIGGER user_workspace_preferences_updated_at BEFORE UPDATE ON public.user_workspace_preferences FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.vault_entries.vault_entries_audit",
+      "kind": "trigger",
+      "name": "vault_entries_audit",
+      "table": "vault_entries",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_entries_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entries_updated",
+      "kind": "trigger",
+      "name": "vault_entries_updated",
+      "table": "vault_entries",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_entries_updated BEFORE UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entry_identity",
+      "kind": "trigger",
+      "name": "vault_entry_identity",
+      "table": "vault_entries",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_vault_identity_v1()",
+      "definition": "CREATE TRIGGER vault_entry_identity BEFORE DELETE OR UPDATE ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+    },
+    {
+      "id": "trigger:public.vault_entries.vault_entry_resource",
+      "kind": "trigger",
+      "name": "vault_entry_resource",
+      "table": "vault_entries",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_vault_resource_v1()",
+      "definition": "CREATE TRIGGER vault_entry_resource AFTER INSERT ON public.vault_entries FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_entry_versions_audit",
+      "kind": "trigger",
+      "name": "vault_entry_versions_audit",
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_entry_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_entry_versions_updated",
+      "kind": "trigger",
+      "name": "vault_entry_versions_updated",
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_entry_versions_updated BEFORE UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.vault_entry_versions.vault_version_immutable",
+      "kind": "trigger",
+      "name": "vault_version_immutable",
+      "table": "vault_entry_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER vault_version_immutable BEFORE DELETE OR UPDATE ON public.vault_entry_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_publication_requests_audit",
+      "kind": "trigger",
+      "name": "vault_publication_requests_audit",
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_publication_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_publication_requests_updated",
+      "kind": "trigger",
+      "name": "vault_publication_requests_updated",
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_publication_requests_updated BEFORE UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.vault_publication_requests.vault_request_immutable",
+      "kind": "trigger",
+      "name": "vault_request_immutable",
+      "table": "vault_publication_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER vault_request_immutable BEFORE DELETE OR UPDATE ON public.vault_publication_requests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publication_history",
+      "kind": "trigger",
+      "name": "vault_publication_history",
+      "table": "vault_publications",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_vault_identity_v1()",
+      "definition": "CREATE TRIGGER vault_publication_history BEFORE DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publications_audit",
+      "kind": "trigger",
+      "name": "vault_publications_audit",
+      "table": "vault_publications",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_publications_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.vault_publications.vault_publications_updated",
+      "kind": "trigger",
+      "name": "vault_publications_updated",
+      "table": "vault_publications",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_publications_updated BEFORE UPDATE ON public.vault_publications FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scope_immutable",
+      "kind": "trigger",
+      "name": "vault_scope_immutable",
+      "table": "vault_scopes",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_vault_identity_v1()",
+      "definition": "CREATE TRIGGER vault_scope_immutable BEFORE DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.guard_vault_identity_v1()"
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scope_resource",
+      "kind": "trigger",
+      "name": "vault_scope_resource",
+      "table": "vault_scopes",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.register_vault_resource_v1()",
+      "definition": "CREATE TRIGGER vault_scope_resource AFTER INSERT ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.register_vault_resource_v1()"
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scopes_audit",
+      "kind": "trigger",
+      "name": "vault_scopes_audit",
+      "table": "vault_scopes",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER vault_scopes_audit AFTER INSERT OR DELETE OR UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.vault_scopes.vault_scopes_updated",
+      "kind": "trigger",
+      "name": "vault_scopes_updated",
+      "table": "vault_scopes",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER vault_scopes_updated BEFORE UPDATE ON public.vault_scopes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.work_channels.work_channels_audit",
       "kind": "trigger",
       "name": "work_channels_audit",
@@ -47503,5 +48852,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-18T01:06:39.346544+00:00"
+  "captured_at": "2026-09-18T11:15:22.624206+00:00"
 }
