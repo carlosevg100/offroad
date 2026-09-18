@@ -60,11 +60,13 @@ test("human vault publication requires designation, exact review and preserves w
     await expect(b.locator("article")).toHaveCount(0);
     await card.getByRole("button",{name:"Revisar publicação",exact:true}).click();
     const confirm = page.getByRole("button",{name:"Confirmar publicação",exact:true});
+    await expect(page.getByLabel("Fundamento da publicação",{exact:true})).toHaveValue("Synthetic review approved for analysis");
     await expect(confirm).toBeDisabled();
     await page.getByRole("checkbox",{name:"Revisei esta versão, a finalidade e o alcance e autorizo sua publicação."}).check();
     await test.info().attach("vault-review-desktop",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
     await page.setViewportSize({width:390,height:844});
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect.poll(() => page.locator(".vault-page").evaluate(element => element.getBoundingClientRect().width)).toBeGreaterThan(300);
     await test.info().attach("vault-review-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
     await page.setViewportSize({width:1440,height:1000});
     await confirm.click();
@@ -73,6 +75,7 @@ test("human vault publication requires designation, exact review and preserves w
     await expect(b.locator("article").filter({hasText:`Synthetic vault ${id}`})).toBeVisible();
     await expect(b.getByRole("button",{name:"Retirar publicação",exact:true})).toHaveCount(0);
     await card.getByRole("button",{name:"Criar nova versão",exact:true}).click();
+    await expect(page.getByLabel("Conteúdo",{exact:true})).toHaveValue(`Synthetic reviewed direction ${id}`);
     await page.getByLabel("Conteúdo",{exact:true}).fill(`Synthetic new candidate ${id}`);
     await page.getByRole("button",{name:"Salvar candidato",exact:true}).click();
     await expect(card).toContainText(`Synthetic new candidate ${id}`);

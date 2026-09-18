@@ -98,6 +98,7 @@ function VaultEditor({locale,row,onClose,onSaved}: {locale: string; row: VaultRo
   </section>;
 }
 function VaultReview({locale,row,workId,onClose,onSaved}: {locale: string; row: VaultRow; workId: string | null; onClose: () => void; onSaved: () => void}) {
+  const reasonId = useId();
   const t = useTranslations("Vault"); const [purpose,setPurpose] = useState<Purpose>(row.purpose ?? "analysis");
   const [scope,setScope] = useState<Reference | null>(row.work_scope_id || workId ? {id:(row.work_scope_id ?? workId)!,title:row.work_scope_id ?? workId!,revision:null} : null);
   const [reason,setReason] = useState(row.reason ?? ""); const [confirmed,setConfirmed] = useState(false); const [status,setStatus] = useState(""); const [pending,start] = useTransition();
@@ -113,7 +114,7 @@ function VaultReview({locale,row,workId,onClose,onSaved}: {locale: string; row: 
     <label>{t("purpose")}<select value={purpose} onChange={e => {setPurpose(e.target.value as Purpose);setConfirmed(false);}}>{(["analysis","retrieval","export"] as const).map(p => <option key={p} value={p}>{t(`purposes.${p}`)}</option>)}</select></label>
     <p>{scope ? t("selected",{name:scope.title}) : t("organizationScope")}</p><VaultReferencePicker locale={locale} kind="work" onSelect={r => {setScope(r);setConfirmed(false);}} />
     <button type="button" onClick={() => {setScope(null);setConfirmed(false);}}>{t("organizationScope")}</button>
-    <label>{t("reason")}<textarea minLength={5} maxLength={2000} value={reason} onChange={e => {setReason(e.target.value);setConfirmed(false);}} /></label>
+    <label htmlFor={reasonId}>{t("reason")}</label><textarea id={reasonId} minLength={5} maxLength={2000} value={reason} onChange={e => {setReason(e.target.value);setConfirmed(false);}} />
     <p>{t("reviewNotice")}</p>{status && <p role="alert">{status}</p>}
     <div className="vault-toolbar"><button disabled={pending || reason.trim().length < 5} onClick={() => start(async () => {try {
       const result = await proposeVaultPublication({locale,requestId:ids.request,versionId:row.version_id,fingerprint:row.content_fingerprint,expectedPublicationId:row.publication_id,workScopeId:scope?.id ?? null,purpose,reason});
