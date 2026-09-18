@@ -21067,16 +21067,58 @@
       "with_check": "false"
     },
     {
-      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_delete",
       "kind": "policy",
-      "name": "contribution_sources_deny",
+      "name": "contribution_sources_deny_delete",
       "qual": "false",
       "roles": [
         "authenticated"
       ],
       "table": "contribution_source_dependencies",
       "schema": "private",
-      "command": "ALL",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_insert",
+      "kind": "policy",
+      "name": "contribution_sources_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_select",
+      "kind": "policy",
+      "name": "contribution_sources_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_update",
+      "kind": "policy",
+      "name": "contribution_sources_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "false"
     },
@@ -42071,6 +42113,26 @@
       "definition": "CREATE TRIGGER contribution_dependency_immutable BEFORE DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
+      "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit",
+      "kind": "trigger",
+      "name": "contribution_source_dependencies_audit",
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER contribution_source_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated",
+      "kind": "trigger",
+      "name": "contribution_source_dependencies_updated",
+      "table": "contribution_source_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER contribution_source_dependencies_updated BEFORE UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.domain_events.domain_events_immutable",
       "kind": "trigger",
       "name": "domain_events_immutable",
@@ -45716,5 +45778,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-18T00:24:21.61153+00:00"
+  "captured_at": "2026-09-18T01:06:35.781307+00:00"
 }

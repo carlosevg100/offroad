@@ -2394,3 +2394,14 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:public.work_contributions.work_contributions_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
 - `trigger:public.work_participants.work_participants_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
 - `trigger:public.work_participants.work_participants_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+
+## Atualização da etapa 11, 17/09/2026
+
+6 superfícies novas conferidas nos dois ambientes. Dependências imutáveis ganham identidade própria para auditoria sem conteúdo e políticas por comando.
+
+- `policy:private.contribution_source_dependencies.contribution_sources_deny_delete`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:private.contribution_source_dependencies.contribution_sources_deny_insert`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:private.contribution_source_dependencies.contribution_sources_deny_select`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `policy:private.contribution_source_dependencies.contribution_sources_deny_update`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.
+- `trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated`: preservar, etapa 11; Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.

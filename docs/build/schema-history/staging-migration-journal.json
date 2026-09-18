@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-18T00:24:28.252Z",
+  "captured_at": "2026-09-18T01:06:42.809Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1433,6 +1433,10 @@
     {
       "version": "20260918001427",
       "name": "work_contribution_history_indexes"
+    },
+    {
+      "version": "20260918010531",
+      "name": "work_contribution_dependency_audit"
     }
   ]
 }

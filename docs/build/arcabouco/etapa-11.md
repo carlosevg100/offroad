@@ -54,9 +54,11 @@ reexecutado para provar herança ao reapresentar candidata sobre base irrestrita
 passou. A CI e a implantação web/worker ainda são gates de fechamento, não presumidos.
 
 As migrações `work_contributions_and_channels`, `work_contribution_command_integrity` e
-`work_contribution_history_indexes` estão nos dois ambientes. Carimbos de produção:
-`20260918002400`, `20260918002404`, `20260918002407`; staging: `20260917235306`,
-`20260918000139`, `20260918001427`. Os textos nos journals são idênticos por nome e as
+`work_contribution_history_indexes` estão nos dois ambientes. A migração adicional
+`work_contribution_dependency_audit` completa identidade, atualização e auditoria de cada vínculo
+sem expor conteúdo e desdobra a negação em quatro políticas explícitas por comando. Carimbos de produção:
+`20260918002400`, `20260918002404`, `20260918002407`, `20260918010613`; staging:
+`20260917235306`, `20260918000139`, `20260918001427`, `20260918010531`. Os textos nos journals são idênticos por nome e as
 16 funções têm definição idêntica. Tipos foram gerados de produção. Os dois verificadores
 de inventário/histórico passaram, incluindo 18 e 5 regressões dos próprios verificadores.
 Segurança: zero alertas nos dois ambientes. Verificação sem identidade em produção negou

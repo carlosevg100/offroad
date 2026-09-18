@@ -14880,15 +14880,21 @@
         }
       },
       "owner": "Codex, etapa 11",
-      "decision": "preservar",
+      "decision": "refatorar",
       "stage": "11",
-      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
       "sources": [
         {
           "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
           "line": 186,
           "anchor": "create function private.pin_contribution_sources_v1(p_org uuid,p_revision uuid,p_sources uuid[],p_parent uuid,p_base uuid) returns void",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 17,
+          "anchor": " select pg_get_functiondef('private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid)'::regprocedure) into body;",
+          "mechanism": "bounded_function_patch"
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
@@ -65254,32 +65260,97 @@
     {
       "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
       "kind": "policy",
+      "catalogues": {},
+      "owner": "Codex, etapa 11",
+      "decision": "substituir",
+      "stage": "11",
+      "reason": "Substituída por quatro políticas explícitas de negação, uma por comando.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
+          "line": 66,
+          "anchor": "create policy contribution_sources_deny on private.contribution_source_dependencies for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_delete",
+      "kind": "policy",
       "catalogues": {
         "production": {
-          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_delete",
           "kind": "policy",
-          "name": "contribution_sources_deny",
+          "name": "contribution_sources_deny_delete",
           "qual": "false",
           "roles": [
             "authenticated"
           ],
           "table": "contribution_source_dependencies",
           "schema": "private",
-          "command": "ALL",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_delete",
+          "kind": "policy",
+          "name": "contribution_sources_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 15,
+          "anchor": "create policy contribution_sources_deny_delete on private.contribution_source_dependencies for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_insert",
+          "kind": "policy",
+          "name": "contribution_sources_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "INSERT",
           "permissive": "PERMISSIVE",
           "with_check": "false"
         },
         "staging": {
-          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny",
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_insert",
           "kind": "policy",
-          "name": "contribution_sources_deny",
-          "qual": "false",
+          "name": "contribution_sources_deny_insert",
+          "qual": null,
           "roles": [
             "authenticated"
           ],
           "table": "contribution_source_dependencies",
           "schema": "private",
-          "command": "ALL",
+          "command": "INSERT",
           "permissive": "PERMISSIVE",
           "with_check": "false"
         }
@@ -65287,12 +65358,106 @@
       "owner": "Codex, etapa 11",
       "decision": "preservar",
       "stage": "11",
-      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
       "sources": [
         {
-          "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
-          "line": 66,
-          "anchor": "create policy contribution_sources_deny on private.contribution_source_dependencies for all to authenticated using(false) with check(false);",
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 13,
+          "anchor": "create policy contribution_sources_deny_insert on private.contribution_source_dependencies for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_select",
+          "kind": "policy",
+          "name": "contribution_sources_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_select",
+          "kind": "policy",
+          "name": "contribution_sources_deny_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 12,
+          "anchor": "create policy contribution_sources_deny_select on private.contribution_source_dependencies for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_update",
+          "kind": "policy",
+          "name": "contribution_sources_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.contribution_source_dependencies.contribution_sources_deny_update",
+          "kind": "policy",
+          "name": "contribution_sources_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 14,
+          "anchor": "create policy contribution_sources_deny_update on private.contribution_source_dependencies for update to authenticated using(false) with check(false);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -85444,14 +85609,20 @@
         }
       },
       "owner": "Codex, etapa 11",
-      "decision": "preservar",
+      "decision": "refatorar",
       "stage": "11",
-      "reason": "Participação por grants canônicos, canais pessoais revogáveis e contribuições imutáveis com direitos herdados.",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
       "sources": [
         {
           "path": "supabase/migrations/20260918002400_work_contributions_and_channels.sql",
           "line": 54,
           "anchor": "create table private.contribution_source_dependencies (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 3,
+          "anchor": "alter table private.contribution_source_dependencies",
           "mechanism": "direct_ddl"
         }
       ],
@@ -120480,6 +120651,84 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit",
+          "kind": "trigger",
+          "name": "contribution_source_dependencies_audit",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER contribution_source_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_audit",
+          "kind": "trigger",
+          "name": "contribution_source_dependencies_audit",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER contribution_source_dependencies_audit AFTER INSERT OR DELETE OR UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 9,
+          "anchor": "create trigger contribution_source_dependencies_audit after insert or update or delete on private.contribution_source_dependencies",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated",
+          "kind": "trigger",
+          "name": "contribution_source_dependencies_updated",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER contribution_source_dependencies_updated BEFORE UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.contribution_source_dependencies.contribution_source_dependencies_updated",
+          "kind": "trigger",
+          "name": "contribution_source_dependencies_updated",
+          "table": "contribution_source_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER contribution_source_dependencies_updated BEFORE UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 11",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "Identidade auditável sem conteúdo para dependências imutáveis; comandos preservam herança e políticas negam acesso direto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+          "line": 7,
+          "anchor": "create trigger contribution_source_dependencies_updated before update on private.contribution_source_dependencies",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:private.domain_events.domain_events_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -140931,6 +141180,13 @@
       "decision": "preservar",
       "stage": "11",
       "reason": "Comandos de participação e revisão com identidade derivada do workspace e autorização no banco."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260918010613_work_contribution_dependency_audit.sql",
+      "decision": "preservar",
+      "stage": "11",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
     }
   ],
   "staging_archive": [
@@ -141492,6 +141748,13 @@
       "20260918002407"
     ],
     "new_objects": 52,
+    "review": "docs/build/arcabouco/etapa-11.md"
+  },
+  "stage_11_dependency_audit_revision": {
+    "production_migrations": [
+      "20260918010613"
+    ],
+    "new_objects": 6,
     "review": "docs/build/arcabouco/etapa-11.md"
   }
 }
