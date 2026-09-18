@@ -58,8 +58,15 @@ As cinco migrações têm SQL idêntico nos journals dos dois ambientes. Produç
 Staging: `20260918102152`, `20260918102750`, `20260918104550`, `20260918105110`, `20260918111340`.
 O catálogo de etapa zero inclui 77 superfícies novas e os checkers passaram nos dois ambientes.
 92 contratos SQL passaram em staging, sem fixtures persistidas. O advisor de segurança está
-sem lints nos dois ambientes. CI da implementação, publicação web/worker e revisão visual
-serão registradas no fechamento; este documento não declara esses gates concluídos.
+sem lints nos dois ambientes. PR 658 e main Quality 35342395648, Security 35342395706,
+worker 35342395711 passaram. A implantação Vercel 6523814267 e o ECS 367 executam o
+commit `14c6e54b2d49b7af8f0da88ffa27591295a2f188`, com tarefa 1/1 e heartbeat atual.
+A PR teve 35 testes de interface aprovados, zero falhas ou instáveis e 16 cenários
+condicionais não executados. O novo teste do cofre passou em 8,7s e a análise real de
+recebíveis em 39,5s. Capturas desktop/mobile foram inspecionadas; a largura útil no celular
+é testada. Rotas privadas PT/EN e caminhos antigos exigem autenticação em produção.
+O inventário reconciliado inclui 164 evidências e conserva as 18 lacunas. A entrega final
+da conciliação é registrada no completion da onda, sem iniciar a etapa 13.
 
 ## Riscos e incrementos responsáveis
 
