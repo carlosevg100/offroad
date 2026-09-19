@@ -161,6 +161,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires procedure compiler and candidate boundaries at wave-twelve closeout", () => {
+    for (const evidenceRef of ["SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-11";

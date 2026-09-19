@@ -19,7 +19,7 @@ Sem DDL, backfill ou dado descartável em produção. Arquivos históricos com h
 identificados pelo índice, mantendo seus bytes; registries com consumidores/IDs distintos
 permanecem. Publicação/composição efetiva é etapa 14; fórmulas profissionais e aprovação de
 conteúdo, etapa 15; aplicação dos limites na execução, etapas 17/18. Retenção permanece na
-16, notificações operacionais na 18 e auditoria integral na 23. Nenhuma dessas etapas é
+16, notificações operacionais na 18 e auditoria integral na 22. Nenhuma dessas etapas é
 antecipada por compilar o candidato. Provas locais/CI e deploy exato são exigidos para o
 completion; implementação presente não significa entrega concluída.
 
@@ -49,5 +49,12 @@ muitas quebras de linha e tabulações. O parser agora percorre as linhas sem ex
 com retrocesso, mantém a exigência de bloco único e rejeita blocos incompletos. O teste
 `scans whitespace-heavy authoring sources without a backtracking expression` cobre
 50 mil repetições, com bloco válido e abertura sem fechamento. O manifesto foi regenerado
-pelo comando de compilação; nenhum hash foi ajustado manualmente. A ausência do alerta
-na nova CI é condição de merge.
+pelo comando de compilação; nenhum hash foi ajustado manualmente. A nova CI aprovou o commit corrigido sem alerta novo de CodeQL.
+
+## Entrega verificada
+
+PR 661 entregue em `80ff92054531884d85096d0ee8debd5d867aed79`; main Quality 35441709470, Security 35441709492 e worker 35441709491 aprovados. Web Vercel 6540634817 e ECS 370 no commit exato, 1/1 e polling saudável.
+
+O inventário exige dez evidências novas, totalizando 174. A omissão de qualquer uma bloqueia
+a validação confiável. As 18 lacunas gerais mantêm severidade e incremento responsável.
+O completion externo registra a implantação da própria conciliação; etapa 14 não iniciada.

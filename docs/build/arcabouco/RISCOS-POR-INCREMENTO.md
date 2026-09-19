@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 10 · 17/09/2026 · Baseline entregue: `cad8990f3cd10958a05d28cb2c7fd54da9c182b2`. Etapa 11 implementada e verificada; etapa 12 não iniciada.
+Onda 12 · 19/09/2026 · Baseline entregue: `80ff92054531884d85096d0ee8debd5d867aed79`. Etapas 12 e 13 implementadas e verificadas; etapa 14 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -124,3 +124,21 @@ mesmo incremento. Demais findings de desempenho legados não são reclassificado
 
 Manifesto e incorporação ao executor permanecem em 17; notificações/outbox em 18 e ciclo de
 vida completo em 22. As 18 lacunas gerais do inventário continuam com seu incremento responsável.
+
+
+## Tratamento técnico das etapas 12 e 13
+
+O cofre exige versão e revisão fixadas, publicador humano designado e direitos herdados;
+retirada preserva histórico e fecha uso futuro. Legado sem ato comprovado permanece candidato.
+As provas de publicação/isolamento/concurrency foram entregues na etapa 12 e continuam na CI.
+
+A etapa 13 tipa componentes, fixa dependências e hashes e rejeita composição inválida, executor
+inventado e enfraquecimento de invariantes. O compilador não concede publicação ou execução.
+A leitura linear de blocos de autoria elimina o backtracking identificado pelo CodeQL; a
+regressão com 50 mil repetições e o check sem alerta novo comprovam a correção.
+
+Executores adicionais requerem registro e provas no incremento correspondente. A etapa 14
+entrega publicação/composição de método; o conteúdo profissional do primeiro procedimento e
+sua aprovação permanecem na 15. Orçamento e delegação são aplicados no executor em 17/18;
+retenção por provedor na 16; notificações na 18; auditoria, retenção e revogação integral na 22.
+A etapa 23 retira caminhos antigos. As 18 lacunas gerais não foram encerradas por documentação.
