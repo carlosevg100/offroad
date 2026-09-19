@@ -157,3 +157,15 @@ provedor/modelo/recurso. Etapas 17/18: consumo universal de parâmetros/fontes e
 adaptador de rollout do callback. Etapa 18: notificações dos alarmes. Etapa 22: auditoria,
 retenção e revogação integrais. Etapa 23: retirada final do legado. As 18 lacunas gerais
 permanecem abertas nos incrementos responsáveis; esta entrega não as encerra por inferência.
+
+## Correção da etapa 14: ingresso do corpus
+
+A ausência de comando para novos métodos-base foi encontrada na abertura da 15 e corrigida
+antes de sua publicação. Candidata, atestações e eventos imutáveis substituem inserção manual
+no corpus como procedimento operacional. Revisão técnica distinta do autor, aprovação humana
+vinculada ao manifesto e bytes fixados em main são gates. Publicação mantém execução desabilitada.
+Retirada preserva o histórico; identidade já publicada não pode ser sombreada por candidata.
+O operador de banco continua confiado e deve conferir o ato humano original; este incremento
+não encerra SG-PRIVILEGED-ACCESS nem equivale a verificar IAM/MFA. As provas finais de produção
+constam do completion externo. Conteúdo na 15, retenção na 16, execução/continuidade em 17/18,
+alarmes na 18 e auditoria integral na 22 continuam com os responsáveis já definidos.

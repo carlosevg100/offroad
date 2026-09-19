@@ -1,3 +1,27 @@
+## Correção da etapa 14: ingresso governado do corpus
+
+A abertura da etapa 15 revelou que a etapa 14 importava R01 e publicava composições,
+mas não registrava novos métodos-base. Correção autorizada pelo fundador e descrita em
+`docs/build/arcabouco/etapa-14-correcao.md`. A reprodução anterior e os recibos efetivos
+ficam em `outputs/onda-14-arcabouco-2026-09-19`, fora do repositório de código.
+
+O operador prepara bytes fixados em main, registra candidata imutável e duas provas
+vinculadas ao manifesto: revisão técnica e aprovação humana de conteúdo. Cliente e worker
+não recebem a autoridade global. Publicar torna o corpus disponível para composição,
+conservando a execução desabilitada; retirar bloqueia nova composição e mantém o histórico.
+R01 e sua aprovação permanecem intactos. Aprovação da onda não aprova o procedimento de capital.
+
+A suíte nova cobre adulteração, revisão própria, prova divergente, publicação sem ato humano,
+repetição, identidade já publicada, retirada e concorrência real de duas sessões na CI.
+A ferramenta de preparação não se conecta ao banco. A operação privilegiada verifica o ato
+humano original; uma string com nome não autentica uma pessoa. As 18 lacunas gerais continuam
+atribuídas aos incrementos correspondentes, sem declaração de IAM/MFA novo.
+
+Migrações e catálogos são conciliados pelo carimbo de produção. A CI reconstrói o histórico;
+o completion registra merge, resultados e web/worker no commit exato somente após conferência.
+A etapa 15 retoma após esse fechamento; publicação profissional continua dependente do ato
+específico do fundador. Etapas 16 em diante não foram iniciadas.
+
 ## Etapa 14: conciliação da entrega da onda 13
 
 ## Onda 14: etapa 15 em preparação, 19/09/2026

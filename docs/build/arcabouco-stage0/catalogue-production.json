@@ -552,6 +552,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.attest_platform_method_candidate_v1(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb)",
+      "kind": "function",
+      "name": "attest_platform_method_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.attest_qualified_introduction_plan_technical_review(p_plan_id uuid, p_material_fingerprint text, p_reviewer_id uuid)",
       "kind": "function",
       "name": "attest_qualified_introduction_plan_technical_review",
@@ -5051,6 +5069,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.platform_method_reference_available_v1(p_release text)",
+      "kind": "function",
+      "name": "platform_method_reference_available_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_release text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "name": "policy_admin_context_v1",
@@ -5621,6 +5657,24 @@
       ],
       "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.publish_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+      "kind": "function",
+      "name": "publish_platform_method_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+      "security_definer": false
     },
     {
       "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
@@ -7471,6 +7525,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.require_platform_method_operator_v1()",
+      "kind": "function",
+      "name": "require_platform_method_operator_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "require_receivables_scope_aware_reader",
@@ -7728,6 +7800,24 @@
       ],
       "signature": "p_release_id uuid, p_reason text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.retire_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+      "kind": "function",
+      "name": "retire_platform_method_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+      "security_definer": false
     },
     {
       "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
@@ -9567,6 +9657,24 @@
       ],
       "signature": "p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.submit_platform_method_candidate_v1(p_id uuid, p_release_id text, p_bundle jsonb, p_author text)",
+      "kind": "function",
+      "name": "submit_platform_method_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_release_id text, p_bundle jsonb, p_author text",
+      "security_definer": false
     },
     {
       "id": "function:private.submit_review_execution_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -22701,6 +22809,48 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.platform_method_attestations.platform_method_attestations_deny",
+      "kind": "policy",
+      "name": "platform_method_attestations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "platform_method_attestations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.platform_method_candidates.platform_method_candidates_deny",
+      "kind": "policy",
+      "name": "platform_method_candidates_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "platform_method_candidates",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.platform_method_publication_events.platform_method_events_deny",
+      "kind": "policy",
+      "name": "platform_method_events_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "platform_method_publication_events",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.platform_method_releases.platform_method_releases_deny",
       "kind": "policy",
       "name": "platform_method_releases_deny",
@@ -29517,6 +29667,156 @@
       "rls": true,
       "kind": "table",
       "name": "platform_capability_releases",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.platform_method_attestations",
+      "rls": true,
+      "kind": "table",
+      "name": "platform_method_attestations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.platform_method_candidates",
+      "rls": true,
+      "kind": "table",
+      "name": "platform_method_candidates",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.platform_method_publication_events",
+      "rls": true,
+      "kind": "table",
+      "name": "platform_method_publication_events",
       "grants": [
         [
           "postgres",
@@ -44848,6 +45148,36 @@
       "definition": "CREATE TRIGGER platform_capability_accreditations_immutable BEFORE DELETE OR UPDATE ON private.platform_capability_accreditations FOR EACH ROW EXECUTE FUNCTION private.reject_control_ledger_mutation()"
     },
     {
+      "id": "trigger:private.platform_method_attestations.platform_method_attestations_immutable",
+      "kind": "trigger",
+      "name": "platform_method_attestations_immutable",
+      "table": "platform_method_attestations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER platform_method_attestations_immutable BEFORE DELETE OR UPDATE ON private.platform_method_attestations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
+      "kind": "trigger",
+      "name": "platform_method_candidates_immutable",
+      "table": "platform_method_candidates",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER platform_method_candidates_immutable BEFORE DELETE OR UPDATE ON private.platform_method_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.platform_method_publication_events.platform_method_events_immutable",
+      "kind": "trigger",
+      "name": "platform_method_events_immutable",
+      "table": "platform_method_publication_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER platform_method_events_immutable BEFORE DELETE OR UPDATE ON private.platform_method_publication_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
       "id": "trigger:private.platform_method_releases.platform_method_immutable",
       "kind": "trigger",
       "name": "platform_method_immutable",
@@ -48673,5 +49003,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-19T14:31:05.858516+00:00"
+  "captured_at": "2026-09-19T18:00:05.29675+00:00"
 }

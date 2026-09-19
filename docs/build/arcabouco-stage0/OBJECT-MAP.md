@@ -2572,3 +2572,22 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:public.method_scope_bindings.method_binding_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
 - `trigger:public.method_scope_bindings.method_scope_bindings_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
 - `trigger:public.method_scope_bindings.method_scope_bindings_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+
+## Correção da etapa 14: ingresso de método-base
+
+15 superfícies privadas adicionais. Operação controlada, sem privilégios globais para tenants ou worker e sem ativação automática.
+- `function:private.attest_platform_method_candidate_v1(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb)`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `function:private.platform_method_reference_available_v1(p_release text)`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `function:private.publish_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `function:private.require_platform_method_operator_v1()`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `function:private.retire_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `function:private.submit_platform_method_candidate_v1(p_id uuid, p_release_id text, p_bundle jsonb, p_author text)`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `policy:private.platform_method_attestations.platform_method_attestations_deny`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `policy:private.platform_method_candidates.platform_method_candidates_deny`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `policy:private.platform_method_publication_events.platform_method_events_deny`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `r:private.platform_method_attestations`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `r:private.platform_method_candidates`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `r:private.platform_method_publication_events`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `trigger:private.platform_method_attestations.platform_method_attestations_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `trigger:private.platform_method_candidates.platform_method_candidates_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+- `trigger:private.platform_method_publication_events.platform_method_events_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
