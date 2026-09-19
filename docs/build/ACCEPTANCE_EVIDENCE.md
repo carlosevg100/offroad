@@ -1,59 +1,27 @@
-## Correção da etapa 14: ingresso governado do corpus
+## Etapa 14: correção do ingresso de métodos-base entregue
 
-A abertura da etapa 15 revelou que a etapa 14 importava R01 e publicava composições,
-mas não registrava novos métodos-base. Correção autorizada pelo fundador e descrita em
-`docs/build/arcabouco/etapa-14-correcao.md`. A reprodução anterior e os recibos efetivos
-ficam em `outputs/onda-14-arcabouco-2026-09-19`, fora do repositório de código.
+PR 667 entregue em `f89b224bbab1f7caf363bd968e500ee63073952b`; main Quality 35460897286, Security 35460897279 e worker 35460897290 aprovados. Web Vercel 6544182973 e ECS 376 no commit exato, 1/1 e polling saudável.
 
-O operador prepara bytes fixados em main, registra candidata imutável e duas provas
-vinculadas ao manifesto: revisão técnica e aprovação humana de conteúdo. Cliente e worker
-não recebem a autoridade global. Publicar torna o corpus disponível para composição,
-conservando a execução desabilitada; retirar bloqueia nova composição e mantém o histórico.
-R01 e sua aprovação permanecem intactos. Aprovação da onda não aprova o procedimento de capital.
+A abertura da 15 encontrou uma omissão do fechamento anterior: a 14 importava R01 e publicava
+composições da casa, mas não registrava novos métodos-base. A correção autorizada entrega
+candidata, revisão técnica, aprovação humana, publicação e retirada por comandos privados.
+A ferramenta fixa bytes de main; cliente e worker não recebem autoridade global. Publicar
+corpus não ativa execução. O operador confere o ato humano original; nome em payload não
+autentica uma pessoa. R01 conserva manifesto e aprovação.
 
-A suíte nova cobre adulteração, revisão própria, prova divergente, publicação sem ato humano,
-repetição, identidade já publicada, retirada e concorrência real de duas sessões na CI.
-A ferramenta de preparação não se conecta ao banco. A operação privilegiada verifica o ato
-humano original; uma string com nome não autentica uma pessoa. As 18 lacunas gerais continuam
-atribuídas aos incrementos correspondentes, sem declaração de IAM/MFA novo.
+96 contratos SQL passaram em staging. Oito testes de preparação e o check integral passaram.
+CI reconstruiu o banco, passou as jornadas e comprovou publicação concorrente em duas sessões.
+Três migrações têm SQL idêntico nos journals; 357 arquivos têm carimbo em produção. Quinze
+superfícies novas conciliadas, oito definições de função iguais, advisors de segurança zero.
+Nenhuma candidata, atestação ou publicação foi inserida em produção. Nove arquivos do fundador
+foram preservados fora desta mudança.
 
-Migrações e catálogos são conciliados pelo carimbo de produção. A CI reconstrói o histórico;
-o completion registra merge, resultados e web/worker no commit exato somente após conferência.
-A etapa 15 retoma após esse fechamento; publicação profissional continua dependente do ato
-específico do fundador. Etapas 16 em diante não foram iniciadas.
-
-## Etapa 14: conciliação da entrega da onda 13
-
-## Onda 14: etapa 15 em preparação, 19/09/2026
-
-Fundador autorizou corrigir o ingresso governado de método-base na etapa 14 antes de retomar 15. Baseline `29f7890ea202a266fff1da08cebef2ea58d989d9`.
-Revisão de abertura em `docs/security/INVENTORY_WAVE_14_REVIEW.md`: 187 evidências,
-18 lacunas preservadas; ECS 374 e journals ao vivo conferidos. Nenhuma alteração de
-método aprovado ou ativação do candidato de capital. A publicação profissional depende
-da aprovação do fundador sobre conteúdo e evidências; etapas 16 em diante não iniciadas.
-
-
-PR 664 entregue em `819d14311faf01743968696ccdb174be0f1254ec`; main Quality 35449997808, Security 35449997806 e worker 35449997850 aprovados. Web Vercel 6542179204 e ECS 373 no commit exato, 1/1 e polling saudável.
-
-Composição imutável, revisão humana, publicação e adoção foram entregues. A alçada vem do
-cofre e a separação de funções é política auditável da casa. Fonte retirada e revisor
-revogado não emprestam autoridade residual. Dois publicadores concorrentes não misturam
-composição. A execução conserva o release fixado; retirada bloqueia sem fallback silencioso.
-
-R01 conserva a aprovação original e o manifesto. O legado cria apenas candidatas; os defaults
-e o merge raso foram retirados. O procedimento de estrutura de capital continua candidato,
-sem aprovação profissional ou nova autorização de execução.
-
-95 contratos SQL passaram em staging. CI reconstruiu o banco e comprovou concorrência em
-duas sessões e jornada de autor/revisor/publicador. Quatro migrações têm SQL idêntico nos
-journals; 354 arquivos em main têm versão em produção. Catálogo de 80 superfícies novas
-conciliado e 28 definições de funções idênticas. Security advisors sem lints nos dois ambientes.
-
-O inventário de fechamento exige 187 evidências, treze novas obrigatórias, e mantém as
-18 lacunas gerais. O completion externo registra também a implantação desta conciliação.
-Etapa 15 exige próximo OK e aprovação do conteúdo profissional. Retenção na 16, execução
-universal e continuidade em 17/18, alarmes na 18, auditoria integral na 22 e retirada final
-do legado na 23 permanecem nos seus incrementos. Nenhuma etapa seguinte foi iniciada.
+O inventário de fechamento exige 195 evidências, oito novas obrigatórias, mantendo as 18
+lacunas gerais. O completion externo registra também a implantação desta conciliação.
+A etapa 15 pode retomar sob o OK já dado; publicar conteúdo profissional continua exigindo
+aprovação específica do fundador. Retenção na 16, execução/continuidade em 17/18, alarmes na
+18 e auditoria integral na 22 continuam nos incrementos correspondentes. Etapas 16 em diante
+não iniciadas. O roteiro e os atos do fundador não foram ampliados.
 
 ## Etapa 13: conciliação da entrega da onda 12
 

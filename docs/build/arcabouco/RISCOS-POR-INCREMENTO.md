@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 13 · 19/09/2026 · Baseline entregue: `819d14311faf01743968696ccdb174be0f1254ec`. Etapa 14 implementada e verificada; etapa 15 não iniciada.
+Onda 14 · 19/09/2026 · Baseline entregue: `f89b224bbab1f7caf363bd968e500ee63073952b`. Ingresso de métodos-base corrigido; retomada da etapa 15 autorizada, publicação profissional pendente.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
