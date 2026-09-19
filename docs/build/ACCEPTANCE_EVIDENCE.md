@@ -1,44 +1,23 @@
-## Etapa 13: contrato de procedimento e compilação
+## Etapa 13: conciliação da entrega da onda 12
 
-O incremento implementa seis tipos de componente, contratos recursivos de entrada/saída,
-dependências versionadas, ferramentas, efeitos, orçamento, direitos herdados, competências
-e invariantes protegidas. `procedure-compiler.ts` rejeita composições inválidas e produz
-manifesto reprodutível com hashes de fontes, compilador, executor e evidência.
+PR 661 entregue em `80ff92054531884d85096d0ee8debd5d867aed79`; main Quality 35441709470, Security 35441709492 e worker 35441709491 aprovados. Web Vercel 6540634817 e ECS 370 no commit exato, 1/1 e polling saudável.
 
-O manifesto de roteamento/capacidades/aprovações agora é gerado; o teste compara seus bytes
-com a recompilação. Os onze métodos anteriores passam pelo adaptador compatível. R01
-preserva fonte, aprovação, versão, política e cálculo; o worker confere a proveniência
-compilada antes da execução, além dos gates anteriores. O candidato de estrutura de capital
-continua incompleto, sem executor, vínculo de tarefa, aprovação ou execução concedida.
+Contratos de seis tipos de componente, compilador reproduzível e manifesto gerado foram
+entregues. O worker valida a proveniência além dos gates de liberação anteriores. Os onze
+procedimentos legados continuam legíveis; R01 mantém fonte, aprovação e resultado. Estrutura
+de capital continua candidata incompleta, sem nova autorização de execução ou publicação.
 
-Saem os limites universais de 12 estágios e três chamadas; orçamento é explícito. `false`
-é lido corretamente e chaves repetidas são recusadas. Runs novos podem fixar o manifesto;
-registros históricos mantêm seus fingerprints. O molde de autoria foi atualizado.
+O CodeQL identificou backtracking no parser inicial. A varredura linear e a regressão de
+50 mil repetições corrigiram o achado; o check do commit corrigido não registrou alerta novo.
+O check local integral e a CI da implementação passaram. Não há DDL, migração ou backfill;
+350 arquivos têm carimbo no journal de produção, e staging conserva seus 364 registros.
 
-Sem DDL, backfill ou dado descartável em produção. Arquivos históricos com hash fixado são
-identificados pelo índice, mantendo seus bytes; registries com consumidores/IDs distintos
-permanecem. Publicação/composição efetiva é etapa 14; fórmulas profissionais e aprovação de
-conteúdo, etapa 15; aplicação dos limites na execução, etapas 17/18. Retenção permanece na
-16, notificações operacionais na 18 e auditoria integral na 23. Nenhuma dessas etapas é
-antecipada por compilar o candidato. Provas locais/CI e deploy exato são exigidos para o
-completion; implementação presente não significa entrega concluída.
-
-## Onda 12: abertura da etapa 13
-
-Autorização do fundador após entrega da etapa 12. Baseline main
-`4b1e136e5eab958da0b3033ded05404c46819da6`; Quality 35344915775, Security
-35344915899 e worker 35344915739 aprovados. ECS 368 no commit exato, 1/1 saudável,
-146 eventos recentes sem bloqueio ou atraso. Observação read-only de 18/09/2026.
-
-Inventário renovado por onda: 164 evidências reancoradas, 18 lacunas preservadas.
-Quatro alarmes OK ainda sem notificação; tratamento na etapa 18. Não há nova atestação
-IAM, auditoria independente, dado descartável ou execução de modelo em produção.
-
-Escopo aprovado: componentes tipados, compilador reprodutível, manifesto, autoria e
-compatibilidade dos procedimentos existentes. R01 publicado permanece preservado;
-o procedimento de estrutura de capital continua candidato sem ativação. Sem DDL.
-Publicação de método e etapa 14 dependem do próximo OK. Riscos de execução e revogação
-ficam nas etapas 17/18; retenção na 16 e auditoria integral na 23.
+O inventário de fechamento fixa 174 evidências, dez novas obrigatórias, e preserva as 18
+lacunas gerais. O completion externo registra CI e deploy deste commit de conciliação.
+Publicação/composição de método (14), autoria profissional (15), retenção (16), execução e
+continuidade (17/18), notificações (18) e auditoria integral (22) permanecem nos incrementos
+correspondentes. Corrigida a referência anterior que atribuía auditoria à 23: a 23 retira
+caminhos legados, conforme o ROADMAP. Etapa 14 não iniciada, exige novo OK.
 
 ## Etapa 12: entrega e reconciliação da onda 11
 
