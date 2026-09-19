@@ -194,6 +194,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires immutable executor boundaries at wave-fifteen closeout", () => {
+    for (const evidenceRef of ["SEV-RELEASE-LOCK", "SEV-RELEASE-MANIFEST", "SEV-RELEASE-BUILD", "SEV-RELEASE-REPRODUCTION", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-ISOLATION", "SEV-RELEASE-HISTORY", "SEV-RELEASE-HISTORY-TEST", "SEV-RELEASE-GOLD"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-14";

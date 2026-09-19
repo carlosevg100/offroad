@@ -1,15 +1,26 @@
-## Isolamento de métodos publicados: correção autorizada em implementação
+## Isolamento dos métodos publicados entregue
 
-Antes da etapa 15, o fundador aprovou complementar a 13 e antecipar da 17 somente o
-isolamento por versão. Registro imutável, snapshot gerado das fontes e executor reproduzível
-preservam o manifesto e a execução do R01. Os dois consumidores do worker abandonam o
-import da implementação atual. A ausência ou adulteração do artefato bloqueia execução.
+PR 669 integrada em `a876965d57204e88357fe379364efb0b0e04a21d`. Quality 35466622840,
+Security 35466622837 e worker 35466622827 de main aprovados. Vercel Production 6545212971
+e ECS 378 no commit exato, 1/1, 87 sinais recentes de polling saudável, sem bloqueios ou atraso.
 
-Escopo e riscos em `docs/build/arcabouco/published-method-isolation.md`. Baseline observada:
-`d694951b11b6733a218b6c1b2037267784c7c815`, CI aprovada, ECS 377 saudável.
-Não há DDL, migração ou nova aprovação de conteúdo. A publicação desta correção ainda
-precisa passar nos gates; seu completion registrará CI, merge e web/worker no commit exato.
-A etapa 15 será retomada depois; demais incrementos e os atos do fundador são preservados.
+O manifesto R01 permanece `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`.
+O executor é reconstruído das fontes fixadas, incluindo schemas e dependências, e carregado
+pelos dois consumidores do worker somente após verificação do artefato. Adição independente
+no pacote de cálculos e mudança do compilador de autoria não reescrevem a versão publicada.
+Quinze testes novos, recusa adicional de release substituído, 29 casos de referência exatos
+e jornada R01 completa passaram. Staging passou pin, publicação e direitos com rollback.
+
+Não há DDL nem migração; journals mantêm 357/371 versões. Manifesto, aprovação e liberação
+R01 estão iguais nos ambientes. Nenhum dado descartável ou chamada a modelo em produção.
+O inventário fixa 205 evidências e preserva as 18 lacunas gerais; a conciliação incorpora dez
+provas novas. O completion externo registra também a implantação desta conciliação.
+
+Correção prévia autorizada, complementando a 13 e antecipando somente o isolamento da 17.
+Etapa 15 pode retomar sob o OK existente; conteúdo profissional ainda exige aprovação humana
+específica. Dependências preservadas exigem versão nova para correção material. Execução na
+17, operação e destinatários de alarmes na 18, retenção na 16 e auditoria na 22 permanecem
+nos incrementos correspondentes. Temporal e contrato universal não foram antecipados.
 
 ## Etapa 14: correção do ingresso de métodos-base entregue
 
