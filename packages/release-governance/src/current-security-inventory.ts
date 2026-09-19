@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "d694951b11b6733a218b6c1b2037267784c7c815";
-const capturedAt = "2026-09-19T19:48:47.948Z";
+const baselineCommit = "a876965d57204e88357fe379364efb0b0e04a21d";
+const capturedAt = "2026-09-19T20:25:25.185Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,17 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-RELEASE-LOCK", "repository_file", "packages/credit-playbook/src/released-method-lock.ts", "Published identity fixes original manifest and validates archived source pins."),
+  evidence("SEV-RELEASE-MANIFEST", "repository_file", "packages/credit-playbook/knowledge/releases/method-release-lock.json", "Source commit, snapshot and artifact digest bind the preserved R01 execution."),
+  evidence("SEV-RELEASE-BUILD", "repository_file", "packages/credit-playbook/scripts/build-released-executors.mjs", "Offline artifact reconstruction admits only recorded sources and native crypto."),
+  evidence("SEV-RELEASE-REPRODUCTION", "automated_test", "packages/credit-playbook/scripts/released-executors.eval.mjs", "Reconstruction repeats byte for byte; changed snapshot, toolchain and artifact are refused."),
+  evidence("SEV-RELEASE-LOADER", "repository_file", "apps/document-worker/src/released-method-executor.ts", "Exact registered identity and artifact digest gate the actual executable without latest-version fallback."),
+  evidence("SEV-RELEASE-LOADER-TEST", "automated_test", "apps/document-worker/src/released-method-executor.test.ts", "Pinned executor preserves 29 original gold results and its input/output validation."),
+  evidence("SEV-RELEASE-ISOLATION", "automated_test", "packages/credit-playbook/src/released-method-lock.test.ts", "Unrelated calculations and authoring compiler changes do not replace published R01 provenance."),
+  evidence("SEV-RELEASE-HISTORY", "repository_file", "scripts/ci/verify-published-method-lock.py", "CI forbids rewriting published registry entries and checks source ancestry and first-introduction vendor bytes."),
+  evidence("SEV-RELEASE-HISTORY-TEST", "automated_test", "scripts/ci/test-published-method-lock.py", "Append-only history rejects modified, deleted and duplicated published identities."),
+  evidence("SEV-RELEASE-GOLD", "repository_file", "apps/document-worker/src/released-r01-gold.json", "Original R01 result fingerprints are fixed independently of current authoring implementations."),
+
   evidence("SEV-PLATFORM-METHOD-REPLAY", "repository_file", "supabase/migrations/20260919175924_platform_method_attestation_replay.sql", "Identical attestation replay preserves its receipt after publication while new attestations stay blocked."),
   evidence("SEV-PLATFORM-METHOD-IDENTITY", "repository_file", "supabase/migrations/20260919175930_preserve_published_platform_method_identity.sql", "A candidate cannot shadow an existing corpus identity or reuse its published method version."),
   evidence("SEV-PLATFORM-METHOD-INGRESS", "repository_file", "supabase/migrations/20260919175916_platform_method_publication_commands.sql", "Operator-only immutable corpus commands require pinned technical and human approvals without activating execution."),
@@ -385,12 +396,12 @@ const systems = [
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-RELEASE-MANIFEST", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-GOLD", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
     environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-UBUNTU-PACKAGES", "VEN-CLAMAV-DEFINITIONS"],
-    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-CONCURRENCY", "SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
+    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-RELEASE-LOCK", "SEV-RELEASE-BUILD", "SEV-RELEASE-REPRODUCTION", "SEV-RELEASE-ISOLATION", "SEV-RELEASE-HISTORY", "SEV-RELEASE-HISTORY-TEST", "SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-CONCURRENCY", "SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE", "SG-VENDOR-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03", "TRUST-AI-01"],
   },
   {
@@ -890,7 +901,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.19-wave-15-opening-v1",
+  inventoryVersion: "2026.09.19-wave-15-delivered-v1",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-15", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",

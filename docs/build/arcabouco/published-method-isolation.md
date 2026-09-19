@@ -57,3 +57,12 @@ Os alarmes sem destinatário permanecem no incremento 18; esta correção não d
 Rollback: republicar a imagem anterior comprovada e seu conjunto completo de artefatos;
 nunca substituir silenciosamente um arquivo ou o hash do método no banco. A etapa só fecha
 com CI, merge e prova de implantação registrados no completion externo da correção.
+
+## Entrega verificada
+
+Implementação integrada na PR 669, `a876965d57204e88357fe379364efb0b0e04a21d`.
+CI de main aprovada, Vercel 6545212971 e ECS 378 no mesmo commit. Quinze testes novos e
+29 resultados originais preservados; jornada R01 completa passou na CI. Três contratos
+de staging passaram com rollback. Produção conserva manifesto, aprovação e liberação R01.
+A conciliação adiciona dez evidências obrigatórias ao inventário, totalizando 205, sem
+remover as 18 lacunas gerais. O completion externo fixa a implantação final da conciliação.
