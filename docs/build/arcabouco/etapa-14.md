@@ -93,3 +93,9 @@ PR 664 entregue em `819d14311faf01743968696ccdb174be0f1254ec`; main Quality 3544
 Inventário de fechamento: 187 evidências e 18 lacunas preservadas. A omissão de qualquer uma
 das treze provas novas bloqueia o inventário. O completion externo registra a entrega do
 próprio commit de conciliação; próxima onda ainda não iniciada.
+
+## Retificação e correção do ingresso de métodos-base
+
+O fechamento acima não cobria registro de uma base nova, omissão reproduzida na abertura
+da 15. A correção autorizada está em `etapa-14-correcao.md`. PR 667 entregue em `f89b224bbab1f7caf363bd968e500ee63073952b`; main Quality 35460897286, Security 35460897279 e worker 35460897290 aprovados. Web Vercel 6544182973 e ECS 376 no commit exato, 1/1 e polling saudável.
+A importação de R01 nunca foi aprovação de outro conteúdo.

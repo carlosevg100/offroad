@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "29f7890ea202a266fff1da08cebef2ea58d989d9";
-const capturedAt = "2026-09-19T16:18:58.884Z";
+const baselineCommit = "f89b224bbab1f7caf363bd968e500ee63073952b";
+const capturedAt = "2026-09-19T18:37:48.622Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,15 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-PLATFORM-METHOD-REPLAY", "repository_file", "supabase/migrations/20260919175924_platform_method_attestation_replay.sql", "Identical attestation replay preserves its receipt after publication while new attestations stay blocked."),
+  evidence("SEV-PLATFORM-METHOD-IDENTITY", "repository_file", "supabase/migrations/20260919175930_preserve_published_platform_method_identity.sql", "A candidate cannot shadow an existing corpus identity or reuse its published method version."),
+  evidence("SEV-PLATFORM-METHOD-INGRESS", "repository_file", "supabase/migrations/20260919175916_platform_method_publication_commands.sql", "Operator-only immutable corpus commands require pinned technical and human approvals without activating execution."),
+  evidence("SEV-PLATFORM-METHOD-PREPARE", "repository_file", "packages/credit-playbook/src/platform-method-publication.ts", "Preparation verifies exact source, executor, review and compiler bytes from the fixed manifest."),
+  evidence("SEV-PLATFORM-METHOD-PREPARE-TEST", "automated_test", "packages/credit-playbook/src/platform-method-publication.test.ts", "Altered bytes, stale or non-human approvals and self review are rejected."),
+  evidence("SEV-PLATFORM-METHOD-CLI", "repository_file", "packages/credit-playbook/scripts/prepare-platform-method.mjs", "Operator preparation reads regular files from an authorized main commit and never writes to the database."),
+  evidence("SEV-PLATFORM-METHOD-SQL", "automated_test", "supabase/tests/platform_method_publication.sql", "No customer or worker command authority; exact replay, withdrawal and existing corpus identity are protected."),
+  evidence("SEV-PLATFORM-METHOD-CONCURRENCY", "automated_test", "scripts/ci/test-platform-method-concurrency.py", "Two actual sessions serialize global publication into one event while execution stays disabled."),
+
   evidence("SEV-METHOD-COMPOSITION", "repository_file", "packages/credit-playbook/src/compose-method.ts", "Declared typed overrides preserve provenance and protected invariants."),
   evidence("SEV-METHOD-COMPOSITION-TEST", "automated_test", "packages/credit-playbook/src/compose-method.test.ts", "Precedence, ambiguity, protected rules and typed value negatives are tested."),
   evidence("SEV-METHOD-SCHEMA", "repository_file", "supabase/migrations/20260919143037_published_method_releases.sql", "Human publication and immutable composition use current vault authority with no worker publisher."),
@@ -369,7 +378,7 @@ const systems = [
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-METHOD-SCHEMA", "SEV-METHOD-PUBLICATION-TEST", "SEV-METHOD-RIGHTS-TEST", "SEV-METHOD-LEGACY-TEST", "SEV-VAULT-LEGACY-GRANTS", "SEV-VAULT-SCHEMA", "SEV-VAULT-LEGACY", "SEV-VAULT-RECEIPTS", "SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-PLATFORM-METHOD-REPLAY", "SEV-PLATFORM-METHOD-IDENTITY", "SEV-PLATFORM-METHOD-INGRESS", "SEV-PLATFORM-METHOD-SQL", "SEV-METHOD-SCHEMA", "SEV-METHOD-PUBLICATION-TEST", "SEV-METHOD-RIGHTS-TEST", "SEV-METHOD-LEGACY-TEST", "SEV-VAULT-LEGACY-GRANTS", "SEV-VAULT-SCHEMA", "SEV-VAULT-LEGACY", "SEV-VAULT-RECEIPTS", "SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
@@ -381,7 +390,7 @@ const systems = [
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
     environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-UBUNTU-PACKAGES", "VEN-CLAMAV-DEFINITIONS"],
-    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
+    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-CONCURRENCY", "SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE", "SG-VENDOR-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03", "TRUST-AI-01"],
   },
   {
@@ -881,7 +890,7 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.19-wave-14-opening-v1",
+  inventoryVersion: "2026.09.19-wave-14-delivered-v1",
   generatedAt: capturedAt,
   baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-14", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
