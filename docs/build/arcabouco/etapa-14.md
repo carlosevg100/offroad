@@ -69,7 +69,7 @@ As quatro migrações têm SQL idêntico nos journals: produção `2026091914303
 `20260919140956`, `20260919141545`, `20260919142246`. Tipos foram gerados de produção.
 Os checkers conferem 354 arquivos no journal de produção e 80 novas superfícies.
 Security advisors: zero lints nos dois ambientes; nenhum novo FK sem índice.
-CI, concorrência em duas sessões, capturas e deploy exato são comprovados no fechamento.
+CI, concorrência em duas sessões e deploy exato passaram; a jornada de interface e suas capturas foram conferidas.
 
 ## Riscos nos incrementos correspondentes
 
@@ -85,3 +85,11 @@ Controles: mínimo privilégio, segregação de funções, isolamento, integrida
 direitos herdados e auditoria sem conteúdo. Não há novo provedor ou dado enviado a modelo.
 Contenção: retirada de publicação, revogação de grant ou pausa de R01; conservar o histórico
 e corrigir por migração posterior, sem apagar os atos humanos ou reabrir o legado.
+
+## Entrega verificada
+
+PR 664 entregue em `819d14311faf01743968696ccdb174be0f1254ec`; main Quality 35449997808, Security 35449997806 e worker 35449997850 aprovados. Web Vercel 6542179204 e ECS 373 no commit exato, 1/1 e polling saudável.
+
+Inventário de fechamento: 187 evidências e 18 lacunas preservadas. A omissão de qualquer uma
+das treze provas novas bloqueia o inventário. O completion externo registra a entrega do
+próprio commit de conciliação; próxima onda ainda não iniciada.

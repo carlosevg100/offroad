@@ -1,23 +1,26 @@
-## Etapa 14: implementação da composição e publicação de métodos
+## Etapa 14: conciliação da entrega da onda 13
 
-Candidata, revisão, publicação e adoção explícitas, com fonte versionada, alçada do cofre,
-separação de funções e composição imutável. R01 conserva aprovação e manifesto; a execução
-fixa seu release e revalida retirada no callback. O legado cria apenas candidatas.
+PR 664 entregue em `819d14311faf01743968696ccdb174be0f1254ec`; main Quality 35449997808, Security 35449997806 e worker 35449997850 aprovados. Web Vercel 6542179204 e ECS 373 no commit exato, 1/1 e polling saudável.
 
-95 contratos SQL passaram em staging e o check local integral passou. Quatro migrações
-aplicadas nos dois ambientes, com SQL idêntico; 354 arquivos alinhados ao journal de produção.
-Security advisors sem lints; catálogo de etapa zero concilia 80 superfícies novas.
-Detalhes, adaptação do rollout e riscos por incremento em `docs/build/arcabouco/etapa-14.md`.
-CI e entrega do commit exato serão registradas na conciliação da onda. Etapa 15 não iniciada.
+Composição imutável, revisão humana, publicação e adoção foram entregues. A alçada vem do
+cofre e a separação de funções é política auditável da casa. Fonte retirada e revisor
+revogado não emprestam autoridade residual. Dois publicadores concorrentes não misturam
+composição. A execução conserva o release fixado; retirada bloqueia sem fallback silencioso.
 
-## Onda 13: etapa 14 autorizada e revisão de abertura
+R01 conserva a aprovação original e o manifesto. O legado cria apenas candidatas; os defaults
+e o merge raso foram retirados. O procedimento de estrutura de capital continua candidato,
+sem aprovação profissional ou nova autorização de execução.
 
-Composição e publicação de métodos é o incremento autorizado. Inventário revalidado contra
-`d623011884ca219ee1c3e8ad0ad46f982e836323`, com 174 evidências e 18 lacunas preservadas.
-Coleta atual confirma ECS 371 no commit exato, polling saudável e alarmes OK, ainda sem
-ações de notificação. Detalhes em `docs/security/INVENTORY_WAVE_13_REVIEW.md`.
-Implementação, migração e gates da etapa 14 pendentes. Estrutura de capital permanece
-candidata sem aprovação profissional; etapa 15 não autorizada nesta onda.
+95 contratos SQL passaram em staging. CI reconstruiu o banco e comprovou concorrência em
+duas sessões e jornada de autor/revisor/publicador. Quatro migrações têm SQL idêntico nos
+journals; 354 arquivos em main têm versão em produção. Catálogo de 80 superfícies novas
+conciliado e 28 definições de funções idênticas. Security advisors sem lints nos dois ambientes.
+
+O inventário de fechamento exige 187 evidências, treze novas obrigatórias, e mantém as
+18 lacunas gerais. O completion externo registra também a implantação desta conciliação.
+Etapa 15 exige próximo OK e aprovação do conteúdo profissional. Retenção na 16, execução
+universal e continuidade em 17/18, alarmes na 18, auditoria integral na 22 e retirada final
+do legado na 23 permanecem nos seus incrementos. Nenhuma etapa seguinte foi iniciada.
 
 ## Etapa 13: conciliação da entrega da onda 12
 

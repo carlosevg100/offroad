@@ -172,6 +172,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires method publication and execution boundaries at wave-thirteen closeout", () => {
+    for (const evidenceRef of ["SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-SCHEMA", "SEV-METHOD-PUBLICATION-TEST", "SEV-METHOD-RIGHTS-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CONCURRENCY", "SEV-METHOD-UI", "SEV-METHOD-UI-E2E", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-CALLBACK", "SEV-METHOD-LEGACY-TEST"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-12";
