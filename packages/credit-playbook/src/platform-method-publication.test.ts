@@ -60,6 +60,12 @@ describe("platform method publication preparation", () => {
       files[path] += "changed";
       expect(() => preparePlatformMethodPublication(input)).toThrow("platform_method_source_changed");
     }
+    const {input} = fixture();
+    input.manifest.compiler.sources = [];
+    input.manifest.compiler.hash = methodContentHash([]);
+    const {manifestHash: _oldHash, ...payload} = input.manifest;
+    input.manifest.manifestHash = methodContentHash(payload);
+    expect(() => preparePlatformMethodPublication(input)).toThrow("platform_method_compiler_changed");
   });
   it("rejects an incomplete candidate and an altered manifest", () => {
     const {input} = fixture(); input.manifest.authoringStatus = "incomplete";

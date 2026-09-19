@@ -68,7 +68,7 @@ Offroad, referências e atos, sem dados de trabalho de clientes ou conteúdo fin
 
 ## Verificação
 
-`platform-method-publication.test.ts` verifica bytes alterados, manifesto incompleto,
+`platform-method-publication.test.ts` verifica bytes alterados, compilador sem fontes fixadas, manifesto incompleto,
 aprovação de outra versão, autor fazendo a própria revisão, aprovação futura, arquivo
 faltante, path traversal e tentativa de usar ato de onda/IA como aprovação de conteúdo.
 `platform_method_publication.sql` exercita comando real, falta de revisão/aprovação,

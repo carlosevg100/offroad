@@ -36,7 +36,7 @@ export function preparePlatformMethodPublication(input: {
   const sourcePath = manifest.source.path;
   if (sourcePath.startsWith("/") || sourcePath.includes("\\") || sourcePath.split("/").includes("..")) throw new Error("platform_method_source_changed");
   checkPin({...manifest.source, path: sourcePath.startsWith("packages/") ? sourcePath : `packages/credit-playbook/knowledge/procedures/${sourcePath}`});
-  if (methodContentHash(manifest.compiler.sources) !== manifest.compiler.hash) throw new Error("platform_method_compiler_changed");
+  if (!manifest.compiler.sources.length || methodContentHash(manifest.compiler.sources) !== manifest.compiler.hash) throw new Error("platform_method_compiler_changed");
   manifest.compiler.sources.forEach(checkPin);
   const evidence = new Map<string, {path: string; hash: string}>();
   const components = manifest.components.map((entry) => {
