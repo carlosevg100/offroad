@@ -1,5 +1,14 @@
 ## Etapa 14: conciliação da entrega da onda 13
 
+## Onda 14: etapa 15 em preparação, 19/09/2026
+
+Fundador autorizou corrigir o ingresso governado de método-base na etapa 14 antes de retomar 15. Baseline `29f7890ea202a266fff1da08cebef2ea58d989d9`.
+Revisão de abertura em `docs/security/INVENTORY_WAVE_14_REVIEW.md`: 187 evidências,
+18 lacunas preservadas; ECS 374 e journals ao vivo conferidos. Nenhuma alteração de
+método aprovado ou ativação do candidato de capital. A publicação profissional depende
+da aprovação do fundador sobre conteúdo e evidências; etapas 16 em diante não iniciadas.
+
+
 PR 664 entregue em `819d14311faf01743968696ccdb174be0f1254ec`; main Quality 35449997808, Security 35449997806 e worker 35449997850 aprovados. Web Vercel 6542179204 e ECS 373 no commit exato, 1/1 e polling saudável.
 
 Composição imutável, revisão humana, publicação e adoção foram entregues. A alçada vem do

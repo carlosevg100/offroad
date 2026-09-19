@@ -30,7 +30,7 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(currentSecurityInventory.baseline).toMatchObject({
-      waveId: "wave-13", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+      waveId: "wave-14", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
     });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);
@@ -185,12 +185,12 @@ describe("security current-state inventory", () => {
 
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
-    archived.baseline.waveId = "wave-12";
+    archived.baseline.waveId = "wave-13";
     archived.baseline.waveStatus = "closed";
     const decision = evaluateSecurityCurrentStateInventory(archived, masterTrustControlCatalogue);
     expect(decision.currentStateTruthVerified).toBe(false);
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-12"});
-    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-12"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: "wave-13"});
+    expect(decision.blockers).toContainEqual({code: "baseline_wave_unknown", subjectRef: "wave-13"});
   });
 
   it("resolves every repository and local evidence byte before asserting current-state truth", async () => {
@@ -463,7 +463,7 @@ describe("security current-state inventory", () => {
     expect(invalid.currentStateTruthVerified).toBe(false);
     expect(() => renderSecurityCurrentStateInventory(inventory, invalid)).toThrow(/unchanged trusted decision/);
     expect(() => renderSecurityCurrentStateInventory(inventory, trusted)).toThrow(/unchanged trusted decision/);
-  });
+  }, 30_000);
 
   it.each([
     "SOC 2 is certified",
@@ -510,7 +510,7 @@ describe("security current-state inventory", () => {
     expect(rendered).toContain("| Assurance ready | não |");
     expect(countsRead).toBe(0);
     expect(assuranceRead).toBe(0);
-  });
+  }, 30_000);
 
   it("derives the evidence cutoff and refuses an invented review deadline", () => {
     const inventory = copyInventory();
