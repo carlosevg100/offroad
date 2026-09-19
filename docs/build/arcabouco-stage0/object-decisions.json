@@ -34500,10 +34500,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "preservar",
-      "stage": "1C",
-      "reason": "Contexto de execução sem perfil profissional; autorização e evidência preservadas.",
+      "owner": "Codex, etapa 14",
+      "decision": "refatorar",
+      "stage": "14",
+      "reason": "Loader fixa publicação de R01 ou retira metodologia ativa legada; corpo conferido por hash nos dois ambientes.",
       "sources": [
         {
           "path": "supabase/migrations/20260916005712_role_free_reasoning_context.sql",
@@ -34516,6 +34516,12 @@
           "line": 388,
           "anchor": "rename to worker_load_agent_context_before_execution_brief_v1;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 334,
+          "anchor": " for f in select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.prokind='f' and p.prosrc like '%public.organization_methodologies%' and p.prosrc like '%methodology.status%' loop",
+          "mechanism": "bounded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -35373,10 +35379,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "preservar",
-      "stage": "1C",
-      "reason": "Contexto de execução sem perfil profissional; autorização e evidência preservadas.",
+      "owner": "Codex, etapa 14",
+      "decision": "refatorar",
+      "stage": "14",
+      "reason": "Loader fixa publicação de R01 ou retira metodologia ativa legada; corpo conferido por hash nos dois ambientes.",
       "sources": [
         {
           "path": "supabase/migrations/20260916005712_role_free_reasoning_context.sql",
@@ -35395,6 +35401,12 @@
           "line": 220,
           "anchor": "create or replace function private.worker_load_capital_project_context_v4(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 334,
+          "anchor": " for f in select p.oid from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.prokind='f' and p.prosrc like '%public.organization_methodologies%' and p.prosrc like '%methodology.status%' loop",
+          "mechanism": "bounded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -37916,10 +37928,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 14",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "14",
+      "reason": "Loader fixa publicação de R01 ou retira metodologia ativa legada; corpo conferido por hash nos dois ambientes.",
       "sources": [
         {
           "path": "supabase/migrations/20260910230401_receivables_analytical_release.sql",
@@ -37932,6 +37944,12 @@
           "line": 89,
           "anchor": "create or replace function private.worker_load_receivables_analytical_release_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 414,
+          "anchor": " select pg_get_functiondef('private.worker_load_receivables_analytical_release_v1(uuid,text)'::regprocedure) into body;",
+          "mechanism": "bounded_function_rewrite"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."

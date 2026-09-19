@@ -1,6 +1,6 @@
 # Riscos por incremento
 
-Onda 12 · 19/09/2026 · Baseline entregue: `80ff92054531884d85096d0ee8debd5d867aed79`. Etapas 12 e 13 implementadas e verificadas; etapa 14 não iniciada.
+Onda 13 · 19/09/2026 · Baseline entregue: `819d14311faf01743968696ccdb174be0f1254ec`. Etapa 14 implementada e verificada; etapa 15 não iniciada.
 
 O responsável técnico pelo incremento trata os riscos abaixo antes de pedir seu aceite. Vincular um risco a uma etapa não o resolve nem autoriza uma capacidade que dependa dele. O inventário canônico conserva severidades, responsáveis funcionais e lacunas de comprovação. Cada fechamento registra evidência, teste e limitação; ausência de prova mantém o item aberto.
 
@@ -16,7 +16,7 @@ O responsável técnico pelo incremento trata os riscos abaixo antes de pedir se
 | Inspeção de PDF confundir bytes de imagem com código ou perder ações comprimidas | 6 | Inspeção estrutural; regressões de nomes escapados/objetos comprimidos e limites de expansão/profundidade, sem alterar o corpus |
 | Identidade pública ampliar memória privada | 7, 17 e 18 | Direitos antes da busca; inputs adicionais declarados, delegação e dependências; loader privado entre dossiês permanece desativado até essas provas |
 | Ranking transformar hipótese em dado adotado | 8 e 9 | Observações coexistem; adoção explícita, versionada por finalidade |
-| Publicação sem ato humano ou aprovação reaproveitada | 12, 13 e 20 | Versão e efeito fixados; worker não publica; nova revisão material exige novo ato |
+| Publicação sem ato humano ou aprovação reaproveitada | 12, 13, 14 e 20 | Versão e efeito fixados; worker não publica; nova revisão material exige novo ato |
 | Fallback de IA violar retenção ou finalidade | 16 | Elegibilidade por conta, provedor, modelo e recurso, inclusive fallback; condições atuais documentadas; retenção zero não é pré-requisito |
 | Job continuar com acesso revogado ou inputs alterados | 17 e 18 | Manifesto fixado, delegação revalidada, dependência invalidada e retomada idempotente |
 | Derivado ou reimportação perder restrição | 19 e 21 | Linhagem e restrições herdadas; contribuição não sobrescreve base nem conserva citação falsa |

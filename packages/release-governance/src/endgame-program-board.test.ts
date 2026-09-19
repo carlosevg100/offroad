@@ -49,7 +49,9 @@ describe("endgame program board", () => {
     const inventoryDecision = await evaluateSecurityCurrentStateInventoryTrusted(closedInventory, masterTrustControlCatalogue);
     expect(inventoryDecision.currentStateTruthVerified).toBe(false);
     expect(inventoryDecision.blockers).toContainEqual({code: "baseline_wave_closed", subjectRef: closedInventory.baseline.waveId});
-  });
+  // This first trusted read resolves the complete evidence set from Git, like the
+  // trusted-inventory test. Keep its I/O budget distinct from pure domain tests.
+  }, 30_000);
 
   it("rejects a board evaluated against a different ledger version", () => {
     const mismatched = {...currentCapabilityLedger, ledgerVersion: "unrelated-version"};
