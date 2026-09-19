@@ -45,3 +45,6 @@ export * as case01 from "./cases/gc01";
 export * as preview from "./preview";
 
 export * from "./procedures/institutional-input-requests";
+
+export * from "./method-component";
+export * from "./procedure-compiler";

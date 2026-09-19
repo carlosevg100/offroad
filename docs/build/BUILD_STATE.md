@@ -1,3 +1,28 @@
+## Etapa 13: contrato de procedimento e compilação
+
+O incremento implementa seis tipos de componente, contratos recursivos de entrada/saída,
+dependências versionadas, ferramentas, efeitos, orçamento, direitos herdados, competências
+e invariantes protegidas. `procedure-compiler.ts` rejeita composições inválidas e produz
+manifesto reprodutível com hashes de fontes, compilador, executor e evidência.
+
+O manifesto de roteamento/capacidades/aprovações agora é gerado; o teste compara seus bytes
+com a recompilação. Os onze métodos anteriores passam pelo adaptador compatível. R01
+preserva fonte, aprovação, versão, política e cálculo; o worker confere a proveniência
+compilada antes da execução, além dos gates anteriores. O candidato de estrutura de capital
+continua incompleto, sem executor, vínculo de tarefa, aprovação ou execução concedida.
+
+Saem os limites universais de 12 estágios e três chamadas; orçamento é explícito. `false`
+é lido corretamente e chaves repetidas são recusadas. Runs novos podem fixar o manifesto;
+registros históricos mantêm seus fingerprints. O molde de autoria foi atualizado.
+
+Sem DDL, backfill ou dado descartável em produção. Arquivos históricos com hash fixado são
+identificados pelo índice, mantendo seus bytes; registries com consumidores/IDs distintos
+permanecem. Publicação/composição efetiva é etapa 14; fórmulas profissionais e aprovação de
+conteúdo, etapa 15; aplicação dos limites na execução, etapas 17/18. Retenção permanece na
+16, notificações operacionais na 18 e auditoria integral na 23. Nenhuma dessas etapas é
+antecipada por compilar o candidato. Provas locais/CI e deploy exato são exigidos para o
+completion; implementação presente não significa entrega concluída.
+
 ## Onda 12: abertura da etapa 13
 
 Autorização do fundador após entrega da etapa 12. Baseline main

@@ -3,6 +3,8 @@ import {readdirSync, readFileSync} from "node:fs";
 import {join, relative} from "node:path";
 
 import {z} from "zod";
+import {readProcedureComposition} from "./procedure-compiler";
+import type {ProcedureComposition} from "./method-component";
 
 import {canonicalProcedureSchema, type CanonicalProcedure} from "./procedure-contract";
 import {aiIndependentReviewSchema, reviewCountsForPromotion, type AiIndependentReview} from "./review-record";
@@ -24,7 +26,7 @@ const frontmatterSchema = z.object({
   title_pt: z.string().min(1),
   title_en: z.string().min(1),
   role: z.enum(["intake_evidence", "financial_analysis", "credit_structuring", "institutional_materials", "market_distribution", "independent_quality_control"]),
-  blueprint_stage: z.coerce.number().int().min(1).max(12),
+  blueprint_stage: z.coerce.number().int().positive().safe(),
   owner_role: z.string().min(1),
   approved_by: z.string().min(1).optional(),
   approved_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -33,7 +35,7 @@ const frontmatterSchema = z.object({
   house_procedure_ids: z.array(z.string().regex(/^(IN|EMP|Q|D|OP|ES|PR|MA|MK|RF|LC)-\d{2}$/)).default([]),
   authorities: z.array(z.enum(["LEI", "DEF", "CASA", "MERCADO", "HEURÍSTICA"])).default([]),
   reference_data_keys: z.array(z.string().regex(/^[a-z][a-z0-9_.-]*$/)).default([]),
-  legal_review_required: z.coerce.boolean().default(false),
+  legal_review_required: z.enum(["true", "false"]).transform((value) => value === "true").default(false),
   /** TaskSpecs of the work plan this method executes. The binding lives here, next to the method. */
   task_specs: z.array(z.string().regex(/^[A-Z][0-9]{2}$/)).default([]),
   /** Every listed specialization pack must be active before this method may bind to a task. */
@@ -81,7 +83,7 @@ const frontmatterSchema = z.object({
   gold_run_ids: z.array(z.string().min(1)).default([]),
   adversarial_run_ids: z.array(z.string().min(1)).default([]),
   consistency_run_ids: z.array(z.string().min(1)).default([]),
-  max_model_calls: z.coerce.number().int().min(0).max(3).default(0),
+  max_model_calls: z.coerce.number().int().nonnegative().safe().default(0),
   model_purpose: z.array(z.string().min(1)).default([]),
   allowed_tools: z.array(z.string().min(1)).default([]),
 }).strict();
@@ -94,6 +96,7 @@ export type MethodDocument = {
   frontmatter: MethodFrontmatter;
   procedure: CanonicalProcedure;
   /** Questions that change the work; recorded for the question policy, never asked by default. */
+  composition: ProcedureComposition | null;
   questions: string[];
   /** Minimum inputs and their accepted substitutes. */
   inputs: string[];
@@ -153,7 +156,9 @@ export function parseFrontmatter(text: string, sourcePath: string): {frontmatter
     if (line.trim().length === 0 || line.trim().startsWith("#")) continue;
     const separator = line.indexOf(":");
     if (separator <= 0) throw new MethodCompileError(sourcePath, `frontmatter line without key: ${line}`);
-    raw[line.slice(0, separator).trim()] = parseScalar(line.slice(separator + 1));
+    const key = line.slice(0, separator).trim();
+    if (Object.hasOwn(raw, key)) throw new MethodCompileError(sourcePath, `duplicate frontmatter key ${key}`);
+    raw[key] = parseScalar(line.slice(separator + 1));
   }
   const parsed = frontmatterSchema.safeParse(raw);
   if (!parsed.success) throw new MethodCompileError(sourcePath, `frontmatter invalid: ${parsed.error.issues.map((issue) => `${issue.path.join(".")} ${issue.message}`).join("; ")}`);
@@ -349,6 +354,7 @@ export function compileMethodDocument(text: string, sourcePath: string, lookupRe
     sourceHash: createHash("sha256").update(text).digest("hex"),
     frontmatter,
     procedure: parsed.data,
+    composition: readProcedureComposition(text),
     questions: items(sections.get(SECTIONS.questions)?.lines ?? []),
     inputs: items(sections.get(SECTIONS.inputs)?.lines ?? []),
   };

@@ -45,6 +45,12 @@ export const deterministicMethodRunSchema = z.object({
   }).strict(),
   /** Deterministic methods spend nothing on models; a run that did is not this kind of evidence. */
   modelCalls: z.literal(0),
+  /** Additive: historic R01 evidence keeps its original fingerprint. */
+  compiledManifest: z.object({
+    manifestHash: sha256Schema,
+    compilerHash: sha256Schema,
+    componentHashes: z.array(sha256Schema).min(1),
+  }).strict().optional(),
   cases: z.array(deterministicMethodRunCaseSchema).min(1),
   result: z.enum(["pass", "fail"]),
   /** sha256 of the reproducible part of the record: everything except when it was executed. */
@@ -54,7 +60,7 @@ export const deterministicMethodRunSchema = z.object({
 export type DeterministicMethodRun = z.infer<typeof deterministicMethodRunSchema>;
 
 /** The part of a run that must reproduce exactly. Timestamps and commit are deliberately outside. */
-export function deterministicRunEvidence(record: Pick<DeterministicMethodRun, "runId" | "kind" | "method" | "executor" | "harness" | "modelCalls" | "cases" | "result">) {
+export function deterministicRunEvidence(record: Pick<DeterministicMethodRun, "runId" | "kind" | "method" | "executor" | "harness" | "modelCalls" | "cases" | "result" | "compiledManifest">) {
   return {
     runId: record.runId,
     kind: record.kind,
@@ -64,6 +70,7 @@ export function deterministicRunEvidence(record: Pick<DeterministicMethodRun, "r
     modelCalls: record.modelCalls,
     cases: record.cases,
     result: record.result,
+    ...(record.compiledManifest ? {compiledManifest: record.compiledManifest} : {}),
   };
 }
 

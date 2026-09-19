@@ -12,7 +12,7 @@ Este molde permite escrever a biblioteca profissional em paralelo à construçã
 
 ## Formato que funciona hoje
 
-O contrato existente é `src/procedure-contract.ts`; `src/procedure-markdown.ts` faz a compilação. Use frontmatter de linhas `chave: valor`, listas simples `[a, b]` e seções `#` com os nomes do esqueleto. Esse parser não é YAML completo: não use objetos aninhados, blocos multilinha ou aspas como delimitadores. Não crie chaves de frontmatter; o schema rejeita chaves desconhecidas. Omita `legal_review_required` quando não for aplicável: a coerção booleana atual não interpreta o texto `false` como falso.
+O contrato existente é `src/procedure-contract.ts`; `src/procedure-markdown.ts` faz a compilação. Use frontmatter de linhas `chave: valor`, listas simples `[a, b]` e seções `#` com os nomes do esqueleto. Esse parser não é YAML completo: não use objetos aninhados, blocos multilinha ou aspas como delimitadores. Não crie chaves de frontmatter; o schema rejeita chaves desconhecidas. `legal_review_required` aceita `true` e `false`; outras grafias e chaves repetidas são recusadas.
 
 | Campo | Como preencher |
 |---|---|
@@ -20,7 +20,7 @@ O contrato existente é `src/procedure-contract.ts`; `src/procedure-markdown.ts`
 | `maturity` | `draft` durante escrita aberta; `candidate` para proposta estruturada; nunca aumentar por conta de o arquivo compilar |
 | `title_pt`, `title_en` | Mesma finalidade e economia nos dois idiomas |
 | `role` | Namespace técnico existente, por exemplo `credit_structuring`; não cargo do usuário nem autorização |
-| `blueprint_stage` | Metadado legado de 1 a 12 exigido pelo parser; não etapa do plano aprovado nem porta obrigatória de intake |
+| `blueprint_stage` | Metadado legado inteiro positivo, sem teto universal de 12; não etapa do plano aprovado nem porta obrigatória de intake |
 | `owner_role` | Função responsável pela autoria; não confere poder de publicação ou acesso |
 | `effective_date` | Data de referência editorial; não comprova vigência operacional |
 | `authorities` | Classes efetivamente fundamentadas: `LEI`, `DEF`, `CASA`, `MERCADO`, `HEURÍSTICA` |
@@ -32,7 +32,7 @@ Não declare `implementation_*`, `result_contract`, `persistence_*`, `capability
 
 As seções obrigatórias e suas listas estão no esqueleto. Cada passo usa `1. [deterministic|model_assisted|human_judgment] Título :: instrução ; instrução`, opcionalmente `| tools: id-real | evidence: entrada`. Cada saída usa `campo (string|number|decimal_string|boolean|date|enum|object|array, required|optional): descrição`; enum admite `| values: valor1, valor2`. Para dinheiro e medidas calculadas, preferir `decimal_string` com unidade, período e definição registrados na estrutura correspondente.
 
-O compilador atual lê objetivo, produto, passos, outputs, evidência, testes, gatilhos, julgamentos, exceções e condições de parada; retorna inputs e perguntas como metadados. Seções editoriais adicionais e a prosa de `Cálculos determinísticos` não viram código executável. Escreva ali a especificação para implementação; a Etapa 13 dará contratos tipados aos componentes. Compilar o texto hoje não demonstra essa implementação.
+O compilador atual lê objetivo, produto, passos, outputs, evidência, testes, gatilhos, julgamentos, exceções e condições de parada; retorna inputs e perguntas como metadados. Seções editoriais adicionais e a prosa de `Cálculos determinísticos` não viram código executável. Escreva ali a especificação para implementação; o bloco tipado descrito abaixo fixa o contrato dos componentes. Compilar o texto hoje não demonstra essa implementação.
 
 ## Molde de conteúdo profissional
 
@@ -66,3 +66,57 @@ Para cada regra ou fórmula, registre no corpo: **ID proposto; finalidade; fonte
 Entregue o Markdown versionado, fontes verificáveis com data e direito de uso, definições/formulações, casos de referência com resultado esperado, conflitos conhecidos e decisões editoriais em aberto. O primeiro procedimento deve comparar alternativas de estrutura com o estado atual e com a opção de adiar/não contratar quando pertinente, sobre a mesma base e o mesmo horizonte. Comparar propostas recebidas será outro procedimento.
 
 Validação de formato: `pnpm --filter @offroad/credit-playbook test`. O teste da biblioteca compila os arquivos e verifica vínculos; não certifica qualidade financeira. Execução e publicação exigem os gates das respectivas etapas, a aprovação real do conteúdo e a evidência técnica. A autoria pode começar imediatamente a partir deste esqueleto.
+
+
+## Contrato tipado e geração do manifesto (etapa 13)
+
+O bloco `offroad-procedure` em `prepare-capital-structure-decision.md` é o molde operacional
+atual. Seu JSON é validado por `procedureCompositionSchema` e `methodComponentSchema`.
+A narrativa permanece legível; somente o bloco tipado declara componentes compiláveis.
+Não colocar instruções executáveis dentro de texto de fonte, exemplo ou nota editorial.
+
+Cada componente declara ID e versão, entradas e saídas recursivamente tipadas, dependências
+por ID/versão, ferramentas, efeito máximo, orçamento, direitos herdados, competências,
+invariantes e pontos permitidos de alteração. Competência é propriedade do método;
+nenhum campo descreve cargo, senioridade ou privilégio da pessoa.
+
+| Tipo | Conteúdo e requisito |
+| --- | --- |
+| `narrative` | Texto editorial; sem ferramenta, modelo ou efeito |
+| `formula` | Expressão, unidade, período, arredondamento, trace e executor registrado em financial-core; zero chamadas de modelo |
+| `rule` | Regra versionada, autoridade e executor registrado |
+| `workflow` | Sequência determinística ou grafo de dependências com referências versionadas |
+| `template` | Corpo Markdown/JSON; sem execução implícita |
+| `quality_gate` | Executor e consequência explícita: bloqueio ou lacuna divulgada |
+
+Objetos especificam os campos e arrays especificam os itens. Valores monetários e índices
+financeiros usam `decimal_string`; não há cálculo financeiro em ponto flutuante ou em modelo.
+Cada executor precisa de módulo/export, versão, contratos correspondentes e bytes de sua
+implementação registrados pela engenharia. Uma função citada em prosa não vira executor.
+Evidências referenciadas precisam existir; o compilador fixa seus hashes, não fabrica aprovações.
+
+Os orçamentos são explícitos em chamadas de modelo, duração e custo em unidades menores de
+uma moeda declarada. Não há teto universal de três chamadas. A soma conservadora dos
+componentes executáveis precisa caber no orçamento do procedimento; a execução ainda aplicará
+sua própria política. Workflows não multiplicam o orçamento de suas dependências.
+
+Direito de uso acompanha a fonte e seus derivados. Lei, definição contratual, rastreabilidade,
+verificação, barreiras de acesso e matemática determinística são invariantes protegidas.
+Alterações permitidas se limitam a narrativa, template e hipóteses tipadas, sempre com racional;
+não podem conceder acesso ou remover invariantes. Composição/publicação é etapa 14.
+
+Use `authoringStatus: incomplete` e liste `pendingContent` enquanto faltar conteúdo.
+`ready_for_review` exige ausência de pendências e continua sem significar aprovação.
+Compilar nunca concede execução. O primeiro procedimento mantém candidato, sem executor,
+vínculo de tarefa ou aprovação; as fórmulas e casos profissionais ainda serão entregues.
+
+Após alterar fontes, executar `pnpm --filter @offroad/credit-playbook manifest:generate`.
+A CI recompila e compara os bytes de `method-runtime-manifest.generated.ts`; esse arquivo
+não deve ser editado manualmente. O manifesto fixa fontes, compilador, componentes, fechamento
+das dependências dos executores e evidências. IDs/hash de roteamento e aprovação de R01 são
+preservados. Os onze documentos anteriores usam adaptador explícito, sem inventar componentes
+completos, republicar conteúdo ou mudar seu estado de liberação.
+
+Os registries institucionais históricos continuam necessários aos consumidores atuais e não
+são cópias equivalentes dos doze documentos Markdown; sua remoção sem equivalência apagaria
+conhecimento referenciado. A duplicação manual do manifesto de roteamento foi retirada.

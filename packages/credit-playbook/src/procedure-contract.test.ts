@@ -156,11 +156,11 @@ describe("canonical procedure contract", () => {
     })).toThrow(/LEI authority/);
   });
 
-  it("hard-codes deterministic orchestration and forbids peer handoffs", () => {
+  it("preserves the legacy pipeline policy and forbids peer handoffs", () => {
     for (const skill of growthCapexProcedureRegistry.skills) {
       expect(skill.runtime.orchestration).toBe("deterministic_pipeline");
       expect(skill.runtime.peerHandoffs).toBe(false);
-      expect(skill.runtime.maxModelCalls).toBeLessThanOrEqual(3);
+      expect(skill.runtime.maxModelCalls).toBeGreaterThanOrEqual(0);
       expect(skill.instructions).toContain("Não delegue, não converse com outros agentes");
     }
   });
@@ -245,5 +245,15 @@ describe("M2 and M3 procedure compilation", () => {
     }
     expect(financialDebtTruthProcedureRegistry.registryHash).toMatch(/^[a-f0-9]{64}$/);
     expect(institutionalProcedureRegistryHash).toMatch(/^[a-f0-9]{64}$/);
+  });
+});
+
+
+describe("explicit procedure policy", () => {
+  it("accepts stages beyond twelve and explicit model budgets beyond three", () => {
+    const input = {...draft(), blueprintStage: 25, runtime: {orchestration: "dependency_graph", peerHandoffs: false, maxModelCalls: 8, modelPurpose: ["bounded synthesis"], allowedTools: []}};
+    expect(canonicalProcedureSchema.parse(input).runtime.maxModelCalls).toBe(8);
+    expect(() => canonicalProcedureSchema.parse({...input, runtime: {...input.runtime, maxModelCalls: -1}})).toThrow();
+    expect(() => canonicalProcedureSchema.parse({...input, runtime: {...input.runtime, peerHandoffs: true}})).toThrow();
   });
 });

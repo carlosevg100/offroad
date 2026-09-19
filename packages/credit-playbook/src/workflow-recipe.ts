@@ -9,6 +9,8 @@ export const workflowRecipeStepSchema = z.object({
   methodId: z.string().regex(/^[a-z][a-z0-9-]{2,79}$/),
   methodVersion: z.string().regex(/^\d{4}\.\d{2}\.\d{2}-v\d+$/),
   executorKey: z.string().min(1),
+  /** Present for compiled compositions; historic recipes keep their original fingerprint. */
+  manifestHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   artifactType: z.string().regex(/^[a-z][a-z0-9_]*$/),
   label: localizedTextSchema,
   purpose: localizedTextSchema,
@@ -22,7 +24,7 @@ export const workflowRecipeStepSchema = z.object({
   stage: z.enum(["research", "analysis", "alternatives", "material"]),
   failurePolicy: z.enum(["block_descendants", "degrade_with_disclosed_gap", "retry_then_abstain"]),
   effect: z.enum(["none", "propose_state", "commit"]),
-  costBudget: z.object({maxModelCalls: z.number().int().min(0).max(3), maxDurationMs: z.number().int().positive()}).strict(),
+  costBudget: z.object({maxModelCalls: z.number().int().nonnegative().safe(), maxDurationMs: z.number().int().positive()}).strict(),
 }).strict();
 export type WorkflowRecipeStep = z.infer<typeof workflowRecipeStepSchema>;
 
