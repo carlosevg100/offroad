@@ -142,3 +142,18 @@ entrega publicação/composição de método; o conteúdo profissional do primei
 sua aprovação permanecem na 15. Orçamento e delegação são aplicados no executor em 17/18;
 retenção por provedor na 16; notificações na 18; auditoria, retenção e revogação integral na 22.
 A etapa 23 retira caminhos antigos. As 18 lacunas gerais não foram encerradas por documentação.
+
+
+## Tratamento técnico da etapa 14
+
+Publicação de método exige composição imutável, fonte publicada, revisão fixada e alçada
+corrente, inclusive do revisor. A separação de funções é política auditável da casa; criador
+e worker não publicam por privilégio residual. Conflito de adoção é negado sob o lock
+organizacional. Retirada bloqueia a composição sem retornar silenciosamente ao padrão.
+R01 fixa release por execução e revalida o vínculo no callback; a aprovação anterior permanece.
+
+Etapa 15: conteúdo profissional e aprovação do fundador. Etapa 16: condições reais de
+provedor/modelo/recurso. Etapas 17/18: consumo universal de parâmetros/fontes e remoção do
+adaptador de rollout do callback. Etapa 18: notificações dos alarmes. Etapa 22: auditoria,
+retenção e revogação integrais. Etapa 23: retirada final do legado. As 18 lacunas gerais
+permanecem abertas nos incrementos responsáveis; esta entrega não as encerra por inferência.

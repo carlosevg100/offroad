@@ -6212,6 +6212,7 @@
     "historicalAuthor": "Historical author not identified"
   },
   "Vault": {
+    "methods": "Methods",
     "eyebrow": "Organization knowledge",
     "title": "Vault",
     "description": "Sources, assumptions, directives and templates with versions and human publication.",
@@ -6297,5 +6298,70 @@
       "warning": "Warning",
       "danger": "Alert"
     }
+  },
+  "MethodPublication": {
+    "compositionContent": "Composition content",
+    "noAdaptations": "No adaptations: this version uses the approved reference method in full.",
+    "reviewSource": "Source version",
+    "reviewScope": "Adaptation scope",
+    "currentlyAdopted": "This version is bound to new work. Withdrawing it blocks use until another version is explicitly adopted.",
+    "scopes": {"organization": "Organization", "unit": "Unit", "work_type": "Work type"},
+
+    "eyebrow": "Knowledge and method",
+    "title": "Methods",
+    "description": "Review how work will be performed and publish the version your team will adopt.",
+    "managePeople": "Manage readers and publishers in the vault",
+    "reviewPolicy": "Review policy",
+    "separateReviewer": "Require a reviewer other than the author and publisher",
+    "separationExplanation": "Your administrator designates publishers in the vault. Changing this policy grants no permissions.",
+    "savePolicy": "Save policy",
+    "offroadMethods": "Offroad methods",
+    "houseMethods": "House methods",
+    "receivables": "Receivables pool analysis",
+    "version": "Version {version}",
+    "approved": "Approved by {name} on {date}",
+    "evidence": "Approval and evidence",
+    "protectedLegacy": "This version preserves the approved method. Its components do not yet accept customization.",
+    "candidateTitle": "House version name",
+    "createCandidate": "Prepare candidate",
+    "candidateNotice": "Preparing a candidate does not publish it. Review covers the content, its sources and the test evidence for the exact version.",
+    "noRead": "You do not have access to this organization’s private methods.",
+    "empty": "No candidate or publication available.",
+    "legacyCandidate": "This is a historical record. It requires a typed composition, evidence and review before publication.",
+    "compositionNotice": "The composition preserves the reference method and records permitted changes with their sources.",
+    "reviewedVersion": "Reviewed version identifier",
+    "testEvidence": "Test evidence identifier",
+    "reviewReason": "Technical content and test review",
+    "recordReview": "Record review",
+    "publish": "Publish this version",
+    "useForHouse": "Adopt for new work of this type",
+    "retireReason": "Reason for withdrawal",
+    "retire": "Withdraw publication",
+    "previous": "Previous",
+    "next": "Next",
+    "saved": "Change recorded.",
+    "unavailableReceipt": "Publication with unavailable content",
+    "override": "House customization",
+    "overrideRationale": "Why adopt this change?",
+    "source": "Published vault source",
+    "findSource": "Find source",
+    "selectedSource": "Selected source: {title}",
+    "search": "Search",
+    "addValue": "Add value",
+    "removeValue": "Remove value",
+    "newValue": "Adopted value",
+    "states": {
+      "candidate": "Candidate",
+      "published": "Published",
+      "retired": "Withdrawn"
+    },
+    "errors": {
+      "invalid": "Check the inputs and method conditions. No change was applied.",
+      "denied": "This action requires current permission and available sources.",
+      "stale": "The version, review or binding changed. Refresh before continuing.",
+      "unavailable": "The action could not be completed. Please try again."
+    },
+    "yes": "Yes",
+    "no": "No"
   }
 }

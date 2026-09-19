@@ -2680,6 +2680,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+          "kind": "function",
+          "name": "bind_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+          "kind": "function",
+          "name": "bind_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 251,
+          "anchor": "create function private.bind_method_release_v1(p_binding_id uuid,p_release_id uuid,p_expected_binding_id uuid,p_unit_id uuid default null,p_work_type text default null,p_work_id uuid default null) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.bind_persistent_work_v1()",
       "kind": "function",
       "catalogues": {
@@ -6499,6 +6564,61 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.compose_method_v1(p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.compose_method_v1(p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text)",
+          "kind": "function",
+          "name": "compose_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.compose_method_v1(p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text)",
+          "kind": "function",
+          "name": "compose_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 152,
+          "anchor": "create function private.compose_method_v1(p_org uuid,p_base text,p_overrides jsonb,p_unit uuid,p_work_type text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.confirm_document_intake(p_organization_id uuid, p_session_id uuid, p_output_locale text)",
@@ -10751,6 +10871,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.guard_method_release_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_method_release_v1()",
+          "kind": "function",
+          "name": "guard_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_method_release_v1()",
+          "kind": "function",
+          "name": "guard_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 111,
+          "anchor": "create function private.guard_method_release_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.guard_observation_v1()",
       "kind": "function",
       "catalogues": {
@@ -13865,6 +14040,71 @@
       "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
+      "id": "function:private.list_method_releases_v1(p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_method_releases_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_method_releases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_method_releases_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_method_releases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143046_method_binding_scope_pagination.sql",
+          "line": 1,
+          "anchor": "create or replace function private.list_method_releases_v1(p_offset integer default 0) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -14782,6 +15022,191 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.method_release_readable_v1(p_org uuid, p_release uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.method_release_readable_v1(p_org uuid, p_release uuid)",
+          "kind": "function",
+          "name": "method_release_readable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_release uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.method_release_readable_v1(p_org uuid, p_release uuid)",
+          "kind": "function",
+          "name": "method_release_readable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_release uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 87,
+          "anchor": "create function private.method_release_readable_v1(p_org uuid,p_release uuid) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.method_scope_allowed_v1(p_org uuid, p_action text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.method_scope_allowed_v1(p_org uuid, p_action text)",
+          "kind": "function",
+          "name": "method_scope_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_action text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.method_scope_allowed_v1(p_org uuid, p_action text)",
+          "kind": "function",
+          "name": "method_scope_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_action text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 83,
+          "anchor": "create function private.method_scope_allowed_v1(p_org uuid,p_action text) returns boolean language sql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.method_value_matches_v1(t jsonb, v jsonb, depth integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.method_value_matches_v1(t jsonb, v jsonb, depth integer)",
+          "kind": "function",
+          "name": "method_value_matches_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "t jsonb, v jsonb, depth integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.method_value_matches_v1(t jsonb, v jsonb, depth integer)",
+          "kind": "function",
+          "name": "method_value_matches_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "t jsonb, v jsonb, depth integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 125,
+          "anchor": "create function private.method_value_matches_v1(t jsonb,v jsonb,depth integer default 0) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.month_spend_usd(p_organization_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -15396,6 +15821,61 @@
           "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
           "line": 256,
           "anchor": "create function private.pin_vault_dependencies_v1(p_org uuid,p_version uuid) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.pin_worker_method_release_v1(p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.pin_worker_method_release_v1(p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text)",
+          "kind": "function",
+          "name": "pin_worker_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.pin_worker_method_release_v1(p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text)",
+          "kind": "function",
+          "name": "pin_worker_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 372,
+          "anchor": "create function private.pin_worker_method_release_v1(p_job_id uuid,p_capability_token text,p_method_id text,p_work_type text) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -17109,6 +17589,71 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+          "kind": "function",
+          "name": "publish_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+          "kind": "function",
+          "name": "publish_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 233,
+          "anchor": "create function private.publish_method_release_v1(p_release_id uuid,p_review_id uuid,p_manifest_fingerprint text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
@@ -23973,6 +24518,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.retire_method_release_v1(p_release_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.retire_method_release_v1(p_release_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "retire_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.retire_method_release_v1(p_release_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "retire_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 271,
+          "anchor": "create function private.retire_method_release_v1(p_release_id uuid,p_reason text) returns uuid language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -24704,6 +25314,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+          "kind": "function",
+          "name": "review_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+          "kind": "function",
+          "name": "review_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 214,
+          "anchor": "create function private.review_method_candidate_v1(p_release_id uuid,p_review_id uuid,p_manifest_fingerprint text,p_evidence_fingerprint text,p_review_text text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.revoke_advisor_authorization_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text)",
       "kind": "function",
       "catalogues": {
@@ -25215,15 +25890,21 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "substituir",
-      "stage": "12, 14",
-      "reason": "escrita antiga passa por candidatura/publicação, nunca método ativo implícito",
+      "owner": "Codex, etapa 14",
+      "decision": "refatorar",
+      "stage": "14",
+      "reason": "Integra publicação e execução de método à autoridade canônica, sem publicação automática pelo legado.",
       "sources": [
         {
           "path": "supabase/migrations/20260904210147_organization_methodology.sql",
           "line": 50,
           "anchor": "create or replace function private.save_organization_methodology(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 314,
+          "anchor": "create or replace function private.save_organization_methodology(p_organization_id uuid,p_content jsonb,p_source_kind text default 'self_declared') returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26301,6 +26982,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+          "kind": "function",
+          "name": "set_method_publication_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_separate_reviewer boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+          "kind": "function",
+          "name": "set_method_publication_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_separate_reviewer boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 283,
+          "anchor": "create function private.set_method_publication_policy_v1(p_separate_reviewer boolean) returns void language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.set_organization_review_policy_v1(p_organization_id uuid, p_self_approval_allowed boolean)",
@@ -29622,6 +30368,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+          "kind": "function",
+          "name": "submit_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+          "kind": "function",
+          "name": "submit_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 189,
+          "anchor": "create function private.submit_method_candidate_v1(p_id uuid,p_title text,p_base_release_id text,p_overrides jsonb,p_unit_id uuid default null,p_work_type text default 'analysis') returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:private.submit_review_execution_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -40037,6 +40848,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.worker_record_receivables_before_method_pin_v1(p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_receivables_before_method_pin_v1(p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb)",
+          "kind": "function",
+          "name": "worker_record_receivables_before_method_pin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_receivables_before_method_pin_v1(p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb)",
+          "kind": "function",
+          "name": "worker_record_receivables_before_method_pin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143043_pinned_method_result_boundary.sql",
+          "line": 2,
+          "anchor": "alter function private.worker_record_receivables_released_result_v1(uuid,text,uuid,jsonb) rename to worker_record_receivables_before_method_pin_v1;",
+          "mechanism": "renamed_private_adapter"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:private.worker_record_receivables_evidence(p_job_id uuid, p_capability_token text, p_content_kind text, p_schema_version text, p_source_sha256 text, p_content_sha256 text, p_payload_sha256 text, p_uncompressed_bytes bigint, p_payload_base64 text)",
       "kind": "function",
       "catalogues": {
@@ -40229,10 +41095,10 @@
           "security_definer": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 14",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "14",
+      "reason": "Integra publicação e execução de método à autoridade canônica, sem publicação automática pelo legado.",
       "sources": [
         {
           "path": "supabase/migrations/20260910230401_receivables_analytical_release.sql",
@@ -40244,6 +41110,12 @@
           "path": "supabase/migrations/20260910230401_receivables_analytical_release.sql",
           "line": 281,
           "anchor": "create or replace function public.worker_record_receivables_released_result_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143043_pinned_method_result_boundary.sql",
+          "line": 4,
+          "anchor": "create function private.worker_record_receivables_released_result_v1(p_job_id uuid,p_capability_token text,p_input_assembly_id uuid,p_result jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -42843,6 +43715,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+          "kind": "function",
+          "name": "bind_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)",
+          "kind": "function",
+          "name": "bind_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 346,
+          "anchor": "create function public.bind_method_release_v1(p_binding_id uuid,p_release_id uuid,p_expected_binding_id uuid,p_unit_id uuid default null,p_work_type text default null,p_work_id uuid default null) returns uuid language sql security invoker set search_path='' as $$ select private.bind_method_release_v1(p_binding_id,p_release_id,p_expected_binding_id,p_unit_id,p_work_type,p_work_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.bind_source_version_v1(p_version_id uuid, p_resource_id uuid, p_request_id uuid)",
@@ -45740,6 +46677,71 @@
       "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
+      "id": "function:public.list_method_releases_v1(p_offset integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_method_releases_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_method_releases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_method_releases_v1(p_offset integer)",
+          "kind": "function",
+          "name": "list_method_releases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_offset integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 349,
+          "anchor": "create function public.list_method_releases_v1(p_offset integer default 0) returns jsonb language sql security invoker set search_path='' as $$ select private.list_method_releases_v1(p_offset); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.list_my_workspace_invites_v1()",
       "kind": "function",
       "catalogues": {
@@ -47034,6 +48036,71 @@
           "path": "supabase/migrations/20260918105943_human_vault_publication.sql",
           "line": 375,
           "anchor": "create function public.propose_vault_publication_v1(p_request_id uuid,p_version_id uuid,p_version_fingerprint text,p_expected_publication_id uuid,p_work_scope_id uuid,p_purpose text,p_reason text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+          "kind": "function",
+          "name": "publish_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)",
+          "kind": "function",
+          "name": "publish_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 345,
+          "anchor": "create function public.publish_method_release_v1(p_release_id uuid,p_review_id uuid,p_manifest_fingerprint text) returns uuid language sql security invoker set search_path='' as $$ select private.publish_method_release_v1(p_release_id,p_review_id,p_manifest_fingerprint); $$;",
           "mechanism": "direct_ddl"
         }
       ],
@@ -51670,6 +52737,71 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.retire_method_release_v1(p_release_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.retire_method_release_v1(p_release_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "retire_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.retire_method_release_v1(p_release_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "retire_method_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 347,
+          "anchor": "create function public.retire_method_release_v1(p_release_id uuid,p_reason text) returns uuid language sql security invoker set search_path='' as $$ select private.retire_method_release_v1(p_release_id,p_reason); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "function:public.review_case_red_flag(p_organization_id uuid, p_intake_session_id uuid, p_flag_id text, p_flag_fingerprint text, p_decision text, p_rationale text, p_evidence_ids jsonb)",
       "kind": "function",
       "catalogues": {
@@ -52225,6 +53357,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+          "kind": "function",
+          "name": "review_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)",
+          "kind": "function",
+          "name": "review_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 344,
+          "anchor": "create function public.review_method_candidate_v1(p_release_id uuid,p_review_id uuid,p_manifest_fingerprint text,p_evidence_fingerprint text,p_review_text text) returns uuid language sql security invoker set search_path='' as $$ select private.review_method_candidate_v1(p_release_id,p_review_id,p_manifest_fingerprint,p_evidence_fingerprint,p_review_text); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.revoke_advisor_authorization_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_reason text)",
@@ -53755,6 +54952,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+          "kind": "function",
+          "name": "set_method_publication_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_separate_reviewer boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_method_publication_policy_v1(p_separate_reviewer boolean)",
+          "kind": "function",
+          "name": "set_method_publication_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_separate_reviewer boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 348,
+          "anchor": "create function public.set_method_publication_policy_v1(p_separate_reviewer boolean) returns void language sql security invoker set search_path='' as $$ select private.set_method_publication_policy_v1(p_separate_reviewer); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.set_organization_review_policy_v1(p_organization_id uuid, p_self_approval_allowed boolean)",
@@ -56629,6 +57891,71 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+          "kind": "function",
+          "name": "submit_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)",
+          "kind": "function",
+          "name": "submit_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 343,
+          "anchor": "create function public.submit_method_candidate_v1(p_id uuid,p_title text,p_base_release_id text,p_overrides jsonb,p_unit_id uuid default null,p_work_type text default 'analysis') returns uuid language sql security invoker set search_path='' as $$ select private.submit_method_candidate_v1(p_id,p_title,p_base_release_id,p_overrides,p_unit_id,p_work_type); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "function:public.submit_vault_entry_version_v1(p_entry_id uuid, p_version_id uuid, p_expected_version_id uuid, p_kind text, p_title text, p_directive_text text, p_reference_id uuid, p_source_version_ids uuid[])",
@@ -68645,6 +69972,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.method_publication_policies.method_policy_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.method_publication_policies.method_policy_deny",
+          "kind": "policy",
+          "name": "method_policy_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "method_publication_policies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.method_publication_policies.method_policy_deny",
+          "kind": "policy",
+          "name": "method_policy_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "method_publication_policies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 78,
+          "anchor": "create policy method_policy_deny on private.method_publication_policies for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:private.organization_units.organization_units_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -68929,6 +70303,53 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.platform_method_releases.platform_method_releases_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_method_releases.platform_method_releases_deny",
+          "kind": "policy",
+          "name": "platform_method_releases_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_releases",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_method_releases.platform_method_releases_deny",
+          "kind": "policy",
+          "name": "platform_method_releases_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_releases",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 14,
+          "anchor": "create policy platform_method_releases_deny on private.platform_method_releases for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:private.principals.principals_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -69115,6 +70536,53 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "policy:private.processing_run_method_pins.method_pins_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.processing_run_method_pins.method_pins_deny",
+          "kind": "policy",
+          "name": "method_pins_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.processing_run_method_pins.method_pins_deny",
+          "kind": "policy",
+          "name": "method_pins_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 368,
+          "anchor": "create policy method_pins_deny on private.processing_run_method_pins for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "policy:private.project_canonical_revisions.project_canonical_revisions_no_delete",
@@ -78036,6 +79504,1134 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.method_component_versions.method_component_versions_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_component_versions.method_component_versions_delete",
+          "kind": "policy",
+          "name": "method_component_versions_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_component_versions.method_component_versions_delete",
+          "kind": "policy",
+          "name": "method_component_versions_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_component_versions.method_component_versions_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_component_versions.method_component_versions_insert",
+          "kind": "policy",
+          "name": "method_component_versions_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_component_versions.method_component_versions_insert",
+          "kind": "policy",
+          "name": "method_component_versions_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_component_versions.method_component_versions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_component_versions.method_component_versions_select",
+          "kind": "policy",
+          "name": "method_component_versions_select",
+          "qual": "(private.method_scope_allowed_v1(organization_id, 'read'::text) AND private.can_read_vault_version_v1(organization_id, vault_version_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_component_versions.method_component_versions_select",
+          "kind": "policy",
+          "name": "method_component_versions_select",
+          "qual": "(private.method_scope_allowed_v1(organization_id, 'read'::text) AND private.can_read_vault_version_v1(organization_id, vault_version_id))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 101,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using(%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_component_versions.method_component_versions_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_component_versions.method_component_versions_update",
+          "kind": "policy",
+          "name": "method_component_versions_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_component_versions.method_component_versions_update",
+          "kind": "policy",
+          "name": "method_component_versions_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_component_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_components.method_components_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_components.method_components_delete",
+          "kind": "policy",
+          "name": "method_components_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_components.method_components_delete",
+          "kind": "policy",
+          "name": "method_components_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_components.method_components_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_components.method_components_insert",
+          "kind": "policy",
+          "name": "method_components_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_components.method_components_insert",
+          "kind": "policy",
+          "name": "method_components_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_components.method_components_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_components.method_components_select",
+          "kind": "policy",
+          "name": "method_components_select",
+          "qual": "private.method_scope_allowed_v1(organization_id, 'read'::text)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_components.method_components_select",
+          "kind": "policy",
+          "name": "method_components_select",
+          "qual": "private.method_scope_allowed_v1(organization_id, 'read'::text)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 101,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using(%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_components.method_components_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_components.method_components_update",
+          "kind": "policy",
+          "name": "method_components_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_components.method_components_update",
+          "kind": "policy",
+          "name": "method_components_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_components",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_release_components.method_release_components_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_release_components.method_release_components_delete",
+          "kind": "policy",
+          "name": "method_release_components_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_release_components.method_release_components_delete",
+          "kind": "policy",
+          "name": "method_release_components_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_release_components.method_release_components_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_release_components.method_release_components_insert",
+          "kind": "policy",
+          "name": "method_release_components_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_release_components.method_release_components_insert",
+          "kind": "policy",
+          "name": "method_release_components_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_release_components.method_release_components_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_release_components.method_release_components_select",
+          "kind": "policy",
+          "name": "method_release_components_select",
+          "qual": "private.method_release_readable_v1(organization_id, release_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_release_components.method_release_components_select",
+          "kind": "policy",
+          "name": "method_release_components_select",
+          "qual": "private.method_release_readable_v1(organization_id, release_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 101,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using(%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_release_components.method_release_components_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_release_components.method_release_components_update",
+          "kind": "policy",
+          "name": "method_release_components_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_release_components.method_release_components_update",
+          "kind": "policy",
+          "name": "method_release_components_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_release_components",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_releases.method_releases_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_releases.method_releases_delete",
+          "kind": "policy",
+          "name": "method_releases_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_releases.method_releases_delete",
+          "kind": "policy",
+          "name": "method_releases_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_releases.method_releases_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_releases.method_releases_insert",
+          "kind": "policy",
+          "name": "method_releases_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_releases.method_releases_insert",
+          "kind": "policy",
+          "name": "method_releases_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_releases.method_releases_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_releases.method_releases_select",
+          "kind": "policy",
+          "name": "method_releases_select",
+          "qual": "private.method_release_readable_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_releases.method_releases_select",
+          "kind": "policy",
+          "name": "method_releases_select",
+          "qual": "private.method_release_readable_v1(organization_id, id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 101,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using(%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_releases.method_releases_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_releases.method_releases_update",
+          "kind": "policy",
+          "name": "method_releases_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_releases.method_releases_update",
+          "kind": "policy",
+          "name": "method_releases_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_releases",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_review_records.method_review_records_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_review_records.method_review_records_delete",
+          "kind": "policy",
+          "name": "method_review_records_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_review_records.method_review_records_delete",
+          "kind": "policy",
+          "name": "method_review_records_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_review_records.method_review_records_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_review_records.method_review_records_insert",
+          "kind": "policy",
+          "name": "method_review_records_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_review_records.method_review_records_insert",
+          "kind": "policy",
+          "name": "method_review_records_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_review_records.method_review_records_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_review_records.method_review_records_select",
+          "kind": "policy",
+          "name": "method_review_records_select",
+          "qual": "private.method_release_readable_v1(organization_id, release_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_review_records.method_review_records_select",
+          "kind": "policy",
+          "name": "method_review_records_select",
+          "qual": "private.method_release_readable_v1(organization_id, release_id)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 101,
+          "anchor": "  execute format('create policy %I on public.%I for select to authenticated using(%s)',t||'_select',t,predicate);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_review_records.method_review_records_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_review_records.method_review_records_update",
+          "kind": "policy",
+          "name": "method_review_records_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_review_records.method_review_records_update",
+          "kind": "policy",
+          "name": "method_review_records_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_review_records",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_scope_bindings.method_scope_bindings_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_delete",
+          "kind": "policy",
+          "name": "method_scope_bindings_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_delete",
+          "kind": "policy",
+          "name": "method_scope_bindings_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 104,
+          "anchor": "  execute format('create policy %I on public.%I for delete to authenticated using(false)',t||'_delete',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_scope_bindings.method_scope_bindings_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_insert",
+          "kind": "policy",
+          "name": "method_scope_bindings_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_insert",
+          "kind": "policy",
+          "name": "method_scope_bindings_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 102,
+          "anchor": "  execute format('create policy %I on public.%I for insert to authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_scope_bindings.method_scope_bindings_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_select",
+          "kind": "policy",
+          "name": "method_scope_bindings_select",
+          "qual": "(private.method_release_readable_v1(organization_id, release_id) AND ((work_id IS NULL) OR private.can_access_resource_v1(organization_id, work_id, 'read'::text)))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_select",
+          "kind": "policy",
+          "name": "method_scope_bindings_select",
+          "qual": "(private.method_release_readable_v1(organization_id, release_id) AND ((work_id IS NULL) OR private.can_access_resource_v1(organization_id, work_id, 'read'::text)))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143040_method_release_scope_and_receipts.sql",
+          "line": 3,
+          "anchor": "create policy method_scope_bindings_select on public.method_scope_bindings for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:public.method_scope_bindings.method_scope_bindings_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_update",
+          "kind": "policy",
+          "name": "method_scope_bindings_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.method_scope_bindings.method_scope_bindings_update",
+          "kind": "policy",
+          "name": "method_scope_bindings_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 103,
+          "anchor": "  execute format('create policy %I on public.%I for update to authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "policy:public.metric_definitions.metric_definitions_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -79455,7 +82051,7 @@
           "id": "policy:public.organization_methodologies.organization_methodologies_select",
           "kind": "policy",
           "name": "organization_methodologies_select",
-          "qual": "( SELECT private.is_org_member(organization_methodologies.organization_id) AS is_org_member)",
+          "qual": "private.method_scope_allowed_v1(organization_id, 'read'::text)",
           "roles": [
             "authenticated"
           ],
@@ -79469,7 +82065,7 @@
           "id": "policy:public.organization_methodologies.organization_methodologies_select",
           "kind": "policy",
           "name": "organization_methodologies_select",
-          "qual": "( SELECT private.is_org_member(organization_methodologies.organization_id) AS is_org_member)",
+          "qual": "private.method_scope_allowed_v1(organization_id, 'read'::text)",
           "roles": [
             "authenticated"
           ],
@@ -79480,15 +82076,21 @@
           "with_check": null
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
+      "owner": "Codex, etapa 14",
       "decision": "refatorar",
-      "stage": "1B, 3",
-      "reason": "comando passa por recurso/ação autorizados; retirar permissão ampla equivalente",
+      "stage": "14",
+      "reason": "Integra publicação e execução de método à autoridade canônica, sem publicação automática pelo legado.",
       "sources": [
         {
           "path": "supabase/migrations/20260904210147_organization_methodology.sql",
           "line": 39,
           "anchor": "create policy organization_methodologies_select on public.organization_methodologies for select to authenticated",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 331,
+          "anchor": "create policy organization_methodologies_select on public.organization_methodologies for select to authenticated using(private.method_scope_allowed_v1(organization_id,'read'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -89831,6 +92433,125 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:private.method_publication_policies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.method_publication_policies",
+          "rls": true,
+          "kind": "table",
+          "name": "method_publication_policies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.method_publication_policies",
+          "rls": true,
+          "kind": "table",
+          "name": "method_publication_policies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 71,
+          "anchor": "create table private.method_publication_policies (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:private.organization_units",
       "kind": "table",
       "catalogues": {
@@ -90188,6 +92909,125 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:private.platform_method_releases",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_method_releases",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_releases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_method_releases",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_releases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 4,
+          "anchor": "create table private.platform_method_releases (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:private.principals",
       "kind": "table",
       "catalogues": {
@@ -90305,6 +93145,125 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "r:private.processing_run_method_pins",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.processing_run_method_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "processing_run_method_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.processing_run_method_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "processing_run_method_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 358,
+          "anchor": "create table private.processing_run_method_pins (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "r:private.project_canonical_revisions",
@@ -110635,6 +113594,780 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.method_component_versions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_component_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "method_component_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_component_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "method_component_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 23,
+          "anchor": "create table public.method_component_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.method_components",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_components",
+          "rls": true,
+          "kind": "table",
+          "name": "method_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_components",
+          "rls": true,
+          "kind": "table",
+          "name": "method_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 17,
+          "anchor": "create table public.method_components (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.method_release_components",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_release_components",
+          "rls": true,
+          "kind": "table",
+          "name": "method_release_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_release_components",
+          "rls": true,
+          "kind": "table",
+          "name": "method_release_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 47,
+          "anchor": "create table public.method_release_components (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.method_releases",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_releases",
+          "rls": true,
+          "kind": "table",
+          "name": "method_releases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_releases",
+          "rls": true,
+          "kind": "table",
+          "name": "method_releases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 31,
+          "anchor": "create table public.method_releases (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.method_review_records",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_review_records",
+          "rls": true,
+          "kind": "table",
+          "name": "method_review_records",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_review_records",
+          "rls": true,
+          "kind": "table",
+          "name": "method_review_records",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 53,
+          "anchor": "create table public.method_review_records (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:public.method_scope_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.method_scope_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "method_scope_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.method_scope_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "method_scope_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 59,
+          "anchor": "create table public.method_scope_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "r:public.metric_definitions",
       "kind": "table",
       "catalogues": {
@@ -112886,15 +116619,21 @@
           "force_rls": true
         }
       },
-      "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "substituir",
-      "stage": "14, 19",
-      "reason": "importar versões legadas sem simular publicação; compor método tipado e template semântico",
+      "owner": "Codex, etapa 14",
+      "decision": "refatorar",
+      "stage": "14",
+      "reason": "Integra publicação e execução de método à autoridade canônica, sem publicação automática pelo legado.",
       "sources": [
         {
           "path": "supabase/migrations/20260904210147_organization_methodology.sql",
           "line": 13,
           "anchor": "create table public.organization_methodologies (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 308,
+          "anchor": "alter table public.organization_methodologies add constraint organization_methodologies_status_check check(status in ('active','superseded','candidate'));",
           "mechanism": "direct_ddl"
         }
       ],
@@ -124938,6 +128677,84 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.method_publication_policies.method_policy_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.method_publication_policies.method_policy_audit",
+          "kind": "trigger",
+          "name": "method_policy_audit",
+          "table": "method_publication_policies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_policy_audit AFTER INSERT OR DELETE OR UPDATE ON private.method_publication_policies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.method_publication_policies.method_policy_audit",
+          "kind": "trigger",
+          "name": "method_policy_audit",
+          "table": "method_publication_policies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_policy_audit AFTER INSERT OR DELETE OR UPDATE ON private.method_publication_policies FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 79,
+          "anchor": "create trigger method_policy_audit after insert or update or delete on private.method_publication_policies for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.method_publication_policies.method_policy_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.method_publication_policies.method_policy_updated",
+          "kind": "trigger",
+          "name": "method_policy_updated",
+          "table": "method_publication_policies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_policy_updated BEFORE UPDATE ON private.method_publication_policies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.method_publication_policies.method_policy_updated",
+          "kind": "trigger",
+          "name": "method_policy_updated",
+          "table": "method_publication_policies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_policy_updated BEFORE UPDATE ON private.method_publication_policies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143040_method_release_scope_and_receipts.sql",
+          "line": 5,
+          "anchor": "create trigger method_policy_updated before update on private.method_publication_policies for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:private.organization_units.organization_units_policy_event",
       "kind": "trigger",
       "catalogues": {
@@ -125055,6 +128872,45 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.platform_method_releases.platform_method_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_releases.platform_method_immutable",
+          "kind": "trigger",
+          "name": "platform_method_immutable",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_immutable BEFORE DELETE OR UPDATE ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_releases.platform_method_immutable",
+          "kind": "trigger",
+          "name": "platform_method_immutable",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_immutable BEFORE DELETE OR UPDATE ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 15,
+          "anchor": "create trigger platform_method_immutable before update or delete on private.platform_method_releases for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:private.principals.principals_policy_event",
       "kind": "trigger",
       "catalogues": {
@@ -125131,6 +128987,84 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "trigger:private.processing_run_method_pins.method_pins_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.processing_run_method_pins.method_pins_audit",
+          "kind": "trigger",
+          "name": "method_pins_audit",
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_pins_audit AFTER INSERT OR DELETE OR UPDATE ON private.processing_run_method_pins FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.processing_run_method_pins.method_pins_audit",
+          "kind": "trigger",
+          "name": "method_pins_audit",
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_pins_audit AFTER INSERT OR DELETE OR UPDATE ON private.processing_run_method_pins FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 370,
+          "anchor": "create trigger method_pins_audit after insert or update or delete on private.processing_run_method_pins for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.processing_run_method_pins.method_pins_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.processing_run_method_pins.method_pins_immutable",
+          "kind": "trigger",
+          "name": "method_pins_immutable",
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_pins_immutable BEFORE DELETE OR UPDATE ON private.processing_run_method_pins FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.processing_run_method_pins.method_pins_immutable",
+          "kind": "trigger",
+          "name": "method_pins_immutable",
+          "table": "processing_run_method_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_pins_immutable BEFORE DELETE OR UPDATE ON private.processing_run_method_pins FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 369,
+          "anchor": "create trigger method_pins_immutable before update or delete on private.processing_run_method_pins for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
       "id": "trigger:private.project_canonical_revisions.project_canonical_revision_immutable",
@@ -132250,6 +136184,708 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.method_component_versions.method_component_versions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_component_versions.method_component_versions_audit",
+          "kind": "trigger",
+          "name": "method_component_versions_audit",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_component_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_component_versions.method_component_versions_audit",
+          "kind": "trigger",
+          "name": "method_component_versions_audit",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_component_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_component_versions.method_component_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_component_versions.method_component_versions_immutable",
+          "kind": "trigger",
+          "name": "method_component_versions_immutable",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_component_versions_immutable BEFORE DELETE OR UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_component_versions.method_component_versions_immutable",
+          "kind": "trigger",
+          "name": "method_component_versions_immutable",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_component_versions_immutable BEFORE DELETE OR UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 107,
+          "anchor": "  if t not in ('method_releases','method_scope_bindings') then execute format('create trigger %I before update or delete on public.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_component_versions.method_component_versions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_component_versions.method_component_versions_updated",
+          "kind": "trigger",
+          "name": "method_component_versions_updated",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_component_versions_updated BEFORE UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_component_versions.method_component_versions_updated",
+          "kind": "trigger",
+          "name": "method_component_versions_updated",
+          "table": "method_component_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_component_versions_updated BEFORE UPDATE ON public.method_component_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_components.method_components_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_components.method_components_audit",
+          "kind": "trigger",
+          "name": "method_components_audit",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_components_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_components.method_components_audit",
+          "kind": "trigger",
+          "name": "method_components_audit",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_components_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_components.method_components_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_components.method_components_immutable",
+          "kind": "trigger",
+          "name": "method_components_immutable",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_components_immutable BEFORE DELETE OR UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_components.method_components_immutable",
+          "kind": "trigger",
+          "name": "method_components_immutable",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_components_immutable BEFORE DELETE OR UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 107,
+          "anchor": "  if t not in ('method_releases','method_scope_bindings') then execute format('create trigger %I before update or delete on public.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_components.method_components_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_components.method_components_updated",
+          "kind": "trigger",
+          "name": "method_components_updated",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_components_updated BEFORE UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_components.method_components_updated",
+          "kind": "trigger",
+          "name": "method_components_updated",
+          "table": "method_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_components_updated BEFORE UPDATE ON public.method_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_release_components.method_release_components_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_release_components.method_release_components_audit",
+          "kind": "trigger",
+          "name": "method_release_components_audit",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_release_components_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_release_components.method_release_components_audit",
+          "kind": "trigger",
+          "name": "method_release_components_audit",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_release_components_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_release_components.method_release_components_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_release_components.method_release_components_immutable",
+          "kind": "trigger",
+          "name": "method_release_components_immutable",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_release_components_immutable BEFORE DELETE OR UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_release_components.method_release_components_immutable",
+          "kind": "trigger",
+          "name": "method_release_components_immutable",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_release_components_immutable BEFORE DELETE OR UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 107,
+          "anchor": "  if t not in ('method_releases','method_scope_bindings') then execute format('create trigger %I before update or delete on public.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_release_components.method_release_components_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_release_components.method_release_components_updated",
+          "kind": "trigger",
+          "name": "method_release_components_updated",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_release_components_updated BEFORE UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_release_components.method_release_components_updated",
+          "kind": "trigger",
+          "name": "method_release_components_updated",
+          "table": "method_release_components",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_release_components_updated BEFORE UPDATE ON public.method_release_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_releases.method_release_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_releases.method_release_immutable",
+          "kind": "trigger",
+          "name": "method_release_immutable",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_method_release_v1()",
+          "definition": "CREATE TRIGGER method_release_immutable BEFORE DELETE OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_method_release_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_releases.method_release_immutable",
+          "kind": "trigger",
+          "name": "method_release_immutable",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_method_release_v1()",
+          "definition": "CREATE TRIGGER method_release_immutable BEFORE DELETE OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_method_release_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 122,
+          "anchor": "create trigger method_release_immutable before update or delete on public.method_releases for each row execute function private.guard_method_release_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_releases.method_releases_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_releases.method_releases_audit",
+          "kind": "trigger",
+          "name": "method_releases_audit",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_releases_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_releases.method_releases_audit",
+          "kind": "trigger",
+          "name": "method_releases_audit",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_releases_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_releases.method_releases_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_releases.method_releases_updated",
+          "kind": "trigger",
+          "name": "method_releases_updated",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_releases_updated BEFORE UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_releases.method_releases_updated",
+          "kind": "trigger",
+          "name": "method_releases_updated",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_releases_updated BEFORE UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_review_records.method_review_records_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_review_records.method_review_records_audit",
+          "kind": "trigger",
+          "name": "method_review_records_audit",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_review_records_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_review_records.method_review_records_audit",
+          "kind": "trigger",
+          "name": "method_review_records_audit",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_review_records_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_review_records.method_review_records_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_review_records.method_review_records_immutable",
+          "kind": "trigger",
+          "name": "method_review_records_immutable",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_review_records_immutable BEFORE DELETE OR UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_review_records.method_review_records_immutable",
+          "kind": "trigger",
+          "name": "method_review_records_immutable",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER method_review_records_immutable BEFORE DELETE OR UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 107,
+          "anchor": "  if t not in ('method_releases','method_scope_bindings') then execute format('create trigger %I before update or delete on public.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);end if;",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_review_records.method_review_records_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_review_records.method_review_records_updated",
+          "kind": "trigger",
+          "name": "method_review_records_updated",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_review_records_updated BEFORE UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_review_records.method_review_records_updated",
+          "kind": "trigger",
+          "name": "method_review_records_updated",
+          "table": "method_review_records",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_review_records_updated BEFORE UPDATE ON public.method_review_records FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_scope_bindings.method_binding_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_scope_bindings.method_binding_immutable",
+          "kind": "trigger",
+          "name": "method_binding_immutable",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_method_release_v1()",
+          "definition": "CREATE TRIGGER method_binding_immutable BEFORE DELETE OR UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_method_release_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_scope_bindings.method_binding_immutable",
+          "kind": "trigger",
+          "name": "method_binding_immutable",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_method_release_v1()",
+          "definition": "CREATE TRIGGER method_binding_immutable BEFORE DELETE OR UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_method_release_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 123,
+          "anchor": "create trigger method_binding_immutable before update or delete on public.method_scope_bindings for each row execute function private.guard_method_release_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_scope_bindings.method_scope_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_scope_bindings.method_scope_bindings_audit",
+          "kind": "trigger",
+          "name": "method_scope_bindings_audit",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_scope_bindings_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_scope_bindings.method_scope_bindings_audit",
+          "kind": "trigger",
+          "name": "method_scope_bindings_audit",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER method_scope_bindings_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 106,
+          "anchor": "  execute format('create trigger %I after insert or update or delete on public.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.method_scope_bindings.method_scope_bindings_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_scope_bindings.method_scope_bindings_updated",
+          "kind": "trigger",
+          "name": "method_scope_bindings_updated",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_scope_bindings_updated BEFORE UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.method_scope_bindings.method_scope_bindings_updated",
+          "kind": "trigger",
+          "name": "method_scope_bindings_updated",
+          "table": "method_scope_bindings",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER method_scope_bindings_updated BEFORE UPDATE ON public.method_scope_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Codex, etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+          "line": 105,
+          "anchor": "  execute format('create trigger %I before update on public.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "bounded_table_ddl_loop"
+        }
+      ],
+      "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
       "id": "trigger:public.metric_definitions.metric_definitions_event",
       "kind": "trigger",
       "catalogues": {
@@ -139042,7 +143678,7 @@
       "path": "apps/web",
       "name": "web",
       "decision": "refatorar",
-      "stage": "12",
+      "stage": "14",
       "reason": "Acrescenta cofre, revisão de publicação, designação de publicador e contexto herdado sob autorização.",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
@@ -145445,6 +150081,48 @@
       "decision": "preservar",
       "stage": "12",
       "reason": "Revoga alteração direta do corpus histórico pelo worker; leituras seguem comandos delegados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919143037_published_method_releases.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919143040_method_release_scope_and_receipts.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919143043_pinned_method_result_boundary.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919143046_method_binding_scope_pagination.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "SQL imutável conferido nos dois journals; arquivo usa o carimbo de produção."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/settings/method/page.tsx",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Revisão e publicação humana com autoridade corrente no banco."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/settings/method/actions.ts",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Revisão e publicação humana com autoridade corrente no banco."
     }
   ],
   "staging_archive": [
@@ -146025,5 +150703,15 @@
     ],
     "new_objects": 77,
     "review": "docs/build/arcabouco/etapa-12.md"
+  },
+  "stage_14_publication_revision": {
+    "production_migrations": [
+      "20260919143037",
+      "20260919143040",
+      "20260919143043",
+      "20260919143046"
+    ],
+    "new_objects": 80,
+    "review": "docs/build/arcabouco/etapa-14.md"
   }
 }

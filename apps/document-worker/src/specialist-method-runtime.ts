@@ -1,3 +1,4 @@
+import {assertPublishedMethodBinding, type PublishedMethodBinding} from "./published-method-binding";
 import {
   assertBundledMethodProvenance,
   specialistMethodRuntimeManifest,
@@ -40,6 +41,7 @@ export type ReceivablesAnalyticalRelease = {
   organizationId: string;
   confirmedScope: {id: string; fingerprint: string};
   sourceDatasetHash: string;
+  methodBinding: PublishedMethodBinding;
 };
 
 export type ReceivablesSpecialistShadowResult = {
@@ -78,6 +80,7 @@ export type ReceivablesSpecialistReleaseResult = {
     maximumEffect: "none";
     confirmedScope: {id: string; fingerprint: string};
     sourceDatasetHash: string;
+    methodBinding: PublishedMethodBinding;
   };
   artifact: {
     artifactType: "receivables_pool_underwriting";
@@ -289,6 +292,8 @@ export function releaseReceivablesSpecialistAnalysis(
   if (!sha256.test(release.confirmedScope.fingerprint) || !sha256.test(release.sourceDatasetHash)) {
     throw new Error("receivables_analytical_release_scope_required");
   }
+  const methodBinding = assertPublishedMethodBinding(release.methodBinding);
+  if (methodBinding.methodId !== "underwrite-receivables-pool" || methodBinding.methodVersion !== input.executorVersion) throw new Error("method_release_executor_mismatch");
   const {runtime, assembly, result, checks, evidenceRefs} = execute("analytical_release", input);
   if (assembly.source.datasetHash !== release.sourceDatasetHash) {
     throw new Error("receivables_analytical_release_dataset_mismatch");
@@ -310,6 +315,7 @@ export function releaseReceivablesSpecialistAnalysis(
       maximumEffect: "none",
       confirmedScope: {id: release.confirmedScope.id, fingerprint: release.confirmedScope.fingerprint},
       sourceDatasetHash: release.sourceDatasetHash,
+      methodBinding,
     },
     artifact: {
       artifactType: "receivables_pool_underwriting",

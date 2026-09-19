@@ -1,3 +1,4 @@
+import {publishedMethodBindingSchema} from "./published-method-binding";
 import {institutionalModelRuntimeContextSchema} from "@offroad/financial-model";
 import {
   canonicalReceivablesRouteCatalogue,
@@ -387,6 +388,7 @@ const rawCaseInputSchema = z.object({
    * in the internal shadow, exactly as before.
    */
   receivables_analytical_release: z.object({
+    methodBinding: publishedMethodBindingSchema.nullable().optional(),
     granted: z.boolean(),
     organizationId: z.uuid(),
     note: z.string().nullable().default(null),
@@ -1973,6 +1975,7 @@ export function buildReceivablesVertical(
         organizationId: analyticalRelease.organizationId,
         release: {
           open: true,
+          methodBinding: publishedMethodBindingSchema.parse(analyticalRelease.methodBinding),
           organizationId: analyticalRelease.organizationId,
           confirmedScope: {id: scope.id, fingerprint: scope.fingerprint},
           sourceDatasetHash: methodAssembly.source.datasetHash,

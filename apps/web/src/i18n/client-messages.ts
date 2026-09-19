@@ -31,6 +31,7 @@ export function selectClientMessages(messages: Messages) {
     WorkContext: messages.WorkContext,
     WorkContributions: messages.WorkContributions,
     Vault: messages.Vault,
+    MethodPublication: messages.MethodPublication,
 
   };
 }

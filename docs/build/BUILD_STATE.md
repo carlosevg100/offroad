@@ -1,3 +1,15 @@
+## Etapa 14: implementação da composição e publicação de métodos
+
+Candidata, revisão, publicação e adoção explícitas, com fonte versionada, alçada do cofre,
+separação de funções e composição imutável. R01 conserva aprovação e manifesto; a execução
+fixa seu release e revalida retirada no callback. O legado cria apenas candidatas.
+
+95 contratos SQL passaram em staging e o check local integral passou. Quatro migrações
+aplicadas nos dois ambientes, com SQL idêntico; 354 arquivos alinhados ao journal de produção.
+Security advisors sem lints; catálogo de etapa zero concilia 80 superfícies novas.
+Detalhes, adaptação do rollout e riscos por incremento em `docs/build/arcabouco/etapa-14.md`.
+CI e entrega do commit exato serão registradas na conciliação da onda. Etapa 15 não iniciada.
+
 ## Onda 13: etapa 14 autorizada e revisão de abertura
 
 Composição e publicação de métodos é o incremento autorizado. Inventário revalidado contra

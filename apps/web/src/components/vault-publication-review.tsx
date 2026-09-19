@@ -22,7 +22,7 @@ export function VaultWorkspace({locale, initialPage, workId = null}: {locale: st
     setStatus(t("saved")); await refresh(); return true;
   }
   return <section className="vault-workspace" aria-label={t("title")}>
-    <div className="vault-toolbar"><div role="group" aria-label={t("view")}>
+    <div className="vault-toolbar"><a href={`/${locale}/app/settings/method`}>{t("methods")}</a><div role="group" aria-label={t("view")}>
       {(["published", "candidates"] as const).map(value => <button key={value} aria-pressed={mode === value} disabled={pending} onClick={() => run(async () => {setMode(value);await refresh(value);})}>{t(value)}</button>)}
     </div><button disabled={pending} onClick={() => setEditing("new")}>{t("create")}</button>
       {page.canAdminister && <button disabled={pending} onClick={() => run(async () => setPeople(await loadVaultPeople({locale, resourceId: page.scopeId, search: "", offset: 0})))}>{t("people")}</button>}

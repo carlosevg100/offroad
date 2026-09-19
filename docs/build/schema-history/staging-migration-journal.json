@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-18T11:15:20.334Z",
+  "captured_at": "2026-09-19T14:31:18.979Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1457,6 +1457,22 @@
     {
       "version": "20260918111340",
       "name": "vault_legacy_worker_grants"
+    },
+    {
+      "version": "20260919135827",
+      "name": "published_method_releases"
+    },
+    {
+      "version": "20260919140956",
+      "name": "method_release_scope_and_receipts"
+    },
+    {
+      "version": "20260919141545",
+      "name": "pinned_method_result_boundary"
+    },
+    {
+      "version": "20260919142246",
+      "name": "method_binding_scope_pagination"
     }
   ]
 }

@@ -24,6 +24,13 @@ insert into public.organization_memberships (organization_id, user_id, role, sta
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000401","role":"authenticated","aal":"aal1"}', true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000401"}',true);
+do $$ declare scope uuid;begin
+ select id into scope from public.vault_scopes where organization_id='20000000-0000-4000-8000-000000000401';
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000401',null,'work','allow');
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000402',null,'read','allow');
+end $$;
+
 
 do $$
 declare
@@ -36,19 +43,18 @@ begin
   if (first ->> 'version')::int <> 1 or (second ->> 'version')::int <> 2 then
     raise exception 'versions did not advance: % %', first, second;
   end if;
-  if (select count(*) from public.organization_methodologies where organization_id = '20000000-0000-4000-8000-000000000401' and status = 'active') <> 1 then
-    raise exception 'more than one active methodology';
+  if (select count(*) from public.organization_methodologies where organization_id = '20000000-0000-4000-8000-000000000401' and status = 'candidate') <> 2 then
+    raise exception 'legacy saves did not remain candidates';
   end if;
-  if (select version_number from public.organization_methodologies where organization_id = '20000000-0000-4000-8000-000000000401' and status = 'active') <> 2 then
-    raise exception 'the active methodology is not the latest';
+  if (select max(version_number) from public.organization_methodologies where organization_id = '20000000-0000-4000-8000-000000000401' and status = 'candidate') <> 2 then
+    raise exception 'candidate versions did not advance';
   end if;
-  if (select confirmed_by from public.organization_methodologies where organization_id = '20000000-0000-4000-8000-000000000401' and status = 'active') is null then
-    raise exception 'a reviewed methodology records who confirmed it';
-  end if;
+  if exists(select 1 from public.organization_methodologies where confirmed_by is not null) then raise exception 'caller supplied reviewed became human approval';end if;
+  if exists(select 1 from public.method_releases where status<>'candidate') then raise exception 'legacy save published a method';end if;
 end;
 $$;
 
--- A member reads; a member does not write.
+-- An explicitly designated reader reads; membership alone does not authorize content.
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000402","role":"authenticated","aal":"aal1"}', true);
 do $$
 declare
@@ -75,6 +81,7 @@ $$;
 
 -- Another tenant sees nothing and writes nothing.
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000403","role":"authenticated","aal":"aal1"}', true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000402"}',true);
 do $$
 declare
   accepted boolean := true;
@@ -93,6 +100,7 @@ $$;
 
 -- Capabilities never enter the methodology through the back door.
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000401","role":"authenticated","aal":"aal1"}', true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000401"}',true);
 do $$
 declare
   accepted boolean := true;

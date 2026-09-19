@@ -1,6 +1,6 @@
 {
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-18T11:15:08.567Z",
+  "captured_at": "2026-09-19T14:31:11.547Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1401,6 +1401,22 @@
     {
       "version": "20260918111441",
       "name": "vault_legacy_worker_grants"
+    },
+    {
+      "version": "20260919143037",
+      "name": "published_method_releases"
+    },
+    {
+      "version": "20260919143040",
+      "name": "method_release_scope_and_receipts"
+    },
+    {
+      "version": "20260919143043",
+      "name": "pinned_method_result_boundary"
+    },
+    {
+      "version": "20260919143046",
+      "name": "method_binding_scope_pagination"
     }
   ]
 }
