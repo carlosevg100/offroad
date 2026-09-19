@@ -1,6 +1,6 @@
 {
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-19T14:31:18.979Z",
+  "captured_at": "2026-09-19T17:51:10.737Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1473,6 +1473,18 @@
     {
       "version": "20260919142246",
       "name": "method_binding_scope_pagination"
+    },
+    {
+      "version": "20260919171641",
+      "name": "platform_method_publication_commands"
+    },
+    {
+      "version": "20260919172752",
+      "name": "platform_method_attestation_replay"
+    },
+    {
+      "version": "20260919173017",
+      "name": "preserve_published_platform_method_identity"
     }
   ]
 }

@@ -1725,6 +1725,67 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.attest_platform_method_candidate_v1(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.attest_platform_method_candidate_v1(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb)",
+          "kind": "function",
+          "name": "attest_platform_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.attest_platform_method_candidate_v1(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb)",
+          "kind": "function",
+          "name": "attest_platform_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor text, p_evidence jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 113,
+          "anchor": "create function private.attest_platform_method_candidate_v1(p_id uuid,p_candidate uuid,p_fingerprint text,p_kind text,p_actor text,p_evidence jsonb) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919175924_platform_method_attestation_replay.sql",
+          "line": 5,
+          "anchor": " body:=pg_get_functiondef('private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)'::regprocedure);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
       "id": "function:private.attest_qualified_introduction_plan_technical_review(p_plan_id uuid, p_material_fingerprint text, p_reviewer_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -15882,6 +15943,61 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.platform_method_reference_available_v1(p_release text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.platform_method_reference_available_v1(p_release text)",
+          "kind": "function",
+          "name": "platform_method_reference_available_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.platform_method_reference_available_v1(p_release text)",
+          "kind": "function",
+          "name": "platform_method_reference_available_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 186,
+          "anchor": "create function private.platform_method_reference_available_v1(p_release text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "catalogues": {
@@ -17654,6 +17770,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.publish_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.publish_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+          "kind": "function",
+          "name": "publish_platform_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.publish_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+          "kind": "function",
+          "name": "publish_platform_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 144,
+          "anchor": "create function private.publish_platform_method_v1(p_command uuid,p_candidate uuid,p_fingerprint text,p_reason text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
       "id": "function:private.publish_vault_entry_v1(p_request_id uuid, p_publication_id uuid, p_reviewed_fingerprint text)",
@@ -23710,6 +23881,61 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.require_platform_method_operator_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_platform_method_operator_v1()",
+          "kind": "function",
+          "name": "require_platform_method_operator_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.require_platform_method_operator_v1()",
+          "kind": "function",
+          "name": "require_platform_method_operator_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 57,
+          "anchor": "create function private.require_platform_method_operator_v1() returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
       "id": "function:private.require_receivables_scope_aware_reader(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "catalogues": {
@@ -24581,6 +24807,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.retire_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.retire_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+          "kind": "function",
+          "name": "retire_platform_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.retire_platform_method_v1(p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text)",
+          "kind": "function",
+          "name": "retire_platform_method_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_candidate uuid, p_fingerprint text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 169,
+          "anchor": "create function private.retire_platform_method_v1(p_command uuid,p_candidate uuid,p_fingerprint text,p_reason text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
       "id": "function:private.retry_blocked_event_outbox_v1(p_organization_id uuid, p_outbox_id uuid)",
@@ -30433,6 +30714,67 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.submit_platform_method_candidate_v1(p_id uuid, p_release_id text, p_bundle jsonb, p_author text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.submit_platform_method_candidate_v1(p_id uuid, p_release_id text, p_bundle jsonb, p_author text)",
+          "kind": "function",
+          "name": "submit_platform_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_release_id text, p_bundle jsonb, p_author text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.submit_platform_method_candidate_v1(p_id uuid, p_release_id text, p_bundle jsonb, p_author text)",
+          "kind": "function",
+          "name": "submit_platform_method_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_release_id text, p_bundle jsonb, p_author text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 64,
+          "anchor": "create function private.submit_platform_method_candidate_v1(p_id uuid,p_release_id text,p_bundle jsonb,p_author text) returns text",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260919175930_preserve_published_platform_method_identity.sql",
+          "line": 4,
+          "anchor": " body:=pg_get_functiondef('private.submit_platform_method_candidate_v1(uuid,text,jsonb,text)'::regprocedure);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
       "id": "function:private.submit_review_execution_turn_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
@@ -70321,6 +70663,147 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.platform_method_attestations.platform_method_attestations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_method_attestations.platform_method_attestations_deny",
+          "kind": "policy",
+          "name": "platform_method_attestations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_method_attestations.platform_method_attestations_deny",
+          "kind": "policy",
+          "name": "platform_method_attestations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 47,
+          "anchor": "create policy platform_method_attestations_deny on private.platform_method_attestations as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "policy:private.platform_method_candidates.platform_method_candidates_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_method_candidates.platform_method_candidates_deny",
+          "kind": "policy",
+          "name": "platform_method_candidates_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_candidates",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_method_candidates.platform_method_candidates_deny",
+          "kind": "policy",
+          "name": "platform_method_candidates_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_candidates",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 46,
+          "anchor": "create policy platform_method_candidates_deny on private.platform_method_candidates as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "policy:private.platform_method_publication_events.platform_method_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_method_publication_events.platform_method_events_deny",
+          "kind": "policy",
+          "name": "platform_method_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_method_publication_events.platform_method_events_deny",
+          "kind": "policy",
+          "name": "platform_method_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 48,
+          "anchor": "create policy platform_method_events_deny on private.platform_method_publication_events as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
       "id": "policy:private.platform_method_releases.platform_method_releases_deny",
       "kind": "policy",
       "catalogues": {
@@ -92925,6 +93408,363 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.platform_method_attestations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_method_attestations",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_attestations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_method_attestations",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_attestations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 17,
+          "anchor": "create table private.platform_method_attestations (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "r:private.platform_method_candidates",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_method_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_method_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 5,
+          "anchor": "create table private.platform_method_candidates (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "r:private.platform_method_publication_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_method_publication_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_publication_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_method_publication_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_method_publication_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 28,
+          "anchor": "create table private.platform_method_publication_events (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
       "id": "r:private.platform_method_releases",
@@ -128890,6 +129730,123 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.platform_method_attestations.platform_method_attestations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_attestations.platform_method_attestations_immutable",
+          "kind": "trigger",
+          "name": "platform_method_attestations_immutable",
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_attestations_immutable BEFORE DELETE OR UPDATE ON private.platform_method_attestations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_attestations.platform_method_attestations_immutable",
+          "kind": "trigger",
+          "name": "platform_method_attestations_immutable",
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_attestations_immutable BEFORE DELETE OR UPDATE ON private.platform_method_attestations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 52,
+          "anchor": "create trigger platform_method_attestations_immutable before update or delete on private.platform_method_attestations for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
+          "kind": "trigger",
+          "name": "platform_method_candidates_immutable",
+          "table": "platform_method_candidates",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_candidates_immutable BEFORE DELETE OR UPDATE ON private.platform_method_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
+          "kind": "trigger",
+          "name": "platform_method_candidates_immutable",
+          "table": "platform_method_candidates",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_candidates_immutable BEFORE DELETE OR UPDATE ON private.platform_method_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 51,
+          "anchor": "create trigger platform_method_candidates_immutable before update or delete on private.platform_method_candidates for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "trigger:private.platform_method_publication_events.platform_method_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_publication_events.platform_method_events_immutable",
+          "kind": "trigger",
+          "name": "platform_method_events_immutable",
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_events_immutable BEFORE DELETE OR UPDATE ON private.platform_method_publication_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_publication_events.platform_method_events_immutable",
+          "kind": "trigger",
+          "name": "platform_method_events_immutable",
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_method_events_immutable BEFORE DELETE OR UPDATE ON private.platform_method_publication_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Codex, correção da etapa 14",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+          "line": 53,
+          "anchor": "create trigger platform_method_events_immutable before update or delete on private.platform_method_publication_events for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
       "id": "trigger:private.platform_method_releases.platform_method_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -150141,6 +151098,27 @@
       "decision": "preservar",
       "stage": "14",
       "reason": "Revisão e publicação humana com autoridade corrente no banco."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919175916_platform_method_publication_commands.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Correção do ingresso de método-base; SQL imutável com carimbo de produção e equivalência em staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919175924_platform_method_attestation_replay.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Correção do ingresso de método-base; SQL imutável com carimbo de produção e equivalência em staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260919175930_preserve_published_platform_method_identity.sql",
+      "decision": "preservar",
+      "stage": "14",
+      "reason": "Correção do ingresso de método-base; SQL imutável com carimbo de produção e equivalência em staging."
     }
   ],
   "staging_archive": [
