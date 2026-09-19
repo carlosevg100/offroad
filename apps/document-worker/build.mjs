@@ -25,6 +25,9 @@ import {build} from "esbuild";
 import {fileURLToPath} from "node:url";
 import {dirname, join} from "node:path";
 
+import {buildReleasedExecutors} from "../../packages/credit-playbook/scripts/build-released-executors.mjs";
+await buildReleasedExecutors();
+
 const here = dirname(fileURLToPath(import.meta.url));
 
 /** Anything that is not ours and not relative is resolved from node_modules at run time. */

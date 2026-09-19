@@ -7,6 +7,7 @@ describe("published method worker boundary", () => {
  it("accepts only a pin whose build manifest is available in this image", () => {expect(assertPublishedMethodBinding(binding)).toEqual(binding);});
  it("rejects missing publication and a substituted manifest or executor version", () => {
   expect(() => assertPublishedMethodBinding(null)).toThrow("method_release_binding_required");
+  expect(() => assertPublishedMethodBinding({...binding,platformReleaseId:"substituted"})).toThrow("method_release_executor_mismatch");
   expect(() => assertPublishedMethodBinding({...binding,baseManifestHash:"0".repeat(64)})).toThrow("method_release_manifest_mismatch");
   expect(() => assertPublishedMethodBinding({...binding,methodVersion:"2026.09.19-v1"})).toThrow("method_release_manifest_mismatch");
   expect(() => assertPublishedMethodBinding({...binding,manifestFingerprint:"0".repeat(64)})).toThrow("method_release_manifest_mismatch");

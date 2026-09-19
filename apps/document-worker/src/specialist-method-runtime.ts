@@ -1,3 +1,4 @@
+import {loadReleasedReceivables} from "./released-method-executor";
 import {assertPublishedMethodBinding, type PublishedMethodBinding} from "./published-method-binding";
 import {
   assertBundledMethodProvenance,
@@ -5,9 +6,6 @@ import {
   specialistTaskCapabilityRuntimeManifest,
 } from "@offroad/credit-playbook";
 import {
-  assessReceivablesPoolMethodReadiness,
-  receivablesPoolInputAssemblySchema,
-  underwriteReceivablesPool,
   type ReceivablesPhaseOneInput,
   type ReceivablesPoolUnderwriting,
   type ReceivablesRawDetectionReport,
@@ -224,6 +222,7 @@ function execute(mode: SpecialistMethodMode, input: SpecialistExecutionInput) {
   if (input.executorKey !== executorKey || input.executorVersion !== runtime.method.procedure.version) {
     throw new Error("specialist_executor_binding_mismatch");
   }
+  const {assessReceivablesPoolMethodReadiness, receivablesPoolInputAssemblySchema, underwriteReceivablesPool} = loadReleasedReceivables();
   const readiness = assessReceivablesPoolMethodReadiness({
     phaseOne: input.phaseOne,
     detection: input.detection,

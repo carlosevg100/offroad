@@ -1,3 +1,4 @@
+import {releasedMethodArtifact} from "./released-method-executor";
 import {z} from "zod";
 import {procedureBuildProvenance} from "@offroad/credit-playbook";
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -9,5 +10,7 @@ export function assertPublishedMethodBinding(value: unknown): PublishedMethodBin
  const binding = parsed.data;
  const built = procedureBuildProvenance.find(p => p.procedure.id === binding.methodId && p.procedure.version === binding.methodVersion);
  if (!built || built.manifestHash !== binding.baseManifestHash || (!binding.houseReleaseId && binding.manifestFingerprint !== binding.baseManifestHash)) throw new Error("method_release_manifest_mismatch");
+ const artifact = releasedMethodArtifact({methodId: binding.methodId, methodVersion: binding.methodVersion, manifestHash: binding.baseManifestHash});
+ if (artifact.platformReleaseId !== binding.platformReleaseId) throw new Error("method_release_executor_mismatch");
  return binding;
 }

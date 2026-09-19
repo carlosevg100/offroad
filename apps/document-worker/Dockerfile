@@ -46,7 +46,8 @@ RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 #                        to resolve from the application root rather than from the isolated
 #                        store of whichever package declared them.
 RUN pnpm --filter @offroad/document-worker... build \
- && pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted /out
+ && pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted /out \
+ && cp -R apps/document-worker/released-methods /out/released-methods
 
 # A bundle that cannot start has to fail here, in the build, and not forty minutes later as a
 # task that boots and dies in CloudWatch. Started with an empty environment the worker must
@@ -126,6 +127,7 @@ RUN printf '%s\n' \
 WORKDIR /app
 COPY --from=build /out/node_modules ./node_modules
 COPY --from=build /out/dist ./dist
+COPY --from=build /repo/apps/document-worker/released-methods ./released-methods
 COPY --from=build /out/package.json ./package.json
 COPY --from=build /repo/brand ./brand
 # Frozen source packs of the gold cases travel with the image: a job bound to a pack reads it

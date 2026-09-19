@@ -41,3 +41,6 @@ packages/testing-fixtures/assets/fakeco/.build.json
 
 # Raw reviewer event streams are large and derived; the review record and response are what count
 docs/product/gold-cases/reviews/**/codex-events.jsonl
+
+# Reproducible executors built only from published source snapshots.
+apps/document-worker/released-methods/
