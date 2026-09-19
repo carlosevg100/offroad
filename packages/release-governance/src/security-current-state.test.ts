@@ -183,6 +183,17 @@ describe("security current-state inventory", () => {
     }
   });
 
+  it("requires platform corpus publication boundaries at wave-fourteen closeout", () => {
+    for (const evidenceRef of ["SEV-PLATFORM-METHOD-REPLAY", "SEV-PLATFORM-METHOD-IDENTITY", "SEV-PLATFORM-METHOD-INGRESS", "SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-SQL", "SEV-PLATFORM-METHOD-CONCURRENCY"]) {
+      expect(currentSecurityInventory.evidenceIndex.some((item) => item.evidenceId === evidenceRef)).toBe(true);
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter((item) => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some((item) => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
   it("rejects the previous wave identity even when it accompanies the current snapshot", () => {
     const archived = copyInventory();
     archived.baseline.waveId = "wave-13";

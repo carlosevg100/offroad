@@ -105,3 +105,10 @@ As três tabelas novas permanecem vazias em produção; R01 conserva manifesto e
 Os 96 contratos SQL passaram em staging, com rollback; os oito testes novos de preparação
 e o check local completo passaram. Concorrência de duas sessões e replay integral são gates
 da CI, cujos resultados efetivos são registrados no completion após a publicação.
+
+## Entrega verificada
+
+PR 667 entregue em `f89b224bbab1f7caf363bd968e500ee63073952b`; main Quality 35460897286, Security 35460897279 e worker 35460897290 aprovados. Web Vercel 6544182973 e ECS 376 no commit exato, 1/1 e polling saudável.
+
+Inventário final: 195 evidências, oito novas obrigatórias, 18 lacunas gerais preservadas.
+A implantação do próprio fechamento é registrada no completion externo após seus gates.
