@@ -13,11 +13,7 @@ import {
   type AuthorizedContextResolution,
   type ContextIssuerTrust,
 } from "@offroad/governed-retrieval";
-import {
-  receivablesPoolUnderwritingInputSchema,
-  receivablesPoolUnderwritingSchema,
-  underwriteReceivablesPool,
-} from "@offroad/receivables-analysis";
+import {loadReleasedReceivables} from "./released-method-executor";
 import {z} from "zod";
 
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -113,6 +109,7 @@ function executorRegistration(executor: InternalBundledExecutor): CandidateExecu
  * The only executor bundled for this internal fixture runtime. Its capability remains shadow;
  * registry presence is not a production authorization and this module is not wired to a queue.
  */
+const {receivablesPoolUnderwritingInputSchema, receivablesPoolUnderwritingSchema} = loadReleasedReceivables();
 export const bundledInternalDispatchExecutorRegistry: readonly InternalBundledExecutor[] = Object.freeze([{
   taskId: "R01",
   executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
@@ -122,7 +119,7 @@ export const bundledInternalDispatchExecutorRegistry: readonly InternalBundledEx
   maximumEffect: "none",
   inputSchema: receivablesPoolUnderwritingInputSchema,
   resultSchema: receivablesPoolUnderwritingSchema,
-  execute: (input) => underwriteReceivablesPool(receivablesPoolUnderwritingInputSchema.parse(input)),
+  execute: (input) => loadReleasedReceivables().underwriteReceivablesPool(receivablesPoolUnderwritingInputSchema.parse(input)),
 }]);
 
 export class InternalDispatchRefusal extends Error {

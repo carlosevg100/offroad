@@ -1,0 +1,432 @@
+{
+  "schemaVersion": "method-release-lock.v1",
+  "releases": [
+    {
+      "platformReleaseId": "r01-2026.09.06-v1",
+      "sourceCommit": "d694951b11b6733a218b6c1b2037267784c7c815",
+      "snapshotHash": "129ff35d15eedb33036bfed3553ee5f2ee732dc38a2f123a8a4ad494c560247d",
+      "artifactHash": "25e7fb90c4dcb08f3550d4969762320e2a7592625cc15c8f0a61d6939610edb5",
+      "provenance": {
+        "schemaVersion": "legacy-procedure-adapter.v1",
+        "procedure": {
+          "id": "underwrite-receivables-pool",
+          "version": "2026.09.06-v1",
+          "maturity": "production"
+        },
+        "source": {
+          "path": "receivables/underwrite-receivables-pool.md",
+          "hash": "9f5cf24e6751c708a7ff9825afebdd1878e2e07fc652c295df7493cb8e246264"
+        },
+        "compiler": {
+          "version": "2026.09.18-v1",
+          "sources": [
+            {
+              "path": "packages/credit-playbook/src/build-method-manifest.ts",
+              "hash": "38dacf680a45fc8e55dc2a862fa8cf950e6b34d626b485a85bc088b997decaec"
+            },
+            {
+              "path": "packages/credit-playbook/src/method-component.ts",
+              "hash": "50a0dc0769ce9bd9d6f909f2a7242d69ed63bcd00e62850772b007ee37dd74e0"
+            },
+            {
+              "path": "packages/credit-playbook/src/procedure-compiler.ts",
+              "hash": "f33177013196299df7c1345ed030b4af548fc815978b0c8ca639936620d8e93a"
+            },
+            {
+              "path": "packages/credit-playbook/src/procedure-contract.ts",
+              "hash": "a5d53552cb262804d32573ee5d954cf5b225dc605851cc1d76cea19be29f70c7"
+            },
+            {
+              "path": "packages/credit-playbook/src/procedure-markdown.ts",
+              "hash": "e4a0b52163edbdfe7d7ed3e8b0f4dd34ca9415628fd1e48b768cb1285b8ebf21"
+            },
+            {
+              "path": "packages/credit-playbook/src/review-record.ts",
+              "hash": "d44342d3d38509c2a616b737e4d9f79e151305a35b918ce2e0dc9d3de5cd013a"
+            },
+            {
+              "path": "pnpm-lock.yaml",
+              "hash": "9c58538e770b8ae181c088a42ba33a5456fbbc112eda3188b9898c084464df5b"
+            },
+            {
+              "path": "tsconfig.base.json",
+              "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+            }
+          ],
+          "hash": "757a3e46d1fc3fd4225e0f91e3302759bd59bb2aae5a3390a8a4db9b55c6bf2e"
+        },
+        "adapterHash": "caf448f8e194522a4fed02a967098ae8da0b6a6cb0ea22995c4b15d3e5c5d288",
+        "compositionStatus": "legacy_contract",
+        "grantsExecution": false,
+        "pendingContent": [
+          "typed component contracts require explicit authorship"
+        ],
+        "executor": {
+          "module": "@offroad/receivables-analysis",
+          "exportName": "underwriteReceivablesPool",
+          "sourceClosureHash": "37ed5a9a2253f25e3c2b8d79d0e9cabf92c76e9bb3d06a74e52380d164c7e9e6"
+        },
+        "evidence": [
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/underwrite-receivables-pool-2026-09-10-adversarial/run.json",
+            "hash": "c28b9da4748cadeafaa1d3e66f6c4bec18f0bd3e4734c09e9d270347a058c99c"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/underwrite-receivables-pool-2026-09-10-consistency/run.json",
+            "hash": "4b7a1f6ee4aa6bcfa2e2e57cce17389288645862f5527ed9ff2d0d98c15e8e2c"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/runs/underwrite-receivables-pool-2026-09-10-gold/run.json",
+            "hash": "47686335ebeedd9a0a651019d617963765162afd8119c3b1cbf2f2b81a330833"
+          },
+          {
+            "path": "packages/credit-playbook/knowledge/reviews/underwrite-receivables-pool-2026-09-10-independent-review.json",
+            "hash": "829490e6200a23a7b62736706e3c7655ff5d81cc36ff980b06541a8d36a09e01"
+          },
+          {
+            "path": "packages/receivables-analysis/src/underwrite.test.ts",
+            "hash": "511f0c30353dc6c0c2d038d7f7738e9f7cb566ab827b8a373d7ee5d773f7e2b7"
+          }
+        ],
+        "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090"
+      },
+      "routing": [
+        {
+          "procedure": {
+            "id": "underwrite-receivables-pool",
+            "version": "2026.09.06-v1",
+            "maturity": "production"
+          },
+          "taskIds": [
+            "R01"
+          ],
+          "requiredPackIds": [
+            "analysis.receivables-underwriting"
+          ],
+          "bindingPriority": 100,
+          "executor": {
+            "module": "@offroad/receivables-analysis",
+            "exportName": "underwriteReceivablesPool"
+          },
+          "resultContract": "method.underwrite-receivables-pool.v1",
+          "sourcePath": "receivables/underwrite-receivables-pool.md",
+          "sourceHash": "9f5cf24e6751c708a7ff9825afebdd1878e2e07fc652c295df7493cb8e246264"
+        }
+      ],
+      "capabilities": [
+        {
+          "taskId": "R01",
+          "executorKey": "@offroad/receivables-analysis#underwriteReceivablesPool",
+          "executorVersion": "2026.09.06-v1",
+          "procedure": {
+            "id": "underwrite-receivables-pool",
+            "version": "2026.09.06-v1"
+          },
+          "availability": "live",
+          "exposure": "universal",
+          "allowedUses": [
+            "internal_validation",
+            "customer_work"
+          ],
+          "allowedEvidenceRegimes": [
+            "project_private",
+            "mixed_governed"
+          ],
+          "allowedDataClasses": [
+            "project_confidential"
+          ],
+          "allowedSourceClasses": [
+            "project_context",
+            "provided_documents",
+            "house_method"
+          ],
+          "allowedProviderIds": [],
+          "allowedToolIds": [],
+          "providerRequired": false,
+          "maximumEffect": "none",
+          "allowlistedTenantIds": [],
+          "allowlistedProjectIds": []
+        }
+      ],
+      "approval": {
+        "procedure": {
+          "id": "underwrite-receivables-pool",
+          "version": "2026.09.06-v1"
+        },
+        "approvedBy": "Carlos Eduardo Galves",
+        "approvedAt": "2026-09-10",
+        "approvalSource": "instrução do fundador na sessão de coordenação de 10/09/2026"
+      },
+      "executorSources": [
+        {
+          "path": "packages/domain-contracts/package.json",
+          "hash": "d9455e3bfc96fc4a14ac45053466c46f46ab6044dbb42250794419b0e417c9d6"
+        },
+        {
+          "path": "packages/domain-contracts/src/contextual-adoption.ts",
+          "hash": "bbe50f847a84fdfce427e507836798df1ee0f8ccc7ec761d2d580ef3c58096b2"
+        },
+        {
+          "path": "packages/domain-contracts/src/document-work-product.ts",
+          "hash": "ec9c66b87b2e496cd3697c9f7a6ecb42b971cfb16007c08f3a2b8d99920df3b9"
+        },
+        {
+          "path": "packages/domain-contracts/src/domain-event.ts",
+          "hash": "971b71a86e609bb27afa355b2063e19800789552c6633d2728df7bb726e2fba6"
+        },
+        {
+          "path": "packages/domain-contracts/src/dossier.ts",
+          "hash": "7fb87fe96d44754c72fd593a4a3477434ee85d2c18df1fc1e8db8fe16679d1d9"
+        },
+        {
+          "path": "packages/domain-contracts/src/entity.ts",
+          "hash": "5c1e3c9c282f24048acd8f12f54d266f5fe629058d1fed3399b558a975f30da2"
+        },
+        {
+          "path": "packages/domain-contracts/src/index.ts",
+          "hash": "451d16e62c9b3801c2da017364a452bd99e500b08c263b3336d213b23e2d24d6"
+        },
+        {
+          "path": "packages/domain-contracts/src/observation.ts",
+          "hash": "8a9ecfd95fd9ac74d2f2824a2b708b377e8de3b03ec0968df8f0520e32e2e025"
+        },
+        {
+          "path": "packages/domain-contracts/src/source-version.ts",
+          "hash": "cfc11f7076ced8be453c7f3fb5751dc89e20e880bbfd2b31ec1c342c321c14c5"
+        },
+        {
+          "path": "packages/financial-core/package.json",
+          "hash": "69f2268dfae2fe6e8f5e0c33a05f68dd8e509f68ff77c21348e5ba906a1ac008"
+        },
+        {
+          "path": "packages/financial-core/src/assumption-unit.ts",
+          "hash": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
+        },
+        {
+          "path": "packages/financial-core/src/depreciation.ts",
+          "hash": "ea9bd8b4f1024d3472d85f35039b8ed72c8bcde9cc5c82b3f97f70fec0ae275a"
+        },
+        {
+          "path": "packages/financial-core/src/financial-truth.ts",
+          "hash": "a0c80b192ca540b8fbd301a621d8e5c82554e1055e3f3231dc0f0d2da659014c"
+        },
+        {
+          "path": "packages/financial-core/src/index.ts",
+          "hash": "de399601ef7e32191aee3f5c42faa6a3a57299787e8b1a3e0bb2d57337e26dd6"
+        },
+        {
+          "path": "packages/financial-core/src/indexed-debt.ts",
+          "hash": "cfb4acc3f86457ecaa858bb489d9e855dc0ff8c14ff4b906106f495159edb2eb"
+        },
+        {
+          "path": "packages/financial-core/src/operation.ts",
+          "hash": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/contracts.ts",
+          "hash": "96c8f29dbc763ada38909538a25b67e849b4f19592459e712c77f215893036b7"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/dynamic-metrics.ts",
+          "hash": "cd6fa83a9db894a4919ed645875f6fd61a5452ec336c9d531420d550c3d3ed51"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/eligibility-allocation.ts",
+          "hash": "e6d668815a3602d96b565234b58fb3aefbaab72f5fb5d3867af44577ac47606b"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-borrowing-base.ts",
+          "hash": "c11cd74e99bb375e56c058beaa48586a1a67b7beedf2630012efdd986825a2cb"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-concentration.ts",
+          "hash": "ca17f9c2ee483dccc4c7dde3338b35a6200a20c6609edbc83cd5748457576167"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-eligibility.ts",
+          "hash": "fd0b6f9fdade3372e0f3822119148d905a09a42bc14bd0301c6ebe9c078dc600"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-performance.ts",
+          "hash": "219e4a1b8d1b0e3729ce2d1a8660ef85a23202e924bb19bd0bf7f5b03f7b9e63"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-reconciliation.ts",
+          "hash": "887e8f1bb3cc8ad8460b08ddf1f826ba0cd0d5919b5d3ffed24d21bc8d59a6bc"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-shared.ts",
+          "hash": "ec9689cf119841652ba0fff48f185df2e7cd7a3d8936a10bda76ab7f5caff7ed"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-triggers.ts",
+          "hash": "cd44019e6800c7f67cade698e2238852d7746852c3f4b6e807fb17bf9886d16a"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/pool-waterfall.ts",
+          "hash": "27c877893caaf92ae4881dcfdc2919110d7845cdf29b9fc301a8a961015a13ae"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/provider-allocation.ts",
+          "hash": "4c66699982526e2186d16e57a77290f2fd08ea1b7c4e334feb123dc7cfb1ff84"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/static-metrics.ts",
+          "hash": "31af3414353b30419945ff45b8be234394feac5f0b30020420bbdc49bc84334e"
+        },
+        {
+          "path": "packages/financial-core/src/receivables/structure-cost.ts",
+          "hash": "0393ab7df072b6a71fb29a723ea3434c233cfd905456562b5f6f859eca31b3d6"
+        },
+        {
+          "path": "packages/financial-core/src/structure.ts",
+          "hash": "f2794ba314bcd6f3212502a2daebe5e28a171f5792e698299365fd9935b3ece6"
+        },
+        {
+          "path": "packages/fund-mandate/package.json",
+          "hash": "475daa3dc64507e41c1a800581b598a6b2371f42bb38e2ddb96b0641b68a0301"
+        },
+        {
+          "path": "packages/fund-mandate/src/fit.ts",
+          "hash": "cf1490ae300b044b26f8dc0484494187ba8d6c6e5e4248ccbeda1006605de676"
+        },
+        {
+          "path": "packages/fund-mandate/src/index.ts",
+          "hash": "e9a75f32ae99ce8b9d5de72feeaba26b77cfbbf2a4fb65ea658b15cbfbf01102"
+        },
+        {
+          "path": "packages/fund-mandate/src/mandate.ts",
+          "hash": "c28763afed509ae19ba370d26cecb4515e58dc72c912f0fb4ff1cb233ba64707"
+        },
+        {
+          "path": "packages/fund-mandate/src/market-truth.ts",
+          "hash": "240e87559fdd1cd1a38813d66b9ebb87db23b8968928da137e9295d2e4453b83"
+        },
+        {
+          "path": "packages/fund-mandate/src/provenance.ts",
+          "hash": "f52e85abc9bb34b0339c88ed41ca1f3a9cf2f829f6c5a4fcffdd622d7ecb0291"
+        },
+        {
+          "path": "packages/fund-mandate/src/provider-case-fit.ts",
+          "hash": "a6a0839e96a68b80db9493997d0d67f99e962c05ce6c4146aa07627d1e4c644e"
+        },
+        {
+          "path": "packages/fund-mandate/src/receivables-provider.ts",
+          "hash": "fe21762fe2a030475bc7581f23a3bf026e78442c62e252497e9e519b36f1ac40"
+        },
+        {
+          "path": "packages/fund-mandate/src/verified-mandate.ts",
+          "hash": "64be14fbe35be030971f8f44fa4586a9b15a25a8fdbf36995fe084fc3c74753c"
+        },
+        {
+          "path": "packages/matching-core/package.json",
+          "hash": "65c2d30d07c7caa688e6ff4891fd754870920afc7d6020241d6bfd4304586a2b"
+        },
+        {
+          "path": "packages/matching-core/src/candidate-fit.ts",
+          "hash": "3f53e963e67ad4bd9b6553f577573b27ec3afcb26b59f4c7a22725652bf10605"
+        },
+        {
+          "path": "packages/matching-core/src/index.ts",
+          "hash": "c0b0725196155b434068d1b8d26d1a54cdd6927c68f2c4c96627c07e7de1df4e"
+        },
+        {
+          "path": "packages/receivables-analysis/package.json",
+          "hash": "c39e488811ecff294de3c93116b3993d0e7e32ed38e412a120744c2fc4c8e5ad"
+        },
+        {
+          "path": "packages/receivables-analysis/src/analyze.ts",
+          "hash": "0fe23ee07a15ce70e434411eab0d72bede9faf816896e7fd0672ac560098521d"
+        },
+        {
+          "path": "packages/receivables-analysis/src/anchors.ts",
+          "hash": "8c1c8b9a3e9153a3c8b647ce663d5e229497f215f50c2a1a1c134901c9442fbf"
+        },
+        {
+          "path": "packages/receivables-analysis/src/balance-source-proposals.ts",
+          "hash": "fef54f1b8455c21825a4a5a86797cf2895c947f8948fb4fc9d7c97de1af32ac5"
+        },
+        {
+          "path": "packages/receivables-analysis/src/canonical.ts",
+          "hash": "56ceb7a877bc3ea06d0eddb5a74efd752e5bc3dab555e56c547bc60d3d8cd48a"
+        },
+        {
+          "path": "packages/receivables-analysis/src/contract-facts.ts",
+          "hash": "4f97d42811fc62b00d311398066cf468f814252ad76c4ec7cefb652c42361cbf"
+        },
+        {
+          "path": "packages/receivables-analysis/src/document-supplement-contract.ts",
+          "hash": "9c5d713f4a6584fe609a0de5d427a5a7905e0a9b2f2a656c48dead229271901d"
+        },
+        {
+          "path": "packages/receivables-analysis/src/evidence-scope.ts",
+          "hash": "b2210a97230ba48af509430a3f8f3ebcf79093590327d7b70a4f535eaab9b834"
+        },
+        {
+          "path": "packages/receivables-analysis/src/history-coverage.ts",
+          "hash": "1419dea0b68616b376a655d611a553e2b2227e149a7b99eb3cf8252d3a82614e"
+        },
+        {
+          "path": "packages/receivables-analysis/src/index.ts",
+          "hash": "95ca1959b9ec3cc55481e53bc80062cfd747b3ecd67481a9c413aa6abb1d077e"
+        },
+        {
+          "path": "packages/receivables-analysis/src/method-assembly.ts",
+          "hash": "b574fb856c7b9eac298df844b91f70d38a1e50f6513ab2e873e40882602e0012"
+        },
+        {
+          "path": "packages/receivables-analysis/src/method-readiness.ts",
+          "hash": "a95fde47c095fc764a665f6af4d15824ea89da55a23a92d3c1d691056c17c4f7"
+        },
+        {
+          "path": "packages/receivables-analysis/src/method-supplement-draft.ts",
+          "hash": "90c7f0c57b4f18f73759daf5af2c020061cf4272dcb43c27e0c366838cbee1b5"
+        },
+        {
+          "path": "packages/receivables-analysis/src/phase-one.ts",
+          "hash": "5f0b2e42b4065bbbe7f7dfb2af09540e0ff4a8a04863088123e23eb38b1cef66"
+        },
+        {
+          "path": "packages/receivables-analysis/src/phase-two-b.ts",
+          "hash": "e09f60574f9800a3762ed8e7e5cefde1cdc689fbf4470d6d422bcead6661dcd6"
+        },
+        {
+          "path": "packages/receivables-analysis/src/phase-two.ts",
+          "hash": "162747113711efa56460bbf1542d46a3f0e922b1df88f5bb6856ea87f50191c2"
+        },
+        {
+          "path": "packages/receivables-analysis/src/playbook.ts",
+          "hash": "37950b5b6ab1a4edd143d0cffc5ab97a8a9160737e54ae6f21394233f407dd03"
+        },
+        {
+          "path": "packages/receivables-analysis/src/raw-detection.ts",
+          "hash": "25894699ca70de2567cede5a18c3b6c537808873d93836b229883f223a936d21"
+        },
+        {
+          "path": "packages/receivables-analysis/src/scenarios.ts",
+          "hash": "9bd14c77cfca2c9a596fb069220088cb970d1a13e702d11a67c784cc39916c0b"
+        },
+        {
+          "path": "packages/receivables-analysis/src/schema.ts",
+          "hash": "79a186c8680d8b8a0de8a089677782af4a645657feadf6c36e37e416778e90d7"
+        },
+        {
+          "path": "packages/receivables-analysis/src/support-periods.ts",
+          "hash": "9678809057e3ab51bcb01f9359baad7ebd29dae3aaa10c491a8f932517bca98c"
+        },
+        {
+          "path": "packages/receivables-analysis/src/underwrite.ts",
+          "hash": "f823ce797bf959c6fe6dd7d30065b9fecd90f4c99dfc52419f4e3d1c4bb60bf5"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "hash": "9c58538e770b8ae181c088a42ba33a5456fbbc112eda3188b9898c084464df5b"
+        },
+        {
+          "path": "tsconfig.base.json",
+          "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
+        }
+      ]
+    }
+  ]
+}

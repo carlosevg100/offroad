@@ -1,6 +1,7 @@
 /** Build-only: neither exported from the package nor imported by the worker. */
 import {readFileSync, readdirSync} from "node:fs";
 import {resolve, relative, join} from "node:path";
+import {readReleasedMethodLock} from "./released-method-lock";
 import {loadMethodLibrary} from "./procedure-markdown";
 import {adaptLegacyMethodDocument, compileProcedureComposition, methodContentHash, pinMethodSources, componentCompilerVersion, type CompilerSource} from "./procedure-compiler";
 
@@ -8,9 +9,10 @@ export function buildMethodManifest(repositoryRoot: string) {
   const root = resolve(repositoryRoot);
   const packageRoot = join(root, "packages/credit-playbook");
   const source = (path: string): CompilerSource => ({path, content: readFileSync(join(root, path), "utf8")});
-  const compilerSources = ["method-component.ts", "procedure-compiler.ts", "procedure-contract.ts", "procedure-markdown.ts", "build-method-manifest.ts", "review-record.ts"].map((name) => source(`packages/credit-playbook/src/${name}`));
+  const compilerSources = ["method-component.ts", "procedure-compiler.ts", "procedure-contract.ts", "procedure-markdown.ts", "build-method-manifest.ts", "review-record.ts", "released-method-lock.ts"].map((name) => source(`packages/credit-playbook/src/${name}`));
   compilerSources.push(source("pnpm-lock.yaml"), source("tsconfig.base.json"));
   const compiler = {version: componentCompilerVersion, sources: pinMethodSources(compilerSources), hash: methodContentHash(pinMethodSources(compilerSources))};
+  const released = readReleasedMethodLock(root).releases;
   const library = loadMethodLibrary(join(packageRoot, "knowledge/procedures"));
   const routing = library.methods.flatMap((method) => {
     const implementation = method.procedure.implementation;
@@ -23,7 +25,20 @@ export function buildMethodManifest(repositoryRoot: string) {
   });
   const approvals = library.methods.filter((method) => method.procedure.maturity === "production").map(({procedure: p}) => ({procedure: {id: p.id, version: p.version}, approvedBy: p.owner.approvedBy, approvedAt: p.owner.approvedAt, approvalSource: p.owner.approvalSource}));
   const executorSourceClosures: Record<string, ReturnType<typeof pinMethodSources>> = {};
+  for (const release of released) {
+    if (!library.methods.some((method) => method.procedure.id === release.provenance.procedure.id && method.procedure.version === release.provenance.procedure.version)) throw new Error("published_method_document_missing");
+  }
   const provenance = library.methods.map((method) => {
+    const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);
+    if (release) {
+      if (method.sourceHash !== release.provenance.source.hash) throw new Error("published_method_requires_new_version");
+      const matching = (entry: {procedure: {id: string; version: string}}) => entry.procedure.id === method.procedure.id && entry.procedure.version === method.procedure.version;
+      if (methodContentHash(routing.filter(matching)) !== methodContentHash(release.routing)
+        || methodContentHash(capabilities.filter(matching)) !== methodContentHash(release.capabilities)
+        || methodContentHash(approvals.find(matching)) !== methodContentHash(release.approval)) throw new Error("published_method_policy_mismatch");
+      executorSourceClosures[release.provenance.executor.sourceClosureHash] = release.executorSources;
+      return release.provenance;
+    }
     if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: [], evidence: []});
     const adapted = adaptLegacyMethodDocument(method);
     const implementation = method.procedure.implementation;

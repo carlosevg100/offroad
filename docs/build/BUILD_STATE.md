@@ -1,3 +1,16 @@
+## Isolamento de métodos publicados: correção autorizada em implementação
+
+Antes da etapa 15, o fundador aprovou complementar a 13 e antecipar da 17 somente o
+isolamento por versão. Registro imutável, snapshot gerado das fontes e executor reproduzível
+preservam o manifesto e a execução do R01. Os dois consumidores do worker abandonam o
+import da implementação atual. A ausência ou adulteração do artefato bloqueia execução.
+
+Escopo e riscos em `docs/build/arcabouco/published-method-isolation.md`. Baseline observada:
+`d694951b11b6733a218b6c1b2037267784c7c815`, CI aprovada, ECS 377 saudável.
+Não há DDL, migração ou nova aprovação de conteúdo. A publicação desta correção ainda
+precisa passar nos gates; seu completion registrará CI, merge e web/worker no commit exato.
+A etapa 15 será retomada depois; demais incrementos e os atos do fundador são preservados.
+
 ## Etapa 14: correção do ingresso de métodos-base entregue
 
 PR 667 entregue em `f89b224bbab1f7caf363bd968e500ee63073952b`; main Quality 35460897286, Security 35460897279 e worker 35460897290 aprovados. Web Vercel 6544182973 e ECS 376 no commit exato, 1/1 e polling saudável.

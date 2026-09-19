@@ -13,7 +13,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --exclude 'dist/**'",
+    "test": "node --test scripts/released-executors.eval.mjs && vitest run --exclude 'dist/**'",
     "manifest:generate": "node scripts/generate-method-manifest.mjs"
   },
   "dependencies": {
