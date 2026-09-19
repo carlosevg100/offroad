@@ -133,6 +133,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-vault-publication-concurrency.py
 
+      - name: Concurrent method publication and adoption
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-method-publication-concurrency.py
+
       - name: Check stage-zero access surface and every file version against production journal
         run: |
           set -euo pipefail

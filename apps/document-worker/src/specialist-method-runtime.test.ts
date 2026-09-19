@@ -1,3 +1,4 @@
+import {procedureBuildProvenance} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 import {
   diversifiedReceivablesCase,
@@ -146,9 +147,11 @@ describe("specialist method shadow runtime", () => {
   });
 });
 
+const publishedManifest = procedureBuildProvenance.find(p => p.procedure.id === "underwrite-receivables-pool")!;
+const methodBinding = {platformReleaseId: "r01-2026.09.06-v1", baseManifestHash: publishedManifest.manifestHash, houseReleaseId: null, manifestFingerprint: publishedManifest.manifestHash, processingRunId: "20000000-0000-4000-8000-000000000001", methodId: "underwrite-receivables-pool", methodVersion: "2026.09.06-v1"};
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const confirmedScope = {id: "22222222-2222-4222-8222-222222222222", fingerprint: "e".repeat(64)};
-const release = {open: true, organizationId, confirmedScope, sourceDatasetHash: datasetHash};
+const release = {methodBinding, open: true, organizationId, confirmedScope, sourceDatasetHash: datasetHash};
 const releaseInput = {
   taskId: "R01",
   executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",

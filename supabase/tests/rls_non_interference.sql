@@ -5718,3 +5718,13 @@ do $$ declare relation text; begin
 end $$;
 
 select 'rls_non_interference_passed' as result;
+
+-- Stage 14: published method authority is never a worker or direct table-write capability.
+do $$ declare t text;begin
+ foreach t in array array['method_components','method_component_versions','method_releases','method_release_components','method_review_records','method_scope_bindings'] loop
+  if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname=t and c.relrowsecurity and c.relforcerowsecurity) then raise exception 'Method RLS missing: %',t;end if;
+  if has_table_privilege('authenticated','public.'||t,'INSERT,UPDATE,DELETE') or has_table_privilege('anon','public.'||t,'SELECT,INSERT,UPDATE,DELETE') or has_table_privilege('service_role','public.'||t,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'Method direct authority exposed: %',t;end if;
+ end loop;
+ if has_function_privilege('service_role','public.publish_method_release_v1(uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('authenticated','private.worker_record_receivables_before_method_pin_v1(uuid,text,uuid,jsonb)','EXECUTE') then raise exception 'Method publication or legacy result bypass exposed';end if;
+end $$;

@@ -2487,3 +2487,88 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:public.vault_scopes.vault_scope_resource`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
 - `trigger:public.vault_scopes.vault_scopes_audit`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
 - `trigger:public.vault_scopes.vault_scopes_updated`: preservar, etapa 12; Cofre com revisão e publicação humanas, versão exata, direitos herdados e retirada auditável.
+
+## Atualização da etapa 14, 19/09/2026
+
+80 superfícies novas conferidas nos dois ambientes. Publicação, candidatos legados e direitos de uso integram a autoridade vigente; migração não constitui aprovação humana.
+
+- `function:private.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.compose_method_v1(p_org uuid, p_base text, p_overrides jsonb, p_unit uuid, p_work_type text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.guard_method_release_v1()`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.list_method_releases_v1(p_offset integer)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.method_release_readable_v1(p_org uuid, p_release uuid)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.method_scope_allowed_v1(p_org uuid, p_action text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.method_value_matches_v1(t jsonb, v jsonb, depth integer)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.pin_worker_method_release_v1(p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.retire_method_release_v1(p_release_id uuid, p_reason text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.set_method_publication_policy_v1(p_separate_reviewer boolean)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:private.worker_record_receivables_before_method_pin_v1(p_job_id uuid, p_capability_token text, p_input_assembly_id uuid, p_result jsonb)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.bind_method_release_v1(p_binding_id uuid, p_release_id uuid, p_expected_binding_id uuid, p_unit_id uuid, p_work_type text, p_work_id uuid)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.list_method_releases_v1(p_offset integer)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.publish_method_release_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.retire_method_release_v1(p_release_id uuid, p_reason text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.review_method_candidate_v1(p_release_id uuid, p_review_id uuid, p_manifest_fingerprint text, p_evidence_fingerprint text, p_review_text text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.set_method_publication_policy_v1(p_separate_reviewer boolean)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `function:public.submit_method_candidate_v1(p_id uuid, p_title text, p_base_release_id text, p_overrides jsonb, p_unit_id uuid, p_work_type text)`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:private.method_publication_policies.method_policy_deny`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:private.platform_method_releases.platform_method_releases_deny`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:private.processing_run_method_pins.method_pins_deny`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_component_versions.method_component_versions_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_component_versions.method_component_versions_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_component_versions.method_component_versions_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_component_versions.method_component_versions_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_components.method_components_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_components.method_components_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_components.method_components_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_components.method_components_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_release_components.method_release_components_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_release_components.method_release_components_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_release_components.method_release_components_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_release_components.method_release_components_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_releases.method_releases_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_releases.method_releases_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_releases.method_releases_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_releases.method_releases_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_review_records.method_review_records_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_review_records.method_review_records_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_review_records.method_review_records_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_review_records.method_review_records_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_scope_bindings.method_scope_bindings_delete`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_scope_bindings.method_scope_bindings_insert`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_scope_bindings.method_scope_bindings_select`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `policy:public.method_scope_bindings.method_scope_bindings_update`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:private.method_publication_policies`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:private.platform_method_releases`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:private.processing_run_method_pins`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_component_versions`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_components`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_release_components`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_releases`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_review_records`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `r:public.method_scope_bindings`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:private.method_publication_policies.method_policy_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:private.method_publication_policies.method_policy_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:private.platform_method_releases.platform_method_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:private.processing_run_method_pins.method_pins_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:private.processing_run_method_pins.method_pins_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_component_versions.method_component_versions_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_component_versions.method_component_versions_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_component_versions.method_component_versions_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_components.method_components_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_components.method_components_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_components.method_components_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_release_components.method_release_components_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_release_components.method_release_components_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_release_components.method_release_components_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_releases.method_release_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_releases.method_releases_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_releases.method_releases_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_review_records.method_review_records_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_review_records.method_review_records_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_review_records.method_review_records_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_scope_bindings.method_binding_immutable`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_scope_bindings.method_scope_bindings_audit`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.
+- `trigger:public.method_scope_bindings.method_scope_bindings_updated`: preservar, etapa 14; Método com composição imutável, revisão humana, fonte publicada, autoridade revogável e execução fixada.

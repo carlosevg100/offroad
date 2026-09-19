@@ -1,3 +1,4 @@
+import {procedureBuildProvenance} from "@offroad/credit-playbook";
 import {readFileSync} from "node:fs";
 import {describe, expect, it} from "vitest";
 import type {ReceivablesEvidenceDocument} from "@offroad/receivables-analysis";
@@ -13,6 +14,8 @@ const workbook = JSON.parse(readFileSync(
   "utf8",
 )) as ReceivablesEvidenceDocument;
 
+const publishedManifest = procedureBuildProvenance.find(p => p.procedure.id === "underwrite-receivables-pool")!;
+const methodBinding = {platformReleaseId: "r01-2026.09.06-v1", baseManifestHash: publishedManifest.manifestHash, houseReleaseId: null, manifestFingerprint: publishedManifest.manifestHash, processingRunId: "20000000-0000-4000-8000-000000000001", methodId: "underwrite-receivables-pool", methodVersion: "2026.09.06-v1"};
 const organizationId = "80000000-0000-4000-8000-000000000001";
 const otherOrganizationId = "80000000-0000-4000-8000-000000000002";
 const projectId = "10000000-0000-4000-8000-000000000001";
@@ -118,7 +121,7 @@ describe("released analytical result inside the real case run", () => {
   it("releases the same calculation bound to the confirmed scope and its dataset when open", () => {
     const shadowOnly = buildReceivablesVertical(completeCaseInput(), "2026-09-10", false)!;
     const granted = buildReceivablesVertical(
-      {...completeCaseInput(), receivables_analytical_release: {granted: true, organizationId, note: null}},
+      {...completeCaseInput(), receivables_analytical_release: {methodBinding, granted: true, organizationId, note: null}},
       "2026-09-10", false,
     )!;
     const release = granted.specialistRelease!;
@@ -152,7 +155,7 @@ describe("released analytical result inside the real case run", () => {
     const crossTenant = buildReceivablesVertical(
       {
         ...completeCaseInput(),
-        receivables_analytical_release: {granted: true, organizationId: otherOrganizationId, note: null},
+        receivables_analytical_release: {methodBinding, granted: true, organizationId: otherOrganizationId, note: null},
       },
       "2026-09-10", false,
     )!;
@@ -173,7 +176,7 @@ describe("released analytical result inside the real case run", () => {
           ...input.confirmed_receivables_scope!,
           state: "stale",
         },
-        receivables_analytical_release: {granted: true, organizationId, note: null},
+        receivables_analytical_release: {methodBinding, granted: true, organizationId, note: null},
       },
       "2026-09-10", false,
     )!;

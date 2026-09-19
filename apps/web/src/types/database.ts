@@ -6106,6 +6106,365 @@ export type Database = {
           },
         ]
       }
+      method_component_versions: {
+        Row: {
+          component_id: string
+          content: Json
+          content_fingerprint: string
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          updated_at: string
+          vault_version_id: string
+        }
+        Insert: {
+          component_id: string
+          content: Json
+          content_fingerprint: string
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          updated_at?: string
+          vault_version_id: string
+        }
+        Update: {
+          component_id?: string
+          content?: Json
+          content_fingerprint?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          updated_at?: string
+          vault_version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_component_versions_organization_id_component_id_fkey"
+            columns: ["organization_id", "component_id"]
+            isOneToOne: false
+            referencedRelation: "method_components"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "method_component_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_component_versions_organization_id_vault_version_id_fkey"
+            columns: ["organization_id", "vault_version_id"]
+            isOneToOne: false
+            referencedRelation: "vault_entry_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      method_components: {
+        Row: {
+          component_key: string
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          scope_id: string
+          updated_at: string
+        }
+        Insert: {
+          component_key: string
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          scope_id: string
+          updated_at?: string
+        }
+        Update: {
+          component_key?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          scope_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_components_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_components_organization_id_scope_id_fkey"
+            columns: ["organization_id", "scope_id"]
+            isOneToOne: false
+            referencedRelation: "vault_scopes"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      method_release_components: {
+        Row: {
+          component_version_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          release_id: string
+          updated_at: string
+        }
+        Insert: {
+          component_version_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          release_id: string
+          updated_at?: string
+        }
+        Update: {
+          component_version_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          release_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_release_components_organization_id_component_versio_fkey"
+            columns: ["organization_id", "component_version_id"]
+            isOneToOne: false
+            referencedRelation: "method_component_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "method_release_components_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_release_components_organization_id_release_id_fkey"
+            columns: ["organization_id", "release_id"]
+            isOneToOne: false
+            referencedRelation: "method_releases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      method_releases: {
+        Row: {
+          base_release_id: string | null
+          created_at: string
+          created_by: string | null
+          evidence_fingerprint: string
+          id: string
+          legacy_methodology_id: string | null
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          published_at: string | null
+          published_by: string | null
+          retired_at: string | null
+          retired_by: string | null
+          retirement_reason: string | null
+          scope_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          base_release_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          evidence_fingerprint: string
+          id: string
+          legacy_methodology_id?: string | null
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          published_at?: string | null
+          published_by?: string | null
+          retired_at?: string | null
+          retired_by?: string | null
+          retirement_reason?: string | null
+          scope_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          base_release_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          evidence_fingerprint?: string
+          id?: string
+          legacy_methodology_id?: string | null
+          manifest?: Json
+          manifest_fingerprint?: string
+          organization_id?: string
+          published_at?: string | null
+          published_by?: string | null
+          retired_at?: string | null
+          retired_by?: string | null
+          retirement_reason?: string | null
+          scope_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_releases_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_releases_organization_id_legacy_methodology_id_fkey"
+            columns: ["organization_id", "legacy_methodology_id"]
+            isOneToOne: true
+            referencedRelation: "organization_methodologies"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "method_releases_organization_id_scope_id_fkey"
+            columns: ["organization_id", "scope_id"]
+            isOneToOne: false
+            referencedRelation: "vault_scopes"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      method_review_records: {
+        Row: {
+          created_at: string
+          evidence_fingerprint: string
+          id: string
+          manifest_fingerprint: string
+          organization_id: string
+          release_id: string
+          review_text: string
+          reviewed_by: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_fingerprint: string
+          id: string
+          manifest_fingerprint: string
+          organization_id: string
+          release_id: string
+          review_text: string
+          reviewed_by: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_fingerprint?: string
+          id?: string
+          manifest_fingerprint?: string
+          organization_id?: string
+          release_id?: string
+          review_text?: string
+          reviewed_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_review_records_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_review_records_organization_id_release_id_fkey"
+            columns: ["organization_id", "release_id"]
+            isOneToOne: false
+            referencedRelation: "method_releases"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      method_scope_bindings: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          organization_id: string
+          previous_binding_id: string | null
+          release_id: string
+          retired_at: string | null
+          unit_id: string | null
+          updated_at: string
+          work_id: string | null
+          work_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id: string
+          organization_id: string
+          previous_binding_id?: string | null
+          release_id: string
+          retired_at?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          work_id?: string | null
+          work_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          organization_id?: string
+          previous_binding_id?: string | null
+          release_id?: string
+          retired_at?: string | null
+          unit_id?: string | null
+          updated_at?: string
+          work_id?: string | null
+          work_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "method_scope_bindings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "method_scope_bindings_organization_id_previous_binding_id_fkey"
+            columns: ["organization_id", "previous_binding_id"]
+            isOneToOne: false
+            referencedRelation: "method_scope_bindings"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "method_scope_bindings_organization_id_release_id_fkey"
+            columns: ["organization_id", "release_id"]
+            isOneToOne: false
+            referencedRelation: "method_releases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "method_scope_bindings_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       metric_definitions: {
         Row: {
           created_at: string
@@ -10243,6 +10602,17 @@ export type Database = {
         }
         Returns: Json
       }
+      bind_method_release_v1: {
+        Args: {
+          p_binding_id: string
+          p_expected_binding_id: string
+          p_release_id: string
+          p_unit_id?: string
+          p_work_id?: string
+          p_work_type?: string
+        }
+        Returns: string
+      }
       bind_source_version_v1: {
         Args: {
           p_request_id: string
@@ -10519,6 +10889,7 @@ export type Database = {
         Args: { p_dossier_id: string; p_work_id: string }
         Returns: string
       }
+      list_method_releases_v1: { Args: { p_offset?: number }; Returns: Json }
       list_my_workspace_invites_v1: { Args: never; Returns: Json }
       list_my_workspaces_v1: { Args: never; Returns: Json }
       list_provider_mandates_v1: {
@@ -10603,6 +10974,14 @@ export type Database = {
           p_version_fingerprint: string
           p_version_id: string
           p_work_scope_id: string
+        }
+        Returns: string
+      }
+      publish_method_release_v1: {
+        Args: {
+          p_manifest_fingerprint: string
+          p_release_id: string
+          p_review_id: string
         }
         Returns: string
       }
@@ -11023,6 +11402,10 @@ export type Database = {
         Args: { p_organization_id: string; p_session_id: string }
         Returns: undefined
       }
+      retire_method_release_v1: {
+        Args: { p_reason: string; p_release_id: string }
+        Returns: string
+      }
       review_case_red_flag: {
         Args: {
           p_decision: string
@@ -11099,6 +11482,16 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      review_method_candidate_v1: {
+        Args: {
+          p_evidence_fingerprint: string
+          p_manifest_fingerprint: string
+          p_release_id: string
+          p_review_id: string
+          p_review_text: string
+        }
+        Returns: string
       }
       revoke_advisor_authorization_command: {
         Args: {
@@ -11298,6 +11691,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      set_method_publication_policy_v1: {
+        Args: { p_separate_reviewer: boolean }
+        Returns: undefined
       }
       set_organization_review_policy_v1: {
         Args: { p_organization_id: string; p_self_approval_allowed: boolean }
@@ -11645,6 +12042,17 @@ export type Database = {
       submit_institutional_revision_proposal_v1: {
         Args: { p_payload: Json; p_project_id: string; p_proposal_id: string }
         Returns: Json
+      }
+      submit_method_candidate_v1: {
+        Args: {
+          p_base_release_id: string
+          p_id: string
+          p_overrides: Json
+          p_title: string
+          p_unit_id?: string
+          p_work_type?: string
+        }
+        Returns: string
       }
       submit_vault_entry_version_v1: {
         Args: {

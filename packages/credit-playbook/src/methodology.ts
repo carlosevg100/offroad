@@ -2,7 +2,7 @@ import {financialDefinitionMap} from "@offroad/credit-ontology";
 import {z} from "zod";
 
 /**
- * How an institution works, as data.
+ * Historical institutional authoring schema, not execution or publication authority.
  *
  * A bank, an asset manager and a credit fund analyse the same company differently: which EBITDA
  * they accept, which adjustments they allow, which thresholds screen a deal, how many scenarios a
@@ -112,98 +112,3 @@ export const organizationMethodologySchema = z.object({
   }
 });
 export type OrganizationMethodology = z.infer<typeof organizationMethodologySchema>;
-
-/**
- * What Offroad does when an organization has not said otherwise. It imposes no lending
- * threshold, because Offroad is not a lender; it does require the scenarios and metrics an
- * institutional read needs.
- */
-export const houseMethodology: OrganizationMethodology = organizationMethodologySchema.parse({
-  schemaVersion: "organization-methodology.v1",
-  definitions: ["adjusted_ebitda", "net_debt", "leverage", "dscr", "interest_coverage", "cfads", "collateral_coverage"]
-    .map((id) => ({id, parameters: {}})),
-  ebitdaAdjustments: [
-    {id: "non_recurring_items", allowed: true, capPercentOfEbitda: 15, requiresEvidence: true},
-    {id: "ifrs16_leases", allowed: true, capPercentOfEbitda: null, requiresEvidence: true},
-    {id: "stock_compensation", allowed: false, capPercentOfEbitda: null, requiresEvidence: true},
-    {id: "pro_forma_acquisitions", allowed: false, capPercentOfEbitda: null, requiresEvidence: true},
-    {id: "run_rate_synergies", allowed: false, capPercentOfEbitda: null, requiresEvidence: true},
-    {id: "fx_translation", allowed: false, capPercentOfEbitda: null, requiresEvidence: true},
-    {id: "discontinued_operations", allowed: true, capPercentOfEbitda: null, requiresEvidence: true},
-  ],
-  thresholds: [],
-  eligibility: [],
-  mandateReferences: [],
-  presentation: {
-    language: "pt-BR",
-    memoSections: ["Resumo", "Companhia", "Desempenho", "Dívida e liquidez", "Estrutura", "Riscos e mitigantes", "Cenários", "Recomendação e condições"],
-    maxPagesByOutput: {meeting_brief: 3, credit_memo: 12, board_paper: 15, pitch: 8},
-    numberLocale: "pt-BR",
-  },
-  reviewSequence: [
-    {order: 1, responsibility: "producer", label: "Produção"},
-    {order: 2, responsibility: "reviewer", label: "Revisão técnica"},
-    {order: 3, responsibility: "decision_maker", label: "Decisão"},
-  ],
-  minimumScenarios: [
-    {id: "base", required: true, shocks: []},
-    {id: "downside", required: true, shocks: [{driver: "ebitda", change: "-20%"}, {driver: "cdi", change: "+200bp"}]},
-    {id: "stress", required: false, shocks: [{driver: "ebitda", change: "-35%"}, {driver: "cdi", change: "+400bp"}]},
-  ],
-  mandatoryMetrics: ["leverage", "dscr", "interest_coverage"],
-  capabilitiesReference: "institution_capability_profiles",
-  priorDecisions: [],
-  corrections: [],
-});
-
-/**
- * The house methodology with an organization's own on top. Lists keyed by id are overridden
- * entry by entry; thresholds, eligibility and references accumulate; presentation and review
- * sequence are replaced whole when the organization states them.
- */
-export function resolveMethodology(organization: Partial<OrganizationMethodology> | null | undefined): OrganizationMethodology {
-  if (!organization) return houseMethodology;
-  const byId = <T extends {id: string}>(base: readonly T[], override: readonly T[] | undefined): T[] => {
-    const merged = new Map(base.map((entry) => [entry.id, entry]));
-    for (const entry of override ?? []) merged.set(entry.id, entry);
-    return [...merged.values()];
-  };
-  return organizationMethodologySchema.parse({
-    ...houseMethodology,
-    definitions: byId(houseMethodology.definitions, organization.definitions),
-    ebitdaAdjustments: byId(houseMethodology.ebitdaAdjustments, organization.ebitdaAdjustments),
-    thresholds: [...houseMethodology.thresholds, ...(organization.thresholds ?? [])],
-    eligibility: [...houseMethodology.eligibility, ...(organization.eligibility ?? [])],
-    mandateReferences: [...houseMethodology.mandateReferences, ...(organization.mandateReferences ?? [])],
-    presentation: organization.presentation ?? houseMethodology.presentation,
-    reviewSequence: organization.reviewSequence?.length ? organization.reviewSequence : houseMethodology.reviewSequence,
-    minimumScenarios: byId(houseMethodology.minimumScenarios, organization.minimumScenarios),
-    mandatoryMetrics: [...new Set([...houseMethodology.mandatoryMetrics, ...(organization.mandatoryMetrics ?? [])])],
-    priorDecisions: organization.priorDecisions ?? [],
-    corrections: organization.corrections ?? [],
-  });
-}
-
-/**
- * The checks a methodology adds to a verifier: one per threshold and one per required
- * scenario and mandatory metric. They change what blocks, never what the numbers are.
- */
-export function methodologyChecks(methodology: OrganizationMethodology): Array<{id: string; kind: "threshold" | "scenario" | "metric"; description: string}> {
-  return [
-    ...methodology.thresholds.map((threshold) => ({
-      id: `threshold:${threshold.scope}:${threshold.metric}`,
-      kind: "threshold" as const,
-      description: `${threshold.metric} ${threshold.comparator} ${threshold.value} (${threshold.scope})`,
-    })),
-    ...methodology.minimumScenarios.filter((scenario) => scenario.required).map((scenario) => ({
-      id: `scenario:${scenario.id}`,
-      kind: "scenario" as const,
-      description: `scenario ${scenario.id} present`,
-    })),
-    ...methodology.mandatoryMetrics.map((metric) => ({
-      id: `metric:${metric}`,
-      kind: "metric" as const,
-      description: `${metric} computed with a trace`,
-    })),
-  ];
-}

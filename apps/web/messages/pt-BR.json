@@ -6212,6 +6212,7 @@
     "historicalAuthor": "Autoria histórica não identificada"
   },
   "Vault": {
+    "methods": "Métodos",
     "eyebrow": "Conhecimento da organização",
     "title": "Cofre",
     "description": "Fontes, premissas, diretrizes e modelos com versões e publicação humana.",
@@ -6297,5 +6298,70 @@
       "warning": "Atenção",
       "danger": "Alerta"
     }
+  },
+  "MethodPublication": {
+    "compositionContent": "Conteúdo da composição",
+    "noAdaptations": "Sem adaptações: esta versão usa integralmente o método de referência aprovado.",
+    "reviewSource": "Versão da fonte",
+    "reviewScope": "Alcance da adaptação",
+    "currentlyAdopted": "Esta versão está vinculada a novos trabalhos. Sua retirada bloqueia o uso até uma nova adoção explícita.",
+    "scopes": {"organization": "Organização", "unit": "Unidade", "work_type": "Tipo de trabalho"},
+
+    "eyebrow": "Conhecimento e método",
+    "title": "Métodos",
+    "description": "Revise como o trabalho será realizado e publique a versão que a sua equipe adotará.",
+    "managePeople": "Gerenciar leitores e publicadores no cofre",
+    "reviewPolicy": "Política de revisão",
+    "separateReviewer": "Exigir revisor diferente do autor e do publicador",
+    "separationExplanation": "A designação para publicar é feita pelo administrador no cofre. Alterar esta política não concede permissão a ninguém.",
+    "savePolicy": "Salvar política",
+    "offroadMethods": "Métodos da Offroad",
+    "houseMethods": "Métodos da casa",
+    "receivables": "Análise de carteira de recebíveis",
+    "version": "Versão {version}",
+    "approved": "Aprovado por {name} em {date}",
+    "evidence": "Aprovação e evidências",
+    "protectedLegacy": "Esta versão preserva o método aprovado. Ela ainda não admite adaptações em seus componentes.",
+    "candidateTitle": "Nome da versão da casa",
+    "createCandidate": "Preparar candidata",
+    "candidateNotice": "Preparar uma candidata não a publica. A revisão considera o conteúdo, suas fontes e as evidências de teste da versão exata.",
+    "noRead": "Você não tem acesso aos métodos privados desta organização.",
+    "empty": "Nenhuma candidata ou publicação disponível.",
+    "legacyCandidate": "Este registro é histórico. Precisa de composição tipada, evidências e revisão antes de poder ser publicado.",
+    "compositionNotice": "A composição mantém o método de referência e registra as adaptações permitidas com suas fontes.",
+    "reviewedVersion": "Identificação da versão revisada",
+    "testEvidence": "Identificação das evidências de teste",
+    "reviewReason": "Revisão técnica do conteúdo e dos testes",
+    "recordReview": "Registrar revisão",
+    "publish": "Publicar esta versão",
+    "useForHouse": "Adotar para novos trabalhos deste tipo",
+    "retireReason": "Motivo da retirada",
+    "retire": "Retirar publicação",
+    "previous": "Anterior",
+    "next": "Próxima",
+    "saved": "Alteração registrada.",
+    "unavailableReceipt": "Publicação com conteúdo indisponível",
+    "override": "Adaptação da casa",
+    "overrideRationale": "Por que adotar esta diferença?",
+    "source": "Fonte publicada no cofre",
+    "findSource": "Buscar fonte",
+    "selectedSource": "Fonte selecionada: {title}",
+    "search": "Buscar",
+    "addValue": "Adicionar valor",
+    "removeValue": "Remover valor",
+    "newValue": "Valor adotado",
+    "states": {
+      "candidate": "Candidata",
+      "published": "Publicada",
+      "retired": "Retirada"
+    },
+    "errors": {
+      "invalid": "Confira os dados e as condições do método. A alteração não foi aplicada.",
+      "denied": "A ação exige permissão vigente e fontes disponíveis.",
+      "stale": "A versão, a revisão ou o vínculo mudou. Atualize antes de continuar.",
+      "unavailable": "Não foi possível concluir a ação. Tente novamente."
+    },
+    "yes": "Sim",
+    "no": "Não"
   }
 }
