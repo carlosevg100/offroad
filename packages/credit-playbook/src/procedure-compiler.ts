@@ -151,11 +151,23 @@ export function adaptLegacyMethodDocument(document: MethodDocument) {
 
 /** Explicit fenced JSON lives alongside the narrative. Ordinary prose is never executed. */
 export function readProcedureComposition(text: string): ProcedureComposition | null {
-  const blocks = [...text.matchAll(/^```offroad-procedure\s*\n([\s\S]*?)^```\s*$/gm)];
-  if (!blocks.length) {
-    if (text.includes("```offroad-procedure")) throw new Error("malformed procedure composition block");
-    return null;
+  // A line scanner is linear in source length; no backtracking over author-controlled whitespace.
+  let opened = false;
+  let closed = false;
+  const body: string[] = [];
+  for (const line of text.split("\n")) {
+    const marker = line.trim();
+    if (marker.startsWith("```offroad-procedure")) {
+      if (marker !== "```offroad-procedure") throw new Error("malformed procedure composition block");
+      if (opened) throw new Error("exactly one procedure composition block is allowed");
+      opened = true;
+    } else if (opened && !closed && marker === "```") {
+      closed = true;
+    } else if (opened && !closed) {
+      body.push(line);
+    }
   }
-  if (blocks.length !== 1) throw new Error("exactly one procedure composition block is allowed");
-  return procedureCompositionSchema.parse(JSON.parse(blocks[0]![1]!));
+  if (!opened) return null;
+  if (!closed) throw new Error("malformed procedure composition block");
+  return procedureCompositionSchema.parse(JSON.parse(body.join("\n")));
 }

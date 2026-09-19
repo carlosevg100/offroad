@@ -40,3 +40,14 @@ o worker recusa o método antes do cálculo. Não há fallback para execução s
 A primeira versão do contrato de componentes não declara prontos os componentes financeiros
 que a autoria ainda precisa fornecer. A integração de executores adicionais é explícita e
 testada em seu incremento; nenhum módulo citado no texto é carregado dinamicamente.
+
+
+## Correção encontrada na CI
+
+O CodeQL identificou retrocesso excessivo na expressão que lia blocos de autoria com
+muitas quebras de linha e tabulações. O parser agora percorre as linhas sem expressão
+com retrocesso, mantém a exigência de bloco único e rejeita blocos incompletos. O teste
+`scans whitespace-heavy authoring sources without a backtracking expression` cobre
+50 mil repetições, com bloco válido e abertura sem fechamento. O manifesto foi regenerado
+pelo comando de compilação; nenhum hash foi ajustado manualmente. A ausência do alerta
+na nova CI é condição de merge.

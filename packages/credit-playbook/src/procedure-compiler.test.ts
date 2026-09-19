@@ -116,3 +116,10 @@ it("compiles a versioned graph and checks budgets inside a nested workflow", () 
   expect(compile(value).components.map((entry) => entry.component.id)).toEqual(["synthetic.formula", "synthetic.workflow"]);
   expect(() => compile({...value, components: [{...workflow, budget: {...budget, maxDurationMs: 999}}, formula()]})).toThrow(/workflow budgets/);
 });
+
+
+it("scans whitespace-heavy authoring sources without a backtracking expression", () => {
+  const block = "```offroad-procedure\n" + JSON.stringify(composition()) + "\n```\n";
+  expect(readProcedureComposition(block + "\n\t".repeat(50_000))?.components).toHaveLength(1);
+  expect(() => readProcedureComposition("```offroad-procedure\n" + "\n\t".repeat(50_000))).toThrow(/malformed/);
+});
