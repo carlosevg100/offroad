@@ -463,7 +463,7 @@ describe("security current-state inventory", () => {
     expect(invalid.currentStateTruthVerified).toBe(false);
     expect(() => renderSecurityCurrentStateInventory(inventory, invalid)).toThrow(/unchanged trusted decision/);
     expect(() => renderSecurityCurrentStateInventory(inventory, trusted)).toThrow(/unchanged trusted decision/);
-  });
+  }, 30_000);
 
   it.each([
     "SOC 2 is certified",
@@ -510,7 +510,7 @@ describe("security current-state inventory", () => {
     expect(rendered).toContain("| Assurance ready | não |");
     expect(countsRead).toBe(0);
     expect(assuranceRead).toBe(0);
-  });
+  }, 30_000);
 
   it("derives the evidence cutoff and refuses an invented review deadline", () => {
     const inventory = copyInventory();

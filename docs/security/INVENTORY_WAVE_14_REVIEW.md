@@ -18,3 +18,8 @@ indexação, amortização, covenants sob definição contratual e cenários com
 Tempo até primeira resposta útil deve ser medido sem conteúdo pessoal ou financeiro.
 A aprovação da onda autoriza a construção, não a publicação de conteúdo profissional: o
 candidato será submetido ao fundador com cálculo e evidências concretos. R01 preservado.
+
+A primeira CI encontrou três timeouts de 5s em testes que resolvem 187 referências no Git.
+Os dois casos parametrizados/de renderização receberam o orçamento de I/O de 30s já usado
+pela primeira leitura confiável. As asserções negativas permanecem iguais; nenhum relógio,
+controle do produto ou gate de segurança foi flexibilizado.
