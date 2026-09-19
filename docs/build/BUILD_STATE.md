@@ -1,3 +1,12 @@
+## Onda 13: etapa 14 autorizada e revisão de abertura
+
+Composição e publicação de métodos é o incremento autorizado. Inventário revalidado contra
+`d623011884ca219ee1c3e8ad0ad46f982e836323`, com 174 evidências e 18 lacunas preservadas.
+Coleta atual confirma ECS 371 no commit exato, polling saudável e alarmes OK, ainda sem
+ações de notificação. Detalhes em `docs/security/INVENTORY_WAVE_13_REVIEW.md`.
+Implementação, migração e gates da etapa 14 pendentes. Estrutura de capital permanece
+candidata sem aprovação profissional; etapa 15 não autorizada nesta onda.
+
 ## Etapa 13: conciliação da entrega da onda 12
 
 PR 661 entregue em `80ff92054531884d85096d0ee8debd5d867aed79`; main Quality 35441709470, Security 35441709492 e worker 35441709491 aprovados. Web Vercel 6540634817 e ECS 370 no commit exato, 1/1 e polling saudável.
