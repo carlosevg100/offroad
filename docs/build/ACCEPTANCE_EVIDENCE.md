@@ -1,5 +1,18 @@
 ## Etapa15: custos adotados na composição financeira em validação
 
+## Etapa15: projeção operacional por períodos (2026-09-20)
+
+Motor `buildOperatingCashProjection` no financial-core v22, registro
+`financial.operating_cash_projection`: receita por valor ou quantidade/preço líquido, despesas
+variáveis/fixas, ponte explícita não monetária, estoques de giro, tributos pagos/restituídos e
+capex manutenção/expansão. EBITDA não vira caixa sem a ponte; períodos contíguos, datas reais e
+operandos completos obrigatórios. Conserva valores negativos, precisão exata e trace imutável.
+Doze casos independentes: caixa20, liberação de giro, caixa negativo, restituição, ausência,
+convenções/datas inválidas, ano bissexto, reprodução e isolamento Decimal. Core202 testes PASS.
+Manifesto corrente regenerado; R01 preservado. Sem DDL, autorização, rota, dado sintético em
+produção ou publicação profissional. Check/CI/implantação são gates do incremento; completion
+externo registra o resultado real. Integração às adoções e alternativas segue na15. Não é
+liquidez intraperíodo nem CFADS contratual; giro por dias exige hipótese adotada própria.
 ## Etapa15: resolução limitada de evidências do gate (2026-09-20)
 
 Após recorrência de timeout local e três timeouts na CI da projeção operacional, o resolvedor
