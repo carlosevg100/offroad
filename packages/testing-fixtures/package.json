@@ -23,6 +23,10 @@
     "./document-work-source-review": {
       "types": "./src/document-work-source-review.ts",
       "default": "./src/document-work-source-review.ts"
+    },
+    "./capital-structure-decision": {
+      "types": "./src/capital-structure-decision.ts",
+      "default": "./src/capital-structure-decision.ts"
     }
   },
   "scripts": {

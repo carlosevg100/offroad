@@ -861,6 +861,9 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
     devDependencies:
+      '@offroad/testing-fixtures':
+        specifier: workspace:*
+        version: link:../testing-fixtures
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
