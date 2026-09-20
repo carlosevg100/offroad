@@ -47,3 +47,4 @@ export * from "./capital-decision-review";
 
 export * from "./capital-decision-delivery";
 export * from "./capital-contract-preparation";
+export * from "./capital-contract-adoptions";
