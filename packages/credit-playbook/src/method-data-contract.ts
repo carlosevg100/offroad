@@ -35,6 +35,11 @@ export function methodDataContractFromJsonSchema(id: string, version: string, ra
       return {type: "array", items: project(s.items)};
     }
     if (type === "object") {
+      if (s.additionalProperties && typeof s.additionalProperties === "object" && !Array.isArray(s.additionalProperties)) {
+        if (s.required !== undefined && !Array.isArray(s.required)) throw new Error("method_json_schema_required_field_missing");
+        if ((s.properties && Object.keys(object(s.properties)).length) || (Array.isArray(s.required) && s.required.length)) throw new Error("method_json_schema_mixed_record_unsupported");
+        return {type: "map", values: project(s.additionalProperties)};
+      }
       if (s.additionalProperties !== false) throw new Error("method_json_schema_closed_object_required");
       const properties = object(s.properties); const required = s.required ?? [];
       if (!Array.isArray(required) || required.some(k => typeof k !== "string" || !Object.hasOwn(properties, k))) throw new Error("method_json_schema_required_field_missing");
