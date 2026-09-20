@@ -1,6 +1,6 @@
 # Autoria de procedimentos da Offroad
 
-Este molde permite escrever a biblioteca profissional em paralelo à construção do arcabouço. O primeiro trabalho é **alternativas de estrutura de capital para uma decisão**; comparar propostas é o segundo. O [esqueleto do primeiro procedimento](procedures/capital/prepare-capital-structure-decision.md) é candidato, não publicado e sem execução habilitada.
+Este molde permite escrever a biblioteca profissional em paralelo à construção do arcabouço. O primeiro trabalho é **alternativas de estrutura de capital para uma decisão**; comparar propostas é o segundo. O [esqueleto do primeiro procedimento](procedures/capital/prepare-capital-structure-decision.md) é candidato com composição técnica em elaboração, não publicado e sem execução habilitada.
 
 ## Como começar
 
@@ -107,8 +107,9 @@ não podem conceder acesso ou remover invariantes. Composição/publicação é 
 
 Use `authoringStatus: incomplete` e liste `pendingContent` enquanto faltar conteúdo.
 `ready_for_review` exige ausência de pendências e continua sem significar aprovação.
-Compilar nunca concede execução. O primeiro procedimento mantém candidato, sem executor,
-vínculo de tarefa ou aprovação; as fórmulas e casos profissionais ainda serão entregues.
+Compilar nunca concede execução. O primeiro procedimento mantém candidato com executor de domínio registrado, sem vínculo de
+tarefa autorizada ou aprovação. A composição contratual e as avaliações profissionais integradas
+continuam pendentes; motores e exemplos unitários não equivalem a publicação.
 
 Após alterar fontes, executar `pnpm --filter @offroad/credit-playbook manifest:generate`.
 A CI recompila e compara os bytes de `method-runtime-manifest.generated.ts`; esse arquivo
@@ -120,3 +121,17 @@ completos, republicar conteúdo ou mudar seu estado de liberação.
 Os registries institucionais históricos continuam necessários aos consumidores atuais e não
 são cópias equivalentes dos doze documentos Markdown; sua remoção sem equivalência apagaria
 conhecimento referenciado. A duplicação manual do manifesto de roteamento foi retirada.
+
+## Descritores de saída e contratos reais da etapa15
+
+A seção Outputs admite nomes reais como workId, tipo null e união explícita object|null.
+Required distingue presença do campo: um campo requerido pode ser nulo quando seu contrato
+permitir, sem ser confundido com ausência ou zero. Nomes de protótipo são recusados.
+Os componentes tipados conservam campos e itens recursivamente; o resumo de Outputs não
+substitui os schemas de validação do executor. A compilação confere os contratos registrados.
+
+No primeiro procedimento, engenharia gera os contratos a partir dos schemas efetivos com
+`node packages/financial-model/scripts/generate-capital-contracts.mjs`; testes comparam o artefato
+aos schemas e negam divergência. O bloco técnico no Markdown deve acompanhar essa versão,
+sem alterar seu contrato para acomodar texto. O autor profissional escreve regras, exceções,
+suficiência, fundamentos e casos. Registro técnico não é aprovação profissional.
