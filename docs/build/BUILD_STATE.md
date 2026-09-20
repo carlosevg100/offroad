@@ -1,5 +1,16 @@
 ## Etapa15: custos adotados na composição financeira em validação
 
+## Etapa15: projeção operacional sob adoções (2026-09-20)
+
+`calculateAdoptedOperatingProjection` conecta o orçamento ao envelope de adoções, sem valores
+livres. Convenções, abertura histórica, séries de giro/receita/despesas/tributos/capex e
+interpretações mantêm definição, origem e cenário. Quantidade exige unidade explícita; valores
+monetários usam a representação adotada. Receita por valor e por drivers são excludentes e
+exigem convenção adotada correspondente. Ausência deixa lacuna e impede resultado, nunca
+preenche zero. Dezenove casos novos; contrato em `etapa-15-projecao-adotada.md`. Sem DDL ou
+autorização; dependências acompanham cada período. Check/CI/produção são gates reais, com
+completion externo. Composição das alternativas segue na15; revalidação de direitos na17.
+
 ## Etapa15: projeção operacional por períodos (2026-09-20)
 
 Motor `buildOperatingCashProjection` no financial-core v22, registro

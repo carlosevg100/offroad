@@ -34,3 +34,5 @@ export * from "./adopted-debt-liquidity";
 export * from "./adopted-numeric-representation";
 
 export * from "./adopted-financing-costs";
+
+export * from "./adopted-operating-projection";
