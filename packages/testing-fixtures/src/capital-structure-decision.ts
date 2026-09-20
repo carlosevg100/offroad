@@ -58,3 +58,5 @@ export function adoptedLiquidityCalendarFixture() {
 }
 
 export {adoptedDebtLiquidityFixture} from "./adopted-debt-liquidity";
+
+export {adoptedFinancingFixture} from "./adopted-financing-costs";

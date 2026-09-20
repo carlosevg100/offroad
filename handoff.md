@@ -1,3 +1,18 @@
+## Etapa15: custos adotados na composição financeira em validação
+
+Novo `calculateAdoptedFinancingLiquidity` liga inventário de custos, convenção de liberação e
+séries tipadas às contribuições do trabalho. Recalcula com encargos retidos/pagos/capitalizados;
+conserva originais, normalização, definições, contexto e dependências. Ausência de taxa, data,
+custo ou representação impede composição; zero/não aplicável são declarações explícitas.
+Resolução de operandos extraída para `adopted-debt-inputs.ts`, reutilizada sem duplicar a
+matemática ou executar primeiro um cronograma que ignore encargos financiados.
+
+20 casos novos na composição, incluindo integração de escala e amortização de custos financiados.
+Gates efetivos serão registrados no completion externo. Sem DDL, nova rota, mudança de acesso ou
+publicação profissional; R01 preservado. Detalhes em `docs/build/arcabouco/etapa-15-custos-adotados.md`.
+Continuar na15 com projeções, comparação, conteúdo e primeira resposta útil; execução17,
+operação18 e preservação19. Não parar a cada incremento nem presumir aprovação de conteúdo.
+
 ## Etapa15: representação numérica adotada em validação
 
 Novo `normalizeCurrencyRepresentation` no financial-core e `resolveAdoptedCurrencyValues`
