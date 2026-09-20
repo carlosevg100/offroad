@@ -66,3 +66,5 @@ export * from "./adopted-operating-projection";
 export * from "./adopted-capital-period-cash";
 
 export * from "./capital-decision-composition";
+
+export * from "./adopted-defined-ratio";
