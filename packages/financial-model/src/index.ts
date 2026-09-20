@@ -46,3 +46,4 @@ export * from "./adopted-defined-ratio";
 export * from "./capital-decision-review";
 
 export * from "./capital-decision-delivery";
+export * from "./capital-contract-preparation";

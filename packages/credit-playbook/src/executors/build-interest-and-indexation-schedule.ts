@@ -179,6 +179,18 @@ export const interestScheduleInputSchema = z.object({
     }
   });
 });
+/** Explicit ordering for equal-date events in new compositions. The frozen v7 route is
+ * retained for reproducibility; new callers use the v8 entry point with these conventions. */
+export const interestEventConventionsSchema = z.object({
+  schemaVersion: z.literal("interest-event-conventions.v1"),
+  series: z.array(z.object({seriesId: nonEmpty,
+    order: z.array(z.enum(["anniversary", "coupon", "amortization"])).length(3)
+      .refine(order => new Set(order).size === 3, "Each event kind occurs exactly once"),
+    anchor: anchorSchema,
+  }).strict()).max(256),
+}).strict().refine(c => new Set(c.series.map(s => s.seriesId)).size === c.series.length, "Duplicate convention series");
+type EventConventions = z.infer<typeof interestEventConventionsSchema>;
+
 export type InterestScheduleInput = z.input<typeof interestScheduleInputSchema>;
 
 type Calculation = {id: string; formula: string; operands: Record<string, string>; result: string; unit: string};
@@ -205,7 +217,8 @@ type SeriesSchedule = {
 };
 
 export type InterestScheduleOutput = {
-  schema_version: "method.build-interest-and-indexation-schedule.v7";
+  schema_version: "method.build-interest-and-indexation-schedule.v7" | "method.build-interest-and-indexation-schedule.v8";
+  event_conventions?: EventConventions;
   reference_date: string;
   unit: string;
   state: "complete" | "partial" | "blocked";
@@ -276,7 +289,21 @@ function anniversaries(start: string, end: string, day: number): string[] {
 }
 
 export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): InterestScheduleOutput {
+  return projectInterestSchedule(raw, null);
+}
+export function buildInterestAndIndexationScheduleWithConventions(raw: InterestScheduleInput, conventions: unknown): InterestScheduleOutput {
+  return projectInterestSchedule(raw, interestEventConventionsSchema.parse(conventions));
+}
+function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventConventions | null): InterestScheduleOutput {
   const input = canonical(interestScheduleInputSchema.parse(raw));
+  if (conventions) {
+    for (const c of conventions.series) if (!input.series.some(s => s.id === c.seriesId)) throw new Error("interest_convention_unknown_series");
+    for (const series of input.series) {
+      const dates = [...(series.couponDates ?? []).map(e => e.date), ...(series.amortization ?? []).map(e => e.date),
+        ...(series.indexation?.anniversaryDates ?? []).map(e => e.date)];
+      if (new Set(dates).size !== dates.length && !conventions.series.some(c => c.seriesId === series.id)) throw new Error("interest_simultaneous_event_convention_required");
+    }
+  }
   const calculations: Calculation[] = [];
   const record = (calculation: Omit<Calculation, "unit">, unit: string = input.unit) => calculations.push({...calculation, unit});
   const curves = new Map(input.curves.map((curve) => [curve.id, curve]));
@@ -416,7 +443,8 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
           ...(positioned ? series.indexation!.anniversaryDates!.filter((entry) => entry.date > period.start && entry.date <= period.end).map((entry): Event => ({kind: "anniversary", date: entry.date, days: entry.businessDaysFromPeriodStart, amount: null})) : []),
           ...series.couponDates!.filter((coupon) => coupon.date > period.start && coupon.date <= period.end).map((coupon): Event => ({kind: "coupon", date: coupon.date, days: coupon.businessDaysFromPeriodStart, amount: null})),
           ...(principalProjection === "scheduled" ? series.amortization!.filter((entry) => entry.date > period.start && entry.date <= period.end).map((entry): Event => ({kind: "amortization", date: entry.date, days: entry.businessDaysFromPeriodStart, amount: d(entry.amount)})) : []),
-        ].sort((a, b) => a.days - b.days || compare(a.date, b.date) || compare(a.kind, b.kind));
+        ].sort((a, b) => a.days - b.days || compare(a.date, b.date) || (conventions?.series.find(c => c.seriesId === series.id)?.order.indexOf(a.kind) ?? ["amortization", "anniversary", "coupon"].indexOf(a.kind))
+          - (conventions?.series.find(c => c.seriesId === series.id)?.order.indexOf(b.kind) ?? ["amortization", "anniversary", "coupon"].indexOf(b.kind)));
         let daysUsed = 0;
         let couponAccrued = d(0);
         let couponPaid = d(0);
@@ -433,7 +461,7 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
           if (event.kind === "anniversary") {
             // The nominal is updated at this date by the lagged month's variation (and the period-end pro rata rides on the last one).
             const month = addMonths(event.date.slice(0, 7), -series.indexation!.lagMonths);
-            const monthly = curve!.monthlyRateByMonth![month]!;
+            const monthly = conventions ? monthlyVariationOf(curve!, month)! : curve!.monthlyRateByMonth![month]!;
             const stepFactor = layer(d(monthly), "indexFactor");
             const stepAccrued = roundAmount(principal.times(stepFactor));
             indexationAccrued = indexationAccrued.plus(stepAccrued);
@@ -554,9 +582,10 @@ export function buildInterestAndIndexationSchedule(raw: InterestScheduleInput): 
   uncovered.sort((a, b) => compare(a.series_id, b.series_id));
   const state: InterestScheduleOutput["state"] = blockReasons.length > 0 ? "blocked" : uncovered.length > 0 || schedules.some((schedule) => schedule.principal_projection === "insufficient_evidence" || schedule.treatment_scenarios !== null || !schedule.first_coupon_complete) ? "partial" : "complete";
   const body = {
-    schema_version: "method.build-interest-and-indexation-schedule.v7" as const, reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons,
+    schema_version: conventions ? "method.build-interest-and-indexation-schedule.v8" as const : "method.build-interest-and-indexation-schedule.v7" as const,
+    ...(conventions ? {event_conventions: conventions} : {}), reference_date: input.referenceDate, unit: input.unit, state, block_reasons: blockReasons,
     assumptions: [...assumptions].sort(compare), schedule_by_series: schedules, schedule_aggregate: aggregate, ledger_coverage: ledgerCoverage, accounting_bridge: bridge, uncovered_series: uncovered,
   };
-  const inputFingerprint = fingerprint(input);
+  const inputFingerprint = fingerprint(conventions ? {input, conventions} : input);
   return {...body, trace: {calculations, inputFingerprint, outputFingerprint: fingerprint({...body, calculations, inputFingerprint})}};
 }
