@@ -270,6 +270,19 @@ describe("security current-state inventory", () => {
     expect(currentSecurityInventory.dataFlows.find((item) => item.flowId === "FLOW-GITHUB-EVAL-SECRETS")!.gapRefs).toContain("SG-PRIVILEGED-ACCESS");
   });
 
+  it("checks each expected fingerprint independently when two evidence records share a pinned object", async () => {
+    const inventory = copyInventory();
+    const repository = inventory.evidenceIndex.filter(e => e.kind === "automated_test");
+    const valid = repository[0]!; const attacked = repository[1]!;
+    attacked.ref = valid.ref;
+    attacked.contentFingerprint = "sha256:" + "0".repeat(64);
+    const result = await evaluateSecurityCurrentStateInventoryTrusted(inventory, masterTrustControlCatalogue);
+    expect(result.evidenceResolutions.some(e => e.evidenceId === valid.evidenceId)).toBe(true);
+    expect(result.evidenceResolutions.some(e => e.evidenceId === attacked.evidenceId)).toBe(false);
+    expect(result.blockers).toContainEqual({code: "repository_evidence_content_mismatch", subjectRef: attacked.evidenceId});
+    expect(result.currentStateTruthVerified).toBe(false);
+  });
+
   it("binds a resolved-evidence receipt to the exact governed milestone relationship", async () => {
     const trusted = await evaluateSecurityCurrentStateInventoryTrusted(currentSecurityInventory, masterTrustControlCatalogue);
     const binding = getSecurityAssuranceMilestoneEvidenceBinding("ASSURANCE-MILESTONE-REMEDIATION-PLAN");
