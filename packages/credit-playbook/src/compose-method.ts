@@ -19,6 +19,8 @@ const precedence = {organization: 0, unit: 1, work_type: 2} as const;
 /** Values are typed parameters, never patches to code, authority or protected components. */
 export function matchesMethodValue(type: MethodValueType, value: unknown): boolean {
   switch (type.type) {
+    case "null": return value === null;
+    case "union": return type.variants.some((variant) => matchesMethodValue(variant, value));
     case "string": return typeof value === "string";
     case "decimal_string": return typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value);
     case "boolean": return typeof value === "boolean";

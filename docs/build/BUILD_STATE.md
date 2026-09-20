@@ -6,6 +6,15 @@ conteúdo; hashes são conferidos por registro, sem cache de autoridade. Quatro 
 cobrem binário/vazio, tamanho/tipo/ausência, injeção e árvore de trabalho alterada. Os94 testes
 do inventário permanecem;209governancePASS isolados em7,76s. Contrato em etapa-15-leitura-git-lotes.md.
 Sem DDL, novos acessos ou relaxamento de gates. CI/produção ainda exigem prova no completion.
+## Etapa15: valores nulos e variantes nos contratos (2026-09-20)
+
+O vocabulário do compilador distingue campo ausente de valor nulo e permite alternativas
+recursivamente tipadas, incluindo dados com campo `id`. Identidades dos componentes mantêm
+as restrições anteriores. Nove testes novos cobrem formatos reais, duplicatas, campos inseguros
+e compatibilidade; contratos legados mantêm seus hashes. Compilador corrente v2026.09.20-v1,
+sem modificar fontes publicadas R01. Não publica nem autoriza execução. Gate completo, CI e
+produção são registrados no completion. Vínculo dos executores reais segue na etapa15.
+
 ## Etapa15: composição da revisão da decisão (2026-09-20)
 
 `prepareCapitalDecisionReview` recalcula comparação e índices definidos, associa condições
