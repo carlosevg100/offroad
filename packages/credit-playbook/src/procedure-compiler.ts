@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 import {procedureCompositionSchema, type ProcedureComposition, type MethodComponent} from "./method-component";
 import type {MethodDocument} from "./procedure-markdown";
 
-export const componentCompilerVersion = "2026.09.18-v1";
+export const componentCompilerVersion = "2026.09.20-v1";
 export type CompilerSource = {path: string; content: string};
 export type RegisteredMethodExecutor = {
   module: string;
