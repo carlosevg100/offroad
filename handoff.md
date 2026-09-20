@@ -14,6 +14,18 @@ produção ou publicação profissional. Check/CI/implantação são gates do in
 externo registra o resultado real. Integração às adoções e alternativas segue na15. Não é
 liquidez intraperíodo nem CFADS contratual; giro por dias exige hipótese adotada própria.
 
+## Etapa15: resolução limitada de evidências do gate (2026-09-20)
+
+Após recorrência de timeout local e três timeouts na CI da projeção operacional, o resolvedor
+do inventário consulta até4 objetosGit por vez, deduplicando apenas a leitura do mesmo objeto
+na mesma avaliação. Cada evidência conserva sua verificação de hash; erros seguem bloqueando.
+Sem cache entre avaliações, sem aceitar dados fornecidos por chamador, sem ampliar timeout ou
+remover teste. Retém somente resumo de bytes/hash, não todos os buffers. Teste novo verifica
+dois registros com o mesmo objeto e hashes esperados distintos.
+94casos do inventário PASS em24,43s, contra93em62,96s na execução isolada anterior; comparação
+observada, não promessa de desempenho. Gate integral, CI e produção exigidos no completion.
+Sem DDL, privilégios, nova confiança, telemetria ou alteração de métodos publicados.
+
 Novo `calculateAdoptedFinancingLiquidity` liga inventário de custos, convenção de liberação e
 séries tipadas às contribuições do trabalho. Recalcula com encargos retidos/pagos/capitalizados;
 conserva originais, normalização, definições, contexto e dependências. Ausência de taxa, data,
