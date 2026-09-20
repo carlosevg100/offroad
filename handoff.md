@@ -1,3 +1,13 @@
+## Etapa15: comparação de alternativas calculadas (2026-09-20)
+
+`composeCapitalStructureDecision` recalcula alternativas e sensibilidades sob a mesma base,
+abertura histórica e períodos. Cenário sem mudança de operando vira lacuna; recomendação é
+julgamento proposto com referências, condições e fatos que a mudariam. Sem ranking. Onze
+testes novos, model232PASS; framing sem companhia, ausências, aberturas, escopo e reprodução.
+Contrato em `docs/build/arcabouco/etapa-15-comparacao-calculada.md`. Sem DDL ou publicação.
+Revisão contratual/mercado, autoria e integração continuam na15. CI e produção precisam ser
+comprovadas no completion antes de encerrar o incremento.
+
 ## Etapa15: leitura de evidências Git em lotes limitados (2026-09-20)
 
 O limite de5s voltou a falhar no negativo capturedAt da CI da composição financeira. A PR
@@ -6,6 +16,7 @@ conteúdo; hashes são conferidos por registro, sem cache de autoridade. Quatro 
 cobrem binário/vazio, tamanho/tipo/ausência, injeção e árvore de trabalho alterada. Os94 testes
 do inventário permanecem;209governancePASS isolados em7,76s. Contrato em etapa-15-leitura-git-lotes.md.
 Sem DDL, novos acessos ou relaxamento de gates. CI/produção ainda exigem prova no completion.
+
 
 ## Etapa15: custos adotados na composição financeira em validação
 

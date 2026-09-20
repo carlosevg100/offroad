@@ -38,3 +38,5 @@ export * from "./adopted-financing-costs";
 export * from "./adopted-operating-projection";
 
 export * from "./adopted-capital-period-cash";
+
+export * from "./capital-decision-composition";
