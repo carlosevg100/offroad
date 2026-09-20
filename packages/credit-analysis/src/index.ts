@@ -14,3 +14,5 @@ export * from "./questions";
 export * from "./rating";
 export * from "./stress";
 export * from "./verdict";
+
+export * from "./capital-decision-sufficiency";
