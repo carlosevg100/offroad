@@ -99,7 +99,9 @@ test("two people preserve private branches, compare conflicts and lose revoked a
       });
     } finally {
       release();
-      await page.unroute(routeUrl, holdPromotion);
+      // This page has only this handler. Drain it before disabling interception;
+      // removing an in-flight handler can otherwise race route.continue().
+      await page.unrouteAll({behavior: "wait"});
     }
     await test.step("after observable publication, the second reader sees the persisted revision", async () => {
       await expectPublished(a, `Shared basis ${id}`);
