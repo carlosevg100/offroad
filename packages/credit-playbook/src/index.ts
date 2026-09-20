@@ -52,3 +52,5 @@ export * from "./procedure-compiler";
 export * from "./compose-method";
 
 export * from "./method-data-contract";
+
+export {capitalPlanningCompatibilityPolicy} from "./capital-planning-policy.generated";

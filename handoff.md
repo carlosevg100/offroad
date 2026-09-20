@@ -1,3 +1,12 @@
+## Etapa15: adaptador canônico e medição de artefato (2026-09-20)
+
+A política do mapa direcional existente sai da string do worker e passa a um bloco compilado
+do procedimento canônico. Famílias e regras preservadas; hash vinculado ao contexto, cache
+e inputs. Nove testes novos verificam geração, autoridade, persistência e relógio; quatro
+contrafactuais de perfil continuam. Duração começa no worker e termina no artefato persistido;
+fila e navegador ficam explícitos fora da medida. Sem DDL, novo provedor ou ativação.
+Gates e produção exigem prova no completion; revisão e publicação profissional seguem na15.
+
 ## Etapa15: candidata profissional e contrato de saída alinhados (2026-09-20)
 
 A candidata2026.09.20-v1 incorpora critérios profissionais, fórmulas implementadas, casos
