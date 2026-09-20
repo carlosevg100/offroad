@@ -1,3 +1,4 @@
+import {hasUnitScale} from "./adopted-input-scale";
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {buildLiquidityCalendar, financialCoreVersion} from "@offroad/financial-core";
@@ -33,7 +34,7 @@ export function calculateAdoptedLiquidityCalendar(raw: unknown) {
     const d = entry.dimensions;
     if (entry.value.type !== "number" || entry.fieldPath !== fieldPath || entry.definitionKind !== selected.definitionKind
       || d.definitionVersionId !== selected.definitionVersionId || d.entityId !== input.entityId || d.perimeter !== input.perimeter
-      || d.currency !== input.currency || d.unit !== "currency" || d.periodEnd !== date || d.periodStart !== (flow ? date : null)
+      || d.currency !== input.currency || d.unit !== "currency" || !hasUnitScale(d.scale) || d.periodEnd !== date || d.periodStart !== (flow ? date : null)
       || d.scenario !== scenario) throw new Error("liquidity_adoption_context_mismatch");
     used.set(entry.decisionId, entry);
     return entry.value.value;

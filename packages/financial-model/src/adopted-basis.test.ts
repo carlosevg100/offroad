@@ -38,10 +38,10 @@ describe("calculation from an immutable contextual basis", () => {
     const canonical = JSON.stringify(input.snapshot);
     expect(() => calculateAdoptedLeverage({...input, envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}})).toThrow("adoption_calculation_context_mismatch");
   });
-  it("does not apply presentation scale to a normalized decimal again", () => {
+  it("rejects non-unit scale because the basis does not prove numeric normalization", () => {
     const input = fixture();
     input.snapshot.entries[0]!.dimensions = {...input.snapshot.entries[0]!.dimensions, scale: "1000"};
     const canonical = JSON.stringify(input.snapshot);
-    expect(calculateAdoptedLeverage({...input, envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}}).value).toBe("3");
+    expect(() => calculateAdoptedLeverage({...input, envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")}})).toThrow("adoption_calculation_unit_scale_required");
   });
 });

@@ -36,13 +36,13 @@ describe("liquidity under an explicitly adopted basis", () => {
     const repeated = fixture(); repeated.events.push({...repeated.events[0]!, id: "duplicate-payment"});
     expect(() => calculateAdoptedLiquidityCalendar(repeated)).toThrow("liquidity_contribution_missing_or_reused");
   });
-  it("reproduces an old revision after a requested scenario is adopted without rescaling normalized values", () => {
+  it("reproduces an old revision and rejects ambiguous non-unit scale", () => {
     const input = fixture(); const before = structuredClone(input); const old = calculateAdoptedLiquidityCalendar(input);
     const requested = fixture(); requested.scenario = "requested"; requested.scope.versionId = id(90);
     mutate(requested, b => {b.versionId = id(90); b.revision = 2; for (const e of b.entries.slice(2)) e.dimensions.scenario = "requested"; b.entries[2]!.value.value = "15";});
     expect(calculateAdoptedLiquidityCalendar(requested).calculation.closingAvailable).toBe("75");
     expect(calculateAdoptedLiquidityCalendar(input)).toEqual(old); expect(input).toEqual(before);
     mutate(input, b => {b.entries[0]!.dimensions.scale = "1000";});
-    expect(calculateAdoptedLiquidityCalendar(input).calculation.closingAvailable).toBe("50");
+    expect(() => calculateAdoptedLiquidityCalendar(input)).toThrow("liquidity_adoption_context_mismatch");
   });
 });
