@@ -1,3 +1,12 @@
+## Etapa15: limite explícito para índice definido (2026-09-20)
+
+`evaluateDefinedRatio`, núcleo v24, separa comparadores estritos/inclusivos e decide por
+produtos cruzados sem arredondamento. Quociente/margem exibidos em18 casas não decidem a
+fronteira. Denominador não positivo ou operando ausente impede conclusão. Oito testes,
+core225PASS. Não certifica cumprimento contratual; adoção/definição e revisão pertencem à
+composição15. R01 preservado. Contrato em etapa-15-limite-definido.md; sem DDL ou acesso novo.
+CI, produção e gate completo ainda são necessários para fechar o incremento.
+
 ## Etapa15: comparação de alternativas calculadas (2026-09-20)
 
 `composeCapitalStructureDecision` recalcula alternativas e sensibilidades sob a mesma base,
