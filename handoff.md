@@ -1,3 +1,12 @@
+## Etapa15: índice definido ligado às adoções (2026-09-20)
+
+`calculateAdoptedDefinedRatio` exige adoções de numerador, denominador, limite, comparador e
+convenção. Preserva definições/períodos e rejeita dado gerencial reclassificado como contratual.
+Moeda/escala são explícitas; referência ausente não vira limite padrão. Quinze casos novos,
+model247PASS, mantêm hipótese/origem/dependências. Contrato em etapa-15-indice-adotado.md.
+Sem DDL, execução ou declaração de compliance. Revisão de componentes e aplicabilidade segue
+na15; autorização/revogação na17. Gate completo, CI e produção ainda exigem prova no completion.
+
 ## Etapa15: limite explícito para índice definido (2026-09-20)
 
 `evaluateDefinedRatio`, núcleo v24, separa comparadores estritos/inclusivos e decide por
