@@ -1,3 +1,16 @@
+## Etapa 15: contrato da base de comparação em validação
+
+Incremento aditivo `capital-structure-decision.ts`: organiza alternativas em uma base imutável,
+com contexto, objetivos, horizonte, cenários, definições, hipóteses e lacunas. Recusa valores de
+outro perímetro, período ou definição e não escolhe vencedor por ranking. Comparabilidade da
+base não equivale a recomendação, projeção calculada ou covenant cumprido. Sem entidade ou
+projeção ainda devolve enquadramento; ausência não vira zero.
+
+Testes dirigidos do contrato aprovados (17 casos). Check integral aprovado (44 tarefas); CI, merge e produção
+pendentes nesta candidata; evidência final no completion externo. Nenhum DDL, rota nova,
+privilégio, chamada de modelo ou publicação de procedimento. R01 permanece fixado.
+Detalhes: `docs/build/arcabouco/etapa-15-comparacao.md`. A etapa 15 inteira permanece aberta.
+
 ## Etapa 15: primeiro incremento financeiro em validação
 
 Baseline `83c58704eae04b1a4b9d03501bf5b60d1a004942`; isolamento publicado já entregue.
