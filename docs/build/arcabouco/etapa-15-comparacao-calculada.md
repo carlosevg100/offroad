@@ -1,4 +1,4 @@
-# Etapa15 — comparação calculada
+# Etapa15: comparação calculada
 
 Composição de domínio; não publica procedimento nem autoriza execução. Toda projeção passa
 novamente por calculateAdoptedCapitalPeriodCash; nenhum saldo é aceito como resultado pronto.
