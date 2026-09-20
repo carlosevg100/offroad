@@ -1,3 +1,22 @@
+## Etapa 15: custos de financiamento por data em validação
+
+Novo motor `buildFinancingCashFlows` em `packages/financial-core/src/financing-costs.ts`,
+registrado como `financial.financing_cash_flows`, motor corrente v20. Recalcula dívida com
+encargos financiados e separa liberação bruta, retenção, pagamento em caixa e capitalização.
+Exige avaliação explícita de originação, recorrência, tributo e outros para cada instrumento;
+zero, não aplicável e desconhecido não se confundem. Custo desconhecido impede total composto.
+Sem taxa fiscal presumida, anualização, nova rota, DDL ou publicação profissional. R01 intacto.
+
+16 casos novos PASS (financial-core185). Check integral PASS (44 tarefas). CI, merge e produção serão registrados
+no completion externo após execução efetiva. Contrato em
+`docs/build/arcabouco/etapa-15-custos-financiamento.md`. Etapa15 inteira aberta: seguir os
+incrementos autorizados até os gates técnicos e revisão profissional, sem parar em cada PR.
+Aprovação do conteúdo é ato separado antes de publicar o procedimento completo.
+
+O incremento anterior (PR681, main5196a585) foi concluído com Quality35521957830,
+Security35521957788 e worker35521999066 PASS, Vercel6554855519 e ECS385 no mesmo commit.
+36 jornadas aprovadas sem intermitência, nove originais locais preservados por hash.
+
 ## Etapa 15: composição de dívida e caixa sob parâmetros adotados
 
 `calculateAdoptedDebtLiquidity` valida contexto/definições e recalcula os movimentos pelos motores
